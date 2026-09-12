@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Helpers;
 using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
@@ -26,15 +27,13 @@ namespace KeyboardManagerEditorUI.Interop
                 throw new InvalidOperationException("Failed to create mapping configuration");
             }
 
-            bool settingsLoaded = KeyboardManagerInterop.LoadMappingSettings(_configHandle);
+            MappingConfigurationLoadResult loadResult = (MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle);
             ConfigurationName = KeyboardManagerInterop.GetStringAndFree(KeyboardManagerInterop.GetMappingConfigurationName(_configHandle));
-            if (!settingsLoaded &&
-                (!KeyboardManagerInterop.MappingConfigurationNameWasResolved(_configHandle) ||
-                 KeyboardManagerInterop.MappingSettingsFileExists(_configHandle)))
+            if (!IsCompleteLoadResult(loadResult))
             {
                 KeyboardManagerInterop.DestroyMappingConfiguration(_configHandle);
                 _configHandle = IntPtr.Zero;
-                throw new InvalidOperationException("Failed to load mapping configuration");
+                throw new InvalidOperationException($"Failed to load mapping configuration: {loadResult}");
             }
         }
 
@@ -162,6 +161,53 @@ namespace KeyboardManagerEditorUI.Interop
                         OriginalKey = mapping.OriginalKey,
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                     });
+                }
+            }
+
+            return result;
+        }
+
+        public List<TextExpansionMapping> GetTextExpansionMappings()
+        {
+            var result = new List<TextExpansionMapping>();
+            int count = KeyboardManagerInterop.GetTextExpansionCount(_configHandle);
+
+            for (int index = 0; index < count; index++)
+            {
+                var nativeMapping = default(NativeTextExpansionMapping);
+                if (!KeyboardManagerInterop.GetTextExpansion(_configHandle, index, ref nativeMapping))
+                {
+                    FreeNativeString(ref nativeMapping.Id);
+                    FreeNativeString(ref nativeMapping.SourceText);
+                    FreeNativeString(ref nativeMapping.ActivationKeys);
+                    FreeNativeString(ref nativeMapping.ReplacementText);
+                    continue;
+                }
+
+                try
+                {
+                    string id = TakeNativeString(ref nativeMapping.Id);
+                    string sourceText = TakeNativeString(ref nativeMapping.SourceText);
+                    string activationKeyString = TakeNativeString(ref nativeMapping.ActivationKeys);
+                    string replacementText = TakeNativeString(ref nativeMapping.ReplacementText);
+                    List<int> keyCodes = ParseKeyCodes(activationKeyString);
+
+                    result.Add(new TextExpansionMapping
+                    {
+                        Id = id,
+                        SourceText = sourceText,
+                        ActivationKeys = keyCodes,
+                        ActivationKeyNames = keyCodes.Select(GetKeyDisplayName).ToList(),
+                        ReplacementText = replacementText,
+                        IsEnabled = nativeMapping.Enabled,
+                    });
+                }
+                finally
+                {
+                    FreeNativeString(ref nativeMapping.Id);
+                    FreeNativeString(ref nativeMapping.SourceText);
+                    FreeNativeString(ref nativeMapping.ActivationKeys);
+                    FreeNativeString(ref nativeMapping.ReplacementText);
                 }
             }
 
@@ -320,10 +366,52 @@ namespace KeyboardManagerEditorUI.Interop
                 exactMatch: shortcutKeyMapping.ExactMatch ? 1 : 0);
         }
 
+        public bool AddTextExpansionMapping(TextExpansionMapping mapping)
+        {
+            return IsValidTextExpansion(mapping) && KeyboardManagerInterop.AddTextExpansion(
+                _configHandle,
+                mapping.Id,
+                mapping.SourceText,
+                FormatKeyCodes(mapping.ActivationKeys),
+                mapping.ReplacementText,
+                mapping.IsEnabled);
+        }
+
+        public bool UpdateTextExpansionMapping(TextExpansionMapping mapping)
+        {
+            return IsValidTextExpansion(mapping) && KeyboardManagerInterop.UpdateTextExpansion(
+                _configHandle,
+                mapping.Id,
+                mapping.SourceText,
+                FormatKeyCodes(mapping.ActivationKeys),
+                mapping.ReplacementText,
+                mapping.IsEnabled);
+        }
+
+        public bool DeleteTextExpansionMapping(string id)
+        {
+            return TextExpansionValidation.IsCanonicalGuid(id) && KeyboardManagerInterop.DeleteTextExpansion(_configHandle, id);
+        }
+
+        public bool SetTextExpansionEnabled(string id, bool enabled)
+        {
+            return TextExpansionValidation.IsCanonicalGuid(id) && KeyboardManagerInterop.SetTextExpansionEnabled(_configHandle, id, enabled);
+        }
+
         public bool SaveSettings()
         {
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
+
+        public bool ReloadSettings()
+        {
+            return IsCompleteLoadResult((MappingConfigurationLoadResult)KeyboardManagerInterop.LoadMappingSettingsWithResult(_configHandle));
+        }
+
+        // The editor must not save a partially loaded profile because doing so would
+        // overwrite entries that the current version could not understand or validate.
+        internal static bool IsCompleteLoadResult(MappingConfigurationLoadResult loadResult) =>
+            loadResult == MappingConfigurationLoadResult.Success;
 
         internal bool SaveSettingsAndVerify()
         {
@@ -352,7 +440,10 @@ namespace KeyboardManagerEditorUI.Interop
                 GetKeyToTextMappings(),
                 other.GetKeyToTextMappings(),
                 GetShortcutMappings(),
-                other.GetShortcutMappings());
+                other.GetShortcutMappings()) &&
+            TextExpansionCollectionsEqual(
+                GetTextExpansionMappings(),
+                other.GetTextExpansionMappings());
 
         internal static bool MappingCollectionsEqual(
             IEnumerable<KeyMapping> firstSingleKeyMappings,
@@ -362,8 +453,14 @@ namespace KeyboardManagerEditorUI.Interop
             IEnumerable<ShortcutKeyMapping> firstShortcutMappings,
             IEnumerable<ShortcutKeyMapping> secondShortcutMappings)
         {
-            var firstSingleKeys = firstSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
-            var secondSingleKeys = secondSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
+            var firstSingleKeys = firstSingleKeyMappings
+                .OrderBy(mapping => mapping.OriginalKey)
+                .ThenBy(mapping => mapping.IsAlone)
+                .ToList();
+            var secondSingleKeys = secondSingleKeyMappings
+                .OrderBy(mapping => mapping.OriginalKey)
+                .ThenBy(mapping => mapping.IsAlone)
+                .ToList();
             var firstTexts = firstTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
             var secondTexts = secondTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
             var firstShortcuts = OrderShortcutMappings(firstShortcutMappings).ToList();
@@ -373,7 +470,8 @@ namespace KeyboardManagerEditorUI.Interop
                    firstSingleKeys.Zip(secondSingleKeys).All(pair =>
                        pair.First.OriginalKey == pair.Second.OriginalKey &&
                        string.Equals(pair.First.TargetKey, pair.Second.TargetKey, StringComparison.Ordinal) &&
-                       pair.First.IsShortcut == pair.Second.IsShortcut) &&
+                       pair.First.IsShortcut == pair.Second.IsShortcut &&
+                       pair.First.IsAlone == pair.Second.IsAlone) &&
                    firstTexts.Count == secondTexts.Count &&
                    firstTexts.Zip(secondTexts).All(pair =>
                        pair.First.OriginalKey == pair.Second.OriginalKey &&
@@ -424,6 +522,44 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.DeleteShortcutRemap(_configHandle, originalKeys, (targetApp ?? string.Empty).ToLowerInvariant());
         }
 
+        private static bool IsValidTextExpansion(TextExpansionMapping? mapping)
+        {
+            return mapping != null &&
+                   TextExpansionValidation.IsCanonicalGuid(mapping.Id) &&
+                   TextExpansionValidation.IsValidSourceText(mapping.SourceText) &&
+                   TextExpansionValidation.IsValidActivationKeys(mapping.ActivationKeys) &&
+                   TextExpansionValidation.IsValidReplacementText(mapping.ReplacementText);
+        }
+
+        private static string FormatKeyCodes(IEnumerable<int> keyCodes)
+        {
+            return string.Join(";", keyCodes.Select(keyCode => keyCode.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        private static List<int> ParseKeyCodes(string keyCodes)
+        {
+            return keyCodes.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(keyCode => int.TryParse(keyCode, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int parsed) ? parsed : 0)
+                .Where(keyCode => keyCode > 0)
+                .ToList();
+        }
+
+        private static string TakeNativeString(ref IntPtr pointer)
+        {
+            IntPtr value = pointer;
+            pointer = IntPtr.Zero;
+            return KeyboardManagerInterop.GetStringAndFree(value);
+        }
+
+        private static void FreeNativeString(ref IntPtr pointer)
+        {
+            if (pointer != IntPtr.Zero)
+            {
+                KeyboardManagerInterop.FreeString(pointer);
+                pointer = IntPtr.Zero;
+            }
+        }
+
         private static IOrderedEnumerable<ShortcutKeyMapping> OrderShortcutMappings(IEnumerable<ShortcutKeyMapping> mappings) =>
             mappings
                 .OrderBy(mapping => mapping.OriginalKeys, StringComparer.Ordinal)
@@ -444,6 +580,22 @@ namespace KeyboardManagerEditorUI.Interop
             first.IfRunningAction == second.IfRunningAction &&
             first.Visibility == second.Visibility &&
             string.Equals(first.UriToOpen, second.UriToOpen, StringComparison.Ordinal);
+
+        internal static bool TextExpansionCollectionsEqual(
+            IEnumerable<TextExpansionMapping> firstMappings,
+            IEnumerable<TextExpansionMapping> secondMappings)
+        {
+            List<TextExpansionMapping> first = firstMappings.ToList();
+            List<TextExpansionMapping> second = secondMappings.ToList();
+
+            return first.Count == second.Count &&
+                   first.Zip(second).All(pair =>
+                       string.Equals(pair.First.Id, pair.Second.Id, StringComparison.Ordinal) &&
+                       string.Equals(pair.First.SourceText, pair.Second.SourceText, StringComparison.Ordinal) &&
+                       pair.First.ActivationKeys.SequenceEqual(pair.Second.ActivationKeys) &&
+                       string.Equals(pair.First.ReplacementText, pair.Second.ReplacementText, StringComparison.Ordinal) &&
+                       pair.First.IsEnabled == pair.Second.IsEnabled);
+        }
 
         public void Dispose()
         {

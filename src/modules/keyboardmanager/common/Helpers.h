@@ -1,4 +1,9 @@
 #pragma once
+#include <cstddef>
+#include <optional>
+
+#include <common/hooks/LowlevelKeyboardEvent.h>
+
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 
@@ -28,6 +33,10 @@ namespace Helpers
     bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode);
     DWORD GetNumpadOriginEncodingBit();
 
+    // Stable identity for one physical press. Unlike vkCode, scan code and the
+    // extended bit do not change when Shift or Num Lock changes a numpad key alias.
+    std::optional<size_t> GetPhysicalKeyEventIndex(const LowlevelKeyboardEvent* data) noexcept;
+
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key);
 
@@ -40,11 +49,15 @@ namespace Helpers
     // Function to set the value of a key event based on the arguments
     void SetKeyEvent(std::vector<INPUT>& keyEventArray, DWORD inputType, WORD keyCode, DWORD flags, ULONG_PTR extraInfo);
 
+    // Appends one text input unit. Newlines use Shift+Enter so chat-style controls
+    // insert a line break instead of submitting their contents.
+    void SetTextInputUnit(std::vector<INPUT>& inputArray, wchar_t value, ULONG_PTR extraInfo);
+
     // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
     void SetDummyKeyEvent(std::vector<INPUT>& keyEventArray, ULONG_PTR extraInfo);
 
     // Function to send text input directly, with multiline support.
-    // Sends each line via KEYEVENTF_UNICODE and newlines via VK_RETURN
+    // Sends each line via KEYEVENTF_UNICODE and newlines via Shift+Enter
     // as separate SendInput calls to avoid mixing event types.
     void SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii);
 

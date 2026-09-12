@@ -39,6 +39,8 @@ namespace KeyboardManagerEditorUI.Pages
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
+        private bool _isUpdatingTextExpansionToggle;
+        private bool _mappingServiceFailed;
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
@@ -81,6 +83,8 @@ namespace KeyboardManagerEditorUI.Pages
 
         public ObservableCollection<TextMapping> TextMappings { get; } = new();
 
+        public ObservableCollection<TextExpansionMapping> TextExpansions { get; } = new();
+
         public ObservableCollection<ProgramShortcut> ProgramShortcuts { get; } = new();
 
         public ObservableCollection<URLShortcut> UrlShortcuts { get; } = new();
@@ -89,6 +93,7 @@ namespace KeyboardManagerEditorUI.Pages
         private readonly List<Remapping> _allRemappings = new();
         private readonly List<Remapping> _allDisabled = new();
         private readonly List<TextMapping> _allTextMappings = new();
+        private readonly List<TextExpansionMapping> _allTextExpansions = new();
         private readonly List<ProgramShortcut> _allProgramShortcuts = new();
         private readonly List<URLShortcut> _allUrlShortcuts = new();
 
@@ -96,7 +101,7 @@ namespace KeyboardManagerEditorUI.Pages
         private static readonly int[] _ctrlVkCodes = { 0x11, 0xA2, 0xA3 };
         private static readonly int[] _altVkCodes = { 0x12, 0xA4, 0xA5 };
         private static readonly int[] _shiftVkCodes = { 0x10, 0xA0, 0xA1 };
-        private static readonly int[] _winVkCodes = { 0x5B, 0x5C };
+        private static readonly int[] _winVkCodes = { 0x5B, 0x5C, 0x104 };
 
         // Sentinel stored in _appFilter for the "Global only" option (item index 1 in the combo).
         // Uses a control character so it can never collide with a real app name.
@@ -223,6 +228,7 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Remapping,
                 TextMapping,
+                TextExpansion,
                 ProgramShortcut,
                 UrlShortcut,
             }
@@ -248,6 +254,7 @@ namespace KeyboardManagerEditorUI.Pages
             catch (Exception ex)
             {
                 Logger.LogError("Failed to initialize mapping service: " + ex.Message);
+                _mappingServiceFailed = true;
                 IsServiceRunning = false;
                 return;
             }
@@ -278,7 +285,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void CheckServiceStatus()
         {
-            IsServiceRunning = ServiceStatusHelper.IsKeyboardManagerServiceRunning();
+            IsServiceRunning = !_mappingServiceFailed && ServiceStatusHelper.IsKeyboardManagerServiceRunning();
         }
 
         private void UpdateServiceBannerVisibility()
@@ -376,6 +383,30 @@ namespace KeyboardManagerEditorUI.Pages
             await ShowRemappingDialog();
         }
 
+        private async void TextExpansionsList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is not TextExpansionMapping textExpansion)
+            {
+                return;
+            }
+
+            _isEditMode = true;
+            _editingItem = new EditingItem
+            {
+                Type = EditingItem.ItemType.TextExpansion,
+                Item = textExpansion,
+                OriginalTriggerKeys = textExpansion.ActivationKeyNames.ToList(),
+            };
+
+            UnifiedMappingControl.Reset();
+            UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.TextExpansion);
+            UnifiedMappingControl.SetTextExpansionSourceText(textExpansion.SourceText);
+            UnifiedMappingControl.SetTriggerKeys(textExpansion.ActivationKeyNames.ToList());
+            UnifiedMappingControl.SetTextExpansionReplacementText(textExpansion.ReplacementText);
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEditTextExpansion");
+            await ShowRemappingDialog();
+        }
+
         private async void ProgramShortcutsList_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is not ProgramShortcut programShortcut)
@@ -442,6 +473,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
+            UnifiedMappingControl.SetTriggerTypeSelectionEnabled(!_isEditMode);
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
@@ -557,6 +589,7 @@ namespace KeyboardManagerEditorUI.Pages
                     triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.Text => ValidationHelper.ValidateTextMapping(
                     triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
+                UnifiedMappingControl.ActionType.TextExpansion => ValidateTextExpansion(triggerKeys),
                 UnifiedMappingControl.ActionType.OpenUrl => ValidationHelper.ValidateUrlMapping(
                     triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
@@ -567,11 +600,42 @@ namespace KeyboardManagerEditorUI.Pages
             };
         }
 
+        private ValidationErrorType ValidateTextExpansion(List<string> activationKeyNames)
+        {
+            if (!TextExpansionValidation.IsValidSourceText(UnifiedMappingControl.GetTextExpansionSourceText()))
+            {
+                return ValidationErrorType.InvalidTextExpansionSourceText;
+            }
+
+            List<int> activationKeys = ParseKeyNames(activationKeyNames);
+            if (!TextExpansionValidation.IsValidActivationKeys(activationKeys))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            if (activationKeys.Count > 1 && KeyboardManagerInterop.IsShortcutIllegal(FormatKeyCodes(activationKeys)))
+            {
+                return ValidationErrorType.IllegalShortcut;
+            }
+
+            if (!TextExpansionValidation.IsValidReplacementText(UnifiedMappingControl.GetTextExpansionReplacementText()))
+            {
+                return ValidationErrorType.InvalidTextExpansionReplacementText;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
         private bool SaveMappingTransaction(List<string> triggerKeys)
         {
             if (_mappingService == null)
             {
                 return false;
+            }
+
+            if (UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.TextExpansion)
+            {
+                return SaveTextExpansionMapping(triggerKeys);
             }
 
             using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
@@ -655,6 +719,50 @@ namespace KeyboardManagerEditorUI.Pages
                 candidateService?.Dispose();
                 originalService?.Dispose();
             }
+        }
+
+        private bool SaveTextExpansionMapping(List<string> activationKeyNames)
+        {
+            List<int> activationKeys = ParseKeyNames(activationKeyNames);
+            bool updateExisting = _isEditMode && _editingItem?.Item is TextExpansionMapping;
+            TextExpansionMapping mapping;
+
+            if (updateExisting)
+            {
+                var existing = (TextExpansionMapping)_editingItem!.Item;
+                mapping = new TextExpansionMapping
+                {
+                    Id = existing.Id,
+                    SourceText = UnifiedMappingControl.GetTextExpansionSourceText(),
+                    ActivationKeys = activationKeys,
+                    ActivationKeyNames = activationKeyNames.ToList(),
+                    ReplacementText = UnifiedMappingControl.GetTextExpansionReplacementText(),
+                    IsEnabled = existing.IsEnabled,
+                };
+            }
+            else
+            {
+                mapping = new TextExpansionMapping
+                {
+                    Id = Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture),
+                    SourceText = UnifiedMappingControl.GetTextExpansionSourceText(),
+                    ActivationKeys = activationKeys,
+                    ActivationKeyNames = activationKeyNames.ToList(),
+                    ReplacementText = UnifiedMappingControl.GetTextExpansionReplacementText(),
+                    IsEnabled = true,
+                };
+            }
+
+            return ExecuteTextExpansionTransaction(candidate =>
+                updateExisting
+                    ? candidate.UpdateTextExpansionMapping(mapping)
+                    : candidate.AddTextExpansionMapping(mapping));
+        }
+
+        private bool ExecuteTextExpansionTransaction(Func<KeyboardMappingService, bool> updateCandidate)
+        {
+            using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
+            return transactionLock != null && ExecuteMappingTransaction(updateCandidate, static () => true);
         }
 
         private ShortcutKeyMapping? CreateShortcutKeyMapping(KeyboardMappingService mappingService, List<string> triggerKeys, bool exactMatch)
@@ -853,6 +961,15 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 switch (menuFlyoutItem.Tag)
                 {
+                    case TextExpansionMapping textExpansion:
+                        HandleTextExpansionDelete(textExpansion);
+                        if (_mappingService != null)
+                        {
+                            LoadAllMappings();
+                        }
+
+                        break;
+
                     case Remapping remapping:
                         HandleRemappingDelete(remapping);
                         RefreshAppFilterOptions();
@@ -868,6 +985,14 @@ namespace KeyboardManagerEditorUI.Pages
             catch (Exception ex)
             {
                 Logger.LogError("Error deleting mapping: " + ex.Message);
+            }
+        }
+
+        private void HandleTextExpansionDelete(TextExpansionMapping textExpansion)
+        {
+            if (!ExecuteTextExpansionTransaction(candidate => candidate.DeleteTextExpansionMapping(textExpansion.Id)))
+            {
+                Logger.LogWarning($"Failed to delete text expansion {textExpansion.Id}");
             }
         }
 
@@ -899,8 +1024,18 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (_isUpdatingToggle ||
                 sender is not ToggleSwitch toggleSwitch ||
-                toggleSwitch.DataContext is not IToggleableShortcut shortcut ||
                 _mappingService == null)
+            {
+                return;
+            }
+
+            if (toggleSwitch.DataContext is TextExpansionMapping textExpansion)
+            {
+                ToggleTextExpansion(toggleSwitch, textExpansion);
+                return;
+            }
+
+            if (toggleSwitch.DataContext is not IToggleableShortcut shortcut)
             {
                 return;
             }
@@ -933,6 +1068,34 @@ namespace KeyboardManagerEditorUI.Pages
                 RestoreToggleState(toggleSwitch, shortcut.IsActive);
                 Logger.LogError("Error toggling shortcut active state: " + ex.Message);
             }
+        }
+
+        private void ToggleTextExpansion(ToggleSwitch toggleSwitch, TextExpansionMapping textExpansion)
+        {
+            if (_isUpdatingTextExpansionToggle || toggleSwitch.IsOn == textExpansion.IsEnabled)
+            {
+                return;
+            }
+
+            bool requestedState = toggleSwitch.IsOn;
+            bool saved = ExecuteTextExpansionTransaction(candidate => candidate.SetTextExpansionEnabled(textExpansion.Id, requestedState));
+            if (saved)
+            {
+                textExpansion.IsEnabled = requestedState;
+                return;
+            }
+
+            try
+            {
+                _isUpdatingTextExpansionToggle = true;
+                toggleSwitch.IsOn = textExpansion.IsEnabled;
+            }
+            finally
+            {
+                _isUpdatingTextExpansionToggle = false;
+            }
+
+            Logger.LogWarning($"Failed to update text expansion {textExpansion.Id}");
         }
 
         private void RestoreToggleState(ToggleSwitch toggleSwitch, bool isActive)
@@ -1058,6 +1221,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             LoadRemappings();
             LoadTextMappings();
+            LoadTextExpansions();
             LoadProgramShortcuts();
             LoadUrlShortcuts();
             RefreshAppFilterOptions();
@@ -1066,8 +1230,8 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UpdateHasAnyMappings()
         {
-            bool hasData = _allRemappings.Count > 0 || _allDisabled.Count > 0 || _allTextMappings.Count > 0 || _allProgramShortcuts.Count > 0 || _allUrlShortcuts.Count > 0;
-            bool hasVisible = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0;
+            bool hasData = _allRemappings.Count > 0 || _allDisabled.Count > 0 || _allTextMappings.Count > 0 || _allTextExpansions.Count > 0 || _allProgramShortcuts.Count > 0 || _allUrlShortcuts.Count > 0;
+            bool hasVisible = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || TextExpansions.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0;
 
             HasAnyData = hasData;
             MappingState = !hasData ? "Empty" : (hasVisible ? "HasMappings" : "NoResults");
@@ -1161,6 +1325,17 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
+        private void LoadTextExpansions()
+        {
+            _allTextExpansions.Clear();
+            foreach (TextExpansionMapping mapping in _mappingService!.GetTextExpansionMappings())
+            {
+                mapping.SearchableText = BuildSearchableText(
+                    mapping.ActivationKeyNames.Prepend(mapping.SourceText).Append(mapping.ReplacementText));
+                _allTextExpansions.Add(mapping);
+            }
+        }
+
         private void LoadProgramShortcuts()
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RunProgram, out var remapShortcutIds);
@@ -1250,6 +1425,18 @@ namespace KeyboardManagerEditorUI.Pages
                 .ToList();
         }
 
+        private List<int> ParseKeyNames(IEnumerable<string> keyNames)
+        {
+            return keyNames
+                .Select(keyName => _mappingService?.GetKeyCodeFromName(keyName) ?? 0)
+                .ToList();
+        }
+
+        private static string FormatKeyCodes(IEnumerable<int> keyCodes)
+        {
+            return string.Join(";", keyCodes.Select(keyCode => keyCode.ToString(CultureInfo.InvariantCulture)));
+        }
+
         // Parse the raw ";"-separated VK code string into integers (no display-name conversion),
         // so modifier filtering can classify keys by code and stay locale-independent.
         private static List<int> ParseVkCodes(string keyCodesString)
@@ -1292,12 +1479,13 @@ namespace KeyboardManagerEditorUI.Pages
 
         #region Filter and Selection
 
-        // Rebuilds the five bound (visible) collections from their backing lists using the active filters.
+        // Rebuilds the six bound (visible) collections from their backing lists using the active filters.
         private void ApplyFilter()
         {
             RebuildView(_allRemappings, RemappingList);
             RebuildView(_allDisabled, DisabledList);
             RebuildView(_allTextMappings, TextMappings);
+            RebuildView(_allTextExpansions, TextExpansions);
             RebuildView(_allProgramShortcuts, ProgramShortcuts);
             RebuildView(_allUrlShortcuts, UrlShortcuts);
             UpdateHasAnyMappings();
@@ -1378,6 +1566,7 @@ namespace KeyboardManagerEditorUI.Pages
             AddApps(_allRemappings, apps);
             AddApps(_allDisabled, apps);
             AddApps(_allTextMappings, apps);
+            AddApps(_allTextExpansions, apps);
             AddApps(_allProgramShortcuts, apps);
             AddApps(_allUrlShortcuts, apps);
 
@@ -1492,6 +1681,7 @@ namespace KeyboardManagerEditorUI.Pages
             ClearSelectionIfMultiple(RemappingsListView);
             ClearSelectionIfMultiple(DisabledListView);
             ClearSelectionIfMultiple(TextListView);
+            ClearSelectionIfMultiple(TextExpansionsListView);
             ClearSelectionIfMultiple(ProgramsListView);
             ClearSelectionIfMultiple(UrlsListView);
         }
@@ -1517,6 +1707,7 @@ namespace KeyboardManagerEditorUI.Pages
                 SelectedCountIfMultiple(RemappingsListView) +
                 SelectedCountIfMultiple(DisabledListView) +
                 SelectedCountIfMultiple(TextListView) +
+                SelectedCountIfMultiple(TextExpansionsListView) +
                 SelectedCountIfMultiple(ProgramsListView) +
                 SelectedCountIfMultiple(UrlsListView);
         }
@@ -1546,6 +1737,7 @@ namespace KeyboardManagerEditorUI.Pages
                 var remappings = RemappingsListView.SelectedItems.OfType<Remapping>().ToList();
                 var disabled = DisabledListView.SelectedItems.OfType<Remapping>().ToList();
                 var texts = TextListView.SelectedItems.OfType<TextMapping>().ToList();
+                var textExpansions = TextExpansionsListView.SelectedItems.OfType<TextExpansionMapping>().ToList();
                 var programs = ProgramsListView.SelectedItems.OfType<ProgramShortcut>().ToList();
                 var urls = UrlsListView.SelectedItems.OfType<URLShortcut>().ToList();
 
@@ -1562,6 +1754,11 @@ namespace KeyboardManagerEditorUI.Pages
                 foreach (var item in texts)
                 {
                     HandleShortcutDelete(item);
+                }
+
+                foreach (var item in textExpansions)
+                {
+                    HandleTextExpansionDelete(item);
                 }
 
                 foreach (var item in programs)

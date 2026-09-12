@@ -15,6 +15,7 @@
     <!-- We might want to add that to the project and fix the issues as well -->
     <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
     <OutputType>Exe</OutputType>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,5 +27,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
+  </ItemGroup>
+
+  <!-- Link the pure managed Text Expansion model and validation logic so these tests do not
+       load WinUI or the native Keyboard Manager editor DLL. -->
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\modules\keyboardmanager\KeyboardManagerEditorUI\Helpers\TextExpansionMapping.cs" Link="KeyboardManagerTextExpansion\TextExpansionMapping.cs" />
+    <Compile Include="$(RepoRoot)src\modules\keyboardmanager\KeyboardManagerEditorUI\Helpers\TextExpansionValidation.cs" Link="KeyboardManagerTextExpansion\TextExpansionValidation.cs" />
   </ItemGroup>
 </Project>

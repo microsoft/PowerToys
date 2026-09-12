@@ -523,6 +523,109 @@ namespace KeyboardManagerEditorUI.UnitTests
         }
 
         [TestMethod]
+        public void MappingCollectionsEqual_ShouldCompareAndOrderAloneCondition()
+        {
+            var alwaysMapping = new KeyMapping
+            {
+                OriginalKey = 65,
+                TargetKey = "66",
+                IsAlone = false,
+            };
+            var aloneMapping = new KeyMapping
+            {
+                OriginalKey = 65,
+                TargetKey = "67",
+                IsAlone = true,
+            };
+
+            Assert.IsTrue(KeyboardMappingService.MappingCollectionsEqual(
+                new List<KeyMapping> { alwaysMapping, aloneMapping },
+                new List<KeyMapping> { aloneMapping, alwaysMapping },
+                new List<KeyToTextMapping>(),
+                new List<KeyToTextMapping>(),
+                new List<ShortcutKeyMapping>(),
+                new List<ShortcutKeyMapping>()));
+
+            Assert.IsFalse(KeyboardMappingService.MappingCollectionsEqual(
+                new List<KeyMapping> { alwaysMapping },
+                new List<KeyMapping>
+                {
+                    new KeyMapping
+                    {
+                        OriginalKey = 65,
+                        TargetKey = "66",
+                        IsAlone = true,
+                    },
+                },
+                new List<KeyToTextMapping>(),
+                new List<KeyToTextMapping>(),
+                new List<ShortcutKeyMapping>(),
+                new List<ShortcutKeyMapping>()));
+        }
+
+        [TestMethod]
+        public void TextExpansionCollectionsEqual_ShouldTreatProfileOrderAsSemantic()
+        {
+            var firstRule = new TextExpansionMapping
+            {
+                Id = "11111111-1111-1111-1111-111111111111",
+                SourceText = "sig",
+                ActivationKeys = new List<int> { 90 },
+                ReplacementText = "first",
+                IsEnabled = true,
+            };
+            var secondRule = new TextExpansionMapping
+            {
+                Id = "22222222-2222-2222-2222-222222222222",
+                SourceText = "sig",
+                ActivationKeys = new List<int> { 90 },
+                ReplacementText = "second",
+                IsEnabled = true,
+            };
+
+            Assert.IsTrue(KeyboardMappingService.TextExpansionCollectionsEqual(
+                new[] { firstRule, secondRule },
+                new[] { firstRule, secondRule }));
+            Assert.IsFalse(KeyboardMappingService.TextExpansionCollectionsEqual(
+                new[] { firstRule, secondRule },
+                new[] { secondRule, firstRule }));
+        }
+
+        [TestMethod]
+        public void TextExpansionCollectionsEqual_ShouldComparePersistedFields()
+        {
+            var expected = new TextExpansionMapping
+            {
+                Id = "11111111-1111-1111-1111-111111111111",
+                SourceText = "source",
+                ActivationKeys = new List<int> { 17, 32 },
+                ReplacementText = "replacement",
+                IsEnabled = true,
+            };
+            var changed = new TextExpansionMapping
+            {
+                Id = expected.Id,
+                SourceText = expected.SourceText,
+                ActivationKeys = new List<int>(expected.ActivationKeys),
+                ReplacementText = expected.ReplacementText,
+                IsEnabled = false,
+            };
+
+            Assert.IsFalse(KeyboardMappingService.TextExpansionCollectionsEqual(
+                new[] { expected },
+                new[] { changed }));
+        }
+
+        [DataTestMethod]
+        [DataRow(MappingConfigurationLoadResult.Success, true)]
+        [DataRow(MappingConfigurationLoadResult.Partial, false)]
+        [DataRow(MappingConfigurationLoadResult.Failure, false)]
+        public void IsCompleteLoadResult_ShouldOnlyAcceptSuccess(MappingConfigurationLoadResult loadResult, bool expected)
+        {
+            Assert.AreEqual(expected, KeyboardMappingService.IsCompleteLoadResult(loadResult));
+        }
+
+        [TestMethod]
         public void ReconcileMappings_ShouldRepairNullGlobalScopeInPlace()
         {
             var metadata = CreateMapping(ShortcutOperationType.RemapShortcut, "162;65", "162;66");
