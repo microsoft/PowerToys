@@ -6,8 +6,6 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.CmdPal.Ext.WindowWalker.UnitTests</RootNamespace>
-    <!-- This project currently contains shared test helpers only (no test methods). -->
-    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
