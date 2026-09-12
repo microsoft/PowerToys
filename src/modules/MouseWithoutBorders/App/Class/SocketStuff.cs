@@ -185,7 +185,7 @@ namespace MouseWithoutBorders.Class
 
             Logger.LogDebug("Validating session...");
 
-            if (Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+            if (!WinAPI.IsCurrentSessionAllowed())
             {
                 if (Common.DesMachineID != Common.MachineID)
                 {

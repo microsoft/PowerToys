@@ -175,6 +175,12 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
+                SessionPolicy.Initialize(serviceMode, runningAsSystem, WinAPI.GetMyDesktop());
+                if (SessionPolicy.Current.AllowNonConsole)
+                {
+                    Logger.Log("Experimental Debug non-console session support enabled. An active user desktop is still required; service and secure-desktop scenarios are not supported.");
+                }
+
                 PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersStartedEvent());
 
                 try

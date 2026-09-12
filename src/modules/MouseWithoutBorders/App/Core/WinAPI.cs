@@ -274,7 +274,7 @@ internal static class WinAPI
     {
         try
         {
-            if (!IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+            if (!IsMyDesktopActive() || !IsCurrentSessionAllowed())
             {
                 Helper.RunDDHelper(true);
                 int waitCount = 20;
@@ -351,6 +351,13 @@ internal static class WinAPI
     }
 
     private static Point p;
+
+    internal static bool IsCurrentSessionAllowed()
+    {
+        return SessionPolicy.Current.IsSessionAllowed(
+            Common.CurrentProcess.SessionId,
+            NativeMethods.WTSGetActiveConsoleSessionId());
+    }
 
     internal static bool IsMyDesktopActive()
     {

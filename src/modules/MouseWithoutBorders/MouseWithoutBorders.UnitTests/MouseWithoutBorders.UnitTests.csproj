@@ -23,6 +23,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Core\Logger.PrivateDump.expected.txt" />
     <EmbeddedResource Include="Core\Logger.PrivateDump.original.txt" />
+    <EmbeddedResource Include="..\Tests\SandboxExperiment\MwbSettings.template.json" LogicalName="MouseWithoutBorders.UnitTests.MwbSettings.template.json" />
   </ItemGroup>
 
   <ItemGroup>

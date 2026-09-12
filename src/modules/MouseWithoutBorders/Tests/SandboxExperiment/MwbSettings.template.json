@@ -1,0 +1,14 @@
+{
+  "name": "MouseWithoutBorders",
+  "version": "1.1",
+  "properties": {
+    "SecurityKey": { "value": "" },
+    "UseService": { "value": false },
+    "ShowOriginalUI": { "value": false },
+    "WrapMouse": { "value": false },
+    "ShareClipboard": { "value": false },
+    "TransferFile": { "value": false },
+    "Name2IP": { "value": "" },
+    "MachineMatrixString": []
+  }
+}

@@ -319,7 +319,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                if (!WinAPI.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+                if (!WinAPI.IsMyDesktopActive() || !WinAPI.IsCurrentSessionAllowed())
                 {
                     myDesktopNotActive = true;
 
