@@ -13,8 +13,8 @@ public class FontIconGlyphClassifierTests
     [TestMethod]
     public void EmptyInputHasNoGlyph()
     {
-        Assert.AreEqual(FontIconGlyphKind.None, FontIconGlyphClassifier.Classify(null));
-        Assert.AreEqual(FontIconGlyphKind.None, FontIconGlyphClassifier.Classify(string.Empty));
+        AssertClassification(null, FontIconGlyphKind.None);
+        AssertClassification(string.Empty, FontIconGlyphKind.None);
     }
 
     [TestMethod]
@@ -23,7 +23,7 @@ public class FontIconGlyphClassifierTests
     [DataRow("\uF8FF")]
     public void FluentPrivateUseCharactersAreSymbols(string text)
     {
-        Assert.AreEqual(FontIconGlyphKind.FluentSymbol, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.FluentSymbol);
     }
 
     [TestMethod]
@@ -34,7 +34,7 @@ public class FontIconGlyphClassifierTests
     [DataRow("e\u0301")]
     public void SingleNonEmojiGraphemesUseTheGeneralFont(string text)
     {
-        Assert.AreEqual(FontIconGlyphKind.Other, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.Other);
     }
 
     [TestMethod]
@@ -42,13 +42,13 @@ public class FontIconGlyphClassifierTests
     {
         var text = new string((char)0xDC00, 1);
 
-        Assert.AreEqual(FontIconGlyphKind.Other, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.Other);
     }
 
     [TestMethod]
     public void IsolatedEmojiVariationSelectorPreservesNativeClassifierBehavior()
     {
-        Assert.AreEqual(FontIconGlyphKind.Emoji, FontIconGlyphClassifier.Classify("\uFE0F"));
+        AssertClassification("\uFE0F", FontIconGlyphKind.Emoji);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class FontIconGlyphClassifierTests
     [DataRow("\U0001F469\u200D\U0001F4BB")]
     public void EmojiGraphemesUseTheEmojiFont(string text)
     {
-        Assert.AreEqual(FontIconGlyphKind.Emoji, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.Emoji);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class FontIconGlyphClassifierTests
     [DataRow("2\u20E3")]
     public void TextPresentationRemainsGeneralText(string text)
     {
-        Assert.AreEqual(FontIconGlyphKind.Other, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.Other);
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class FontIconGlyphClassifierTests
     [DataRow("\U0001F600\U0001F600")]
     public void InvalidOrMultipleGraphemesAreRejected(string text)
     {
-        Assert.AreEqual(FontIconGlyphKind.Invalid, FontIconGlyphClassifier.Classify(text));
+        AssertClassification(text, FontIconGlyphKind.Invalid);
     }
 
     [TestMethod]
@@ -98,5 +98,13 @@ public class FontIconGlyphClassifierTests
         Assert.AreEqual(
             "Segoe UI",
             FontIconGlyphClassifier.GetFontFamily(FontIconGlyphKind.Invalid, "Custom Font"));
+    }
+
+    private static void AssertClassification(string? text, FontIconGlyphKind expected)
+    {
+        Assert.AreEqual(expected, FontIconGlyphClassifier.Classify(text));
+        Assert.AreEqual(
+            expected is not FontIconGlyphKind.Invalid and not FontIconGlyphKind.None,
+            FontIconGlyphClassifier.IsGlyphCandidate(text));
     }
 }

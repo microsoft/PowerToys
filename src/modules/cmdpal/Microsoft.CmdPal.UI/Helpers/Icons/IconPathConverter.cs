@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
@@ -48,7 +49,35 @@ internal static partial class IconPathConverter
         return PreparedIcon.FromGlyph(glyph, family, targetSize > 0 ? targetSize : 8);
     }
 
-    public static async Task<IconSource> CreateIconSourceAsync(PreparedIcon icon)
+    public static Task<IconSource> CreateIconSourceAsync(PreparedIcon icon)
+    {
+        try
+        {
+            if (TryCreateIconSourceSynchronously(icon, out var iconSource))
+            {
+                return Task.FromResult(iconSource);
+            }
+
+            return CompleteIconSourceCreationAsync(icon);
+        }
+        catch (Exception exception)
+        {
+            // Preserve async exception delivery for invalid callers now that this
+            // entry point no longer has an async state machine.
+            return Task.FromException<IconSource>(exception);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to create an icon source without an asynchronous bitmap transfer.
+    /// </summary>
+    /// <returns>
+    /// <see langword="false"/> only when a populated binary icon must be transferred
+    /// to a <see cref="SoftwareBitmapSource"/> asynchronously.
+    /// </returns>
+    public static bool TryCreateIconSourceSynchronously(
+        PreparedIcon icon,
+        [MaybeNullWhen(false)] out IconSource iconSource)
     {
         try
         {
@@ -60,7 +89,8 @@ internal static partial class IconPathConverter
                         DecodePixelWidth = icon.TargetSize > 0 ? icon.TargetSize : 0,
                         UriSource = icon.Uri!,
                     };
-                    return new ImageIconSource { ImageSource = bitmap };
+                    iconSource = new ImageIconSource { ImageSource = bitmap };
+                    return true;
 
                 case PreparedIconKind.SvgUri:
                     var svg = new SvgImageSource(icon.Uri!);
@@ -69,64 +99,87 @@ internal static partial class IconPathConverter
                         svg.RasterizePixelWidth = icon.TargetSize;
                     }
 
-                    return new ImageIconSource { ImageSource = svg };
+                    iconSource = new ImageIconSource { ImageSource = svg };
+                    return true;
 
                 case PreparedIconKind.Glyph:
-                    return new FontIconSource
+                    iconSource = new FontIconSource
                     {
                         FontFamily = new FontFamily(icon.FontFamily!),
                         FontSize = icon.TargetSize,
                         Glyph = icon.Glyph!,
                     };
+                    return true;
 
                 case PreparedIconKind.Binary:
-                    var softwareBitmap = icon.TakeSoftwareBitmap();
-                    if (softwareBitmap is null)
+                    if (icon.SoftwareBitmap is not null)
                     {
-                        return new ImageIconSource();
+                        iconSource = null!;
+                        return false;
                     }
 
-                    var ownershipTransferred = false;
-                    try
-                    {
-                        var bitmapSource = new SoftwareBitmapSource();
-                        try
-                        {
-                            await bitmapSource.SetBitmapAsync(softwareBitmap);
-
-                            var iconSource = new ImageIconSource { ImageSource = bitmapSource };
-
-                            // SetBitmapAsync can finish before WinUI's AsyncCopyToSurfaceTask.
-                            // Once XAML accepts the bitmap, explicitly closing either object can
-                            // fail-fast that later copy with RO_E_CLOSED. Release both through
-                            // their normal WinRT reference lifetimes instead.
-                            ownershipTransferred = true;
-                            return iconSource;
-                        }
-                        catch
-                        {
-                            // The source has not escaped to a caller or visual tree.
-                            bitmapSource.Dispose();
-                            throw;
-                        }
-                    }
-                    finally
-                    {
-                        if (!ownershipTransferred)
-                        {
-                            softwareBitmap.Dispose();
-                        }
-                    }
+                    iconSource = new ImageIconSource();
+                    return true;
 
                 default:
-                    return CreateEmptyIconSource();
+                    iconSource = CreateEmptyIconSource();
+                    return true;
             }
         }
         catch
         {
-            return icon.Kind == PreparedIconKind.Binary
+            iconSource = icon.Kind == PreparedIconKind.Binary
                 ? new ImageIconSource()
                 : CreateEmptyIconSource();
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Completes icon-source creation after <see cref="TryCreateIconSourceSynchronously"/>
+    /// returned <see langword="false"/> for the same prepared icon.
+    /// </summary>
+    public static Task<IconSource> CompleteIconSourceCreationAsync(PreparedIcon icon) =>
+        icon.TakeSoftwareBitmap() is { } softwareBitmap
+            ? CreateBinaryIconSourceAsync(softwareBitmap)
+            : Task.FromResult<IconSource>(new ImageIconSource());
+
+    private static async Task<IconSource> CreateBinaryIconSourceAsync(SoftwareBitmap softwareBitmap)
+    {
+        var ownershipTransferred = false;
+        try
+        {
+            var bitmapSource = new SoftwareBitmapSource();
+            try
+            {
+                await bitmapSource.SetBitmapAsync(softwareBitmap);
+
+                var iconSource = new ImageIconSource { ImageSource = bitmapSource };
+
+                // SetBitmapAsync can finish before WinUI's AsyncCopyToSurfaceTask.
+                // Once XAML accepts the bitmap, explicitly closing either object can
+                // fail-fast that later copy with RO_E_CLOSED. Release both through
+                // their normal WinRT reference lifetimes instead.
+                ownershipTransferred = true;
+                return iconSource;
+            }
+            catch
+            {
+                // The source has not escaped to a caller or visual tree.
+                bitmapSource.Dispose();
+                throw;
+            }
+        }
+        catch
+        {
+            return new ImageIconSource();
+        }
+        finally
+        {
+            if (!ownershipTransferred)
+            {
+                softwareBitmap.Dispose();
+            }
         }
     }
 
