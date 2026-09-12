@@ -16,6 +16,9 @@ struct LightSwitchState
     // Derived, runtime-resolved times
     int effectiveLightMinutes = 0; // the boundary we actually act on
     int effectiveDarkMinutes = 0; // includes offsets if needed
+
+    // Last known display brightness (0-100), -1 = unknown
+    int lastBrightness = -1;
 };
 
 // The controller that reacts to settings changes, time ticks, and manual overrides.
@@ -35,6 +38,9 @@ public:
 
     // Called when night light changes in windows settings
     void OnNightLightChange();
+
+    // Called when display brightness changes (via BrightnessObserver)
+    void OnBrightnessChange(int brightness);
 
     // Initial sync at startup to align internal state with system theme
     void SyncInitialThemeState();
