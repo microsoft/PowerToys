@@ -32,6 +32,4 @@ private:
 
     // Provided during initialization.
     IStream* m_pStream;
-
-    HANDLE m_process;
 };
