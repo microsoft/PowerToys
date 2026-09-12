@@ -5,7 +5,11 @@
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -14,12 +18,15 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 public static partial class IconProvider
 {
+    private static readonly Uri AppIconFallbackUri = new("ms-appx:///Assets/Icons/AppIconFallback.svg");
+
     private static IIconSourceProvider _provider16 = null!;
     private static IIconSourceProvider _provider20 = null!;
     private static IIconSourceProvider _provider32 = null!;
     private static IIconSourceProvider _provider64 = null!;
     private static IIconSourceProvider _provider256 = null!;
     private static IIconSourceProvider _providerUnbound = null!;
+    private static ImageIconSource? _appIconFallbackSource;
 
     public static void Initialize(IServiceProvider serviceProvider)
     {
@@ -42,22 +49,29 @@ public static partial class IconProvider
 
         try
         {
-            args.Value = args.Key switch
+            var iconData = args.Key switch
             {
-                IconDataViewModel iconData => await service.GetIconSource(
+                IconDataViewModel value => value,
+                IconInfoViewModel value => value.IconForTheme(args.Theme == ElementTheme.Light),
+                _ => null,
+            };
+            if (iconData is not null && AppIconProtocol.IsProtocol(iconData.Icon))
+            {
+                args.FallbackSource = _appIconFallbackSource ??= new ImageIconSource
+                {
+                    ImageSource = new SvgImageSource(AppIconFallbackUri),
+                };
+                args.ExpectsImageSource = true;
+            }
+
+            args.Value = iconData is null
+                ? null
+                : await service.GetIconSource(
                     iconData,
                     args.Scale,
                     args.Diagnostics,
                     args,
-                    args.Theme),
-                IconInfoViewModel iconInfo => await service.GetIconSource(
-                    args.Theme == Microsoft.UI.Xaml.ElementTheme.Light ? iconInfo.Light : iconInfo.Dark,
-                    args.Scale,
-                    args.Diagnostics,
-                    args,
-                    args.Theme),
-                _ => null,
-            };
+                    args.Theme);
         }
         catch (Exception ex)
         {

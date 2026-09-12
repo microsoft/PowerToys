@@ -28,6 +28,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\AppIconProtocolProcessor.cs" Link="Helpers\Icons\AppIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconPresentationState`1.cs" Link="Controls\IconPresentationState`1.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCacheRemovalReason.cs" Link="Helpers\AdaptiveCacheRemovalReason.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\BinaryIconReference.cs" Link="Helpers\Icons\BinaryIconReference.cs" />
