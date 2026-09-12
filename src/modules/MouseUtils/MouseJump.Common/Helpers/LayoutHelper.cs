@@ -7,8 +7,8 @@ using System.Drawing;
 
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
+using MouseJump.Models.Layout;
 using MouseJump.Models.Styles;
-using MouseJump.Models.ViewModel;
 
 namespace MouseJump.Common.Helpers;
 
@@ -21,7 +21,7 @@ public static class LayoutHelper
             (combined, screenBounds) => combined.Union(screenBounds));
     }
 
-    public static FormViewModel GetFormLayout(
+    public static FormLayout GetFormLayout(
         PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
@@ -77,7 +77,7 @@ public static class LayoutHelper
         return formLayout.Build();
     }
 
-    internal static FormViewModel.Builder CreateInitialFormLayout(
+    internal static FormLayout.Builder CreateInitialFormLayout(
         PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
@@ -113,7 +113,7 @@ public static class LayoutHelper
         // create an initial form layout.
         // this is a nested structure of mutable "builder" objects that can be used to
         // build the final immutable layout objects once all the bounds have been calculated
-        var formLayout = new FormViewModel.Builder
+        var formLayout = new FormLayout.Builder
         {
             FormBounds = RectangleInfo.Empty,
             CanvasLayout = new()
@@ -123,13 +123,13 @@ public static class LayoutHelper
                     boxStyle: previewStyle.CanvasStyle),
                 CanvasStyle = previewStyle.CanvasStyle,
                 DeviceLayouts = displayInfo.Devices.Select(
-                    (deviceInfo, deviceIndex) => new DeviceViewModel.Builder
+                    (deviceInfo, deviceIndex) => new DeviceLayout.Builder
                     {
                         DeviceInfo = deviceInfo,
                         DeviceBounds = BoxBounds.Empty,
                         DeviceStyle = BoxStyle.Empty,
                         ScreenLayouts = deviceInfo.Screens.Select(
-                            screenInfo => new ScreenViewModel.Builder
+                            screenInfo => new ScreenLayout.Builder
                             {
                                 ScreenInfo = screenInfo,
                                 ScreenBounds = BoxBounds.Empty,
@@ -177,7 +177,7 @@ public static class LayoutHelper
     /// <summary>
     /// Arranges the device layouts into a non-overlapping grid and scales them to fit inside the specified content bounds.
     /// </summary>
-    internal static void ArrangeAndScaleDeviceLayouts(FormViewModel.Builder formLayout)
+    internal static void ArrangeAndScaleDeviceLayouts(FormLayout.Builder formLayout)
     {
         var deviceLayouts = formLayout.CanvasLayout?.DeviceLayouts
             ?? throw new InvalidOperationException();
@@ -190,7 +190,7 @@ public static class LayoutHelper
         // Mouse Without Borders "square" arrangement.
         var gridRowCount = 1;
         var gridColumnCount = deviceLayouts.Count;
-        var deviceGrid = new DeviceViewModel.Builder[gridRowCount, gridColumnCount];
+        var deviceGrid = new DeviceLayout.Builder[gridRowCount, gridColumnCount];
         for (var columnIndex = 0; columnIndex < gridColumnCount; columnIndex++)
         {
             deviceGrid[0, columnIndex] = deviceLayouts[columnIndex];
@@ -319,7 +319,7 @@ public static class LayoutHelper
     /// Arranges the screen layouts inside their respective device cells and
     /// scales them to fit inside their parent device layouts.
     /// </summary>
-    internal static void ArrangeAndScaleScreenLayouts(FormViewModel.Builder formLayout)
+    internal static void ArrangeAndScaleScreenLayouts(FormLayout.Builder formLayout)
     {
         var deviceLayouts = formLayout.CanvasLayout?.DeviceLayouts
             ?? throw new InvalidOperationException();
@@ -367,7 +367,7 @@ public static class LayoutHelper
         }
     }
 
-    internal static void ArrangeAndResizeCanvasLayout(FormViewModel.Builder formLayout)
+    internal static void ArrangeAndResizeCanvasLayout(FormLayout.Builder formLayout)
     {
         var canvasLayout = formLayout.CanvasLayout ?? throw new InvalidOperationException();
 
@@ -389,7 +389,7 @@ public static class LayoutHelper
             boxStyle: formLayout.CanvasLayout.CanvasStyle);
     }
 
-    internal static void ArrangeAndResizeFormLayout(FormViewModel.Builder formLayout, ScreenInfo activatedScreen, PointInfo activatedLocation)
+    internal static void ArrangeAndResizeFormLayout(FormLayout.Builder formLayout, ScreenInfo activatedScreen, PointInfo activatedLocation)
     {
         var canvasOuterBounds = formLayout.CanvasLayout?.CanvasBounds?.OuterBounds
             ?? throw new InvalidOperationException();

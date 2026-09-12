@@ -4,12 +4,12 @@
 
 using MouseJump.Models.Drawing;
 
-namespace MouseJump.Models.ViewModel;
+namespace MouseJump.Models.Layout;
 
 /// <summary>
 /// Defines the preview form size and location.
 /// </summary>
-public sealed class FormViewModel
+public sealed class FormLayout
 {
     public sealed class Builder
     {
@@ -23,24 +23,24 @@ public sealed class FormViewModel
             set;
         }
 
-        public CanvasViewModel.Builder? CanvasLayout
+        public CanvasLayout.Builder? CanvasLayout
         {
             get;
             set;
         }
 
-        public FormViewModel Build()
+        public FormLayout Build()
         {
-            return new FormViewModel(
+            return new FormLayout(
                 formBounds: this.FormBounds ?? throw new InvalidOperationException($"{nameof(this.FormBounds)} must be initialized before calling {nameof(this.Build)}."),
                 canvasLayout: (this.CanvasLayout ?? throw new InvalidOperationException($"{nameof(this.CanvasLayout)} must be initialized before calling {nameof(this.Build)}."))
                     .Build());
         }
     }
 
-    public FormViewModel(
+    public FormLayout(
         RectangleInfo formBounds,
-        CanvasViewModel canvasLayout)
+        CanvasLayout canvasLayout)
     {
         this.FormBounds = formBounds ?? throw new ArgumentNullException(nameof(formBounds));
         this.CanvasLayout = canvasLayout ?? throw new ArgumentNullException(nameof(canvasLayout));
@@ -55,7 +55,7 @@ public sealed class FormViewModel
         get;
     }
 
-    public CanvasViewModel CanvasLayout
+    public CanvasLayout CanvasLayout
     {
         get;
     }

@@ -6,9 +6,9 @@ using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
 using MouseJump.Models.Styles;
 
-namespace MouseJump.Models.ViewModel;
+namespace MouseJump.Models.Layout;
 
-public sealed class ScreenViewModel
+public sealed class ScreenLayout
 {
     public sealed class Builder
     {
@@ -40,16 +40,16 @@ public sealed class ScreenViewModel
             set;
         }
 
-        public ScreenViewModel Build()
+        public ScreenLayout Build()
         {
-            return new ScreenViewModel(
+            return new ScreenLayout(
                 screenInfo: this.ScreenInfo ?? throw new InvalidOperationException($"{nameof(this.ScreenInfo)} must be initialized before calling {nameof(this.Build)}."),
                 screenBounds: this.ScreenBounds ?? throw new InvalidOperationException($"{nameof(this.ScreenBounds)} must be initialized before calling {nameof(this.Build)}."),
                 screenStyle: this.ScreenStyle ?? throw new InvalidOperationException($"{nameof(this.ScreenStyle)} must be initialized before calling {nameof(this.Build)}."));
         }
     }
 
-    public ScreenViewModel(
+    public ScreenLayout(
         ScreenInfo screenInfo,
         BoxBounds screenBounds,
         BoxStyle screenStyle)
