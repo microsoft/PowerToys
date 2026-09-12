@@ -8,6 +8,7 @@
 #include <string>
 
 #include <common/telemetry/EtwTrace/EtwTrace.h>
+#include <common/utils/context_menu_lifecycle.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -22,6 +23,19 @@ using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
 Shared::Trace::ETWTrace trace(L"ImageResizerContextMenu");
+
+namespace
+{
+    void ensure_servicing_window()
+    {
+        context_menu_lifecycle::ensure_servicing_window(
+            &g_hInst,
+            L"Microsoft.PowerToys.ImageResizerContextMenu_",
+            L"PowerToys.ImageResizerContextMenu.ServicingWindow",
+            5000,
+            Trace::ServicingWindowInitialization);
+    }
+}
 
 #define BUFSIZE 4096 * 4
 
@@ -136,6 +150,12 @@ public:
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     try
     {
+        context_menu_lifecycle::activity_guard activity;
+        if (!activity)
+        {
+            return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+        }
+
         trace.UpdateState(true);
 
         Trace::Invoked();
@@ -290,6 +310,7 @@ CoCreatableClassWrlCreatorMapInclude(ImageResizerContextMenuCommand)
 
 STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
 {
+    ensure_servicing_window();
     return Module<ModuleType::InProc>::GetModule().GetActivationFactory(activatableClassId, factory);
 }
 
@@ -300,5 +321,6 @@ STDAPI DllCanUnloadNow()
 
 STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _COM_Outptr_ void** instance)
 {
+    ensure_servicing_window();
     return Module<InProc>::GetModule().GetClassObject(rclsid, riid, instance);
 }

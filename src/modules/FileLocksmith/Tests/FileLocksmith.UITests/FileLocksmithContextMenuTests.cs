@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
+
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
@@ -21,6 +25,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
         @"Software\Classes\AllFileSystemObjects\ShellEx\ContextMenuHandlers\FileLocksmithExt";
 
     private const string ModernPackageName = "FileLocksmithContextMenu";
+    private const string ServicingWindowClassName = "PowerToys.FileLocksmithContextMenu.ServicingWindow";
 
     private static readonly string[] ShellIntegrationModules =
     {
@@ -224,6 +229,59 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
         }
     }
 
+    /// <summary>
+    /// Packaged Win32 servicing can only request shutdown from a GUI process through a top-level
+    /// window. Verify the package-dedicated COM surrogate exposes that window, exits on WM_CLOSE,
+    /// and can be activated again by Explorer.
+    /// </summary>
+    [TestMethod("FileLocksmith.ContextMenu.ServicingShutdown")]
+    [TestCategory("File Locksmith")]
+    public void ContextMenuSurrogateHandlesServicingShutdown()
+    {
+        if (!ExplorerHelper.IsWindows11OrNewer)
+        {
+            Assert.Inconclusive("The packaged File Locksmith context-menu surrogate exists only on Windows 11.");
+        }
+
+        RequireDefaultTier();
+        var fixture = CreateFixture();
+        var selection = new[] { fixture.TargetPath };
+        var explorer = ExplorerHelper.OpenFolder(fixture.TargetFolder);
+        var initialProbe = ExplorerHelper.ProbeCommand(
+            explorer,
+            () => ExplorerHelper.OpenFolder(fixture.TargetFolder),
+            selection,
+            ContextMenuTier.Default,
+            FileLocksmithConstants.ContextMenuCaption,
+            expectedCommand: true,
+            siblingCaption: null,
+            TestContext);
+        Assert.IsTrue(initialProbe.Succeeded, "Explorer did not activate the File Locksmith context-menu surrogate.");
+
+        using var surrogate = WaitForModernContextMenuSurrogate(timeoutMS: 10_000);
+        Assert.IsNotNull(surrogate, "The File Locksmith package-specific dllhost process was not found.");
+
+        var servicingWindow = WaitForServicingWindow(surrogate!.Id, timeoutMS: 5_000);
+        Assert.AreNotEqual(
+            IntPtr.Zero,
+            servicingWindow,
+            "The File Locksmith context-menu surrogate has no top-level servicing window.");
+
+        Assert.IsTrue(PostMessageW(servicingWindow, WmClose, IntPtr.Zero, IntPtr.Zero), "WM_CLOSE could not be posted.");
+        Assert.IsTrue(surrogate.WaitForExit(5_000), "The context-menu surrogate did not exit after WM_CLOSE.");
+
+        var reactivationProbe = ExplorerHelper.ProbeCommand(
+            initialProbe.Explorer,
+            () => ExplorerHelper.OpenFolder(fixture.TargetFolder),
+            selection,
+            ContextMenuTier.Default,
+            FileLocksmithConstants.ContextMenuCaption,
+            expectedCommand: true,
+            siblingCaption: null,
+            TestContext);
+        Assert.IsTrue(reactivationProbe.Succeeded, "Explorer could not reactivate the context-menu surrogate.");
+    }
+
     private static bool ClassicHandlerRegistered()
     {
         using var key = Registry.CurrentUser.OpenSubKey(ClassicHandlerKeyPath);
@@ -292,6 +350,122 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
             return false;
         }
     }
+
+    private static Process? WaitForModernContextMenuSurrogate(int timeoutMS)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        do
+        {
+            foreach (var process in Process.GetProcessesByName("dllhost"))
+            {
+                if (GetPackageFullName(process.Id)?.Contains(ModernPackageName, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return process;
+                }
+
+                process.Dispose();
+            }
+
+            Thread.Sleep(200);
+        }
+        while (DateTime.UtcNow < deadline);
+
+        return null;
+    }
+
+    private static string? GetPackageFullName(int processId)
+    {
+        var process = OpenProcess(ProcessQueryLimitedInformation, false, processId);
+        if (process == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        try
+        {
+            uint length = 0;
+            if (GetPackageFullName(process, ref length, null) != ErrorInsufficientBuffer)
+            {
+                return null;
+            }
+
+            var packageFullName = new StringBuilder(checked((int)length));
+            return GetPackageFullName(process, ref length, packageFullName) == ErrorSuccess
+                ? packageFullName.ToString()
+                : null;
+        }
+        finally
+        {
+            CloseHandle(process);
+        }
+    }
+
+    private static IntPtr WaitForServicingWindow(int processId, int timeoutMS)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        do
+        {
+            IntPtr match = IntPtr.Zero;
+            EnumWindows(
+                (window, _) =>
+                {
+                    if (GetWindowThreadProcessId(window, out var ownerProcessId) != 0 && ownerProcessId == processId)
+                    {
+                        var className = new StringBuilder(256);
+                        if (GetClassNameW(window, className, className.Capacity) > 0 &&
+                            className.ToString().Equals(ServicingWindowClassName, StringComparison.Ordinal))
+                        {
+                            match = window;
+                            return false;
+                        }
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+
+            if (match != IntPtr.Zero)
+            {
+                return match;
+            }
+
+            Thread.Sleep(100);
+        }
+        while (DateTime.UtcNow < deadline);
+
+        return IntPtr.Zero;
+    }
+
+    private const int ErrorSuccess = 0;
+    private const int ErrorInsufficientBuffer = 122;
+    private const uint ProcessQueryLimitedInformation = 0x1000;
+    private const uint WmClose = 0x0010;
+
+    private delegate bool EnumWindowsCallback(IntPtr window, IntPtr parameter);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenProcess(uint desiredAccess, bool inheritHandle, int processId);
+
+    [DllImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr handle);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetPackageFullName(IntPtr process, ref uint packageFullNameLength, StringBuilder? packageFullName);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool EnumWindows(EnumWindowsCallback callback, IntPtr parameter);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr window, out int processId);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassNameW(IntPtr window, StringBuilder className, int maximumCount);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PostMessageW(IntPtr window, uint message, IntPtr wparam, IntPtr lparam);
 
     private static bool WaitForElementSearch(Session session, By by, int timeoutMS) =>
         session.WaitFor(
