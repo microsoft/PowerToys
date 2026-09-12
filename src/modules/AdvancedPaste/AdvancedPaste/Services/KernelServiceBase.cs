@@ -377,7 +377,7 @@ public abstract class KernelServiceBase(
         ExecuteTransformAsync(
            kernel,
            new ActionChainItem(format, Arguments: []),
-           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetCancellationToken(), kernel.GetProgress()));
+           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetCancellationToken(), kernel.GetProgress(), _userSettings.PasteAsJpgQuality));
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {

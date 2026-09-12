@@ -27,6 +27,8 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }
 
+        public int PasteAsJpgQuality { get; }
+
         public string FixSpellingAndGrammarPrompt { get; }
 
         public string FixSpellingAndGrammarSystemPrompt { get; }

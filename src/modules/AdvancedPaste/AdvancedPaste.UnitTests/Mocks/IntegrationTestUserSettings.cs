@@ -57,6 +57,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
+    public int PasteAsJpgQuality => AdvancedPasteProperties.DefaultPasteAsJpgQuality;
+
     public string FixSpellingAndGrammarPrompt => string.Empty;
 
     public string FixSpellingAndGrammarSystemPrompt => string.Empty;

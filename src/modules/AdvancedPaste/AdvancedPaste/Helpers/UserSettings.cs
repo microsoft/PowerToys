@@ -46,6 +46,8 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
+        public int PasteAsJpgQuality { get; private set; }
+
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
         public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
@@ -75,6 +77,7 @@ namespace AdvancedPaste.Settings
             ShowAIPaste = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
+            PasteAsJpgQuality = AdvancedPasteProperties.DefaultPasteAsJpgQuality;
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -131,6 +134,7 @@ namespace AdvancedPaste.Settings
                                 ShowAIPaste = properties.ShowAIPaste;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
+                                PasteAsJpgQuality = properties.PasteAsJpgQuality?.Value ?? AdvancedPasteProperties.DefaultPasteAsJpgQuality;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
@@ -150,6 +154,7 @@ namespace AdvancedPaste.Settings
                                     (PasteFormats.FixSpellingAndGrammar, [sourceAdditionalActions.FixSpellingAndGrammar]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
+                                    (PasteFormats.PasteAsJpgFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsJpgFile]),
                                     (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
                                     (PasteFormats.TranscodeToMp3, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp3]),
                                     (PasteFormats.TranscodeToMp4, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp4]),
