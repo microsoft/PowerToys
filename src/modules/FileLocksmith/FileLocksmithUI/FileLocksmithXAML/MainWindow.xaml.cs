@@ -17,6 +17,11 @@ namespace FileLocksmithUI
         public MainWindow(bool isElevated)
         {
             InitializeComponent();
+
+            const string fallbackTitle = "File Locksmith";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             mainPage.ViewModel.IsElevated = isElevated;
             SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
@@ -33,7 +38,7 @@ namespace FileLocksmithUI
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "File Locksmith";
+                title = fallbackTitle;
             }
 
             Title = title;

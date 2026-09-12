@@ -26,6 +26,10 @@ namespace Hosts
         {
             InitializeComponent();
 
+            const string fallbackTitle = "Hosts File Editor";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             TitleBarHelper.SetPreferredTheme(this);
@@ -41,7 +45,7 @@ namespace Hosts
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Hosts File Editor";
+                title = fallbackTitle;
             }
 
             Title = title;

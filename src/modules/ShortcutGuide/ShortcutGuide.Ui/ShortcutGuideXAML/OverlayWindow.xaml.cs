@@ -76,6 +76,9 @@ namespace ShortcutGuide
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Shortcut Guide";
+            this.Title = fallbackTitle;
+
             // The base TransparentWindow already applies the
             // TransparentTintBackdrop, extends content into the title bar and
             // collapses it, and strips the native chrome.
@@ -86,7 +89,7 @@ namespace ShortcutGuide
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Shortcut Guide";
+                title = fallbackTitle;
             }
 
             this.Title = title;
