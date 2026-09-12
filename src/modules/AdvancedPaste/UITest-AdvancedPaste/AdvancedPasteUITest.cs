@@ -179,7 +179,7 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             // Copy some text(same as in the previous step or different.If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-            // Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
+            // Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
             DeleteAndCopyFile(pasteAsMarkdownSrcFile, tempTxtFileName);
             ContentCopyAndPasteAsMarkdownCase3(tempTxtFileName);
             var result = FileReader.CompareRtfFiles(
@@ -221,7 +221,7 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             // Copy some text(same as in the previous step or different.If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-            // Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+            // Open Advanced Paste window using hotkey, click Paste as JSON button and confirm that pasted text is converted to JSON
             DeleteAndCopyFile(pasteAsJsonFileName, tempTxtFileName);
             ContentCopyAndPasteAsJsonCase2(tempTxtFileName);
             var result = FileReader.CompareRtfFiles(
@@ -242,7 +242,7 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             // Copy some text(same as in the previous step or different.If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-            // Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
+            // Open Advanced Paste window using hotkey, press Ctrl + 4 and confirm that pasted text is converted to JSON
             DeleteAndCopyFile(pasteAsJsonFileName, tempTxtFileName);
             ContentCopyAndPasteAsJsonCase3(tempTxtFileName);
             var result = FileReader.CompareRtfFiles(
@@ -745,7 +745,7 @@ namespace Microsoft.AdvancedPaste.UITests
             this.SendKeys(Key.Win, Key.Shift, Key.V);
             Thread.Sleep(15000);
 
-            this.SendKeys(Key.LCtrl, Key.Num2);
+            this.SendKeys(Key.LCtrl, Key.Num3);
             Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
@@ -817,7 +817,7 @@ namespace Microsoft.AdvancedPaste.UITests
             this.SendKeys(Key.Win, Key.Shift, Key.V);
             Thread.Sleep(15000);
 
-            // click Paste as markdown button and confirm that pasted text is converted to markdown
+            // click Paste as JSON button and confirm that pasted text is converted to JSON
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<TextBlock>("Paste as JSON").Click();
 
@@ -855,7 +855,7 @@ namespace Microsoft.AdvancedPaste.UITests
             this.SendKeys(Key.Win, Key.Shift, Key.V);
             Thread.Sleep(15000);
 
-            this.SendKeys(Key.LCtrl, Key.Num3);
+            this.SendKeys(Key.LCtrl, Key.Num4);
             Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);

@@ -717,6 +717,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsPlainText_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList() },
             };
 
+            if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsSingleLineShortcut.GetKeysList().Count > 0)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsSingleLine_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsSingleLineShortcut.GetKeysList() });
+            }
+
             if (moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList().Count > 0)
             {
                 list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PasteAsMarkdown_Shortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList() });

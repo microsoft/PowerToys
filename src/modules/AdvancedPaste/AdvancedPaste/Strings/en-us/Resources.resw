@@ -232,6 +232,9 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="PasteAsSingleLine" xml:space="preserve">
+    <value>Paste as single line</value>
+  </data>
   <data name="FixSpellingAndGrammar" xml:space="preserve">
     <value>Fix spelling and grammar</value>
   </data>
