@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
@@ -15,16 +15,21 @@
 #include <LightSwitchUtils.h>
 #include <NightLightRegistryObserver.h>
 #include <trace.h>
+#include "CliPipeServer.h"
+#include "CliProtocol.h"
+#include "ScheduleCommandQueue.h"
+#include <array>
+#include <algorithm>
+#include <roapi.h>
+#include <wil/resource.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
-void ApplyTheme(bool shouldBeLight);
 
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
@@ -125,234 +130,257 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
-void ApplyTheme(bool shouldBeLight)
+namespace
 {
-    const auto& s = LightSwitchSettings::settings();
+    using winrt::Windows::Data::Json::JsonObject;
+    using winrt::Windows::Data::Json::JsonValue;
 
-    if (s.changeSystem)
+    JsonObject SerializeStatus(const StatusSnapshot& status)
     {
-        bool isSystemCurrentlyLight = GetCurrentSystemTheme();
-        if (shouldBeLight != isSystemCurrentlyLight)
-        {
-            SetSystemTheme(shouldBeLight);
-            Logger::info(L"[LightSwitchService] Changed system theme to {}.", shouldBeLight ? L"light" : L"dark");
-        }
+        JsonObject state;
+        const auto themeName = [](const std::optional<bool>& value) {
+            return value ? (*value ? L"light" : L"dark") : L"unknown";
+        };
+        state.SetNamedValue(L"systemTheme", JsonValue::CreateStringValue(themeName(status.systemLight)));
+        state.SetNamedValue(L"appsTheme", JsonValue::CreateStringValue(themeName(status.appsLight)));
+        state.SetNamedValue(L"changeSystem", JsonValue::CreateBooleanValue(status.config.changeSystem));
+        state.SetNamedValue(L"changeApps", JsonValue::CreateBooleanValue(status.config.changeApps));
+        state.SetNamedValue(L"scheduleMode", JsonValue::CreateStringValue(ToString(status.config.scheduleMode)));
+        state.SetNamedValue(L"manualOverride", JsonValue::CreateBooleanValue(status.manualOverride));
+        return state;
     }
 
-    if (s.changeApps)
+    JsonObject SerializeResult(const ThemeCommandResult& result)
     {
-        bool isAppsCurrentlyLight = GetCurrentAppsTheme();
-        if (shouldBeLight != isAppsCurrentlyLight)
-        {
-            SetAppsTheme(shouldBeLight);
-            Logger::info(L"[LightSwitchService] Changed apps theme to {}.", shouldBeLight ? L"light" : L"dark");
-        }
+        auto state = SerializeStatus(result.status);
+        const wchar_t* code = result.errorCode.c_str();
+        if (result.errorCode == L"SETTINGS_READ_FAILED")
+            code = L"INVALID_CONFIGURATION";
+        else if (result.errorCode == L"THEME_READ_FAILED" || result.errorCode == L"THEME_WRITE_FAILED")
+            code = L"EXECUTION_FAILED";
+        return result.success ? light_switch_cli::MakeSuccess(state) : light_switch_cli::MakeError(code, result.message, state);
     }
 }
 
-static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateManager)
+static DWORD RunServiceWorker(LPVOID lpParam)
 {
-    const auto& s = LightSwitchSettings::settings();
-    if (s.scheduleMode == ScheduleMode::Off)
-        return;
+    using light_switch_cli::Command;
+    using light_switch_cli::Request;
 
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    int nowMinutes = st.wHour * 60 + st.wMinute;
+    const DWORD parentPid = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(lpParam));
+    wil::unique_handle parent(parentPid ? OpenProcess(SYNCHRONIZE, FALSE, parentPid) : nullptr);
+    wil::unique_handle toggleRequests(OpenSemaphoreW(SYNCHRONIZE, FALSE, LIGHT_SWITCH_TOGGLE_REQUEST_SEMAPHORE));
+    LightSwitchStateManager stateManager;
+    auto& settingsStore = LightSwitchSettings::instance();
+    ScheduleCommandQueue scheduleCommands;
+    std::unique_ptr<NightLightRegistryObserver> nightLightWatcher;
 
-    // Compute effective boundaries (with offsets if needed)
-    int effectiveLight = s.lightTime;
-    int effectiveDark = s.darkTime;
+    Logger::info(L"[LightSwitchService] Worker thread starting, parent PID: {}", parentPid);
+    settingsStore.InitFileWatcher();
+    HANDLE settingsChanged = settingsStore.GetSettingsChangedEvent();
 
-    if (s.scheduleMode == ScheduleMode::SunsetToSunrise)
-    {
-        effectiveLight = (s.lightTime + s.sunrise_offset) % 1440;
-        effectiveDark = (s.darkTime + s.sunset_offset) % 1440;
-    }
+    // Observer lifetime stays on the existing worker. In particular, Stop() joins
+    // its callback thread and must never run while holding the state-manager lock.
+    const auto updateNightLightWatcher = [&]() {
+        const bool needed = LightSwitchSettings::settings().scheduleMode == ScheduleMode::FollowNightLight;
+        if (needed && !nightLightWatcher)
+        {
+            nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+                HKEY_CURRENT_USER, NIGHT_LIGHT_REGISTRY_PATH, [&stateManager]() { stateManager.OnNightLightChange(); });
+        }
+        else if (!needed && nightLightWatcher)
+        {
+            nightLightWatcher->Stop();
+            nightLightWatcher.reset();
+        }
+    };
 
-    // Use shared helper (handles wraparound logic)
-    bool shouldBeLight = false;
-    if (s.scheduleMode == ScheduleMode::FollowNightLight)
-    {
-        shouldBeLight = !IsNightLightEnabled();
-    } 
-    else
-    {
-        shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
-    }
-
-    // Compare current system/apps theme
-    bool currentSystemLight = GetCurrentSystemTheme();
-    bool currentAppsLight = GetCurrentAppsTheme();
-
-    bool systemMismatch = s.changeSystem && (currentSystemLight != shouldBeLight);
-    bool appsMismatch = s.changeApps && (currentAppsLight != shouldBeLight);
-
-    // Trigger manual override only if mismatch and not already active
-    if ((systemMismatch || appsMismatch) && !stateManager.GetState().isManualOverride)
-    {
-        Logger::info(L"[LightSwitchService] External theme change detected (Windows Settings). Entering manual override mode.");
-        stateManager.OnManualOverride();
-    }
-}
-
-DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
-{
-    DWORD parentPid = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(lpParam));
-    HANDLE hParent = nullptr;
-    if (parentPid)
-        hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid);
-
-    Logger::info(L"[LightSwitchService] Worker thread starting...");
-    Logger::info(L"[LightSwitchService] Parent PID: {}", parentPid);
-
-    // ────────────────────────────────────────────────────────────────
-    // Initialization
-    // ────────────────────────────────────────────────────────────────
-    static LightSwitchStateManager stateManager;
-    g_stateManagerPtr = &stateManager;
-
-    LightSwitchSettings::instance().InitFileWatcher();
-
-    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-    HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
-
-    static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;
-
-    LightSwitchSettings::instance().LoadSettings();
-    const auto& settings = LightSwitchSettings::instance().settings();
-
-    // after loading settings:
-    bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
-
-    if (nightLightNeeded && !g_nightLightWatcher)
-    {
-        Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
-
-        g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
-            HKEY_CURRENT_USER,
-            NIGHT_LIGHT_REGISTRY_PATH,
-            []() {
-                if (g_stateManagerPtr)
-                    g_stateManagerPtr->OnNightLightChange();
-            });
-    }
-    else if (!nightLightNeeded && g_nightLightWatcher)
-    {
-        Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
-        g_nightLightWatcher->Stop();
-        g_nightLightWatcher.reset();
-    }
-
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    int nowMinutes = st.wHour * 60 + st.wMinute;
-
-    Logger::info(L"[LightSwitchService] Initialized at {:02d}:{:02d}.", st.wHour, st.wMinute);
+    settingsStore.LoadSettings();
+    updateNightLightWatcher();
     stateManager.SyncInitialThemeState();
 
-    // ────────────────────────────────────────────────────────────────
-    // Worker Loop
-    // ────────────────────────────────────────────────────────────────
+    const auto applyScheduleRequest = [&](const Request& request) -> JsonObject {
+        LightSwitchConfig current;
+        std::wstring error;
+        if (!settingsStore.TryLoadSettings(current, error))
+        {
+            return light_switch_cli::MakeError(L"INVALID_CONFIGURATION", error);
+        }
+
+        ScheduleMode target = current.scheduleMode;
+        if (request.command == Command::ScheduleDisable)
+        {
+            target = ScheduleMode::Off;
+        }
+        else if (request.mode)
+        {
+            // The protocol parser only accepts the three explicit enabled modes.
+            target = FromString(*request.mode);
+        }
+        else if (target == ScheduleMode::Off)
+        {
+            return light_switch_cli::MakeError(
+                L"INVALID_ARGUMENT", L"The schedule is off. Specify --mode fixed-hours, sunset-to-sunrise, or follow-night-light.");
+        }
+
+        if (target != current.scheduleMode && !settingsStore.TrySetScheduleMode(target, current, error))
+        {
+            return light_switch_cli::MakeError(L"EXECUTION_FAILED", error);
+        }
+
+        // The state manager ignores unchanged configurations, including the late
+        // file-watcher echo of this same save. A no-op enable must not clear a
+        // manual theme override.
+        updateNightLightWatcher();
+        const auto applied = stateManager.OnSettingsChanged();
+        if (!applied.success)
+        {
+            return SerializeResult(applied);
+        }
+        const auto status = stateManager.GetStatusSnapshot();
+        if (status.config.scheduleMode != target)
+        {
+            return light_switch_cli::MakeError(
+                L"EXECUTION_FAILED", L"The schedule was changed by another settings update. Query status and try again.", SerializeStatus(status));
+        }
+        return light_switch_cli::MakeSuccess(SerializeStatus(status));
+    };
+
+    light_switch_cli::CliPipeServer cliServer([&](const Request& request) -> JsonObject {
+        if (WaitForSingleObject(g_ServiceStopEvent, 0) == WAIT_OBJECT_0)
+        {
+            return light_switch_cli::MakeError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.");
+        }
+        switch (request.command)
+        {
+        case Command::Status:
+        {
+            const auto status = stateManager.GetStatusSnapshot();
+            if (!status.configurationAvailable)
+            {
+                return light_switch_cli::MakeError(L"INVALID_CONFIGURATION", L"Light Switch settings have not been loaded successfully.");
+            }
+            return status.systemLight && status.appsLight ? light_switch_cli::MakeSuccess(SerializeStatus(status)) : light_switch_cli::MakeError(L"EXECUTION_FAILED", L"Windows theme state could not be read.", SerializeStatus(status));
+        }
+        case Command::Light:
+            return SerializeResult(stateManager.SetTheme(true));
+        case Command::Dark:
+            return SerializeResult(stateManager.SetTheme(false));
+        case Command::Toggle:
+            return SerializeResult(stateManager.ToggleTheme());
+        case Command::ScheduleEnable:
+        case Command::ScheduleDisable:
+            return scheduleCommands.Submit(request);
+        default:
+            return light_switch_cli::MakeError(L"INVALID_ARGUMENT", L"Unknown Light Switch command.");
+        }
+    });
+    const auto stopCli = wil::scope_exit([&]() {
+        scheduleCommands.Stop();
+        cliServer.Stop();
+    });
+    if (!cliServer.Start())
+    {
+        Logger::error(L"[LightSwitchService] Could not start the CLI pipe (error: {}).", GetLastError());
+    }
+
+    std::array<HANDLE, 5> waits{};
+    DWORD count = 0;
+    const DWORD stopIndex = count;
+    waits[count++] = g_ServiceStopEvent;
+    DWORD parentIndex = MAXDWORD;
+    DWORD toggleIndex = MAXDWORD;
+    if (parent)
+    {
+        parentIndex = count;
+        waits[count++] = parent.get();
+    }
+    if (toggleRequests)
+    {
+        toggleIndex = count;
+        waits[count++] = toggleRequests.get();
+    }
+    const DWORD settingsIndex = count;
+    waits[count++] = settingsChanged;
+    const DWORD scheduleIndex = count;
+    waits[count++] = scheduleCommands.Event();
+
     for (;;)
     {
-        HANDLE waits[4];
-        DWORD count = 0;
-        waits[count++] = g_ServiceStopEvent;
-        if (hParent)
-            waits[count++] = hParent;
-        if (hManualOverride)
-            waits[count++] = hManualOverride;
-        waits[count++] = hSettingsChanged;
-
-        // Wait for one of these to trigger or for a new minute tick
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
-        if (msToNextMinute < 50)
-            msToNextMinute = 50;
-
-        DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
-
+        SYSTEMTIME now;
+        GetLocalTime(&now);
+        const DWORD untilNextMinute = static_cast<DWORD>((std::max)(50, (60 - now.wSecond) * 1000 - now.wMilliseconds));
+        const DWORD wait = WaitForMultipleObjects(count, waits.data(), FALSE, untilNextMinute);
         if (wait == WAIT_TIMEOUT)
         {
-            // regular minute tick
-            GetLocalTime(&st);
-            nowMinutes = st.wHour * 60 + st.wMinute;
-            DetectAndHandleExternalThemeChange(stateManager);
+            stateManager.DetectExternalThemeChange();
             stateManager.OnTick();
-            continue;
         }
-
-        if (wait == WAIT_OBJECT_0)
+        else if (wait == WAIT_FAILED)
         {
-            Logger::info(L"[LightSwitchService] Stop event triggered — exiting.");
+            Logger::error(L"[LightSwitchService] Worker wait failed (error: {}).", GetLastError());
             break;
         }
-
-        if (hParent && wait == WAIT_OBJECT_0 + 1)
+        else
         {
-            Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
-            break;
-        }
-
-        if (hManualOverride && wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
-        {
-            Logger::info(L"[LightSwitchService] Manual override event detected.");
-            stateManager.OnManualOverride();
-            ResetEvent(hManualOverride);
-            continue;
-        }
-
-        if (wait == WAIT_OBJECT_0 + (hParent ? (hManualOverride ? 3 : 2) : 2))
-        {
-            ResetEvent(hSettingsChanged);
-            LightSwitchSettings::instance().LoadSettings();
-            stateManager.OnSettingsChanged();
-
-            const auto& settings = LightSwitchSettings::instance().settings();
-            bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
-
-            if (nightLightNeeded && !g_nightLightWatcher)
+            const DWORD index = wait - WAIT_OBJECT_0;
+            if (index == stopIndex || index == parentIndex)
             {
-                Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
-
-                g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
-                    HKEY_CURRENT_USER,
-                    NIGHT_LIGHT_REGISTRY_PATH,
-                    []() {
-                        if (g_stateManagerPtr)
-                            g_stateManagerPtr->OnNightLightChange();
-                    });
-
-                stateManager.OnNightLightChange();
+                break;
             }
-            else if (!nightLightNeeded && g_nightLightWatcher)
+            if (index == toggleIndex)
             {
-                Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
-                g_nightLightWatcher->Stop();
-                g_nightLightWatcher.reset();
+                const auto result = stateManager.ToggleTheme();
+                if (!result.success)
+                {
+                    Logger::warn(L"[LightSwitchService] Toggle failed: {}", result.message);
+                }
             }
-
-            continue;
+            else if (index == settingsIndex)
+            {
+                ResetEvent(settingsChanged);
+                settingsStore.LoadSettings();
+                updateNightLightWatcher();
+                stateManager.OnSettingsChanged();
+            }
+            else if (index == scheduleIndex)
+            {
+                scheduleCommands.ProcessPending(applyScheduleRequest);
+            }
         }
     }
 
-    // ────────────────────────────────────────────────────────────────
-    // Cleanup
-    // ────────────────────────────────────────────────────────────────
-    if (hManualOverride)
-        CloseHandle(hManualOverride);
-    if (hParent)
-        CloseHandle(hParent);
-    if (g_nightLightWatcher)
+    // Release pipe callbacks waiting for this worker before joining the server.
+    // In-flight theme operations retain access to stateManager until Stop returns.
+    SetEvent(g_ServiceStopEvent);
+    scheduleCommands.Stop();
+    cliServer.Stop();
+    if (nightLightWatcher)
     {
-        g_nightLightWatcher->Stop();
-        g_nightLightWatcher.reset();
+        nightLightWatcher->Stop();
+        nightLightWatcher.reset();
     }
-
     Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
     return 0;
+}
+DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
+{
+    try
+    {
+        winrt::check_hresult(RoInitialize(RO_INIT_MULTITHREADED));
+        const auto apartmentCleanup = wil::scope_exit([]() { RoUninitialize(); });
+        return RunServiceWorker(lpParam);
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        Logger::error(L"[LightSwitchService] Worker failed: {}", error.message().c_str());
+        return static_cast<DWORD>(error.code());
+    }
+    catch (...)
+    {
+        Logger::error(L"[LightSwitchService] Worker failed unexpectedly.");
+        return ERROR_GEN_FAILURE;
+    }
 }
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)

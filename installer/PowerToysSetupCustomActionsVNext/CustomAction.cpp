@@ -1606,6 +1606,8 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.ImageResizerCLI.exe",
         L"PowerToys.ImageResizer.CLI.exe",
         L"PowerToys.LightSwitchService.exe",
+        // Also matches the installed shim PowerToys.LightSwitch.CLI.exe.
+        L"PowerToys.LightSwitch.Cli.exe",
         L"PowerToys.PowerDisplay.exe",
         // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
         L"PowerToys.PowerDisplay.Cli.exe",

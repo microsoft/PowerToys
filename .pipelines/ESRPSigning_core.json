@@ -155,6 +155,8 @@
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
+            "PowerToys.LightSwitch.Cli.exe",
+            "PowerToys.LightSwitch.Cli.dll",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
