@@ -36,6 +36,11 @@ public record PerformCommandMessage
     /// </summary>
     public bool ShowWindowIfPage { get; set; }
 
+    /// <summary>
+    /// Gets or sets initial state that must be applied before a list page fetches its first items.
+    /// </summary>
+    public ListPageLaunchOptions? ListPageOptions { get; set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

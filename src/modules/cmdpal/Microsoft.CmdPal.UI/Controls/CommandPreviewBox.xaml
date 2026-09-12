@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.CommandPreviewBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls">
+
+    <Border
+        Padding="12,8"
+        HorizontalAlignment="Left"
+        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="{ThemeResource ControlCornerRadius}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <local:IconBox
+                x:Name="PreviewIcon"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+
+            <StackPanel
+                x:Name="PreviewTextPanel"
+                Grid.Column="1"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center">
+                <TextBlock
+                    x:Name="PreviewTitleText"
+                    FontSize="12"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+                <TextBlock
+                    x:Name="PreviewSubtitleText"
+                    FontSize="10"
+                    Foreground="{ThemeResource TextFillColorTertiary}"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="NoWrap" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

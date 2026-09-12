@@ -164,7 +164,6 @@ internal sealed class Program
     private static void OnActivated(object? sender, AppActivationArguments args)
     {
         // If we already have a form, display the message now.
-        // Otherwise, add it to the collection for displaying later.
         if (App.Current?.AppWindow is MainWindow mainWindow)
         {
             // LOAD BEARING
@@ -173,6 +172,15 @@ internal sealed class Program
             // The sending instance remains blocked until this returns; afterward it may quit,
             // causing the activation arguments to be lost.
             mainWindow.HandleLaunchNonUI(args);
+        }
+        else
+        {
+            // TODO: Buffer these arguments and replay them once OnLaunched has created MainWindow.
+            // AppInstance.Activated is wired in DecideRedirection before Application.Start, so a
+            // redirect arriving while this instance is still starting finds no window. The sending
+            // instance is blocked in RedirectActivationToAsync until this returns and then exits,
+            // so the activation is lost with no feedback to the caller.
+            Logger.LogWarning("Dropping a redirected activation because the main window is not ready.");
         }
     }
 }

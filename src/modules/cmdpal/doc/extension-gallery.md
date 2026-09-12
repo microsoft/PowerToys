@@ -184,3 +184,6 @@ path separators, control characters, or more than 256 characters are rejected.
 Extension IDs are matched case-insensitively. If an ID is not present in the
 current feed, Settings remains on the gallery page.
 
+For command execution links and their consent model, see
+[Command Palette links](command-links.md).
+
