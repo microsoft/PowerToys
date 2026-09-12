@@ -58,6 +58,24 @@ public sealed partial class DockItemControl : Control
         set => SetValue(SubtitleProperty, value);
     }
 
+    public static readonly DependencyProperty ShowTitleProperty =
+        DependencyProperty.Register(nameof(ShowTitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowTitle
+    {
+        get => (bool)GetValue(ShowTitleProperty);
+        set => SetValue(ShowTitleProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowSubtitleProperty =
+        DependencyProperty.Register(nameof(ShowSubtitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowSubtitle
+    {
+        get => (bool)GetValue(ShowSubtitleProperty);
+        set => SetValue(ShowSubtitleProperty, value);
+    }
+
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(object), typeof(DockItemControl), new PropertyMetadata(null, OnIconPropertyChanged));
 
@@ -141,9 +159,8 @@ public sealed partial class DockItemControl : Control
     private void UpdateCompactState()
     {
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
-        UpdateSubtitleVisibilityState();
         UpdateInnerMargin();
-        UpdateLabelWidth();
+        UpdateTextVisibility();
     }
 
     private const string IconPresenterName = "IconPresenter";
@@ -185,9 +202,10 @@ public sealed partial class DockItemControl : Control
         }
     }
 
-    internal bool HasTitle => !string.IsNullOrEmpty(Title);
+    // Explicit row widths keep their slots when text is temporarily empty.
+    internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
 
-    internal bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
 
     internal bool HasText => HasTitle || HasSubtitle;
 
@@ -226,8 +244,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateSubtitleVisibilityState()
     {
-        var showSubtitle = HasSubtitle && !IsCompact;
-        VisualStateManager.GoToState(this, showSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
+        VisualStateManager.GoToState(this, HasSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
     }
 
     private void UpdateIconVisibility()

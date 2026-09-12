@@ -2466,66 +2466,91 @@ changed.
 
 ## Addenda IX: Dock label layout hints
 
-To keep changing performance values from moving neighbouring Dock items, use
-`IExtendedAttributesProvider` to reserve label space. `ListItem` already
-implements the interface:
+Optional attributes exposed through `IExtendedAttributesProvider.GetProperties()`.
+Apply to the rendered item: the root of a single-item band, or each `IListPage` child.
 
-```csharp
-var item = new ListItem(command) { Title = "1%" };
-var properties = item.GetProperties();
-properties[WellKnownExtensionAttributes.DockMinLabelWidth] = "12ch";
-properties[WellKnownExtensionAttributes.DockMaxLabelWidth] = "12ch";
-```
+### Width values
 
-```csharp
-var fixedWidth = new ListItem(command) { Title = changingText }
-    .SetDockLabelWidth("12ch");
+`DockLabelWidth` is an immutable Toolkit helper with three factories:
 
-var tabular = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
-    .SetDockLabelTabularDigits();
+- `Dips(double value)`: device-independent pixels.
+- `Characters(double value)`: multiples of the `0` glyph width in the target font.
+- `Sample(string text)`: literal text measured in the target font; empty text reserves zero.
 
-var trailing = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
-    .SetDockLabelWidth("12ch")
-    .SetDockLabelTrailingAlignment();
-```
+Numeric values must be finite, non-negative, and no greater than `float.MaxValue`.
+Factories reject invalid numbers and null samples.
+Helpers serialize widths as primitive attributes; the managed `DockLabelWidth` object does not cross WinRT.
 
-Use `SetDockLabelWidth(80)` for DIPs or `ClearDockLabelWidth()` to restore
-defaults. These extension methods preserve the concrete item type and notify
-once with `PropChanged("DockLabelWidth")` when the hints change. They support `CommandItem` subclasses implementing
-`IExtendedAttributesProvider` with a persistent, writable property bag, such as
-`ListItem`.
+### Toolkit methods
 
-`SetDockLabelTabularDigits()` gives digits equal width;
-`SetDockLabelTrailingAlignment()` anchors the text to the trailing edge. The
-hints are independent. Format the value in the extension (`F2` above) to keep
-decimal precision consistent. Their Boolean keys are
-`Microsoft.CommandPalette.Dock.TabularDigits` and
-`Microsoft.CommandPalette.Dock.TrailingAlignment`; direct edits notify
-`"DockLabelTabularDigits"`, `"DockLabelTrailingAlignment"`, or `"Properties"`.
+Receiver: `TItem : CommandItem, IExtendedAttributesProvider` (including `ListItem`).
+Requires a persistent, writable property bag. All methods return the same `TItem`.
 
-The keys are `Microsoft.CommandPalette.Dock.MinLabelWidth` and
-`Microsoft.CommandPalette.Dock.MaxLabelWidth`. Values accept a finite,
-non-negative `double` in DIPs (`80d`) or an invariant decimal string ending in
-`ch` (`"12ch"`) or `sqh`. One `ch` is the width of `0` in the title font,
-including text scaling; other characters may be wider. One `sqh` (squirrel
-hair width) is defined as `0.01ch`, so `"1200sqh"` equals `"12ch"`.
+- `SetDockLabelReservations(DockLabelWidth? titleWidth, DockLabelWidth? subtitleWidth)`:
+  replace both row reservations; `null` removes the corresponding reservation.
+- `ClearDockLabelReservations()`: remove both row reservations; preserve shared limits.
+- `SetDockLabelWidthLimits(DockLabelWidth? minimum, DockLabelWidth? maximum)`:
+  replace both shared limits; `null` removes the corresponding limit.
+- `ClearDockLabelWidthLimits()`: remove both shared limits; preserve row reservations.
+- `SetDockLabelTabularDigits(bool enabled = true)`: enable equal-width digits in both rows.
+- `SetDockLabelTrailingAlignment(bool enabled = true)`: align both rows to the trailing edge.
 
-Equal bounds fix the shared title/subtitle column's width; a maximum alone
-still permits shrinking. Icons and padding are excluded. Overflow is
-ellipsized, with full text in the tooltip. Hidden labels reserve no space,
-and a vertical Dock may shrink below the minimum.
+Both width arguments are required, including explicit `null` values.
+Presentation hints are independent; `enabled: false` removes the corresponding hint.
+Number formatting and decimal precision remain the extension's responsibility.
 
-Set attributes on the rendered item: the root for a single-item band, or each
-child for an `IListPage` band. Custom providers can raise `PropChanged` for
-`"DockLabelWidth"` after changing these hints, or `"Properties"` to invalidate
-the entire bag. The helpers notify automatically. Ordinary `Title`/`Subtitle`
-updates need no extra notification.
-Hosts that do not recognize these additive keys or notification keep their
-existing Dock sizing.
+Example: `item.SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample(localizedSubtitle))`.
+Optional cap: `item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(20))`.
 
-Defaults are a 100-DIP cap and a 24-DIP floor for visible titles (zero for
-subtitle-only items). Missing or invalid bounds use defaults, adjusted to fit
-an explicit opposite bound. An inverted pair is ignored after unit conversion.
+### Attributes
+
+Constants are defined in `WellKnownExtensionAttributes`.
+Attribute keys use the prefix `Microsoft.CommandPalette.Dock.`.
+
+| Constant | Key suffix | Value | Measurement font |
+| --- | --- | --- | --- |
+| `DockTitleWidth` | `TitleWidth` | Width | Title |
+| `DockSubtitleWidth` | `SubtitleWidth` | Width | Subtitle |
+| `DockMinLabelWidth` | `MinLabelWidth` | Width | Title |
+| `DockMaxLabelWidth` | `MaxLabelWidth` | Width | Title |
+| `DockLabelTabularDigits` | `TabularDigits` | `bool` | Both rows |
+| `DockLabelTrailingAlignment` | `TrailingAlignment` | `bool` | Both rows |
+
+Width encodings:
+
+- `double`: DIPs.
+- Invariant number followed by `ch`: character units, including fractional or exponent notation.
+- `text:` followed by literal text: sample. For example, `text:12ch` measures the characters `12ch`.
+- Unit suffixes and the sample prefix are case-sensitive. Invalid values are ignored.
+
+### Host behavior
+
+- Reservations: measure each enabled row in its own font and text scale.
+  Fix the shared label width to the largest valid reservation, clamped by explicit min/max.
+- Limits: use the title font for character units and samples.
+  Without a row reservation, constrain the content's natural width.
+  Equal limits fix the width; a maximum alone permits shrinking.
+  Ignore both limits if the resolved minimum exceeds the maximum.
+- Defaults: apply only when no enabled row has a valid reservation.
+  Minimum 24 DIPs with a title, zero for subtitle-only items; maximum 100 DIPs.
+  An explicit limit overrides a conflicting default.
+- Visibility: compact mode excludes the subtitle; settings exclude hidden rows.
+  Empty displayed text retains its row reservation. Hidden labels reserve no space.
+- Samples: independent of displayed text, never rendered or inferred from it.
+  Keep samples stable across value updates to avoid resizing.
+  Measurements include pixel rounding and are cached until hints, fonts, language,
+  direction, text scale, or display scale change.
+- Scope: label column only, excluding icons and padding. Vertical docks may shrink below the minimum.
+- Overflow: ellipsis, with full text in the tooltip.
+
+### Change notifications
+
+- Width attributes: `PropChanged("DockLabelWidth")`.
+- Tabular digits: `PropChanged("DockLabelTabularDigits")`.
+- Trailing alignment: `PropChanged("DockLabelTrailingAlignment")`.
+- Entire property bag: `PropChanged("Properties")`.
+- Helpers notify once after updating all affected keys; unchanged hints do not notify.
+- Ordinary `Title` / `Subtitle` updates require no additional hint notification.
 
 ## Class diagram
 
