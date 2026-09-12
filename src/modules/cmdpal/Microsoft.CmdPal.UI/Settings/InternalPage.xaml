@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
@@ -72,6 +73,72 @@
                             Click="OpenCurrentLogCardClicked"
                             Content="Open log" />
                     </controls:SettingsCard>
+                    <controls:SettingsExpander
+                        x:Name="IconDiagnosticsExpander"
+                        Description="Records anonymous request, cache, queue, dispatcher, and element timing. Stopped reports are written to the current log and remain available for this app session."
+                        Header="Icon loading diagnostics"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                        IsExpanded="True"
+                        ItemsSource="{x:Bind IconDiagnosticReports, Mode=OneWay}">
+                        <StackPanel HorizontalAlignment="Right" Spacing="4">
+                            <CommandBar
+                                Background="Transparent"
+                                DefaultLabelPosition="Right"
+                                IsDynamicOverflowEnabled="True">
+                                <AppBarButton
+                                    x:Name="StartIconDiagnosticsButton"
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_StartIconDiagnostics"
+                                    Click="StartIconDiagnosticsClicked"
+                                    Label="Start">
+                                    <AppBarButton.Icon>
+                                        <SymbolIcon Symbol="Play" />
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                                <AppBarButton
+                                    x:Name="StopIconDiagnosticsButton"
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_StopIconDiagnostics"
+                                    Click="StopIconDiagnosticsClicked"
+                                    Label="Stop">
+                                    <AppBarButton.Icon>
+                                        <SymbolIcon Symbol="Stop" />
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                                <AppBarButton
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_ResetIconDiagnostics"
+                                    Click="ResetIconDiagnosticsClicked"
+                                    Label="Reset">
+                                    <AppBarButton.Icon>
+                                        <SymbolIcon Symbol="Refresh" />
+                                    </AppBarButton.Icon>
+                                </AppBarButton>
+                            </CommandBar>
+                            <TextBlock
+                                x:Name="IconDiagnosticsStatusTextBlock"
+                                MaxWidth="440"
+                                HorizontalAlignment="Right"
+                                Text="Not recording."
+                                TextAlignment="Right"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <controls:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="local:IconDiagnosticsReportItem">
+                                <controls:SettingsCard
+                                    Description="{x:Bind Description, Mode=OneTime}"
+                                    Header="{x:Bind Header, Mode=OneTime}"
+                                    HorizontalContentAlignment="Right">
+                                    <Button
+                                        AutomationProperties.AutomationId="{x:Bind CopyAutomationId, Mode=OneTime}"
+                                        Click="CopyIconDiagnosticsReportClicked"
+                                        Tag="{x:Bind Report, Mode=OneTime}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <SymbolIcon Symbol="Copy" />
+                                            <TextBlock Text="Copy report" />
+                                        </StackPanel>
+                                    </Button>
+                                </controls:SettingsCard>
+                            </DataTemplate>
+                        </controls:SettingsExpander.ItemTemplate>
+                    </controls:SettingsExpander>
                     <controls:SettingsCard
                         x:Name="ToggleDevRibbonVisibilitySettingsCard"
                         Description="This is only temporary and state is not saved"

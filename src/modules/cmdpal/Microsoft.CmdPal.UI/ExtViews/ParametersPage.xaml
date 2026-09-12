@@ -42,7 +42,9 @@
                                 Width="48"
                                 Height="48"
                                 Margin="8"
+                                DiagnosticScope="Command"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                RequestSite="Parameter"
                                 SourceKey="{x:Bind ViewModel.Command.Icon, Mode=OneWay}"
                                 SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                             <TextBlock

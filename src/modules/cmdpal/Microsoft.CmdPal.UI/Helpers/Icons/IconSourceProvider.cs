@@ -26,26 +26,39 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     {
     }
 
-    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale)
+    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale, IconRequestMeasurement diagnostics = default)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IconLoadMeasurement? loadDiagnostics = null;
 
         try
         {
+            var streamReference = icon.Data?.Unsafe;
+            loadDiagnostics = IconLoadDiagnostics.CreateLoad(
+                diagnostics,
+                icon.Icon,
+                streamReference is not null,
+                _iconSize.Width,
+                _iconSize.Height,
+                scale);
+            diagnostics.RecordProviderResolution(IconProviderResolution.NewLoad, loadDiagnostics);
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
-                    icon.Data?.Unsafe,
+                    streamReference,
                     _iconSize,
                     scale,
                     tcs,
-                    _isPriority ? IconLoadPriority.High : IconLoadPriority.Low))
+                    _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
+                    loadDiagnostics))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }
         }
         catch (Exception ex)
         {
+            loadDiagnostics?.Rejected();
             tcs.TrySetException(ex);
         }
 

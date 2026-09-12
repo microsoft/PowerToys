@@ -29,16 +29,24 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
     {
     }
 
-    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale)
+    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale, IconRequestMeasurement diagnostics = default)
     {
         var key = new IconCacheKey(icon, scale);
 
-        return _cache.TryGet(key, out var existingTask)
-            ? existingTask
-            : GetOrCreateSlowPath(key, icon, scale);
+        if (_cache.TryGet(key, out var existingTask))
+        {
+            diagnostics.RecordProviderResolution(IconProviderResolution.CacheHit, existingTask);
+            return existingTask;
+        }
+
+        return GetOrCreateSlowPath(key, icon, scale, diagnostics);
     }
 
-    private Task<IconSource?> GetOrCreateSlowPath(IconCacheKey key, IconDataViewModel icon, double scale)
+    private Task<IconSource?> GetOrCreateSlowPath(
+        IconCacheKey key,
+        IconDataViewModel icon,
+        double scale,
+        IconRequestMeasurement diagnostics)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var task = tcs.Task;
@@ -46,8 +54,11 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
         var pending = _inFlight.GetOrAdd(key, task);
         if (!ReferenceEquals(pending, task))
         {
+            diagnostics.RecordProviderResolution(IconProviderResolution.InFlight, pending);
             return pending;
         }
+
+        IconLoadMeasurement? loadDiagnostics = null;
 
         _ = task.ContinueWith(
             completed =>
@@ -70,20 +81,33 @@ internal sealed class CachedIconSourceProvider : IIconSourceProvider
 
         try
         {
+            var streamReference = icon.Data?.Unsafe;
+            loadDiagnostics = IconLoadDiagnostics.CreateLoad(
+                diagnostics,
+                icon.Icon,
+                streamReference is not null,
+                _iconSize.Width,
+                _iconSize.Height,
+                scale);
+            loadDiagnostics?.RegisterTask(task);
+            diagnostics.RecordProviderResolution(IconProviderResolution.NewLoad, loadDiagnostics);
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
-                    icon.Data?.Unsafe,
+                    streamReference,
                     _iconSize,
                     scale,
                     tcs,
-                    IconLoadPriority.Low))
+                    IconLoadPriority.Low,
+                    loadDiagnostics))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }
         }
         catch (Exception ex)
         {
+            loadDiagnostics?.Rejected();
             tcs.TrySetException(ex);
         }
 
