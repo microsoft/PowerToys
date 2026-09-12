@@ -413,7 +413,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Quick access shelf</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
-    <value>Shows quick access commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for visible items, starting from the left, and Alt+0 for overflow.</value>
+    <value>Shows quick access commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 to run visible items, Alt+Shift+1 through Alt+Shift+9 to select them, and Alt+0 for overflow.</value>
   </data>
   <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Header" xml:space="preserve">
     <value>Maximum pinned commands</value>
@@ -464,8 +464,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Quick access</value>
   </data>
   <data name="QuickAccessShelfShortcutTextFormat" xml:space="preserve">
-    <value>Alt+{0}</value>
-    <comment>Tooltip shortcut text for a quick access item. {0} is a digit from 1 through 9.</comment>
+    <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
+    <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
   </data>
   <data name="QuickAccessShelfChangeOrderDragCaption" xml:space="preserve">
     <value>Change order</value>
