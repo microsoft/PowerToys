@@ -419,6 +419,184 @@
                                 <tkcontrols:SettingsCard Visibility="Collapsed" />
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
+                        <tkcontrols:SettingsExpander
+                            Name="TextCase"
+                            x:Uid="TextCase"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.TextCase, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ToggleSwitch
+                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent="" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+
+                                <tkcontrols:SettingsCard
+                                    Name="LowerCase"
+                                    x:Uid="LowerCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.LowerCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.LowerCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="UpperCase"
+                                    x:Uid="UpperCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.UpperCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.UpperCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="TitleCase"
+                                    x:Uid="TitleCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.TitleCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.TitleCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="SentenceCase"
+                                    x:Uid="SentenceCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.SentenceCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.SentenceCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="ToggleCase"
+                                    x:Uid="ToggleCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.ToggleCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.ToggleCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="CamelCase"
+                                    x:Uid="CamelCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.CamelCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.CamelCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="PascalCase"
+                                    x:Uid="PascalCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.PascalCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.PascalCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="SnakeCase"
+                                    x:Uid="SnakeCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.SnakeCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.SnakeCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="ScreamingSnakeCase"
+                                    x:Uid="ScreamingSnakeCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.ScreamingSnakeCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.ScreamingSnakeCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard
+                                    Name="KebabCase"
+                                    x:Uid="KebabCase"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.TextCase.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.TextCase.KebabCase.Shortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.TextCase.KebabCase.IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                         <InfoBar
                             x:Uid="AdvancedPaste_ShortcutWarning"
                             IsClosable="False"
