@@ -39,6 +39,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseJumpEnabledValue();
         static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
+        static GpoRuleConfigured GetConfiguredAutoHideCursorEnabledValue();
         static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();

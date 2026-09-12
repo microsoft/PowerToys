@@ -8,9 +8,8 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Fault-tolerant window cleanup helpers. Every method swallows exceptions and returns a
-/// boolean — they're designed for test <c>finally</c> blocks where a cleanup failure must
-/// never mask the real test failure.
+/// Window cleanup and input-readiness helpers. Cleanup methods report failure without throwing,
+/// so a cleanup failure in a test <c>finally</c> block does not mask the original test failure.
 /// </summary>
 /// <remarks>
 /// winappcli has no <c>close</c> verb, so closing goes through Win32 <c>WM_CLOSE</c>
@@ -88,6 +87,7 @@ public static class WindowControl
 
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+    private const uint GaParent = 1;
     private const uint GaRoot = 2;
     private const int SW_RESTORE = 9;
 
@@ -442,6 +442,55 @@ public static class WindowControl
 
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
+    /// <summary>
+    /// Whether keyboard focus belongs to a descendant with the specified native window class,
+    /// inside the exact foreground window. This also handles empty Shell views without a
+    /// keyboard-focusable UIA element.
+    /// </summary>
+    public static bool IsKeyboardFocusWithinClass(IntPtr window, string className)
+    {
+        if (window == IntPtr.Zero)
+        {
+            throw new ArgumentException("The foreground window must not be zero.", nameof(window));
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(className);
+        if (GetForegroundWindow() != window)
+        {
+            return false;
+        }
+
+        var threadId = GetWindowThreadProcessId(window, out _);
+        var threadInfo = new GUITHREADINFO { Size = Marshal.SizeOf<GUITHREADINFO>() };
+        return threadId != 0 && GetGUIThreadInfo(threadId, ref threadInfo) &&
+            IsKeyboardFocusWithinClass(
+                window,
+                className,
+                threadInfo.FocusedWindow,
+                child => GetAncestor(child, GaParent),
+                GetWindowClassName);
+    }
+
+    internal static bool IsKeyboardFocusWithinClass(
+        IntPtr window,
+        string className,
+        IntPtr focusedWindow,
+        Func<IntPtr, IntPtr> getParent,
+        Func<IntPtr, string> getClassName)
+    {
+        ArgumentNullException.ThrowIfNull(getParent);
+        ArgumentNullException.ThrowIfNull(getClassName);
+
+        var matchesClass = false;
+        while (focusedWindow != IntPtr.Zero && focusedWindow != window)
+        {
+            matchesClass |= string.Equals(getClassName(focusedWindow), className, StringComparison.OrdinalIgnoreCase);
+            focusedWindow = getParent(focusedWindow);
+        }
+
+        return focusedWindow == window && matchesClass;
+    }
 
     /// <summary>Whether the root window under a screen point is the expected HWND.</summary>
     public static bool IsPointOwnedByWindow(IntPtr window, int x, int y)
