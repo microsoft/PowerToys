@@ -280,6 +280,74 @@ internal sealed partial class IconLoadEventSource : EventSource
             demandedBeyondCapacity);
     }
 
+    // Event IDs follow the final grouped diagnostics schema and intentionally remain sparse so
+    // independently reviewable layers can land without changing an event's published identity.
+    [Event(22, Level = EventLevel.Informational)]
+    public void SchedulerCommandProcessed(long sessionId, int commandKind, long elapsedMicroseconds, long backlog)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(22, sessionId, commandKind, elapsedMicroseconds, backlog);
+    }
+
+    [Event(23, Level = EventLevel.Informational)]
+    public void WorkerReadyToDispatchCompleted(long sessionId, int demanded, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(23, sessionId, demanded, elapsedMicroseconds);
+    }
+
+    [Event(24, Level = EventLevel.Informational)]
+    public void DemandedIdleCapacityCompleted(long sessionId, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(24, sessionId, elapsedMicroseconds);
+    }
+
+    [Event(25, Level = EventLevel.Informational)]
+    public void SchedulerCoordinatorWoke(long sessionId, int triggerKind, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(25, sessionId, triggerKind, elapsedMicroseconds);
+    }
+
+    [Event(26, Level = EventLevel.Informational)]
+    public void SchedulerBatchCompleted(
+        long sessionId,
+        int commandCount,
+        int dispatchedWorkItemCount,
+        long drainMicroseconds,
+        long passMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(
+            26,
+            sessionId,
+            commandCount,
+            dispatchedWorkItemCount,
+            drainMicroseconds,
+            passMicroseconds);
+    }
+
     [Event(34, Level = EventLevel.Warning)]
     public void DispatcherWaitFailed(long sessionId, long loadId, long elapsedMicroseconds)
     {
@@ -324,8 +392,6 @@ internal sealed partial class IconLoadEventSource : EventSource
         WriteEvent(36, sessionId, loadId, materializationKind, isDemanded, elapsedMicroseconds);
     }
 
-    // Event IDs follow the final grouped diagnostics schema and intentionally remain sparse so
-    // independently reviewable layers can land without changing an event's published identity.
     [Event(37, Level = EventLevel.Informational)]
     public void UiResponsivenessProbeCompleted(long sessionId, long elapsedMicroseconds)
     {
@@ -335,6 +401,17 @@ internal sealed partial class IconLoadEventSource : EventSource
         }
 
         WriteEvent(37, sessionId, elapsedMicroseconds);
+    }
+
+    [Event(38, Level = EventLevel.Informational)]
+    public void SpeculativeDispatchDeferralCompleted(long sessionId, long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(38, sessionId, elapsedMicroseconds);
     }
 
     // These exact overloads intentionally shadow EventSource.WriteEvent(params object?[]).
@@ -347,6 +424,16 @@ internal sealed partial class IconLoadEventSource : EventSource
         SetEventData(&data[0], &value1, sizeof(long));
         SetEventData(&data[1], &value2, sizeof(long));
         WritePrimitiveEvent(eventId, 2, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, int value2, long value3)
+    {
+        EventData* data = stackalloc EventData[3];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
+        SetEventData(&data[2], &value3, sizeof(long));
+        WritePrimitiveEvent(eventId, 3, data);
     }
 
     [NonEvent]
@@ -414,6 +501,17 @@ internal sealed partial class IconLoadEventSource : EventSource
     }
 
     [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, int value2, long value3, long value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
+        SetEventData(&data[2], &value3, sizeof(long));
+        SetEventData(&data[3], &value4, sizeof(long));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
     private unsafe void WriteEvent(int eventId, long value1, int value2, bool value3, long value4)
     {
         var boolValue3 = value3 ? 1 : 0;
@@ -455,6 +553,18 @@ internal sealed partial class IconLoadEventSource : EventSource
         EventData* data = stackalloc EventData[5];
         SetEventData(&data[0], &value1, sizeof(long));
         SetEventData(&data[1], &value2, sizeof(long));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        SetEventData(&data[4], &value5, sizeof(long));
+        WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, int value2, int value3, long value4, long value5)
+    {
+        EventData* data = stackalloc EventData[5];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
         SetEventData(&data[2], &value3, sizeof(int));
         SetEventData(&data[3], &value4, sizeof(long));
         SetEventData(&data[4], &value5, sizeof(long));

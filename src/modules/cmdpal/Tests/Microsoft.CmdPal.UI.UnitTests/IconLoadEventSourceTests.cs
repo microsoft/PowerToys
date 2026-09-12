@@ -42,12 +42,18 @@ public sealed class IconLoadEventSourceTests
         log.RequestOrigin(11, 12, 42, 43, "ListItem / SingleRow");
         log.LoadQueueDemandChanged(11, 14, 44, 45, 46);
         log.LoadDemandAtWorkerStart(11, 14, 1, 47, 48, 49, 4, 50);
+        log.SchedulerCommandProcessed(11, 58, 59, 60);
+        log.WorkerReadyToDispatchCompleted(11, 1, 61);
+        log.DemandedIdleCapacityCompleted(11, 62);
+        log.SchedulerCoordinatorWoke(11, 63, 64);
+        log.SchedulerBatchCompleted(11, 65, 66, 67, 68);
         log.DispatcherWaitFailed(11, 14, 51);
         log.DispatcherUiSliceCompleted(11, 14, 52, 53, isDemanded: true, 54);
         log.DispatcherAsyncSuspensionCompleted(11, 14, 55, isDemanded: false, 56);
         log.UiResponsivenessProbeCompleted(11, 57);
+        log.SpeculativeDispatchDeferralCompleted(11, 69);
 
-        Assert.AreEqual(25, listener.Events.Count);
+        Assert.AreEqual(31, listener.Events.Count);
         Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
 
         CollectionAssert.AreEqual(
@@ -63,11 +69,29 @@ public sealed class IconLoadEventSourceTests
             new object?[] { 11L, 14L, 1, 47L, 48L, 49L, 4, 50L },
             listener.GetEvent(21).Payload!.ToArray());
         CollectionAssert.AreEqual(
+            new object?[] { 11L, 58, 59L, 60L },
+            listener.GetEvent(22).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 1, 61L },
+            listener.GetEvent(23).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 62L },
+            listener.GetEvent(24).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 63, 64L },
+            listener.GetEvent(25).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 65, 66, 67L, 68L },
+            listener.GetEvent(26).Payload!.ToArray());
+        CollectionAssert.AreEqual(
             new object?[] { 11L, 14L, 52, 53, true, 54L },
             listener.GetEvent(35).Payload!.ToArray());
         CollectionAssert.AreEqual(
             new object?[] { 11L, 14L, 55, false, 56L },
             listener.GetEvent(36).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 69L },
+            listener.GetEvent(38).Payload!.ToArray());
     }
 
     private sealed class CollectingEventListener : EventListener

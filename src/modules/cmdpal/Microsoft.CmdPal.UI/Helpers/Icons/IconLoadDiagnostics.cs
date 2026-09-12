@@ -219,6 +219,50 @@ internal static class IconLoadDiagnostics
         return ReferenceEquals(session, Volatile.Read(ref _etwSession));
     }
 
+    internal static SchedulerCommandMeasurement? BeginSchedulerCommand(IconLoadQueue.QueueCommandKind kind)
+    {
+        var session = GetCurrentSession();
+        if (session is null)
+        {
+            return null;
+        }
+
+        var publishedAt = Stopwatch.GetTimestamp();
+        session.RecordSchedulerCommandPublished(kind);
+        return new SchedulerCommandMeasurement(session, kind, publishedAt);
+    }
+
+    internal static DemandedIdleCapacityMeasurement? BeginDemandedIdleCapacity(
+        int demandedQueueDepth,
+        int availableWorkerSlots)
+    {
+        var session = GetCurrentSession();
+        if (session is null)
+        {
+            return null;
+        }
+
+        var startedAt = Stopwatch.GetTimestamp();
+        session.RecordDemandedIdleCapacityStarted(demandedQueueDepth, availableWorkerSlots);
+        return new DemandedIdleCapacityMeasurement(session, startedAt);
+    }
+
+    internal static SpeculativeDispatchDeferralMeasurement? BeginSpeculativeDispatchDeferral(
+        int speculativeQueueDepth,
+        int workerCount,
+        int reservedWorkerSlots)
+    {
+        var session = Volatile.Read(ref _activeSession);
+        if (session is null)
+        {
+            return null;
+        }
+
+        var startedAt = Stopwatch.GetTimestamp();
+        session.RecordSpeculativeDispatchDeferralStarted(speculativeQueueDepth, workerCount, reservedWorkerSlots);
+        return new SpeculativeDispatchDeferralMeasurement(session, startedAt, workerCount);
+    }
+
     private static IconLoadInputKind ClassifyInput(string? iconString, bool hasStream)
     {
         if (!string.IsNullOrEmpty(iconString))
@@ -263,6 +307,164 @@ internal static class IconLoadDiagnostics
         catch
         {
             return IconLoadResultKind.Other;
+        }
+    }
+
+    internal sealed class SchedulerCommandMeasurement
+    {
+        private readonly IconLoadDiagnosticsSession _session;
+        private readonly IconLoadQueue.QueueCommandKind _kind;
+        private readonly long _publishedAt;
+        private int _processed;
+        private int _dispatched;
+
+        public SchedulerCommandMeasurement(
+            IconLoadDiagnosticsSession session,
+            IconLoadQueue.QueueCommandKind kind,
+            long publishedAt)
+        {
+            _session = session;
+            _kind = kind;
+            _publishedAt = publishedAt;
+        }
+
+        public void Processed()
+        {
+            if (Interlocked.Exchange(ref _processed, 1) == 0)
+            {
+                _session.RecordSchedulerCommandProcessed(
+                    _kind,
+                    Stopwatch.GetTimestamp() - _publishedAt);
+            }
+        }
+
+        public SchedulerWakeMeasurement CreateWakeMeasurement()
+        {
+            return new SchedulerWakeMeasurement(_session, _kind, _publishedAt);
+        }
+
+        public void WorkerDispatched(bool demanded)
+        {
+            if (Interlocked.Exchange(ref _dispatched, 1) == 0)
+            {
+                _session.RecordWorkerDispatched(
+                    demanded,
+                    Stopwatch.GetTimestamp() - _publishedAt);
+            }
+        }
+    }
+
+    internal sealed class SchedulerWakeMeasurement
+    {
+        private readonly IconLoadDiagnosticsSession _session;
+        private readonly IconLoadQueue.QueueCommandKind _triggerKind;
+        private readonly long _signaledAt;
+        private long _wakeTicks = -1;
+        private int _woke;
+        private int _completed;
+
+        public SchedulerWakeMeasurement(
+            IconLoadDiagnosticsSession session,
+            IconLoadQueue.QueueCommandKind triggerKind,
+            long signaledAt)
+        {
+            _session = session;
+            _triggerKind = triggerKind;
+            _signaledAt = signaledAt;
+        }
+
+        public void Woke(long wokeAt)
+        {
+            if (Interlocked.Exchange(ref _woke, 1) == 0)
+            {
+                var wakeTicks = Math.Max(0, wokeAt - _signaledAt);
+                Volatile.Write(ref _wakeTicks, wakeTicks);
+                _session.RecordSchedulerCoordinatorWoke(_triggerKind, wakeTicks);
+            }
+        }
+
+        public void BatchCompleted(
+            int commandCount,
+            int dispatchedWorkItemCount,
+            long drainTicks,
+            long passTicks)
+        {
+            if (Interlocked.Exchange(ref _completed, 1) == 0)
+            {
+                var wakeTicks = Volatile.Read(ref _wakeTicks);
+                Debug.Assert(wakeTicks >= 0, "A scheduler batch must wake before it completes.");
+                _session.RecordSchedulerBatchCompleted(
+                    _triggerKind,
+                    wakeTicks,
+                    commandCount,
+                    dispatchedWorkItemCount,
+                    drainTicks,
+                    passTicks);
+            }
+        }
+    }
+
+    internal sealed class DemandedIdleCapacityMeasurement
+    {
+        private readonly IconLoadDiagnosticsSession _session;
+        private readonly long _startedAt;
+        private int _completed;
+
+        public DemandedIdleCapacityMeasurement(IconLoadDiagnosticsSession session, long startedAt)
+        {
+            _session = session;
+            _startedAt = startedAt;
+        }
+
+        public bool IsForActiveSession => IsCurrentSession(_session);
+
+        public void Observe(int demandedQueueDepth, int availableWorkerSlots)
+        {
+            _session.RecordDemandedIdleCapacityObserved(demandedQueueDepth, availableWorkerSlots);
+        }
+
+        public void Complete()
+        {
+            if (Interlocked.Exchange(ref _completed, 1) == 0)
+            {
+                _session.RecordDemandedIdleCapacityCompleted(Stopwatch.GetTimestamp() - _startedAt);
+            }
+        }
+    }
+
+    internal sealed class SpeculativeDispatchDeferralMeasurement
+    {
+        private readonly IconLoadDiagnosticsSession _session;
+        private readonly long _startedAt;
+        private readonly int _workerCount;
+        private int _completed;
+
+        public SpeculativeDispatchDeferralMeasurement(
+            IconLoadDiagnosticsSession session,
+            long startedAt,
+            int workerCount)
+        {
+            _session = session;
+            _startedAt = startedAt;
+            _workerCount = workerCount;
+        }
+
+        public bool IsForActiveSession => ReferenceEquals(_session, Volatile.Read(ref _activeSession));
+
+        public void Observe(int speculativeQueueDepth, int reservedWorkerSlots)
+        {
+            _session.RecordSpeculativeDispatchDeferralObserved(
+                speculativeQueueDepth,
+                _workerCount,
+                reservedWorkerSlots);
+        }
+
+        public void Complete()
+        {
+            if (Interlocked.Exchange(ref _completed, 1) == 0)
+            {
+                _session.RecordSpeculativeDispatchDeferralCompleted(Stopwatch.GetTimestamp() - _startedAt);
+            }
         }
     }
 }
