@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-08-28
+last updated: 2026-09-03
 issue id: n/a
 ---
 
@@ -90,6 +90,7 @@ functionality.
     - [Plain text content](#plain-text-content)
   - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
+  - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2462,6 +2463,69 @@ Should an extension want to indicate that the content has changed, they can
 raise a `INotifyPropChanged` event on the `IDetails2` object for the property
 name "Content". The host will accept that as a notification that the content has
 changed. 
+
+## Addenda IX: Dock label layout hints
+
+To keep changing performance values from moving neighbouring Dock items, use
+`IExtendedAttributesProvider` to reserve label space. `ListItem` already
+implements the interface:
+
+```csharp
+var item = new ListItem(command) { Title = "1%" };
+var properties = item.GetProperties();
+properties[WellKnownExtensionAttributes.DockMinLabelWidth] = "12ch";
+properties[WellKnownExtensionAttributes.DockMaxLabelWidth] = "12ch";
+```
+
+```csharp
+var fixedWidth = new ListItem(command) { Title = changingText }
+    .SetDockLabelWidth("12ch");
+
+var tabular = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
+    .SetDockLabelTabularDigits();
+
+var trailing = new ListItem(command) { Title = $"{cpuPercent:F2}%" }
+    .SetDockLabelWidth("12ch")
+    .SetDockLabelTrailingAlignment();
+```
+
+Use `SetDockLabelWidth(80)` for DIPs or `ClearDockLabelWidth()` to restore
+defaults. These extension methods preserve the concrete item type and notify
+once with `PropChanged("DockLabelWidth")` when the hints change. They support `CommandItem` subclasses implementing
+`IExtendedAttributesProvider` with a persistent, writable property bag, such as
+`ListItem`.
+
+`SetDockLabelTabularDigits()` gives digits equal width;
+`SetDockLabelTrailingAlignment()` anchors the text to the trailing edge. The
+hints are independent. Format the value in the extension (`F2` above) to keep
+decimal precision consistent. Their Boolean keys are
+`Microsoft.CommandPalette.Dock.TabularDigits` and
+`Microsoft.CommandPalette.Dock.TrailingAlignment`; direct edits notify
+`"DockLabelTabularDigits"`, `"DockLabelTrailingAlignment"`, or `"Properties"`.
+
+The keys are `Microsoft.CommandPalette.Dock.MinLabelWidth` and
+`Microsoft.CommandPalette.Dock.MaxLabelWidth`. Values accept a finite,
+non-negative `double` in DIPs (`80d`) or an invariant decimal string ending in
+`ch` (`"12ch"`) or `sqh`. One `ch` is the width of `0` in the title font,
+including text scaling; other characters may be wider. One `sqh` (squirrel
+hair width) is defined as `0.01ch`, so `"1200sqh"` equals `"12ch"`.
+
+Equal bounds fix the shared title/subtitle column's width; a maximum alone
+still permits shrinking. Icons and padding are excluded. Overflow is
+ellipsized, with full text in the tooltip. Hidden labels reserve no space,
+and a vertical Dock may shrink below the minimum.
+
+Set attributes on the rendered item: the root for a single-item band, or each
+child for an `IListPage` band. Custom providers can raise `PropChanged` for
+`"DockLabelWidth"` after changing these hints, or `"Properties"` to invalidate
+the entire bag. The helpers notify automatically. Ordinary `Title`/`Subtitle`
+updates need no extra notification.
+Hosts that do not recognize these additive keys or notification keep their
+existing Dock sizing.
+
+Defaults are a 100-DIP cap and a 24-DIP floor for visible titles (zero for
+subtitle-only items). Missing or invalid bounds use defaults, adjusted to fit
+an explicit opposite bound. An inverted pair is ignored after unit conversion.
 
 ## Class diagram
 
