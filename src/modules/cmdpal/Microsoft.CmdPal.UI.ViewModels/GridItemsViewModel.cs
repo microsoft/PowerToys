@@ -223,8 +223,23 @@ public sealed partial class GridItemsViewModel : IDisposable
 
     private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not ListItemViewModel item ||
-            (e.PropertyName is not (null or "" or nameof(ListItemViewModel.Type) or nameof(ListItemViewModel.Section))))
+        if (sender is not ListItemViewModel item)
+        {
+            return;
+        }
+
+        if (e.PropertyName is null or "" or nameof(ListItemViewModel.SectionCommandName) or nameof(ListItemViewModel.HasSectionCommand))
+        {
+            foreach (var group in Groups)
+            {
+                if (ReferenceEquals(group.Header, item))
+                {
+                    group.RefreshHeader();
+                }
+            }
+        }
+
+        if (e.PropertyName is not (null or "" or nameof(ListItemViewModel.Type) or nameof(ListItemViewModel.Section)))
         {
             return;
         }

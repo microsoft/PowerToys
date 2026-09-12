@@ -50,6 +50,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private ListItemViewModel? _stickySelectedItem;
     private ListItemViewModel? _lastPushedToVm;
+    private ListItemViewModel? _selectedListSectionCommand;
+    private GridItemGroupViewModel? _selectedGridSectionCommand;
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
@@ -172,7 +174,7 @@ public sealed partial class ListItemsView : UserControl,
                 {
                     using (SuppressSelectionChangedScope())
                     {
-                        if (_stickySelectedItem is { IsInteractive: true } && ItemView.Items.Contains(_stickySelectedItem))
+                        if (_stickySelectedItem is { IsKeyboardNavigable: true } && ItemView.Items.Contains(_stickySelectedItem))
                         {
                             ItemView.SelectedItem = _stickySelectedItem;
                         }
@@ -190,18 +192,26 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     /// <summary>
-    /// Finds the index of the first item in the list that is not a separator.
-    /// Returns -1 if the list is empty or only contains separators.
+    /// Finds the first ordinary item, falling back to a section command when the
+    /// page has no ordinary command items.
     /// </summary>
     private int GetFirstSelectableIndex()
     {
+        for (var i = 0; i < ItemView.Items.Count; i++)
+        {
+            if (ItemView.Items[i] is ListItemViewModel { IsInteractive: true })
+            {
+                return i;
+            }
+        }
+
         return FindSelectableIndex(0, 1);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is ListItemViewModel item)
+        if (e.ClickedItem is ListItemViewModel { IsInteractive: true } item)
         {
             if (_lastInputSource == InputSource.Keyboard)
             {
@@ -227,7 +237,7 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (ItemView.SelectedItem is ListItemViewModel { IsInteractive: true } vm)
         {
             var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (!settings.SingleClickActivates)
@@ -248,12 +258,24 @@ public sealed partial class ListItemsView : UserControl,
         var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
 
-        // Transient null/separator selection can happen during in-place updates.
-        // Do not push null into the VM; Page_ItemsUpdated will repair selection.
-        if (li is null || IsSeparator(li))
+        // A transient null selection can happen during in-place updates.
+        // Page_ItemsUpdated will repair it without clearing the current VM selection.
+        if (li is null)
         {
             return;
         }
+
+        // Plain structural rows never participate in keyboard navigation. A section
+        // command is a distinct logical target even though IListItem.Command is unset.
+        if (!li.IsKeyboardNavigable)
+        {
+            RestoreSelectionAfterNonInteractiveItem(e);
+            return;
+        }
+
+        SetSectionCommandSelection(
+            listHeader: ViewModel?.IsGridView == false && li.IsSectionCommandTarget ? li : null,
+            gridGroup: null);
 
         _stickySelectedItem = li;
         if (!_isGridNavigationSelection)
@@ -265,8 +287,14 @@ public sealed partial class ListItemsView : UserControl,
         // is superseded by the user's navigation.
         _forceFirstPending = false;
 
-        // Do not Task.Run (it reorders selection updates).
-        vm?.UpdateSelectedItemCommand.Execute(li);
+        // Do not Task.Run (it reorders selection updates). A section command is not
+        // the IListItem primary command, so it must not flow into the command bar.
+        if (!li.IsInteractive)
+        {
+            _lastPushedToVm = null;
+        }
+
+        vm?.UpdateSelectedItemCommand.Execute(li.IsInteractive ? li : null);
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -275,13 +303,40 @@ public sealed partial class ListItemsView : UserControl,
             ScrollToItem(li);
         }
 
-        // Automation notification for screen readers
-        var listViewPeer = ListViewAutomationPeer.CreatePeerForElement(ItemView);
-        if (listViewPeer is not null)
+        AnnounceSelection(li.IsInteractive ? li.Title : $"{li.Section}, {li.SectionCommandName}");
+    }
+
+    private void RestoreSelectionAfterNonInteractiveItem(SelectionChangedEventArgs e)
+    {
+        var previousItem = e.RemovedItems
+            .OfType<ListItemViewModel>()
+            .FirstOrDefault(item => item.IsKeyboardNavigable && ItemView.Items.Contains(item));
+
+        using (SuppressSelectionChangedScope())
+        {
+            if (previousItem is not null)
+            {
+                ItemView.SelectedItem = previousItem;
+            }
+            else
+            {
+                ItemView.SelectedIndex = GetFirstSelectableIndex();
+            }
+        }
+
+        _scrollOnNextSelectionChange = false;
+        PushSelectionToVm();
+    }
+
+    private void AnnounceSelection(string text)
+    {
+        // Search retains keyboard focus while the logical navigation target moves,
+        // so explicitly announce both ordinary items and section commands.
+        if (ListViewAutomationPeer.CreatePeerForElement(ItemView) is not null)
         {
             UIHelper.AnnounceActionForAccessibility(
                 ItemView,
-                li.Title,
+                text,
                 "CommandPaletteSelectedItemChanged");
         }
     }
@@ -317,7 +372,7 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (e.OriginalSource is FrameworkElement element &&
-            element.DataContext is ListItemViewModel item)
+            element.DataContext is ListItemViewModel { IsInteractive: true } item)
         {
             if (ItemView.SelectedItem != item)
             {
@@ -507,6 +562,33 @@ public sealed partial class ListItemsView : UserControl,
     // Message-driven navigation should count as keyboard.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
+    private void SetSectionCommandSelection(ListItemViewModel? listHeader, GridItemGroupViewModel? gridGroup)
+    {
+        if (listHeader?.IsSectionCommandTarget != true)
+        {
+            listHeader = null;
+        }
+
+        if (gridGroup?.HasSectionCommand != true)
+        {
+            gridGroup = null;
+        }
+
+        if (!ReferenceEquals(_selectedListSectionCommand, listHeader))
+        {
+            _selectedListSectionCommand?.SetSectionCommandSelected(false);
+            _selectedListSectionCommand = listHeader;
+            _selectedListSectionCommand?.SetSectionCommandSelected(true);
+        }
+
+        if (!ReferenceEquals(_selectedGridSectionCommand, gridGroup))
+        {
+            _selectedGridSectionCommand?.SetSectionCommandSelected(false);
+            _selectedGridSectionCommand = gridGroup;
+            _selectedGridSectionCommand?.SetSectionCommandSelected(true);
+        }
+    }
+
     private void PushSelectionToVm()
     {
         if (ViewModel is null)
@@ -514,11 +596,34 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        if (ViewModel.IsGridView &&
+            _selectedGridSectionCommand is { HasSectionCommand: true } selectedGridSection &&
+            GridItems.Groups.Contains(selectedGridSection))
         {
+            _lastPushedToVm = null;
+            _stickySelectedItem = selectedGridSection.Header;
             ViewModel.UpdateSelectedItemCommand.Execute(null);
             return;
         }
+
+        if (ItemView.SelectedItem is not ListItemViewModel li || !li.IsKeyboardNavigable)
+        {
+            SetSectionCommandSelection(null, null);
+            _lastPushedToVm = null;
+            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            return;
+        }
+
+        if (li.IsSectionCommandTarget)
+        {
+            SetSectionCommandSelection(ViewModel.IsGridView ? null : li, null);
+            _lastPushedToVm = null;
+            _stickySelectedItem = li;
+            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            return;
+        }
+
+        SetSectionCommandSelection(null, null);
 
         if (ReferenceEquals(_lastPushedToVm, li))
         {
@@ -609,9 +714,21 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel?.InvokeItemCommand.Execute(null);
         }
+        else if (ViewModel?.IsGridView == true &&
+                 _selectedGridSectionCommand is { HasSectionCommand: true, Header: not null } selectedGridSection)
+        {
+            selectedGridSection.Header.InvokeSectionCommandCommand.Execute(null);
+        }
         else if (ItemView.SelectedItem is ListItemViewModel item)
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
+            if (item.IsSectionCommandTarget)
+            {
+                item.InvokeSectionCommandCommand.Execute(null);
+            }
+            else
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+            }
         }
     }
 
@@ -802,7 +919,7 @@ public sealed partial class ListItemsView : UserControl,
 
         for (var i = startIndex; i >= 0 && i < count; i += step)
         {
-            if (!IsSeparator(items[i]))
+            if (!IsNotKeyboardNavigationTarget(items[i]))
             {
                 return i;
             }
@@ -834,6 +951,7 @@ public sealed partial class ListItemsView : UserControl,
 
             // Reset latched state — selection sticky/last-pushed only make sense
             // for the previous ViewModel's items.
+            @this.SetSectionCommandSelection(null, null);
             @this._forceFirstPending = false;
             @this._stickySelectedItem = null;
             @this._lastPushedToVm = null;
@@ -954,10 +1072,21 @@ public sealed partial class ListItemsView : UserControl,
             return false;
         }
 
-        // Structural rows are group headers, not selectable items in grid mode.
-        // Use the stable source of truth, not the possibly transient ItemView.Items.
-        if (vm.FilteredItems.Count == 0 || (vm.IsGridView && GridItems.ItemCount == 0))
+        var selectedGridSection = _selectedGridSectionCommand;
+        var selectedGridSectionIsCurrent =
+            vm.IsGridView &&
+            selectedGridSection is { HasSectionCommand: true } &&
+            GridItems.Groups.Contains(selectedGridSection);
+        var firstGridSectionCommand = vm.IsGridView
+            ? GridItems.Groups.FirstOrDefault(group => group.HasSectionCommand)
+            : null;
+
+        // Structural rows are group headers rather than ItemsGrid items. A header
+        // command can therefore be the only logical target in an otherwise empty grid.
+        if (vm.FilteredItems.Count == 0 ||
+            (vm.IsGridView && GridItems.ItemCount == 0 && firstGridSectionCommand is null))
         {
+            SetSectionCommandSelection(null, null);
             using (SuppressSelectionChangedScope())
             {
                 ItemView.SelectedIndex = -1;
@@ -966,6 +1095,21 @@ public sealed partial class ListItemsView : UserControl,
             }
 
             PushSelectionToVm();
+            return true;
+        }
+
+        if (vm.IsGridView && GridItems.ItemCount == 0 && firstGridSectionCommand is not null)
+        {
+            if (forceFirstItem || !selectedGridSectionIsCurrent)
+            {
+                SelectGridSectionCommand(firstGridSectionCommand, 0);
+            }
+            else
+            {
+                PushSelectionToVm();
+            }
+
+            _forceFirstPending = false;
             return true;
         }
 
@@ -996,11 +1140,11 @@ public sealed partial class ListItemsView : UserControl,
         if (!shouldUpdateSelection)
         {
             // Check if selection needs repair (item gone, null, or separator).
-            if (ItemView.SelectedItem is null)
+            if (ItemView.SelectedItem is null && !selectedGridSectionIsCurrent)
             {
                 shouldUpdateSelection = true;
             }
-            else if (IsSeparator(ItemView.SelectedItem))
+            else if (IsNotKeyboardNavigationTarget(ItemView.SelectedItem))
             {
                 shouldUpdateSelection = true;
             }
@@ -1012,6 +1156,7 @@ public sealed partial class ListItemsView : UserControl,
 
         if (shouldUpdateSelection)
         {
+            SetSectionCommandSelection(null, null);
             using (SuppressSelectionChangedScope())
             {
                 ListItemViewModel? stickyRestored = null;
@@ -1020,7 +1165,7 @@ public sealed partial class ListItemsView : UserControl,
                 if (!forceFirstItem &&
                     _stickySelectedItem is not null &&
                     items.Contains(_stickySelectedItem) &&
-                    !IsSeparator(_stickySelectedItem))
+                    !IsNotKeyboardNavigationTarget(_stickySelectedItem))
                 {
                     // Restore sticky selection only when force-first is not
                     // active. The latched _forceFirstPending flag guarantees
@@ -1075,7 +1220,11 @@ public sealed partial class ListItemsView : UserControl,
             // has been fully delivered and selection has stabilized.
             _forceFirstPending = false;
 
-            if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
+            if (ensureSelectionVisible && selectedGridSectionIsCurrent && selectedGridSection is not null)
+            {
+                ScrollGridToSectionCommand(selectedGridSection);
+            }
+            else if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                 {
@@ -1133,7 +1282,7 @@ public sealed partial class ListItemsView : UserControl,
             _ => (null, null),
         };
 
-        if (item is null || element is null)
+        if (item is null || element is null || !item.IsInteractive)
         {
             return;
         }
@@ -1189,6 +1338,7 @@ public sealed partial class ListItemsView : UserControl,
                     _lastInputSource = InputSource.Keyboard;
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
+                    RequestGridNavigationTargetFocus();
                     e.Handled = true;
                     break;
             }
@@ -1328,7 +1478,7 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
-    private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;
+    private static bool IsNotKeyboardNavigationTarget(object? item) => item is ListItemViewModel li && !li.IsKeyboardNavigable;
 
     private bool IsSectionHeader(object? item) => item is ListItemViewModel li && li.Type == ListItemType.SectionHeader;
 
