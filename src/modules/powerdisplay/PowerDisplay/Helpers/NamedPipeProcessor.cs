@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerToys.Interop;
 
 namespace PowerDisplay.Helpers;
 
@@ -39,6 +40,17 @@ public static class NamedPipeProcessor
             Logger.LogInfo($"[NamedPipe] Connecting to pipe: {pipeName}");
             await pipeClient.ConnectAsync(connectTimeout, cancellationToken);
             Logger.LogInfo($"[NamedPipe] Connected to pipe: {pipeName}");
+
+            var installationDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, ".."));
+            if (!CommonManaged.AuthenticateNamedPipeServer(
+                    unchecked((ulong)pipeClient.SafePipeHandle.DangerousGetHandle().ToInt64()),
+                    "PowerToys.exe",
+                    installationDirectory,
+                    Environment.ProcessPath ?? string.Empty,
+                    NamedPipePeerValidation.PowerToysPeer))
+            {
+                throw new UnauthorizedAccessException("The named pipe server is not a trusted PowerToys process.");
+            }
 
             using StreamReader streamReader = new(pipeClient, Encoding.Unicode);
 
