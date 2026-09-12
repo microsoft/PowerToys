@@ -56,6 +56,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
     const std::wstring POLICY_CONFIGURE_ENABLED_AUTO_HIDE_CURSOR = L"ConfigureEnabledUtilityAutoHideCursor";
     const std::wstring POLICY_CONFIGURE_ENABLED_CURSOR_WRAP = L"ConfigureEnabledUtilityCursorWrap";
+    const std::wstring POLICY_CONFIGURE_ENABLED_LASER_POINTER = L"ConfigureEnabledUtilityLaserPointer";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
     const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
@@ -440,6 +441,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredCursorWrapEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CURSOR_WRAP);
+    }
+
+    inline gpo_rule_configured_t getConfiguredLaserPointerEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_LASER_POINTER);
     }
 
     inline gpo_rule_configured_t getConfiguredPowerRenameEnabledValue()

@@ -6682,4 +6682,134 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="MouseUtils_LaserPointer.Header" xml:space="preserve">
+    <value>Laser Pointer</value>
+    <comment>Refers to the utility name</comment>
+  </data>
+  <data name="QuickAccess_LaserPointer_ShareWindow.Title" xml:space="preserve">
+    <value>Laser pointer: Share Window</value>
+    <comment>Quick Access entry. Starts sharing, or moves an existing share to another window. "Laser pointer" is the name of the utility.</comment>
+  </data>
+  <data name="QuickAccess_LaserPointer_StopSharing.Title" xml:space="preserve">
+    <value>Laser pointer: Stop Sharing</value>
+    <comment>Quick Access entry, shown only while something is being shared. "Laser pointer" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer.Description" xml:space="preserve">
+    <value>Draw a fading laser trail that follows your pointer, anywhere on screen.</value>
+    <comment>"Laser Pointer" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_Enable_LaserPointer.Header" xml:space="preserve">
+    <value>Enable Laser Pointer</value>
+    <comment>"Laser Pointer" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut that turns the laser pointer on and off</value>
+    <comment>"laser pointer" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton.Header" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton.Description" xml:space="preserve">
+    <value>The button that draws the laser trail while it is held down</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose.Header" xml:space="preserve">
+    <value>Pen drawing</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose_Check.Header" xml:space="preserve">
+    <value>Render when pen gets close</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenRenderWhenClose_Check.Description" xml:space="preserve">
+    <value>Draw the trail as soon as the screen detects the pen nearby. When off, the pen tip has to touch the screen.</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenActivationShortcut.Header" xml:space="preserve">
+    <value>Pen activation</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PenActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut that turns the laser pointer on and off for the pen. The pen and the mouse are armed separately, so this shortcut affects only the pen. Leave it unset to disable pen support.</value>
+    <comment>"laser pointer" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_AlwaysOnButton.Header" xml:space="preserve">
+    <value>Always-on mouse button</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_AlwaysOnButton.Description" xml:space="preserve">
+    <value>A button that draws the laser trail whenever it is held, without needing the activation shortcut. The left and right buttons cannot be used.</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_AlwaysOnButton_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton_Left.Content" xml:space="preserve">
+    <value>Left button</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton_Right.Content" xml:space="preserve">
+    <value>Right button</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton_Middle.Content" xml:space="preserve">
+    <value>Middle button</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton_X1.Content" xml:space="preserve">
+    <value>Back button (X1)</value>
+    <comment>X1 is the standard name of the fourth mouse button</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_ActivationButton_X2.Content" xml:space="preserve">
+    <value>Forward button (X2)</value>
+    <comment>X2 is the standard name of the fifth mouse button</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_SuppressActivationButton.Header" xml:space="preserve">
+    <value>Do not pass the button through to apps</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_SuppressActivationButton.Description" xml:space="preserve">
+    <value>Stops the app underneath from also reacting to the button. Only applies to the middle, back and forward buttons; the left and right buttons are always passed through.</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Appearance.Header" xml:space="preserve">
+    <value>Appearance and behavior</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Appearance.Description" xml:space="preserve">
+    <value>Color, thickness and fade of the laser trail</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Header" xml:space="preserve">
+    <value>Share window</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterActivationShortcut.Description" xml:space="preserve">
+    <value>Shortcut that mirrors the window under the pointer into a window named "Present: ...", with the laser trail drawn into it. Share that window instead, so people see the laser pointer even when you share a single window rather than the whole screen. Press it again over a different window to move the share there, without the person watching having to pick it again.</value>
+    <comment>"Present: ..." is a window title prefix and should keep its formatting.</comment>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterStopShortcut.Header" xml:space="preserve">
+    <value>Stop sharing</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_PresenterStopShortcut.Description" xml:space="preserve">
+    <value>Shortcut that closes the shareable window and ends sharing. It does nothing while nothing is being shared, so it is safe to press at any time.</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Size.Header" xml:space="preserve">
+    <value>Thickness</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Size.Description" xml:space="preserve">
+    <value>Width of the laser trail at its head, in pixels</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_DecayTimeMs.Header" xml:space="preserve">
+    <value>Fade-out duration (ms)</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_DecayTimeMs.Description" xml:space="preserve">
+    <value>How long the trail takes to disappear after the pointer has moved on</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_DecayLength.Header" xml:space="preserve">
+    <value>Trail length</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_DecayLength.Description" xml:space="preserve">
+    <value>How many samples the trail tapers over. Longer values give a longer tail.</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Streamline.Header" xml:space="preserve">
+    <value>Smoothing</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Streamline.Description" xml:space="preserve">
+    <value>Higher values smooth out shaky movement, at the cost of the trail lagging slightly behind the pointer</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Glow.Header" xml:space="preserve">
+    <value>Glow</value>
+  </data>
+  <data name="MouseUtils_LaserPointer_Glow.Description" xml:space="preserve">
+    <value>Adds a soft halo behind the trail so it reads as a beam of light. Turn off for a flat stroke with no halo.</value>
+  </data>
 </root>

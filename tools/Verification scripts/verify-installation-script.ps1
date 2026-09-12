@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 
 <#
 .SYNOPSIS
@@ -415,6 +415,7 @@ function Test-CoreFiles {
         
         # Mouse utilities
         'PowerToys.FindMyMouse.dll',
+        'PowerToys.LaserPointer.dll',
         'PowerToys.MouseHighlighter.dll',
         'PowerToys.MouseJump.dll',
         'PowerToys.MouseJump.Common.dll',
