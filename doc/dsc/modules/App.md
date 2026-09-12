@@ -131,12 +131,10 @@ PowerToys.DSC.exe set --resource 'settings' --module App --input $config
 This example configures PowerToys to run at startup with elevated privileges
 and use dark theme.
 
-```bash
-dsc config set --file app-config.dsc.yaml
-```
+Save the following configuration as `app-config.dsc.config.yaml`:
 
 ```yaml
-# app-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure PowerToys general settings
@@ -151,16 +149,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file app-config.dsc.config.yaml
+```
+
 ### Example 3 - Enable all utilities with WinGet
 
 This example installs PowerToys and enables all available utilities.
 
-```bash
-winget configure winget-enable-all.yaml
-```
+Save the following configuration as `enable-all.dsc.config.winget`:
 
 ```yaml
-# winget-enable-all.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -204,6 +206,12 @@ resources:
             ZoomIt: true
         name: App
         version: 1.0
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure enable-all.dsc.config.winget
 ```
 
 ### Example 4 - Test if specific utilities are enabled

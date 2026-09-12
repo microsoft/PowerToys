@@ -84,12 +84,10 @@ PowerToys.DSC.exe set --resource 'settings' --module MouseJump `
 
 This example sets a larger thumbnail for better visibility.
 
-```bash
-dsc config set --file mousejump-size.dsc.yaml
-```
+Save the following configuration as `mousejump-size.dsc.config.yaml`:
 
 ```yaml
-# mousejump-size.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Mouse Jump thumbnail
@@ -102,17 +100,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousejump-size.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Mouse Jump for multi-monitor
 setups.
 
-```bash
-winget configure winget-mousejump.yaml
-```
+Save the following configuration as `mousejump.dsc.config.winget`:
 
 ```yaml
-# winget-mousejump.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -134,16 +136,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure mousejump.dsc.config.winget
+```
+
 ### Example 4 - Performance-optimized configuration
 
 This example uses a smaller thumbnail for better performance.
 
-```bash
-dsc config set --file mousejump-performance.dsc.yaml
-```
+Save the following configuration as `mousejump-performance.dsc.config.yaml`:
 
 ```yaml
-# mousejump-performance.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Performance-optimized Mouse Jump
@@ -154,6 +160,12 @@ resources:
           ThumbnailSize: small
         name: MouseJump
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousejump-performance.dsc.config.yaml
 ```
 
 ### Example 5 - Large display configuration

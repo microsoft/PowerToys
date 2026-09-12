@@ -121,12 +121,10 @@ PowerToys.DSC.exe set --resource 'settings' --module MouseHighlighter `
 
 This example customizes the animation timing and appearance.
 
-```bash
-dsc config set --file mousehighlighter-animation.dsc.yaml
-```
+Save the following configuration as `mousehighlighter-animation.dsc.config.yaml`:
 
 ```yaml
-# mousehighlighter-animation.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Mouse Highlighter animation
@@ -141,17 +139,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousehighlighter-animation.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure for presentations with WinGet
 
 This example installs PowerToys and configures Mouse Highlighter for
 presentations.
 
-```bash
-winget configure winget-mousehighlighter.yaml
-```
+Save the following configuration as `mousehighlighter.dsc.config.winget`:
 
 ```yaml
-# winget-mousehighlighter.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -177,16 +179,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure mousehighlighter.dsc.config.winget
+```
+
 ### Example 4 - Subtle highlighting
 
 This example configures subtle, less distracting highlights.
 
-```bash
-dsc config set --file mousehighlighter-subtle.dsc.yaml
-```
+Save the following configuration as `mousehighlighter-subtle.dsc.config.yaml`:
 
 ```yaml
-# mousehighlighter-subtle.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Subtle mouse highlighting
@@ -199,6 +205,12 @@ resources:
           HighlightFadeDelayMs: 300
         name: MouseHighlighter
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousehighlighter-subtle.dsc.config.yaml
 ```
 
 ### Example 5 - High visibility for accessibility

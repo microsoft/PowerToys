@@ -83,12 +83,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Workspaces --input $config
 
 This example enables moving existing windows when launching workspaces.
 
-```bash
-dsc config set --file workspaces-behavior.dsc.yaml
-```
+Save the following configuration as `workspaces-behavior.dsc.config.yaml`:
 
 ```yaml
-# workspaces-behavior.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Workspaces window behavior
@@ -102,16 +100,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file workspaces-behavior.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Workspaces.
 
-```bash
-winget configure winget-workspaces.yaml
-```
+Save the following configuration as `workspaces.dsc.config.winget`:
 
 ```yaml
-# winget-workspaces.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -140,16 +142,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure workspaces.dsc.config.winget
+```
+
 ### Example 4 - Multi-monitor setup
 
 This example configures for multi-monitor workspace management.
 
-```bash
-dsc config set --file workspaces-multimonitor.dsc.yaml
-```
+Save the following configuration as `workspaces-multimonitor.dsc.config.yaml`:
 
 ```yaml
-# workspaces-multimonitor.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Multi-monitor configuration
@@ -161,6 +167,12 @@ resources:
           MoveExistingWindows: true
         name: Workspaces
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file workspaces-multimonitor.dsc.config.yaml
 ```
 
 ### Example 5 - Simple hotkey

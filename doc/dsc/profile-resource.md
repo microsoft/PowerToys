@@ -132,12 +132,10 @@ PowerToys.DSC.exe schema --resource 'profile' --module KeyboardManager
 
 ### Example 1 - Deploy remappings with DSC
 
-```bash
-dsc config set --file keyboardmanager-profile.dsc.yaml
-```
+Save the following configuration as `keyboardmanager-profile.dsc.config.yaml`:
 
 ```yaml
-# keyboardmanager-profile.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Deploy key remappings
@@ -159,14 +157,18 @@ resources:
           - { from: "Ctrl+Alt+B", openUri: "https://github.com/microsoft/PowerToys" }
 ```
 
-### Example 2 - Install PowerToys and deploy remappings with WinGet
+Apply the configuration with Microsoft DSC:
 
 ```bash
-winget configure winget-kbm-profile.yaml
+dsc config set --file keyboardmanager-profile.dsc.config.yaml
 ```
 
+### Example 2 - Install PowerToys and deploy remappings with WinGet
+
+Save the following configuration as `kbm-profile.dsc.config.winget`:
+
 ```yaml
-# winget-kbm-profile.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -195,6 +197,12 @@ resources:
           - { from: CapsLock, to: LCtrl }
         shortcuts:
           - { from: "Ctrl+Shift+V", toText: "Best regards,\nContoso IT" }
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure kbm-profile.dsc.config.winget
 ```
 
 ### Example 3 - Capture existing remappings
