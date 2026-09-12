@@ -79,6 +79,13 @@ std::wstring get_json(const std::vector<ProcessResult>& results)
     return root.Stringify().c_str();
 }
 
+CommandResult run_worker_query(const std::vector<std::wstring>& paths, IProcessFinder& finder)
+{
+    auto results = finder.find(paths);
+    Logger::info("Worker enumeration found {} processes", results.size());
+    return { 0, get_json(results), L"worker-query" };
+}
+
 std::wstring get_text(const std::vector<ProcessResult>& results, IStringProvider& strings)
 {
     std::wstringstream ss;

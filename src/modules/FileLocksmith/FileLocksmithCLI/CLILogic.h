@@ -30,3 +30,4 @@ struct IStringProvider
 };
 
 CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IProcessTerminator& terminator, IStringProvider& strings);
+CommandResult run_worker_query(const std::vector<std::wstring>& paths, IProcessFinder& finder);

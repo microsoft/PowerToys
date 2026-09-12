@@ -38,6 +38,7 @@
     <Grid RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="ButtonsRow" Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -84,7 +85,15 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <InfoBar
+            Grid.Row="1"
+            Margin="16,0,16,8"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasQueryError, Mode=OneWay}"
+            Message="{x:Bind ViewModel.QueryErrorMessage, Mode=OneWay}"
+            Severity="Error" />
+
+        <Grid Grid.Row="2">
             <Grid Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
                 <ListView
                     x:Name="ProcessesListView"
@@ -175,7 +184,10 @@
                             <TextBlock x:Uid="Reload" />
                         </ToolTipService.ToolTip>
                     </Button>
-                    <TextBlock x:Uid="EmptyListDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
+                        x:Uid="EmptyListDescription"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="{x:Bind ViewModel.HasQueryError, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
             <ProgressRing
