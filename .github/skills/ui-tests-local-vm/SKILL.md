@@ -14,12 +14,12 @@ guest when clean-profile behavior must be validated.
 The guest is a Hyper-V virtual machine. Nothing runs nested, so the same scaffold works on x64 and on
 Windows on ARM, where nested virtualization is unavailable to any Linux-hosted emulator.
 
-The local correctness gate passes when the **full** suite is green on Windows 10 **and** on Windows 11, in two
-separate VMs. Run Windows 10 Enterprise LTSC 2021 first because it gives the fastest feedback, then
-run the same unfiltered suite on Windows 11. Differences in the shell, compositor, theming, and
-timing break tests that contain nothing Windows 11-specific, and those are exactly the failures
-worth catching locally instead of in CI. On a Windows on ARM host, Windows 11 ARM64 is the only
-practical guest; run it with `-Platform ARM64` and get the Windows 10 half from an x64 host.
+The local correctness gate passes when the **full** suite is green on Windows 10 **and** on
+Windows 11, in two separate VMs. Run Windows 10 Enterprise LTSC 2021 first for the fastest
+feedback, then run the same unfiltered suite on Windows 11. Differences in the shell, compositor,
+theming, and timing break tests that contain nothing Windows 11-specific, and those are exactly
+the failures worth catching locally instead of in CI. On a Windows on ARM host, Windows 11 ARM64
+is the only practical guest; run it with `-Platform ARM64` and get the Windows 10 half from an x64 host.
 
 Start guests with the default resource profile: 4 vCPUs and 8 GB RAM. Get the target suite fully
 green before lowering resources with the `Constrained` profile (1 vCPU and 4 GB RAM).
@@ -238,10 +238,10 @@ starts or exits without status, summarizes TRX, and leaves the persistent VM run
 - Invoke every focused, full-suite, and constrained controller run synchronously. Keep the active
   agent turn attached until the controller returns matching status/TRX evidence; never background
   the controller or end the turn while it runs.
-- Complete the local correctness gate with two green full suites: Windows 10 and Windows 11, in separate VMs. Windows 10 runs first
-  for speed; Windows 11 runs the same unfiltered suite, never a Win11-only subset. Narrow filters are
-  for iteration, not for sign-off. On a Windows on ARM host the ARM64 Windows 11 guest covers the
-  Windows 11 half and the Windows 10 half needs an x64 host.
+- Complete the local correctness gate with two green full suites: Windows 10 and Windows 11, in
+  separate VMs. Windows 10 runs first for speed; Windows 11 runs the same unfiltered suite, never a
+  Win11-only subset. Narrow filters are for iteration, not for sign-off. On a Windows on ARM host
+  the ARM64 Windows 11 guest covers the Windows 11 half and the Windows 10 half needs an x64 host.
 - Establish a fully green correctness baseline with the default (4 vCPU / 8 GB) resources before
   running the same tests under `Constrained` (1 vCPU / 4 GB) resources.
 - For implementation tasks, require both resource profiles and the subsequent pipeline handoff.

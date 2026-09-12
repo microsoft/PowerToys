@@ -48,7 +48,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     public void PrepareTest()
     {
         Assert.IsTrue(FileLocksmithUi.Close(), "A stale File Locksmith window could not be closed before the test.");
-        Assert.IsTrue(ExplorerHelper.CloseFileWindows(), "Stale Explorer file windows could not be closed before the test.");
+        Assert.IsTrue(ExplorerControl.CloseFileWindows(), "Stale Explorer file windows could not be closed before the test.");
 
         // Both handlers register when the runner enables the module; give that a moment to land.
         WaitUntil(() => DefaultTierRegistered() || ClassicHandlerRegistered(), timeoutMS: 30_000);
@@ -59,7 +59,7 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         FileLocksmithUi.Close();
-        ExplorerHelper.CloseFileWindows();
+        ExplorerControl.CloseFileWindows();
 
         foreach (var fixture in fixtures)
         {

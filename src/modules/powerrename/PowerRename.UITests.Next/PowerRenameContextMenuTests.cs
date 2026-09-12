@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Drawing;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -19,10 +18,7 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 [DoNotParallelize]
 public sealed partial class PowerRenameTests : PowerRenameTestBase
 {
-    private const string ExplorerProcessName = "explorer";
-    private const string ModernContextMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
     private const string ModernPackageName = "PowerRenameContextMenu";
-    private const string ShowMoreOptionsCaption = "Show more options";
     private const string ModuleToggleName = "PowerRename";
     private const int ExplorerTimeoutMS = 30_000;
     private const int MenuSurfaceTimeoutMS = 25_000;
@@ -42,7 +38,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         // Capture first: the base cleanup runs last, and by then Explorer is already gone.
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         KeyboardHelper.SendKeys(Key.Esc);
-        CloseExplorerFileWindows();
+        ExplorerControl.CloseFileWindows();
     }
 
     [TestMethod("PowerRename.ContextMenu.EnabledState")]
@@ -146,7 +142,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
             ModernSurfaceAvailable() ? ContextMenuSurface.Modern : ContextMenuSurface.Classic,
             extendedVerbs: false,
             requireEntry: true);
-        var entry = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
+        var entry = ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
         Assert.IsNotNull(entry, $"Explorer did not offer '{ContextMenuCaption}' for the selected files.");
         Step($"Invoking '{ContextMenuCaption}'");
         entry!.Invoke(msPostAction: 500);
@@ -306,7 +302,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         try
         {
             var observation = WaitHelper.WaitForStable(
-                observe: () => FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 250) is not null,
+                observe: () => ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 250) is not null,
                 isMatch: present => present == expected,
                 timeoutMS: 5_000,
                 requiredConsecutiveMatches: expected ? 2 : 8,
@@ -327,7 +323,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         try
         {
             var observation = WaitHelper.WaitForStable(
-                observe: () => ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)),
+                observe: () => ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)),
                 isMatch: captions => captions is not null && HasEntry(captions) == expected,
                 timeoutMS: 5_000,
                 requiredConsecutiveMatches: expected ? 2 : 8,
@@ -383,12 +379,12 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
 
         try
         {
-            var entry = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
+            var entry = ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: MenuSurfaceTimeoutMS);
             Assert.IsNotNull(
                 entry,
                 $"The {surface} Explorer context menu did not show '{ContextMenuCaption}'. " +
                 (surface == ContextMenuSurface.Classic
-                    ? Describe(ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)))
+                    ? Describe(ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)))
                     : string.Empty));
             Assert.IsTrue(ScreenCapture.TryCaptureDesktop(desktopPath), "The desktop could not be captured while the menu was open.");
 
@@ -513,19 +509,18 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
 
     private static bool MenuHasEntry(Session menu, ContextMenuSurface surface) =>
         surface == ContextMenuSurface.Classic
-            ? HasEntry(ClassicContextMenu.TryReadItemCaptions(new IntPtr(menu.WindowHandle)))
-            : FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000) is not null;
+            ? HasEntry(ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)))
+            : ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000) is not null;
 
     private Session? OpenModernMenu(Session explorer)
     {
         TryEnsureExplorerForeground(explorer);
         Step("Opening the tier-1 Explorer context menu");
-        if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
-        {
-            return null;
-        }
-
-        return WaitForMenuWindow(ModernContextMenuClassName, MenuSurfaceTimeoutMS);
+        var menu = ShellMenu.OpenForFocusedControl(explorer, timeoutMS: MenuSurfaceTimeoutMS);
+        return menu is not null && WindowsFinder.ListByApp(ExplorerControl.ProcessName).Any(window =>
+            window.Hwnd == menu.WindowHandle && ShellMenu.IsModernWindow(window))
+            ? menu
+            : null;
     }
 
     /// <summary>
@@ -549,41 +544,10 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
 
         try
         {
-            if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
-            {
-                return null;
-            }
-
-            var surface = WaitForMenuWindow(
-                new[] { ClassicContextMenu.WindowClassName, ModernContextMenuClassName },
-                extendedVerbs ? 4_000 : MenuSurfaceTimeoutMS);
-            if (surface is null)
-            {
-                return null;
-            }
-
-            if (IsClassicMenuWindow(surface))
-            {
-                return surface;
-            }
-
-            var showMore = FindVisibleMenuItem(surface, ShowMoreOptionsCaption, timeoutMS: extendedVerbs ? 2_000 : 8_000);
-            if (showMore is null)
-            {
-                return null;
-            }
-
-            try
-            {
-                showMore.Invoke(msPostAction: 300);
-            }
-            catch (Exception)
-            {
-                // The popup can vanish between the find and the invoke; let the caller reopen it.
-                return null;
-            }
-
-            return WaitForMenuWindow(ClassicContextMenu.WindowClassName, extendedVerbs ? 3_000 : MenuSurfaceTimeoutMS);
+            return ShellMenu.OpenForFocusedControl(
+                explorer,
+                useClassicMenu: true,
+                timeoutMS: extendedVerbs ? 7_000 : MenuSurfaceTimeoutMS);
         }
         finally
         {
@@ -594,84 +558,21 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         }
     }
 
-    private static bool IsClassicMenuWindow(Session menu) =>
-        WindowsFinder.ListAll().Any(window =>
-            window.Hwnd == menu.WindowHandle &&
-            window.ClassName.Equals(ClassicContextMenu.WindowClassName, StringComparison.OrdinalIgnoreCase));
-
-    private static Session? WaitForMenuWindow(string className, int timeoutMS) =>
-        WaitForMenuWindow(new[] { className }, timeoutMS);
-
-    private static Session? WaitForMenuWindow(IReadOnlyList<string> classNames, int timeoutMS) =>
-        WindowsFinder.WaitForWindow(
-            window => classNames.Any(name => name.Equals(ClassicContextMenu.WindowClassName, StringComparison.OrdinalIgnoreCase)
-                ? window.ClassName.Equals(name, StringComparison.OrdinalIgnoreCase)
-                : window.ClassName.Contains(name, StringComparison.OrdinalIgnoreCase)),
-            timeoutMS: timeoutMS,
-            pollIntervalMS: 100);
-
-    private static Element? FindVisibleMenuItem(Session menu, string name, int timeoutMS)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
-        do
-        {
-            try
-            {
-                var item = menu.FindAll<Element>(By.Name(name), timeoutMS: 250)
-                    .FirstOrDefault(element =>
-                        element.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
-                        element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase) &&
-                        element.Width > 0 &&
-                        element.Height > 0 &&
-                        element.Displayed);
-                if (item is not null)
-                {
-                    return item;
-                }
-            }
-            catch (Exception)
-            {
-                // A transient popup can disappear mid-query; keep polling until the deadline.
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return null;
-    }
-
     // ---- Explorer --------------------------------------------------------------------------------
 
     private void PrepareContextMenuTest()
     {
         contextMenuTest = true;
-        Assert.IsTrue(CloseExplorerFileWindows(), "Stale Explorer file windows could not be closed before the test.");
+        Assert.IsTrue(ExplorerControl.CloseFileWindows(), "Stale Explorer file windows could not be closed before the test.");
     }
 
     private Session OpenExplorer(string folderPath, bool forceHandlerRefresh = false)
     {
         EnsureContextMenuHandlersLoaded(forceHandlerRefresh);
-        CloseExplorerFileWindows();
-        var existing = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Select(window => window.Hwnd)
-            .ToHashSet();
+        ExplorerControl.CloseFileWindows();
 
         Step($"Opening Explorer at '{folderPath}'");
-        using (Process.Start(new ProcessStartInfo
-        {
-            FileName = "explorer.exe",
-            Arguments = $"/n,\"{folderPath}\"",
-            UseShellExecute = true,
-        }))
-        {
-        }
-
-        var explorer = WindowsFinder.WaitForWindowByApp(
-            ExplorerProcessName,
-            window => IsExplorerFileWindow(window) && !existing.Contains(window.Hwnd),
-            timeoutMS: ExplorerTimeoutMS);
+        var explorer = ExplorerControl.OpenFolder(folderPath, timeoutMS: ExplorerTimeoutMS);
         Assert.IsNotNull(explorer, $"Explorer did not open '{folderPath}'.");
 
         TryEnsureExplorerForeground(explorer!);
@@ -690,39 +591,12 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
             return;
         }
 
-        explorerRefreshedForRegistration = true;
+        explorerRefreshedForRegistration = false;
         Thread.Sleep(3_000);
-
-        var previous = Process.GetProcessesByName(ExplorerProcessName)
-            .Select(process =>
-            {
-                var id = process.Id;
-                process.Dispose();
-                return id;
-            })
-            .ToHashSet();
-
-        // Only explorer.exe: killing its tree would also stop processes the user launched from it.
-        WindowControl.TryKillProcessByName(ExplorerProcessName);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
-        while (DateTime.UtcNow < deadline)
-        {
-            var current = Process.GetProcessesByName(ExplorerProcessName);
-            var fresh = current.Any(process => !previous.Contains(process.Id));
-            foreach (var process in current)
-            {
-                process.Dispose();
-            }
-
-            if (fresh)
-            {
-                break;
-            }
-
-            Thread.Sleep(500);
-        }
-
+        Assert.IsTrue(
+            ExplorerControl.RestartShell(timeoutMS: ExplorerTimeoutMS),
+            "Explorer did not expose a taskbar in a fresh process after registering the PowerRename context-menu handlers.");
+        explorerRefreshedForRegistration = true;
         Thread.Sleep(2_000);
     }
 
@@ -734,7 +608,7 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
             return explorer;
         }
 
-        var replacement = FindReplacementExplorer(explorer, Path.GetDirectoryName(paths[0])!);
+        var replacement = ExplorerControl.FindReplacementWindow(explorer, Path.GetDirectoryName(paths[0])!);
         if (replacement is not null &&
             ExplorerShell.SetSelectionAndWaitForStable(
                 new IntPtr(replacement.WindowHandle), paths, paths[0], timeoutMS: 12_000, requiredConsecutiveMatches: 4).Succeeded)
@@ -743,21 +617,6 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
         }
 
         return null;
-    }
-
-    private static Session? FindReplacementExplorer(Session explorer, string folderPath)
-    {
-        var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
-        var foreground = WindowControl.GetForegroundWindowHandle().ToInt64();
-        var replacement = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Where(window => window.Hwnd != explorer.WindowHandle)
-            .Where(window => window.Title.Contains(folderName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(window => window.Hwnd == foreground)
-            .FirstOrDefault();
-        return replacement is null
-            ? null
-            : WindowsFinder.WaitForWindow(window => window.Hwnd == replacement.Hwnd, timeoutMS: 2_000, pollIntervalMS: 100);
     }
 
     private void TryEnsureExplorerForeground(Session explorer)
@@ -769,10 +628,4 @@ public sealed partial class PowerRenameTests : PowerRenameTestBase
                 $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
         }
     }
-
-    private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
-        window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
-
-    private static bool CloseExplorerFileWindows() =>
-        WindowControl.TryCloseByApp(ExplorerProcessName, IsExplorerFileWindow, timeoutMS: 10_000);
 }

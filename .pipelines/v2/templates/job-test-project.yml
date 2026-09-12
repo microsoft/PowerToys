@@ -217,7 +217,8 @@ jobs:
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or $selectedModules -contains 'Workspaces.UITests.Next' -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview|CropAndLock|NewPlus' }).Count -gt 0
+      $requiresNewPlus = $allModules -or $selectedModules -contains 'NewPlus.UITests' -or $selectedModules -contains 'NewPlus.UITests.Next'
+      $requiresAuthenticatedSettingsIpc = $allModules -or $requiresNewPlus -or $selectedModules -contains 'Workspaces.UITests.Next' -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview|CropAndLock' }).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -230,7 +231,7 @@ jobs:
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
       }
 
-      if ($requiresModernContextMenu -and ($allModules -or $selectedModules -contains 'NewPlus.UITests')) {
+      if ($requiresModernContextMenu -and $requiresNewPlus) {
         $requiredPackages += 'NewPlusPackage.msix'
       }
 

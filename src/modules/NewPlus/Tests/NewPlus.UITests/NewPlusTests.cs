@@ -52,7 +52,7 @@ public sealed partial class NewPlusTests : UITestBase
         var explorer = OpenExplorer();
         AssertTemplateMenu(explorer, ["Report.txt"]);
         InvokeTemplate(explorer, "Report.txt");
-        AssertCopiedTree(templates, outputFolder);
+        FileSystemAssert.AreDirectoryTreesEqual(templates, outputFolder);
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public sealed partial class NewPlusTests : UITestBase
         var explorer = OpenExplorer();
         AssertTemplateMenu(explorer, ["Project"]);
         InvokeTemplate(explorer, "Project");
-        AssertCopiedTree(templates, outputFolder);
+        FileSystemAssert.AreDirectoryTreesEqual(templates, outputFolder);
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public sealed partial class NewPlusTests : UITestBase
         AssertRootMenu(explorer, expected: false);
         SetModuleEnabled(true);
 
-        AssertCopiedTree(examples, templates);
+        FileSystemAssert.AreDirectoryTreesEqual(examples, templates);
         AssertTemplateMenu(explorer, expectedNames);
     }
 
@@ -128,7 +128,7 @@ public sealed partial class NewPlusTests : UITestBase
         SetDisplayOption(HideExtensionName, "HideFileExtension", true);
         AssertTemplateMenu(explorer, ["Folder.with.dots", "Report"]);
         InvokeTemplate(explorer, "Report");
-        AssertFileContents(Path.Combine(templates, "Report.txt"), Path.Combine(outputFolder, "Report.txt"));
+        FileSystemAssert.AreFilesEqual(Path.Combine(templates, "Report.txt"), Path.Combine(outputFolder, "Report.txt"));
         Assert.IsFalse(File.Exists(Path.Combine(outputFolder, "Report")), "Hiding an extension removed it from the created file.");
 
         SetDisplayOption(HideExtensionName, "HideFileExtension", false);
@@ -139,24 +139,26 @@ public sealed partial class NewPlusTests : UITestBase
     [TestCategory("NewPlus")]
     public void HideStartingDigitsChangesMenuAndCreatedNames()
     {
+        const string unicodeName = "Cafe\u0301-\u6F22-\U0001F680.txt";
+        const string numberedName = "01. " + unicodeName;
         var templates = ChooseNewTemplateFolder();
-        File.WriteAllText(Path.Combine(templates, "01. Report.txt"), "Numbered template");
+        File.WriteAllText(Path.Combine(templates, numberedName), "Numbered Unicode template");
         File.WriteAllText(Path.Combine(templates, "001231.txt"), "Digits are the entire filename");
         var sourceFolder = Directory.CreateDirectory(Path.Combine(templates, "02. Project")).FullName;
         File.WriteAllText(Path.Combine(sourceFolder, "Child.txt"), "Folder contents");
         var explorer = OpenExplorer();
 
-        AssertTemplateMenu(explorer, ["02. Project", "001231.txt", "01. Report.txt"]);
+        AssertTemplateMenu(explorer, ["02. Project", "001231.txt", numberedName]);
         SetDisplayOption(HideDigitsName, "HideStartingDigits", true);
-        AssertTemplateMenu(explorer, ["Project", "001231.txt", "Report.txt"]);
-        InvokeTemplate(explorer, "Report.txt");
-        AssertFileContents(Path.Combine(templates, "01. Report.txt"), Path.Combine(outputFolder, "Report.txt"));
+        AssertTemplateMenu(explorer, ["Project", "001231.txt", unicodeName]);
+        InvokeTemplate(explorer, unicodeName);
+        FileSystemAssert.AreFilesEqual(Path.Combine(templates, numberedName), Path.Combine(outputFolder, unicodeName));
         InvokeTemplate(explorer, "Project");
-        AssertCopiedTree(sourceFolder, Path.Combine(outputFolder, "Project"));
+        FileSystemAssert.AreDirectoryTreesEqual(sourceFolder, Path.Combine(outputFolder, "Project"));
 
         SetDisplayOption(HideDigitsName, "HideStartingDigits", false);
-        AssertTemplateMenu(explorer, ["02. Project", "001231.txt", "01. Report.txt"]);
-        InvokeTemplate(explorer, "01. Report.txt");
-        AssertFileContents(Path.Combine(templates, "01. Report.txt"), Path.Combine(outputFolder, "01. Report.txt"));
+        AssertTemplateMenu(explorer, ["02. Project", "001231.txt", numberedName]);
+        InvokeTemplate(explorer, numberedName);
+        FileSystemAssert.AreFilesEqual(Path.Combine(templates, numberedName), Path.Combine(outputFolder, numberedName));
     }
 }

@@ -204,8 +204,8 @@ Report:
 
 Then run the **same** filter against the Windows 11 guest with `-Platform x64Win11` and report that
 evidence separately. Narrowing the Windows 11 run to Windows 11-specific tests does not satisfy this
-step. The local correctness gate passes only when both suites are fully green; a Windows 10 pass with an unrun or
-red Windows 11 suite is an incomplete result, not a success.
+step. The local correctness gate passes only when both suites are fully green; a Windows 10 pass
+with an unrun or red Windows 11 suite is an incomplete result, not a success.
 
 Once the complete target suite is green, stop the guest, then let the controller restart it with the
 `Constrained` profile (1 vCPU and 4 GB RAM). Pass the guest's config explicitly when one VM root owns

@@ -17,10 +17,10 @@ public sealed partial class NewPlusTests
     private const string HideExtensionName = "Hide the file extension in template names";
     private const string HideDigitsName = "Hide leading digits, spaces, and dots in template filenames";
     private const string OpenTemplatesName = "Open templates";
-    private const string ClassicMenuClass = "#32768";
-    private const string ModernMenuClass = "Microsoft.UI.Content.PopupWindowSiteBridge";
     private const string HandlerKey = @"Software\Classes\Directory\background\ShellEx\ContextMenuHandlers\NewPlusShellExtensionWin10";
     private const int TimeoutMS = 30_000;
+    private const int MenuOpenTimeoutMS = 90_000;
+    private const int MaxMenuEvidencePerTest = 2;
 
     private static readonly string SuiteRoot = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
@@ -31,6 +31,7 @@ public sealed partial class NewPlusTests
     private string caseFolder = string.Empty;
     private string outputFolder = string.Empty;
     private Session settings = null!;
+    private int menuEvidenceCaptures;
 
     public NewPlusTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: [ModuleName])
@@ -46,7 +47,7 @@ public sealed partial class NewPlusTests
         SettingsConfigHelper.UpdateModuleSettings(ModuleName, "{}", root =>
         {
             root["name"] = ModuleName;
-            root["version"] = "0.0.1";
+            root["version"] = "1.0";
             root["properties"] = new JsonObject
             {
                 ["TemplateLocation"] = new JsonObject { ["value"] = initialTemplates },
@@ -61,6 +62,7 @@ public sealed partial class NewPlusTests
     [TestInitialize]
     public void PrepareNewPlusTest()
     {
+        menuEvidenceCaptures = 0;
         Step("Navigating to New+ Settings");
         settings = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
         if (!settings.Has(By.AccessibilityId("NewPlusNavItem"), timeoutMS: 500))
@@ -82,7 +84,7 @@ public sealed partial class NewPlusTests
     public async Task CleanupNewPlusTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        DismissMenus();
+        ShellMenu.Dismiss();
         var picker = WindowsFinder.WaitForWindowByApp(
             "PowerToys.Settings", window => window.ClassName == "#32770", timeoutMS: 500);
         if (picker is not null)
@@ -97,6 +99,7 @@ public sealed partial class NewPlusTests
     public static void RestoreNewPlusState()
     {
         // Stop the shared Runner before restoring bytes; otherwise shutdown can overwrite them.
+        // The inherited ClassCleanup also calls this; the idempotent call here guarantees ordering.
         StopSharedScope();
         try
         {
@@ -114,7 +117,7 @@ public sealed partial class NewPlusTests
 
     private void SetModuleEnabled(bool enabled)
     {
-        DismissMenus();
+        ShellMenu.Dismiss();
         Step($"Setting New+ enabled={enabled} through Settings");
         SetToggle(FindToggle("New+"), enabled);
         WaitForJsonValue(
@@ -132,12 +135,15 @@ public sealed partial class NewPlusTests
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250);
-        Assert.IsTrue(registration.Succeeded, $"Runner did not {(enabled ? "register" : "unregister")} New+'s handler. Last value: {registration.LastObservation}");
+        Assert.IsTrue(
+            registration.Succeeded,
+            $"Runner did not {(enabled ? "register" : "unregister")} New+'s handler. Last value: {registration.LastObservation}. " +
+            "Classic-handler registration requires a Release (NDEBUG) product runtime or ENABLE_REGISTRATION.");
     }
 
     private void SetDisplayOption(string caption, string property, bool enabled)
     {
-        DismissMenus();
+        ShellMenu.Dismiss();
         Step($"Setting {property}={enabled} through Settings");
         SetToggle(FindToggle(caption), enabled);
         WaitForJsonValue(ModuleSettingsPath, root => root?["properties"]?[property]?["value"]?.GetValue<bool>() == enabled, $"{property}={enabled}");
@@ -182,7 +188,7 @@ public sealed partial class NewPlusTests
 
     private string ChooseNewTemplateFolder()
     {
-        DismissMenus();
+        ShellMenu.Dismiss();
         Step($"Creating and selecting a template folder under '{caseFolder}' with the Settings folder picker");
 
         // SHBrowseForFolder blocks its caller until dismissed, including a synchronous UIA Invoke.
@@ -240,8 +246,9 @@ public sealed partial class NewPlusTests
     {
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
         {
+            var packageManager = new Windows.Management.Deployment.PackageManager();
             var registered = WaitHelper.WaitForStable(
-                observe: () => new Windows.Management.Deployment.PackageManager().FindPackagesForUser(string.Empty)
+                observe: () => packageManager.FindPackagesForUser(string.Empty)
                     .Any(package => package.Id.Name == "Microsoft.PowerToys.NewPlusContextMenu"),
                 isMatch: value => value,
                 timeoutMS: TimeoutMS,
@@ -256,17 +263,9 @@ public sealed partial class NewPlusTests
         }
 
         Step("Restarting Explorer once after New+ registration");
-        foreach (var process in Process.GetProcessesByName("explorer"))
-        {
-            using (process)
-            {
-                process.Kill();
-                Assert.IsTrue(process.WaitForExit(10_000), $"Explorer PID {process.Id} did not exit.");
-            }
-        }
-
-        var shell = WindowsFinder.WaitForWindow(window => window.ClassName == "Shell_TrayWnd", timeoutMS: TimeoutMS);
-        Assert.IsNotNull(shell, "Explorer did not restart its taskbar after handler registration.");
+        Assert.IsTrue(
+            ExplorerControl.RestartShell(TimeoutMS, Step),
+            "Explorer did not restart its taskbar in a fresh process after handler registration.");
         explorerRestarted = true;
     }
 
@@ -274,8 +273,8 @@ public sealed partial class NewPlusTests
     {
         CloseExplorerWindows();
         Step($"Opening Explorer at '{outputFolder}'");
-        using var process = Process.Start(new ProcessStartInfo("explorer.exe", $"/n,\"{outputFolder}\"") { UseShellExecute = true });
-        var explorer = WindowsFinder.WaitForWindowByApp("explorer", IsFileWindow, timeoutMS: TimeoutMS);
+
+        var explorer = ExplorerControl.OpenFolder(outputFolder, TimeoutMS);
         Assert.IsNotNull(explorer, "Explorer did not open the output folder.");
         WindowHelper.MaximizeWindow(new IntPtr(explorer.WindowHandle));
         return explorer;
@@ -284,83 +283,95 @@ public sealed partial class NewPlusTests
     private Session OpenRootMenu(Session explorer, bool expectNewPlus)
     {
         var deadline = Stopwatch.StartNew();
-        do
+        int RemainingTimeout(int maximumMS) =>
+            Math.Min(maximumMS, Math.Max(0, MenuOpenTimeoutMS - (int)deadline.ElapsedMilliseconds));
+
+        while (deadline.ElapsedMilliseconds < MenuOpenTimeoutMS)
         {
-            DismissMenus();
+            ShellMenu.Dismiss();
+            var foregroundTimeout = RemainingTimeout(TimeoutMS);
+            if (foregroundTimeout == 0)
+            {
+                break;
+            }
+
             Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(explorer.WindowHandle), TimeoutMS, requiredConsecutiveMatches: 3),
+                WindowControl.WaitForForeground(new IntPtr(explorer.WindowHandle), foregroundTimeout, requiredConsecutiveMatches: 3),
                 $"Explorer did not own foreground: {WindowControl.GetForegroundWindowInfo()}");
+            var viewTimeout = RemainingTimeout(TimeoutMS);
+            if (viewTimeout == 0)
+            {
+                break;
+            }
+
             Step("Opening the Explorer folder-background context menu");
-            var view = explorer.FindAll<Element>(By.Name("Items View"), TimeoutMS)
+            var view = explorer.FindAll<Element>(By.Name("Items View"), viewTimeout)
                 .FirstOrDefault(element => element.ClassName == "UIItemsView" && element.Width > 0 && element.Height > 0);
             Assert.IsNotNull(view, "Explorer did not expose its folder Items View.");
+            var menuTimeout = RemainingTimeout(25_000);
+            if (menuTimeout == 0)
+            {
+                break;
+            }
 
             // The fixtures occupy the top of the view. Click the lower empty area so this is the
             // folder-background menu, not the selected-file menu used by PowerRename.
             MouseHelper.MoveTo(view.X + (view.Width / 2), view.Y + view.Height - 40);
             MouseHelper.RightClick();
-            var menu = WindowsFinder.WaitForWindowByApp(
-                "explorer",
-                window => window.ClassName == (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000) ? ModernMenuClass : ClassicMenuClass),
-                timeoutMS: 25_000);
-            if (menu is not null && FindMenuItem(menu, expectNewPlus ? "New+" : "View") is not null)
+            var menu = ShellMenu.WaitForWindow(
+                OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000) ? ShellMenu.ModernWindowClassName : ShellMenu.ClassicWindowClassName,
+                timeoutMS: menuTimeout,
+                processNameOrId: ExplorerControl.ProcessName);
+            var itemTimeout = RemainingTimeout(3_000);
+            if (itemTimeout == 0)
+            {
+                break;
+            }
+
+            if (menu is not null && ShellMenu.FindVisibleMenuItem(menu, expectNewPlus ? "New+" : "View", itemTimeout, StringComparison.Ordinal) is not null)
             {
                 return menu;
             }
         }
-        while (deadline.ElapsedMilliseconds < 90_000);
 
-        Assert.Fail($"Explorer did not open its background menu{(expectNewPlus ? " with New+" : string.Empty)}. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+        Assert.Fail(
+            $"Explorer did not open its background menu{(expectNewPlus ? " with New+" : string.Empty)} " +
+            $"within the {MenuOpenTimeoutMS}ms retry budget. Foreground: {WindowControl.GetForegroundWindowInfo()}");
         return null!;
     }
 
     private Session OpenTemplateMenu(Session explorer)
     {
         var root = OpenRootMenu(explorer, expectNewPlus: true);
-        var item = FindMenuItem(root, "New+");
+        var item = ShellMenu.FindVisibleMenuItem(root, "New+", comparison: StringComparison.Ordinal);
         Assert.IsNotNull(item, "New+ was missing from the open context menu.");
         Step("Expanding the New+ template submenu");
         item.Invoke(msPostAction: 0);
 
-        // A popup HWND can precede UIA layout, and Explorer can replace it while animating.
-        // Resolve the submenu by its visible content instead of caching the first popup HWND.
-        var ready = WaitHelper.WaitForStable(
-            observe: () =>
-            {
-                foreach (var window in WindowsFinder.ListByApp("explorer").Where(window =>
-                    window.Hwnd != root.WindowHandle && (window.ClassName == ClassicMenuClass || window.ClassName == ModernMenuClass)))
-                {
-                    var candidate = WindowsFinder.WaitForWindow(
-                        current => current.Hwnd == window.Hwnd, timeoutMS: 250, pollIntervalMS: 100);
-                    if (candidate is not null && FindMenuItem(candidate, OpenTemplatesName, timeoutMS: 500) is not null)
-                    {
-                        return candidate;
-                    }
-                }
-
-                return null;
-            },
-            isMatch: submenu => submenu is not null,
+        var submenu = ShellMenu.WaitForSubmenu(
+            root,
+            OpenTemplatesName,
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: 2,
-            pollIntervalMS: 200,
-            shouldRetryException: IsStaleMenuElement);
-        Assert.IsTrue(ready.Succeeded, $"The New+ submenu did not expose a stable, visible Open templates item. Last error: {ready.LastException}");
-        return ready.LastObservation!;
+            comparison: StringComparison.Ordinal);
+        Assert.IsNotNull(submenu, "The New+ submenu did not expose a stable, visible Open templates item.");
+        return submenu;
     }
 
     private void AssertRootMenu(Session explorer, bool expected)
     {
         var menu = OpenRootMenu(explorer, expectNewPlus: expected);
+
+        // Absence needs more stable samples: an enumerating menu can temporarily omit New+.
         var observed = WaitHelper.WaitForStable(
-            observe: () => ReadMenuNames(menu),
+            observe: () => ShellMenu.ReadMenuNames(menu),
             isMatch: names => names is not null && names.Contains("View") && names.Contains("New+") == expected,
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: expected ? 2 : 4,
             pollIntervalMS: 250);
         Assert.IsTrue(observed.Succeeded, $"New+ menu presence should be {expected}; menu: {string.Join(", ", observed.LastObservation ?? [])}");
         AttachMenuEvidence("enabled-" + expected);
-        DismissMenus();
+        ShellMenu.Dismiss();
     }
 
     private void AssertTemplateMenu(Session explorer, string[] expected)
@@ -368,128 +379,64 @@ public sealed partial class NewPlusTests
         var menu = OpenTemplateMenu(explorer);
         var expectedNames = expected.Append(OpenTemplatesName).ToHashSet(StringComparer.Ordinal);
         var observed = WaitHelper.WaitForStable(
-            observe: () => ReadMenuNames(menu),
+            observe: () => ShellMenu.ReadMenuNames(menu),
             isMatch: names => names is not null && names.Count == expectedNames.Count && expectedNames.SetEquals(names),
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250);
         Assert.IsTrue(observed.Succeeded, $"Expected templates [{string.Join(", ", expectedNames)}]; actual menu: [{string.Join(", ", observed.LastObservation ?? [])}].");
         AttachMenuEvidence("templates");
-        DismissMenus();
+        ShellMenu.Dismiss();
     }
 
     private void InvokeTemplate(Session explorer, string caption)
     {
         var menu = OpenTemplateMenu(explorer);
-        var item = FindMenuItem(menu, caption);
+        var item = ShellMenu.FindVisibleMenuItem(menu, caption, comparison: StringComparison.Ordinal);
         Assert.IsNotNull(item, $"Template '{caption}' was not visible in the New+ submenu.");
         Step($"Invoking template '{caption}'");
         item.Invoke(msPostAction: 0);
         Assert.IsTrue(
             explorer.WaitFor(
-                () => !WindowsFinder.ListByApp("explorer").Any(window => window.ClassName == ClassicMenuClass || window.ClassName == ModernMenuClass),
+                () => !WindowsFinder.ListByApp(ExplorerControl.ProcessName).Any(ShellMenu.IsMenuWindow),
                 TimeoutMS),
             "The context menu did not close after creating the template.");
     }
 
-    private static Element? FindMenuItem(Session menu, string name, int timeoutMS = 3_000)
-    {
-        // FindAll returns as soon as the name exists, even when its geometry is not ready yet.
-        var ready = WaitHelper.WaitForStable(
-            observe: () => menu.FindAll<Element>(By.Name(name), timeoutMS: 0)
-                .FirstOrDefault(item => item.Name == name && item.ControlType == "MenuItem" && item.Width > 0 && item.Height > 0),
-            isMatch: item => item is not null,
-            timeoutMS: timeoutMS,
-            pollIntervalMS: 100,
-            shouldRetryException: IsStaleMenuElement);
-        return ready.Succeeded ? ready.LastObservation : null;
-    }
-
-    private static bool IsStaleMenuElement(Exception exception) =>
-        exception is AssertFailedException && exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase);
-
-    private static IReadOnlyList<string> ReadMenuNames(Session menu)
-    {
-        var names = new List<string>();
-        CollectMenuNames(menu.Inspect(depth: 12, hideOffscreen: true), names);
-        return names;
-    }
-
-    private static void CollectMenuNames(JsonElement node, List<string> names)
-    {
-        if (node.ValueKind == JsonValueKind.Object)
-        {
-            if (node.TryGetProperty("type", out var type) && type.GetString() == "MenuItem" &&
-                node.TryGetProperty("name", out var name) && !string.IsNullOrEmpty(name.GetString()))
-            {
-                names.Add(name.GetString()!);
-            }
-
-            foreach (var property in node.EnumerateObject())
-            {
-                if (property.Value.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
-                {
-                    CollectMenuNames(property.Value, names);
-                }
-            }
-        }
-        else if (node.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var child in node.EnumerateArray())
-            {
-                CollectMenuNames(child, names);
-            }
-        }
-    }
-
     private void AttachMenuEvidence(string label)
     {
-        // MSTest removes its deployment directory after a green run, even for attached files.
-        var resultsRoot = Directory.GetParent(TestContext.TestRunDirectory!)!.FullName;
-        var evidence = Directory.CreateDirectory(Path.Combine(resultsRoot, "NewPlusEvidence")).FullName;
-        var path = Path.Combine(evidence, $"newplus-{label}-{Guid.NewGuid():N}.png");
-        Assert.IsTrue(ScreenCapture.TryCaptureDesktop(path), "Could not capture the visible New+ menu.");
-        TestContext.AddResultFile(path);
-    }
-
-    private static void AssertCopiedTree(string source, string destination)
-    {
-        var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories);
-        var directories = Directory.GetDirectories(source, "*", SearchOption.AllDirectories);
-        var copied = WaitHelper.WaitForStable(
-            observe: () => Directory.Exists(destination) &&
-                directories.All(path => Directory.Exists(Path.Combine(destination, Path.GetRelativePath(source, path)))) &&
-                files.All(path => File.Exists(Path.Combine(destination, Path.GetRelativePath(source, path)))),
-            isMatch: value => value,
-            timeoutMS: TimeoutMS,
-            requiredConsecutiveMatches: 2,
-            pollIntervalMS: 200);
-        Assert.IsTrue(copied.Succeeded, $"New+ did not copy the complete template tree from '{source}' to '{destination}'.");
-        CollectionAssert.AreEquivalent(
-            files.Select(path => Path.GetRelativePath(source, path)).ToArray(),
-            Directory.GetFiles(destination, "*", SearchOption.AllDirectories).Select(path => Path.GetRelativePath(destination, path)).ToArray(),
-            "The created file inventory differs from the template.");
-        CollectionAssert.AreEquivalent(
-            directories.Select(path => Path.GetRelativePath(source, path)).ToArray(),
-            Directory.GetDirectories(destination, "*", SearchOption.AllDirectories).Select(path => Path.GetRelativePath(destination, path)).ToArray(),
-            "The created directory inventory differs from the template.");
-        foreach (var file in files)
+        if (menuEvidenceCaptures >= MaxMenuEvidencePerTest)
         {
-            AssertFileContents(file, Path.Combine(destination, Path.GetRelativePath(source, file)));
+            Step($"Skipping supplementary menu capture: the {MaxMenuEvidencePerTest}-image per-test budget is exhausted.");
+            return;
         }
-    }
 
-    private static void AssertFileContents(string source, string destination)
-    {
-        var expected = File.ReadAllBytes(source);
-        var copied = WaitHelper.WaitForStable(
-            observe: () => File.Exists(destination) ? File.ReadAllBytes(destination) : null,
-            isMatch: bytes => bytes is not null && expected.SequenceEqual(bytes),
-            timeoutMS: TimeoutMS,
-            requiredConsecutiveMatches: 2,
-            pollIntervalMS: 200,
-            shouldRetryException: exception => exception is IOException);
-        Assert.IsTrue(copied.Succeeded, $"New+ did not create '{destination}' with the exact contents of '{source}'.");
+        menuEvidenceCaptures++;
+        try
+        {
+            // MSTest removes its deployment directory after a green run, even for attached files.
+            var runDirectory = TestContext.TestRunDirectory;
+            var resultsRoot = string.IsNullOrEmpty(runDirectory) ? null : Directory.GetParent(runDirectory)?.FullName;
+            if (resultsRoot is null)
+            {
+                resultsRoot = Path.GetTempPath();
+                Step($"No test-run parent directory is available; writing menu evidence under '{resultsRoot}'.");
+            }
+
+            var evidence = Directory.CreateDirectory(Path.Combine(resultsRoot, "NewPlusEvidence")).FullName;
+            var path = Path.Combine(evidence, $"newplus-{label}-{Guid.NewGuid():N}.png");
+            if (!ScreenCapture.TryCaptureDesktop(path))
+            {
+                Step($"Supplementary menu capture was unavailable for '{label}'.");
+                return;
+            }
+
+            TestContext.AddResultFile(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            Step($"Could not attach supplementary menu evidence for '{label}': {ex.Message}");
+        }
     }
 
     private static string GetSettingsExecutable()
@@ -509,16 +456,8 @@ public sealed partial class NewPlusTests
         }
     }
 
-    private static bool IsFileWindow(WindowsFinder.WindowInfo window) => window.ClassName == "CabinetWClass";
-
     private static void CloseExplorerWindows() =>
-        Assert.IsTrue(WindowControl.TryCloseByApp("explorer", IsFileWindow, timeoutMS: 10_000), "Explorer file windows did not close.");
-
-    private static void DismissMenus()
-    {
-        KeyboardHelper.SendKeys(Key.Esc);
-        KeyboardHelper.SendKeys(Key.Esc);
-    }
+        Assert.IsTrue(ExplorerControl.CloseFileWindows(), "Explorer file windows did not close.");
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 }

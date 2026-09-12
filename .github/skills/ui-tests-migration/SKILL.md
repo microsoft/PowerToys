@@ -30,8 +30,6 @@ Use this skill when the task is to:
 - **Validate a new or migrated suite in a local Windows VM** through an unattended
   build/package/deploy/run/TRX/diagnose loop. Use a retained VM for fast iteration and a restored
   baseline checkpoint when clean-profile behavior matters.
-10. **[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md)** — the mandatory post-local handoff
-  for implementation tasks: preflight, scoped commit/push, exact-revision CI, and terminal sign-off.
 
 This skill is the *how*: the framework differences, the API mapping, the project scaffolding, the
 naming rules, the recurring PowerToys test recipes, and the build/validate loop. The *what* (which
@@ -113,6 +111,8 @@ queueing, synchronous waiting, and the three-run stabilization limit.
   scaffold or reuse a persistent Hyper-V VM, run as a true standard user, refresh only
   changed payloads, iterate through durable TRX/evidence, and restore or recreate the baseline for
   clean-profile validation.
+10. **[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md)** — the mandatory post-local handoff
+  for implementation tasks: preflight, scoped commit/push, exact-revision CI, and terminal sign-off.
 
 ## Pick your scenario
 
