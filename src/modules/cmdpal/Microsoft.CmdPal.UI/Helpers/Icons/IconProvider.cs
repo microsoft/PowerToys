@@ -48,12 +48,14 @@ public static partial class IconProvider
                     iconData,
                     args.Scale,
                     args.Diagnostics,
-                    args),
+                    args,
+                    args.Theme),
                 IconInfoViewModel iconInfo => await service.GetIconSource(
                     args.Theme == Microsoft.UI.Xaml.ElementTheme.Light ? iconInfo.Light : iconInfo.Dark,
                     args.Scale,
                     args.Diagnostics,
-                    args),
+                    args,
+                    args.Theme),
                 _ => null,
             };
         }
