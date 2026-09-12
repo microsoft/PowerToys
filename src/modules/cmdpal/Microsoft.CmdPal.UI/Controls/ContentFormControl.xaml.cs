@@ -70,8 +70,10 @@ public sealed partial class ContentFormControl : UserControl
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+
+        // Fix Issue #49435: seed the renderer's host config so the very first
+        // render already matches the current theme.
+        UpdateRendererTheme();
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".
@@ -81,8 +83,30 @@ public sealed partial class ContentFormControl : UserControl
             _renderer.OverrideStyles = CardOverrideStyles;
         }
 
-        // TODO in the future, we should handle ActualThemeChanged and replace
-        // our rendered card with one for that theme. But today is not that day
+        // Fix Issue #49435: re-render the card whenever the effective theme flips,
+        // instead of leaving the previous theme's colors baked into the visual tree.
+        this.ActualThemeChanged += OnActualThemeChanged;
+    }
+
+    private void UpdateRendererTheme()
+    {
+        var lightTheme = ActualTheme == ElementTheme.Light;
+        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+    }
+
+    private void OnActualThemeChanged(FrameworkElement sender, object args)
+    {
+        // _renderer is shared by every ContentFormControl, so re-point its HostConfig
+        // on each theme change. That's safe because ActualThemeChanged fires on every
+        // element in the tree, so each live control re-renders itself immediately
+        // below with the same theme — nobody is left reading a stale HostConfig.
+        UpdateRendererTheme();
+
+        var card = _adaptiveCard;
+        if (card is not null)
+        {
+            RenderCard(card);
+        }
     }
 
     private void AttachViewModel(ContentFormViewModel? vm)
@@ -123,10 +147,20 @@ public sealed partial class ContentFormControl : UserControl
         }
     }
 
-    private void DisplayCard(AdaptiveCardParseResult result)
+    private void DisplayCard(AdaptiveCardParseResult result) => RenderCard(result.AdaptiveCard);
+
+    /// <summary>
+    /// Renders <paramref name="card"/> into ContentGrid, replacing whatever was
+    /// rendered before it. Shared by the initial/view-model-driven render and by
+    /// the theme-change re-render so the two can't drift apart.
+    /// </summary>
+    private void RenderCard(AdaptiveCard card)
     {
-        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        _adaptiveCard = result.AdaptiveCard;
+        DetachRenderedCard();
+
+        _adaptiveCard = card;
+        _renderedCard = _renderer.RenderAdaptiveCard(card);
+
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
         {
@@ -143,6 +177,27 @@ public sealed partial class ContentFormControl : UserControl
         }
 
         _renderedCard.Action += Rendered_Action;
+    }
+
+    /// <summary>
+    /// Unhooks the handlers on the currently rendered card, so a card that's about
+    /// to be dropped from the tree can't keep raising events against this control.
+    /// </summary>
+    private void DetachRenderedCard()
+    {
+        if (_renderedCard is null)
+        {
+            return;
+        }
+
+        if (_renderedCard.FrameworkElement is not null)
+        {
+            _renderedCard.FrameworkElement.KeyDown -= OnFormKeyDown;
+            _renderedCard.FrameworkElement.Loaded -= OnFrameworkElementLoaded;
+            _renderedCard.FrameworkElement.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+        }
+
+        _renderedCard.Action -= Rendered_Action;
     }
 
     private void OnFrameworkElementLayoutUpdated(object? sender, object e)
