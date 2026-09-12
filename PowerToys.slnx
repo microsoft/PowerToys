@@ -930,6 +930,10 @@
   <Folder Name="/modules/New+/">
     <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu.win10/NewPlus.ShellExtension.win10.vcxproj" Id="0db0f63a-d2f8-4da3-a650-2d0b8724218e" />
     <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu/NewShellExtensionContextMenu.vcxproj" Id="8acb33d9-c95b-47d4-8363-9731ee0930a0" />
+    <Project Path="src/modules/NewPlus/Tests/NewPlus.UITests/NewPlus.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/Peek/">
     <Project Path="src/modules/peek/Peek.Common/Peek.Common.csproj">

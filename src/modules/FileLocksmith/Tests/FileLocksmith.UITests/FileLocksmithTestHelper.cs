@@ -23,7 +23,7 @@ internal static class FileLocksmithConstants
     public const string ContextMenuCaption = "Unlock with File Locksmith";
 
     /// <summary>Sibling PowerToys command used to prove the menu itself still renders.</summary>
-    public const string PowerRenameContextMenuCaption = "PowerRename";
+    public const string PowerRenameContextMenuCaption = "Rename with PowerRename";
 
     public const string WindowTitle = "File Locksmith";
     public const string ElevatedWindowTitle = "Administrator: File Locksmith";

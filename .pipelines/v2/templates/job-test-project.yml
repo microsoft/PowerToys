@@ -215,9 +215,35 @@ jobs:
       }
       $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
+      $newPlusModules = @(
+        'NewPlus.UITests',
+        'NewPlus.UITests.Next'
+      )
+      # Match exact project stems so unrelated names cannot opt into companion signing.
+      $authenticatedSettingsIpcModules = @(
+        'AdvancedPaste-UITests',
+        'AdvancedPaste.UITests.Next',
+        'ColorPicker.UITests',
+        'CropAndLock.UITests',
+        'HostsEditor.UITests',
+        'Hosts.UITests.Next',
+        'MouseUtils.UITests',
+        'MouseUtils.UITests.Next',
+        'PowerAccent.UITests',
+        'PowerRename.UITests',
+        'PowerRename.UITests.Next',
+        'RegistryPreview.UITests',
+        'Workspaces.UITests.Next'
+      ) + $newPlusModules
+
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or $selectedModules -contains 'Workspaces.UITests.Next' -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview|CropAndLock|AdvancedPaste' }).Count -gt 0
+      $requiresNewPlus = $allModules -or @(
+        $selectedModules | Where-Object { $_ -in $newPlusModules }
+      ).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @(
+        $selectedModules | Where-Object { $_ -in $authenticatedSettingsIpcModules }
+      ).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -228,6 +254,10 @@ jobs:
 
       if ($requiresModernContextMenu -and $requiresPowerRename) {
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
+      }
+
+      if ($requiresModernContextMenu -and $requiresNewPlus) {
+        $requiredPackages += 'NewPlusPackage.msix'
       }
 
       if ($allModules -or @($selectedModules | Where-Object { $_ -match 'CropAndLock' }).Count -gt 0) {
