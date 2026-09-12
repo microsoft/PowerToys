@@ -940,6 +940,7 @@ namespace AdvancedPaste.ViewModels
                 AIServiceType.Google => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteGoogleValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
                 AIServiceType.Ollama => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOllamaValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
                 AIServiceType.FoundryLocal => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Anthropic => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAnthropicValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
                 _ => true, // Allow unknown types by default
             };
         }
