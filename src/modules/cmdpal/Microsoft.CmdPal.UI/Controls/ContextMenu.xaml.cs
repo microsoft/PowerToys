@@ -113,14 +113,30 @@ public sealed partial class ContextMenu : UserControl,
         ViewModel.UnhookCommandBar();
     }
 
-    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
+    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation, bool resetContextMenu = true)
     {
         _isOpening = true;
 
         ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
-        ViewModel.ResetContextMenu();
+        if (resetContextMenu)
+        {
+            ViewModel.ResetContextMenu();
+        }
 
         UpdateUiForStackChange();
+    }
+
+    internal ContextKeybindingResult? TryInvokeKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    {
+        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key);
+        if (result is ContextKeybindingResult.Hide or ContextKeybindingResult.KeepOpen)
+        {
+            // A submenu shortcut changes the context stack before the flyout opens. Keep the
+            // standalone menu's selection/filter state in step with that new stack.
+            UpdateUiForStackChange();
+        }
+
+        return result;
     }
 
     /// <summary>
