@@ -149,6 +149,7 @@ internal static class ModuleEnablementService
         "MouseWithoutBorders" => "ConfigureEnabledUtilityMouseWithoutBorders",
         "NewPlus" => "ConfigureEnabledUtilityNewPlus",
         "Peek" => "ConfigureEnabledUtilityPeek",
+        "PowerDisplay" => "ConfigureEnabledUtilityPowerDisplay",
         "PowerRename" => "ConfigureEnabledUtilityPowerRename",
         "PowerToys Run" => "ConfigureEnabledUtilityPowerLauncher",
         "QuickAccent" => "ConfigureEnabledUtilityQuickAccent",

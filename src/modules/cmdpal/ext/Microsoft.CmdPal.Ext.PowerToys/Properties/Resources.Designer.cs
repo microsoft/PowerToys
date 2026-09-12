@@ -1068,6 +1068,140 @@ namespace PowerToysExtension.Properties {
             }
         }
         
+        internal static string PowerDisplay_Apply_ArgumentError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_ArgumentError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_CancelledError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_CancelledError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_InternalError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_InternalError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_InvalidResponseError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_InvalidResponseError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_MissingCliError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_MissingCliError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_Processed_Format {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_Processed_Format", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_ProcessError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_ProcessError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_ProviderUnavailableError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_ProviderUnavailableError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Apply_TimeoutError {
+            get { return ResourceManager.GetString("PowerDisplay_Apply_TimeoutError", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_DisplayName {
+            get { return ResourceManager.GetString("PowerDisplay_DisplayName", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Argument {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Argument", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Cancelled {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Cancelled", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Internal {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Internal", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_InvalidResponse {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_InvalidResponse", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_MissingCli {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_MissingCli", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Process {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Process", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_ProviderUnavailable {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_ProviderUnavailable", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Timeout {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Timeout", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_LoadError_Title {
+            get { return ResourceManager.GetString("PowerDisplay_LoadError_Title", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_NoProfiles_Subtitle {
+            get { return ResourceManager.GetString("PowerDisplay_NoProfiles_Subtitle", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_NoProfiles_Title {
+            get { return ResourceManager.GetString("PowerDisplay_NoProfiles_Title", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_Modified_Format {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_Modified_Format", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_ModifiedUnknown {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_ModifiedUnknown", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_FallbackName {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_FallbackName", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_Loading {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_Loading", resourceCulture); }
+        }
+        internal static string PowerDisplay_Profile_DetailsUnavailable {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_DetailsUnavailable", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_MonitorCount_Format {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_MonitorCount_Format", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_OneMonitor {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_OneMonitor", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profile_Title_Format {
+            get { return ResourceManager.GetString("PowerDisplay_Profile_Title_Format", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profiles_Subtitle {
+            get { return ResourceManager.GetString("PowerDisplay_Profiles_Subtitle", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Profiles_Title {
+            get { return ResourceManager.GetString("PowerDisplay_Profiles_Title", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Retry {
+            get { return ResourceManager.GetString("PowerDisplay_Retry", resourceCulture); }
+        }
+        internal static string PowerDisplay_Refresh {
+            get { return ResourceManager.GetString("PowerDisplay_Refresh", resourceCulture); }
+        }
+
+        internal static string PowerDisplay_Settings_Subtitle {
+            get { return ResourceManager.GetString("PowerDisplay_Settings_Subtitle", resourceCulture); }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Open PowerRename settings.
         /// </summary>
