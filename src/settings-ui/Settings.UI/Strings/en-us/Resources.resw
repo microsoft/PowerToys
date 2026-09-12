@@ -1028,6 +1028,24 @@ opera.exe</value>
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
+  <data name="General_SettingsRestorePreview_Title" xml:space="preserve">
+    <value>Review settings restore</value>
+  </data>
+  <data name="General_SettingsRestorePreview_Confirm" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="General_SettingsRestorePreview_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="General_SettingsRestorePreview_Excluded" xml:space="preserve">
+    <value>Excluded</value>
+  </data>
+  <data name="General_SettingsRestorePreview_Restart" xml:space="preserve">
+    <value>PowerToys will restart after the restore.</value>
+  </data>
+  <data name="General_SettingsRestorePreview_NoRestart" xml:space="preserve">
+    <value>PowerToys will not restart after the restore.</value>
+  </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectFolder.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Select folder</value>
   </data>
