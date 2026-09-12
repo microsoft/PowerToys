@@ -891,6 +891,21 @@ void LaserPointerOverlay::UpdatePenCapture(uint64_t nowMs)
     SetWindowLongPtr(m_hwnd, GWL_EXSTYLE, capture ? (exStyle & ~WS_EX_TRANSPARENT) : (exStyle | WS_EX_TRANSPARENT));
 }
 
+// A window that actually shows on screen. The z-order is full of windows that do not:
+// tooltips, GDI+ hooks, message-only and broadcast windows, and windows cloaked onto a
+// background virtual desktop. They hold slots without covering anything, so neither the
+// occlusion test nor the z-order anchor below should count them.
+static bool IsOnScreenWindow(HWND window) noexcept
+{
+    if (window == nullptr || !IsWindowVisible(window) || IsIconic(window))
+    {
+        return false;
+    }
+
+    BOOL cloaked = FALSE;
+    return !(SUCCEEDED(DwmGetWindowAttribute(window, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked);
+}
+
 // The border belongs to the window being shared, so it should be covered when that
 // window is. Sitting at the top of the z-order made it hover over everything, which
 // reads as a bug rather than an indicator. Only the trail needs to be above all windows.
@@ -922,8 +937,13 @@ void LaserPointerOverlay::UpdateOverlayZOrder(bool trailVisible, uint64_t nowMs)
     // SetWindowPos places the window *after* the one it is given, so passing the target
     // would bury the border behind it. What is wanted is the slot the target itself
     // occupies, which means inserting after whatever currently sits above it.
+    // Anchoring on whatever happens to sit immediately above the target is not enough:
+    // that is usually an invisible helper window, and those are ordered arbitrarily, so
+    // inserting relative to one dropped the overlay above the window covering the shared
+    // one - the border then painted over it until the next refresh happened to pick a
+    // better anchor. Only windows that are actually on screen make a meaningful anchor.
     HWND above = GetWindow(m_presenter.Target(), GW_HWNDPREV);
-    while (above != nullptr && (above == m_hwnd || above == m_hwndOwner))
+    while (above != nullptr && (above == m_hwnd || above == m_hwndOwner || !IsOnScreenWindow(above)))
     {
         above = GetWindow(above, GW_HWNDPREV);
     }
@@ -1056,16 +1076,7 @@ bool LaserPointerOverlay::TargetMostlyCovered(uint64_t nowMs) noexcept
     long long covered = 0;
     for (HWND above = GetWindow(target, GW_HWNDPREV); above != nullptr; above = GetWindow(above, GW_HWNDPREV))
     {
-        if (above == m_hwnd || above == m_hwndOwner || !IsWindowVisible(above) || IsIconic(above))
-        {
-            continue;
-        }
-
-        // A cloaked window occupies a z-order slot without being on screen - a background
-        // virtual desktop, or a suspended app. Counting one as an occluder would hide the
-        // border for a window nothing is actually covering.
-        BOOL cloaked = FALSE;
-        if (SUCCEEDED(DwmGetWindowAttribute(above, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked)
+        if (above == m_hwnd || above == m_hwndOwner || !IsOnScreenWindow(above))
         {
             continue;
         }
