@@ -6,10 +6,15 @@
 
 - [ ] Closes: #xxx
 <!--  - [ ] Closes: #yyy (add separate lines for additional resolved issues) -->
+- [ ] **Issue and scope:** The linked issue exists, the scope has been discussed, and larger work has an agreed spec
 - [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [ ] **Atomic change:** This PR contains only the agreed issue and uses a feature branch
 - [ ] **Tests:** Added/updated and all pass
+- [ ] **Build:** The affected project builds successfully locally
+- [ ] **Skipped validation:** Any skipped build or test is explained below
 - [ ] **Localization:** All end-user-facing strings can be localized
 - [ ] **Dev docs:** Added/updated
+- [ ] **Change log:** The applicable entry was added to [the project wiki index](../docs/wiki/README.md)
 - [ ] **New binaries:** Added on the required places
    - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
    - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder

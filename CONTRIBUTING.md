@@ -6,6 +6,19 @@ Below is our guidance for reporting issues, proposing new features, and submitti
 2. There has been a conversation.
 3. There is agreement on the problem, the fit for PowerToys, and the solution to the problem (implementation).
 
+## Repository contribution workflow
+
+This repository follows the same issue-first workflow for changes made in this fork:
+
+1. Search for an existing issue, or open one before starting implementation.
+2. Describe the problem, user scenario, proposed scope, and validation plan in the issue.
+3. Discuss the approach with the maintainers. Larger changes should have an agreed spec before development begins.
+4. Work on an atomic branch and keep the change focused on the agreed issue.
+5. Build and test the affected project locally before opening a pull request. Record any skipped validation and why.
+6. Open a pull request that links the issue, explains the implementation, and includes the validation performed.
+
+Use the [developer documentation](doc/devdocs/readme.md) for setup, build, test, and coding guidance. Record each repository change in the [project wiki index](docs/wiki/README.md).
+
 ## Filing an issue
 
 **Importance of Filing an Issue First**
