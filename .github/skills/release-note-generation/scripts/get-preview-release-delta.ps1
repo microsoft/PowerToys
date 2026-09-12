@@ -195,6 +195,57 @@ function New-IdentitySet {
     return ,$set
 }
 
+function Get-HistoryPrIdentitySet {
+    param([Parameter(Mandatory)][string]$Commit)
+
+    $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($subject in @(Invoke-Git log --format=%s $Commit)) {
+        $prNumber = Get-SubjectPrNumber -Subject ([string]$subject)
+        if ($prNumber) {
+            [void]$set.Add("pr:$prNumber")
+        }
+    }
+    return ,$set
+}
+
+function Get-EquivalentCommitSet {
+    param(
+        [Parameter(Mandatory)][string]$Upstream,
+        [Parameter(Mandatory)][string]$Head
+    )
+
+    $set = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($line in @(Invoke-Git cherry $Upstream $Head)) {
+        if ([string]$line -match "^-\s+([0-9a-fA-F]{40})$") {
+            [void]$set.Add($matches[1])
+        }
+    }
+    return ,$set
+}
+
+function Test-PromotionMerge {
+    param(
+        [Parameter(Mandatory)]$Record,
+        [Parameter(Mandatory)][string]$OtherTip
+    )
+
+    if ($Record.patchId) {
+        return $false
+    }
+
+    $parents = @(([string](Invoke-Git show -s --format=%P $Record.sha)).Trim() -split "\s+" | Where-Object { $_ })
+    if ($parents.Count -lt 2) {
+        return $false
+    }
+
+    foreach ($parent in $parents) {
+        if (Test-Ancestor -Ancestor $parent -Descendant $OtherTip) {
+            return $true
+        }
+    }
+    return $false
+}
+
 function Resolve-CrossSidePatchIdentities {
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Left,
@@ -274,6 +325,32 @@ Resolve-CrossSidePatchIdentities -Left $targetRecords -Right $previousRecords
 
 $previousIdentities = New-IdentitySet -Records $previousRecords
 $targetIdentities = New-IdentitySet -Records $targetRecords
+
+if ($deltaMode -eq "branch-transition") {
+    $previousHistoryPrIdentities = Get-HistoryPrIdentitySet -Commit $previousSha
+    $targetHistoryPrIdentities = Get-HistoryPrIdentitySet -Commit $targetSha
+    foreach ($identity in $previousHistoryPrIdentities) {
+        [void]$previousIdentities.Add($identity)
+    }
+    foreach ($identity in $targetHistoryPrIdentities) {
+        [void]$targetIdentities.Add($identity)
+    }
+
+    $previousEquivalentCommits = Get-EquivalentCommitSet -Upstream $targetSha -Head $previousSha
+    $targetEquivalentCommits = Get-EquivalentCommitSet -Upstream $previousSha -Head $targetSha
+    foreach ($record in $previousRecords) {
+        if ($previousEquivalentCommits.Contains([string]$record.sha) -or
+            (Test-PromotionMerge -Record $record -OtherTip $targetSha)) {
+            [void]$targetIdentities.Add([string]$record.identity)
+        }
+    }
+    foreach ($record in $targetRecords) {
+        if ($targetEquivalentCommits.Contains([string]$record.sha) -or
+            (Test-PromotionMerge -Record $record -OtherTip $previousSha)) {
+            [void]$previousIdentities.Add([string]$record.identity)
+        }
+    }
+}
 
 $addedPrs = Get-PrOutput -Records $targetRecords -OtherSide $previousIdentities
 $removedPrs = if ($deltaMode -eq "branch-transition") {
