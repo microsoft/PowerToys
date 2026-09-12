@@ -121,14 +121,7 @@ internal abstract partial class OnLoadBasePage : Page
             handlers = InternalItemsChanged;
         }
 
-        try
-        {
-            // TODO #181 - This is the same thing that BaseObservable has to deal with.
-            handlers?.Invoke(this, new ItemsChangedEventArgs(totalItems));
-        }
-        catch
-        {
-        }
+        EventHelpers.Raise(handlers, this, new ItemsChangedEventArgs(totalItems));
     }
 
     private (Exception Exception, bool Loading)? ReconcileLoadState()
