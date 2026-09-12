@@ -1,0 +1,33 @@
+[
+  {
+    "background": {
+      "color": {
+        "a": 255,
+        "b": 215,
+        "g": 120,
+        "r": 0
+      },
+      "hasValue": true
+    },
+    "foreground": {
+      "color": {
+        "a": 255,
+        "b": 255,
+        "g": 255,
+        "r": 255
+      },
+      "hasValue": true
+    },
+    "text": "New",
+    "toolTip": "Recently added"
+  },
+  {
+    "background": {
+      "hasValue": false
+    },
+    "foreground": {
+      "hasValue": false
+    },
+    "text": "Beta"
+  }
+]

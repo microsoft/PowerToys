@@ -1,0 +1,18 @@
+{
+  "accentColor": {
+    "color": {
+      "a": 255,
+      "b": 16,
+      "g": 124,
+      "r": 16
+    },
+    "hasValue": true
+  },
+  "displayName": "List Page",
+  "id": "page-list",
+  "name": "List Page",
+  "pageType": "listPage",
+  "placeholderText": "Search...",
+  "showDetails": true,
+  "title": "List Page"
+}
