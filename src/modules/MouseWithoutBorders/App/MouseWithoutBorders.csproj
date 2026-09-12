@@ -206,6 +206,8 @@
     <Content Include="Icon\yes_button_hover.png" />
     <Content Include="Icon\yes_button_normal.png" />
     <Content Include="Logo.ico" />
+    <Content Include="LogoWhite.ico" CopyToOutputDirectory="PreserveNewest" Condition="Exists('LogoWhite.ico')" />
+    <Content Include="LogoDark.ico" CopyToOutputDirectory="PreserveNewest" Condition="Exists('LogoDark.ico')" />
   </ItemGroup>
   <ItemGroup>
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
