@@ -654,6 +654,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EnableAudibleFeedback
+        {
+            get => settings.Properties.EnableAudibleFeedback;
+            set
+            {
+                if (settings.Properties.EnableAudibleFeedback != value)
+                {
+                    settings.Properties.EnableAudibleFeedback = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool EnableOpeningSound
+        {
+            get => settings.Properties.EnableOpeningSound;
+            set
+            {
+                if (settings.Properties.EnableOpeningSound != value)
+                {
+                    settings.Properties.EnableOpeningSound = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public bool EnableClosingSound
+        {
+            get => settings.Properties.EnableClosingSound;
+            set
+            {
+                if (settings.Properties.EnableClosingSound != value)
+                {
+                    settings.Properties.EnableClosingSound = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
         private ObservableCollection<PowerLauncherPluginViewModel> _plugins;
 
         public ObservableCollection<PowerLauncherPluginViewModel> Plugins
