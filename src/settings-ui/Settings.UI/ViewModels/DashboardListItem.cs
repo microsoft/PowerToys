@@ -40,5 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<DashboardModuleItem> DashboardModuleItems { get; set; } = new ObservableCollection<DashboardModuleItem>();
+
+        public bool AreDashboardModuleItemsLoaded { get; set; }
     }
 }

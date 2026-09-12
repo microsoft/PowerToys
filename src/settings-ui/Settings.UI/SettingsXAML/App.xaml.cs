@@ -123,19 +123,17 @@ namespace Microsoft.PowerToys.Settings.UI
                 settingsWindow.BeginWindowSession();
             }
 
-            settingsWindow.Activate();
-
             if (type != null)
             {
                 settingsWindow.NavigateToSection(type);
-
-                WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
             }
 
-            if (ensurePageIsSelected)
+            if (type == null || ensurePageIsSelected)
             {
                 settingsWindow.EnsurePageIsSelected();
             }
+
+            settingsWindow.ActivateWhenReady(type != null);
         }
 
         private void OnLaunchedToSetSetting(string[] cmdArgs)
@@ -241,19 +239,15 @@ namespace Microsoft.PowerToys.Settings.UI
             if (!ShowOobe && !ShowScoobe)
             {
                 settingsWindow = new MainWindow();
-                settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-
-                // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
-                // Need to call SetForegroundWindow to actually gain focus.
-                WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
+                settingsWindow.ActivateWhenReady(true);
             }
             else
             {
                 // Create the Settings window hidden so that it's fully initialized and
                 // it will be ready to receive the notification if the user opens
                 // the Settings from the tray icon.
-                settingsWindow = new MainWindow(true);
+                settingsWindow = new MainWindow();
 
                 if (ShowOobe)
                 {
@@ -297,8 +291,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
-                settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
+                settingsWindow.ActivateWhenReady();
 
                 // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
                 GlobalHotkeyConflictManager.Initialize(message =>

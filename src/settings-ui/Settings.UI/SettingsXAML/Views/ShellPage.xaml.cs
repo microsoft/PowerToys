@@ -97,12 +97,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public Controls.TitleBar TitleBar => AppTitleBar;
 
+        public event EventHandler InitialContentLoaded;
+
+        public bool IsInitialContentLoaded { get; private set; }
+
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = [];
 
         private CancellationTokenSource _searchDebounceCts;
         private const int SearchDebounceMs = 500;
         private bool _disposed;
+        private FrameworkElement _initialPageContent;
 
         // Removed trace id counter per cleanup
 
@@ -121,9 +126,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
+            shellFrame.Navigated += ShellFrame_InitialNavigated;
 
-            // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
-            // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
             IPCResponseService.Instance.RegisterForIPC();
 
@@ -659,8 +663,57 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _searchDebounceCts?.Cancel();
             _searchDebounceCts?.Dispose();
             _searchDebounceCts = null;
+            shellFrame.Navigated -= ShellFrame_InitialNavigated;
+            if (_initialPageContent != null)
+            {
+                _initialPageContent.Loaded -= InitialPageContent_Loaded;
+                _initialPageContent = null;
+            }
+
             _disposed = true;
             GC.SuppressFinalize(this);
+        }
+
+        private void ShellFrame_InitialNavigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            shellFrame.Navigated -= ShellFrame_InitialNavigated;
+
+            if (e.Content is not FrameworkElement content)
+            {
+                CompleteInitialNavigation();
+                return;
+            }
+
+            if (content.IsLoaded)
+            {
+                CompleteInitialNavigation();
+                return;
+            }
+
+            _initialPageContent = content;
+            _initialPageContent.Loaded += InitialPageContent_Loaded;
+        }
+
+        private void InitialPageContent_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement content)
+            {
+                content.Loaded -= InitialPageContent_Loaded;
+            }
+
+            _initialPageContent = null;
+            CompleteInitialNavigation();
+        }
+
+        private void CompleteInitialNavigation()
+        {
+            if (IsInitialContentLoaded)
+            {
+                return;
+            }
+
+            IsInitialContentLoaded = true;
+            InitialContentLoaded?.Invoke(this, EventArgs.Empty);
         }
     }
 }
