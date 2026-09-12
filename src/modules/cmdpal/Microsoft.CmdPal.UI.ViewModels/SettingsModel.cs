@@ -50,6 +50,8 @@ public record SettingsModel
 
     public bool CompactMode { get; set; }
 
+    public bool ShowQuickAccessShelf { get; init; }
+
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
     // box is vertically centered. 75 places it in the upper portion of the display. Ignored
