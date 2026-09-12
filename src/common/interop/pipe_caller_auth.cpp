@@ -1,4 +1,5 @@
 #include "pipe_caller_auth.h"
+#include "pipe_caller_auth_chain_policy.h"
 
 #include <wincrypt.h>
 #include <wintrust.h>
@@ -130,8 +131,9 @@ namespace interop_auth
             para.RequestedUsage.Usage.cUsageIdentifier = 1;
             para.RequestedUsage.Usage.rgpszUsageIdentifier = oids;
 
-            // Cached-only revocation: never hit the network; treat "unknown/offline" as not-revoked.
+            // Never retrieve revocation data online; missing cached information alone does not reject a peer.
             const DWORD flags = CERT_CHAIN_CACHE_ONLY_URL_RETRIEVAL |
+                                CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY |
                                 CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
 
             PCCERT_CHAIN_CONTEXT chain = nullptr;
@@ -140,20 +142,7 @@ namespace interop_auth
                 return false;
             }
 
-            bool ok = false;
-            const DWORD ignore = CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CERT_TRUST_IS_OFFLINE_REVOCATION;
-            if ((chain->TrustStatus.dwErrorStatus & ~ignore) == 0)
-            {
-                CERT_CHAIN_POLICY_PARA policyPara = {};
-                policyPara.cbSize = sizeof(policyPara);
-                CERT_CHAIN_POLICY_STATUS policyStatus = {};
-                policyStatus.cbSize = sizeof(policyStatus);
-                if (CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_AUTHENTICODE, chain, &policyPara, &policyStatus))
-                {
-                    ok = (policyStatus.dwError == 0);
-                }
-            }
-
+            const bool ok = details::VerifyMachineSignerChainPolicy(chain);
             CertFreeCertificateChain(chain);
             return ok;
         }

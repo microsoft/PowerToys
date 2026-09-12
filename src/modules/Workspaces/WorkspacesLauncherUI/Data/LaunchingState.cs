@@ -8,9 +8,10 @@ namespace WorkspacesLauncherUI.Data
     public enum LaunchingState
     {
         Waiting = 0,
-        Launched,
-        LaunchedAndMoved,
-        Failed,
-        Canceled,
+        Launched = 1,
+        LaunchedAndMoved = 2,
+        Failed = 3,
+        Canceled = 4,
+        Skipped = 5,
     }
 }

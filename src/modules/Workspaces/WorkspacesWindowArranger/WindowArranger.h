@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include <WindowCreationHandler.h>
 
 #include <WorkspacesLib/AppUtils.h>
@@ -26,6 +28,7 @@ private:
     const std::vector<WorkspacesData::WorkspacesProject::Monitor> m_monitors;
     const Utils::Apps::AppList m_installedApps;
     //const WindowCreationHandler m_windowCreationHandler;
+    std::atomic<ULONGLONG> m_launchHeartbeat{};
     IPCHelper m_ipcHelper;
     LaunchingStatus m_launchingStatus;
     std::optional<WindowWithDistance> GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper);

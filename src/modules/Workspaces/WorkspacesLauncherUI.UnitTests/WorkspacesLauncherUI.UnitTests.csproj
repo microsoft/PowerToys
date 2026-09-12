@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\WorkspacesLauncherUI\</OutputPath>
+    <RootNamespace>WorkspacesLauncherUI.UnitTests</RootNamespace>
+    <AssemblyName>PowerToys.WorkspacesLauncherUI.UnitTests</AssemblyName>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <!-- Compile the real warning and managed IPC without starting the launcher or touching settings. -->
+  <ItemGroup>
+    <Page Include="..\WorkspacesLauncherUI\SignatureWarningWindow.xaml" Link="SignatureWarningWindow.xaml" />
+    <Compile Include="..\WorkspacesLauncherUI\SignatureWarningWindow.xaml.cs" Link="SignatureWarningWindow.xaml.cs" />
+    <Compile Include="..\WorkspacesLauncherUI\Models\SignatureWarningRequest.cs" Link="Models\SignatureWarningRequest.cs" />
+    <Compile Include="..\WorkspacesLauncherUI\IPC\*.cs" Link="IPC\%(Filename)%(Extension)" />
+    <Compile Include="..\WorkspacesLauncherUI\Data\*.cs" Link="Data\%(Filename)%(Extension)" />
+    <Compile Include="..\WorkspacesLauncherUI\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
+    <EmbeddedResource Include="..\WorkspacesLauncherUI\Properties\Resources.resx" Link="Properties\Resources.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources</ManifestResourceName>
+    </EmbeddedResource>
+    <None Include="..\WorkspacesLauncherUI\Properties\Resources.resx" Link="TestResources\NeutralResources.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+    <None Update="LauncherPipeChild.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Synthetic satellites are test-only fixtures, not product translations. -->
+  <ItemGroup>
+    <EmbeddedResource Update="TestResources\Localization.fr-FR.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources.fr-FR</ManifestResourceName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="TestResources\Localization.ar-SA.resx">
+      <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources.ar-SA</ManifestResourceName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

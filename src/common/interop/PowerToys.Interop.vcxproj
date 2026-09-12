@@ -121,6 +121,7 @@
     <ClInclude Include="two_way_pipe_message_ipc.h" />
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
     <ClInclude Include="pipe_caller_auth.h" />
+    <ClInclude Include="pipe_caller_auth_chain_policy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonManaged.cpp">

@@ -14,7 +14,7 @@ public:
     bool AllLaunchedAndMoved() noexcept;
     bool AllInstancesOfTheAppLaunchedAndMoved(const WorkspacesData::WorkspacesProject::Application& app) noexcept;
 
-    const WorkspacesData::LaunchingAppStateMap& Get() noexcept;
+    WorkspacesData::LaunchingAppStateMap Get();
     std::optional<WorkspacesData::LaunchingAppState> Get(const WorkspacesData::WorkspacesProject::Application& app) noexcept;
     std::optional<WorkspacesData::LaunchingAppState> GetNext(LaunchingState state) noexcept;
     
