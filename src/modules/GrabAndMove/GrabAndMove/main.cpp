@@ -818,6 +818,17 @@ static void ReplayAbsorbedModifier(bool alsoKeyUp)
     SendInput(alsoKeyUp ? 2 : 1, inputs, sizeof(INPUT));
 }
 
+static void SendDummyKeyEvent()
+{
+    constexpr WORD dummyKey = 0xFF;
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = dummyKey;
+    inputs[1] = inputs[0];
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+}
+
 // ---------------------------------------------------------------------------
 // Deferred activation helpers.
 // A modifier+button press does not start an interaction immediately; it is held
@@ -827,6 +838,11 @@ static void ReplayAbsorbedModifier(bool alsoKeyUp)
 // ---------------------------------------------------------------------------
 static void BeginDrag(HWND hwnd, POINT pt)
 {
+    if (g_modifierKey == GrabAndMoveModifier::Win && !g_activatedDuringHold)
+    {
+        // Mark Win as part of a chord before it is released so Windows doesn't open Start.
+        SendDummyKeyEvent();
+    }
     g_dragging = true;
     g_dragFirstMove = true;
     g_dragConsumedAlt = true;
@@ -841,6 +857,11 @@ static void BeginDrag(HWND hwnd, POINT pt)
 
 static void BeginResize(HWND hwnd, POINT pt)
 {
+    if (g_modifierKey == GrabAndMoveModifier::Win && !g_activatedDuringHold)
+    {
+        // Mark Win as part of a chord before it is released so Windows doesn't open Start.
+        SendDummyKeyEvent();
+    }
     g_resizing = true;
     g_resizeFirstMove = true;
     g_dragConsumedAlt = true;
