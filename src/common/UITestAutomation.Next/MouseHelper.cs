@@ -52,7 +52,6 @@ public static class MouseHelper
 
     private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
-
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetCursorPos(int x, int y);
 

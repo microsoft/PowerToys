@@ -290,6 +290,7 @@ Note: Online/remote images (http/https URLs) are always blocked regardless of th
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityAutoHideCursor">Auto Hide Cursor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCursorWrap">CursorWrap: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
