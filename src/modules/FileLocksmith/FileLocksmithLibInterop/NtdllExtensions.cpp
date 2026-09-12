@@ -1,8 +1,6 @@
 #include "pch.h"
 
 #include "NtdllExtensions.h"
-#include <thread>
-#include <atomic>
 
 #define STATUS_INFO_LENGTH_MISMATCH ((LONG)0xC0000004)
 
@@ -12,12 +10,39 @@ namespace
 {
     std::wstring_view unicode_to_view(UNICODE_STRING unicode_str)
     {
+        if (!unicode_str.Buffer || unicode_str.Length == 0)
+        {
+            return {};
+        }
+
         return std::wstring_view(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
     }
 
     std::wstring unicode_to_str(UNICODE_STRING unicode_str)
     {
+        if (!unicode_str.Buffer || unicode_str.Length == 0)
+        {
+            return {};
+        }
+
         return std::wstring(unicode_str.Buffer, unicode_str.Length / sizeof(WCHAR));
+    }
+
+    // NtQueryObject/GetFileType can hang indefinitely on some handle access masks.
+    // Skip those instead of using TerminateThread (which corrupts CRT heap state).
+    // See: https://stackoverflow.com/questions/46384048/enumerate-handles
+    constexpr bool is_hanging_file_handle_access(ACCESS_MASK granted_access)
+    {
+        switch (granted_access)
+        {
+        case 0x0012019f:
+        case 0x001a019f:
+        case 0x00120189:
+        case 0x00100000:
+            return true;
+        default:
+            return false;
+        }
     }
 
     // Implementation adapted from src/common/utils
@@ -164,119 +189,75 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 
     std::map<ULONG_PTR, HANDLE> pid_to_handle;
     std::vector<HandleInfo> result;
-
     std::vector<BYTE> object_info_buffer(DefaultResultBufferSize);
 
-    std::atomic<ULONG> i = 0;
-    std::atomic<ULONG_PTR> handle_count = info_ptr->NumberOfHandles;
-    std::atomic<HANDLE> process_handle = NULL;
-    std::atomic<HANDLE> handle_copy = NULL;
-    ULONG previous_i;
+    const ULONG_PTR handle_count = info_ptr->NumberOfHandles;
 
-
-    while (i < handle_count)
+    // Enumerate on the calling thread. Do not use TerminateThread to recover from
+    // NtQueryObject/GetFileType hangs: killing a thread that owns CRT/heap locks
+    // causes access violations later (often in this DLL; see #45158 / #47200).
+    // Skip access masks known to hang instead.
+    for (ULONG_PTR i = 0; i < handle_count; i++)
     {
-        previous_i = i;
+        const auto* handle_info = info_ptr->Handles + i;
+        const auto pid = handle_info->UniqueProcessId;
 
-        // The system calls we use in this block were reported to hang on some machines.
-        // We need to offload the cycle to another thread and keep track of progress to terminate and resume when needed.
-        // Unfortunately, there are no alternative APIs to what we're using that accept timeouts. (NtQueryObject and GetFileType)
-        auto offload_function = std::thread([&] {
-            for (; i < handle_count; i++)
-            {
-                process_handle = NULL;
-                handle_copy = NULL;
-
-                auto handle_info = info_ptr->Handles + i;
-                auto pid = handle_info->UniqueProcessId;
-
-                auto iter = pid_to_handle.find(pid);
-                if (iter != pid_to_handle.end())
-                {
-                    process_handle = iter->second;
-                }
-                else
-                {
-                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, static_cast<DWORD>(pid));
-                    if (!process_handle)
-                    {
-                        continue;
-                    }
-                    pid_to_handle[pid] = process_handle;
-                }
-
-                // According to this:
-                // https://stackoverflow.com/questions/46384048/enumerate-handles
-                // NtQueryObject could hang
-
-                // TODO uncomment and investigate
-                // if (handle_info->GrantedAccess == 0x0012019f) {
-                //     continue;
-                // }
-
-                HANDLE local_handle_copy;
-                auto dh_result = DuplicateHandle(process_handle, reinterpret_cast<HANDLE>(handle_info->HandleValue), GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
-                if (dh_result == 0)
-                {
-                    // Ignore this handle.
-                    continue;
-                }
-                handle_copy = local_handle_copy;
-
-                ULONG return_length;
-                auto status = NtQueryObject(handle_copy, ObjectTypeInformation, object_info_buffer.data(), static_cast<ULONG>(object_info_buffer.size()), &return_length);
-                if (NT_ERROR(status))
-                {
-                    // Ignore this handle.
-                    CloseHandle(handle_copy);
-                    handle_copy = NULL;
-                    continue;
-                }
-
-                auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
-                auto type_name = unicode_to_str(object_type_info->Name);
-
-                std::wstring file_name;
-
-                if (type_name == L"File")
-                {
-                    file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
-                    result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
-                }
-
-                CloseHandle(handle_copy);
-                handle_copy = NULL;
-            }
-        });
-
-        offload_function.detach();
-        do
+        if (is_hanging_file_handle_access(handle_info->GrantedAccess))
         {
-            Sleep(200); // Timeout in milliseconds for detecting that the system hang on getting information for a handle.
-            if (i >= handle_count)
+            continue;
+        }
+
+        HANDLE process_handle = NULL;
+        if (auto iter = pid_to_handle.find(pid); iter != pid_to_handle.end())
+        {
+            process_handle = iter->second;
+        }
+        else
+        {
+            process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, static_cast<DWORD>(pid));
+            if (!process_handle)
             {
-                // We're done.
-                break;
+                continue;
             }
+            pid_to_handle[pid] = process_handle;
+        }
 
-            if (previous_i >= i)
-            {
-                // The thread looks like it's hanging on some handle. Let's kill it and resume.
+        HANDLE handle_copy = NULL;
+        if (!DuplicateHandle(
+                process_handle,
+                reinterpret_cast<HANDLE>(handle_info->HandleValue),
+                GetCurrentProcess(),
+                &handle_copy,
+                0,
+                FALSE,
+                DUPLICATE_SAME_ACCESS))
+        {
+            continue;
+        }
 
-                // HACK: This is unsafe and may leak something, but looks like there's no way to properly clean up a thread when it's hanging on a system call.
-                TerminateThread(offload_function.native_handle(), 1);
+        ULONG return_length = 0;
+        auto status = NtQueryObject(
+            handle_copy,
+            ObjectTypeInformation,
+            object_info_buffer.data(),
+            static_cast<ULONG>(object_info_buffer.size()),
+            &return_length);
+        if (NT_ERROR(status))
+        {
+            CloseHandle(handle_copy);
+            continue;
+        }
 
-                // Close Handles that might be lingering.
-                if (handle_copy!=NULL)
-                {
-                    CloseHandle(handle_copy);
-                }
-                i++;
-                break;
-            }
-            previous_i = i;
-        } while (1);
+        auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
+        auto type_name = unicode_to_str(object_type_info->Name);
 
+        if (type_name == L"File")
+        {
+            auto file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
+            result.push_back(HandleInfo{ pid, handle_info->HandleValue, std::move(type_name), std::move(file_name) });
+        }
+
+        CloseHandle(handle_copy);
     }
 
     for (auto [pid, handle] : pid_to_handle)
