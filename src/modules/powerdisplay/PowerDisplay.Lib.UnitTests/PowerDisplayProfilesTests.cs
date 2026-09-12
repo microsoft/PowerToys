@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Resources;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Models;
 
@@ -238,4 +240,194 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(ids.Count, ids.Distinct().Count(), "profile ids must be unique");
         Assert.IsTrue(profiles.NextId > profiles.Profiles.Max(p => p.Id));
     }
+
+    [TestMethod]
+    public void GetAssignedProfiles_UsesArrayOrder()
+    {
+        var profiles = MakeOrderedProfiles();
+        profiles.Profiles.Reverse();
+
+        Assert.AreEqual("4,3,2,1", DisplayOrder(profiles));
+    }
+
+    [TestMethod]
+    public void MoveProfileBefore_PreservesLightSwitchIdReferences()
+    {
+        var profiles = MakeOrderedProfiles();
+        var selectedProfile = profiles.GetById(2);
+        var properties = new LightSwitchProperties();
+        properties.EnableLightModeProfile.Value = true;
+        properties.LightModeProfileId.Value = 2;
+
+        Assert.IsTrue(profiles.MoveProfileBefore(2, 1));
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, profiles));
+        Assert.AreEqual(2, LightSwitchProfileReferenceHelper.GetProfileIdForTheme(properties, isLightMode: true));
+        Assert.AreSame(selectedProfile, profiles.GetById(properties.LightModeProfileId.Value));
+        Assert.AreSame(selectedProfile, profiles.Profiles[0]);
+    }
+
+    [TestMethod]
+    public void RemoveProfile_PreservesRemainingArrayOrder()
+    {
+        var profiles = MakeOrderedProfiles();
+        profiles.MoveProfileBefore(3, 1);
+
+        Assert.IsTrue(profiles.RemoveProfile(1));
+        Assert.IsFalse(profiles.RemoveProfile(1));
+        Assert.IsFalse(profiles.RemoveProfile(0));
+
+        Assert.AreEqual("3,2,4", DisplayOrder(profiles));
+        Assert.AreEqual(3, profiles.Profiles.Count);
+    }
+
+    [TestMethod]
+    [DataRow(4, 1, "4,1,2,3")]
+    [DataRow(1, 4, "2,3,1,4")]
+    [DataRow(2, 1, "2,1,3,4")]
+    [DataRow(2, 4, "1,3,2,4")]
+    [DataRow(1, null, "2,3,4,1")]
+    [DataRow(3, null, "1,2,4,3")]
+    public void MoveProfileBefore_ReordersArrayWithoutChangingProfiles(int profileId, int? beforeProfileId, string expectedOrder)
+    {
+        var profiles = MakeOrderedProfiles();
+        var originalProfiles = profiles.Profiles.ToDictionary(profile => profile.Id);
+        var originalContents = profiles.Profiles.ToDictionary(profile => profile.Id, SerializeContents);
+        var originalNextId = profiles.NextId;
+
+        Assert.IsTrue(profiles.MoveProfileBefore(profileId, beforeProfileId));
+
+        Assert.AreEqual(expectedOrder, DisplayOrder(profiles));
+        Assert.AreEqual(expectedOrder, string.Join(",", profiles.Profiles.Select(profile => profile.Id)));
+        Assert.AreEqual(originalProfiles.Count, profiles.Profiles.Count);
+        Assert.AreEqual(originalNextId, profiles.NextId);
+        Assert.IsTrue(profiles.LastUpdated > DateTime.UnixEpoch);
+        foreach (var profile in profiles.Profiles)
+        {
+            Assert.AreSame(originalProfiles[profile.Id], profile);
+            Assert.AreEqual(originalContents[profile.Id], SerializeContents(profile));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(-1, 1)]
+    [DataRow(1, -1)]
+    [DataRow(0, 1)]
+    [DataRow(1, 0)]
+    [DataRow(99, 1)]
+    [DataRow(1, 99)]
+    [DataRow(1, 1)]
+    [DataRow(1, 2)]
+    [DataRow(4, null)]
+    public void MoveProfileBefore_InvalidOrUnchangedPosition_LeavesCollectionUnchanged(int profileId, int? beforeProfileId)
+    {
+        var profiles = MakeOrderedProfiles();
+        var originalJson = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
+
+        Assert.IsFalse(profiles.MoveProfileBefore(profileId, beforeProfileId));
+
+        Assert.AreEqual(originalJson, JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles));
+    }
+
+    [TestMethod]
+    public void MoveProfileBefore_EmptyOrSingleProfile_LeavesCollectionUnchanged()
+    {
+        var profiles = new PowerDisplayProfiles { LastUpdated = DateTime.UnixEpoch };
+        Assert.IsFalse(profiles.MoveProfileBefore(1, null));
+        Assert.IsFalse(profiles.MoveProfileBefore(1, 2));
+
+        var profile = MakeProfile("Only", 1);
+        profiles.Profiles.Add(profile);
+
+        Assert.IsFalse(profiles.MoveProfileBefore(1, null));
+        Assert.IsFalse(profiles.MoveProfileBefore(1, 1));
+        Assert.AreSame(profile, profiles.Profiles[0]);
+        Assert.AreEqual(DateTime.UnixEpoch, profiles.LastUpdated);
+    }
+
+    [TestMethod]
+    public void MoveProfileBefore_RoundTripsArrayOrderThroughJson()
+    {
+        var profiles = MakeOrderedProfiles();
+        profiles.Profiles.Reverse();
+        Assert.IsTrue(profiles.MoveProfileBefore(1, 3));
+
+        var json = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
+        var restored = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles);
+        Assert.IsNotNull(restored);
+        Assert.AreEqual("4,1,3,2", DisplayOrder(restored));
+        Assert.AreEqual("4,1,3,2", string.Join(",", restored.Profiles.Select(profile => profile.Id)));
+        Assert.IsFalse(restored.EnsureIds());
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(3)]
+    [DataRow(4)]
+    public void SetProfile_AfterReordering_PreservesArrayPosition(int profileId)
+    {
+        var profiles = MakeOrderedProfiles();
+        profiles.MoveProfileBefore(3, 1);
+        var existing = profiles.GetById(profileId)!;
+        var originalIndex = profiles.Profiles.IndexOf(existing);
+        var replacement = MakeProfile("Edited", existing.Id);
+
+        profiles.SetProfile(replacement);
+
+        Assert.AreEqual("3,1,2,4", DisplayOrder(profiles));
+        Assert.AreSame(replacement, profiles.Profiles[originalIndex]);
+    }
+
+    [TestMethod]
+    public void SetProfile_NewProfileAfterReordering_AppendsToDisplayOrder()
+    {
+        var profiles = MakeOrderedProfiles();
+        profiles.MoveProfileBefore(3, 1);
+        var added = MakeProfile("New");
+
+        profiles.SetProfile(added);
+
+        Assert.AreSame(added, profiles.GetAssignedProfiles().Last());
+        Assert.AreEqual("3,1,2,4,5", DisplayOrder(profiles));
+    }
+
+    [TestMethod]
+    public void EnsureIds_BackfillsMissingIdsWithoutChangingArrayOrder()
+    {
+        const string json = """
+            {"nextId":8,"profiles":[{"name":"Existing ID","id":7},{"name":"No ID"}]}
+            """;
+        var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles)!;
+
+        Assert.IsTrue(profiles.EnsureIds());
+
+        Assert.AreEqual(7, profiles.Profiles[0].Id);
+        Assert.AreEqual(8, profiles.Profiles[1].Id);
+        Assert.AreEqual(9, profiles.NextId);
+        Assert.AreEqual("Existing ID,No ID", string.Join(",", profiles.Profiles.Select(profile => profile.Name)));
+        var repairedJson = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
+        Assert.IsFalse(profiles.EnsureIds());
+        Assert.AreEqual(repairedJson, JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles));
+    }
+
+    private static PowerDisplayProfiles MakeOrderedProfiles()
+    {
+        var profiles = new PowerDisplayProfiles { NextId = 5, LastUpdated = DateTime.UnixEpoch };
+        for (var id = 1; id <= 4; id++)
+        {
+            var profile = MakeProfile("Same", id);
+            profile.CreatedDate = DateTime.UnixEpoch;
+            profile.LastModified = DateTime.UnixEpoch;
+            profiles.Profiles.Add(profile);
+        }
+
+        return profiles;
+    }
+
+    private static string DisplayOrder(PowerDisplayProfiles profiles)
+        => string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Id));
+
+    private static string SerializeContents(PowerDisplayProfile profile)
+        => JsonSerializer.Serialize(profile, ProfileSerializationContext.Default.PowerDisplayProfile);
 }

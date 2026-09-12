@@ -81,4 +81,23 @@ public class ProfileDtoProjectorTests
         Assert.AreEqual(4, result.Profiles[0].Id);
         Assert.AreEqual("Gaming", result.Profiles[0].Name);
     }
+
+    [TestMethod]
+    public void BuildProfileListResult_UsesArrayOrderInsteadOfIdOrder()
+    {
+        var profiles = new PowerDisplayProfiles
+        {
+            Profiles = new List<PowerDisplayProfile>
+            {
+                new() { Id = 4, Name = "First" },
+                new() { Id = 1, Name = "Second" },
+            },
+        };
+
+        var result = ProfileDtoProjector.BuildProfileListResult(profiles);
+
+        Assert.AreEqual(2, result.Profiles.Count);
+        Assert.AreEqual(4, result.Profiles[0].Id);
+        Assert.AreEqual(1, result.Profiles[1].Id);
+    }
 }
