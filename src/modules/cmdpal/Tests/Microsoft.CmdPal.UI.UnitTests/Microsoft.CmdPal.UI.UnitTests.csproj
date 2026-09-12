@@ -41,9 +41,33 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconSizeCalculator.cs" Link="Helpers\Icons\FontIconSizeCalculator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\GeneratedIconProtocol.cs" Link="Helpers\Icons\GeneratedIconProtocol.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\GeneratedIconProtocolProcessor.cs" Link="Helpers\Icons\GeneratedIconProtocolProcessor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\HIconSoftwareBitmapConverter.cs" Link="Helpers\Icons\HIconSoftwareBitmapConverter.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\InitialsPathFactory.cs" Link="Helpers\Icons\InitialsPathFactory.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\InitialsTextRenderer.cs" Link="Helpers\Icons\InitialsTextRenderer.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SemanticIconColor.cs" Link="Helpers\Icons\SemanticIconColor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconIdentity.cs" Link="Helpers\Icons\ShellIconIdentity.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconIdentityKind.cs" Link="Helpers\Icons\ShellIconIdentityKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconExtractionResult.cs" Link="Helpers\Icons\ShellIconExtractionResult.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconDiagnosticStep.cs" Link="Helpers\Icons\ShellIconDiagnosticStep.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconCacheInvalidationReason.cs" Link="Helpers\Icons\ShellIconCacheInvalidationReason.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconCacheInvalidator.cs" Link="Helpers\Icons\ShellIconCacheInvalidator.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellImageListSize.cs" Link="Helpers\Icons\ShellImageListSize.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconLocationCache.cs" Link="Helpers\Icons\ShellIconLocationCache.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconLocationResolver.cs" Link="Helpers\Icons\ShellIconLocationResolver.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconMeasurement.cs" Link="Helpers\Icons\ShellIconMeasurement.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellIconRequestKind.cs" Link="Helpers\Icons\ShellIconRequestKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconProtocolProcessor.cs" Link="Helpers\Icons\ShellItemIconProtocolProcessor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconExtractor.cs" Link="Helpers\Icons\IShellItemIconExtractor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconExtractor.cs" Link="Helpers\Icons\ShellItemIconExtractor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconFallback.cs" Link="Helpers\Icons\ShellItemIconFallback.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconLocator.cs" Link="Helpers\Icons\ShellItemIconLocator.cs" />
+    <Compile Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ShellThreadErrorModeScope.cs" Link="Helpers\Icons\ShellThreadErrorModeScope.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconRequest.cs" Link="Helpers\Icons\ShellItemIconRequest.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconRequestClassifier.cs" Link="Helpers\Icons\ShellItemIconRequestClassifier.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconLocationMode.cs" Link="Helpers\Icons\ShellItemIconLocationMode.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemIconTypeRequest.cs" Link="Helpers\Icons\ShellItemIconTypeRequest.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellSystemImageListIconExtractor.cs" Link="Helpers\Icons\ShellSystemImageListIconExtractor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\LocatedShellIcon.cs" Link="Helpers\Icons\LocatedShellIcon.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgFileTextReader.cs" Link="Helpers\Icons\SvgFileTextReader.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgIconProtocol.cs" Link="Helpers\Icons\SvgIconProtocol.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgIconProtocolProcessor.cs" Link="Helpers\Icons\SvgIconProtocolProcessor.cs" />
@@ -77,6 +101,9 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconProtocolProcessor.cs" Link="Helpers\Icons\IIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconRequestDemand.cs" Link="Helpers\Icons\IIconRequestDemand.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconRequestProgress.cs" Link="Helpers\Icons\IIconRequestProgress.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconSourceProvider.cs" Link="Helpers\Icons\IIconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLoadCoordinator.cs" Link="Helpers\Icons\IShellItemIconLoadCoordinator.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLocator.cs" Link="Helpers\Icons\IShellItemIconLocator.cs" />
   </ItemGroup>
 </Project>
