@@ -57,6 +57,7 @@ properties:
           EnableBgcodePreview: true
           EnableBgcodeThumbnail: true
           EnableStlThumbnail: true
+          EnableThreeMfThumbnail: true
           EnableQoiPreview: true
           EnableQoiThumbnail: true
         PowerOcr:

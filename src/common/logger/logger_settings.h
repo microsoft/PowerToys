@@ -37,6 +37,8 @@ struct LogSettings
     inline const static std::wstring qoiThumbLogPath = L"logs\\FileExplorer_localLow\\QoiThumbnailProvider\\qoi-thumbnail-provider-log.log";
     inline const static std::string stlThumbLoggerName = "StlThumbnailProvider";
     inline const static std::wstring stlThumbLogPath = L"logs\\FileExplorer_localLow\\StlThumbnailProvider\\stl-thumbnail-provider-log.log";
+    inline const static std::string threeMfThumbLoggerName = "ThreeMfThumbnailProvider";
+    inline const static std::wstring threeMfThumbLogPath = L"logs\\FileExplorer_localLow\\ThreeMfThumbnailProvider\\threemf-thumbnail-provider-log.log";
     inline const static std::string svgPrevLoggerName = "SvgPrevHandler";
     inline const static std::wstring svgPrevLogPath = L"logs\\FileExplorer_localLow\\SvgPrevHandler\\svg-prev-handler-log.log";
     inline const static std::string svgThumbLoggerName = "SvgThumbnailProvider";
