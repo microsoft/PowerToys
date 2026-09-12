@@ -16,7 +16,7 @@ output rather than duplicated.
 | Windows OCR | Bitmap and file clipboard sources, preview acceptance by button and Enter, direct-hotkey bypass, Settings-controlled automatic paste, and no-text error recovery. Uses Windows OCR, not an AI provider. |
 | File paste | TXT, HTML, and PNG via action list and direct shortcuts; real Explorer paste, exact copied bytes, UTF-8 content, PNG dimensions and pixels, and source-file preservation. |
 | Media conversion | PCM audio to MP3, video audio extraction, and H.264/AAC MP4. Deterministic fixtures use Windows media APIs; output streams, dimensions, duration, and same-extension naming are checked. |
-| Clipboard history | Select/delete specific test-owned Windows history items, preserve unrelated IDs, and disable history through Settings. Windows history APIs are the authoritative shared-state observation. |
+| Clipboard history | Select/delete specific test-owned Windows history items, preserve other baseline IDs, reset a full history store, and disable history through Settings. Windows history APIs are the authoritative shared-state observation. |
 | Lifecycle and keyboard | Real Settings OFF/ON with process exit/restart and all configured hotkeys disabled; live shortcut editing, cancel, reset, and clearing optional shortcuts. |
 | Settings and window behavior | Clipboard preview refresh/visibility, close-on-focus-loss, Escape, empty clipboard, offline action/group visibility, preference persistence, and unavailable AI with no providers. |
 
@@ -76,18 +76,27 @@ menu controls. No coordinate-click retry, paste retry, or direct file-copy
 substitute is used.
 File delivery is observed on disk before reading CF_HDROP, so the test does not
 open the clipboard while Explorer is consuming the product's Ctrl+V.
-Text and rich-text clipboard access uses the fixture's message-pumping STA.
+Text, rich-text, and startup clipboard snapshot access use the fixture's message-pumping STA.
+Asynchronous snapshot reads stay on that thread across awaits, including when Test Explorer
+starts the test on an MTA worker with a nonempty desktop clipboard.
+Snapshots retry only the transient clipboard-busy HRESULT, asynchronously on the
+same STA and within a bounded deadline; no format is dropped to make a snapshot succeed.
 Read errors are reported rather than converted to an empty string. RTF fixtures
 are copied from the real editor with Ctrl+C, and both text and RTF formats are
 verified before the formatting-removal scenarios start.
 
 History tests use a fresh process per case so restoring the OS history preference
 does not carry an old ItemsView and pending notifications into the next fixture.
-They remove only their own entries and fail explicitly rather than
-evicting unrelated history when the OS history has insufficient capacity or the
-disable scenario cannot safely start with an empty history.
+**The `DestructiveClipboardHistory` category can permanently clear saved Windows
+clipboard history.** Setup calls Windows' Clear history operation when there is
+insufficient capacity or the scenario requires an empty history. It logs the reset
+and waits for the required state before adding fixtures. Cleared unpinned entries
+are not restored. Pinned items are never removed by setup; the scenario fails with
+an explicit explanation if they prevent the required baseline. Exclude this category
+or use a disposable desktop if saved history must be retained.
+The current clipboard and the original OS history preference are still restored.
 Cleanup clears only the current test-owned clipboard content before re-enabling
-history, then drains late test-owned IDs while preserving all original entries.
+history, then drains late test-owned IDs while preserving entries in the post-setup baseline.
 
 ## HTML-only conversion regression
 

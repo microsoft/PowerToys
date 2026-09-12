@@ -16,6 +16,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
+[TestCategory("DestructiveClipboardHistory")]
 public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 {
     private const string HistoryCard = "AdvancedPasteClipboardHistoryEnabledSettingsCard";
@@ -169,6 +170,36 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
             });
     }
 
+    [TestMethod]
+    public Task FullHistoryCanBeResetBeforeAddingNewFixtureEntries()
+    {
+        return RunHistoryScenarioAsync(
+            entryCount: MaximumHistoryEntries,
+            requiresEmptyHistory: true,
+            async () =>
+            {
+                for (var index = 0; index < MaximumHistoryEntries; index++)
+                {
+                    await CopyHistoryFixtureAsync($"capacity-{index}");
+                }
+
+                var full = await WaitForHistoryAsync(
+                    items => items.Count == MaximumHistoryEntries,
+                    "The capacity regression did not fill Windows clipboard history.");
+                var previousIds = full.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+                var baseline = await EnsureHistorySpaceAsync(entryCount: 1, requiresEmptyHistory: true);
+                Assert.IsEmpty(baseline, "The history fixture did not establish an empty baseline.");
+
+                var fresh = await CopyHistoryFixtureAsync("after-capacity-reset");
+                var after = await WaitForHistoryAsync(
+                    items => items.Count == 1 && items[0].Id == fresh.Id,
+                    "The new fixture did not become the only item after clearing full history.");
+                Assert.IsFalse(
+                    after.Any(item => previousIds.Contains(item.Id)),
+                    "An entry from the cleared history reappeared in the new baseline.");
+            });
+    }
+
     private async Task RunHistoryScenarioAsync(int entryCount, bool requiresEmptyHistory, Func<Task> scenario)
     {
         var originalRegistry = ClipboardHistoryRegistrySnapshot.Capture();
@@ -176,14 +207,8 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
         {
             Step("Preparing OS history as a fixture; the Advanced Paste checkbox cannot enable an OS-disabled history card");
             EnableHistoryFixture();
-            var originalItems = await ReadHistoryAsync();
+            var originalItems = await EnsureHistorySpaceAsync(entryCount, requiresEmptyHistory);
             originalHistoryIds.UnionWith(originalItems.Select(item => item.Id));
-            Assert.IsTrue(
-                originalItems.Length + entryCount <= MaximumHistoryEntries,
-                $"BLOCKED: Windows history contains {originalItems.Length} existing items and has no safe capacity for {entryCount} fixtures. No unrelated history will be evicted or cleared.");
-            Assert.IsTrue(
-                !requiresEmptyHistory || originalItems.Length == 0,
-                "BLOCKED: the OS-history disable scenario requires an initially empty history so turning it off cannot discard unrelated entries.");
 
             Step("Reloading the Advanced Paste Settings page after the OS fixture reaches its enabled state");
             NavigateToGeneralSettings();
@@ -210,6 +235,27 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
                 originalRegistry.Restore();
             }
         }
+    }
+
+    private async Task<ClipboardHistoryItem[]> EnsureHistorySpaceAsync(int entryCount, bool requiresEmptyHistory)
+    {
+        bool IsReady(IReadOnlyList<ClipboardHistoryItem> items) =>
+            items.Count + entryCount <= MaximumHistoryEntries && (!requiresEmptyHistory || items.Count == 0);
+
+        var items = await ReadHistoryAsync();
+        if (IsReady(items))
+        {
+            return items;
+        }
+
+        Step($"WARNING: clearing unpinned Windows clipboard history ({items.Length} saved entries) to prepare this destructive history scenario. Cleared entries cannot be restored.");
+        Assert.IsTrue(
+            Target.Invoke(WinClipboard.ClearHistory),
+            "Windows rejected the clipboard-history clear operation; the history scenario cannot proceed.");
+        var message = requiresEmptyHistory
+            ? "BLOCKED: Windows history is not empty after clearing. Clear history preserves pinned items; unpin or remove them before running this scenario."
+            : $"BLOCKED: Windows history still has insufficient capacity for {entryCount} fixtures after clearing. Pinned items are preserved.";
+        return await WaitForHistoryAsync(IsReady, message);
     }
 
     private CheckBox HistoryCheckbox() => AdvancedPasteUi.CardControl<CheckBox>(Session, HistoryCard, "CheckBox");
@@ -330,6 +376,11 @@ public sealed class AdvancedPasteClipboardHistoryTests : AdvancedPasteTestBase
 
     private async Task DiscoverOwnedHistoryItemsAsync(IEnumerable<ClipboardHistoryItem> items)
     {
+        if (fixtureContents.Count == 0)
+        {
+            return;
+        }
+
         foreach (var item in items)
         {
             if (originalHistoryIds.Contains(item.Id) || !inspectedHistoryIds.Add(item.Id) || !item.Content.Contains(StandardDataFormats.Text))

@@ -86,14 +86,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
             Step("Preparing the clipboard and a real rich-text paste destination");
             target = new PasteTarget();
             testDirectory = Directory.CreateTempSubdirectory("PowerToys_AdvancedPaste_UITests_");
-            var original = WinClipboard.GetContent();
-            var snapshot = new DataPackage();
-            foreach (var format in original.AvailableFormats)
-            {
-                snapshot.SetData(format, await original.GetDataAsync(format).AsTask().WaitAsync(TimeSpan.FromSeconds(10)));
-            }
-
-            clipboardSnapshot = snapshot;
+            clipboardSnapshot = await Target.CaptureClipboardAsync();
             DismissAdvancedPaste();
             Assert.IsTrue(ClipboardHelper.Clear(), "Could not clear the clipboard before the test.");
             Target.Focus();

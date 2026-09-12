@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
+using Forms = System.Windows.Forms;
 using WinClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
 namespace AdvancedPaste.UITests;
@@ -151,6 +153,84 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         Assert.IsEmpty(actions, "An empty clipboard exposed an enabled action/accelerator.");
         Assert.AreEqual(string.Empty, Target.Text);
         Assert.AreEqual(string.Empty, ReadClipboardText());
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task ClipboardBackupRestoresNonEmptyDesktopFormatsFromAnMtaCaller(bool includeRichFormats, bool simulateContention)
+    {
+        const string text = "Desktop clipboard snapshot \u00e9";
+        const string html = "<p>Desktop clipboard <strong>snapshot</strong></p>";
+        const string rtf = @"{\rtf1\ansi Desktop clipboard \b snapshot\b0}";
+        Step("Preparing a desktop data object before taking a clipboard snapshot from an MTA worker");
+        Target.Invoke(() =>
+        {
+            var data = new Forms.DataObject(text);
+            if (includeRichFormats)
+            {
+                data.SetData(Forms.DataFormats.Html, autoConvert: false, HtmlFormatHelper.CreateHtmlFormat(html));
+                data.SetData(Forms.DataFormats.Rtf, autoConvert: false, rtf);
+            }
+
+            Forms.Clipboard.SetDataObject(data, copy: true);
+        });
+        var formats = ReadClipboardFormats();
+        var readAttempts = 0;
+        var snapshot = await Task.Run(() =>
+        {
+            Assert.AreEqual(ApartmentState.MTA, Thread.CurrentThread.GetApartmentState());
+            return Target.CaptureClipboardAsync((content, format) =>
+            {
+                if (Interlocked.Increment(ref readAttempts) == 1 && simulateContention)
+                {
+                    var contention = Marshal.GetExceptionForHR(unchecked((int)0x800401D0), new IntPtr(-1));
+                    Assert.IsNotNull(contention);
+                    return Task.FromException<object>(contention);
+                }
+
+                return content.GetDataAsync(format).AsTask();
+            });
+        });
+        Assert.IsTrue(readAttempts >= formats.Length + (simulateContention ? 1 : 0), "The snapshot did not retry the injected clipboard contention.");
+
+        SetClipboardText("Replacement clipboard content");
+        Step("Restoring the original text and formats after replacing the clipboard");
+        SetClipboard(snapshot);
+        Assert.AreEqual(text, ReadClipboardText(), "The snapshot did not restore the original text.");
+        CollectionAssert.IsSubsetOf(formats, ReadClipboardFormats(), "The snapshot lost an original clipboard format.");
+        if (includeRichFormats)
+        {
+            Target.Invoke(() =>
+            {
+                Assert.IsTrue(Forms.Clipboard.TryGetData<string>(Forms.DataFormats.Html, out var restoredHtml), "The HTML clipboard format could not be read.");
+                Assert.IsNotNull(restoredHtml);
+                Assert.AreEqual(html, HtmlFormatHelper.GetStaticFragment(restoredHtml), "The snapshot changed the HTML fragment.");
+                Assert.IsTrue(Forms.Clipboard.TryGetData<string>(Forms.DataFormats.Rtf, out var restoredRtf), "The RTF clipboard format could not be read.");
+                Assert.AreEqual(rtf, restoredRtf, "The snapshot changed the RTF content.");
+            });
+        }
+    }
+
+    [TestMethod]
+    [DataRow(unchecked((int)0x8001010E))]
+    [DataRow(unchecked((int)0x80004005))]
+    public async Task ClipboardBackupDoesNotRetryNonContentionErrors(int hresult)
+    {
+        SetClipboardText("Non-transient clipboard error fixture");
+        var attempts = 0;
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => Target.CaptureClipboardAsync((_, _) =>
+            {
+                Interlocked.Increment(ref attempts);
+                var failure = Marshal.GetExceptionForHR(hresult, new IntPtr(-1));
+                Assert.IsNotNull(failure);
+                return Task.FromException<object>(failure);
+            }));
+        Assert.AreEqual(1, attempts, "A non-contention clipboard failure was retried.");
+        Assert.IsNotNull(error.InnerException);
+        Assert.AreEqual(hresult, error.InnerException.HResult, "The original clipboard failure was not preserved.");
     }
 
     private void InvokeCoreAction(string name, Key directKey, Key accelerator, Invocation invocation)

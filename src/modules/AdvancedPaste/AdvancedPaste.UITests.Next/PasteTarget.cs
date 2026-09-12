@@ -2,9 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
 using Forms = System.Windows.Forms;
+using WinClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
 
 namespace AdvancedPaste.UITests;
 
@@ -96,6 +100,56 @@ internal sealed class PasteTarget : IDisposable
             KeyboardHelper.SendChord(Key.Ctrl, Key.C);
         });
     }
+
+    internal Task<DataPackage> CaptureClipboardAsync() =>
+        CaptureClipboardAsync((content, format) => content.GetDataAsync(format).AsTask());
+
+    internal Task<DataPackage> CaptureClipboardAsync(Func<DataPackageView, string, Task<object>> readData) => Invoke(async () =>
+    {
+        ArgumentNullException.ThrowIfNull(readData);
+
+        // Clipboard-backed format requests require the pumping STA, including continuations after await.
+        var timeout = TimeSpan.FromSeconds(10);
+        var timer = Stopwatch.StartNew();
+        var format = "clipboard format enumeration";
+        while (true)
+        {
+            try
+            {
+                if (timer.Elapsed >= timeout)
+                {
+                    throw new TimeoutException("The clipboard snapshot deadline expired.");
+                }
+
+                format = "clipboard format enumeration";
+                var original = WinClipboard.GetContent();
+                var snapshot = new DataPackage();
+                foreach (var availableFormat in original.AvailableFormats)
+                {
+                    format = availableFormat;
+                    var remaining = timeout - timer.Elapsed;
+                    if (remaining <= TimeSpan.Zero)
+                    {
+                        throw new TimeoutException("The clipboard snapshot deadline expired.");
+                    }
+
+                    var value = await readData(original, format).WaitAsync(remaining);
+                    snapshot.SetData(format, value);
+                }
+
+                return snapshot;
+            }
+            catch (COMException exception) when (exception.HResult == unchecked((int)0x800401D0) && timer.Elapsed < timeout)
+            {
+                // Retry a fresh snapshot only for clipboard contention, without blocking the STA pump.
+                await Task.Delay(100);
+            }
+            catch (Exception exception) when (exception is COMException or TimeoutException)
+            {
+                throw new InvalidOperationException($"Could not preserve clipboard format '{format}' (HRESULT 0x{exception.HResult:X8}).", exception);
+            }
+        }
+    });
 
     internal void AssertText(string expected)
     {
