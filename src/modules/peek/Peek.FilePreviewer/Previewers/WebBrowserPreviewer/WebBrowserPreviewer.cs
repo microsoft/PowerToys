@@ -97,7 +97,8 @@ namespace Peek.FilePreviewer.Previewers
         {
             cancellationToken.ThrowIfCancellationRequested();
             State = PreviewState.Loading;
-            await LoadDisplayInfoAsync(cancellationToken);
+            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
+            await DisplayInfoTask; // Wait for the display info to load before checking for errors
 
             if (HasFailedLoadingPreview())
             {
@@ -111,45 +112,55 @@ namespace Peek.FilePreviewer.Previewers
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await Dispatcher.RunOnUiThread(async () =>
+                string extension = File.Extension;
+
+                // Default: non-dev file preview with standard context menu
+                bool isDevFilePreview = false;
+                bool customContextMenu = false;
+                Uri previewUri;
+
+                // Determine preview strategy based on file type priority
+                if (extension == ".md")
                 {
-                    string extension = File.Extension;
+                    // Markdown files use custom renderer
+                    var raw = await ReadHelper.Read(File.Path.ToString(), _previewSettings.SourceCodeMaxFileSizeBytes, cancellationToken).ConfigureAwait(false);
+                    previewUri = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
+                }
+                else if (extension == ".svg")
+                {
+                    // SVG files are rendered directly by WebView2 for better compatibility
+                    // with complex SVGs from Adobe Illustrator, Inkscape, etc.
+                    previewUri = new Uri(File.Path);
+                }
+                else if (extension == ".html" || extension == ".htm")
+                {
+                    // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
+                    previewUri = new Uri(File.Path);
+                }
+                else if (extension == ".pdf")
+                {
+                    previewUri = new Uri(File.Path);
+                }
+                else
+                {
+                    // Source code files use Monaco editor
+                    // Only extensions Monaco doesn't recognize are sniffed to check if they can be displayed as plain text.
+                    if (!IsItemSupported(File) && !await TextFileHelper.IsTextFileAsync(File.Path, _previewSettings.SourceCodeMaxFileSizeBytes, cancellationToken).ConfigureAwait(false))
+                    {
+                        throw new NotSupportedException($"'{File.Path}' has an unrecognized extension and its content was not sniffed as text.");
+                    }
 
-                    // Default: non-dev file preview with standard context menu
-                    IsDevFilePreview = false;
-                    CustomContextMenu = false;
+                    isDevFilePreview = true;
+                    customContextMenu = true;
+                    var raw = await ReadHelper.Read(File.Path.ToString(), _previewSettings.SourceCodeMaxFileSizeBytes, cancellationToken).ConfigureAwait(false);
+                    previewUri = new Uri(MonacoHelper.PreviewTempFile(raw, extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
+                }
 
-                    // Determine preview strategy based on file type priority
-                    if (extension == ".md")
-                    {
-                        // Markdown files use custom renderer
-                        var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MarkdownHelper.PreviewTempFile(raw, File.Path, TempFolderPath.Path));
-                    }
-                    else if (extension == ".svg")
-                    {
-                        // SVG files are rendered directly by WebView2 for better compatibility
-                        // with complex SVGs from Adobe Illustrator, Inkscape, etc.
-                        Preview = new Uri(File.Path);
-                    }
-                    else if (extension == ".html" || extension == ".htm")
-                    {
-                        // Simple html file to preview. Shouldn't do things like enabling scripts or using a virtual mapped directory.
-                        Preview = new Uri(File.Path);
-                    }
-                    else if (MonacoHelper.SupportedMonacoFileTypes.Contains(extension))
-                    {
-                        // Source code files use Monaco editor
-                        IsDevFilePreview = true;
-                        CustomContextMenu = true;
-                        var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
-                    }
-                    else
-                    {
-                        // Fallback for other supported file types (e.g., PDF)
-                        Preview = new Uri(File.Path);
-                    }
+                await Dispatcher.RunOnUiThread(() =>
+                {
+                    IsDevFilePreview = isDevFilePreview;
+                    CustomContextMenu = customContextMenu;
+                    Preview = previewUri;
                 });
             });
         }
@@ -166,6 +177,17 @@ namespace Peek.FilePreviewer.Previewers
         public static bool IsItemSupported(IFileSystemItem item)
         {
             return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
+        }
+
+        /// <summary>
+        /// Last-resort check for files with no extension, or an extension Peek doesn't otherwise
+        /// recognize, whose content should be checked to confirm if it is text. Should only be
+        /// consulted after every other previewer (including the shell preview handler)
+        /// has declined the item.
+        /// </summary>
+        public static bool IsFallbackCandidate(IFileSystemItem item)
+        {
+            return item is FileItem && !IsItemSupported(item);
         }
 
         private bool HasFailedLoadingPreview()

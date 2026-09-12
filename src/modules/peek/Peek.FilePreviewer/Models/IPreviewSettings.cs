@@ -15,5 +15,7 @@ namespace Peek.FilePreviewer.Models
         public bool SourceCodeStickyScroll { get; }
 
         public bool SourceCodeMinimap { get; }
+
+        public long SourceCodeMaxFileSizeBytes { get; }
     }
 }
