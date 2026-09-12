@@ -152,7 +152,7 @@ namespace Microsoft.Plugin.Program.Programs
                                 var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                 info.UseShellExecute = true;
                                 info.Arguments = queryArguments;
-                                Process.Start(info);
+                                Main.StartProcess(Process.Start, info);
                                 return true;
                             },
                         });
@@ -212,6 +212,7 @@ namespace Microsoft.Plugin.Program.Programs
                 try
                 {
                     appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
+                    Log.Info($"Launched program: {DisplayName} ({UserModelId})", GetType());
                 }
                 catch (Exception ex)
                 {
