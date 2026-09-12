@@ -39,6 +39,8 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -92,6 +94,7 @@ public sealed partial class ListItemsView : UserControl,
         _isLoaded = true;
         SynchronizeGridItems();
         RegisterMessenger();
+        RegisterExistingRealizedItems();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -104,6 +107,7 @@ public sealed partial class ListItemsView : UserControl,
         SetItemsScrollViewer(null);
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
+        ReleaseRealizedItems();
     }
 
     private void RegisterMessenger()
@@ -334,6 +338,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
+        RegisterExistingRealizedItems();
+
         if (sender is ListViewBase view && ReferenceEquals(view, ItemView))
         {
             SynchronizeGridItems();
@@ -344,6 +350,13 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Unloaded(object sender, RoutedEventArgs e)
     {
+        if (sender is ListViewBase view)
+        {
+            // The incoming view may already be loaded. Release only the outgoing
+            // view's demand, even if its detached panel still has children.
+            ReleaseRealizedItems(view);
+        }
+
         if (ReferenceEquals(sender, _itemsScrollViewerOwner))
         {
             SetItemsScrollViewer(null);
@@ -372,6 +385,105 @@ public sealed partial class ListItemsView : UserControl,
         {
             _itemsScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
         }
+    }
+
+    private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        try
+        {
+            var container = args.ItemContainer;
+            if (!sender.IsLoaded || args.InRecycleQueue || args.Item is not ListItemViewModel item)
+            {
+                ReleaseRealizedItem(container);
+                return;
+            }
+
+            RegisterRealizedItem(sender, container, item);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to track a realized list item", ex);
+        }
+    }
+
+    private void RegisterRealizedItem(ListViewBase owner, SelectorItem container, ListItemViewModel item)
+    {
+        if (_realizedItems.TryGetValue(container, out var existing))
+        {
+            // Demand belongs to the item, not its current coordinator. A refetch
+            // replays a live registration even when this container is unchanged.
+            if (ReferenceEquals(existing.Owner, owner) && existing.Registration.IsFor(item))
+            {
+                return;
+            }
+
+            existing.Registration.Release();
+            _realizedItems.Remove(container);
+        }
+
+        var registration = item.BeginRealization();
+        if (registration.IsValid)
+        {
+            _realizedItems.Add(container, (owner, registration));
+        }
+    }
+
+    private void RegisterExistingRealizedItems()
+    {
+        try
+        {
+            // Unloading releases demand. Loading the same view need not raise
+            // ContainerContentChanging again. Only visit realized panel children,
+            // never the potentially very large Items collection.
+            RegisterExistingRealizedItems(ItemsList);
+            RegisterExistingRealizedItems(ItemsGrid);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to restore realized list item demand", ex);
+        }
+    }
+
+    private void RegisterExistingRealizedItems(ListViewBase view)
+    {
+        if (!view.IsLoaded || view.ItemsPanelRoot is not { } panel)
+        {
+            return;
+        }
+
+        foreach (var child in panel.Children)
+        {
+            if (child is SelectorItem container && view.ItemFromContainer(container) is ListItemViewModel item)
+            {
+                RegisterRealizedItem(view, container, item);
+            }
+        }
+    }
+
+    private void ReleaseRealizedItem(SelectorItem container)
+    {
+        if (_realizedItems.Remove(container, out var realized))
+        {
+            realized.Registration.Release();
+        }
+    }
+
+    private void ReleaseRealizedItems(ListViewBase owner)
+    {
+        foreach (var container in _realizedItems.Where(entry => ReferenceEquals(entry.Value.Owner, owner)).Select(entry => entry.Key).ToArray())
+        {
+            ReleaseRealizedItem(container);
+        }
+    }
+
+    private void ReleaseRealizedItems()
+    {
+        foreach (var realized in _realizedItems.Values)
+        {
+            realized.Registration.Release();
+        }
+
+        _realizedItems.Clear();
     }
 
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
@@ -713,6 +825,8 @@ public sealed partial class ListItemsView : UserControl,
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
+            @this.ReleaseRealizedItems();
+
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;

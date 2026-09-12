@@ -23,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private AutoHideCursorSettings AutoHideCursorSettingsConfig { get; set; }
+
         private FindMyMouseSettings FindMyMouseSettingsConfig { get; set; }
 
         private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
@@ -33,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private LaserPointerSettings LaserPointerSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<LaserPointerSettings> laserPointerSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<LaserPointerSettings> laserPointerSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -43,6 +45,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValues();
+
+            ArgumentNullException.ThrowIfNull(autoHideCursorSettingsRepository);
+
+            AutoHideCursorSettingsConfig = autoHideCursorSettingsRepository.SettingsConfig;
+            AutoHideCursorSettingsConfig.UpgradeSettingsConfiguration();
+            _autoHideCursorHideOnTyping = AutoHideCursorSettingsConfig.Properties.HideOnTyping.Value;
+            _autoHideCursorHideOnIdle = AutoHideCursorSettingsConfig.Properties.HideOnIdle.Value;
+            _autoHideCursorIdleDelaySeconds = Math.Clamp(
+                AutoHideCursorSettingsConfig.Properties.IdleDelayMs.Value,
+                AutoHideCursorProperties.MinimumIdleDelayMs,
+                AutoHideCursorProperties.MaximumIdleDelayMs) / 1000;
 
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
@@ -158,6 +171,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValues()
         {
+            _autoHideCursorEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAutoHideCursorEnabledValue();
+            _autoHideCursorEnabledStateIsGPOConfigured =
+                _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled ||
+                _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            if (_autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                _isAutoHideCursorEnabled = _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isAutoHideCursorEnabled = GeneralSettingsConfig.Enabled.AutoHideCursor;
+            }
+
             _findMyMouseEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
             if (_findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -1161,6 +1187,91 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
         }
 
+        public bool IsAutoHideCursorEnabled
+        {
+            get => _isAutoHideCursorEnabled;
+            set
+            {
+                if (_autoHideCursorEnabledStateIsGPOConfigured)
+                {
+                    return;
+                }
+
+                if (_isAutoHideCursorEnabled != value)
+                {
+                    _isAutoHideCursorEnabled = value;
+                    GeneralSettingsConfig.Enabled.AutoHideCursor = value;
+                    OnPropertyChanged(nameof(IsAutoHideCursorEnabled));
+                    OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsAutoHideCursorEnabledGpoConfigured => _autoHideCursorEnabledStateIsGPOConfigured;
+
+        public bool AutoHideCursorHideOnTyping
+        {
+            get => _autoHideCursorHideOnTyping;
+            set
+            {
+                if (_autoHideCursorHideOnTyping != value)
+                {
+                    _autoHideCursorHideOnTyping = value;
+                    AutoHideCursorSettingsConfig.Properties.HideOnTyping.Value = value;
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool AutoHideCursorHideOnIdle
+        {
+            get => _autoHideCursorHideOnIdle;
+            set
+            {
+                if (_autoHideCursorHideOnIdle != value)
+                {
+                    _autoHideCursorHideOnIdle = value;
+                    AutoHideCursorSettingsConfig.Properties.HideOnIdle.Value = value;
+                    OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public int AutoHideCursorIdleDelaySeconds
+        {
+            get => _autoHideCursorIdleDelaySeconds;
+            set
+            {
+                int normalizedValue = Math.Clamp(
+                    value,
+                    AutoHideCursorProperties.MinimumIdleDelayMs / 1000,
+                    AutoHideCursorProperties.MaximumIdleDelayMs / 1000);
+                if (_autoHideCursorIdleDelaySeconds != normalizedValue)
+                {
+                    _autoHideCursorIdleDelaySeconds = normalizedValue;
+                    AutoHideCursorSettingsConfig.Properties.IdleDelayMs.Value = normalizedValue * 1000;
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsAutoHideCursorIdleDelayEnabled => _isAutoHideCursorEnabled && _autoHideCursorHideOnIdle;
+
+        private void NotifyAutoHideCursorPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndAutoHideCursorSettings outsettings = new SndAutoHideCursorSettings(AutoHideCursorSettingsConfig);
+            SndModuleSettings<SndAutoHideCursorSettings> ipcMessage = new SndModuleSettings<SndAutoHideCursorSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(AutoHideCursorSettingsConfig.ToJsonString(), AutoHideCursorSettings.ModuleName);
+        }
+
         public bool IsCursorWrapEnabled
         {
             get => _isCursorWrapEnabled;
@@ -1641,6 +1752,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
+            OnPropertyChanged(nameof(IsAutoHideCursorEnabled));
+            OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
             OnPropertyChanged(nameof(IsFindMyMouseEnabled));
             OnPropertyChanged(nameof(IsMouseHighlighterEnabled));
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
@@ -1650,6 +1763,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private Func<string, int> SendConfigMSG { get; }
+
+        private GpoRuleConfigured _autoHideCursorEnabledGpoRuleConfiguration;
+        private bool _autoHideCursorEnabledStateIsGPOConfigured;
+        private bool _isAutoHideCursorEnabled;
+        private bool _autoHideCursorHideOnTyping;
+        private bool _autoHideCursorHideOnIdle;
+        private int _autoHideCursorIdleDelaySeconds;
 
         private GpoRuleConfigured _findMyMouseEnabledGpoRuleConfiguration;
         private bool _findMyMouseEnabledStateIsGPOConfigured;

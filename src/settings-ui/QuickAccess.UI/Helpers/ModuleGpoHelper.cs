@@ -16,6 +16,7 @@ internal static class ModuleGpoHelper
         {
             ModuleType.AdvancedPaste => GPOWrapper.GetConfiguredAdvancedPasteEnabledValue(),
             ModuleType.AlwaysOnTop => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue(),
+            ModuleType.AutoHideCursor => GPOWrapper.GetConfiguredAutoHideCursorEnabledValue(),
             ModuleType.Awake => GPOWrapper.GetConfiguredAwakeEnabledValue(),
             ModuleType.CmdPal => GPOWrapper.GetConfiguredCmdPalEnabledValue(),
             ModuleType.ColorPicker => GPOWrapper.GetConfiguredColorPickerEnabledValue(),

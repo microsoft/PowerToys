@@ -100,11 +100,11 @@ namespace AltWindowCycleLogic
         layout.scale = scale;
         layout.pad = ScaledValue(scale, 32);
         layout.gap = ScaledValue(scale, 26);
-        layout.tileW = ScaledValue(scale, 270);
-        layout.headerH = ScaledValue(scale, 48);
-        layout.previewH = ScaledValue(scale, 142);
-        layout.inner = ScaledValue(scale, 6);
-        layout.radius = ScaledValue(scale, 10);
+        layout.tileW = ScaledValue(scale, 300);
+        layout.headerH = ScaledValue(scale, 44);
+        layout.previewH = ScaledValue(scale, 158);
+        layout.inner = ScaledValue(scale, 8);
+        layout.radius = ScaledValue(scale, 8);
         layout.cardTrimBottom = 0;
         layout.iconSize = ScaledValue(scale, 16);
         layout.tileH = layout.headerH + layout.inner + layout.previewH + layout.inner;
@@ -173,16 +173,16 @@ namespace AltWindowCycleLogic
         return { left, top, left + layout.tileW, top + layout.tileH - layout.cardTrimBottom };
     }
 
+    // Flush to the card's left/right/bottom edges, and now flush directly
+    // under the header row too -- like the native Alt-Tab switcher's
+    // thumbnail, with no inset padding on any side.
     inline RECT PreviewRect(const OverlayLayout& layout, const RECT& tile)
     {
-        // Sits directly below the header band, inset by the 1px card stroke on the
-        // left/right/bottom so the card border stays visible around the image.
-        const int stroke = ScaledValue(layout.scale, 1);
         return {
-            tile.left + stroke,
+            tile.left,
             tile.top + layout.headerH,
-            tile.right - stroke,
-            tile.bottom - stroke
+            tile.right,
+            tile.bottom
         };
     }
 
