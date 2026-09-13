@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using System.Globalization;
 using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -96,6 +97,7 @@ public sealed partial class ContentFormControl : UserControl
 
     private void OnActualThemeChanged(FrameworkElement sender, object args)
     {
+        PreserveCurrentInputValues();
         // _renderer is shared by every ContentFormControl, so re-point its HostConfig
         // on each theme change. That's safe because ActualThemeChanged fires on every
         // element in the tree, so each live control re-renders itself immediately
@@ -106,6 +108,67 @@ public sealed partial class ContentFormControl : UserControl
         if (card is not null)
         {
             RenderCard(card);
+        }
+    }
+
+    private void PreserveCurrentInputValues()
+    {
+        var renderedCard = _renderedCard;
+        if (renderedCard is null)
+        {
+            return;
+        }
+
+        foreach (var input in renderedCard.UserInputs)
+        {
+            var currentValue = input.CurrentValue;
+
+            switch (input.InputElement)
+            {
+                case AdaptiveTextInput textInput:
+                    textInput.Value = currentValue;
+                    break;
+
+                case AdaptiveNumberInput numberInput:
+                    if (string.IsNullOrWhiteSpace(currentValue))
+                    {
+                        numberInput.Value = null;
+                    }
+                    else if (double.TryParse(
+                        currentValue,
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out var number))
+                    {
+                        numberInput.Value = number;
+                    }
+
+                    break;
+
+                case AdaptiveDateInput dateInput:
+                    dateInput.Value = currentValue;
+                    break;
+
+                case AdaptiveTimeInput timeInput:
+                    timeInput.Value = currentValue;
+                    break;
+
+                case AdaptiveChoiceSetInput choiceSetInput:
+                    choiceSetInput.Value = currentValue;
+                    break;
+
+                case AdaptiveToggleInput toggleInput:
+                    toggleInput.Value = currentValue;
+                    break;
+
+                case AdaptiveListInputElement listInput:
+                    listInput.Value = currentValue;
+                    break;
+
+                case AdaptiveFilePathInputElement filePathInput:
+                    filePathInput.Value = currentValue;
+                    break;
+            }
         }
     }
 
