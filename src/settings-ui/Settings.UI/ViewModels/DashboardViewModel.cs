@@ -106,13 +106,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
-        private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+        private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader;
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : this(
+                settingsRepository,
+                ipcMSGCallBackFunc,
+                new QuickAccessViewModel(
+                    settingsRepository,
+                    new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
+                    moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                    moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled,
+                    Helpers.ResourceLoaderInstance.ResourceLoader),
+                DispatcherQueue.GetForCurrentThread())
         {
-            dispatcher = DispatcherQueue.GetForCurrentThread();
+            resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            BuildModuleList();
+            SortModuleList();
+            RefreshShortcutModules();
+        }
+
+        internal DashboardViewModel(
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            QuickAccessViewModel quickAccessViewModel,
+            DispatcherQueue dispatcherQueue = null)
+        {
+            dispatcher = dispatcherQueue;
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
+            _quickAccessViewModel = quickAccessViewModel;
 
             _settingsRepository.SettingsChanged += OnSettingsChanged;
 
@@ -121,17 +144,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            _quickAccessViewModel = new QuickAccessViewModel(
-                _settingsRepository,
-                new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
-                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
-                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled,
-                resourceLoader);
-
-            BuildModuleList();
-            SortModuleList();
-            RefreshShortcutModules();
         }
 
         private void OnSettingsChanged(GeneralSettings newSettings)
@@ -904,6 +916,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _isDisposed = true;
+            _quickAccessViewModel.Dispose();
             base.Dispose();
             if (_settingsRepository != null)
             {

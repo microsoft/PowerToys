@@ -21,9 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class DashboardPage : NavigablePage, IRefreshablePage
     {
         /// <summary>
-        /// Gets or sets view model.
+        /// Gets the view model.
         /// </summary>
-        public DashboardViewModel ViewModel { get; set; }
+        public DashboardViewModel ViewModel => _viewModelLifetime?.ViewModel;
+
+        private readonly DashboardViewModelLifetime _viewModelLifetime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardPage"/> class.
@@ -34,12 +36,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             var settingsUtils = SettingsUtils.Default;
 
-            ViewModel = new DashboardViewModel(
-               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            _viewModelLifetime = new DashboardViewModelLifetime(() => new DashboardViewModel(
+               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage));
             DataContext = ViewModel;
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
-            Unloaded += (s, e) => ViewModel?.Dispose();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (_viewModelLifetime.Load())
+            {
+                DataContext = ViewModel;
+
+                // The same Page can reload; compiled bindings must follow the new model too.
+                Bindings.Update();
+            }
+
+            ViewModel.OnPageLoaded();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _viewModelLifetime.Unload();
         }
 
         public void RefreshEnabledState()
