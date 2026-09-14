@@ -81,6 +81,7 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
 
     m_cancel = false;
     auto rect = GetMonitorRectFromCursor();
+    m_sourceMonitorRect = rect;
     SelectRectangleDebugLog( L"[SelectRectangle] Monitor rect=(%ld,%ld)-(%ld,%ld)\n",
                              rect.left,
                              rect.top,
@@ -128,9 +129,19 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
         SelectRectangleDebugLog( L"[SelectRectangle] Cursor clipped to monitor bounds\n" );
     }
 
-    MSG message;
-    while( GetMessageW( &message, nullptr, 0, 0 ) != 0 )
+    MSG message{};
+    for( ;; )
     {
+        const BOOL result = GetMessageW( &message, nullptr, 0, 0 );
+        if( result <= 0 )
+        {
+            Stop();
+            // A nested selector must not consume shutdown intended for the
+            // main message loop (including PowerToys' WM_QUIT exit path).
+            if( result == 0 )
+                PostQuitMessage( static_cast<int>( message.wParam ) );
+            return false;
+        }
         TranslateMessage( &message );
         DispatchMessageW( &message );
         if( m_cancel )
@@ -237,8 +248,11 @@ void SelectRectangle::ShowSelected()
     // Resize the window to the selection rectangle and translate the position.
     RECT windowRect;
     GetWindowRect( m_window.get(), &windowRect );
-    point.x += windowRect.left;
-    point.y += windowRect.top;
+    if( !m_fullMonitor )
+    {
+        point.x += windowRect.left;
+        point.y += windowRect.top;
+    }
     MoveWindow( m_window.get(), point.x, point.y, rect.right, rect.bottom, true );
     SelectRectangleDebugLog( L"[SelectRectangle] Border window moved to (%ld,%ld) size=%ldx%ld borderWidth=%d\n",
                              point.x,

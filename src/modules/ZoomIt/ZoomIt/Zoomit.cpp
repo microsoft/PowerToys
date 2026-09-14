@@ -18,6 +18,7 @@
 #include "GifRecordingSession.h"
 #include "WebcamPreviewWindow.h"
 #include "MirrorWindow.h"
+#include "VirtualMirrorSession.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
 #include "ImageEncoder.h"
@@ -223,7 +224,11 @@ BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 WebcamPreviewWindow g_WebcamPreview;
 SelectRectangle g_MirrorSelectRectangle;
+zoomit_mirror::VirtualMirrorSession g_VirtualMirrorSession;
 MirrorWindow g_MirrorWindow;
+bool g_MirrorSelecting = false;
+bool g_MirrorStopping = false;
+constexpr UINT_PTR VIRTUAL_MIRROR_LAYOUT_TIMER = 6;
 // The full path of the last saved recording file.
 std::wstring	g_RecordingSaveLocation;
 // The last user-chosen recording filename. Used to construct unique recording filenames.
@@ -7041,14 +7046,57 @@ auto GetUniqueScreenshotFilename()
 
 //----------------------------------------------------------------------------
 //
-// FindMirrorTargetMonitor
-//
-// Picks the monitor to mirror onto: the one showing a PowerPoint slide show
-// if there is one, otherwise the first monitor that isn't the source.
+// Mirror session helpers. All window/capture operations run on the UI thread.
 //
 //----------------------------------------------------------------------------
+static void StopMirror( HWND notifyWindow )
+{
+    if( g_MirrorStopping )
+        return;
+
+    g_MirrorStopping = true;
+    auto stopping = wil::scope_exit( [] { g_MirrorStopping = false; } );
+    KillTimer( notifyWindow, VIRTUAL_MIRROR_LAYOUT_TIMER );
+    g_MirrorWindow.Stop();
+    g_MirrorSelectRectangle.Stop();
+    // The output/capture must be gone before the owned display is removed.
+    // Close also cancels and joins a pending device creation.
+    g_VirtualMirrorSession.Close();
+    MSG stale{};
+    while( PeekMessageW( &stale, notifyWindow, WM_USER_MIRROR_STOP, WM_USER_MIRROR_STOP, PM_REMOVE ) )
+    {
+        // WM_QUIT is retrieved regardless of the requested message range.
+        if( stale.message == WM_QUIT )
+        {
+            PostQuitMessage( static_cast<int>( stale.wParam ) );
+            break;
+        }
+    }
+}
+
+static bool StartMirror( HWND notifyWindow, HWND sourceWindow, HMONITOR sourceMonitor,
+                         HMONITOR targetMonitor, RECT sourceRect,
+                         MirrorWindow::AnnotationState ( *annotationQuery )() )
+{
+    const bool trackWindow = sourceWindow != nullptr && g_MirrorTrackWindow;
+    try
+    {
+        auto item = trackWindow || sourceWindow == nullptr ?
+            util::CreateCaptureItemForMonitor( sourceMonitor ) :
+            util::CreateCaptureItemForWindow( sourceWindow );
+        return item != nullptr && g_MirrorWindow.Start( item, sourceRect, sourceWindow,
+            sourceMonitor, targetMonitor, notifyWindow, annotationQuery, trackWindow,
+            sourceWindow == nullptr ? g_MirrorSelectRectangle.Window() : nullptr );
+    }
+    catch( ... )
+    {
+        return false;
+    }
+}
+
 HMONITOR FindMirrorTargetMonitor( HMONITOR sourceMonitor )
 {
+    // Prefer the slide-show monitor, otherwise the first non-source monitor.
     HWND hWndSlideShow = FindWindow( L"screenClass", NULL );
     if( hWndSlideShow != NULL && IsWindowVisible( hWndSlideShow ) ) {
 
@@ -7622,6 +7670,13 @@ LRESULT APIENTRY MainWndProc(
     static BITMAP	bmp;
     static BOOLEAN	g_TimerActive = FALSE;
     static BOOLEAN	g_Zoomed = FALSE;
+    const auto mirrorAnnotationQuery = [] {
+        if( g_hWndLiveZoom != nullptr && IsWindowVisible( g_hWndLiveZoom ) )
+            return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
+        if( g_Zoomed )
+            return MirrorWindow::AnnotationState::Annotating;
+        return MirrorWindow::AnnotationState::None;
+    };
     static TypeModeState g_TypeMode = TypeModeOff;
     static BOOLEAN	g_HaveTyped = FALSE;
     static DEVMODE	secondaryDevMode;
@@ -8014,6 +8069,15 @@ LRESULT APIENTRY MainWndProc(
 
             // Do not process any other hotkeys while panorama capture is active.
             LogPanoramaState( L"WM_HOTKEY consumed while panorama active", wParam );
+            return 0;
+        }
+
+        // Mirror selection runs a nested message loop. Consume its hotkeys
+        // here instead of treating the separate mirror selector as stale.
+        if( g_MirrorSelecting || g_VirtualMirrorSession.IsPending() || g_MirrorStopping )
+        {
+            if( wParam == MIRROR_HOTKEY || wParam == MIRROR_CROP_HOTKEY || wParam == MIRROR_WINDOW_HOTKEY )
+                StopMirror( hWnd );
             return 0;
         }
 
@@ -8742,16 +8806,13 @@ LRESULT APIENTRY MainWndProc(
         case MIRROR_WINDOW_HOTKEY: {
 
             //
-            // DemoMirror: mirror the screen, a region (Shift), or a window
-            // (Alt), including the mouse cursor, onto a second monitor on
-            // top of a slide show so the audience can follow a demo without
-            // the presenter leaving the presentation. Entered once to start
-            // mirroring and again to stop.
+            // Region mirroring creates a temporary virtual display. Screen
+            // and window mirroring retain the existing presentation monitor.
+            // Enter any mirror hotkey again to stop the current session.
             //
             if( g_MirrorWindow.IsActive() ) {
 
-                g_MirrorWindow.Stop();
-                g_MirrorSelectRectangle.Stop();
+                StopMirror( hWnd );
                 break;
             }
 
@@ -8799,20 +8860,40 @@ LRESULT APIENTRY MainWndProc(
                 // Select the region to mirror. The selection border stays up
                 // to show what's being mirrored; it is excluded from capture.
                 g_RecordCropping = TRUE;
+                g_MirrorSelecting = true;
                 g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
                 g_MirrorSelectRectangle.AspectRatio( 0.0 );
-                bool mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr, false, MIRROR_BORDER_COLOR );
+                bool mirrorCanceled = true;
+                try
+                {
+                    mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr, false, MIRROR_BORDER_COLOR );
+                }
+                catch( ... )
+                {
+                    StopMirror( hWnd );
+                }
+                g_MirrorSelecting = false;
                 g_RecordCropping = FALSE;
                 if( mirrorCanceled ) {
-
+                    StopMirror( hWnd );
                     break;
                 }
-                mirrorSourceRect = g_MirrorSelectRectangle.SelectedRect();
-                mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONEAREST );
+                mirrorSourceRect = g_MirrorSelectRectangle.SelectedScreenRect();
+                mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONULL );
 
                 // The selection border defaults to translucent; make the
                 // mirror border fully opaque so it reads bright green.
                 SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+
+                std::wstring error;
+                if( !g_VirtualMirrorSession.Begin( hWnd, mirrorSourceMonitor, mirrorSourceRect, error ) )
+                {
+                    StopMirror( hWnd );
+                    MessageBoxW( hWnd, error.c_str(), APPNAME, MB_OK | MB_ICONERROR );
+                }
+                // Continue on the UI thread after device creation and display
+                // topology have settled. Other mirror hotkeys can cancel it.
+                break;
 
             } else {
 
@@ -8834,45 +8915,14 @@ LRESULT APIENTRY MainWndProc(
             HMONITOR mirrorTargetMonitor = FindMirrorTargetMonitor( mirrorSourceMonitor );
             if( mirrorTargetMonitor == NULL ) {
 
-                g_MirrorSelectRectangle.Stop();
+                StopMirror( hWnd );
                 MessageBox( hWnd, L"Screen mirroring requires a second monitor.", APPNAME, MB_OK );
                 break;
             }
 
-            // With window tracking, mirror the monitor region under the
-            // window instead of the window's own surface so ZoomIt zoom and
-            // draw annotations show in place.
-            bool mirrorTrackWindow = ( hWndMirrorSource != NULL && g_MirrorTrackWindow );
+            if( !StartMirror( hWnd, hWndMirrorSource, mirrorSourceMonitor, mirrorTargetMonitor, mirrorSourceRect, mirrorAnnotationQuery ) ) {
 
-            winrt::Windows::Graphics::Capture::GraphicsCaptureItem mirrorItem{ nullptr };
-            try {
-
-                if( hWndMirrorSource != NULL && !mirrorTrackWindow )
-                    mirrorItem = util::CreateCaptureItemForWindow( hWndMirrorSource );
-                else
-                    mirrorItem = util::CreateCaptureItemForMonitor( mirrorSourceMonitor );
-            }
-            catch( const winrt::hresult_error& ) {}
-
-            // Reports when a zoom/draw/live-zoom mode is active so a window
-            // mirror can temporarily capture the monitor instead - those
-            // modes render in overlay windows a window capture can't see.
-            auto mirrorAnnotationQuery = []() {
-                if( g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ))
-                    return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
-                if( g_Zoomed )
-                    return MirrorWindow::AnnotationState::Annotating;
-                return MirrorWindow::AnnotationState::None;
-            };
-
-            HWND mirrorBorderWindow = hWndMirrorSource == NULL ? g_MirrorSelectRectangle.Window() : NULL;
-            if( mirrorItem == nullptr ||
-                !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
-                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
-                                       mirrorAnnotationQuery, mirrorTrackWindow,
-                                       mirrorBorderWindow )) {
-
-                g_MirrorSelectRectangle.Stop();
+                StopMirror( hWnd );
                 MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );
             }
             break;
@@ -10568,8 +10618,31 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_USER_MIRROR_STOP:
         // The mirrored window closed.
-        g_MirrorWindow.Stop();
-        g_MirrorSelectRectangle.Stop();
+        StopMirror( hWnd );
+        break;
+
+    case zoomit_mirror::WM_USER_MIRROR_DEVICE_READY:
+    {
+        if( !g_VirtualMirrorSession.IsPending() )
+            break;
+        std::wstring error;
+        if( g_VirtualMirrorSession.Complete( error ) )
+        {
+            if( StartMirror( hWnd, nullptr, g_VirtualMirrorSession.SourceMonitor(),
+                             g_VirtualMirrorSession.TargetMonitor(), g_VirtualMirrorSession.Region(), mirrorAnnotationQuery ) &&
+                SetTimer( hWnd, VIRTUAL_MIRROR_LAYOUT_TIMER, 1000, nullptr ) != 0 )
+                break;
+            error = L"Unable to start mirroring to the virtual display.";
+        }
+        StopMirror( hWnd );
+        MessageBoxW( hWnd, error.c_str(), APPNAME, MB_OK | MB_ICONERROR );
+        break;
+    }
+
+    case WM_DISPLAYCHANGE:
+        if( g_MirrorSelecting ||
+            ( g_VirtualMirrorSession.IsActive() && !g_VirtualMirrorSession.IsLayoutCurrent() ) )
+            StopMirror( hWnd );
         break;
 
     case WM_USER_RECORDING_STARTED:
@@ -11508,6 +11581,10 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_TIMER:
         switch( wParam ) {
+        case VIRTUAL_MIRROR_LAYOUT_TIMER:
+            if( g_VirtualMirrorSession.IsActive() && !g_VirtualMirrorSession.IsLayoutCurrent() )
+                StopMirror( hWnd );
+            break;
         case 0:
             //
             // Break timer
@@ -11805,6 +11882,7 @@ LRESULT APIENTRY MainWndProc(
         break;
 
     case WM_DESTROY:
+        StopMirror( hWnd );
         // Restore screensaver settings on clean shutdown in case the
         // break screensaver was still active.
         if( HasOrphanedScreenSaverSettings() )
@@ -12884,6 +12962,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     }
     int retCode = (int) msg.wParam;
 
+    // PowerToys can post WM_QUIT directly, bypassing WM_DESTROY.
+    StopMirror( g_hWndMain );
     g_running = FALSE;
 
 #ifdef __ZOOMIT_POWERTOYS__

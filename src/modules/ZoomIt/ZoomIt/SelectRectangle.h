@@ -24,6 +24,15 @@ public:
     // Sets the border color Start resets to (default: capture-API yellow).
     void BorderColor( COLORREF color ) { m_configuredBorderColor = color; m_borderColor = color; }
     RECT SelectedRect() const { return m_selectedRect; }
+    // Drag selections use monitor-local coordinates; mirror capture needs
+    // desktop coordinates, including monitors to the left/above the primary.
+    RECT SelectedScreenRect() const
+    {
+        RECT rect = m_selectedRect;
+        if( !m_fullMonitor )
+            OffsetRect( &rect, m_sourceMonitorRect.left, m_sourceMonitorRect.top );
+        return rect;
+    }
     bool IsActive() const { return m_window != nullptr; }
 
     // borderColor sets the initial selection border color (defaults to yellow to
@@ -49,6 +58,7 @@ private:
     int m_minSize = 34;
     double m_aspectRatio = 0.0; // 0 = no constraint, e.g. 16.0/9.0
     RECT m_selectedRect{};
+    RECT m_sourceMonitorRect{};
     COLORREF m_borderColor = RGB( 255, 222, 0 ); // default: yellow (matches capture API)
     COLORREF m_configuredBorderColor = RGB( 255, 222, 0 ); // color Start resets to
     bool m_recordingActive = false; // true once first frame is captured

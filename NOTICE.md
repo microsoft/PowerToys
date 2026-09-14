@@ -1552,6 +1552,20 @@ SOFTWARE.
 
 ## Utility: ZoomIt
 
+### Virtual Display Driver (external development prerequisite)
+
+The ZoomIt virtual mirror experiment uses the separately installed Virtual Display
+Driver to create a temporary display for DemoMirror. This is a local development
+dependency on the experimental branch; no driver source or binaries are committed
+to this repository or bundled with PowerToys, and the PowerToys installer does not
+install this driver.
+
+**Source**: <https://github.com/VirtualDrivers/Virtual-Display-Driver>
+
+**Pinned release**: <https://github.com/VirtualDrivers/Virtual-Display-Driver/releases/tag/25.7.23>
+
+**License**: [MIT License](https://github.com/VirtualDrivers/Virtual-Display-Driver/blob/25.7.23/LICENSE)
+
 ### libwebp
 
 ZoomIt uses libwebp to encode screenshots in the WebP image format.

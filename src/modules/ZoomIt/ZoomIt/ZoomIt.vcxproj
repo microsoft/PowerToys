@@ -258,6 +258,8 @@
     </ClCompile>
     <ClCompile Include="GifRecordingSession.cpp" />
     <ClCompile Include="MirrorWindow.cpp" />
+    <ClCompile Include="VirtualDisplay.cpp" />
+    <ClCompile Include="VirtualMirrorSession.cpp" />
     <ClCompile Include="NoiseSuppressor.cpp" />
     <ClCompile Include="PanoramaCapture.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
@@ -483,6 +485,9 @@
     <ClInclude Include="GifRecordingSession.h" />
     <ClInclude Include="ImageEncoder.h" />
     <ClInclude Include="MirrorWindow.h" />
+    <ClInclude Include="VirtualDisplay.h" />
+    <ClInclude Include="VirtualMirrorLayout.h" />
+    <ClInclude Include="VirtualMirrorSession.h" />
     <ClInclude Include="NoiseSuppressor.h" />
     <ClInclude Include="PanoramaCapture.h" />
     <ClInclude Include="pch.h" />
