@@ -12,6 +12,36 @@ namespace PowerToys.TryRun.UnitTests;
 public sealed class FuzzSmokeTests
 {
     [TestMethod]
+    public void WorkspaceNamesPreviewsAndFileRoundTripsHandleFuzzInputs()
+    {
+        var random = new Random(73);
+        foreach (var seed in new[] { "..\\escape", "CON.txt", "file.txt:stream", "folder/你好.txt", "\\\\?\\C:\\file", "result.txt", "a\0b" })
+        {
+            WorkspaceFuzzer.FuzzTarget(Encoding.UTF8.GetBytes(seed));
+        }
+
+        for (var index = 0; index < 1000; index++)
+        {
+            var data = new byte[random.Next(1, 10000)];
+            random.NextBytes(data);
+            WorkspaceFuzzer.FuzzTarget(data);
+        }
+
+        foreach (var name in new[] { "result.txt", "nested/你好.txt", "binary.bin" })
+        {
+            var encoded = Encoding.UTF8.GetBytes(name);
+            for (var index = 0; index < 16; index++)
+            {
+                var data = new byte[1 + encoded.Length + random.Next(0, 512)];
+                random.NextBytes(data);
+                data[0] = (byte)encoded.Length;
+                encoded.CopyTo(data, 1);
+                WorkspaceFuzzer.FileRoundTrip(data);
+            }
+        }
+    }
+
+    [TestMethod]
     public void MalformedProtocolAndDiagnosticInputsDoNotEscapeValidation()
     {
         var random = new Random(42);

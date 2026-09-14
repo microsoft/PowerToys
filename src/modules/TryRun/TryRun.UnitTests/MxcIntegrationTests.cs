@@ -26,6 +26,44 @@ public sealed class MxcIntegrationTests
     }
 
     [TestMethod]
+    public async Task CopiedFilesCanBeModifiedReviewedAndExported()
+    {
+        using var input = new RunSession();
+        using var session = new RunSession();
+        using var destination = new RunSession();
+        var original = Path.Combine(input.WorkingDirectory, "notes.txt");
+        File.WriteAllText(original, "original");
+        var workspace = new FileWorkspace(session);
+        workspace.Import([original], CancellationToken.None);
+        var messages = new ConcurrentQueue<WorkerMessage>();
+        var request = new ExecutionRequest("Set-Content notes.txt changed -NoNewline -ErrorAction Stop; New-Item -ItemType Directory results -ErrorAction Stop | Out-Null; Set-Content results/new.txt created -NoNewline -ErrorAction Stop", session.WorkingDirectory, session.TemporaryDirectory, 30);
+        var result = await new WorkerClient(workerPath).RunAsync(request, new InlineProgress(messages.Enqueue), CancellationToken.None);
+        Assert.AreEqual(0, result.ExitCode, string.Join("\n", messages.Select(message => message.Text)));
+        var changes = workspace.Review(CancellationToken.None);
+        Assert.AreEqual(FileChangeKind.Modified, changes.Single(change => change.RelativePath == "notes.txt").Kind);
+        Assert.AreEqual(FileChangeKind.Added, changes.Single(change => change.RelativePath == "results\\new.txt").Kind);
+        var exported = workspace.Export(destination.WorkingDirectory, changes.Select(change => change.RelativePath), CancellationToken.None);
+        Assert.AreEqual("changed", File.ReadAllText(Path.Combine(exported, "notes.txt")));
+        Assert.AreEqual("created", File.ReadAllText(Path.Combine(exported, "results", "new.txt")));
+        Assert.AreEqual("original", File.ReadAllText(original));
+    }
+
+    [TestMethod]
+    public async Task TimedOutRunCanExportPartialResults()
+    {
+        using var session = new RunSession();
+        using var destination = new RunSession();
+        var workspace = new FileWorkspace(session);
+        workspace.Import([], CancellationToken.None);
+        var request = new ExecutionRequest("Set-Content partial.txt saved -NoNewline -ErrorAction Stop; Start-Sleep -Seconds 60", session.WorkingDirectory, session.TemporaryDirectory, 5);
+        var result = await new WorkerClient(workerPath).RunAsync(request, new InlineProgress(_ => { }), CancellationToken.None);
+        Assert.IsTrue(result.TimedOut);
+        Assert.AreEqual(FileChangeKind.Added, workspace.Review(CancellationToken.None).Single().Kind);
+        var exported = workspace.Export(destination.WorkingDirectory, ["partial.txt"], CancellationToken.None);
+        Assert.AreEqual("saved", File.ReadAllText(Path.Combine(exported, "partial.txt")));
+    }
+
+    [TestMethod]
     public async Task RunsTrustedScriptAndWritesOnlyItsWorkspace()
     {
         using var session = new RunSession();

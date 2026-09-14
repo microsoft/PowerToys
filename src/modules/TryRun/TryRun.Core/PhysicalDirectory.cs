@@ -10,7 +10,7 @@ namespace PowerToys.TryRun.Core;
 
 internal static partial class PhysicalDirectory
 {
-    public static unsafe string Resolve(string path)
+    public static string Resolve(string path)
     {
         // MSIX filesystem virtualization is not a reparse point. Lexical path
         // normalization alone can name a different directory in the sandbox.
@@ -20,6 +20,11 @@ internal static partial class PhysicalDirectory
             throw new IOException("Could not open the session directory.", new Win32Exception(Marshal.GetLastPInvokeError()));
         }
 
+        return Resolve(handle);
+    }
+
+    internal static unsafe string Resolve(SafeFileHandle handle)
+    {
         var buffer = new char[512];
         while (true)
         {
