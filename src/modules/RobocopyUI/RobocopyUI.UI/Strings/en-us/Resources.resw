@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CopyOptionsLabel.Text" xml:space="preserve">
+    <value>Copy options</value>
+  </data>
   <data name="CommandPreviewSelectorBarLabel.Text" xml:space="preserve">
     <value>Command Preview</value>
   </data>
@@ -134,5 +137,11 @@
   </data>
   <data name="SourceLabel.Text" xml:space="preserve">
     <value>Source</value>
+  </data>
+  <data name="RetryOptionsLabel.Text" xml:space="preserve">
+    <value>Retry options</value>
+  </data>
+  <data name="OutputSelectorBarLabel.Text" xml:space="preserve">
+    <value>Execution Output</value>
   </data>
 </root>

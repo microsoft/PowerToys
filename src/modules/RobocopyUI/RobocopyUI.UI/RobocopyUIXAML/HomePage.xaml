@@ -25,27 +25,32 @@
                 </Grid.RowDefinitions>
                 <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBox Margin="0,0,4,0" x:Name="SourceTextBox" Grid.Column="0" Grid.Row="1" />
-                <Button Margin="0,0,4,0" x:Uid="SourceBrowseButton" Grid.Column="1" Grid.Row="1">
+                <TextBox Margin="0,0,4,0" x:Name="SourceTextBox" Grid.Column="0" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
+                <Button Margin="0,0,4,0" x:Uid="SourceBrowseButton" x:Name="SourceBrowseButton" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
                     <FontIcon Glyph="&#xE8B7;" />
                 </Button>
-                <Button Margin="4,0,4,0" x:Uid="SwapButton" Grid.Column="2" Grid.Row="1">
+                <Button Margin="4,0,4,0" x:Uid="SwapButton" x:Name="SwapButton" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
                     <FontIcon Glyph="&#xE8AB;" />
                 </Button>
-                <TextBox Margin="4,0,4,0" x:Name="DestinationTextBox" Grid.Column="3" Grid.Row="1" />
-                <Button Margin="0,0,0,0" x:Uid="DestinationBrowseButton" Grid.Column="4" Grid.Row="1">
+                <TextBox Margin="4,0,4,0" x:Name="DestinationTextBox" Grid.Column="3" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
+                <Button Margin="0,0,0,0" x:Uid="DestinationBrowseButton" Grid.Column="4" Grid.Row="1" x:Name="DestinationBrowseButton" Click="DestinationBrowseButton_Click">
                     <FontIcon Glyph="&#xE8B7;" />
                 </Button>
             </Grid>
-            <SelectorBar>
-                <SelectorBarItem x:Uid="OptionsSelectorBarLabel">
+            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
+                <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
                     <SelectorBarItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
                     </SelectorBarItem.Icon>
                 </SelectorBarItem>
-                <SelectorBarItem x:Uid="CommandPreviewSelectorBarLabel">
+                <SelectorBarItem x:Uid="CommandPreviewSelectorBarLabel" Tag="CommandPreview">
                     <SelectorBarItem.Icon>
                         <FontIcon Glyph="&#xE756;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="OutputSelectorBarLabel" Tag="Output" x:Name="OutputSelectorBarItem" IsEnabled="False">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE768;" />
                     </SelectorBarItem.Icon>
                 </SelectorBarItem>
             </SelectorBar>
@@ -55,20 +60,22 @@
                     <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
+                <StackPanel Grid.Column="0" x:Name="OptionsContentLeft">
                     <TextBlock x:Uid="CopyOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
                     <local:OptionEntry OptionName="/S" OptionDescription="Copy directories and subdirectories except empty ones" />
                 </StackPanel>
-                <StackPanel Grid.Column="1">
+                <StackPanel Grid.Column="1" x:Name="OptionsContentRight">
                     <TextBlock x:Uid="RetryOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                    <local:OptionEntry OptionName="/R:3" OptionDescription="On failed copies retry how many times:">
-                        <local:OptionEntry.OptionContent>
-                            <TextBox Width="40" />
-                        </local:OptionEntry.OptionContent>
-                    </local:OptionEntry>
+                    <local:OptionEntry OptionName="/R" OptionDescription="On failed copies retry how many times:" IsNumberOption="True" />
                 </StackPanel>
             </Grid>
-            <Button HorizontalAlignment="Right" Margin="0,12,0,12" Style="{StaticResource AccentButtonStyle}">
+            <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
+                <TextBox x:Name="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
+            </Grid>
+            <Grid x:Name="OutputContent" Margin="12" Visibility="Collapsed">
+                <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
+            </Grid>
+            <Button HorizontalAlignment="Right" Margin="0,12,0,12" Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
                     <FontIcon Glyph="&#xE768;" />
                     <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
