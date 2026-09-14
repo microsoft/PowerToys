@@ -48,6 +48,24 @@ namespace RobocopyUI
             set { SetValue(IsRunHoursOptionProperty, value); }
         }
 
+        public bool IsStorageOption
+        {
+            get { return (bool)GetValue(IsStorageOptionProperty); }
+            set { SetValue(IsStorageOptionProperty, value); }
+        }
+
+        public bool IsTextOption
+        {
+            get { return (bool)GetValue(IsTextOptionProperty); }
+            set { SetValue(IsTextOptionProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsStorageOptionProperty =
+            DependencyProperty.Register("IsStorageOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsTextOptionProperty =
+            DependencyProperty.Register("IsTextOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+
         public static readonly DependencyProperty IsRunHoursOptionProperty =
             DependencyProperty.Register("IsRunHoursOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
@@ -85,7 +103,17 @@ namespace RobocopyUI
             {
                 if (IsNumberOption)
                 {
+                    if (IsStorageOption)
+                    {
+                        return $"{OptionName}:{OptionNumberValue.Value}{((string)((ComboBoxItem)StorageUnitComboBox.SelectedItem).Content)[0]}";
+                    }
+
                     return $"{OptionName}:{OptionNumberValue.Value}";
+                }
+
+                if (IsTextOption)
+                {
+                    return $"{OptionName}:{OptionTextValue.Text}";
                 }
 
                 if (IsMultiSelectOption)

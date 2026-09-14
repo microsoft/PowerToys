@@ -56,12 +56,18 @@ namespace RobocopyUI
                     break;
                 case "CommandPreview":
                     OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                     OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     CommandPreviewTextBox.Text = GetCommandLine();
                     break;
                 case "Output":
                     OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                     break;
@@ -84,6 +90,18 @@ namespace RobocopyUI
             }
 
             foreach (var option in OptionsContentRight.Children)
+            {
+                if (option is OptionEntry entry)
+                {
+                    additionalArgs.Append(entry.GetCommandLine());
+                    if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                    {
+                        additionalArgs.Append(' ');
+                    }
+                }
+            }
+
+            foreach (var option in FilterOptions.Children)
             {
                 if (option is OptionEntry entry)
                 {

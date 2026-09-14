@@ -288,7 +288,7 @@
   <data name="COPYOptionsE" xml:space="preserve">
     <value>Extended attribute</value>
   </data>
-  <data name="NODCOPY.OptionDescription" xml:space="preserve">
+  <data name="NODCOPYOption.OptionDescription" xml:space="preserve">
     <value>Copy no directory info.</value>
   </data>
   <data name="NOOFFLOADOption.OptionDescription" xml:space="preserve">
@@ -323,5 +323,179 @@
   </data>
   <data name="FiltersSelectorBarLabel.Text" xml:space="preserve">
     <value>Filters</value>
+  </data>
+  <data name="CopyFileThrottlingOptionsLabel.Text" xml:space="preserve">
+    <value>Copy File Throttling Options</value>
+  </data>
+  <data name="IoMaxSizeOption.OptionDescription" xml:space="preserve">
+    <value>Requested max i/o size per read/write cycle:</value>
+  </data>
+  <data name="IoRateOption.OptionDescription" xml:space="preserve">
+    <value>Requested i/o rate per second:</value>
+  </data>
+  <data name="ThresholdOption.OptionDescription" xml:space="preserve">
+    <value>File size threshold for throttling</value>
+  </data>
+  <data name="FileSelectionOptionsLabel.Text" xml:space="preserve">
+    <value>File Selection Options</value>
+  </data>
+  <data name="AOption.OptionDescription" xml:space="preserve">
+    <value>Copy only files with the Archive attribute set.</value>
+  </data>
+  <data name="MOption.OptionDescription" xml:space="preserve">
+    <value>Copy only files with the Archive attribute and reset it.</value>
+  </data>
+  <data name="IAOption.OptionDescription" xml:space="preserve">
+    <value>Include only files with any of the given Attributes set.</value>
+  </data>
+  <data name="XAOption.OptionDescription" xml:space="preserve">
+    <value>Exclude files with any of the given Attributes set.</value>
+  </data>
+  <data name="XFOption.OptionDescription" xml:space="preserve">
+    <value>Exclude Files matching given names/paths/wildcards.</value>
+  </data>
+  <data name="XDOption.OptionDescription" xml:space="preserve">
+    <value>Exclude Directories matching given names/paths.</value>
+  </data>
+  <data name="XCOption.OptionDescription" xml:space="preserve">
+    <value>Exclude changed files.</value>
+  </data>
+  <data name="XNOption.OptionDescription" xml:space="preserve">
+    <value>Exclude newer files.</value>
+  </data>
+  <data name="XOOption.OptionDescription" xml:space="preserve">
+    <value>Exclude older files.</value>
+  </data>
+  <data name="XXOption.OptionDescription" xml:space="preserve">
+    <value>Exclude extra files and directories.</value>
+  </data>
+  <data name="XLOption.OptionDescription" xml:space="preserve">
+    <value>Exclude lonely files and directories.</value>
+  </data>
+  <data name="ISOption.OptionDescription" xml:space="preserve">
+    <value>Include same files</value>
+  </data>
+  <data name="ITOption.OptionDescription" xml:space="preserve">
+    <value>Include tweaked files.</value>
+  </data>
+  <data name="MAXOption.OptionDescription" xml:space="preserve">
+    <value>Maximum file size in bytes:</value>
+  </data>
+  <data name="MINOption.OptionDescription" xml:space="preserve">
+    <value>Minimum file size in bytes:</value>
+  </data>
+  <data name="MAXAGEOption.OptionDescription" xml:space="preserve">
+    <value>Maximum file age in days:</value>
+  </data>
+  <data name="MINAGEOption.OptionDescription" xml:space="preserve">
+    <value>Minimum file age in days:</value>
+  </data>
+  <data name="MAXLADOption.OptionDescription" xml:space="preserve">
+    <value>Maximum last access date in days:</value>
+  </data>
+  <data name="MINLADOption.OptionDescription" xml:space="preserve">
+    <value>Minimum last access date in days:</value>
+  </data>
+  <data name="FFTOption.OptionDescription" xml:space="preserve">
+    <value>Assume FAT File Times (2-second granularity).</value>
+  </data>
+  <data name="DSTOption.OptionDescription" xml:space="preserve">
+    <value>Compensate for one-hour DST time differences.</value>
+  </data>
+  <data name="XJOption.OptionDescription" xml:space="preserve">
+    <value>Exclude symbolic links (for both files and directories) and Junction points.</value>
+  </data>
+  <data name="XJDOption.OptionDescription" xml:space="preserve">
+    <value>Exclude symbolic links for Directories and Junction points.</value>
+  </data>
+  <data name="XJFOption.OptionDescription" xml:space="preserve">
+    <value>Exclude symbolic links for Files.</value>
+  </data>
+  <data name="IMOption.OptionDescription" xml:space="preserve">
+    <value>Include Modified files (differing change times).</value>
+  </data>
+  <data name="WOption.OptionDescription" xml:space="preserve">
+    <value>Wait time between retries:</value>
+  </data>
+  <data name="REGOption.OptionDescription" xml:space="preserve">
+    <value>Save /R and /W in the registry as default settings.</value>
+  </data>
+  <data name="TBDOption.OptionDescription" xml:space="preserve">
+    <value>Wait for sharenames to be defined (retry error 67).</value>
+  </data>
+  <data name="LFSMOption.OptionDescription" xml:space="preserve">
+    <value>Operate in low free space mode, enabling copy pause and resume.</value>
+  </data>
+  <data name="LFSMNOption.OptionDescription" xml:space="preserve">
+    <value>Specify the floor size for LFSM:</value>
+  </data>
+  <data name="NODDOption.OptionDescription" xml:space="preserve">
+    <value>No destination directory specified.</value>
+  </data>
+  <data name="NOSDOption.OptionDescription" xml:space="preserve">
+    <value>No source directory is specified.</value>
+  </data>
+  <data name="QUITOption.OptionDescription" xml:space="preserve">
+    <value>Quit after processing command line (to view parameters).</value>
+  </data>
+  <data name="LOption.OptionDescription" xml:space="preserve">
+    <value> List only - don't copy, timestamp or delete any files.</value>
+  </data>
+  <data name="XOption.OptionDescription" xml:space="preserve">
+    <value>Report all extra files, not just those selected.</value>
+  </data>
+  <data name="VOption.OptionDescription" xml:space="preserve">
+    <value>Produce verbose output, showing skipped files.</value>
+  </data>
+  <data name="TSOption.OptionDescription" xml:space="preserve">
+    <value>Include source file time stamps in the output.</value>
+  </data>
+  <data name="FPOption.OptionDescription" xml:space="preserve">
+    <value>Include full pathname of files in the output.</value>
+  </data>
+  <data name="BYTESOption.OptionDescription" xml:space="preserve">
+    <value>Print sizes as bytes.</value>
+  </data>
+  <data name="NSOption.OptionDescription" xml:space="preserve">
+    <value>Don't log file sizes.</value>
+  </data>
+  <data name="NCOption.OptionDescription" xml:space="preserve">
+    <value>Don't log file classes.</value>
+  </data>
+  <data name="NFLOption.OptionDescription" xml:space="preserve">
+    <value>Don't log file names.</value>
+  </data>
+  <data name="NDLOption.OptionDescription" xml:space="preserve">
+    <value>Don't log directory names.</value>
+  </data>
+  <data name="NPOption.OptionDescription" xml:space="preserve">
+    <value>Don't display percentage copied.</value>
+  </data>
+  <data name="ETAOption.OptionDescription" xml:space="preserve">
+    <value>Show estimated time of arrival of copied files.</value>
+  </data>
+  <data name="LOGOption.OptionDescription" xml:space="preserve">
+    <value>Output status to log file (overwrite).</value>
+  </data>
+  <data name="UNILOGOption.OptionDescription" xml:space="preserve">
+    <value>Output status to log file as unicode (overwrite).</value>
+  </data>
+  <data name="LOGPlusOption.OptionDescription" xml:space="preserve">
+    <value>Output status to log file (append).</value>
+  </data>
+  <data name="UNILOGPlusOption.OptionDescription" xml:space="preserve">
+    <value>Output status to log file as unicode (append).</value>
+  </data>
+  <data name="TEEOption.OptionDescription" xml:space="preserve">
+    <value>Output to log file and the output text box.</value>
+  </data>
+  <data name="NJHOption.OptionDescription" xml:space="preserve">
+    <value>No job header.</value>
+  </data>
+  <data name="NJSOption.OptionDescription" xml:space="preserve">
+    <value>No job summary.</value>
+  </data>
+  <data name="UNICODEOption.OptionDescription" xml:space="preserve">
+    <value>Output status as unicode.</value>
   </data>
 </root>
