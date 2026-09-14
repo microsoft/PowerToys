@@ -451,24 +451,56 @@ namespace WorkspacesLibUnitTests
 
     TEST_CLASS (ElevatedLaunchGateTests)
     {
-    public:
-        TEST_METHOD (DecliningUnsignedExecutableDoesNotLaunch)
+        static void AssertDecliningUnsignedExecutableDoesNotLaunch(const std::wstring& requestedPath)
         {
-            TemporaryExecutable fixture;
             WorkspacesData::WorkspacesProject::Application app{};
             app.name = L"Signature test";
-            app.path = fixture.path;
+            app.path = requestedPath;
             app.isElevated = true;
             AppLauncher::ErrorList errors;
             int requests = 0;
             const auto result = AppLauncher::Launch(app, errors, [&](const auto& path, const auto&, const auto& verification) {
                 ++requests;
-                Assert::AreEqual(fixture.path, path);
+                Assert::IsTrue(std::filesystem::equivalent(requestedPath, path), L"Approval must refer to the requested executable.");
                 Assert::IsTrue(verification.status == Status::Unsigned);
                 return LaunchDecision::Skipped; }, [] { return false; });
             Assert::IsTrue(result == AppLauncher::LaunchResult::Skipped);
             Assert::AreEqual(1, requests);
             Assert::IsTrue(errors.empty());
+        }
+
+    public:
+        TEST_METHOD (DecliningUnsignedExecutableDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            AssertDecliningUnsignedExecutableDoesNotLaunch(fixture.path);
+        }
+
+        TEST_METHOD (DecliningUnsignedExecutableWithDotComponentDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            const std::filesystem::path path(fixture.path);
+            const auto alternatePath = (path.parent_path() / L"." / path.filename()).wstring();
+            Assert::AreNotEqual(fixture.path, alternatePath);
+            AssertDecliningUnsignedExecutableDoesNotLaunch(alternatePath);
+        }
+
+        TEST_METHOD (DecliningUnsignedExecutableWithShortPathDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            const DWORD length = GetShortPathNameW(fixture.path.c_str(), nullptr, 0);
+            Assert::IsTrue(length > 0);
+            std::wstring shortPath(length, L'\0');
+            const DWORD written = GetShortPathNameW(fixture.path.c_str(), shortPath.data(), length);
+            Assert::IsTrue(written > 0 && written < length);
+            shortPath.resize(written);
+            if (shortPath == fixture.path)
+            {
+                Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"No alternate 8.3 path is available for the signature test fixture.");
+                return;
+            }
+
+            AssertDecliningUnsignedExecutableDoesNotLaunch(shortPath);
         }
 
         TEST_METHOD (DecliningPwaTargetDoesNotTryNativeFallback)

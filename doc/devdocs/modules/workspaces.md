@@ -96,10 +96,16 @@ $marker = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestSigning\Workspaces-certifi
 
 For VM execution, use the `ui-tests-local-vm` skill: sign on the build host with
 `-SkipLocalTrust`, export only the public certificate, and trust it in the guest
-instead. Release Runner/Settings/Quick Access authentication is a separate
+instead. Release Runner/Settings/Quick Access/Launcher UI authentication is a separate
 prerequisite: use matching signed product binaries or the existing CI companion
 signing setup. The package-only command above does not bypass product IPC
 authentication.
+For Workspaces CI runs, `job-test-project.yml` requires
+`PowerToys.WorkspacesLauncherUI.exe` alongside the existing companions. Without
+its signature, the native launcher rejects the progress UI even though ordinary
+non-elevated application launches can continue. Keep the authentication checks
+and progress-window assertions enabled; fix missing CI signing rather than
+disabling verification or adding retries.
 
 The suite README documents the full checklist mapping, fixture ownership, and
 evidence/cleanup behavior:
