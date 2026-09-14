@@ -62,11 +62,29 @@
 
                 <StackPanel Grid.Column="0" x:Name="OptionsContentLeft">
                     <TextBlock x:Uid="CopyOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                    <local:OptionEntry OptionName="/S" OptionDescription="Copy directories and subdirectories except empty ones" />
+                    <local:OptionEntry OptionName="/S" x:Uid="SOption"/>
+                    <local:OptionEntry OptionName="/E" x:Uid="EOption"/>
+                    <local:OptionEntry OptionName="/LEV" x:Uid="LEVOption" IsNumberOption="True"/>
+                    <local:OptionEntry OptionName="/Z" x:Uid="ZOption"/>
+                    <local:OptionEntry OptionName="/B" x:Uid="BOption"/>
+                    <local:OptionEntry OptionName="/ZB" x:Uid="ZBOption"/>
+                    <local:OptionEntry OptionName="/J" x:Uid="JOption"/>
+                    <local:OptionEntry OptionName="/EFSRAW" x:Uid="EFSRAWOption"/>
+                    <local:OptionEntry OptionName="/COPY" x:Uid="COPYOption" IsMultiSelectOption="True">
+                        <local:OptionEntry.MultiSelectOptions>
+                            <local:OptionEntry OptionName="D" x:Uid="COPYOptionD"></local:OptionEntry>
+                            <local:OptionEntry OptionName="A" x:Uid="COPYOptionA"></local:OptionEntry>
+                            <local:OptionEntry OptionName="T" x:Uid="COPYOptionT"></local:OptionEntry>
+                            <local:OptionEntry OptionName="X" x:Uid="COPYOptionX"></local:OptionEntry>
+                            <local:OptionEntry OptionName="S" x:Uid="COPYOptionS"></local:OptionEntry>
+                            <local:OptionEntry OptionName="O" x:Uid="COPYOptionO"></local:OptionEntry>
+                            <local:OptionEntry OptionName="U" x:Uid="COPYOptionU"></local:OptionEntry>
+                        </local:OptionEntry.MultiSelectOptions>
+                    </local:OptionEntry>
                 </StackPanel>
                 <StackPanel Grid.Column="1" x:Name="OptionsContentRight">
                     <TextBlock x:Uid="RetryOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                    <local:OptionEntry OptionName="/R" OptionDescription="On failed copies retry how many times:" IsNumberOption="True" />
+                    <local:OptionEntry OptionName="/R" x:Uid="ROption" IsNumberOption="True" />
                 </StackPanel>
             </Grid>
             <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">

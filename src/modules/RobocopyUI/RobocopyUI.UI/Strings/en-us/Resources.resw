@@ -144,4 +144,52 @@
   <data name="OutputSelectorBarLabel.Text" xml:space="preserve">
     <value>Execution Output</value>
   </data>
+  <data name="ROption.OptionDescription" xml:space="preserve">
+    <value>On failed copies retry how many times:</value>
+  </data>
+  <data name="SOption.OptionDescription" xml:space="preserve">
+    <value>Copy directories and subdirectories except empty ones.</value>
+  </data>
+  <data name="EOption.OptionDescription" xml:space="preserve">
+    <value>Copy subdirectories, including Empty ones.</value>
+  </data>
+  <data name="LEVOption.OptionDescription" xml:space="preserve">
+    <value>Number of levels to copy of the source directory tree:</value>
+  </data>
+  <data name="ZOption.OptionDescription" xml:space="preserve">
+    <value>Copy files in restartable mode.</value>
+  </data>
+  <data name="BOption.OptionDescription" xml:space="preserve">
+    <value>Copy files in Backup mode.</value>
+  </data>
+  <data name="ZBOption.OptionDescription" xml:space="preserve">
+    <value>Use restartable mode; if access denied use Backup mode.</value>
+  </data>
+  <data name="JOption.OptionDescription" xml:space="preserve">
+    <value>Copy using unbuffered I/O (recommended for large files).</value>
+  </data>
+  <data name="EFSRAWOption.OptionDescription" xml:space="preserve">
+    <value>Copy all encrypted files in EFS RAW mode.</value>
+  </data>
+  <data name="COPYOptionD.OptionDescription" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="COPYOptionA.OptionDescription" xml:space="preserve">
+    <value>Attributes</value>
+  </data>
+  <data name="COPYOptionT.OptionDescription" xml:space="preserve">
+    <value>Timestamps</value>
+  </data>
+  <data name="COPYOptionX.OptionDescription" xml:space="preserve">
+    <value>Skip alternative data streams</value>
+  </data>
+  <data name="COPYOptionS.OptionDescription" xml:space="preserve">
+    <value>Security (NTFS ACLs)</value>
+  </data>
+  <data name="COPYOptionO.OptionDescription" xml:space="preserve">
+    <value>Owner info</value>
+  </data>
+  <data name="COPYOptionU.OptionDescription" xml:space="preserve">
+    <value>Auditing info</value>
+  </data>
 </root>

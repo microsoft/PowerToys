@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -27,8 +30,26 @@ namespace RobocopyUI
             set { SetValue(IsNumberOptionProperty, value); }
         }
 
+        public bool IsMultiSelectOption
+        {
+            get { return (bool)GetValue(IsMultiSelectOptionProperty); }
+            set { SetValue(IsMultiSelectOptionProperty, value); }
+        }
+
+        public List<OptionEntry> MultiSelectOptions
+        {
+            get { return (List<OptionEntry>)GetValue(MultiSelectOptionsProperty); }
+            set { SetValue(MultiSelectOptionsProperty, value); }
+        }
+
+        public static readonly DependencyProperty MultiSelectOptionsProperty =
+            DependencyProperty.Register("MultiSelectOptions", typeof(List<OptionEntry>), typeof(OptionEntry), new PropertyMetadata(null));
+
         public static readonly DependencyProperty IsNumberOptionProperty =
             DependencyProperty.Register("IsNumberOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty IsMultiSelectOptionProperty =
+            DependencyProperty.Register("IsMultiSelectOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty OptionDescriptionProperty =
             DependencyProperty.Register("OptionDescription", typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
@@ -38,6 +59,7 @@ namespace RobocopyUI
 
         public OptionEntry()
         {
+            MultiSelectOptions ??= [];
             InitializeComponent();
             DataContext = this;
 
@@ -52,7 +74,17 @@ namespace RobocopyUI
         {
             if (OptionEnabledCheckBox.IsChecked == true)
             {
-                return IsNumberOption ? $"{OptionName}:{OptionNumberValue.Value}" : $"{OptionName}";
+                if (IsNumberOption)
+                {
+                    return $"{OptionName}:{OptionNumberValue.Value}";
+                }
+
+                if (IsMultiSelectOption)
+                {
+                    return $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.OptionEnabledCheckBox.IsChecked ?? false).Select(o => o.OptionName))}";
+                }
+
+                return $"{OptionName}";
             }
 
             return string.Empty;

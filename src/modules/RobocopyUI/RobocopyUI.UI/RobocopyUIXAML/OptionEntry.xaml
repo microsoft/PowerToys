@@ -15,6 +15,24 @@
                 <TextBlock Text="{Binding OptionName}" Margin="0,0,8,0" FontFamily="Cascadia Mono" />
                 <TextBlock Text="{Binding OptionDescription}" />
                 <NumberBox x:Name="OptionNumberValue" Width="100" Value="0" Minimum="0" SpinButtonPlacementMode="Compact" Visibility="{Binding IsNumberOption, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <Button x:Name="SelectOptionsButton" Content="Select Options" Visibility="{Binding IsMultiSelectOption, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Button.Flyout>
+                        <Flyout Placement="Bottom">
+                            <ItemsControl ItemsSource="{x:Bind MultiSelectOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" Spacing="4"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="local:OptionEntry">
+                                        <ContentPresenter Content="{x:Bind}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </StackPanel>
         </CheckBox>
     </Grid>
