@@ -304,6 +304,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToShortcutRemapInvoked | Logs each instance of an OS-level shortcut-to-shortcut remap being used. |
 | Microsoft.PowerToys.KeyboardManager_ShortcutRemapConfigurationLoaded | Indicates that the shortcut remap configuration has been successfully loaded. |
 
+### Laser Pointer
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.LaserPointer_EnableLaserPointer | Triggered when Laser Pointer is enabled or disabled. |
+| Microsoft.PowerToys.LaserPointer_StartLaserPointerSession | Occurs when the user activates Laser Pointer with its shortcut, starting a session. |
+
 ### Light Switch
 
 | Event Name | Description |

@@ -8,7 +8,7 @@
 [Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Mouse%20Utilities%22)<br>
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Mouse+Utilities%22)
 
-Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains four sub-utilities that provide different mouse-related features.
+Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains five sub-utilities that provide different mouse-related features.
 
 ## Overview
 
@@ -18,6 +18,7 @@ Mouse Utilities includes the following sub-modules:
 - **[Mouse Highlighter](mousehighlighter.md)**: Visualizes mouse clicks with customizable highlights
 - **[Mouse Jump](mousejump.md)**: Allows quick cursor movement to specific screen locations
 - **[Mouse Pointer Crosshairs](mousepointer.md)**: Displays crosshair lines that follow the mouse cursor
+- **[Laser Pointer](laserpointer.md)**: Draws a fading trail behind the pointer, and can mirror a window so the trail survives per-window screen sharing
 
 ## Architecture
 

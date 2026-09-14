@@ -198,6 +198,7 @@
             "PowerToys.MouseHighlighter.dll",
             "PowerToys.AutoHideCursor.dll",
             "PowerToys.AutoHideCursor.exe",
+            "PowerToys.LaserPointer.dll",
             "PowerToys.MouseJump.dll",
             "PowerToys.MouseJump.Common.dll",
             "WinUI3Apps\\PowerToys.MouseJump.HotKeys.dll",
