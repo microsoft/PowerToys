@@ -14,7 +14,13 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding OptionName}" Margin="0,0,8,0" FontFamily="Cascadia Mono" />
                 <TextBlock Text="{Binding OptionDescription}" />
+                <TextBox x:Name="OptionTextValue" Width="400" Visibility="{Binding IsTextOption, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <NumberBox x:Name="OptionNumberValue" Width="100" Value="0" Minimum="0" SpinButtonPlacementMode="Compact" Visibility="{Binding IsNumberOption, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ComboBox x:Name="StorageUnitComboBox" Visibility="{Binding IsStorageOption, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ComboBoxItem Content="KB" IsSelected="True" />
+                    <ComboBoxItem Content="MB" />
+                    <ComboBoxItem Content="GB" />
+                </ComboBox>
                 <Button x:Name="SelectOptionsButton" Content="Select Options" Visibility="{Binding IsMultiSelectOption, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
