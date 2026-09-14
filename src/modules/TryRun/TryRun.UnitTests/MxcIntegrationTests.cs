@@ -55,6 +55,27 @@ public sealed class MxcIntegrationTests
     }
 
     [TestMethod]
+    public async Task AvailabilityProbeVerifiesReadWriteAccess()
+    {
+        Assert.IsNull(await new WorkerClient(workerPath).GetAvailabilityFailureAsync(CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task RelativePathsAndNavigationStayInTheWorkspaceDrive()
+    {
+        using var session = new RunSession();
+        var messages = new ConcurrentQueue<WorkerMessage>();
+        var script = "New-Item -ItemType Directory nested -ErrorAction Stop | Out-Null; Set-Location nested -ErrorAction Stop; Set-Content result.txt ready -NoNewline -ErrorAction Stop; Set-Location .. -ErrorAction Stop; Write-Output $PWD.Path; Get-Content nested/result.txt -ErrorAction Stop";
+        var request = new ExecutionRequest(script, session.WorkingDirectory, session.TemporaryDirectory, 30);
+        var result = await new WorkerClient(workerPath).RunAsync(request, new InlineProgress(messages.Enqueue), CancellationToken.None);
+        var output = string.Concat(messages.Select(message => message.Text));
+        Assert.AreEqual(0, result.ExitCode, output);
+        StringAssert.Contains(output, "TryRun:\\");
+        StringAssert.Contains(output, "ready");
+        Assert.AreEqual("ready", File.ReadAllText(Path.Combine(session.WorkingDirectory, "nested", "result.txt")));
+    }
+
+    [TestMethod]
     public async Task RejectsWritingAnotherSessionsWorkspace()
     {
         using var session = new RunSession();

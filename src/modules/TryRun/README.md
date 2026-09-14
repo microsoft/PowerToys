@@ -9,7 +9,7 @@ that its profiles are not security boundaries.
 
 Complete and validate each milestone before starting the next.
 
-1. **Execution foundation — implemented, native verification blocked**: standalone window, Windows/privilege checks, isolated
+1. **Execution foundation — implemented and validated**: standalone window, Windows/privilege checks, isolated
    worker using the MXC C# SDK, bounded output, timeout and explicit stop; unit tests
    and a trusted-script smoke test.
 2. **File workflow — not started**: copy selected input into a temporary workspace, reject links
@@ -66,9 +66,18 @@ Before enabling Run, the application executes a fixed, harmless workspace
 write/read check. MXC platform discovery alone does not validate file grants.
 Try Run never prepares the host automatically, never retries scripts with broader
 permissions, and exits before running user code if it cannot enter the workspace.
-The AppContainer + DACL backend may need the elevated setup documented in MXC
-`docs/host-prep.md`, but that is not a confirmed remedy for the native-backend
-failure described below. Do not change host ACLs based solely on this failure.
+
+The sandbox starts in a PowerShell drive named `TryRun:\`, rooted at the granted
+workspace. Use relative paths, for example `Set-Content result.txt hello` and
+`Get-Content result.txt`. This drive exists only inside the child PowerShell
+session. It lets PowerShell normalize paths without inspecting ungranted parent
+directories such as `C:\Users`.
+
+Sessions resolve their newly created directory through a Windows file handle
+before passing paths to MXC. Packaged development hosts can redirect AppData
+creation to a package-private directory while reads of an existing parent use a
+merged view. Resolving the unique session directory keeps the worker's grant and
+the actual files aligned without changing host permissions.
 
 Windows PowerShell may use Constrained Language under local security policy.
 Try Run preserves that policy. The smoke tests use normal cmdlets, not unrestricted
@@ -79,22 +88,20 @@ The fuzz target is built with the solution. Its OneFuzz entry is disabled until
 the production fuzzing owner and service configuration are assigned; no remote
 fuzzing job is submitted by building this prototype.
 
-Current verification: the standalone x64 Debug solution builds with exit code 0.
-All 16 unit tests pass, including the local fuzz smoke test (2,004 seeded/random
-inputs). The opt-in native workspace test fails with exit code 125: the wrapper
-cannot enter the explicitly granted workspace and stops before the user script.
-Results are under `x64/Debug/tests/TryRun.UnitTests/TestResults/` as
-`milestone1-units.trx` and `milestone1-native.trx`.
+Current verification: the standalone x64 Debug projects build with exit code 0.
+All 24 tests pass: 16 unit cases, including the local fuzz smoke test (2,004
+seeded/random inputs), and 8 opt-in native integration tests. The native tests
+cover the startup workspace probe, file creation and relative navigation,
+cross-session write denial, environment isolation, timeout, stop, and bounded
+output. Results are in
+`x64/Debug/tests/TryRun.UnitTests/TestResults/milestone1-fixed.trx`.
 The first full PowerToys essentials build is blocked by missing MSVC Spectre
-libraries in this development environment. Milestone 1's real workspace test is
-blocked by native filesystem access on the current host. Do not consider the
-milestone complete or advance to file import/export before that test passes.
+libraries in this development environment; the standalone prototype does not
+require that full build. ARM64 has not been validated on hardware.
 
-On this host (Windows reports 26200; `processmodel.dll` is 10.0.26100.9444), MXC
-reports BaseContainer/PSEC support and no DACL augmentation requirement. A CLI
-reproduction with `fallback.allowDaclMutation=false` still receives access denied
-when writing to the explicitly granted scratch directory. The older SBOX path
-also reproduces it. A policy-only volume-root read grant and a separate low-label
-diagnostic scratch directory did not resolve it. No system-drive root permissions
-were changed. This is evidence of an unresolved native access failure, not proof
-of an OS defect or a reason to grant broad filesystem access.
+If an older window reports **Restricted workspace access is unavailable** with
+Run disabled, save its script, close it, rebuild, and reopen the application.
+The fixed version should show **Ready. Scripts run only when you choose Run.**
+Try `Set-Content result.txt hello; Get-Content result.txt`; expect `hello` in the
+output and exit code 0. Setting the time limit to 2 seconds and running
+`Start-Sleep -Seconds 10` should report that the time limit was reached.

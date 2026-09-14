@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>PowerToys.TryRun.Core</RootNamespace>
   </PropertyGroup>
 </Project>

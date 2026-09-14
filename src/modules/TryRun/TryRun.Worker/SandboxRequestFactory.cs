@@ -44,7 +44,11 @@ internal static class SandboxRequestFactory
 
         // The encoded argument is script content, never interpolated shell syntax.
         var workingDirectory = input.WorkingDirectory.Replace("'", "''", StringComparison.Ordinal);
-        var script = $"$ProgressPreference='SilentlyContinue'; try {{ Set-Location -LiteralPath '{workingDirectory}' -ErrorAction Stop }} catch {{ Write-Error 'Restricted workspace access is unavailable on this device.'; exit 125 }}; & {{\n{input.Script}\n}}";
+
+        // A drive rooted at the granted directory keeps PowerShell's path
+        // normalization inside that directory. Using the host C: drive makes
+        // Set-Location inspect ungranted ancestors such as C:\Users.
+        var script = $"$ProgressPreference='SilentlyContinue'; try {{ New-PSDrive -Name TryRun -PSProvider FileSystem -Root '{workingDirectory}' -Scope Global -ErrorAction Stop | Out-Null; Set-Location -LiteralPath 'TryRun:\\' -ErrorAction Stop }} catch {{ Write-Error 'Restricted workspace access is unavailable on this device.'; exit 125 }}; & {{\n{input.Script}\n}}";
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         return new SandboxRequest(policy, $"\"{executable}\" -NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand {encoded}")
         {

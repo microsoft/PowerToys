@@ -6,13 +6,19 @@ namespace PowerToys.TryRun.Core;
 
 public sealed class RunSession : IDisposable
 {
-    private static readonly string SessionsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "TryRun", "Sessions");
+    private static readonly string LogicalSessionsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "TryRun", "Sessions");
     private readonly string root;
     private bool disposed;
 
     public RunSession()
     {
-        root = Path.Combine(SessionsDirectory, Guid.NewGuid().ToString("N"));
+        RejectDirectoryLinks(LogicalSessionsDirectory, mustExist: false);
+        var logicalRoot = Path.Combine(LogicalSessionsDirectory, Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(logicalRoot);
+
+        // Resolve the newly created, unique directory. An existing Sessions
+        // parent can be a merged MSIX view whose read and create targets differ.
+        root = PhysicalDirectory.Resolve(logicalRoot);
         WorkingDirectory = Path.Combine(root, "Work");
         TemporaryDirectory = Path.Combine(root, "Temp");
         Directory.CreateDirectory(WorkingDirectory);
@@ -29,8 +35,16 @@ public sealed class RunSession : IDisposable
         var working = Path.TrimEndingDirectorySeparator(Path.GetFullPath(workingDirectory));
         var temporary = Path.TrimEndingDirectorySeparator(Path.GetFullPath(temporaryDirectory));
         var sessionRoot = Path.GetDirectoryName(working)!;
-        if (!Guid.TryParseExact(Path.GetFileName(sessionRoot), "N", out _) ||
-            !string.Equals(Path.GetDirectoryName(sessionRoot), SessionsDirectory, StringComparison.OrdinalIgnoreCase) ||
+        RejectDirectoryLinks(LogicalSessionsDirectory, mustExist: true);
+        if (!Guid.TryParseExact(Path.GetFileName(sessionRoot), "N", out var sessionId))
+        {
+            throw new ArgumentException("Execution is allowed only in a Try Run session workspace.");
+        }
+
+        var logicalRoot = Path.Combine(LogicalSessionsDirectory, sessionId.ToString("N"));
+        RejectDirectoryLinks(logicalRoot, mustExist: true);
+        var expectedRoot = PhysicalDirectory.Resolve(logicalRoot);
+        if (!string.Equals(sessionRoot, expectedRoot, StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(working, Path.Combine(sessionRoot, "Work"), StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(temporary, Path.Combine(sessionRoot, "Temp"), StringComparison.OrdinalIgnoreCase))
         {
@@ -39,12 +53,17 @@ public sealed class RunSession : IDisposable
 
         foreach (var path in new[] { working, temporary })
         {
-            for (var directory = new DirectoryInfo(path); directory is not null; directory = directory.Parent)
+            RejectDirectoryLinks(path, mustExist: true);
+        }
+    }
+
+    private static void RejectDirectoryLinks(string path, bool mustExist)
+    {
+        for (var directory = new DirectoryInfo(path); directory is not null; directory = directory.Parent)
+        {
+            if ((!directory.Exists && mustExist) || (directory.Exists && (directory.Attributes & FileAttributes.ReparsePoint) != 0))
             {
-                if (!directory.Exists || (directory.Attributes & FileAttributes.ReparsePoint) != 0)
-                {
-                    throw new IOException("Session directories must exist and cannot contain directory links.");
-                }
+                throw new IOException("Session directories must exist and cannot contain directory links.");
             }
         }
     }
