@@ -40,7 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly Func<int, int?, Task<bool>> _reorderProfileAsync;
         private readonly Func<PowerDisplayProfile, Task> _addOrUpdateProfileAsync;
         private readonly Func<int, Task<bool>> _removeProfileByIdAsync;
-        private readonly Action _signalSettingsUpdated;
+        private readonly Action<string> _signalNamedEvent;
+
         private bool _isProfilesLoading;
 
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
@@ -61,22 +62,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
         }
 
-        public PowerDisplayViewModel(
+        public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc, Action<string, Action> waitForEventLoop)
+            : this(settingsUtils, settingsRepository, powerDisplaySettingsRepository, ipcMSGCallBackFunc, waitForEventLoop, SignalNamedEvent)
+        {
+        }
+
+        internal PowerDisplayViewModel(
             SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             Action<string, Action> waitForEventLoop,
+            Action<string> signalNamedEvent,
             Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
             Func<int, int?, Task<bool>> reorderProfileAsync = null,
-            Action signalSettingsUpdated = null,
             Func<PowerDisplayProfile, Task> addOrUpdateProfileAsync = null,
             Func<int, Task<bool>> removeProfileByIdAsync = null)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
             ArgumentNullException.ThrowIfNull(waitForEventLoop);
+            ArgumentNullException.ThrowIfNull(signalNamedEvent);
 
+            _signalNamedEvent = signalNamedEvent;
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             _loadProfilesAsync = loadProfilesAsync ?? ProfileHelper.LoadProfilesAsync;
@@ -84,7 +92,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ProfileHelper.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(id, beforeId)));
             _addOrUpdateProfileAsync = addOrUpdateProfileAsync ?? (profile => ProfileHelper.AddOrUpdateProfileAsync(profile));
             _removeProfileByIdAsync = removeProfileByIdAsync ?? (id => ProfileHelper.RemoveProfileByIdAsync(id));
-            _signalSettingsUpdated = signalSettingsUpdated ?? (() => SignalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent()));
 
             _settings = powerDisplaySettingsRepository.SettingsConfig;
 
@@ -383,7 +390,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v))
                 {
                     // Signal PowerDisplay.exe to re-register the hotkey
-                    SignalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                    _signalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
                     Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
                 }
             }
@@ -612,24 +619,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
+            // Only these properties are edited by the Settings page. Runtime data and
+            // derived display properties must not save again after the update event:
+            // PowerDisplay may already be reading the file in response to that event.
+            if (e.PropertyName is not (nameof(MonitorInfo.EnableContrast) or
+                nameof(MonitorInfo.EnableVolume) or
+                nameof(MonitorInfo.EnableInputSource) or
+                nameof(MonitorInfo.EnableRotation) or
+                nameof(MonitorInfo.EnableColorTemperature) or
+                nameof(MonitorInfo.EnablePowerState) or
+                nameof(MonitorInfo.IsHidden)))
+            {
+                return;
+            }
+
             // MonitorInfo is a reference type shared between _monitors and
             // _settings.Properties.Monitors — the property change is already visible
             // in the persisted list, so just trigger save. Rebuilding the list from
             // _monitors here would silently drop legacy entries the filter hides.
             NotifySettingsChanged();
 
-            // For feature visibility properties, explicitly signal PowerDisplay to refresh
-            // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
-            if (e.PropertyName == nameof(MonitorInfo.EnableContrast) ||
-                e.PropertyName == nameof(MonitorInfo.EnableVolume) ||
-                e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
-                e.PropertyName == nameof(MonitorInfo.EnableRotation) ||
-                e.PropertyName == nameof(MonitorInfo.EnableColorTemperature) ||
-                e.PropertyName == nameof(MonitorInfo.EnablePowerState) ||
-                e.PropertyName == nameof(MonitorInfo.IsHidden))
-            {
-                SignalSettingsUpdated();
-            }
+            // set_config() does not signal this event. Notify the module only after
+            // the user preference has been saved.
+            SignalSettingsUpdated();
         }
 
         /// <summary>
@@ -637,7 +649,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SignalSettingsUpdated()
         {
-            _signalSettingsUpdated();
+            _signalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
         }
 
@@ -649,7 +661,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public void SignalRescanRequest()
         {
-            SignalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
+            _signalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
             Logger.LogInfo("Signaled RescanPowerDisplayMonitorsEvent (max-compat toggle finalized)");
         }
 

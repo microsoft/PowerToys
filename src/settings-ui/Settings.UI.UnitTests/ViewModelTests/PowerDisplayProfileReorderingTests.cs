@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using PowerDisplay.Models;
+using PowerToys.Interop;
 
 namespace ViewModelTests;
 
@@ -354,9 +355,13 @@ public class PowerDisplayProfileReorderingTests
             new BackCompatTestProperties.MockSettingsRepository<PowerDisplaySettings>(settingsUtils.Object),
             _ => 0,
             (_, _) => { },
+            eventName =>
+            {
+                Assert.AreEqual(Constants.SettingsUpdatedPowerDisplayEvent(), eventName);
+                store.Notifications++;
+            },
             store.LoadAsync,
             store.ReorderAsync,
-            () => store.Notifications++,
             store.AddOrUpdateAsync,
             store.RemoveAsync);
     }

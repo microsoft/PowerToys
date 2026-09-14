@@ -39,9 +39,6 @@ public abstract class RegistryPreviewTestBase : UITestBase
     protected const int InteractiveRegistryImportTimeoutMS = 90_000;
     protected const string ContextMenuCaption = "Preview";
 
-    private static readonly string[] ContextMenuWindowClasses = { "#32768", "Microsoft.UI.Content.PopupWindowSiteBridge" };
-    private static readonly string[] ClassicContextMenuWindowClasses = { "#32768" };
-
     private readonly List<string> temporaryFolders = new();
     private readonly List<string> registrySubKeys = new();
     private readonly IDisposable moduleSettingsSnapshot = SettingsConfigHelper.PreserveModuleSettings(ModuleSettingsKey);
@@ -76,7 +73,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
         CloseRegistryPreviewWindows();
         WindowControl.TryCloseByApp("notepad", timeoutMS: 2_000);
         WindowControl.TryCloseByApp("regedit", timeoutMS: 2_000);
-        CloseExplorerFileWindows();
+        ExplorerControl.CloseFileWindows();
 
         foreach (var subKey in registrySubKeys)
         {
@@ -626,26 +623,10 @@ public abstract class RegistryPreviewTestBase : UITestBase
     // ---- Explorer classic context menu -----------------------------------------------------------
     protected Session OpenExplorer(string folderPath)
     {
-        CloseExplorerFileWindows();
-        var existingHandles = WindowsFinder.ListByApp("explorer")
-            .Where(IsExplorerFileWindow)
-            .Select(window => window.Hwnd)
-            .ToHashSet();
+        ExplorerControl.CloseFileWindows();
 
         Step($"Opening Explorer at '{folderPath}'");
-        using (Process.Start(new ProcessStartInfo
-        {
-            FileName = "explorer.exe",
-            Arguments = $"/n,\"{folderPath}\"",
-            UseShellExecute = true,
-        }))
-        {
-        }
-
-        var explorer = WindowsFinder.WaitForWindowByApp(
-            "explorer",
-            window => IsExplorerFileWindow(window) && !existingHandles.Contains(window.Hwnd),
-            timeoutMS: WindowTimeoutMS);
+        var explorer = ExplorerControl.OpenFolder(folderPath, timeoutMS: WindowTimeoutMS);
         Assert.IsNotNull(explorer, $"Explorer did not open '{folderPath}'.");
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(explorer!.WindowHandle), WindowTimeoutMS, requiredConsecutiveMatches: 2),
@@ -671,46 +652,13 @@ public abstract class RegistryPreviewTestBase : UITestBase
                 continue;
             }
 
-            if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
-            {
-                Thread.Sleep(300);
-                continue;
-            }
-
-            var surface = WaitForMenuWindow(
-                ContextMenuWindowClasses,
-                ActionTimeoutMS);
-            if (surface is null)
-            {
-                continue;
-            }
-
-            if (IsClassicMenuWindow(surface))
-            {
-                return surface;
-            }
-
-            var showMore = FindVisibleMenuItem(surface, "Show more options", timeoutMS: 8_000);
-            if (showMore is null)
-            {
-                continue;
-            }
-
-            try
-            {
-                showMore.Invoke(msPostAction: 300);
-            }
-            catch (Exception)
-            {
-                // The transient modern menu can disappear before Invoke; reopen it on the next attempt.
-                continue;
-            }
-
-            var classic = WaitForMenuWindow(ClassicContextMenuWindowClasses, ActionTimeoutMS);
+            var classic = ShellMenu.OpenForFocusedControl(explorer, useClassicMenu: true, timeoutMS: WindowTimeoutMS);
             if (classic is not null)
             {
                 return classic;
             }
+
+            Thread.Sleep(300);
         }
         while (DateTime.UtcNow < deadline);
 
@@ -726,7 +674,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
         do
         {
             var menu = OpenClassicContextMenu(explorer, filePath);
-            var item = FindExact<Element>(menu, caption, timeoutMS: 1_000);
+            var item = ShellMenu.FindVisibleMenuItem(menu, caption, timeoutMS: 1_000);
             if (item is not null)
             {
                 return item;
@@ -739,56 +687,6 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
         return null;
     }
-
-    private static Session? WaitForMenuWindow(IReadOnlyList<string> classNames, int timeoutMS) =>
-        WindowsFinder.WaitForWindow(
-            window => classNames.Any(name => name.Equals("#32768", StringComparison.OrdinalIgnoreCase)
-                ? window.ClassName.Equals(name, StringComparison.OrdinalIgnoreCase)
-                : window.ClassName.Contains(name, StringComparison.OrdinalIgnoreCase)),
-            timeoutMS: timeoutMS,
-            pollIntervalMS: 100);
-
-    private static bool IsClassicMenuWindow(Session menu) =>
-        WindowsFinder.ListAll().Any(window =>
-            window.Hwnd == menu.WindowHandle &&
-            window.ClassName.Equals("#32768", StringComparison.OrdinalIgnoreCase));
-
-    private static Element? FindVisibleMenuItem(Session menu, string name, int timeoutMS)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
-        do
-        {
-            try
-            {
-                var item = menu.FindAll<Element>(By.Name(name), timeoutMS: 250)
-                    .FirstOrDefault(element =>
-                        element.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
-                        element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase) &&
-                        element.Width > 0 &&
-                        element.Height > 0 &&
-                        element.Displayed);
-                if (item is not null)
-                {
-                    return item;
-                }
-            }
-            catch (Exception)
-            {
-                // The transient menu can disappear during a query; let the caller reopen it.
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return null;
-    }
-
-    protected static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
-        window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
-
-    protected static bool CloseExplorerFileWindows() =>
-        WindowControl.TryCloseByApp("explorer", IsExplorerFileWindow, timeoutMS: 10_000);
 
     // ---- Registry import and association ---------------------------------------------------------
     protected static bool CanConfirmRegistryImportInteractively =>
