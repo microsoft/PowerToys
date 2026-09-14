@@ -4,8 +4,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
 
@@ -113,10 +113,39 @@ namespace RobocopyUI
                 }
             }
 
+            foreach (var option in LoggingOptions.Children)
+            {
+                if (option is OptionEntry entry)
+                {
+                    additionalArgs.Append(entry.GetCommandLine());
+                    if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                    {
+                        additionalArgs.Append(' ');
+                    }
+                }
+            }
+
+            foreach (var option in AdvancedOptions.Children)
+            {
+                if (option is OptionEntry entry)
+                {
+                    additionalArgs.Append(entry.GetCommandLine());
+                    if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                    {
+                        additionalArgs.Append(' ');
+                    }
+                }
+            }
+
             return $"robocopy.exe {SourceTextBox.Text.Trim('"')} {DestinationTextBox.Text.Trim('"')} {additionalArgs}";
         }
 
         private void RunButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            RunRobocopy(GetCommandLine().Replace("robocopy.exe", string.Empty).Trim());
+        }
+
+        private void RunRobocopy(string arguments)
         {
             OutputTextBox.Text = string.Empty;
             OutputSelectorBarItem.IsEnabled = true;
@@ -124,7 +153,7 @@ namespace RobocopyUI
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "robocopy.exe",
-                Arguments = GetCommandLine().Replace("robocopy.exe", string.Empty).Trim(),
+                Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -170,6 +199,21 @@ namespace RobocopyUI
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+        }
+
+        private async void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            FileSavePicker fileSavePicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
+            fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            fileSavePicker.FileTypeChoices.Add("Robocopy options file", [".rcj"]);
+            var result = await fileSavePicker.PickSaveFileAsync();
+
+            if (result is null)
+            {
+                return;
+            }
+
+            RunRobocopy(GetCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
         }
 
         private void SourceTextBox_TextChanged(object sender, TextChangedEventArgs e)

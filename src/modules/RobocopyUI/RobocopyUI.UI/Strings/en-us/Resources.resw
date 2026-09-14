@@ -498,4 +498,7 @@
   <data name="UNICODEOption.OptionDescription" xml:space="preserve">
     <value>Output status as unicode.</value>
   </data>
+  <data name="SaveButtonLabel.Text" xml:space="preserve">
+    <value>Save options</value>
+  </data>
 </root>
