@@ -76,7 +76,10 @@ namespace RobocopyUI
                 if (option is OptionEntry entry)
                 {
                     additionalArgs.Append(entry.GetCommandLine());
-                    additionalArgs.Append(' ');
+                    if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                    {
+                        additionalArgs.Append(' ');
+                    }
                 }
             }
 
@@ -85,7 +88,10 @@ namespace RobocopyUI
                 if (option is OptionEntry entry)
                 {
                     additionalArgs.Append(entry.GetCommandLine());
-                    additionalArgs.Append(' ');
+                    if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                    {
+                        additionalArgs.Append(' ');
+                    }
                 }
             }
 
