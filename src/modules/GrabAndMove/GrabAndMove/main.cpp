@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <atomic>
+
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/Telemetry/ProjectTelemetry.h>
@@ -38,15 +40,35 @@ enum class GrabAndMoveModifier
 static GrabAndMoveModifier g_modifierKey = GrabAndMoveModifier::Alt;
 
 static bool g_altPressed = false;
-static bool g_winPressed = false;  // true while LWIN or RWIN is held (Win modifier mode)
+static bool g_winPressed = false; // true while LWIN or RWIN is held (Win modifier mode)
 static bool g_ignoreModifier = false; // true if the user pressed the modifier then clicked the mouse without dragging
 static bool g_winAbsorbed = false; // true if we absorbed a Win keydown
 static bool g_dragging = false;
 static bool g_dragFirstMove = false; // true until first WM_MOUSEMOVE of a drag
 static HWND g_dragTarget = nullptr;
-static POINT g_dragStart = {};    // cursor pos at drag start
-static RECT g_dragWndRect = {};   // window rect at drag start
+static POINT g_dragStart = {}; // cursor pos at drag start
+static RECT g_dragWndRect = {}; // window rect at drag start
 static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
+
+// Edge-snap support: while dragging near a screen edge or corner, preview the
+// target region; releasing there snaps the window (left/right half, quarter at a
+// corner, or maximize at the top edge).
+enum class SnapTarget
+{
+    None = 0,
+    LeftHalf,
+    RightHalf,
+    Maximize,
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+};
+
+static std::atomic_bool g_snapToEdges{ true };
+static bool g_snapArmed = false;
+static SnapTarget g_snapTarget = SnapTarget::None;
+static RECT g_snapTargetRect = {};
 
 // Current target window rect for overlay info display
 static int g_overlayInfoX = 0, g_overlayInfoY = 0;
@@ -77,16 +99,16 @@ static constexpr BYTE OVERLAY_FILL_ALPHA = 0x66;
 
 static bool g_shouldAbsorbAlt =
     true; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
-static bool g_altAbsorbed = false;     // true if we absorbed an Alt keydown
+static bool g_altAbsorbed = false; // true if we absorbed an Alt keydown
 static bool g_dragConsumedAlt = false; // true if a drag consumed the absorbed Alt
-static DWORD g_absorbedVk = 0;         // VK code of absorbed Alt key
-static DWORD g_absorbedScanCode = 0;   // scan code for replay
-static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
+static DWORD g_absorbedVk = 0; // VK code of absorbed Alt key
+static DWORD g_absorbedScanCode = 0; // scan code for replay
+static DWORD g_absorbedFlags = 0; // flags for replay (extended key, etc.)
 
-static bool g_showGeometry = false;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
+static bool g_showGeometry = false; // true if we want to draw the X, Y, W and H on the overlay on move and resize
 static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
 
-static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
+static bool g_useAltResize = true; // This can be toggled from the settings. If false, Alt + right click does nothing.
 
 // Count of non-modifier keys currently held. Used to suppress GrabAndMove when the
 // modifier key is pressed while another key is already down (e.g. Q held, then modifier pressed).
@@ -114,7 +136,7 @@ enum ResizeHandle
 static bool g_resizing = false;
 static bool g_resizeFirstMove = false;
 static HWND g_resizeTarget = nullptr;
-static POINT g_resizeLast = {};   // cursor pos from previous frame
+static POINT g_resizeLast = {}; // cursor pos from previous frame
 static RECT g_resizeWndRect = {}; // current window rect (updated each frame)
 static ResizeHandle g_currentHandle = RESIZE_NONE;
 
@@ -144,6 +166,9 @@ static bool g_activatedDuringHold = false;
 
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
+
+// Distance (px) from a work-area edge at which a drag arms edge-snapping.
+static constexpr int SNAP_EDGE_THRESHOLD = 24;
 
 // Minimum interval (ms) between move/resize updates.  Lower = snappier but
 // more CPU/GPU work.  0 = unlimited (every mouse event triggers an update).
@@ -190,7 +215,8 @@ static const wchar_t* const GRABANDMOVE_EXIT_EVENT =
 
 // Lock-free excluded apps list – readers use .load(), writer uses .store() (fix #5)
 static std::atomic<std::shared_ptr<const std::vector<std::wstring>>> g_excludedApps{
-    std::make_shared<const std::vector<std::wstring>>()};
+    std::make_shared<const std::vector<std::wstring>>()
+};
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
 static HANDLE g_hExitEvent = nullptr;
@@ -240,9 +266,7 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     if (!g_altPressed && !g_winPressed && !g_altAbsorbed && !g_winAbsorbed && !g_dragging && !g_resizing)
         return;
 
-    bool modActuallyHeld = (g_modifierKey == GrabAndMoveModifier::Win)
-        ? ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0
-        : ((GetAsyncKeyState(VK_LMENU) | GetAsyncKeyState(VK_RMENU)) & 0x8000) != 0;
+    bool modActuallyHeld = (g_modifierKey == GrabAndMoveModifier::Win) ? ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0 : ((GetAsyncKeyState(VK_LMENU) | GetAsyncKeyState(VK_RMENU)) & 0x8000) != 0;
 
     if (!modActuallyHeld)
     {
@@ -332,6 +356,11 @@ static void LoadSettingsFromFile()
         if (auto v = values.get_bool_value(L"useAltResize"))
         {
             g_useAltResize = *v;
+        }
+
+        if (auto v = values.get_bool_value(L"snapToEdges"))
+        {
+            g_snapToEdges.store(*v);
         }
 
         if (auto v = values.get_int_value(L"modifierKey"))
@@ -534,31 +563,30 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     if (!hwnd || cw <= 0 || ch <= 0)
         return;
 
-    BITMAPINFO bmi        = {};
-    bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth       = cw;
-    bmi.bmiHeader.biHeight      = -ch; // top-down so (0,0) is top-left
-    bmi.bmiHeader.biPlanes      = 1;
-    bmi.bmiHeader.biBitCount    = 32;
+    BITMAPINFO bmi = {};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = cw;
+    bmi.bmiHeader.biHeight = -ch; // top-down so (0,0) is top-left
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
 
     HDC screenDC = GetDC(nullptr);
     DWORD* pBits = nullptr;
-    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS,
-                                    reinterpret_cast<void**>(&pBits), nullptr, 0);
+    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS, reinterpret_cast<void**>(&pBits), nullptr, 0);
     if (!hDib)
     {
         ReleaseDC(nullptr, screenDC);
         return;
     }
 
-    HDC     memDC   = CreateCompatibleDC(screenDC);
+    HDC memDC = CreateCompatibleDC(screenDC);
     HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
 
     // Start fully transparent.
     memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
 
-    // We apply a translucent white rect with a gold border. 
+    // We apply a translucent white rect with a gold border.
     // The overlay window spans GetWindowRect, so inset by
     // the invisible-border margins so both hug the visible edge; Always On Top draws
     // its own border just outside that edge, giving a clean double layer.
@@ -605,27 +633,24 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     if (g_showGeometry)
     {
         wchar_t text[128];
-        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d",
-                   g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
+        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
 
-        HFONT hFont    = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+        HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
         HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
 
         RECT textRect = {};
         DrawTextW(memDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
 
-        const int pad  = 10;
+        const int pad = 10;
         const int boxW = (textRect.right - textRect.left) + pad * 2;
         const int boxH = (textRect.bottom - textRect.top) + pad * 2;
-        RECT boxRect   = {cw / 2 - boxW / 2, ch / 2 - boxH / 2,
-                          cw / 2 + boxW / 2, ch / 2 + boxH / 2};
+        RECT boxRect = { cw / 2 - boxW / 2, ch / 2 - boxH / 2, cw / 2 + boxW / 2, ch / 2 + boxH / 2 };
 
         HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
         FillRect(memDC, &boxRect, hBlack);
         DeleteObject(hBlack);
 
-        RECT textDrawRect = {boxRect.left + pad, boxRect.top + pad,
-                             boxRect.right - pad, boxRect.bottom - pad};
+        RECT textDrawRect = { boxRect.left + pad, boxRect.top + pad, boxRect.right - pad, boxRect.bottom - pad };
         SetTextColor(memDC, RGB(255, 255, 255));
         SetBkMode(memDC, TRANSPARENT);
         DrawTextW(memDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
@@ -644,9 +669,9 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
                 pBits[y * cw + x] |= 0xFF000000u;
     }
 
-    SIZE          sz    = {cw, ch};
-    POINT         ptSrc = {0, 0};
-    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+    SIZE sz = { cw, ch };
+    POINT ptSrc = { 0, 0 };
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
     UpdateLayeredWindow(hwnd, screenDC, nullptr, &sz, memDC, &ptSrc, 0, &blend, ULW_ALPHA);
 
     SelectObject(memDC, hOldBmp);
@@ -669,7 +694,10 @@ static void EnsureOverlayWindow()
         OVERLAY_CLASS_NAME,
         nullptr,
         WS_POPUP, // initially hidden (no WS_VISIBLE)
-        0, 0, 1, 1,
+        0,
+        0,
+        1,
+        1,
         nullptr,
         nullptr,
         g_hInstance,
@@ -694,8 +722,7 @@ static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
     g_overlayRenderedW = 0; // force re-render
     g_overlayRenderedH = 0;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h,
-                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
     RenderOverlayContent(g_hOverlay, w, h);
 }
 
@@ -712,8 +739,7 @@ static void RepositionOverlay(int x, int y, int w, int h)
     g_overlayInfoW = w;
     g_overlayInfoH = h;
 
-    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
-        SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
     // Re-render only when the size changed or geometry text needs updating
     bool sizeChanged = (w != g_overlayRenderedW || h != g_overlayRenderedH);
@@ -736,6 +762,9 @@ static void StopDragging()
     g_dragging = false;
     g_dragFirstMove = false;
     g_dragTarget = nullptr;
+    g_snapArmed = false;
+    g_snapTarget = SnapTarget::None;
+    g_snapTargetRect = {};
     HideOverlay();
 }
 
@@ -750,14 +779,14 @@ static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
         int y;
         ResizeHandle h;
     } handles[] = {
-        {rc.left, rc.top, RESIZE_TOP_LEFT},
-        {cx, rc.top, RESIZE_TOP},
-        {rc.right, rc.top, RESIZE_TOP_RIGHT},
-        {rc.right, cy, RESIZE_RIGHT},
-        {rc.right, rc.bottom, RESIZE_BOTTOM_RIGHT},
-        {cx, rc.bottom, RESIZE_BOTTOM},
-        {rc.left, rc.bottom, RESIZE_BOTTOM_LEFT},
-        {rc.left, cy, RESIZE_LEFT},
+        { rc.left, rc.top, RESIZE_TOP_LEFT },
+        { cx, rc.top, RESIZE_TOP },
+        { rc.right, rc.top, RESIZE_TOP_RIGHT },
+        { rc.right, cy, RESIZE_RIGHT },
+        { rc.right, rc.bottom, RESIZE_BOTTOM_RIGHT },
+        { cx, rc.bottom, RESIZE_BOTTOM },
+        { rc.left, rc.bottom, RESIZE_BOTTOM_LEFT },
+        { rc.left, cy, RESIZE_LEFT },
     };
 
     ResizeHandle closest = RESIZE_BOTTOM_RIGHT;
@@ -970,7 +999,6 @@ static bool IsSystemClass(HWND hwnd)
 
     return false;
 }
-
 
 std::wstring ToUpperInvariant(std::wstring_view input)
 {
@@ -1334,6 +1362,10 @@ static HWND ResolveTargetWindow(POINT pt)
 static void HandleDragMove(POINT pt);
 static void HandleDragResize(POINT pt);
 
+static bool GetWorkAreaForPoint(POINT pt, RECT& out);
+static bool WindowSupportsSnap(HWND hwnd, SnapTarget target);
+static bool ComputeSnapTarget(POINT pt, RECT& target, SnapTarget& out);
+
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
@@ -1419,8 +1451,10 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         {
             int ddx = ms->pt.x - g_pendingDownPt.x;
             int ddy = ms->pt.y - g_pendingDownPt.y;
-            if (ddx < 0) ddx = -ddx;
-            if (ddy < 0) ddy = -ddy;
+            if (ddx < 0)
+                ddx = -ddx;
+            if (ddy < 0)
+                ddy = -ddy;
             if (ddx >= GetSystemMetrics(SM_CXDRAG) || ddy >= GetSystemMetrics(SM_CYDRAG))
             {
                 bool wasResize = g_pendingResize;
@@ -1469,6 +1503,49 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         // ----- Left Button Up: end drag -----
         if (wParam == WM_LBUTTONUP && g_dragging)
         {
+            // Edge-snap on release: re-evaluate the target from the release
+            // coordinates - mouse moves are throttled, so the preview state can be
+            // stale by the time the button is released. This also keeps the preview
+            // and release paths in agreement about what a pointer position arms.
+            SnapTarget snapTarget = SnapTarget::None;
+            RECT snapRect = {};
+            g_snapArmed = !g_dragFirstMove && g_snapToEdges && ComputeSnapTarget(ms->pt, snapRect, snapTarget) && WindowSupportsSnap(g_dragTarget, snapTarget);
+            g_snapTarget = g_snapArmed ? snapTarget : SnapTarget::None;
+            g_snapTargetRect = g_snapArmed ? snapRect : RECT{};
+
+            // Edge-snap on release: snap the window into the armed target region.
+            if (g_snapArmed)
+            {
+                const SnapTarget target = g_snapTarget;
+                const RECT targetRect = g_snapTargetRect;
+                g_snapArmed = false;
+                g_snapTarget = SnapTarget::None;
+                g_snapTargetRect = {};
+
+                if (target == SnapTarget::Maximize)
+                {
+                    ShowWindowAsync(g_dragTarget, SW_MAXIMIZE);
+                }
+                else if (target != SnapTarget::None)
+                {
+                    // Position the window directly so its visible frame (DWM extended
+                    // frame bounds) matches the target region. The visible frame is
+                    // inset from the window rect by the invisible resize borders, so
+                    // expand the target rect by those margins (recomputed here because
+                    // they are zeroed while the snap preview is armed).
+                    PrepareOverlayMetrics(g_dragTarget);
+                    RECT windowRect = targetRect;
+                    windowRect.left -= g_overlayMarginL;
+                    windowRect.top -= g_overlayMarginT;
+                    windowRect.right += g_overlayMarginR;
+                    windowRect.bottom += g_overlayMarginB;
+                    SetWindowPos(g_dragTarget, nullptr, windowRect.left, windowRect.top, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+                }
+
+                EndInteraction(true, false);
+                return 1;
+            }
+
             // Flush final position (may have been throttled)
             POINT pt = ms->pt;
             int dx = pt.x - g_dragStart.x;
@@ -1569,6 +1646,113 @@ forward:
 }
 
 // ---------------------------------------------------------------------------
+// Edge-snap helpers
+// ---------------------------------------------------------------------------
+static bool GetWorkAreaForPoint(POINT pt, RECT& out)
+{
+    HMONITOR monitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi{};
+    mi.cbSize = sizeof(mi);
+    if (!GetMonitorInfoW(monitor, &mi))
+    {
+        return false;
+    }
+    out = mi.rcWork;
+    return true;
+}
+
+// Returns true when the window can perform the snap operation: side and corner
+// snaps resize the window (requires a thick frame) and the top-edge snap
+// maximizes it (requires a maximize box).
+static bool WindowSupportsSnap(HWND hwnd, SnapTarget target)
+{
+    const LONG style = GetWindowLongW(hwnd, GWL_STYLE);
+    if (target == SnapTarget::Maximize)
+    {
+        return (style & WS_MAXIMIZEBOX) != 0;
+    }
+    return (style & WS_THICKFRAME) != 0;
+}
+
+// Returns true when the cursor is within a snap zone and fills the target
+// rectangle. Corners are checked before edges so quadrants take priority over
+// the half-screen/maximize edge zones.
+static bool ComputeSnapTarget(POINT pt, RECT& target, SnapTarget& out)
+{
+    RECT work{};
+    if (!GetWorkAreaForPoint(pt, work))
+    {
+        return false;
+    }
+
+    // Proximity is measured against the physical monitor bounds - the work area
+    // stops at the taskbar, so it would arm snapping early and never reach the
+    // bottom edge with a docked taskbar. The work area remains the placement
+    // destination.
+    HMONITOR monitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO monitorInfo{};
+    monitorInfo.cbSize = sizeof(monitorInfo);
+    if (!GetMonitorInfoW(monitor, &monitorInfo))
+    {
+        return false;
+    }
+
+    const int midX = (work.left + work.right) / 2;
+    const int midY = (work.top + work.bottom) / 2;
+
+    const bool nearLeft = pt.x <= monitorInfo.rcMonitor.left + SNAP_EDGE_THRESHOLD;
+    const bool nearRight = pt.x >= monitorInfo.rcMonitor.right - SNAP_EDGE_THRESHOLD;
+    const bool nearTop = pt.y <= monitorInfo.rcMonitor.top + SNAP_EDGE_THRESHOLD;
+    const bool nearBottom = pt.y >= monitorInfo.rcMonitor.bottom - SNAP_EDGE_THRESHOLD;
+
+    if (nearLeft && nearTop)
+    {
+        target = RECT{ work.left, work.top, midX, midY };
+        out = SnapTarget::TopLeft;
+        return true;
+    }
+    if (nearRight && nearTop)
+    {
+        target = RECT{ midX, work.top, work.right, midY };
+        out = SnapTarget::TopRight;
+        return true;
+    }
+    if (nearLeft && nearBottom)
+    {
+        target = RECT{ work.left, midY, midX, work.bottom };
+        out = SnapTarget::BottomLeft;
+        return true;
+    }
+    if (nearRight && nearBottom)
+    {
+        target = RECT{ midX, midY, work.right, work.bottom };
+        out = SnapTarget::BottomRight;
+        return true;
+    }
+
+    if (nearLeft)
+    {
+        target = RECT{ work.left, work.top, midX, work.bottom };
+        out = SnapTarget::LeftHalf;
+        return true;
+    }
+    if (nearRight)
+    {
+        target = RECT{ midX, work.top, work.right, work.bottom };
+        out = SnapTarget::RightHalf;
+        return true;
+    }
+    if (nearTop)
+    {
+        target = work;
+        out = SnapTarget::Maximize;
+        return true;
+    }
+
+    return false;
+}
+
+// ---------------------------------------------------------------------------
 // Drag / resize move helpers – called directly from the LL mouse hook.
 // DeferWindowPos batches the target + overlay into one DWM composition pass.
 // ---------------------------------------------------------------------------
@@ -1600,11 +1784,10 @@ static void HandleDragMove(POINT pt)
             float ratioT = (maxH > 0) ? static_cast<float>(g_dragStart.y - maxRect.top) / maxH : 0.5f;
             int newX = g_dragStart.x - static_cast<int>(restoredW * ratioL);
             int newY = g_dragStart.y - static_cast<int>(restoredH * ratioT);
-            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
-                         SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
             g_dragStart = pt;
-            g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
+            g_dragWndRect = { newX, newY, newX + restoredW, newY + restoredH };
 
             // Corner radius / invisible-border margins differ once restored.
             PrepareOverlayMetrics(g_dragTarget);
@@ -1620,9 +1803,42 @@ static void HandleDragMove(POINT pt)
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
-                 SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-    RepositionOverlay(newX, newY, w, h);
+    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+
+    // Edge-snap preview: when armed, overlay the target region instead of the
+    // dragged window (zero the frame margins/rounding so it hugs the screen edge).
+    SnapTarget snapTarget = SnapTarget::None;
+    RECT snapRect{};
+    const bool nowArmed = g_snapToEdges && ComputeSnapTarget(pt, snapRect, snapTarget) && WindowSupportsSnap(g_dragTarget, snapTarget);
+    const bool wasArmed = g_snapArmed;
+
+    if (nowArmed)
+    {
+        g_snapArmed = true;
+        g_snapTarget = snapTarget;
+        g_snapTargetRect = snapRect;
+        if (!wasArmed)
+        {
+            g_overlayMarginL = g_overlayMarginT = g_overlayMarginR = g_overlayMarginB = 0;
+            g_overlayCornerRadius = 0;
+            g_overlayRenderedW = 0;
+            g_overlayRenderedH = 0;
+        }
+        RepositionOverlay(snapRect.left, snapRect.top, snapRect.right - snapRect.left, snapRect.bottom - snapRect.top);
+    }
+    else
+    {
+        if (wasArmed)
+        {
+            PrepareOverlayMetrics(g_dragTarget);
+            g_overlayRenderedW = 0;
+            g_overlayRenderedH = 0;
+        }
+        g_snapArmed = false;
+        g_snapTarget = SnapTarget::None;
+        g_snapTargetRect = {};
+        RepositionOverlay(newX, newY, w, h);
+    }
 }
 
 static void HandleDragResize(POINT pt)
@@ -1651,9 +1867,8 @@ static void HandleDragResize(POINT pt)
 
             int newLeft = pt.x - static_cast<int>(ratioL * newW);
             int newTop = pt.y - static_cast<int>(ratioT * newH);
-            SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
-                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
+            SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+            g_resizeWndRect = { newLeft, newTop, newLeft + newW, newTop + newH };
 
             // Corner radius / invisible-border margins differ once restored.
             PrepareOverlayMetrics(g_resizeTarget);
@@ -1680,15 +1895,36 @@ static void HandleDragResize(POINT pt)
     RECT nr = g_resizeWndRect;
     switch (g_currentHandle)
     {
-    case RESIZE_TOP_LEFT:     nr.left += dx; nr.top += dy; break;
-    case RESIZE_TOP:          nr.top += dy; break;
-    case RESIZE_TOP_RIGHT:    nr.right += dx; nr.top += dy; break;
-    case RESIZE_RIGHT:        nr.right += dx; break;
-    case RESIZE_BOTTOM_RIGHT: nr.right += dx; nr.bottom += dy; break;
-    case RESIZE_BOTTOM:       nr.bottom += dy; break;
-    case RESIZE_BOTTOM_LEFT:  nr.left += dx; nr.bottom += dy; break;
-    case RESIZE_LEFT:         nr.left += dx; break;
-    default: break;
+    case RESIZE_TOP_LEFT:
+        nr.left += dx;
+        nr.top += dy;
+        break;
+    case RESIZE_TOP:
+        nr.top += dy;
+        break;
+    case RESIZE_TOP_RIGHT:
+        nr.right += dx;
+        nr.top += dy;
+        break;
+    case RESIZE_RIGHT:
+        nr.right += dx;
+        break;
+    case RESIZE_BOTTOM_RIGHT:
+        nr.right += dx;
+        nr.bottom += dy;
+        break;
+    case RESIZE_BOTTOM:
+        nr.bottom += dy;
+        break;
+    case RESIZE_BOTTOM_LEFT:
+        nr.left += dx;
+        nr.bottom += dy;
+        break;
+    case RESIZE_LEFT:
+        nr.left += dx;
+        break;
+    default:
+        break;
     }
 
     // Enforce minimum window size
@@ -1697,13 +1933,17 @@ static void HandleDragResize(POINT pt)
 
     if (nr.right - nr.left < MIN_WINDOW_WIDTH)
     {
-        if (leftMoving) nr.left = nr.right - MIN_WINDOW_WIDTH;
-        else            nr.right = nr.left + MIN_WINDOW_WIDTH;
+        if (leftMoving)
+            nr.left = nr.right - MIN_WINDOW_WIDTH;
+        else
+            nr.right = nr.left + MIN_WINDOW_WIDTH;
     }
     if (nr.bottom - nr.top < MIN_WINDOW_HEIGHT)
     {
-        if (topMoving) nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
-        else           nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
+        if (topMoving)
+            nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
+        else
+            nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
     }
 
     g_resizeWndRect = nr;
@@ -1714,8 +1954,7 @@ static void HandleDragResize(POINT pt)
 
     // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
     // work reliably for cross-process target windows)
-    SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
     RepositionOverlay(nr.left, nr.top, w, h);
 }
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1874,11 +2113,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     }
 
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
-    g_curSizeAll  = LoadCursorW(nullptr, IDC_SIZEALL);
+    g_curSizeAll = LoadCursorW(nullptr, IDC_SIZEALL);
     g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
     g_curSizeNESW = LoadCursorW(nullptr, IDC_SIZENESW);
-    g_curSizeWE   = LoadCursorW(nullptr, IDC_SIZEWE);
-    g_curSizeNS   = LoadCursorW(nullptr, IDC_SIZENS);
+    g_curSizeWE = LoadCursorW(nullptr, IDC_SIZEWE);
+    g_curSizeNS = LoadCursorW(nullptr, IDC_SIZENS);
 
     // Install global low-level hooks
     g_hhkKeyboard = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
@@ -1886,8 +2125,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
     // Detect foreground switches to elevated processes (where key-up events stop arriving)
     g_hWinEventHook = SetWinEventHook(
-        EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND,
-        nullptr, WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+        EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
 
     if (!g_hhkKeyboard || !g_hhkMouse)
     {
