@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include <FancyZonesLib/FancyZonesData/LayoutData.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
@@ -68,11 +69,13 @@ public:
     std::optional<LayoutData> GetLayout(const GUID& id) const noexcept;
     std::optional<FancyZonesDataTypes::CustomLayoutData> GetCustomLayoutData(const GUID& id) const noexcept;
     const TCustomLayoutMap& GetAllLayouts() const noexcept;
+    const std::vector<GUID>& GetLayoutIdsInOrder() const noexcept; // in the order layouts appear in custom-layouts.json
 
 private:
     CustomLayouts();
     ~CustomLayouts() = default;
 
     TCustomLayoutMap m_layouts;
+    std::vector<GUID> m_layoutIdsOrder;
     std::unique_ptr<FileWatcher> m_fileWatcher;
 };
