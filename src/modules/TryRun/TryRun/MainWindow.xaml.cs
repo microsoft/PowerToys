@@ -39,6 +39,8 @@ public partial class MainWindow : Window
     private string? windowsFailure;
     private WorkloadKind kind;
     private bool updatingSelection;
+    private bool isolationDemo;
+    private IsolationReport? isolationReport;
 
     public MainWindow(string[] startupPaths, string? startupError = null)
     {
@@ -171,6 +173,9 @@ public partial class MainWindow : Window
         LinuxImageHeader.Visibility = LinuxOptions.Visibility;
         BackendText.Text = linux ? backends?.LinuxDetail ?? "Checking Linux backend…" : windowsFailure ?? backends?.WindowsDetail ?? "Checking Windows backend…";
         PermissionText.Text = linux ? "Linux: isolated WSLC container, 2 CPUs / 2 GiB. Only this run's data folders are mounted. No existing WSL distribution is used." : "Windows: MXC ProcessContainer. Copied applications use the run workspace; installed application directories are read-only. Clipboard and input injection: off. Windows are allowed.";
+        CaptureOption.Visibility = linux ? Visibility.Collapsed : Visibility.Visible;
+        CaptureHint.Text = backends?.NativeDenialCaptureAvailable == true ? "Native MXC capture is available. Blocked access stays blocked." : "Native capture unavailable on this host. Runs keep their restrictions; no elevated capture fallback is used.";
+        UpdateEnvironmentSummary();
     }
 
     private void OnBrowseWorkload(object sender, RoutedEventArgs e)
@@ -269,6 +274,7 @@ public partial class MainWindow : Window
 
     private async Task ImportSelectionAsync(IEnumerable<string> paths)
     {
+        isolationDemo = false;
         var selection = paths.ToArray();
         var previous = (EntryPointBox.SelectedItem as TaskEntryPoint)?.RelativePath;
         cancellation = new CancellationTokenSource();
@@ -359,6 +365,7 @@ public partial class MainWindow : Window
     {
         if (IsInitialized)
         {
+            isolationDemo = false;
             ApplyEntryPoint();
             SetRunning(cancellation is not null);
         }
@@ -371,6 +378,63 @@ public partial class MainWindow : Window
             : EntryPointBox.SelectedItem is TaskEntryPoint entry
                 ? $"Run {entry.RelativePath}\nWorking folder: {entry.WorkingSubdirectory ?? "selection root"}. All selected files are copied. The original folders are not granted access. Changes stay in this run until you export them."
                 : "Drop files or a folder, then choose an entry point. Nothing runs until you select Run.";
+        UpdateEnvironmentSummary();
+    }
+
+    private void OnEnvironmentChanged(object sender, RoutedEventArgs e)
+    {
+        if (IsInitialized)
+        {
+            UpdateEnvironmentSummary();
+        }
+    }
+
+    private void UpdateEnvironmentSummary()
+    {
+        var linux = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
+        var installed = ManualModeBox.IsChecked == true && kind == WorkloadKind.WindowsApplication;
+        var capture = linux ? "Windows denial capture does not apply to WSLC." : CaptureBox.IsChecked != true ? "Denial capture off." : backends?.NativeDenialCaptureAvailable == true ? "Native denial capture: block and record." : "Native denial capture unavailable.";
+        var runtime = linux ? $"Linux / MXC WSLC · {ImageBox.Text}\nRuntime: {(kind == WorkloadKind.LinuxApplication ? "Selected executable" : InterpreterBox.Text)} · 2 CPUs / 2 GiB" : "Windows / MXC ProcessContainer · " + (ProfileBox.SelectedItem as ExecutionProfile)?.Name;
+        EnvironmentSummaryText.Text = $"{runtime}\nFiles: selected copies and temporary data are writable. {(installed ? "Selected installation folder is read-only." : "Original input folders are not granted access.")}\nNetwork: off · Time limit: {TimeoutBox.Text} seconds\n{capture}" + (isolationDemo ? "\nDemo: a harmless host-only fixture is supplied for an access check." : string.Empty);
+    }
+
+    private async void OnWindowsDemo(object sender, RoutedEventArgs e) => await LoadDemoAsync("Windows-isolation");
+
+    private async void OnLinuxDemo(object sender, RoutedEventArgs e) => await LoadDemoAsync("Linux-isolation");
+
+    private async Task LoadDemoAsync(string name)
+    {
+        ManualModeBox.IsChecked = false;
+        await ImportSelectionAsync([Path.Combine(AppContext.BaseDirectory, "Samples", name)]);
+        isolationDemo = inputs.Count == 1 && Path.GetFileName(inputs[0]) == name;
+        if (isolationDemo)
+        {
+            ArgumentsBox.Clear();
+            if (name == "Linux-isolation")
+            {
+                ImageBox.Text = "alpine:3.22";
+            }
+
+            StatusText.Text = "Demo ready. Select Run to change a copy, check access to a harmless host-only file, and review the isolation report.";
+            UpdateEnvironmentSummary();
+        }
+    }
+
+    private void ShowIsolationReport(IsolationReport report)
+    {
+        isolationReport = report;
+        CaptureStatusText.Text = $"Denial capture: {report.CaptureStatus}\n{report.CaptureDetail}";
+        ReportEvidenceText.Text = report.EvidenceNote;
+        IsolationGrid.ItemsSource = report.Events;
+        if (report.Events.Count > 0)
+        {
+            IsolationGrid.SelectedIndex = 0;
+        }
+    }
+
+    private void OnIsolationEventSelected(object sender, SelectionChangedEventArgs e)
+    {
+        IsolationDetails.Text = IsolationGrid.SelectedItem is IsolationEvent observation ? $"{observation.Source}\n{observation.Resource}\n{observation.Detail}" : string.Empty;
     }
 
     private async void OnRun(object sender, RoutedEventArgs e)
@@ -413,6 +477,10 @@ public partial class MainWindow : Window
         var buffer = new OutputBuffer();
         OutputBox.Clear();
         StatusText.Text = "Copying inputs…";
+        ReportEnvironmentBox.Text = "Preparing this run's environment…";
+        OriginalCheckText.Text = "Original file check pending.";
+        IsolationDetails.Clear();
+        ShowIsolationReport(new IsolationReport("Pending", "The run has not started.", []));
         var workloadFile = entry is null ? WorkloadFileBox.Text : string.Empty;
         var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
@@ -443,9 +511,21 @@ public partial class MainWindow : Window
                 Image = ImageBox.Text.Trim(),
                 ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
                 Interpreter = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython ? InterpreterBox.Text.Trim() : null,
+                CaptureDenials = kind is not WorkloadKind.LinuxShell and not WorkloadKind.LinuxPython and not WorkloadKind.LinuxApplication && CaptureBox.IsChecked == true,
+                IsolationDemo = isolationDemo,
             };
             var progress = new Progress<WorkerMessage>(message =>
             {
+                if (message.Environment is { } environment)
+                {
+                    ReportEnvironmentBox.Text = environment.Describe();
+                }
+
+                if (message.Report is { } report)
+                {
+                    ShowIsolationReport(report);
+                }
+
                 if (message.Kind is WorkerMessage.Output or WorkerMessage.Error)
                 {
                     buffer.Append(message.Text);
@@ -468,6 +548,11 @@ public partial class MainWindow : Window
         {
             if (prepared && !closeWhenStopped)
             {
+                if (isolationReport?.CaptureStatus is "Pending" or "Collecting")
+                {
+                    ShowIsolationReport(new IsolationReport("Incomplete", "The worker did not finish report collection. Available output and copied files can still be reviewed.", []));
+                }
+
                 var outcome = StatusText.Text;
                 cancellation.Dispose();
                 cancellation = new CancellationTokenSource();
@@ -503,6 +588,8 @@ public partial class MainWindow : Window
         StatusText.Text = "Reviewing result files…";
         try
         {
+            var originals = await Task.Run(() => workspace!.CheckOriginals(cancellation!.Token));
+            OriginalCheckText.Text = originals.ToString();
             var comparison = await Task.Run(() => workspace!.Review(cancellation!.Token));
             changes = comparison.Select(change => new FileChangeRow(change)).ToList();
             ChangesGrid.ItemsSource = changes;
@@ -592,6 +679,9 @@ public partial class MainWindow : Window
     private void SetRunning(bool running)
     {
         var manual = ManualModeBox.IsChecked == true;
+        WindowsDemoButton.IsEnabled = !running;
+        LinuxDemoButton.IsEnabled = !running;
+        CaptureBox.IsEnabled = !running && backends?.NativeDenialCaptureAvailable == true;
         RunButton.IsEnabled = available && !running && (manual || EntryPointBox.SelectedItem is TaskEntryPoint);
         EntryPointBox.IsEnabled = !running && !manual;
         ManualModeBox.IsEnabled = !running;

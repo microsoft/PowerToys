@@ -98,9 +98,16 @@ public sealed class WorkerClient(string executablePath)
         {
             await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(request)).ConfigureAwait(false);
             await process.StandardInput.FlushAsync(cancellationToken).ConfigureAwait(false);
-            using var registration = cancellationToken.Register(() => RequestStop(process));
             using var watchdog = new CancellationTokenSource(TimeSpan.FromSeconds(request.TimeoutSeconds + 30));
-            using var waitCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, watchdog.Token);
+            using var waitCancellation = CancellationTokenSource.CreateLinkedTokenSource(watchdog.Token);
+            using var registration = cancellationToken.Register(() =>
+            {
+                RequestStop(process);
+
+                // Allow a stopped worker to finish its bounded diagnostics and
+                // send its report before tearing down the reader.
+                waitCancellation.CancelAfter(TimeSpan.FromSeconds(5));
+            });
             WorkerMessage? completion = null;
             while (await process.StandardOutput.ReadLineAsync(waitCancellation.Token).ConfigureAwait(false) is { } line)
             {
@@ -114,6 +121,7 @@ public sealed class WorkerClient(string executablePath)
 
             await process.WaitForExitAsync(waitCancellation.Token).ConfigureAwait(false);
             await errorReader.ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             return completion ?? throw new InvalidOperationException($"The execution worker stopped unexpectedly. {errors}");
         }
         finally

@@ -4,7 +4,4 @@
 
 namespace PowerToys.TryRun.Core;
 
-public sealed record BackendAvailability(bool WindowsAvailable, bool LinuxAvailable, string WindowsDetail, string LinuxDetail, string NativeVersion)
-{
-    public bool NativeDenialCaptureAvailable { get; init; }
-}
+public sealed record IsolationEvent(string Source, string Resource, string Access, string Outcome, string Detail);

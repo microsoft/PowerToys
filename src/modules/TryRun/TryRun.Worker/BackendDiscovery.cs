@@ -21,6 +21,11 @@ internal static class BackendDiscovery
             linux,
             windows ? $"Windows · MXC ProcessContainer (host capability: {tier}; actual policy support is checked at launch)." : support.Reason ?? "Windows ProcessContainer is unavailable.",
             linux ? "Linux · MXC WSLC. Requires a prepared image containing your application's runtime." : "Linux WSLC is unavailable. Build with MxcWithWslc=true and install a compatible WSL runtime. No ordinary WSL execution will be substituted.",
-            MxcSandbox.NativeVersion);
+            MxcSandbox.NativeVersion)
+        {
+            // The pinned MXC probe starts/stops native PSEC/V2 capture. It does
+            // not advertise the guarded WPR path, which can require elevation.
+            NativeDenialCaptureAvailable = available.Any(backend => backend.Backend == ContainmentBackend.ProcessContainer && backend.Capabilities.Contains(BackendCapability.CaptureDenials)),
+        };
     }
 }

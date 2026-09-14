@@ -17,6 +17,7 @@ internal static class Program
     public static async Task<int> Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
+        RunDiagnostics? diagnostics = null;
         try
         {
             var unavailable = RuntimeRequirements.GetUnavailableReason();
@@ -57,6 +58,10 @@ internal static class Program
 
             Send(new WorkerMessage(WorkerMessage.Output, (input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail) + "\n"));
             var request = SandboxRequestFactory.Create(input);
+            diagnostics = new RunDiagnostics(input, backends);
+            diagnostics.Configure(request);
+            Send(new WorkerMessage(WorkerMessage.EnvironmentReady, "Configured execution environment.") { Environment = diagnostics.Describe(request) });
+            Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics started.") { Report = diagnostics.Pending() });
             using var process = MxcSandbox.Spawn(request);
             if (process.Warnings.Count > 0)
             {
@@ -90,11 +95,17 @@ internal static class Program
             }
 
             await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
+            Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics completed.") { Report = diagnostics.Complete(process) });
             Send(new WorkerMessage(WorkerMessage.Completed, result.TimedOut ? "Time limit reached." : "Finished.", result.ExitCode, result.TimedOut));
             return result.TimedOut ? 124 : 0;
         }
         catch (Exception exception)
         {
+            if (diagnostics is not null)
+            {
+                Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics incomplete.") { Report = new IsolationReport("Incomplete", "The run did not reach normal report finalization. " + exception.Message, []) });
+            }
+
             Send(new WorkerMessage(WorkerMessage.Error, exception.Message));
             Send(new WorkerMessage(WorkerMessage.Completed, "Unable to run.", -1));
             return 1;

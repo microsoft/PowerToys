@@ -10,4 +10,10 @@ public sealed record WorkerMessage(string Kind, string Text, int? ExitCode = nul
     public const string Error = "error";
     public const string Completed = "completed";
     public const string Ready = "ready";
+    public const string EnvironmentReady = "environment";
+    public const string Isolation = "isolation";
+
+    public RunEnvironment? Environment { get; init; }
+
+    public IsolationReport? Report { get; init; }
 }

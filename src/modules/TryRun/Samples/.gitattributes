@@ -1,2 +1,4 @@
 *.sh text eol=lf
 *.py text eol=lf
+Windows-isolation/* text eol=lf
+Linux-isolation/* text eol=lf

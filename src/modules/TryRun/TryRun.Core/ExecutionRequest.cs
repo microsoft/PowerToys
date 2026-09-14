@@ -28,6 +28,10 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
     public bool PrepareImage { get; init; }
 
+    public bool CaptureDenials { get; init; }
+
+    public bool IsolationDemo { get; init; }
+
     [JsonIgnore]
     public bool IsLinux => Kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
 
@@ -65,6 +69,11 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
         if (PrepareImage && !IsLinux)
         {
             throw new ArgumentException("Only Linux profiles use image preparation.");
+        }
+
+        if ((CaptureDenials && IsLinux) || (PrepareImage && (IsolationDemo || CaptureDenials)))
+        {
+            throw new ArgumentException("Denial capture is only available for Windows workloads, and demos require a workload run.");
         }
 
         if (Kind == WorkloadKind.WindowsApplication)

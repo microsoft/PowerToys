@@ -11,6 +11,7 @@ public sealed class FileWorkspace(RunSession session)
     private readonly RunSession session = session ?? throw new ArgumentNullException(nameof(session));
     private IReadOnlyDictionary<string, WorkspaceFile> baseline = new Dictionary<string, WorkspaceFile>();
     private IReadOnlyDictionary<string, WorkspaceFile>? reviewed;
+    private IReadOnlyDictionary<string, WorkspaceFile> originals = new Dictionary<string, WorkspaceFile>();
     private bool imported;
 
     public void Import(IEnumerable<string> inputs, CancellationToken cancellationToken)
@@ -29,6 +30,7 @@ public sealed class FileWorkspace(RunSession session)
         }
 
         var files = new Dictionary<string, WorkspaceFile>(StringComparer.OrdinalIgnoreCase);
+        var sourceFiles = new Dictionary<string, WorkspaceFile>(StringComparer.OrdinalIgnoreCase);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var budget = new Budget();
         foreach (var input in inputs)
@@ -42,11 +44,54 @@ public sealed class FileWorkspace(RunSession session)
             }
 
             using var source = new WorkspaceFileSystem.DirectoryLease(Path.GetDirectoryName(path)!);
-            Visit(path, name, destination.Path, files, budget, cancellationToken);
+            Visit(path, name, destination.Path, files, budget, cancellationToken, sourceFiles);
         }
 
         baseline = files;
+        originals = sourceFiles;
         imported = true;
+    }
+
+    public OriginalFilesCheck CheckOriginals(CancellationToken cancellationToken)
+    {
+        if (!imported)
+        {
+            throw new InvalidOperationException("Import must complete before checking originals.");
+        }
+
+        var unchanged = 0;
+        var changed = 0;
+        var unavailable = 0;
+        long bytes = 0;
+        foreach (var original in originals)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                using var parent = new WorkspaceFileSystem.DirectoryLease(Path.GetDirectoryName(original.Key)!);
+                using var file = WorkspaceFileSystem.OpenRead(Path.Combine(parent.Path, Path.GetFileName(original.Key)));
+                bytes += file.Length;
+                if (bytes > WorkspacePath.MaximumTotalBytes)
+                {
+                    throw new IOException("Originals exceed the bounded verification budget.");
+                }
+
+                if (Describe(file, cancellationToken).Hash == original.Value.Hash)
+                {
+                    unchanged++;
+                }
+                else
+                {
+                    changed++;
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                unavailable++;
+            }
+        }
+
+        return new OriginalFilesCheck(unchanged, changed, unavailable);
     }
 
     public IReadOnlyList<FileChange> Review(CancellationToken cancellationToken)
@@ -157,7 +202,7 @@ public sealed class FileWorkspace(RunSession session)
         RunSession.ValidateDirectories(session.WorkingDirectory, session.TemporaryDirectory);
     }
 
-    private static void Visit(string source, string relative, string? destination, Dictionary<string, WorkspaceFile> files, Budget budget, CancellationToken cancellationToken)
+    private static void Visit(string source, string relative, string? destination, Dictionary<string, WorkspaceFile> files, Budget budget, CancellationToken cancellationToken, Dictionary<string, WorkspaceFile>? sourceFiles = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
         relative = WorkspacePath.ValidateRelative(relative);
@@ -176,7 +221,7 @@ public sealed class FileWorkspace(RunSession session)
 
             foreach (var child in Directory.EnumerateFileSystemEntries(physicalDirectory.Path))
             {
-                Visit(child, Path.Combine(relative, Path.GetFileName(child)), destination, files, budget, cancellationToken);
+                Visit(child, Path.Combine(relative, Path.GetFileName(child)), destination, files, budget, cancellationToken, sourceFiles);
             }
         }
         else
@@ -185,6 +230,7 @@ public sealed class FileWorkspace(RunSession session)
             budget.AddBytes(stream.Length);
             var description = Describe(stream, cancellationToken);
             files.Add(relative, description);
+            sourceFiles?.TryAdd(PhysicalDirectory.Resolve(stream.SafeFileHandle), description);
             if (destination is not null)
             {
                 using var target = new FileStream(Path.Combine(destination, relative), FileMode.CreateNew, FileAccess.Write, FileShare.None);

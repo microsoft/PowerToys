@@ -30,6 +30,19 @@
                 Margin="0,6,0,0"
                 Text="Windows and Linux, powered by MXC. Experimental: MXC is not currently a security boundary."
                 TextWrapping="Wrap" />
+            <WrapPanel Margin="0,8,0,0">
+                <Button
+                    x:Name="WindowsDemoButton"
+                    Padding="10,4"
+                    Click="OnWindowsDemo"
+                    Content="Windows isolation demo" />
+                <Button
+                    x:Name="LinuxDemoButton"
+                    Margin="8,0,0,0"
+                    Padding="10,4"
+                    Click="OnLinuxDemo"
+                    Content="Linux isolation demo" />
+            </WrapPanel>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -114,6 +127,11 @@
                         Margin="0,8,0,0"
                         Text="Checking execution backends…"
                         TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Name="EnvironmentSummaryText"
+                        Margin="0,8,0,0"
+                        AutomationProperties.Name="Run environment summary"
+                        TextWrapping="Wrap" />
                     <DockPanel
                         x:Name="LinuxImageHeader"
                         Margin="0,8,0,0"
@@ -130,10 +148,24 @@
                             x:Name="ImageBox"
                             AutomationProperties.Name="Linux container image"
                             MaxLength="256"
-                            Text="alpine:3.22" />
+                            Text="alpine:3.22"
+                            TextChanged="OnEnvironmentChanged" />
                     </DockPanel>
                     <Expander Margin="0,12,0,0" Header="Advanced options">
                         <StackPanel Margin="0,8,0,0">
+                            <StackPanel x:Name="CaptureOption" Margin="0,0,0,8">
+                                <CheckBox
+                                    x:Name="CaptureBox"
+                                    Checked="OnEnvironmentChanged"
+                                    Content="Record blocked access with MXC"
+                                    IsChecked="True"
+                                    Unchecked="OnEnvironmentChanged" />
+                                <TextBlock
+                                    x:Name="CaptureHint"
+                                    Margin="0,4,0,0"
+                                    FontSize="12"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
                             <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
                             <TextBox
                                 x:Name="ArgumentsBox"
@@ -152,7 +184,8 @@
                                         x:Name="InterpreterBox"
                                         AutomationProperties.Name="Script runtime inside Linux image"
                                         MaxLength="256"
-                                        Text="/bin/sh" />
+                                        Text="/bin/sh"
+                                        TextChanged="OnEnvironmentChanged" />
                                 </DockPanel>
                                 <DockPanel>
                                     <Button
@@ -251,7 +284,8 @@
                     VerticalContentAlignment="Center"
                     AutomationProperties.Name="Timeout in seconds"
                     MaxLength="3"
-                    Text="60" />
+                    Text="60"
+                    TextChanged="OnEnvironmentChanged" />
             </StackPanel>
         </StackPanel>
         <TabControl x:Name="ResultsTabs" Grid.Row="3">
@@ -404,6 +438,79 @@
                                 VerticalScrollBarVisibility="Auto" />
                         </Grid>
                     </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="IsolationTab" Header="Isolation _report">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="90" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Expander Header="Configured environment for this run">
+                        <TextBox
+                            x:Name="ReportEnvironmentBox"
+                            MaxHeight="180"
+                            AutomationProperties.Name="Configured environment for the completed run"
+                            IsReadOnly="True"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />
+                    </Expander>
+                    <TextBlock
+                        x:Name="CaptureStatusText"
+                        Grid.Row="1"
+                        Margin="0,8,0,4"
+                        Text="Run a task to collect an isolation report."
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Name="OriginalCheckText"
+                        Grid.Row="2"
+                        Margin="0,0,0,8"
+                        TextWrapping="Wrap" />
+                    <DataGrid
+                        x:Name="IsolationGrid"
+                        Grid.Row="3"
+                        AutoGenerateColumns="False"
+                        AutomationProperties.Name="Isolation evidence and observations"
+                        CanUserAddRows="False"
+                        IsReadOnly="True"
+                        SelectionChanged="OnIsolationEventSelected">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="190"
+                                Binding="{Binding Source}"
+                                Header="Source" />
+                            <DataGridTextColumn
+                                Width="130"
+                                Binding="{Binding Outcome}"
+                                Header="Outcome" />
+                            <DataGridTextColumn
+                                Width="90"
+                                Binding="{Binding Access}"
+                                Header="Access" />
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding Resource}"
+                                Header="Resource" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBox
+                        x:Name="IsolationDetails"
+                        Grid.Row="4"
+                        Margin="0,8,0,0"
+                        AutomationProperties.Name="Selected isolation observation details"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto" />
+                    <TextBlock
+                        x:Name="ReportEvidenceText"
+                        Grid.Row="5"
+                        Margin="0,8,0,0"
+                        FontSize="12"
+                        TextWrapping="Wrap" />
                 </Grid>
             </TabItem>
         </TabControl>

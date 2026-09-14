@@ -16,6 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
-    <Content Include="..\Samples\*" Exclude="..\Samples\.gitattributes" Link="Samples\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Samples\**\*" Exclude="..\Samples\**\.gitattributes" Link="Samples\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

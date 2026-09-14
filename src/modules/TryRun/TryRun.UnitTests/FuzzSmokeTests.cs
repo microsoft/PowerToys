@@ -14,6 +14,23 @@ namespace PowerToys.TryRun.UnitTests;
 public sealed class FuzzSmokeTests
 {
     [TestMethod]
+    public void IsolationReportsHandleMalformedAndMutatedDocuments()
+    {
+        var random = new Random(117);
+        foreach (var seed in new[] { "{\"denials\":[],\"summary\":{\"totalDenials\":0,\"deniedResourcesTruncated\":false}}", "{\"version\":1,\"observations\":[{\"resource\":\"fixture\",\"access\":\"read\",\"outcome\":\"blocked\",\"detail\":\"self reported\"}]}", "null", "[]" })
+        {
+            var bytes = Encoding.UTF8.GetBytes(seed);
+            IsolationReportFuzzer.FuzzTarget(bytes);
+            for (var index = 0; index < 250; index++)
+            {
+                var mutation = bytes.ToArray();
+                mutation[random.Next(mutation.Length)] = (byte)random.Next(256);
+                IsolationReportFuzzer.FuzzTarget(mutation);
+            }
+        }
+    }
+
+    [TestMethod]
     public void MultiBackendRequestsHandleMutatedInputs()
     {
         var random = new Random(97);

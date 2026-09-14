@@ -145,6 +145,7 @@ public sealed class FileWorkspaceTests
         var workspace = new FileWorkspace(session);
         Assert.ThrowsException<IOException>(() => workspace.Import([hardLink], CancellationToken.None));
         Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([hardLink], CancellationToken.None));
+        Assert.ThrowsException<IOException>(() => RunArtifacts.ReadFile(hardLink, source.WorkingDirectory, 4096));
         var junction = Path.Combine(session.TemporaryDirectory, "linked-folder");
         CreateJunction(junction, source.WorkingDirectory);
         Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([junction], CancellationToken.None));
@@ -153,6 +154,7 @@ public sealed class FileWorkspaceTests
         workspace.Import([], CancellationToken.None);
         CreateJunction(Path.Combine(session.WorkingDirectory, "escape"), source.WorkingDirectory);
         Assert.ThrowsException<IOException>(() => RunSession.ValidateWorkspacePath(Path.Combine(session.WorkingDirectory, "escape"), session.WorkingDirectory));
+        Assert.ThrowsException<IOException>(() => RunArtifacts.ReadFile(Path.Combine(session.WorkingDirectory, "escape", "original.txt"), session.WorkingDirectory, 4096));
         Assert.ThrowsException<IOException>(() => workspace.Review(CancellationToken.None));
         Assert.AreEqual("original", File.ReadAllText(original));
     }

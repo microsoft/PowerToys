@@ -24,9 +24,12 @@ Complete and validate each milestone before starting the next.
 5. **Explorer entry — implemented, registration and native tests passing**: a per-user classic
    menu verb passes the entire selection through an out-of-process COM helper
    to the same task workflow; it does not inspect files inside Explorer.
-6. **Remaining MXC capability coverage — not started**: configurable policies,
+6. **Environment and isolation report — implemented and validated**:
+   pre-run summary, native block-mode denial capture, attributed observations,
+   original-file hash verification, and Windows/Linux demonstration tasks.
+7. **Remaining MXC capability coverage — not started**: configurable policies,
    denial capture, session lifecycle, and additional supported backends.
-7. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+8. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
@@ -57,6 +60,75 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Run environment and isolation report
+
+The run page summarizes the selected runtime/backend, writable copies,
+read-only installation folder (custom installed-app mode), network policy,
+time limit, Linux image and resource limits, and capture availability.
+The **Isolation report** tab retains the actual request's environment snapshot
+so editing the next task does not relabel evidence from the previous run.
+Windows has no additional CPU/memory cap; Linux requests 2 CPUs and 2 GiB.
+These are configured restrictions, not proof that every attempted operation
+was observed or a certification that arbitrary software is safe.
+
+**Record blocked access with MXC** is enabled by default in the UI. It adds
+`ProcessContainerContainment.CaptureDenials` with `Mode=Block` and
+`RetainEtl=false` only when MXC's native capture probe succeeds. The pinned probe
+starts/stops native PSEC/V2 capture; it does not advertise the elevated guarded
+WPR path. The fixed Try Run policy uses neither LPAC, a network proxy, nor denied
+path overrides, so it is compatible with that native capture path. This utility
+does not enable permissive audit mode or automatically retry with broader grants.
+Unavailable native capture is shown as **Not collected** and ordinary restricted
+execution remains available. A capture/report failure remains visible; missing
+or empty diagnostics never become a claim that nothing was attempted.
+
+The report separates evidence sources:
+
+- **MXC denial capture (block)**: native denied resources and access types.
+- **Workload file (self-reported)**: optional `tryrun-observations.json` in the
+  working folder. These may be supplied or modified by the workload, including
+  pre-existing input content; their claims are not independently trusted.
+- **Host verification**: the demo's harmless host-only fixture is checked before
+  and after execution. Selected original input file hashes are also rechecked
+  by the UI after the run. This verifies those file contents, not the whole host;
+  changes by another host process are not attributed to MXC.
+
+Native documents are kept in a session-owned Diagnostics sibling outside the
+Work/Temp grants and are removed with the session. Reads reject paths outside
+the expected directory, links, junctions, hard links, and oversized files. Native
+JSON is capped at 4 MiB with at most 100 displayed denials; truncation is explicit.
+Workload observations are capped at 32 KiB, 20 rows and 512 characters per field,
+and cannot override their source label. A capture-finalization error may retain
+an MXC-owned ETL file outside the session; its location is shown for diagnosis.
+Stop allows a bounded five-second report-drain period. If finalization cannot
+finish, the UI marks diagnostics incomplete while keeping file review available.
+
+Choose **Windows isolation demo** or **Linux isolation demo**, then **Run**.
+The buttons load the corresponding Samples folder and supply a harmless fixture
+outside the granted workspace. Each demo reads and modifies a copy of notes.txt,
+creates a result, and attempts to read the fixture. The Linux demo additionally
+lists network interfaces; that observation is not a complete network test.
+Expected results: one modified input, a result file and observation file added,
+two original inputs unchanged, and a host fixture unchanged. Inspect **Isolation
+report**, then export the desired files through **Review file changes**.
+The sample folders also work through Explorer; the host-fixture check is enabled
+by the demo buttons, and an ordinary sample-file invocation labels it not tested.
+
+Validation: the standalone x64 Debug build exits 0 and all **94 tests pass**
+with no skips (`isolation-report-full.trx`). This host advertises native denial
+capture. Both demo integration tests verified generated results, a blocked or
+unavailable host-fixture read reported by the script, host-fixture integrity,
+unchanged original input hashes, and export of the modified copy. Windows also
+returned native blocked-access events. Timeout still produced a finalized report;
+the existing Windows/Linux Stop, timeout and Explorer handoff regressions passed.
+Report fuzz coverage includes 1,004 valid/mutated inputs, alongside bounded-parser,
+source-attribution, BOM, truncation, path-boundary and link-rejection tests.
+The actual demo-button → Run → file-review → isolation-report UI flow was checked
+for both backends. The Windows UI showed 13 native denials plus separately labeled
+workload observations and host verification. Linux showed its self-reported
+fixture/interface observations with native denial capture marked Not collected.
+Both UI runs completed with exit code 0 and two original input hashes unchanged.
 
 ### Explorer context menu
 
