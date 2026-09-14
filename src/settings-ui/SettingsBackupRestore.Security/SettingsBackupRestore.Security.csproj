@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <AssemblyName>PowerToys.SettingsBackupRestore.Security</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.SettingsBackupRestore.Security</RootNamespace>
+    <Description>Validated filesystem and archive support for PowerToys settings backup and restore</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SettingsBackupRestore.Security.UnitTests" />
+  </ItemGroup>
+</Project>
