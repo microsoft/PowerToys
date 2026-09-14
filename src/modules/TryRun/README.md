@@ -107,6 +107,11 @@ Explorer. The COM call queues work and returns promptly. A single-use helper
 receives the whole `IShellItemArray`, reads only filesystem names, starts the
 fixed adjacent UI, and exits. Abandoned activation has a 60-second idle limit.
 Each invocation has its own helper and UI, so concurrent selections do not merge.
+The command captures the server thread's dispatcher at construction. Managed
+COM calls can arrive on RPC pool threads; creating a dispatcher on such a thread
+queues work to a message loop that does not exist. Selection state is locked
+while accepting a request, and the accepted selection is retained for the
+server-thread callback.
 
 The UI receives versioned JSON on redirected standard input, with a fixed
 `--selection-stdin` switch. Names are never interpolated into a command, file
@@ -125,8 +130,20 @@ selection-message seeds/mutations. A desktop-context unregister/status/register
 round trip also passed, with the entry left enabled.
 Native checks verified automatic COM activation and the expected delegate for
 files, directories, `.txt`, and `.ps1`; enumerating the current sample file's
-Shell verbs returned **Try Run**. Full right-click-to-Run mouse automation remains
-pending after the user stopped Computer Use; no GUI gesture completion is claimed.
+Shell verbs returned **Try Run**.
+
+The click-handoff regression was reproduced in `explorer-click-repro.trx`:
+Execute returned success, but no task window appeared. After binding dispatch
+to the server thread, all 13 Explorer/protocol/fuzz regressions passed in
+`explorer-click-fixed.trx`. The opt-in integration test activates the registered
+COM class, sends three real shell items, invokes Execute, and checks that exactly
+one task window opens. Its accessibility tree confirmed all three paths arrived.
+Run this check with `POWERTOYS_TRYRUN_EXPLORER_TESTS=1` and
+`POWERTOYS_TRYRUN_APP` set to the built application's full path. The test leaves
+the prepared task window open and never runs its selected scripts.
+A separate Windows ShellExecute invocation of the registered verb also opened
+Try Run. Full right-click-to-Run mouse automation remains pending; these checks
+use the real Windows verb/COM path and inspect the resulting window.
 
 ### Select files and run
 

@@ -14,42 +14,60 @@ namespace PowerToys.TryRun.Explorer;
 [ClassInterface(ClassInterfaceType.None)]
 public sealed class ExplorerCommand(Action<string[]> launch, Action finished) : ShellInterop.IExecuteCommand, ShellInterop.IObjectWithSelection
 {
+    private readonly Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
+    private readonly object selectionLock = new();
     private ShellInterop.IShellItemArray? selection;
     private bool queued;
 
     public int SetSelection(ShellInterop.IShellItemArray? selection)
     {
-        if (queued)
+        lock (selectionLock)
         {
-            return unchecked((int)0x8000FFFF);
-        }
+            if (queued)
+            {
+                return unchecked((int)0x8000FFFF);
+            }
 
-        this.selection = selection;
-        return 0;
+            this.selection = selection;
+            return 0;
+        }
     }
 
     public int GetSelection(ref Guid interfaceId, out IntPtr result)
     {
+        ShellInterop.IShellItemArray? selected;
+        lock (selectionLock)
+        {
+            selected = selection;
+        }
+
         result = IntPtr.Zero;
-        return selection is null ? unchecked((int)0x80004005) : ShellInterop.QueryInterface(selection, ref interfaceId, out result);
+        return selected is null ? unchecked((int)0x80004005) : ShellInterop.QueryInterface(selected, ref interfaceId, out result);
     }
 
     public int Execute()
     {
-        if (queued || selection is null)
+        ShellInterop.IShellItemArray selected;
+        lock (selectionLock)
         {
-            return unchecked((int)0x80070057);
-        }
+            if (queued || selection is null)
+            {
+                return unchecked((int)0x80070057);
+            }
 
-        queued = true;
+            queued = true;
+            selected = selection;
+        }
 
         // Return to Explorer before resolving names or starting the UI. This
         // callback runs in this local server, never in the Explorer process.
-        Dispatcher.CurrentDispatcher.BeginInvoke(() =>
+        // Capture the dispatcher's owning thread during construction: COM calls
+        // may arrive on RPC pool threads whose dispatchers have no message loop.
+        dispatcher.BeginInvoke(() =>
         {
             try
             {
-                launch(ReadSelection(selection));
+                launch(ReadSelection(selected));
             }
             catch (Exception exception)
             {
@@ -57,7 +75,11 @@ public sealed class ExplorerCommand(Action<string[]> launch, Action finished) : 
             }
             finally
             {
-                selection = null;
+                lock (selectionLock)
+                {
+                    selection = null;
+                }
+
                 finished();
             }
         });

@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
 using PowerToys.TryRun.Core;
@@ -14,6 +16,137 @@ namespace PowerToys.TryRun.UnitTests;
 [TestClass]
 public sealed class ExplorerTests
 {
+    [TestMethod]
+    public async Task ExplorerCallbackRunsOnTheServerDispatcher()
+    {
+        using var source = new RunSession();
+        var path = Path.Combine(source.WorkingDirectory, "selected.txt");
+        File.WriteAllText(path, "original");
+        var completed = new TaskCompletionSource<(int ExpectedThread, int ActualThread, string[] Paths)>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serverThread = new Thread(() =>
+        {
+            var dispatcher = Dispatcher.CurrentDispatcher;
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            timer.Tick += (_, _) => dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+            ShellInterop.IShellItemArray? selection = null;
+            try
+            {
+                var threadId = Environment.CurrentManagedThreadId;
+                selection = CreateSelection([path]);
+                var command = new ExplorerCommand(
+                    paths => completed.TrySetResult((threadId, Environment.CurrentManagedThreadId, paths)),
+                    () => dispatcher.BeginInvokeShutdown(DispatcherPriority.Background));
+                command.SetSelection(selection);
+
+                // Managed COM objects can receive calls on RPC pool threads.
+                // Only the server's STA dispatcher has a running message loop.
+                var status = Task.Run(command.Execute).GetAwaiter().GetResult();
+                Assert.AreEqual(0, status);
+                timer.Start();
+                Dispatcher.Run();
+                completed.TrySetException(new AssertFailedException("Execute returned success, but the selection was never dispatched to the server."));
+            }
+            catch (Exception exception)
+            {
+                completed.TrySetException(exception);
+            }
+            finally
+            {
+                timer.Stop();
+                if (selection is not null)
+                {
+                    Marshal.ReleaseComObject(selection);
+                }
+            }
+        }) { IsBackground = true };
+        serverThread.SetApartmentState(ApartmentState.STA);
+        serverThread.Start();
+        var result = await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.IsTrue(serverThread.Join(TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(result.ExpectedThread, result.ActualThread);
+        Assert.AreEqual(path, result.Paths.Single());
+    }
+
+    [TestMethod]
+    [TestCategory("ExplorerIntegration")]
+    public async Task RegisteredExplorerCommandOpensOneTaskWindow()
+    {
+        var application = Environment.GetEnvironmentVariable("POWERTOYS_TRYRUN_APP");
+        if (Environment.GetEnvironmentVariable("POWERTOYS_TRYRUN_EXPLORER_TESTS") != "1" || !File.Exists(application))
+        {
+            Assert.Inconclusive("Register this build and set POWERTOYS_TRYRUN_EXPLORER_TESTS=1 plus POWERTOYS_TRYRUN_APP to test the actual Explorer-to-window handoff.");
+        }
+
+        var root = Path.GetDirectoryName(application)!;
+        var paths = new[] { Path.Combine(root, "Samples", "windows.ps1"), Path.Combine(root, "Samples", "notes.txt"), Path.Combine(root, "Samples", "linux.sh") };
+        var before = AppWindows(application!);
+        var selection = CreateSelection(paths);
+        object? instance = null;
+        try
+        {
+            instance = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid(ExplorerRegistration.CommandClassId), throwOnError: true)!);
+            Assert.AreEqual(0, ((ShellInterop.IObjectWithSelection)instance!).SetSelection(selection));
+            Assert.AreEqual(0, ((ShellInterop.IExecuteCommand)instance!).Execute());
+            int[] opened = [];
+            for (var attempt = 0; attempt < 60 && opened.Length == 0; attempt++)
+            {
+                await Task.Delay(250);
+                opened = AppWindows(application!).Except(before).ToArray();
+            }
+
+            Assert.AreEqual(1, opened.Length, "The actual COM invocation did not open exactly one Try Run task window.");
+        }
+        finally
+        {
+            if (instance is not null)
+            {
+                Marshal.ReleaseComObject(instance);
+            }
+
+            Marshal.ReleaseComObject(selection);
+        }
+    }
+
+    private static int[] AppWindows(string application)
+    {
+        var windows = new List<int>();
+        foreach (var process in Process.GetProcessesByName("PowerToys.TryRun"))
+        {
+            using (process)
+            {
+                if (string.Equals(process.MainModule?.FileName, application, StringComparison.OrdinalIgnoreCase) && process.MainWindowHandle != IntPtr.Zero)
+                {
+                    windows.Add(process.Id);
+                }
+            }
+        }
+
+        return windows.ToArray();
+    }
+
+    private static ShellInterop.IShellItemArray CreateSelection(string[] paths)
+    {
+        var pointers = new List<IntPtr>();
+        try
+        {
+            foreach (var path in paths)
+            {
+                Marshal.ThrowExceptionForHR(SHParseDisplayName(path, IntPtr.Zero, out var pointer, 0, out _));
+                pointers.Add(pointer);
+            }
+
+            Marshal.ThrowExceptionForHR(SHCreateShellItemArrayFromIDLists((uint)pointers.Count, pointers.ToArray(), out var selection));
+            return selection;
+        }
+        finally
+        {
+            foreach (var pointer in pointers)
+            {
+                Marshal.FreeCoTaskMem(pointer);
+            }
+        }
+    }
+
     [TestMethod]
     public void RegistrationReceiptPathCannotEscapeTheHelperFolder()
     {
