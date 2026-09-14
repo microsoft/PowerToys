@@ -306,4 +306,22 @@
   <data name="NOCLONEOption.OptionDescription" xml:space="preserve">
     <value>Do not attempt block cloning as an optimization.</value>
   </data>
+  <data name="LoggingSelectorBarLabel.Text" xml:space="preserve">
+    <value>Logging</value>
+  </data>
+  <data name="AdvancedSelectorBarLabel.Text" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="FiltersContentHeaderLabel.Text" xml:space="preserve">
+    <value>FILTER CONTENT HERE</value>
+  </data>
+  <data name="LoggingContentHeaderLabel.Text" xml:space="preserve">
+    <value>LOGGING CONTENT HERE</value>
+  </data>
+  <data name="AdvancedContentHeaderLabel.Text" xml:space="preserve">
+    <value>ADVANCED CONTENT HERE</value>
+  </data>
+  <data name="FiltersSelectorBarLabel.Text" xml:space="preserve">
+    <value>Filters</value>
+  </data>
 </root>

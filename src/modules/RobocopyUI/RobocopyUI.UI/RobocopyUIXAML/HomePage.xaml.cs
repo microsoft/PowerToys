@@ -24,6 +24,33 @@ namespace RobocopyUI
             {
                 case "Options":
                     OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    break;
+                case "Filters":
+                    OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    break;
+                case "Logging":
+                    OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    break;
+                case "Advanced":
+                    OptionsContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    FiltersContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    LoggingContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                    AdvancedContent.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                     CommandPreviewContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     OutputContent.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
                     break;
