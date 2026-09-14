@@ -112,40 +112,58 @@
                         Padding="6,4">
                         <FontIcon Glyph="&#xE72C;" FontSize="14" />
                     </Button>
-                    <ComboBox
-                        x:Name="CardSourceLanguageComboBox"
-                        AutomationProperties.AutomationId="ComboCardSourceLanguage"
-                        PlaceholderText="From"
-                        Width="92">
-                        <ComboBoxItem Content="Auto" Tag="auto" />
-                        <ComboBoxItem Content="English" Tag="en" />
-                        <ComboBoxItem Content="Chinese" Tag="zh" />
-                        <ComboBoxItem Content="Japanese" Tag="ja" />
-                        <ComboBoxItem Content="Korean" Tag="ko" />
-                        <ComboBoxItem Content="French" Tag="fr" />
-                        <ComboBoxItem Content="German" Tag="de" />
-                        <ComboBoxItem Content="Spanish" Tag="es" />
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="CardTargetLanguageComboBox"
-                        AutomationProperties.AutomationId="ComboCardTargetLanguage"
-                        PlaceholderText="To"
-                        Width="92">
-                        <ComboBoxItem Content="English" Tag="en-US" />
-                        <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
-                        <ComboBoxItem Content="Japanese" Tag="ja" />
-                        <ComboBoxItem Content="Korean" Tag="ko" />
-                        <ComboBoxItem Content="French" Tag="fr" />
-                        <ComboBoxItem Content="German" Tag="de" />
-                        <ComboBoxItem Content="Spanish" Tag="es" />
-                    </ComboBox>
-                    <Button
-                        x:Name="ApplyCardLanguageButton"
-                        x:Uid="ApplyCardLanguageButton"
-                        AutomationProperties.AutomationId="BtnApplyCardLanguage"
-                        Click="ApplyCardLanguageButton_Click"
-                        Content="Translate"
-                        Padding="8,4" />
+                    <StackPanel Spacing="4" VerticalAlignment="Center">
+                        <TextBlock
+                            x:Uid="CardLanguageLabel"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="Translate this text" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock
+                                x:Uid="CardSourceLanguageLabel"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="From"
+                                VerticalAlignment="Center" />
+                            <ComboBox
+                                x:Name="CardSourceLanguageComboBox"
+                                x:Uid="CardSourceLanguageComboBox"
+                                AutomationProperties.AutomationId="ComboCardSourceLanguage"
+                                Width="144">
+                                <ComboBoxItem Content="Auto" Tag="auto" />
+                                <ComboBoxItem Content="English" Tag="en" />
+                                <ComboBoxItem Content="Chinese" Tag="zh" />
+                                <ComboBoxItem Content="Japanese" Tag="ja" />
+                                <ComboBoxItem Content="Korean" Tag="ko" />
+                                <ComboBoxItem Content="French" Tag="fr" />
+                                <ComboBoxItem Content="German" Tag="de" />
+                                <ComboBoxItem Content="Spanish" Tag="es" />
+                            </ComboBox>
+                            <TextBlock
+                                x:Uid="CardTargetLanguageLabel"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="To"
+                                VerticalAlignment="Center" />
+                            <ComboBox
+                                x:Name="CardTargetLanguageComboBox"
+                                x:Uid="CardTargetLanguageComboBox"
+                                AutomationProperties.AutomationId="ComboCardTargetLanguage"
+                                Width="144">
+                                <ComboBoxItem Content="English" Tag="en-US" />
+                                <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
+                                <ComboBoxItem Content="Japanese" Tag="ja" />
+                                <ComboBoxItem Content="Korean" Tag="ko" />
+                                <ComboBoxItem Content="French" Tag="fr" />
+                                <ComboBoxItem Content="German" Tag="de" />
+                                <ComboBoxItem Content="Spanish" Tag="es" />
+                            </ComboBox>
+                            <Button
+                                x:Name="ApplyCardLanguageButton"
+                                x:Uid="ApplyCardLanguageButton"
+                                AutomationProperties.AutomationId="BtnApplyCardLanguage"
+                                Click="ApplyCardLanguageButton_Click"
+                                Content="Translate"
+                                Padding="8,4" />
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </Canvas>
@@ -186,40 +204,58 @@
                     AutomationProperties.Name="Restore hidden translated text"
                     Click="RestoreHiddenButton_Click"
                     Content="Restore hidden" />
-                <ComboBox
-                    x:Name="OverallSourceLanguageComboBox"
-                    AutomationProperties.AutomationId="ComboOverallSourceLanguage"
-                    PlaceholderText="From"
-                    Width="92">
-                    <ComboBoxItem Content="Auto" Tag="auto" />
-                    <ComboBoxItem Content="English" Tag="en" />
-                    <ComboBoxItem Content="Chinese" Tag="zh" />
-                    <ComboBoxItem Content="Japanese" Tag="ja" />
-                    <ComboBoxItem Content="Korean" Tag="ko" />
-                    <ComboBoxItem Content="French" Tag="fr" />
-                    <ComboBoxItem Content="German" Tag="de" />
-                    <ComboBoxItem Content="Spanish" Tag="es" />
-                </ComboBox>
-                <ComboBox
-                    x:Name="OverallTargetLanguageComboBox"
-                    AutomationProperties.AutomationId="ComboOverallTargetLanguage"
-                    PlaceholderText="To"
-                    Width="92">
-                    <ComboBoxItem Content="English" Tag="en-US" />
-                    <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
-                    <ComboBoxItem Content="Japanese" Tag="ja" />
-                    <ComboBoxItem Content="Korean" Tag="ko" />
-                    <ComboBoxItem Content="French" Tag="fr" />
-                    <ComboBoxItem Content="German" Tag="de" />
-                    <ComboBoxItem Content="Spanish" Tag="es" />
-                </ComboBox>
-                <Button
-                    x:Name="ApplyOverallLanguageButton"
-                    x:Uid="ApplyOverallLanguageButton"
-                    AutomationProperties.AutomationId="BtnApplyOverallLanguage"
-                    Click="ApplyOverallLanguageButton_Click"
-                    Content="Translate all"
-                    Padding="8,2" />
+                <StackPanel Spacing="4" VerticalAlignment="Center">
+                    <TextBlock
+                        x:Uid="OverallLanguageLabel"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Translate capture" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock
+                            x:Uid="OverallSourceLanguageLabel"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="From"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            x:Name="OverallSourceLanguageComboBox"
+                            x:Uid="OverallSourceLanguageComboBox"
+                            AutomationProperties.AutomationId="ComboOverallSourceLanguage"
+                            Width="144">
+                            <ComboBoxItem Content="Auto" Tag="auto" />
+                            <ComboBoxItem Content="English" Tag="en" />
+                            <ComboBoxItem Content="Chinese" Tag="zh" />
+                            <ComboBoxItem Content="Japanese" Tag="ja" />
+                            <ComboBoxItem Content="Korean" Tag="ko" />
+                            <ComboBoxItem Content="French" Tag="fr" />
+                            <ComboBoxItem Content="German" Tag="de" />
+                            <ComboBoxItem Content="Spanish" Tag="es" />
+                        </ComboBox>
+                        <TextBlock
+                            x:Uid="OverallTargetLanguageLabel"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="To"
+                            VerticalAlignment="Center" />
+                        <ComboBox
+                            x:Name="OverallTargetLanguageComboBox"
+                            x:Uid="OverallTargetLanguageComboBox"
+                            AutomationProperties.AutomationId="ComboOverallTargetLanguage"
+                            Width="144">
+                            <ComboBoxItem Content="English" Tag="en-US" />
+                            <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
+                            <ComboBoxItem Content="Japanese" Tag="ja" />
+                            <ComboBoxItem Content="Korean" Tag="ko" />
+                            <ComboBoxItem Content="French" Tag="fr" />
+                            <ComboBoxItem Content="German" Tag="de" />
+                            <ComboBoxItem Content="Spanish" Tag="es" />
+                        </ComboBox>
+                        <Button
+                            x:Name="ApplyOverallLanguageButton"
+                            x:Uid="ApplyOverallLanguageButton"
+                            AutomationProperties.AutomationId="BtnApplyOverallLanguage"
+                            Click="ApplyOverallLanguageButton_Click"
+                            Content="Translate"
+                            Padding="8,2" />
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Border>
     </Grid>

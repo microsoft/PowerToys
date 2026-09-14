@@ -223,8 +223,32 @@
     <comment>Retranslates the selected text card using its chosen languages</comment>
   </data>
   <data name="ApplyOverallLanguageButton.Content" xml:space="preserve">
-    <value>Translate all</value>
+    <value>Translate</value>
     <comment>Retranslates the current capture using the chosen languages</comment>
+  </data>
+  <data name="CardLanguageLabel.Text" xml:space="preserve">
+    <value>Translate this text</value>
+    <comment>Labels the per-card language controls</comment>
+  </data>
+  <data name="OverallLanguageLabel.Text" xml:space="preserve">
+    <value>Translate capture</value>
+    <comment>Labels the whole-capture language controls</comment>
+  </data>
+  <data name="CardSourceLanguageLabel.Text" xml:space="preserve">
+    <value>From</value>
+    <comment>Labels the source language selector for a card</comment>
+  </data>
+  <data name="CardTargetLanguageLabel.Text" xml:space="preserve">
+    <value>To</value>
+    <comment>Labels the target language selector for a card</comment>
+  </data>
+  <data name="OverallSourceLanguageLabel.Text" xml:space="preserve">
+    <value>From</value>
+    <comment>Labels the source language selector for the capture</comment>
+  </data>
+  <data name="OverallTargetLanguageLabel.Text" xml:space="preserve">
+    <value>To</value>
+    <comment>Labels the target language selector for the capture</comment>
   </data>
   <data name="RestoreHiddenButton.AutomationProperties.Name" xml:space="preserve">
     <value>Restore hidden translated text</value>
