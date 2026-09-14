@@ -7,8 +7,11 @@
     Height="960"
     MinWidth="800"
     MinHeight="760"
+    AllowDrop="True"
     Closing="OnClosing"
     Loaded="OnLoaded"
+    PreviewDragOver="OnDragOver"
+    PreviewDrop="OnDrop"
     WindowStartupLocation="CenterScreen">
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -18,187 +21,230 @@
             <RowDefinition Height="3*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Margin="0,0,0,12">
+        <StackPanel Margin="0,0,0,16">
             <TextBlock
-                FontSize="24"
+                FontSize="26"
                 FontWeight="SemiBold"
-                Text="Run Windows and Linux workloads with MXC" />
+                Text="Try a program. Keep the results you choose." />
             <TextBlock
-                Margin="0,8,0,0"
-                Text="Experimental: MXC is not currently a security boundary."
+                Margin="0,6,0,0"
+                Text="Windows and Linux, powered by MXC. Experimental: MXC is not currently a security boundary."
                 TextWrapping="Wrap" />
-            <DockPanel Margin="0,10,0,0">
-                <ComboBox
-                    x:Name="ProfileBox"
-                    Width="260"
-                    Margin="0,0,12,0"
-                    AutomationProperties.Name="Execution profile"
-                    DisplayMemberPath="Name"
-                    SelectionChanged="OnProfileChanged" />
-                <TextBlock
-                    x:Name="BackendText"
-                    VerticalAlignment="Center"
-                    Text="Checking execution backends…"
-                    TextWrapping="Wrap" />
-            </DockPanel>
-            <DockPanel
-                x:Name="LinuxImageHeader"
-                Margin="0,8,0,0"
-                Visibility="Collapsed">
-                <Button
-                    x:Name="PrepareImageButton"
-                    Margin="8,0,0,0"
-                    Padding="10,4"
-                    Click="OnPrepareImage"
-                    Content="Prepare image…"
-                    DockPanel.Dock="Right" />
-                <Label Content="Linux image" Target="{Binding ElementName=ImageBox}" />
-                <TextBox
-                    x:Name="ImageBox"
-                    AutomationProperties.Name="Linux container image"
-                    MaxLength="256"
-                    Text="alpine:3.22" />
-            </DockPanel>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
-            <Grid Margin="0,0,16,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock FontWeight="SemiBold" Text="1. Choose input files (optional)" />
-                <WrapPanel Grid.Row="1" Margin="0,8,0,8">
-                    <Button
-                        x:Name="AddFilesButton"
-                        Padding="10,5"
-                        Click="OnAddFiles"
-                        Content="Add _files…" />
-                    <Button
-                        x:Name="AddFolderButton"
-                        Margin="8,0,0,0"
-                        Padding="10,5"
-                        Click="OnAddFolder"
-                        Content="Add fol_der…" />
-                    <Button
-                        x:Name="RemoveInputButton"
-                        Margin="8,0,0,0"
-                        Padding="10,5"
-                        Click="OnRemoveInput"
-                        Content="_Remove" />
-                </WrapPanel>
-                <ListBox
-                    x:Name="InputList"
-                    Grid.Row="2"
-                    AutomationProperties.Name="Input files and folders"
-                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                    SelectionMode="Extended" />
-                <TextBlock
-                    Grid.Row="3"
-                    Margin="0,8,0,0"
-                    FontSize="12"
-                    Text="Copies keep their file or folder name. Up to 1,000 entries, 32 MiB per file, 100 MiB total. Links are rejected."
-                    TextWrapping="Wrap" />
-            </Grid>
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="0,0,8,0">
-                    <TextBlock FontWeight="SemiBold" Text="2. Choose a program or script file, or enter a script" />
-                    <DockPanel Margin="0,6,0,6">
-                        <Button
-                            x:Name="BrowseWorkloadButton"
-                            Margin="8,0,0,0"
-                            Padding="10,4"
-                            Click="OnBrowseWorkload"
-                            Content="Choose file…"
-                            DockPanel.Dock="Right" />
-                        <Button
-                            x:Name="ClearWorkloadButton"
-                            Margin="8,0,0,0"
-                            Padding="10,4"
-                            Click="OnClearWorkload"
-                            Content="Clear"
-                            DockPanel.Dock="Right" />
-                        <TextBox
-                            x:Name="WorkloadFileBox"
-                            AutomationProperties.Name="Program or script file"
-                            IsReadOnly="True" />
-                    </DockPanel>
-                    <Label
-                        Padding="0,0,0,8"
-                        Content="_Script (used when no file is selected)"
-                        Target="{Binding ElementName=ScriptBox}" />
-                    <TextBox
-                        x:Name="ScriptBox"
-                        Height="100"
-                        AcceptsReturn="True"
-                        AcceptsTab="True"
-                        AutomationProperties.Name="Script"
-                        FontFamily="Cascadia Mono, Consolas"
-                        MaxLength="8192"
-                        Text="Get-ChildItem -Recurse"
-                        TextWrapping="Wrap"
-                        VerticalScrollBarVisibility="Auto" />
-                    <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
-                    <TextBox
-                        x:Name="ArgumentsBox"
-                        Height="48"
-                        AcceptsReturn="True"
-                        AutomationProperties.Name="Program arguments, one per line"
-                        MaxLength="8192"
-                        VerticalScrollBarVisibility="Auto" />
-                    <StackPanel
-                        x:Name="LinuxOptions"
-                        Margin="0,8,0,0"
-                        Visibility="Collapsed">
-                        <DockPanel Margin="0,0,0,6">
-                            <Label Content="Script runtime" Target="{Binding ElementName=InterpreterBox}" />
-                            <TextBox
-                                x:Name="InterpreterBox"
-                                AutomationProperties.Name="Script runtime inside Linux image"
-                                MaxLength="256"
-                                Text="/bin/sh" />
-                        </DockPanel>
-                        <DockPanel Margin="0,6,0,0">
-                            <Button
-                                x:Name="BrowseImageButton"
-                                Margin="8,0,0,0"
-                                Padding="10,4"
-                                Click="OnBrowseImage"
-                                Content="Image archive…"
-                                DockPanel.Dock="Right" />
-                            <TextBox
-                                x:Name="ImageTarBox"
-                                AutomationProperties.Name="Optional local image archive"
-                                MaxLength="1024" />
-                        </DockPanel>
+            <Border
+                Margin="0,0,16,0"
+                Padding="12"
+                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel>
                         <TextBlock
-                            Margin="0,4,0,0"
-                            FontSize="12"
-                            Text="Prepare downloads the image once. Runs have networking off. Choose an image with the runtime your program needs (for example python:3.12-alpine)."
+                            FontSize="17"
+                            FontWeight="SemiBold"
+                            Text="Drop files or a folder here" />
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            Text="Include the program or script and the data it needs."
                             TextWrapping="Wrap" />
                     </StackPanel>
+                    <WrapPanel Grid.Row="1" Margin="0,10,0,8">
+                        <Button
+                            x:Name="AddFilesButton"
+                            Padding="10,5"
+                            Click="OnAddFiles"
+                            Content="Add _files…" />
+                        <Button
+                            x:Name="AddFolderButton"
+                            Margin="8,0,0,0"
+                            Padding="10,5"
+                            Click="OnAddFolder"
+                            Content="Add fol_der…" />
+                        <Button
+                            x:Name="RemoveInputButton"
+                            Margin="8,0,0,0"
+                            Padding="10,5"
+                            Click="OnRemoveInput"
+                            Content="_Remove" />
+                    </WrapPanel>
+                    <ListBox
+                        x:Name="InputList"
+                        Grid.Row="2"
+                        AutomationProperties.Name="Selected files and folders"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        SelectionMode="Extended" />
                     <TextBlock
+                        x:Name="SelectionText"
+                        Grid.Row="3"
                         Margin="0,8,0,0"
                         FontSize="12"
-                        Text="Data and script files are copied for each run. Windows EXEs use their installation directory read-only. Export results before running again or closing."
+                        Text="Up to 1,000 entries, 32 MiB per file, 100 MiB total. Links are rejected."
                         TextWrapping="Wrap" />
+                </Grid>
+            </Border>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,8,0">
+                    <TextBlock
+                        FontSize="17"
+                        FontWeight="SemiBold"
+                        Text="What would you like to run?" />
+                    <ComboBox
+                        x:Name="EntryPointBox"
+                        Margin="0,8,0,8"
+                        AutomationProperties.Name="Entry point"
+                        DisplayMemberPath="DisplayName"
+                        SelectionChanged="OnEntryPointChanged" />
+                    <TextBlock
+                        x:Name="RunSummary"
+                        Text="Drop files or a folder, then choose an entry point. Nothing runs until you select Run."
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Name="BackendText"
+                        Margin="0,8,0,0"
+                        Text="Checking execution backends…"
+                        TextWrapping="Wrap" />
+                    <DockPanel
+                        x:Name="LinuxImageHeader"
+                        Margin="0,8,0,0"
+                        Visibility="Collapsed">
+                        <Button
+                            x:Name="PrepareImageButton"
+                            Margin="8,0,0,0"
+                            Padding="10,4"
+                            Click="OnPrepareImage"
+                            Content="Prepare image…"
+                            DockPanel.Dock="Right" />
+                        <Label Content="Linux image" Target="{Binding ElementName=ImageBox}" />
+                        <TextBox
+                            x:Name="ImageBox"
+                            AutomationProperties.Name="Linux container image"
+                            MaxLength="256"
+                            Text="alpine:3.22" />
+                    </DockPanel>
+                    <Expander Margin="0,12,0,0" Header="Advanced options">
+                        <StackPanel Margin="0,8,0,0">
+                            <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
+                            <TextBox
+                                x:Name="ArgumentsBox"
+                                Height="48"
+                                AcceptsReturn="True"
+                                AutomationProperties.Name="Program arguments, one per line"
+                                MaxLength="8192"
+                                VerticalScrollBarVisibility="Auto" />
+                            <StackPanel
+                                x:Name="LinuxOptions"
+                                Margin="0,8,0,0"
+                                Visibility="Collapsed">
+                                <DockPanel Margin="0,0,0,6">
+                                    <Label Content="Script runtime" Target="{Binding ElementName=InterpreterBox}" />
+                                    <TextBox
+                                        x:Name="InterpreterBox"
+                                        AutomationProperties.Name="Script runtime inside Linux image"
+                                        MaxLength="256"
+                                        Text="/bin/sh" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <Button
+                                        x:Name="BrowseImageButton"
+                                        Margin="8,0,0,0"
+                                        Padding="10,4"
+                                        Click="OnBrowseImage"
+                                        Content="Image archive…"
+                                        DockPanel.Dock="Right" />
+                                    <TextBox
+                                        x:Name="ImageTarBox"
+                                        AutomationProperties.Name="Optional local image archive"
+                                        MaxLength="1024" />
+                                </DockPanel>
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="12"
+                                    Text="Prepare the image once before running. Choose an image containing the runtime and dependencies your program needs. Runs have networking off."
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <CheckBox
+                                x:Name="ManualModeBox"
+                                Margin="0,12,0,6"
+                                Checked="OnManualModeChanged"
+                                Content="Use a custom command or installed application"
+                                Unchecked="OnManualModeChanged" />
+                            <StackPanel x:Name="ManualOptions" IsEnabled="False">
+                                <ComboBox
+                                    x:Name="ProfileBox"
+                                    AutomationProperties.Name="Execution profile"
+                                    DisplayMemberPath="Name"
+                                    SelectionChanged="OnProfileChanged" />
+                                <DockPanel Margin="0,6,0,6">
+                                    <Button
+                                        x:Name="BrowseWorkloadButton"
+                                        Margin="8,0,0,0"
+                                        Padding="10,4"
+                                        Click="OnBrowseWorkload"
+                                        Content="Choose file…"
+                                        DockPanel.Dock="Right" />
+                                    <Button
+                                        x:Name="ClearWorkloadButton"
+                                        Margin="8,0,0,0"
+                                        Padding="10,4"
+                                        Click="OnClearWorkload"
+                                        Content="Clear"
+                                        DockPanel.Dock="Right" />
+                                    <TextBox
+                                        x:Name="WorkloadFileBox"
+                                        AutomationProperties.Name="Program or script file"
+                                        IsReadOnly="True" />
+                                </DockPanel>
+                                <Label Content="Script (used when no file is selected)" Target="{Binding ElementName=ScriptBox}" />
+                                <TextBox
+                                    x:Name="ScriptBox"
+                                    Height="100"
+                                    AcceptsReturn="True"
+                                    AcceptsTab="True"
+                                    AutomationProperties.Name="Script"
+                                    FontFamily="Cascadia Mono, Consolas"
+                                    MaxLength="8192"
+                                    Text="Get-ChildItem -Recurse"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <TextBlock
+                                x:Name="PermissionText"
+                                Margin="0,8,0,0"
+                                FontSize="12"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Expander>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
         <StackPanel Grid.Row="2" Margin="0,12,0,12">
-            <TextBlock Text="Write access: run workspace and temporary data. Network: off. MXC is experimental; application compatibility and isolation vary by backend." TextWrapping="Wrap" />
-            <TextBlock
-                x:Name="PermissionText"
-                Margin="0,4,0,0"
-                Text="Windows: allowed for PowerShell compatibility. Input injection: off."
-                TextWrapping="Wrap" />
+            <TextBlock Text="Network: off · Writes: run copies and temporary data · Review results before exporting" TextWrapping="Wrap" />
             <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
-                <Label Content="_Timeout (seconds)" Target="{Binding ElementName=TimeoutBox}" />
+                <Button
+                    x:Name="RunButton"
+                    Padding="20,6"
+                    Click="OnRun"
+                    Content="_Run"
+                    IsEnabled="False" />
+                <Button
+                    x:Name="StopButton"
+                    Margin="8,0,16,0"
+                    Padding="16,6"
+                    Click="OnStop"
+                    Content="_Stop"
+                    IsEnabled="False" />
+                <Label Content="Time limit (seconds)" Target="{Binding ElementName=TimeoutBox}" />
                 <TextBox
                     x:Name="TimeoutBox"
                     Width="64"
@@ -206,20 +252,6 @@
                     AutomationProperties.Name="Timeout in seconds"
                     MaxLength="3"
                     Text="60" />
-                <Button
-                    x:Name="RunButton"
-                    Margin="16,0,0,0"
-                    Padding="16,6"
-                    Click="OnRun"
-                    Content="_Run"
-                    IsEnabled="False" />
-                <Button
-                    x:Name="StopButton"
-                    Margin="8,0,0,0"
-                    Padding="16,6"
-                    Click="OnStop"
-                    Content="_Stop"
-                    IsEnabled="False" />
             </StackPanel>
         </StackPanel>
         <TabControl x:Name="ResultsTabs" Grid.Row="3">
@@ -234,7 +266,7 @@
                     TextWrapping="Wrap"
                     VerticalScrollBarVisibility="Auto" />
             </TabItem>
-            <TabItem Header="3. Review file _changes">
+            <TabItem Header="Review file _changes">
                 <Grid Margin="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

@@ -24,6 +24,7 @@ public sealed class FuzzSmokeTests
                 Kind = kind,
                 ApplicationPath = kind == WorkloadKind.WindowsApplication ? "C:\\app.exe" : null,
                 FileRelativePath = kind == WorkloadKind.LinuxApplication ? "program" : null,
+                WorkingSubdirectory = "package\\nested",
                 Arguments = ["a'b\"c", "path with spaces"],
             };
             var seed = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));

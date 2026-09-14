@@ -57,6 +57,21 @@ public sealed class RunSession : IDisposable
         }
     }
 
+    public static void ValidateWorkspacePath(string directory, string workspace)
+    {
+        directory = WorkspacePath.LocalPath(directory);
+        if (!WorkspacePath.IsWithin(directory, workspace))
+        {
+            throw new ArgumentException("The working folder must be inside this run's workspace.");
+        }
+
+        using var lease = new WorkspaceFileSystem.DirectoryLease(directory);
+        if (!string.Equals(directory, lease.Path, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new IOException("The working folder is redirected.");
+        }
+    }
+
     private static void RejectDirectoryLinks(string path, bool mustExist)
     {
         for (var directory = new DirectoryInfo(path); directory is not null; directory = directory.Parent)

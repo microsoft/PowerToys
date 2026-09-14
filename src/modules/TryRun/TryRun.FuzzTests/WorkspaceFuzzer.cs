@@ -16,6 +16,24 @@ public static class WorkspaceFuzzer
             return;
         }
 
+        foreach (var name in new[] { "app.exe", "run", "run.sh", "script.py", "data.txt" })
+        {
+            var entry = EntryPointDetector.Detect(name, data);
+            if (entry is not null && (!Enum.IsDefined(entry.Kind) || entry.RelativePath != name))
+            {
+                throw new InvalidOperationException("Invalid detected entry point.");
+            }
+        }
+
+        try
+        {
+            TaskBundle.ParseLaunchArguments(Encoding.UTF8.GetString(data).Split('\n'));
+        }
+        catch (ArgumentException)
+        {
+            // Launch payloads contain only bounded absolute local paths.
+        }
+
         var preview = WorkspaceSnapshot.FormatPreview(data, false);
         if (preview.Length > WorkspaceSnapshot.PreviewBytes + 100)
         {

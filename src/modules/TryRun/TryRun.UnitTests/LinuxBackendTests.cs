@@ -44,6 +44,33 @@ public sealed class LinuxBackendTests
     }
 
     [TestMethod]
+    public async Task RunsSelectedLinuxFolderWithAdjacentData()
+    {
+        using var source = new RunSession();
+        using var session = new RunSession();
+        var folder = Path.Combine(source.WorkingDirectory, "linux package's files");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "run.sh"), "#!/bin/sh\ncat data.txt\nprintf changed > data.txt\nprintf created > result.txt\n");
+        File.WriteAllText(Path.Combine(folder, "data.txt"), "original");
+        var bundle = TaskBundle.Inspect([folder], CancellationToken.None);
+        var entry = bundle.EntryPoints.Single();
+        var workspace = new FileWorkspace(session);
+        workspace.Import(bundle.Inputs, CancellationToken.None);
+        var output = await MultiBackendTests.Execute(new ExecutionRequest(string.Empty, session.WorkingDirectory, session.TemporaryDirectory, 60)
+        {
+            Kind = entry.Kind,
+            FileRelativePath = entry.RelativePath,
+            WorkingSubdirectory = entry.WorkingSubdirectory,
+            Interpreter = entry.Interpreter,
+        });
+        StringAssert.Contains(output, "original");
+        Assert.AreEqual("original", File.ReadAllText(Path.Combine(folder, "data.txt")));
+        var changes = workspace.Review(CancellationToken.None);
+        Assert.AreEqual(1, changes.Count(change => change.Kind == FileChangeKind.Modified));
+        Assert.AreEqual(1, changes.Count(change => change.Kind == FileChangeKind.Added));
+    }
+
+    [TestMethod]
     public async Task LinuxScriptFileReceivesLiteralArguments()
     {
         using var session = new RunSession();

@@ -16,6 +16,8 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
     public string? FileRelativePath { get; init; }
 
+    public string? WorkingSubdirectory { get; init; }
+
     public string[] Arguments { get; init; } = [];
 
     public string Image { get; init; } = "alpine:3.22";
@@ -50,6 +52,11 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
         ValidateDirectory(WorkingDirectory);
         ValidateDirectory(TemporaryDirectory);
+        if (WorkingSubdirectory is not null)
+        {
+            WorkspacePath.ValidateRelative(WorkingSubdirectory);
+        }
+
         if (Interpreter is not null && (!IsLinux || Kind == WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(Interpreter) || Interpreter.Length > 256 || Interpreter.Contains('\0')))
         {
             throw new ArgumentException("A Linux script runtime must be a single executable name or path inside the image.");
@@ -62,10 +69,14 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
         if (Kind == WorkloadKind.WindowsApplication)
         {
-            WorkspacePath.LocalPath(ApplicationPath!);
-            if (!string.Equals(Path.GetExtension(ApplicationPath), ".exe", StringComparison.OrdinalIgnoreCase) || FileRelativePath is not null)
+            if ((ApplicationPath is null) == (FileRelativePath is null) || !string.Equals(Path.GetExtension(ApplicationPath ?? FileRelativePath), ".exe", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Choose a Windows .exe application.");
+                throw new ArgumentException("Choose either a copied Windows .exe or an installed application.");
+            }
+
+            if (ApplicationPath is not null)
+            {
+                WorkspacePath.LocalPath(ApplicationPath);
             }
         }
         else if (ApplicationPath is not null)

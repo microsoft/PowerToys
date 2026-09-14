@@ -144,11 +144,15 @@ public sealed class FileWorkspaceTests
         Assert.IsTrue(CreateHardLink(hardLink, original, IntPtr.Zero), $"Hard link setup failed: {Marshal.GetLastWin32Error()}");
         var workspace = new FileWorkspace(session);
         Assert.ThrowsException<IOException>(() => workspace.Import([hardLink], CancellationToken.None));
+        Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([hardLink], CancellationToken.None));
         var junction = Path.Combine(session.TemporaryDirectory, "linked-folder");
         CreateJunction(junction, source.WorkingDirectory);
+        Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([junction], CancellationToken.None));
+        Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([Path.Combine(junction, "original.txt")], CancellationToken.None));
         Assert.ThrowsException<IOException>(() => workspace.Import([Path.Combine(junction, "original.txt")], CancellationToken.None));
         workspace.Import([], CancellationToken.None);
         CreateJunction(Path.Combine(session.WorkingDirectory, "escape"), source.WorkingDirectory);
+        Assert.ThrowsException<IOException>(() => RunSession.ValidateWorkspacePath(Path.Combine(session.WorkingDirectory, "escape"), session.WorkingDirectory));
         Assert.ThrowsException<IOException>(() => workspace.Review(CancellationToken.None));
         Assert.AreEqual("original", File.ReadAllText(original));
     }

@@ -14,6 +14,78 @@ namespace PowerToys.TryRun.UnitTests;
 public sealed class MultiBackendTests
 {
     [TestMethod]
+    public async Task RunsCopiedWindowsApplicationAlongsideSelectedData()
+    {
+        using var source = new RunSession();
+        using var session = new RunSession();
+        var folder = Path.Combine(source.WorkingDirectory, "app package");
+        Directory.CreateDirectory(folder);
+        File.Copy(Path.Combine(Environment.SystemDirectory, "findstr.exe"), Path.Combine(folder, "findstr.exe"));
+        File.WriteAllText(Path.Combine(folder, "data.txt"), "copied application\n");
+        var bundle = TaskBundle.Inspect([folder], CancellationToken.None);
+        var entry = bundle.EntryPoints.Single();
+        var workspace = new FileWorkspace(session);
+        workspace.Import(bundle.Inputs, CancellationToken.None);
+        var output = await Execute(new ExecutionRequest(string.Empty, session.WorkingDirectory, session.TemporaryDirectory, 30)
+        {
+            Kind = entry.Kind,
+            FileRelativePath = entry.RelativePath,
+            WorkingSubdirectory = entry.WorkingSubdirectory,
+            Arguments = ["/c:copied application", "data.txt"],
+        });
+        StringAssert.Contains(output, "copied application");
+        Assert.AreEqual("copied application\n", File.ReadAllText(Path.Combine(folder, "data.txt")));
+    }
+
+    [TestMethod]
+    public async Task RunsNestedPowerShellBundleAndExportsOnlyCopies()
+    {
+        using var source = new RunSession();
+        using var session = new RunSession();
+        using var destination = new RunSession();
+        var folder = Path.Combine(source.WorkingDirectory, "a package's files");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "run.ps1"), "Get-Content data.txt; Set-Content data.txt changed -NoNewline -ErrorAction Stop; Set-Content result.txt created -NoNewline -ErrorAction Stop");
+        File.WriteAllText(Path.Combine(folder, "data.txt"), "original");
+        var bundle = TaskBundle.Inspect([folder], CancellationToken.None);
+        var entry = bundle.EntryPoints.Single();
+        var workspace = new FileWorkspace(session);
+        workspace.Import(bundle.Inputs, CancellationToken.None);
+        var output = await Execute(new ExecutionRequest(string.Empty, session.WorkingDirectory, session.TemporaryDirectory, 30)
+        {
+            Kind = entry.Kind,
+            FileRelativePath = entry.RelativePath,
+            WorkingSubdirectory = entry.WorkingSubdirectory,
+        });
+        StringAssert.Contains(output, "original");
+        var changes = workspace.Review(CancellationToken.None);
+        Assert.AreEqual(1, changes.Count(change => change.Kind == FileChangeKind.Modified));
+        Assert.AreEqual(1, changes.Count(change => change.Kind == FileChangeKind.Added));
+        var exported = workspace.Export(destination.WorkingDirectory, changes.Where(change => change.Kind is FileChangeKind.Modified or FileChangeKind.Added).Select(change => change.RelativePath), CancellationToken.None);
+        Assert.AreEqual("original", File.ReadAllText(Path.Combine(folder, "data.txt")));
+        Assert.AreEqual("changed", File.ReadAllText(Path.Combine(exported, Path.GetFileName(folder), "data.txt")));
+    }
+
+    [TestMethod]
+    public async Task RunsBatchInItsSelectedSubdirectory()
+    {
+        using var session = new RunSession();
+        var folder = Path.Combine(session.WorkingDirectory, "package folder");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "run.cmd"), "@echo off\r\ntype data.txt\r\n>result.txt echo created\r\n");
+        File.WriteAllText(Path.Combine(folder, "data.txt"), "adjacent data");
+        var output = await Execute(new ExecutionRequest(string.Empty, session.WorkingDirectory, session.TemporaryDirectory, 30)
+        {
+            Kind = WorkloadKind.WindowsBatch,
+            FileRelativePath = "package folder\\run.cmd",
+            WorkingSubdirectory = "package folder",
+        });
+        StringAssert.Contains(output, "adjacent data");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "result.txt")));
+        Assert.IsFalse(File.Exists(Path.Combine(session.WorkingDirectory, "result.txt")));
+    }
+
+    [TestMethod]
     public async Task WindowsGuiApplicationCreatesAWindowAndCanBeStopped()
     {
         if (Environment.GetEnvironmentVariable("POWERTOYS_TRYRUN_GUI_TESTS") != "1")

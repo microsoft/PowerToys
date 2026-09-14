@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<string> inputs = [];
     private readonly HashSet<string> unexported = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<WorkloadKind, (string Script, string File, string Arguments, string Interpreter)> drafts = [];
+    private readonly string[] startupPaths;
     private CancellationTokenSource? cancellation;
     private RunSession? session;
     private bool closeWhenStopped;
@@ -36,9 +37,11 @@ public partial class MainWindow : Window
     private bool windowsReady;
     private string? windowsFailure;
     private WorkloadKind kind;
+    private bool updatingSelection;
 
-    public MainWindow()
+    public MainWindow(string[] startupPaths)
     {
+        this.startupPaths = startupPaths;
         InitializeComponent();
         InputList.ItemsSource = inputs;
         ProfileBox.ItemsSource = new[]
@@ -70,8 +73,14 @@ public partial class MainWindow : Window
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        Loaded -= OnLoaded;
         if (!canProbe)
         {
+            if (startupPaths.Length > 0)
+            {
+                await ImportSelectionAsync(startupPaths);
+            }
+
             return;
         }
 
@@ -90,7 +99,7 @@ public partial class MainWindow : Window
             }
 
             UpdateProfileState();
-            StatusText.Text = available ? "Ready. Choose a workload and select Run." : BackendText.Text;
+            StatusText.Text = available ? "Ready. Drop files or a folder to begin." : BackendText.Text;
         }
         catch (OperationCanceledException)
         {
@@ -103,6 +112,11 @@ public partial class MainWindow : Window
         finally
         {
             FinishOperation();
+        }
+
+        if (startupPaths.Length > 0 && !closeWhenStopped && IsVisible)
+        {
+            await ImportSelectionAsync(startupPaths);
         }
     }
 
@@ -144,7 +158,7 @@ public partial class MainWindow : Window
         LinuxOptions.Visibility = linux ? Visibility.Visible : Visibility.Collapsed;
         LinuxImageHeader.Visibility = LinuxOptions.Visibility;
         BackendText.Text = linux ? backends?.LinuxDetail ?? "Checking Linux backend…" : windowsFailure ?? backends?.WindowsDetail ?? "Checking Windows backend…";
-        PermissionText.Text = linux ? "Linux: isolated WSLC container, 2 CPUs / 2 GiB. Only this run's data folders are mounted. No existing WSL distribution is used." : "Windows: MXC ProcessContainer. Application directory: read-only. Clipboard and input injection: off. Windows are allowed; some installed applications require additional dependencies.";
+        PermissionText.Text = linux ? "Linux: isolated WSLC container, 2 CPUs / 2 GiB. Only this run's data folders are mounted. No existing WSL distribution is used." : "Windows: MXC ProcessContainer. Copied applications use the run workspace; installed application directories are read-only. Clipboard and input injection: off. Windows are allowed.";
     }
 
     private void OnBrowseWorkload(object sender, RoutedEventArgs e)
@@ -223,47 +237,128 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnAddFiles(object sender, RoutedEventArgs e)
+    private async void OnAddFiles(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Title = "Choose files to copy into this run", Multiselect = true, CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
-            AddInputs(dialog.FileNames);
+            await ImportSelectionAsync(inputs.Concat(dialog.FileNames));
         }
     }
 
-    private void OnAddFolder(object sender, RoutedEventArgs e)
+    private async void OnAddFolder(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Title = "Choose a folder to copy into this run" };
         if (dialog.ShowDialog(this) == true)
         {
-            AddInputs([dialog.FolderName]);
+            await ImportSelectionAsync(inputs.Append(dialog.FolderName));
         }
     }
 
-    private void AddInputs(IEnumerable<string> paths)
+    private async Task ImportSelectionAsync(IEnumerable<string> paths)
     {
-        foreach (var path in paths)
+        var selection = paths.ToArray();
+        var previous = (EntryPointBox.SelectedItem as TaskEntryPoint)?.RelativePath;
+        cancellation = new CancellationTokenSource();
+        SetRunning(true);
+        StatusText.Text = "Reading selection and identifying entry points…";
+        try
         {
-            if (inputs.Count >= WorkspacePath.MaximumEntries)
-            {
-                StatusText.Text = "Choose at most 1,000 input files and folders.";
-                break;
-            }
-
-            if (!inputs.Contains(path, StringComparer.OrdinalIgnoreCase))
+            var inspected = await Task.Run(() => TaskBundle.Inspect(selection, cancellation.Token));
+            inputs.Clear();
+            foreach (var path in inspected.Inputs)
             {
                 inputs.Add(path);
             }
+
+            updatingSelection = true;
+            EntryPointBox.ItemsSource = inspected.EntryPoints;
+            EntryPointBox.SelectedItem = inspected.EntryPoints.FirstOrDefault(entry => entry.RelativePath == previous) ?? (inspected.EntryPoints.Count == 1 ? inspected.EntryPoints[0] : null);
+            updatingSelection = false;
+            ApplyEntryPoint();
+            SelectionText.Text = $"{inspected.EntryCount} files and folders · {inspected.Bytes / 1048576.0:F1} MiB. Directory structure is preserved.";
+            StatusText.Text = inspected.EntryPoints.Count switch
+            {
+                0 => "No supported entry point found. Add a program/script, or use a custom command in Advanced options.",
+                1 => "Entry point selected. Review the run summary, then select Run.",
+                _ => "Choose one entry point. The other selected files accompany it as data or dependencies.",
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "Selection inspection stopped. The previous selection is unchanged.";
+        }
+        catch (Exception exception)
+        {
+            StatusText.Text = "Could not import selection: " + exception.Message;
+        }
+        finally
+        {
+            updatingSelection = false;
+            FinishOperation();
         }
     }
 
-    private void OnRemoveInput(object sender, RoutedEventArgs e)
+    private async void OnRemoveInput(object sender, RoutedEventArgs e)
     {
-        foreach (var path in InputList.SelectedItems.Cast<string>().ToArray())
+        var removed = InputList.SelectedItems.Cast<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        await ImportSelectionAsync(inputs.Where(path => !removed.Contains(path)));
+    }
+
+    private void OnDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = cancellation is null && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void OnDrop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (cancellation is null && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
-            inputs.Remove(path);
+            await ImportSelectionAsync(inputs.Concat(paths));
         }
+    }
+
+    private void OnEntryPointChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!updatingSelection)
+        {
+            ApplyEntryPoint();
+            SetRunning(cancellation is not null);
+        }
+    }
+
+    private void ApplyEntryPoint()
+    {
+        if (EntryPointBox.SelectedItem is TaskEntryPoint entry && ManualModeBox.IsChecked != true)
+        {
+            ProfileBox.SelectedItem = ProfileBox.Items.Cast<ExecutionProfile>().First(profile => profile.Kind == entry.Kind);
+            if (entry.Interpreter is not null)
+            {
+                InterpreterBox.Text = entry.Interpreter;
+            }
+        }
+
+        UpdateRunSummary();
+    }
+
+    private void OnManualModeChanged(object sender, RoutedEventArgs e)
+    {
+        if (IsInitialized)
+        {
+            ApplyEntryPoint();
+            SetRunning(cancellation is not null);
+        }
+    }
+
+    private void UpdateRunSummary()
+    {
+        RunSummary.Text = ManualModeBox.IsChecked == true
+            ? "Custom run: copied inputs plus the command below. Installed Windows applications use their original directory read-only."
+            : EntryPointBox.SelectedItem is TaskEntryPoint entry
+                ? $"Run {entry.RelativePath}\nWorking folder: {entry.WorkingSubdirectory ?? "selection root"}. All selected files are copied. The original folders are not granted access. Changes stay in this run until you export them."
+                : "Drop files or a folder, then choose an entry point. Nothing runs until you select Run.";
     }
 
     private async void OnRun(object sender, RoutedEventArgs e)
@@ -274,7 +369,14 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
+        var entry = ManualModeBox.IsChecked == true ? null : EntryPointBox.SelectedItem as TaskEntryPoint;
+        if (ManualModeBox.IsChecked != true && entry is null)
+        {
+            StatusText.Text = "Choose an entry point first.";
+            return;
+        }
+
+        if (ManualModeBox.IsChecked == true && string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
         {
             StatusText.Text = "Choose a program or enter a script first.";
             return;
@@ -299,7 +401,7 @@ public partial class MainWindow : Window
         var buffer = new OutputBuffer();
         OutputBox.Clear();
         StatusText.Text = "Copying inputs…";
-        var workloadFile = WorkloadFileBox.Text;
+        var workloadFile = entry is null ? WorkloadFileBox.Text : string.Empty;
         var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
         try
@@ -307,16 +409,24 @@ public partial class MainWindow : Window
             session?.Dispose();
             session = new RunSession();
             workspace = new FileWorkspace(session);
-            await Task.Run(() => workspace.Import(inputPaths, cancellation.Token));
+            var runBundle = await Task.Run(() => TaskBundle.Inspect(inputPaths, cancellation.Token));
+            if (entry is not null && !runBundle.EntryPoints.Any(candidate => candidate.RelativePath == entry.RelativePath && candidate.Kind == entry.Kind))
+            {
+                throw new IOException("The selected entry point changed or was removed. Select the files again.");
+            }
+
+            var relativeFile = entry?.RelativePath ?? (kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? runBundle.GetRelativePath(workloadFile) : null);
+            await Task.Run(() => workspace.Import(runBundle.Inputs, cancellation.Token));
             prepared = true;
             canReview = true;
             hasUnreviewedResults = true;
             StatusText.Text = "Starting a restricted run…";
-            var request = new ExecutionRequest(ScriptBox.Text, session.WorkingDirectory, session.TemporaryDirectory, timeout)
+            var request = new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
             {
                 Kind = kind,
-                ApplicationPath = kind == WorkloadKind.WindowsApplication ? workloadFile : null,
-                FileRelativePath = kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? Path.GetFileName(workloadFile) : null,
+                ApplicationPath = entry is null && kind == WorkloadKind.WindowsApplication ? workloadFile : null,
+                FileRelativePath = relativeFile,
+                WorkingSubdirectory = entry?.WorkingSubdirectory,
                 Arguments = ArgumentsBox.Text.Length == 0 ? [] : ArgumentsBox.Text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'),
                 Image = ImageBox.Text.Trim(),
                 ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
@@ -469,7 +579,11 @@ public partial class MainWindow : Window
 
     private void SetRunning(bool running)
     {
-        RunButton.IsEnabled = available && !running;
+        var manual = ManualModeBox.IsChecked == true;
+        RunButton.IsEnabled = available && !running && (manual || EntryPointBox.SelectedItem is TaskEntryPoint);
+        EntryPointBox.IsEnabled = !running && !manual;
+        ManualModeBox.IsEnabled = !running;
+        ManualOptions.IsEnabled = !running && manual;
         StopButton.IsEnabled = running;
         ScriptBox.IsEnabled = !running && WorkloadFileBox.Text.Length == 0 && kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication;
         TimeoutBox.IsEnabled = !running;
@@ -481,7 +595,7 @@ public partial class MainWindow : Window
         ExportButton.IsEnabled = !running && changes.Any(change => change.CanExport);
         ReviewButton.IsEnabled = !running && canReview;
         OpenExportButton.IsEnabled = !running && exportDirectory is not null;
-        ProfileBox.IsEnabled = !running;
+        ProfileBox.IsEnabled = !running && manual;
         BrowseWorkloadButton.IsEnabled = !running;
         ClearWorkloadButton.IsEnabled = !running;
         ArgumentsBox.IsEnabled = !running;

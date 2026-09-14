@@ -14,11 +14,17 @@ internal static class SandboxRequestFactory
     {
         input.Validate();
         RunSession.ValidateDirectories(input.WorkingDirectory, input.TemporaryDirectory);
+        var executionDirectory = input.WorkingSubdirectory is null ? input.WorkingDirectory : Path.Combine(input.WorkingDirectory, WorkspacePath.ValidateRelative(input.WorkingSubdirectory));
+
+        // Check every ancestor, including nested folders, before granting a
+        // copied entry point or choosing its working directory.
+        RunSession.ValidateWorkspacePath(executionDirectory, input.WorkingDirectory);
         if (input.FileRelativePath is not null)
         {
             // Reject links and invalid result trees before any copied file is
             // executed. Imported files already went through this same scanner.
             var file = Path.Combine(input.WorkingDirectory, WorkspacePath.ValidateRelative(input.FileRelativePath));
+            RunSession.ValidateWorkspacePath(Path.GetDirectoryName(file)!, input.WorkingDirectory);
             if (!File.Exists(file) || !string.Equals(RuntimeFile.Resolve(file), Path.GetFullPath(file), StringComparison.OrdinalIgnoreCase))
             {
                 throw new IOException("The selected workload file is missing or redirected.");
@@ -57,8 +63,12 @@ internal static class SandboxRequestFactory
 
         if (input.Kind == WorkloadKind.WindowsApplication)
         {
-            executable = RuntimeFile.Resolve(input.ApplicationPath!);
-            policy.Filesystem.ReadonlyPaths.Add(Path.GetDirectoryName(executable)!);
+            executable = RuntimeFile.Resolve(input.ApplicationPath ?? Path.Combine(input.WorkingDirectory, input.FileRelativePath!));
+            if (input.ApplicationPath is not null)
+            {
+                policy.Filesystem.ReadonlyPaths.Add(Path.GetDirectoryName(executable)!);
+            }
+
             var fonts = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
             if (Directory.Exists(fonts))
             {
@@ -76,9 +86,10 @@ internal static class SandboxRequestFactory
         // normalization inside that directory. Using the host C: drive makes
         // Set-Location inspect ungranted ancestors such as C:\Users.
         var arguments = string.Join(" ", input.Arguments.Select(argument => "'" + argument.Replace("'", "''", StringComparison.Ordinal) + "'"));
-        var body = input.FileRelativePath is null ? input.Script : $"& '.\\{input.FileRelativePath.Replace("'", "''", StringComparison.Ordinal)}' {arguments}";
+        var body = input.FileRelativePath is null ? input.Script : $"& 'TryRun:\\{input.FileRelativePath.Replace("'", "''", StringComparison.Ordinal)}' {arguments}";
         var scriptArguments = input.FileRelativePath is null ? arguments : string.Empty;
-        var script = $"$ProgressPreference='SilentlyContinue'; try {{ New-PSDrive -Name TryRun -PSProvider FileSystem -Root '{workingDirectory}' -Scope Global -ErrorAction Stop | Out-Null; Set-Location -LiteralPath 'TryRun:\\' -ErrorAction Stop }} catch {{ Write-Error 'Restricted workspace access is unavailable on this device.'; exit 125 }}; & {{\n{body}\n}} {scriptArguments}";
+        var location = input.WorkingSubdirectory?.Replace("'", "''", StringComparison.Ordinal) ?? string.Empty;
+        var script = $"$ProgressPreference='SilentlyContinue'; try {{ New-PSDrive -Name TryRun -PSProvider FileSystem -Root '{workingDirectory}' -Scope Global -ErrorAction Stop | Out-Null; Set-Location -LiteralPath 'TryRun:\\{location}' -ErrorAction Stop }} catch {{ Write-Error 'Restricted workspace access is unavailable on this device.'; exit 125 }}; & {{\n{body}\n}} {scriptArguments}";
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var command = $"{CommandEncoding.WindowsArgument(executable)} -NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand {encoded}";
         if (input.Kind == WorkloadKind.WindowsApplication)
@@ -110,7 +121,7 @@ internal static class SandboxRequestFactory
                 // commands. See MXC docs/playground-limitations.md.
                 Ui = new ProcessContainerUiPolicy { Isolation = ProcessContainerUiIsolation.Desktop },
             },
-            WorkingDirectory = input.WorkingDirectory,
+            WorkingDirectory = executionDirectory,
             InheritDefaultEnvironment = false,
             Environment = new Dictionary<string, string>
             {
@@ -130,6 +141,7 @@ internal static class SandboxRequestFactory
     private static SandboxRequest CreateLinux(ExecutionRequest input)
     {
         var work = CommandEncoding.LinuxPath(input.WorkingDirectory);
+        var executionDirectory = input.WorkingSubdirectory is null ? work : work + "/" + input.WorkingSubdirectory.Replace('\\', '/');
         var temporary = CommandEncoding.LinuxPath(input.TemporaryDirectory);
         var file = input.FileRelativePath is null ? temporary + (input.Kind == WorkloadKind.LinuxPython ? "/run.py" : "/run.sh") : work + "/" + input.FileRelativePath.Replace('\\', '/');
         if (input.FileRelativePath is null)
@@ -145,7 +157,7 @@ internal static class SandboxRequestFactory
         };
         var arguments = string.Join(" ", input.Arguments.Select(CommandEncoding.ShellArgument));
         var executableSetup = input.Kind == WorkloadKind.LinuxApplication ? $"chmod u+x {CommandEncoding.ShellArgument(file)} && " : string.Empty;
-        var command = $"cd {CommandEncoding.ShellArgument(work)} && {executableSetup}exec {interpreter}{CommandEncoding.ShellArgument(file)} {arguments}";
+        var command = $"cd {CommandEncoding.ShellArgument(executionDirectory)} && {executableSetup}exec {interpreter}{CommandEncoding.ShellArgument(file)} {arguments}";
         var imageStore = Path.Combine(AppContext.BaseDirectory, "WslcImages");
         Directory.CreateDirectory(imageStore);
         return new SandboxRequest(

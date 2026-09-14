@@ -18,9 +18,14 @@ Complete and validate each milestone before starting the next.
 3. **Windows and Linux workloads — implemented, native tests passing**: Windows EXE, PowerShell and
    batch profiles through ProcessContainer; Linux scripts and executables through
    WSLC; image preparation, backend discovery, and shared file review/export.
-4. **Remaining MXC capability coverage — not started**: configurable policies,
+4. **Selection-driven tasks — implemented, tests and startup UI flow passing**: drag/drop or startup paths,
+   read-only entry point detection, copied Windows application bundles, nested
+   working folders, and a simpler run summary with optional advanced controls.
+5. **Explorer entry — next**: a thin multiselect context-menu handler passes
+   selection to the same task workflow; it does not inspect files inside Explorer.
+6. **Remaining MXC capability coverage — not started**: configurable policies,
    denial capture, session lifecycle, and additional supported backends.
-5. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+7. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
@@ -52,12 +57,77 @@ The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
 
+### Select files and run
+
+Drop files or a folder anywhere in the window, or use **Add files / Add folder**.
+One recognized entry point is selected automatically. Multiple candidates require
+choosing one; data-only selections require adding a script/program or enabling
+**Use a custom command or installed application** under **Advanced options**.
+Importing never starts the selected code. Select **Run** after reviewing the summary.
+
+Selected folders retain their names and contents. Overlapping parent/child
+selections are deduplicated; unselected siblings are never implicitly imported.
+Different roots with the same name are rejected with an explanation. A script
+or program runs in its copied parent folder, so relative data paths work. All
+selected files accompany it. Downloaded EXEs run from the copy and may write
+alongside themselves; the original application directory is not granted access.
+Include dependencies by selecting them or their containing folder.
+
+Detection reads extensions and at most 4 KiB of each regular file. It recognizes
+PowerShell, batch, shell, Python, PE EXEs and ELF candidates, plus simple allowlisted
+shell/Python shebangs. It never evaluates a shebang command, reads instructions
+from a README, installs dependencies, or invokes a file association. Header
+recognition is a suggestion, not a guarantee of compatibility; unusual PE headers,
+ELF shared objects and unsupported runtimes may require a custom run. Python is
+recommended through Linux; Windows Python can be selected as an installed runtime
+in the custom mode. Images must contain the chosen interpreter and dependencies.
+
+The executable also accepts bounded, absolute local file/folder paths as separate
+startup arguments (optional leading `--`). Paths import a task; there is no
+automatic run switch. For example:
+
+```powershell
+& 'C:\source\PowerToys\x64\Debug\TryRun-Selection\PowerToys.TryRun.exe' -- 'C:\Downloads\my package' 'C:\Downloads\data.csv'
+```
+
+Explorer registration and Command Palette integration are not part of this
+milestone. Output, errors, Stop, timeout, before/after review and explicit export
+continue to use the same MXC worker and file workflow.
+
+Current selection milestone verification: the standalone x64 Debug solution
+builds with exit code 0; all **74 tests pass** (48 unit/fuzz, 18 Windows integration,
+8 WSLC integration), with no skipped tests. Results are in
+`x64/Debug/tests/TryRun.UnitTests/TestResults/selection-full.trx`. New coverage
+includes overlap deduplication, preserved folders, data-only/ambiguous selections,
+bounded header and startup parsing, links, limits, copied EXEs, nested Windows
+PowerShell/batch tasks, Linux folder tasks, and unchanged original files. The
+existing fuzz target now also exercises header detection and launch argument parsing.
+
+The final window build was checked through startup arguments containing
+`Samples/windows.ps1` and `Samples/notes.txt`: both inputs appeared, PowerShell was
+automatically selected, Run was enabled, and clicking it completed with exit 0.
+The review showed one added and one modified file, with correct before/after
+previews; the host original stayed unchanged. The empty layout and Add files
+dialog were also inspected. Cross-window drag gestures and the full export-dialog
+click sequence have not been manually completed; their shared file handling and
+export logic are covered by the tests. A transient desktop automation failure
+(`foreground window did not report a process id`) interrupted the file picker
+walkthrough; reselecting the live startup window allowed the run/review check.
+
+The current deliverable is `x64/Debug/TryRun-Selection/PowerToys.TryRun.exe`.
+Its adjacent Worker cache contains the prepared Alpine and Python images.
+To try it, add or drop `Samples/windows.ps1` together with `Samples/notes.txt`,
+then select Run. For Linux, select `Samples/linux.sh` with `Samples/notes.txt`.
+Selecting the entire Samples folder instead demonstrates choosing among multiple
+entry points and running with the original folder structure.
+
 ### Windows and Linux profiles
 
-Choose an **Execution profile**, then select a file or enter a script. Arguments
+For a custom run, expand **Advanced options**, enable **Use a custom command or
+installed application**, then choose an **Execution profile** and a file or script. Arguments
 are one literal argument per line; surrounding quotes are unnecessary. Choosing
 a script file disables the inline editor for that run. Scripts and data are
-copied into the workspace; an EXE is run from its original location with its
+copied into the workspace; a custom-mode EXE is run from its original location with its
 containing directory granted read-only access, so adjacent DLLs/resources remain
 available. System execution policy is not bypassed for PowerShell script files.
 Batch arguments reject command-expansion characters; put complex batch commands
@@ -220,7 +290,7 @@ The fuzz target is built with the solution. Its OneFuzz entry is disabled until
 the production fuzzing owner and service configuration are assigned; no remote
 fuzzing job is submitted by building this prototype.
 
-Current verification: the standalone x64 Debug solution builds with exit code 0.
+Previous dual-backend milestone verification: the standalone x64 Debug solution builds with exit code 0.
 All 62 tests pass: 40 unit/fuzz cases, 15 Windows integration cases (including
 the optional GUI window/stop test), and 7 WSLC integration cases. Fuzz smoke
 coverage includes 2,004 original protocol inputs, 1,506 additional multi-backend
@@ -250,7 +320,7 @@ require that full build. ARM64 has not been validated on hardware.
 
 If an older window reports **Restricted workspace access is unavailable** with
 Run disabled, save its script, close it, rebuild, and reopen the application.
-The current version should show **Ready. Choose a workload and select Run.**
-Try `Set-Content result.txt hello; Get-Content result.txt`; expect `hello` in the
+For an inline command, enable custom mode in Advanced options, then
+try `Set-Content result.txt hello; Get-Content result.txt`; expect `hello` in the
 output and exit code 0. Setting the time limit to 2 seconds and running
 `Start-Sleep -Seconds 10` should report that the time limit was reached.
