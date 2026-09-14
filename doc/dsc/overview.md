@@ -100,14 +100,15 @@ resources:
 
 ## Available resources
 
-PowerToys DSC provides the following resource:
+PowerToys DSC provides the following resources:
 
-| Resource   | Description                                          |
-| ---------- | ---------------------------------------------------- |
-| `settings` | Manages configuration for PowerToys utility modules. |
+| Resource   | Description                                                        |
+| ---------- | ------------------------------------------------------------------ |
+| `settings` | Manages configuration for PowerToys utility modules.               |
+| `profile`  | Manages the Keyboard Manager remapping profile (keys, shortcuts).  |
 
-For detailed information about the settings resource, see [Settings
-Resource Reference][03].
+For detailed information, see the [Settings Resource Reference][03] and the
+[Keyboard Manager Profile Resource Reference][34].
 
 ## Available modules
 
@@ -244,3 +245,4 @@ For complete examples, see:
 [31]: ./modules/
 [32]: https://learn.microsoft.com/powershell/dsc/overview
 [33]: https://learn.microsoft.com/windows/package-manager/configuration/
+[34]: ./profile-resource.md

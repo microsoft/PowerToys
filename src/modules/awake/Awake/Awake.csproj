@@ -7,13 +7,14 @@
     <OutputType>WinExe</OutputType>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWindowsForms>False</UseWindowsForms>
     <!--Per documentation: https://learn.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AssemblyName>PowerToys.Awake</AssemblyName>
-    
+
     <ApplicationIcon>Assets\Awake\Awake.ico</ApplicationIcon>
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
@@ -99,4 +100,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Awake.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

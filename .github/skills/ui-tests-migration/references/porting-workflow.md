@@ -192,3 +192,9 @@ that covers it, and explicitly call out any items left as manual-only (e.g. "che
 - [ ] One deterministic test and then the module suite were run through the local VM loop in
   [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), using a restored baseline or fresh volume
   when clean-profile behavior matters, or the exact host prerequisite/environment blocker was reported.
+- [ ] Full default and constrained suites pass on both OSes, with applicable architecture coverage.
+- [ ] For implementation tasks, automatically continue with
+  [ui-tests-pipeline-ci](../../ui-tests-pipeline-ci/SKILL.md): access preflight, scoped commit/push,
+  exact-revision CI, and synchronous terminal-result validation. Local green is not completion.
+- [ ] CI is terminal and all selected tests passed, or explicit local-only scope/the precise
+  access or environment blocker/three-run escalation is reported without claiming CI validation.

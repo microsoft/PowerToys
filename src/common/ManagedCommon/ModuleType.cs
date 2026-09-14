@@ -9,6 +9,7 @@ namespace ManagedCommon
         AdvancedPaste,
         AltWindowCycle,
         AlwaysOnTop,
+        AutoHideCursor,
         Awake,
         ColorPicker,
         CmdPal,

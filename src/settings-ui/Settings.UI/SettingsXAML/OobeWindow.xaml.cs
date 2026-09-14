@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
@@ -73,6 +74,8 @@ namespace Microsoft.PowerToys.Settings.UI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             Title = ResourceLoaderInstance.ResourceLoader.GetString("OobeWindow_Title");
         }
 

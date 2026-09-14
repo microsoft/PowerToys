@@ -1,6 +1,6 @@
 ---
 name: ui-tests-pipeline-ci
-description: "Microsoft FTE-only workflow for validating setup, queueing, autonomously waiting for, and stabilizing PowerToys UI Test Automation through an existing Azure CLI session and Azure DevOps REST APIs. Use after local VM suites pass, when asked to run UITests CI, perform a setup preflight/readiness check, diagnose repeated az login prompts or 401/403 permission failures, reuse a successful build, inspect recordings/artifacts, or manage the three-run limit. Includes an agent-owned foreground completion waiter. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, buildNow, specificBuildId, uiTestModules, CI flake."
+description: "Microsoft FTE-only completion workflow for PowerToys UI-test implementation: automatically continue after successful local VM suites, commit and push scoped changes, queue CI, wait synchronously, and stabilize through Azure CLI and Azure DevOps REST APIs. No separate push/run-CI request is needed for create, migrate, or stabilize tasks unless the user limited scope. Also use for explicit UITests CI, setup preflight, 401/403 diagnosis, build reuse, recordings/artifacts, and the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, commit, push, local-to-CI handoff, buildNow, specificBuildId, uiTestModules, CI flake."
 license: MIT
 ---
 
@@ -18,7 +18,11 @@ discovery, preview, queueing, status, timelines, logs, tests, artifacts, and res
 
 ## When to use
 
-Use this skill when an authorized Microsoft FTE asks to:
+Invoke this skill automatically when an authorized Microsoft FTE's **create, migrate, or stabilize
+UI tests** task passes its full local VM matrix. That task includes scoped commit/push and CI
+validation; do not wait for an additional "run CI" request.
+
+Also use it when an authorized Microsoft FTE asks to:
 
 - Queue PowerToys UITests in the internal `UI Test Automation` pipeline.
 - Validate Azure CLI and Azure DevOps readiness before queueing or after a `401`/`403` response.
@@ -31,6 +35,20 @@ Do not use this skill for local execution. Complete
 [ui-tests-local-vm](../ui-tests-local-vm/SKILL.md) first. Use
 [ui-tests-migration](../ui-tests-migration/SKILL.md) for test implementation and stabilization.
 
+## Automatic handoff and scope
+
+The three skills form one delivery workflow, not three independently complete tasks. Local success
+means **ready for publication and CI**, not done. Follow
+[references/agentic-loop.md](./references/agentic-loop.md#1-prove-the-local-gate-and-publish-the-revision)
+to review the diff, commit only task-owned files, push a feature branch without force, and record
+the exact remote SHA before queueing. Never include unrelated work or secrets.
+
+Honor explicit local-only/no-push/no-CI instructions. A status question, read-only investigation,
+VM setup, or local execution of an existing suite does not authorize publishing changes. External
+contributors or failed access/push preflights stop at the exact blocker; do not bypass sign-in,
+permissions, protected branches, or local gates. For an end-to-end task, keep CI pending until
+verified terminal success or a documented blocker/three-run escalation.
+
 ## Non-negotiable gates
 
 1. **Setup preflight first.** Before the first Azure operation in a session, run
@@ -41,7 +59,8 @@ Do not use this skill for local execution. Complete
    the default and `Constrained` profiles for Windows 10 and Windows 11, plus the applicable
    architecture builds/guests required by `ui-tests-local-vm`.
 3. **Pushed revision.** Queue only a pushed branch. Record its exact commit and verify the queued
-   run's `sourceVersion` matches it.
+   run's `sourceVersion` matches it. Creating and pushing that scoped commit is part of the
+   implementation workflow, not an optional user follow-up.
 4. **One run per branch.** Before queueing, discover active runs for `UI Test Automation`. Wait for
    or cancel a relevant superseded run on the target branch; runs on other branches may continue in
    parallel. Never cancel another branch's unrelated run.

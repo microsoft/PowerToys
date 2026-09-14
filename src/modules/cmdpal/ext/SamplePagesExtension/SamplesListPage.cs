@@ -165,11 +165,16 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of a command that takes multiple types of parameters",
         },
 
-        // List parameters aren't yet supported
+        // List parameters
         new ListItem(new CreateNoteParametersPage())
         {
             Title = "Create note sample",
             Subtitle = "A parameter page with both a string and list parameter",
+        },
+        new ListItem(new CreateNoteParametersPage(gridProperties: new MediumGridLayout { ShowTitle = true }))
+        {
+            Title = "Create note sample (grid view)",
+            Subtitle = "A parameter page with a string and a grid of folders",
         },
 
         // Evil edge cases
