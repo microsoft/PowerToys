@@ -4,10 +4,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
+using RobocopyUI.Helpers;
 
 namespace RobocopyUI
 {
@@ -150,6 +152,7 @@ namespace RobocopyUI
             OutputTextBox.Text = string.Empty;
             OutputSelectorBarItem.IsEnabled = true;
             OutputSelectorBarItem.IsSelected = true;
+            OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_Running");
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "robocopy.exe",
@@ -199,6 +202,15 @@ namespace RobocopyUI
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+
+            process.Exited += (s, args) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_" + (process.ExitCode <= 8 ? process.ExitCode : "fail"));
+                    StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
+                });
+            };
         }
 
         private async void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
