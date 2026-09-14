@@ -10,7 +10,7 @@
 
     <StackPanel Margin="12">
         <TextBlock Margin="4" x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}" />
-        <StackPanel Margin="12">
+        <StackPanel x:Name="SourceDestinationHeader" Margin="12">
             <Grid Margin="0,12,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -37,8 +37,33 @@
                     <FontIcon Glyph="&#xE8B7;" />
                 </Button>
             </Grid>
-            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
+            <!-- Glyphs from https://learn.microsoft.com/en-us/windows/apps/design/iconography/segoe-fluent-icons-font -->
+            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" >
+                <SelectorBar.Resources>
+                    <!-- WIP Need ot get the selection indicator to dynamically change width to fill the entire word's width -->
+                    <Style x:Key="SelectorBarItemPill" TargetType="Rectangle" BasedOn="{StaticResource ComboBoxItemPill}">
+                        <Setter Property="Fill" Value="{ThemeResource SelectorBarItemPillFill}" />
+                        <Setter Property="Height" Value="{ThemeResource SelectorBarItemPillHeight}" />
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </Style>
+                </SelectorBar.Resources>
+
                 <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE762;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="FiltersSelectorBarLabel" Tag="Filters">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE71C;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="LoggingSelectorBarLabel" Tag="Logging">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE9F9;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="AdvancedSelectorBarLabel" Tag="Advanced">
                     <SelectorBarItem.Icon>
                         <FontIcon Glyph="&#xE713;" />
                     </SelectorBarItem.Icon>
@@ -68,6 +93,15 @@
                     <TextBlock x:Uid="RetryOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
                     <local:OptionEntry OptionName="/R" OptionDescription="On failed copies retry how many times:" IsNumberOption="True" />
                 </StackPanel>
+            </Grid>
+            <Grid x:Name="FiltersContent" Margin="12">
+                <TextBlock x:Uid="FiltersContentHeaderLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+            <Grid x:Name="LoggingContent" Margin="12">
+                <TextBlock x:Uid="LoggingContentHeaderLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+            <Grid x:Name="AdvancedContent" Margin="12">
+                <TextBlock x:Uid="AdvancedContentHeaderLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
             <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
                 <TextBox x:Name="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
