@@ -27,9 +27,12 @@ Complete and validate each milestone before starting the next.
 6. **Environment and isolation report — implemented and validated**:
    pre-run summary, native block-mode denial capture, attributed observations,
    original-file hash verification, and Windows/Linux demonstration tasks.
-7. **Remaining MXC capability coverage — not started**: configurable policies,
+7. **Windows window borders — implemented, native integration verified**: cyan, noninteractive borders for the
+   running Windows process and observable descendants; track window geometry,
+   visibility and session lifetime without marking ordinary instances.
+8. **Remaining MXC capability coverage — not started**: configurable policies,
    denial capture, session lifecycle, and additional supported backends.
-8. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+9. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
@@ -60,6 +63,53 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Windows window borders
+
+Windows application windows receive a four-DIP cyan border while their Try Run
+session is active. The Worker announces the MXC root PID and Windows creation
+time only after spawn succeeds and policy warnings have been checked. The UI
+opens that exact live process, discovers descendants from Windows process
+snapshots, and checks parent/child creation and exit times. Retained process
+handles prevent a stale identity from being accepted merely by executable name
+or PID. No window title or workload output is used for association.
+
+The border is a separate transparent WPF window: it does not modify or inject
+code into the application. It is nonactivating, absent from Alt+Tab/taskbar, and
+click-through, including over the resize edges. Visible frame bounds use native
+physical coordinates, with WPF scaling the stroke for DPI. Each border is placed
+immediately above its target, below covering windows, rather than globally
+topmost. Hidden, minimized and DWM-cloaked windows are excluded. Movement is
+checked every 100 ms and process discovery every 500 ms while a run is active;
+tracking is bounded to 256 processes and 32 visible windows.
+
+Stop, normal exit, timeout, worker failure and closing Try Run remove the borders.
+The marker associates a window with a Try Run session; it is not an additional
+security boundary or a certification of the application. Linux GUI remains
+unsupported. Windows handed off to an existing unrelated process/broker are not
+marked. Very short-lived intermediate parents can escape snapshot discovery;
+unverified windows are left unmarked rather than guessed from their names.
+
+`WindowBorderTests` exercises stale identities, the live Worker identity, a real
+MXC `winver.exe`, a GUI child launched through PowerShell, and an ordinary
+`winver.exe` alongside each run. It checks movement/resizing, z-order, input/focus
+styles, minimize/restore, and stop/normal-close/timeout cleanup. Set
+`POWERTOYS_TRYRUN_GUI_TESTS=1` for the native GUI cases. Manual acceptance also
+needs mixed-DPI, multiple-monitor coverage before production integration.
+
+The separate raster test first renders a solid-color control. If even that
+control is empty (as observed in the current unavailable desktop capture
+session), the test reports **inconclusive**, rather than claiming that the
+border's pixels passed. Reconnect/unlock an interactive desktop to rerun
+`BorderPaintsCyanEdgesAndLeavesTheApplicationVisible` and visually inspect the
+border. This does not skip the native association and lifecycle tests.
+
+The x64 Debug solution build succeeded. The full regression run passed 99 tests
+with the single raster test inconclusive (`window-borders-validated.trx`). The
+local deliverable and registered Explorer entry use `x64/Debug/TryRun-Borders`.
+Topmost/non-topmost transitions are also covered: the marker follows the target's
+band and never becomes topmost merely because an unrelated topmost window is
+immediately above the target.
 
 ### Run environment and isolation report
 

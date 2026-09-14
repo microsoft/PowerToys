@@ -70,6 +70,15 @@ internal static class Program
             }
 
             process.StandardInput?.Dispose();
+            if (!input.IsLinux)
+            {
+                var identity = WindowsProcessIdentity.Capture(process.Id);
+                if (identity is not null && !process.TryGetExitCode(out _))
+                {
+                    Send(new WorkerMessage(WorkerMessage.ProcessStarted, "Windows run started.") { Process = identity });
+                }
+            }
+
             var stdout = PumpAsync(process.StandardOutput, isError: false);
             var stderr = PumpAsync(process.StandardError, isError: true);
 

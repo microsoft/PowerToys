@@ -41,6 +41,7 @@ public partial class MainWindow : Window
     private bool updatingSelection;
     private bool isolationDemo;
     private IsolationReport? isolationReport;
+    private RunWindowBorders? windowBorders;
 
     public MainWindow(string[] startupPaths, string? startupError = null)
     {
@@ -484,6 +485,10 @@ public partial class MainWindow : Window
         var workloadFile = entry is null ? WorkloadFileBox.Text : string.Empty;
         var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
+        using var runBorders = new RunWindowBorders(message => WindowBorderText.Text = message);
+        windowBorders = runBorders;
+        WindowBorderText.Visibility = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication ? Visibility.Collapsed : Visibility.Visible;
+        WindowBorderText.Text = "Windows in this run will have a cyan border after MXC starts the application.";
         try
         {
             session?.Dispose();
@@ -516,6 +521,16 @@ public partial class MainWindow : Window
             };
             var progress = new Progress<WorkerMessage>(message =>
             {
+                if (message.Kind == WorkerMessage.ProcessStarted && message.Process is { } process && !request.IsLinux)
+                {
+                    runBorders.Start(process);
+                }
+
+                if (message.Kind == WorkerMessage.Completed)
+                {
+                    runBorders.Dispose();
+                }
+
                 if (message.Environment is { } environment)
                 {
                     ReportEnvironmentBox.Text = environment.Describe();
@@ -546,6 +561,9 @@ public partial class MainWindow : Window
         }
         finally
         {
+            runBorders.Dispose();
+            windowBorders = null;
+            WindowBorderText.Visibility = Visibility.Collapsed;
             if (prepared && !closeWhenStopped)
             {
                 if (isolationReport?.CaptureStatus is "Pending" or "Collecting")
@@ -671,6 +689,7 @@ public partial class MainWindow : Window
 
     private void OnStop(object sender, RoutedEventArgs e)
     {
+        windowBorders?.Dispose();
         StatusText.Text = "Stopping…";
         StopButton.IsEnabled = false;
         cancellation?.Cancel();
@@ -729,6 +748,7 @@ public partial class MainWindow : Window
     {
         if (cancellation is not null)
         {
+            windowBorders?.Dispose();
             e.Cancel = true;
             closeWhenStopped = true;
             cancellation.Cancel();

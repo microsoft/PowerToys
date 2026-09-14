@@ -12,6 +12,9 @@ public sealed record WorkerMessage(string Kind, string Text, int? ExitCode = nul
     public const string Ready = "ready";
     public const string EnvironmentReady = "environment";
     public const string Isolation = "isolation";
+    public const string ProcessStarted = "process-started";
+
+    public WindowsProcessIdentity? Process { get; init; }
 
     public RunEnvironment? Environment { get; init; }
 
