@@ -40,12 +40,7 @@
             <!-- Glyphs from https://learn.microsoft.com/en-us/windows/apps/design/iconography/segoe-fluent-icons-font -->
             <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" >
                 <SelectorBar.Resources>
-                    <!-- WIP Need ot get the selection indicator to dynamically change width to fill the entire word's width -->
-                    <Style x:Key="SelectorBarItemPill" TargetType="Rectangle" BasedOn="{StaticResource ComboBoxItemPill}">
-                        <Setter Property="Fill" Value="{ThemeResource SelectorBarItemPillFill}" />
-                        <Setter Property="Height" Value="{ThemeResource SelectorBarItemPillHeight}" />
-                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                    </Style>
+                    <x:Double x:Key="SelectorBarItemPillWidth">15</x:Double>
                 </SelectorBar.Resources>
 
                 <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
