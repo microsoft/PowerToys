@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Windows;
+using System.Windows.Markup;
 
 using WorkspacesLauncherUI.ViewModels;
 
@@ -21,11 +23,15 @@ namespace WorkspacesLauncherUI
             _mainViewModel.SetSnapshotWindow(this);
             this.DataContext = _mainViewModel;
             InitializeComponent();
+            Language = XmlLanguage.GetLanguage(CultureInfo.CurrentUICulture.IetfLanguageTag);
+            FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         }
 
-        private void CancelButtonClicked(object sender, RoutedEventArgs e)
+        private async void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
-            _mainViewModel.CancelLaunch();
+            CancelButton.IsEnabled = false;
+            DismissButton.IsEnabled = false;
+            await _mainViewModel.CancelLaunchAsync();
             Close();
         }
 
@@ -36,6 +42,7 @@ namespace WorkspacesLauncherUI
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            _mainViewModel.Dispose();
         }
     }
 }

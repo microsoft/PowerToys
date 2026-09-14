@@ -2,9 +2,16 @@
 #include "TestHelpers.h"
 
 #include <interop/pipe_caller_auth.h>
+#include <interop/pipe_caller_auth_chain_policy.h>
 
+#include <array>
+#include <ncrypt.h>
 #include <string>
 #include <thread>
+#include <vector>
+#include <wil/resource.h>
+
+#pragma comment(lib, "ncrypt.lib")
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -12,6 +19,85 @@ namespace UnitTestsCommonUtils
 {
     namespace
     {
+        struct PolicyChainFixture
+        {
+            PolicyChainFixture()
+            {
+                wil::unique_ncrypt_prov provider;
+                wil::unique_ncrypt_key key;
+                Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptOpenStorageProvider(provider.put(), MS_KEY_STORAGE_PROVIDER, 0));
+                Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptCreatePersistedKey(provider.get(), key.put(), NCRYPT_RSA_ALGORITHM, nullptr, 0, 0));
+                Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptFinalizeKey(key.get(), NCRYPT_SILENT_FLAG));
+
+                DWORD nameSize = 0;
+                constexpr auto subjectName = L"CN=PowerToys chain policy test";
+                Assert::IsTrue(CertStrToNameW(X509_ASN_ENCODING, subjectName, CERT_X500_NAME_STR, nullptr, nullptr, &nameSize, nullptr) != FALSE);
+                std::vector<BYTE> name(nameSize);
+                Assert::IsTrue(CertStrToNameW(X509_ASN_ENCODING, subjectName, CERT_X500_NAME_STR, nullptr, name.data(), &nameSize, nullptr) != FALSE);
+                CERT_NAME_BLOB subject{ nameSize, name.data() };
+                char algorithmOid[] = szOID_RSA_SHA256RSA;
+                CRYPT_ALGORITHM_IDENTIFIER algorithm{ algorithmOid, {} };
+                m_certificate.reset(CertCreateSelfSignCertificate(key.get(), &subject, CERT_CREATE_SELFSIGN_NO_KEY_INFO, nullptr, &algorithm, nullptr, nullptr, nullptr));
+                Assert::IsTrue(static_cast<bool>(m_certificate));
+
+                // Policy consumes precomputed trust statuses. This fixture models those
+                // statuses with an ephemeral certificate; it never installs a trusted root.
+                for (size_t index = 0; index < m_elements.size(); ++index)
+                {
+                    m_elements[index].cbSize = sizeof(CERT_CHAIN_ELEMENT);
+                    m_elements[index].pCertContext = m_certificate.get();
+                    m_revocation[index].cbSize = sizeof(CERT_REVOCATION_INFO);
+                    m_elements[index].pRevocationInfo = &m_revocation[index];
+                    m_elementPointers[index] = &m_elements[index];
+                }
+                m_elements.back().TrustStatus.dwInfoStatus = CERT_TRUST_IS_SELF_SIGNED;
+                m_simple.cbSize = sizeof(m_simple);
+                m_simple.cElement = static_cast<DWORD>(m_elements.size());
+                m_simple.rgpElement = m_elementPointers.data();
+                m_simplePointer = &m_simple;
+                chain.cbSize = sizeof(chain);
+                chain.cChain = 1;
+                chain.rgpChain = &m_simplePointer;
+            }
+
+            void SetErrors(size_t index, DWORD errors)
+            {
+                for (auto& element : m_elements)
+                {
+                    element.TrustStatus.dwErrorStatus = 0;
+                }
+                for (auto& revocation : m_revocation)
+                {
+                    revocation.dwRevocationResult = 0;
+                }
+                m_elements[index].TrustStatus.dwErrorStatus = errors;
+                m_revocation[index].dwRevocationResult = errors & CERT_TRUST_IS_REVOKED ? CRYPT_E_REVOKED : CRYPT_E_REVOCATION_OFFLINE;
+                m_simple.TrustStatus.dwErrorStatus = errors;
+                chain.TrustStatus.dwErrorStatus = errors;
+            }
+
+            DWORD PolicyError(DWORD flags) const
+            {
+                CERT_CHAIN_POLICY_PARA parameters{};
+                parameters.cbSize = sizeof(parameters);
+                parameters.dwFlags = flags;
+                CERT_CHAIN_POLICY_STATUS status{};
+                status.cbSize = sizeof(status);
+                Assert::IsTrue(CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_AUTHENTICODE, &chain, &parameters, &status) != FALSE);
+                return status.dwError;
+            }
+
+            CERT_CHAIN_CONTEXT chain{};
+
+        private:
+            wil::unique_cert_context m_certificate;
+            std::array<CERT_CHAIN_ELEMENT, 3> m_elements{};
+            std::array<CERT_REVOCATION_INFO, 3> m_revocation{};
+            std::array<PCERT_CHAIN_ELEMENT, 3> m_elementPointers{};
+            CERT_SIMPLE_CHAIN m_simple{};
+            PCERT_SIMPLE_CHAIN m_simplePointer{};
+        };
+
         std::wstring CurrentExePath()
         {
             wchar_t buf[MAX_PATH * 2] = {};
@@ -96,6 +182,57 @@ namespace UnitTestsCommonUtils
     TEST_CLASS(PipeCallerAuthTests)
     {
     public:
+        TEST_METHOD(MachineSignerPolicy_AcceptsCleanChain)
+        {
+            PolicyChainFixture fixture;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), fixture.PolicyError(0));
+            Assert::IsTrue(interop_auth::details::VerifyMachineSignerChainPolicy(&fixture.chain));
+        }
+
+        TEST_METHOD(MachineSignerPolicy_AcceptsUnavailableRevocationAtEachChainLevel)
+        {
+            PolicyChainFixture fixture;
+            for (size_t level = 0; level < 3; ++level)
+            {
+                for (DWORD errors : { CERT_TRUST_REVOCATION_STATUS_UNKNOWN, CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CERT_TRUST_IS_OFFLINE_REVOCATION })
+                {
+                    fixture.SetErrors(level, errors);
+                    if (level == 0)
+                    {
+                        Assert::AreNotEqual(static_cast<DWORD>(ERROR_SUCCESS), fixture.PolicyError(0));
+                    }
+                    Assert::IsTrue(interop_auth::details::VerifyMachineSignerChainPolicy(&fixture.chain));
+                }
+            }
+        }
+
+        TEST_METHOD(MachineSignerPolicy_StillRejectsKnownRevocation)
+        {
+            PolicyChainFixture fixture;
+            for (size_t level = 0; level < 3; ++level)
+            {
+                for (DWORD errors : { CERT_TRUST_IS_REVOKED, CERT_TRUST_IS_REVOKED | CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CERT_TRUST_IS_OFFLINE_REVOCATION })
+                {
+                    fixture.SetErrors(level, errors);
+                    Assert::AreNotEqual(static_cast<DWORD>(ERROR_SUCCESS), fixture.PolicyError(CERT_CHAIN_POLICY_IGNORE_ALL_REV_UNKNOWN_FLAGS));
+                    Assert::IsFalse(interop_auth::details::VerifyMachineSignerChainPolicy(&fixture.chain));
+                }
+            }
+        }
+
+        TEST_METHOD(MachineSignerPolicy_StillRejectsOtherTrustFailures)
+        {
+            PolicyChainFixture fixture;
+            for (DWORD error : { CERT_TRUST_IS_UNTRUSTED_ROOT, CERT_TRUST_IS_PARTIAL_CHAIN, CERT_TRUST_IS_EXPLICIT_DISTRUST,
+                                 CERT_TRUST_IS_NOT_SIGNATURE_VALID, CERT_TRUST_IS_NOT_TIME_VALID, CERT_TRUST_IS_NOT_VALID_FOR_USAGE,
+                                 CERT_TRUST_INVALID_BASIC_CONSTRAINTS })
+            {
+                fixture.SetErrors(0, error | CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CERT_TRUST_IS_OFFLINE_REVOCATION);
+                Assert::IsFalse(interop_auth::details::VerifyMachineSignerChainPolicy(&fixture.chain));
+            }
+            Assert::IsFalse(interop_auth::details::VerifyMachineSignerChainPolicy(nullptr));
+        }
+
         // A disabled policy is a pass-through (preserves the managed start(nullptr) server and tests).
         TEST_METHOD(DisabledPolicy_Accepts)
         {

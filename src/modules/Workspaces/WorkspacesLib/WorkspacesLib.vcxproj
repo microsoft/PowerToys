@@ -37,10 +37,17 @@
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="LaunchingStateEnum.h" />
+    <ClInclude Include="LaunchDecision.h" />
     <ClInclude Include="LaunchingStatus.h" />
+    <ClInclude Include="LauncherIpcServer.h" />
+    <ClInclude Include="LauncherUiMessage.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PendingLaunchApproval.h" />
+    <ClInclude Include="PackageVerification.h" />
+    <ClInclude Include="PackageVerificationAsync.h" />
     <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="SignatureVerification.h" />
     <ClInclude Include="SteamHelper.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="utils.h" />
@@ -55,10 +62,16 @@
     <ClCompile Include="IPCHelper.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="LaunchingStatus.cpp" />
+    <ClCompile Include="LauncherIpcServer.cpp" />
+    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PwaHelper.cpp" />
+    <ClCompile Include="SignatureVerification.cpp" />
+    <ClCompile Include="PackageVerification.cpp" />
     <ClCompile Include="SteamGameHelper.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
