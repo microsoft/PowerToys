@@ -267,7 +267,7 @@
                 <Grid x:Name="OutputContent" Margin="12" Visibility="Collapsed">
                     <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
                 </Grid>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
                     <Button Margin="0,12,0,12" Click="SaveButton_Click" x:Name="SaveButton">
                         <StackPanel Orientation="Horizontal">
                             <FontIcon Glyph="&#xE78C;" />
