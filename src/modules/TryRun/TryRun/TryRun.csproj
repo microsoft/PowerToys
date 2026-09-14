@@ -10,10 +10,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\..\..\runner\svgs\icon.ico</ApplicationIcon>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\</OutputPath>
+    <OutputPath Condition="'$(TryRunOutputRoot)' != ''">$(TryRunOutputRoot)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <Content Include="..\Samples\*" Exclude="..\Samples\.gitattributes" Link="Samples\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

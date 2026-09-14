@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly string workerPath = Path.Combine(AppContext.BaseDirectory, "Worker", "PowerToys.TryRun.Worker.exe");
     private readonly ObservableCollection<string> inputs = [];
     private readonly HashSet<string> unexported = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<WorkloadKind, (string Script, string File, string Arguments, string Interpreter)> drafts = [];
     private CancellationTokenSource? cancellation;
     private RunSession? session;
     private bool closeWhenStopped;
@@ -31,11 +32,25 @@ public partial class MainWindow : Window
     private FileWorkspace? workspace;
     private List<FileChangeRow> changes = [];
     private string? exportDirectory;
+    private BackendAvailability? backends;
+    private bool windowsReady;
+    private string? windowsFailure;
+    private WorkloadKind kind;
 
     public MainWindow()
     {
         InitializeComponent();
         InputList.ItemsSource = inputs;
+        ProfileBox.ItemsSource = new[]
+        {
+            new ExecutionProfile(WorkloadKind.WindowsPowerShell, "Windows · PowerShell"),
+            new ExecutionProfile(WorkloadKind.WindowsApplication, "Windows · Application (.exe)"),
+            new ExecutionProfile(WorkloadKind.WindowsBatch, "Windows · Batch (.cmd / .bat)"),
+            new ExecutionProfile(WorkloadKind.LinuxShell, "Linux · Shell"),
+            new ExecutionProfile(WorkloadKind.LinuxPython, "Linux · Python / other runtime"),
+            new ExecutionProfile(WorkloadKind.LinuxApplication, "Linux · Executable"),
+        };
+        ProfileBox.SelectedIndex = 0;
         var reason = RuntimeRequirements.GetUnavailableReason();
         if (reason is null && !File.Exists(workerPath))
         {
@@ -66,13 +81,137 @@ public partial class MainWindow : Window
         StatusText.Text = "Checking restricted workspace access…";
         try
         {
-            var failure = await new WorkerClient(workerPath).GetAvailabilityFailureAsync(cancellation.Token);
-            available = failure is null;
-            StatusText.Text = failure ?? "Ready. Scripts run only when you choose Run.";
+            var client = new WorkerClient(workerPath);
+            backends = await client.GetBackendsAsync(cancellation.Token);
+            if (backends.WindowsAvailable)
+            {
+                windowsFailure = await client.GetAvailabilityFailureAsync(cancellation.Token);
+                windowsReady = windowsFailure is null;
+            }
+
+            UpdateProfileState();
+            StatusText.Text = available ? "Ready. Choose a workload and select Run." : BackendText.Text;
         }
         catch (OperationCanceledException)
         {
             StatusText.Text = "Availability check stopped. Reopen Try Run to check again.";
+        }
+        catch (Exception exception)
+        {
+            StatusText.Text = exception.Message;
+        }
+        finally
+        {
+            FinishOperation();
+        }
+    }
+
+    private void OnProfileChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || ProfileBox.SelectedItem is not ExecutionProfile profile)
+        {
+            return;
+        }
+
+        drafts[kind] = (ScriptBox.Text, WorkloadFileBox.Text, ArgumentsBox.Text, InterpreterBox.Text);
+        kind = profile.Kind;
+        var initial = kind switch
+        {
+            WorkloadKind.WindowsPowerShell => "Get-ChildItem -Recurse",
+            WorkloadKind.WindowsBatch => "@echo off\r\necho Hello from Windows\r\nver",
+            WorkloadKind.LinuxShell => "uname -s\nprintf 'Hello from Linux\\n'\nls -la",
+            WorkloadKind.LinuxPython => "import platform\nprint('Hello from', platform.system())",
+            _ => string.Empty,
+        };
+        var draft = drafts.GetValueOrDefault(kind, (initial, string.Empty, string.Empty, kind == WorkloadKind.LinuxPython ? "python3" : "/bin/sh"));
+        ScriptBox.Text = draft.Item1;
+        WorkloadFileBox.Text = draft.Item2;
+        ArgumentsBox.Text = draft.Item3;
+        InterpreterBox.Text = draft.Item4;
+        if (kind == WorkloadKind.LinuxPython && ImageBox.Text == "alpine:3.22")
+        {
+            ImageBox.Text = "python:3.12-alpine";
+        }
+
+        UpdateProfileState();
+        SetRunning(cancellation is not null);
+    }
+
+    private void UpdateProfileState()
+    {
+        var linux = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
+        available = linux ? backends?.LinuxAvailable == true : windowsReady;
+        LinuxOptions.Visibility = linux ? Visibility.Visible : Visibility.Collapsed;
+        LinuxImageHeader.Visibility = LinuxOptions.Visibility;
+        BackendText.Text = linux ? backends?.LinuxDetail ?? "Checking Linux backend…" : windowsFailure ?? backends?.WindowsDetail ?? "Checking Windows backend…";
+        PermissionText.Text = linux ? "Linux: isolated WSLC container, 2 CPUs / 2 GiB. Only this run's data folders are mounted. No existing WSL distribution is used." : "Windows: MXC ProcessContainer. Application directory: read-only. Clipboard and input injection: off. Windows are allowed; some installed applications require additional dependencies.";
+    }
+
+    private void OnBrowseWorkload(object sender, RoutedEventArgs e)
+    {
+        var filter = kind switch
+        {
+            WorkloadKind.WindowsApplication => "Windows applications|*.exe",
+            WorkloadKind.WindowsPowerShell => "PowerShell scripts|*.ps1|All files|*.*",
+            WorkloadKind.WindowsBatch => "Batch scripts|*.cmd;*.bat|All files|*.*",
+            WorkloadKind.LinuxPython => "Python scripts|*.py|All files|*.*",
+            _ => "All files|*.*",
+        };
+        var dialog = new OpenFileDialog { Title = "Choose a program or script file", Filter = filter, CheckFileExists = true };
+        if (dialog.ShowDialog(this) == true)
+        {
+            WorkloadFileBox.Text = dialog.FileName;
+            SetRunning(false);
+        }
+    }
+
+    private void OnClearWorkload(object sender, RoutedEventArgs e)
+    {
+        WorkloadFileBox.Clear();
+        SetRunning(false);
+    }
+
+    private void OnBrowseImage(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Title = "Choose a local container image archive", Filter = "Image archives|*.tar;*.tar.gz;*.tgz|All files|*.*", CheckFileExists = true };
+        if (dialog.ShowDialog(this) == true)
+        {
+            ImageTarBox.Text = dialog.FileName;
+        }
+    }
+
+    private async void OnPrepareImage(object sender, RoutedEventArgs e)
+    {
+        cancellation = new CancellationTokenSource();
+        SetRunning(true);
+        OutputBox.Clear();
+        ResultsTabs.SelectedIndex = 0;
+        StatusText.Text = "Preparing image using MXC. This step downloads into the dedicated image cache…";
+        var buffer = new OutputBuffer();
+        try
+        {
+            using var preparation = new RunSession();
+            var request = new ExecutionRequest(":", preparation.WorkingDirectory, preparation.TemporaryDirectory, 300)
+            {
+                Kind = WorkloadKind.LinuxShell,
+                Image = ImageBox.Text.Trim(),
+                PrepareImage = true,
+            };
+            var progress = new Progress<WorkerMessage>(message =>
+            {
+                if (message.Kind is WorkerMessage.Output or WorkerMessage.Error)
+                {
+                    buffer.Append(message.Text);
+                    OutputBox.Text = buffer.ToString();
+                    OutputBox.ScrollToEnd();
+                }
+            });
+            var result = await new WorkerClient(workerPath).RunAsync(request, progress, cancellation.Token);
+            StatusText.Text = result.ExitCode == 0 ? "Image ready. Runs use the cached image with networking off." : "Image preparation failed. See output for MXC details.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "Image preparation stopped.";
         }
         catch (Exception exception)
         {
@@ -135,9 +274,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(ScriptBox.Text))
+        if (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
         {
-            StatusText.Text = "Enter a PowerShell script first.";
+            StatusText.Text = "Choose a program or enter a script first.";
             return;
         }
 
@@ -160,7 +299,8 @@ public partial class MainWindow : Window
         var buffer = new OutputBuffer();
         OutputBox.Clear();
         StatusText.Text = "Copying inputs…";
-        var inputPaths = inputs.ToArray();
+        var workloadFile = WorkloadFileBox.Text;
+        var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
         try
         {
@@ -172,7 +312,16 @@ public partial class MainWindow : Window
             canReview = true;
             hasUnreviewedResults = true;
             StatusText.Text = "Starting a restricted run…";
-            var request = new ExecutionRequest(ScriptBox.Text, session.WorkingDirectory, session.TemporaryDirectory, timeout);
+            var request = new ExecutionRequest(ScriptBox.Text, session.WorkingDirectory, session.TemporaryDirectory, timeout)
+            {
+                Kind = kind,
+                ApplicationPath = kind == WorkloadKind.WindowsApplication ? workloadFile : null,
+                FileRelativePath = kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? Path.GetFileName(workloadFile) : null,
+                Arguments = ArgumentsBox.Text.Length == 0 ? [] : ArgumentsBox.Text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'),
+                Image = ImageBox.Text.Trim(),
+                ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
+                Interpreter = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython ? InterpreterBox.Text.Trim() : null,
+            };
             var progress = new Progress<WorkerMessage>(message =>
             {
                 if (message.Kind is WorkerMessage.Output or WorkerMessage.Error)
@@ -322,7 +471,7 @@ public partial class MainWindow : Window
     {
         RunButton.IsEnabled = available && !running;
         StopButton.IsEnabled = running;
-        ScriptBox.IsEnabled = !running;
+        ScriptBox.IsEnabled = !running && WorkloadFileBox.Text.Length == 0 && kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication;
         TimeoutBox.IsEnabled = !running;
         AddFilesButton.IsEnabled = !running;
         AddFolderButton.IsEnabled = !running;
@@ -332,6 +481,15 @@ public partial class MainWindow : Window
         ExportButton.IsEnabled = !running && changes.Any(change => change.CanExport);
         ReviewButton.IsEnabled = !running && canReview;
         OpenExportButton.IsEnabled = !running && exportDirectory is not null;
+        ProfileBox.IsEnabled = !running;
+        BrowseWorkloadButton.IsEnabled = !running;
+        ClearWorkloadButton.IsEnabled = !running;
+        ArgumentsBox.IsEnabled = !running;
+        ImageBox.IsEnabled = !running;
+        ImageTarBox.IsEnabled = !running;
+        InterpreterBox.IsEnabled = !running && kind != WorkloadKind.LinuxApplication;
+        BrowseImageButton.IsEnabled = !running;
+        PrepareImageButton.IsEnabled = !running && backends?.LinuxAvailable == true;
     }
 
     private void FinishOperation()

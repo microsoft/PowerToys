@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\Worker\</OutputPath>
+    <OutputPath Condition="'$(TryRunOutputRoot)' != ''">$(TryRunOutputRoot)\Worker\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
@@ -23,5 +24,8 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="ActualMxcRevision" />
     </Exec>
     <Error Condition="'$(ActualMxcRevision)' != '$(ExpectedMxcRevision)'" Text="MXC must be at $(ExpectedMxcRevision). Build the managed SDK and native unit from that same checkout." />
+  </Target>
+  <Target Name="BuildMxcImageHelper" AfterTargets="Build" Condition="'$(MxcWithWslc)' == 'true'">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\build-wxc-helper.ps1&quot; -MxcRoot &quot;$(MxcRoot)&quot; -OutputDirectory &quot;$(OutDir).&quot; -Platform $(Platform) -Configuration $(Configuration)" />
   </Target>
 </Project>

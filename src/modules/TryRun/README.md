@@ -1,7 +1,7 @@
 # Try Run (experimental prototype)
 
-Try a PowerShell script in an MXC ProcessContainer, inspect the output, and keep
-selected results separately from the original files. This is an opt-in developer
+Run Windows applications and Windows/Linux scripts through MXC, inspect the
+output, and keep selected results separately from the original files. This is an opt-in developer
 prototype, not an installed PowerToy or a security boundary. MXC currently warns
 that its profiles are not security boundaries.
 
@@ -15,12 +15,17 @@ Complete and validate each milestone before starting the next.
 2. **File workflow — implemented and validated**: copy selected input into a temporary workspace, reject links
    and oversized inputs, compare results, export to a new directory, clean up;
    filesystem unit tests and fuzz targets.
-3. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+3. **Windows and Linux workloads — implemented, native tests passing**: Windows EXE, PowerShell and
+   batch profiles through ProcessContainer; Linux scripts and executables through
+   WSLC; image preparation, backend discovery, and shared file review/export.
+4. **Remaining MXC capability coverage — not started**: configurable policies,
+   denial capture, session lifecycle, and additional supported backends.
+5. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
-Installer, Runner/GPO registration, automatic write-back, GUI executables,
-network access, additional runtimes, and permission-learning UI are outside this
+Installer, Runner/GPO registration, automatic write-back, workload network
+access, and permission-learning UI are outside this
 prototype. Production integration needs the normal PowerToys dependency, signing,
 privacy and security reviews and resolution of MXC's preview limitations.
 
@@ -32,8 +37,11 @@ root as `MxcRoot` when building the worker. The managed SDK and native libraries
 are built together; do not mix releases. Rust 1.93 and the Windows C++ build tools
 are required. No Node runtime is required. See the root `NOTICE.md` entry.
 
-The prototype runs Windows PowerShell from the Windows system directory with
-`-NoProfile -NonInteractive`. It never runs the script directly when MXC is
+The PowerShell profile uses the Windows system runtime with
+`-NoProfile -NonInteractive`. The application profile runs the selected EXE,
+and batch scripts use the system `cmd.exe`. Linux profiles use a dedicated MXC
+WSLC container and a prepared image; they do not execute in a user's existing
+WSL distribution. It never runs a workload directly when MXC is
 missing or unavailable. Only Windows 11 24H2+ is supported. Elevated sessions
 are refused. Script text and output are not sent to telemetry.
 
@@ -43,6 +51,77 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Windows and Linux profiles
+
+Choose an **Execution profile**, then select a file or enter a script. Arguments
+are one literal argument per line; surrounding quotes are unnecessary. Choosing
+a script file disables the inline editor for that run. Scripts and data are
+copied into the workspace; an EXE is run from its original location with its
+containing directory granted read-only access, so adjacent DLLs/resources remain
+available. System execution policy is not bypassed for PowerShell script files.
+Batch arguments reject command-expansion characters; put complex batch commands
+in the script itself.
+
+Linux supports shell scripts, Python or another image-provided runtime, and
+selected Linux executable files. **Script runtime** names the interpreter inside
+the image (for example `/bin/sh`, `bash`, `python3`, or `node`). The runtime,
+libraries and executable architecture must match the selected image. Host paths
+are explicitly mapped to their MXC `/mnt/<drive>/...` paths. Only this run's Work
+and Temp folders are mounted. Linux runs request 2 CPUs and 2 GiB, with networking
+disabled. WSLC does not offer interactive stdin through this SDK's one-shot API.
+
+**Prepare image** invokes MXC's official `wxc-exec.exe --setup-wslc` helper to
+download an image into `Worker/WslcImages`. This is a separate operation with
+network access; normal workload runs use that cache with networking off. A local
+image archive can also be supplied. Preparing images creates persistent cache
+files; running creates temporary data and consumes host CPU/memory. No claim of
+zero host impact or universal application compatibility is made. MXC remains a
+preview, not a verified security boundary. Installed apps requiring services,
+drivers, elevation, package activation, additional runtimes, or writable install
+directories may not work in ProcessContainer.
+
+Known compatibility result on the current host: `charmap.exe` exits with code 0
+without showing a window under this profile; granting read-only system fonts did
+not resolve it. The GUI smoke test uses `winver.exe`, which does show a window
+and can be stopped through MXC. The application profile also grants read-only
+access to installed system fonts for GUI workloads.
+
+Build the Windows/Linux worker with the matching optional native components:
+
+```powershell
+& ..\..\..\tools\build\build.ps1 -Platform x64 -Configuration Debug -Path . -ExtraArgs @('/p:MxcRoot=C:/source/mxc', '/p:MxcWithWslc=true')
+```
+
+To build beside an already-open prototype, add
+`/p:TryRunOutputRoot=C:/source/PowerToys/x64/Debug/TryRun-Multi` to that argument
+array. This changes only the application and Worker destinations; do not use a
+global `OutDir` override, which can make shared project outputs remove each
+other during incremental builds.
+
+The WSLC-enabled build stages MXC's image helper, WSLC daemon and pinned
+Microsoft.WSL.Containers SDK alongside the worker. WSL must already be installed
+and compatible (MXC currently requires WSL 2.9.9+). Try Run does not enable Windows
+features, update WSL, invoke global host preparation, or run an ordinary WSL
+process as fallback. MXC owns the selected backend's permission mechanisms;
+its AppContainer fallback can use DACL augmentation. The tested host reports
+BaseContainer with no DACL augmentation requirement.
+Backend discovery describes the host's capability, not proof that every request
+can be enforced. A failed launch retains its MXC error.
+
+For a two-backend demo:
+
+1. Windows application: choose a classic EXE such as `C:\Windows\System32\winver.exe`
+   and Run; Stop ends the contained application. Or choose a `.ps1`/`.cmd` file
+   using its matching Windows profile.
+2. Linux shell: prepare `alpine:3.22`, then run `uname -s; printf linux > result.txt`.
+   Review and export `result.txt`.
+3. Linux Python: prepare `python:3.12-alpine`, choose a `.py` file, and use `python3`
+   as the script runtime. Other languages require an image that contains them.
+
+Opt-in Linux integration tests require the two prepared images and
+`POWERTOYS_TRYRUN_WSLC_TESTS=1`. The optional native GUI test requires
+`POWERTOYS_TRYRUN_GUI_TESTS=1` and briefly opens the Windows version dialog through MXC.
 
 ### File workflow
 
@@ -141,26 +220,37 @@ The fuzz target is built with the solution. Its OneFuzz entry is disabled until
 the production fuzzing owner and service configuration are assigned; no remote
 fuzzing job is submitted by building this prototype.
 
-Current verification: the standalone x64 Debug projects build with exit code 0.
-All 46 tests pass: 36 unit cases, including local fuzz smoke tests (2,004 protocol
-inputs, 1,007 path/preview inputs and 48 file round trips), and 10 opt-in native
-integration tests. The native tests
+Current verification: the standalone x64 Debug solution builds with exit code 0.
+All 62 tests pass: 40 unit/fuzz cases, 15 Windows integration cases (including
+the optional GUI window/stop test), and 7 WSLC integration cases. Fuzz smoke
+coverage includes 2,004 original protocol inputs, 1,506 additional multi-backend
+request seeds/mutations, 1,007 path/preview inputs and 48 file round trips.
+The native tests
 cover the startup workspace probe, file creation and relative navigation,
 cross-session write denial, environment isolation, timeout, stop, and bounded
-output, the complete file workflow, and export of partial results after timeout.
+output, the complete file workflow, export of partial results after timeout,
+native Windows arguments, PowerShell/batch files, Linux shell/Python/ELF files,
+unmounted host files, network-interface isolation, and Linux stop/timeout.
 Results are in
-`x64/Debug/tests/TryRun.UnitTests/TestResults/milestone2-full.trx`.
+`x64/Debug/tests/TryRun.UnitTests/TestResults/multibackend-full.trx`.
+The final script-type validation change also passed all 8 targeted protocol,
+argument, fuzz and Windows script regressions in `multibackend-input-regression.trx`.
 The M2 window was also checked for successful startup (**Ready**, Run enabled),
 the input-file dialog, and the review/preview layout. Native file execution and
 export are covered by integration tests; the complete sequence of GUI clicks
 has not been automated.
+The new multi-backend window builds successfully, but its full UI walkthrough
+is pending: desktop automation returned `GetCursorPos failed: Access is denied
+(0x80070005)` before launch. The native GUI process test passes independently.
+The MXC image-helper build emits an existing advisory about a Windows Python
+Store alias; Linux Python uses its own prepared image and passed its tests.
 The first full PowerToys essentials build is blocked by missing MSVC Spectre
 libraries in this development environment; the standalone prototype does not
 require that full build. ARM64 has not been validated on hardware.
 
 If an older window reports **Restricted workspace access is unavailable** with
 Run disabled, save its script, close it, rebuild, and reopen the application.
-The fixed version should show **Ready. Scripts run only when you choose Run.**
+The current version should show **Ready. Choose a workload and select Run.**
 Try `Set-Content result.txt hello; Get-Content result.txt`; expect `hello` in the
 output and exit code 0. Setting the time limit to 2 seconds and running
 `Start-Sleep -Seconds 10` should report that the time limit was reached.

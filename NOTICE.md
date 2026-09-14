@@ -26,6 +26,13 @@ from MXC revision `4a941b0b913c39d91a9fb1ad1824c537a896eef5`. These are not incl
 in the PowerToys installer. Production redistribution also requires an inventory
 and review of the native build's transitive dependencies and their notices.
 
+The optional WSLC-enabled developer build also stages `wxc-exec.exe` and
+`wxc-wslc-daemon.exe` from the same MXC revision, plus `wslcsdk.dll` from
+Microsoft.WSL.Containers 2.9.9 (MIT, copyright Microsoft Corporation), obtained
+and hash-verified by MXC's build. Source: <https://github.com/microsoft/WSL>.
+Container images are prepared separately by the user and are not redistributed
+with PowerToys.
+
 MIT License
 
 Copyright (c) Microsoft Corporation.

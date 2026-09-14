@@ -37,7 +37,25 @@ internal static class Program
                 return 0;
             }
 
+            if (args is ["--capabilities"])
+            {
+                Console.WriteLine(JsonSerializer.Serialize(BackendDiscovery.Get()));
+                return 0;
+            }
+
             var input = await RequestCodec.ReadAsync(Console.In, CancellationToken.None).ConfigureAwait(false);
+            if (input.PrepareImage)
+            {
+                return await ImagePreparation.RunAsync(input).ConfigureAwait(false);
+            }
+
+            var backends = BackendDiscovery.Get();
+            if (input.IsLinux ? !backends.LinuxAvailable : !backends.WindowsAvailable)
+            {
+                throw new InvalidOperationException(input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail);
+            }
+
+            Send(new WorkerMessage(WorkerMessage.Output, (input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail) + "\n"));
             var request = SandboxRequestFactory.Create(input);
             using var process = MxcSandbox.Spawn(request);
             if (process.Warnings.Count > 0)
@@ -52,9 +70,25 @@ internal static class Program
 
             // Console's synchronized reader can block synchronously. Keep it on a
             // background thread; EOF means the owner stopped or disconnected.
-            _ = Task.Run(() => WatchConnection(process));
-            var result = await process.WaitAsync().ConfigureAwait(false);
-            process.Kill();
+            var executionFinished = 0;
+            _ = Task.Run(() => WatchConnection(process, () => Volatile.Read(ref executionFinished) != 0));
+            SandboxWaitResult result;
+            try
+            {
+                result = await process.WaitAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                Volatile.Write(ref executionFinished, 1);
+            }
+
+            // WSLC Wait already stops/deletes its container. ProcessContainer
+            // can leave descendants after the root exits, so kill its job.
+            if (!input.IsLinux)
+            {
+                process.Kill();
+            }
+
             await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
             Send(new WorkerMessage(WorkerMessage.Completed, result.TimedOut ? "Time limit reached." : "Finished.", result.ExitCode, result.TimedOut));
             return result.TimedOut ? 124 : 0;
@@ -67,20 +101,30 @@ internal static class Program
         }
     }
 
-    private static void WatchConnection(MxcSandboxProcess process)
+    private static void WatchConnection(MxcSandboxProcess process, Func<bool> finished)
     {
         try
         {
             Console.In.ReadLine();
-            process.Kill();
+            if (!finished())
+            {
+                process.Kill();
+            }
         }
         catch (ObjectDisposedException)
         {
             // Normal completion may dispose the process before the owner closes.
         }
+        catch (MxcException exception)
+        {
+            if (!finished())
+            {
+                Send(new WorkerMessage(WorkerMessage.Error, "MXC could not stop the workload: " + exception.Message));
+            }
+        }
     }
 
-    private static Task PumpAsync(Stream? stream, bool isError)
+    internal static Task PumpAsync(Stream? stream, bool isError)
     {
         return Task.Run(async () =>
         {
@@ -129,7 +173,7 @@ internal static class Program
         }
     }
 
-    private static void Send(WorkerMessage message)
+    internal static void Send(WorkerMessage message)
     {
         lock (OutputLock)
         {

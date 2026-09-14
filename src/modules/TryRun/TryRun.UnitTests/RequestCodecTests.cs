@@ -15,9 +15,15 @@ public sealed class RequestCodecTests
     public async Task ReaderStopsAtOneRequestAndRejectsOversizedMessages()
     {
         using var session = new RunSession();
-        var request = new ExecutionRequest("Write-Output '中文'", session.WorkingDirectory, session.TemporaryDirectory, 1);
+        var request = new ExecutionRequest("Write-Output '中文'", session.WorkingDirectory, session.TemporaryDirectory, 1) { Arguments = ["中文", string.Empty, "'\""] };
         using var reader = new StringReader(JsonSerializer.Serialize(request) + "\nnext");
-        Assert.AreEqual(request, await RequestCodec.ReadAsync(reader, CancellationToken.None));
+        var decoded = await RequestCodec.ReadAsync(reader, CancellationToken.None);
+        Assert.AreEqual(request.Script, decoded.Script);
+        Assert.AreEqual(request.WorkingDirectory, decoded.WorkingDirectory);
+        Assert.AreEqual(request.TemporaryDirectory, decoded.TemporaryDirectory);
+        Assert.AreEqual(request.TimeoutSeconds, decoded.TimeoutSeconds);
+        Assert.AreEqual(request.Kind, decoded.Kind);
+        CollectionAssert.AreEqual(request.Arguments, decoded.Arguments);
         Assert.AreEqual("next", reader.ReadToEnd());
         using var oversized = new StringReader(new string(' ', RequestCodec.MaximumMessageLength + 1));
         await Assert.ThrowsExceptionAsync<InvalidDataException>(() => RequestCodec.ReadAsync(oversized, CancellationToken.None));

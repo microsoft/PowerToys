@@ -9,6 +9,50 @@ namespace PowerToys.TryRun.Core;
 
 public sealed class WorkerClient(string executablePath)
 {
+    public async Task<BackendAvailability> GetBackendsAsync(CancellationToken cancellationToken)
+    {
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo(executablePath)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = Path.GetDirectoryName(executablePath)!,
+            },
+        };
+        process.StartInfo.ArgumentList.Add("--capabilities");
+        process.Start();
+        var output = new OutputBuffer();
+        var errors = new OutputBuffer();
+        var readOutput = DrainErrorsAsync(process.StandardOutput, output);
+        var readErrors = DrainErrorsAsync(process.StandardError, errors);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+            await Task.WhenAll(readOutput, readErrors).ConfigureAwait(false);
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"MXC capability discovery failed. {errors} {output}");
+            }
+
+            return JsonSerializer.Deserialize<BackendAvailability>(output.ToString()) ?? throw new InvalidDataException("Missing backend information.");
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+
+            await Task.WhenAll(readOutput, readErrors).ConfigureAwait(false);
+        }
+    }
+
     public async Task<string?> GetAvailabilityFailureAsync(CancellationToken cancellationToken)
     {
         using var session = new RunSession();

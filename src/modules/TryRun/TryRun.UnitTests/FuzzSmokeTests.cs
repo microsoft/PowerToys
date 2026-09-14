@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerToys.TryRun.Core;
 using PowerToys.TryRun.FuzzTests;
 
 namespace PowerToys.TryRun.UnitTests;
@@ -11,6 +13,30 @@ namespace PowerToys.TryRun.UnitTests;
 [TestClass]
 public sealed class FuzzSmokeTests
 {
+    [TestMethod]
+    public void MultiBackendRequestsHandleMutatedInputs()
+    {
+        var random = new Random(97);
+        foreach (var kind in Enum.GetValues<WorkloadKind>())
+        {
+            var request = new ExecutionRequest("echo hello", "C:\\work", "C:\\temp", 30)
+            {
+                Kind = kind,
+                ApplicationPath = kind == WorkloadKind.WindowsApplication ? "C:\\app.exe" : null,
+                FileRelativePath = kind == WorkloadKind.LinuxApplication ? "program" : null,
+                Arguments = ["a'b\"c", "path with spaces"],
+            };
+            var seed = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
+            RequestFuzzer.FuzzTarget(seed);
+            for (var iteration = 0; iteration < 250; iteration++)
+            {
+                var mutation = seed.ToArray();
+                mutation[random.Next(mutation.Length)] = (byte)random.Next(256);
+                RequestFuzzer.FuzzTarget(mutation);
+            }
+        }
+    }
+
     [TestMethod]
     public void WorkspaceNamesPreviewsAndFileRoundTripsHandleFuzzInputs()
     {

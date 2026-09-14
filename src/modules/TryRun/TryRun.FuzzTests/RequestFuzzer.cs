@@ -21,6 +21,8 @@ public static class RequestFuzzer
         {
             var text = Encoding.UTF8.GetString(data);
             PowerShellErrorFormatter.Format(text);
+            CommandEncoding.WindowsArgument(text);
+            CommandEncoding.ShellArgument(text);
             RequestCodec.Parse(text);
         }
         catch (JsonException)

@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Try Run — PowerToys (Experimental)"
     Width="1080"
-    Height="860"
+    Height="960"
     MinWidth="800"
-    MinHeight="640"
+    MinHeight="760"
     Closing="OnClosing"
     Loaded="OnLoaded"
     WindowStartupLocation="CenterScreen">
@@ -22,11 +22,43 @@
             <TextBlock
                 FontSize="24"
                 FontWeight="SemiBold"
-                Text="Try changes on a copy" />
+                Text="Run Windows and Linux workloads with MXC" />
             <TextBlock
                 Margin="0,8,0,0"
                 Text="Experimental: MXC is not currently a security boundary."
                 TextWrapping="Wrap" />
+            <DockPanel Margin="0,10,0,0">
+                <ComboBox
+                    x:Name="ProfileBox"
+                    Width="260"
+                    Margin="0,0,12,0"
+                    AutomationProperties.Name="Execution profile"
+                    DisplayMemberPath="Name"
+                    SelectionChanged="OnProfileChanged" />
+                <TextBlock
+                    x:Name="BackendText"
+                    VerticalAlignment="Center"
+                    Text="Checking execution backends…"
+                    TextWrapping="Wrap" />
+            </DockPanel>
+            <DockPanel
+                x:Name="LinuxImageHeader"
+                Margin="0,8,0,0"
+                Visibility="Collapsed">
+                <Button
+                    x:Name="PrepareImageButton"
+                    Margin="8,0,0,0"
+                    Padding="10,4"
+                    Click="OnPrepareImage"
+                    Content="Prepare image…"
+                    DockPanel.Dock="Right" />
+                <Label Content="Linux image" Target="{Binding ElementName=ImageBox}" />
+                <TextBox
+                    x:Name="ImageBox"
+                    AutomationProperties.Name="Linux container image"
+                    MaxLength="256"
+                    Text="alpine:3.22" />
+            </DockPanel>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -73,38 +105,95 @@
                     Text="Copies keep their file or folder name. Up to 1,000 entries, 32 MiB per file, 100 MiB total. Links are rejected."
                     TextWrapping="Wrap" />
             </Grid>
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label
-                    Padding="0,0,0,8"
-                    Content="2. Write a _script"
-                    Target="{Binding ElementName=ScriptBox}" />
-                <TextBox
-                    x:Name="ScriptBox"
-                    Grid.Row="1"
-                    AcceptsReturn="True"
-                    AcceptsTab="True"
-                    AutomationProperties.Name="PowerShell script"
-                    FontFamily="Cascadia Mono, Consolas"
-                    MaxLength="8192"
-                    Text="Get-ChildItem -Recurse"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto" />
-                <TextBlock
-                    Grid.Row="2"
-                    Margin="0,8,0,0"
-                    FontSize="12"
-                    Text="Use relative paths, such as .\notes.txt. Each run starts with fresh copies. Export results before running again or closing."
-                    TextWrapping="Wrap" />
-            </Grid>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,8,0">
+                    <TextBlock FontWeight="SemiBold" Text="2. Choose a program or script file, or enter a script" />
+                    <DockPanel Margin="0,6,0,6">
+                        <Button
+                            x:Name="BrowseWorkloadButton"
+                            Margin="8,0,0,0"
+                            Padding="10,4"
+                            Click="OnBrowseWorkload"
+                            Content="Choose file…"
+                            DockPanel.Dock="Right" />
+                        <Button
+                            x:Name="ClearWorkloadButton"
+                            Margin="8,0,0,0"
+                            Padding="10,4"
+                            Click="OnClearWorkload"
+                            Content="Clear"
+                            DockPanel.Dock="Right" />
+                        <TextBox
+                            x:Name="WorkloadFileBox"
+                            AutomationProperties.Name="Program or script file"
+                            IsReadOnly="True" />
+                    </DockPanel>
+                    <Label
+                        Padding="0,0,0,8"
+                        Content="_Script (used when no file is selected)"
+                        Target="{Binding ElementName=ScriptBox}" />
+                    <TextBox
+                        x:Name="ScriptBox"
+                        Height="100"
+                        AcceptsReturn="True"
+                        AcceptsTab="True"
+                        AutomationProperties.Name="Script"
+                        FontFamily="Cascadia Mono, Consolas"
+                        MaxLength="8192"
+                        Text="Get-ChildItem -Recurse"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto" />
+                    <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
+                    <TextBox
+                        x:Name="ArgumentsBox"
+                        Height="48"
+                        AcceptsReturn="True"
+                        AutomationProperties.Name="Program arguments, one per line"
+                        MaxLength="8192"
+                        VerticalScrollBarVisibility="Auto" />
+                    <StackPanel
+                        x:Name="LinuxOptions"
+                        Margin="0,8,0,0"
+                        Visibility="Collapsed">
+                        <DockPanel Margin="0,0,0,6">
+                            <Label Content="Script runtime" Target="{Binding ElementName=InterpreterBox}" />
+                            <TextBox
+                                x:Name="InterpreterBox"
+                                AutomationProperties.Name="Script runtime inside Linux image"
+                                MaxLength="256"
+                                Text="/bin/sh" />
+                        </DockPanel>
+                        <DockPanel Margin="0,6,0,0">
+                            <Button
+                                x:Name="BrowseImageButton"
+                                Margin="8,0,0,0"
+                                Padding="10,4"
+                                Click="OnBrowseImage"
+                                Content="Image archive…"
+                                DockPanel.Dock="Right" />
+                            <TextBox
+                                x:Name="ImageTarBox"
+                                AutomationProperties.Name="Optional local image archive"
+                                MaxLength="1024" />
+                        </DockPanel>
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            FontSize="12"
+                            Text="Prepare downloads the image once. Runs have networking off. Choose an image with the runtime your program needs (for example python:3.12-alpine)."
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        FontSize="12"
+                        Text="Data and script files are copied for each run. Windows EXEs use their installation directory read-only. Export results before running again or closing."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
         <StackPanel Grid.Row="2" Margin="0,12,0,12">
-            <TextBlock Text="Write access: this run's temporary workspace. Network and clipboard: off." TextWrapping="Wrap" />
+            <TextBlock Text="Write access: run workspace and temporary data. Network: off. MXC is experimental; application compatibility and isolation vary by backend." TextWrapping="Wrap" />
             <TextBlock
+                x:Name="PermissionText"
                 Margin="0,4,0,0"
                 Text="Windows: allowed for PowerShell compatibility. Input injection: off."
                 TextWrapping="Wrap" />
