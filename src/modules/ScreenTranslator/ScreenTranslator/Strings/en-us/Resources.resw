@@ -250,6 +250,36 @@
     <value>To</value>
     <comment>Labels the target language selector for the capture</comment>
   </data>
+  <data name="CardSourceAuto.Content" xml:space="preserve"><value>Auto detect</value></data>
+  <data name="CardSourceEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="CardSourceChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="CardSourceJapanese.Content" xml:space="preserve"><value>Japanese</value></data>
+  <data name="CardSourceKorean.Content" xml:space="preserve"><value>Korean</value></data>
+  <data name="CardSourceFrench.Content" xml:space="preserve"><value>French</value></data>
+  <data name="CardSourceGerman.Content" xml:space="preserve"><value>German</value></data>
+  <data name="CardSourceSpanish.Content" xml:space="preserve"><value>Spanish</value></data>
+  <data name="CardTargetEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="CardTargetChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="CardTargetJapanese.Content" xml:space="preserve"><value>Japanese</value></data>
+  <data name="CardTargetKorean.Content" xml:space="preserve"><value>Korean</value></data>
+  <data name="CardTargetFrench.Content" xml:space="preserve"><value>French</value></data>
+  <data name="CardTargetGerman.Content" xml:space="preserve"><value>German</value></data>
+  <data name="CardTargetSpanish.Content" xml:space="preserve"><value>Spanish</value></data>
+  <data name="OverallSourceAuto.Content" xml:space="preserve"><value>Auto detect</value></data>
+  <data name="OverallSourceEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="OverallSourceChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="OverallSourceJapanese.Content" xml:space="preserve"><value>Japanese</value></data>
+  <data name="OverallSourceKorean.Content" xml:space="preserve"><value>Korean</value></data>
+  <data name="OverallSourceFrench.Content" xml:space="preserve"><value>French</value></data>
+  <data name="OverallSourceGerman.Content" xml:space="preserve"><value>German</value></data>
+  <data name="OverallSourceSpanish.Content" xml:space="preserve"><value>Spanish</value></data>
+  <data name="OverallTargetEnglish.Content" xml:space="preserve"><value>English</value></data>
+  <data name="OverallTargetChinese.Content" xml:space="preserve"><value>Chinese</value></data>
+  <data name="OverallTargetJapanese.Content" xml:space="preserve"><value>Japanese</value></data>
+  <data name="OverallTargetKorean.Content" xml:space="preserve"><value>Korean</value></data>
+  <data name="OverallTargetFrench.Content" xml:space="preserve"><value>French</value></data>
+  <data name="OverallTargetGerman.Content" xml:space="preserve"><value>German</value></data>
+  <data name="OverallTargetSpanish.Content" xml:space="preserve"><value>Spanish</value></data>
   <data name="RestoreHiddenButton.AutomationProperties.Name" xml:space="preserve">
     <value>Restore hidden translated text</value>
     <comment>Accessible name for restoring hidden translated text</comment>
