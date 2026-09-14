@@ -244,6 +244,12 @@
                             AutomationProperties.AutomationId="TextExtractorNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
                         <NavigationViewItem
+                            x:Name="ScreenTranslatorNavigationItem"
+                            x:Uid="Shell_ScreenTranslator"
+                            helpers:NavHelper.NavigateTo="views:ScreenTranslatorPage"
+                            AutomationProperties.AutomationId="ScreenTranslatorNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
+                        <NavigationViewItem
                             x:Name="ZoomItNavigationItem"
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"

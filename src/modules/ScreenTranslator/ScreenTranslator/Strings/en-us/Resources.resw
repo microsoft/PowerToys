@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="OverlayTitle.Text" xml:space="preserve">
+    <value>Screen Translator</value>
+    <comment>Title shown on the floating toolbar</comment>
+  </data>
+  <data name="CloseButtonText.Text" xml:space="preserve">
+    <value>Close (Esc)</value>
+    <comment>Text on the overlay close button</comment>
+  </data>
+  <data name="CloseButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Close translated overlay</value>
+    <comment>Accessible name for the overlay close button</comment>
+  </data>
+  <data name="SelectionCanvas.AutomationProperties.Name" xml:space="preserve">
+    <value>Screen region selection canvas</value>
+    <comment>Accessible name for selection canvas</comment>
+  </data>
+  <data name="QuickSelectLabel.Text" xml:space="preserve">
+    <value>Quick select</value>
+    <comment>Label for quick translation actions</comment>
+  </data>
+  <data name="ContextMenuHideText" xml:space="preserve">
+    <value>Hide this text</value>
+    <comment>Context menu action to hide one translated text card</comment>
+  </data>
+  <data name="ContextMenuHideMatchingText" xml:space="preserve">
+    <value>Hide same source text</value>
+    <comment>Context menu action to hide translated cards with matching source text</comment>
+  </data>
+  <data name="ContextMenuRestoreHiddenText" xml:space="preserve">
+    <value>Restore hidden text</value>
+    <comment>Context menu action to restore hidden translated text cards</comment>
+  </data>
+  <data name="HideCardButton.Content" xml:space="preserve">
+    <value>Hide</value>
+    <comment>Hides the selected translated text card</comment>
+  </data>
+  <data name="HideCardButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Hide this translated text</value>
+    <comment>Accessible name for hiding the selected translated text card</comment>
+  </data>
+  <data name="HideMatchingCardsButton.Content" xml:space="preserve">
+    <value>Hide same source text</value>
+    <comment>Hides translated cards with matching source text</comment>
+  </data>
+  <data name="HideMatchingCardsButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Hide translated text with the same source</value>
+    <comment>Accessible name for hiding matching translated text cards</comment>
+  </data>
+  <data name="RestoreContextMenuButton.Content" xml:space="preserve">
+    <value>Restore hidden text</value>
+    <comment>Restores hidden translated text cards from the context panel</comment>
+  </data>
+  <data name="RestoreContextMenuButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Restore hidden translated text</value>
+    <comment>Accessible name for restoring hidden translated text cards</comment>
+  </data>
+  <data name="BackgroundColorLabel.Text" xml:space="preserve">
+    <value>Background color</value>
+    <comment>Label for the selected card background color</comment>
+  </data>
+  <data name="TextColorLabel.Text" xml:space="preserve">
+    <value>Text color</value>
+    <comment>Label for the selected card text color</comment>
+  </data>
+  <data name="FontSizeLabel.Text" xml:space="preserve">
+    <value>Font size</value>
+    <comment>Label for the selected card font size</comment>
+  </data>
+  <data name="BackgroundColorPicker.AutomationProperties.Name" xml:space="preserve">
+    <value>Overlay background color</value>
+    <comment>Accessible name for changing the selected card background color</comment>
+  </data>
+  <data name="TextColorPicker.AutomationProperties.Name" xml:space="preserve">
+    <value>Overlay text color</value>
+    <comment>Accessible name for changing the selected card text color</comment>
+  </data>
+  <data name="FontSizeSlider.AutomationProperties.Name" xml:space="preserve">
+    <value>Overlay font size</value>
+    <comment>Accessible name for changing the selected card font size</comment>
+  </data>
+  <data name="BackgroundColorButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Choose overlay background color</value>
+    <comment>Accessible name for opening the background color picker</comment>
+  </data>
+  <data name="HideCardButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Hide</value>
+    <comment>Tooltip for hiding the selected translated text card</comment>
+  </data>
+  <data name="EditCardButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Edit translated text</value>
+    <comment>Accessible name for editing the selected translated text</comment>
+  </data>
+  <data name="EditCardButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit text</value>
+    <comment>Tooltip for editing the selected translated text</comment>
+  </data>
+  <data name="CopyCardButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Copy translated text</value>
+    <comment>Accessible name for copying the selected translated text</comment>
+  </data>
+  <data name="CopyCardButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Copy text</value>
+    <comment>Tooltip for copying the selected translated text</comment>
+  </data>
+  <data name="BackgroundColorButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Background color</value>
+    <comment>Tooltip for opening the background color picker</comment>
+  </data>
+  <data name="TextColorButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Choose overlay text color</value>
+    <comment>Accessible name for opening the text color picker</comment>
+  </data>
+  <data name="TextColorButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Text color</value>
+    <comment>Tooltip for opening the text color picker</comment>
+  </data>
+  <data name="DecreaseFontSizeButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Decrease overlay text size</value>
+    <comment>Accessible name for decreasing the selected card font size</comment>
+  </data>
+  <data name="DecreaseFontSizeButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Decrease text size</value>
+    <comment>Tooltip for decreasing the selected card font size</comment>
+  </data>
+  <data name="IncreaseFontSizeButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Increase overlay text size</value>
+    <comment>Accessible name for increasing the selected card font size</comment>
+  </data>
+  <data name="IncreaseFontSizeButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Increase text size</value>
+    <comment>Tooltip for increasing the selected card font size</comment>
+  </data>
+  <data name="RestoreInitialButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Restore initial overlay appearance</value>
+    <comment>Accessible name for restoring the selected card appearance</comment>
+  </data>
+  <data name="RestoreInitialButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Restore initial appearance</value>
+    <comment>Tooltip for restoring the selected card appearance</comment>
+  </data>
+  <data name="FullScreenButton.Content" xml:space="preserve">
+    <value>Full screen</value>
+    <comment>Translates the entire monitor</comment>
+  </data>
+  <data name="FullScreenButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Translate full screen</value>
+    <comment>Accessible name for full-screen translation</comment>
+  </data>
+  <data name="ActiveWindowButton.Content" xml:space="preserve">
+    <value>Active window</value>
+    <comment>Translates the foreground application window</comment>
+  </data>
+  <data name="ActiveWindowButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Translate active window</value>
+    <comment>Accessible name for active-window translation</comment>
+  </data>
+  <data name="RestoreHiddenButton.Content" xml:space="preserve">
+    <value>Restore hidden</value>
+    <comment>Restores translated text cards hidden by the user</comment>
+  </data>
+  <data name="ApplyCardLanguageButton.Content" xml:space="preserve">
+    <value>Translate</value>
+    <comment>Retranslates the selected text card using its chosen languages</comment>
+  </data>
+  <data name="ApplyOverallLanguageButton.Content" xml:space="preserve">
+    <value>Translate all</value>
+    <comment>Retranslates the current capture using the chosen languages</comment>
+  </data>
+  <data name="RestoreHiddenButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Restore hidden translated text</value>
+    <comment>Accessible name for restoring hidden translated text</comment>
+  </data>
+  <data name="ProcessingStatus.Text" xml:space="preserve">
+    <value>Recognizing text...</value>
+    <comment>Status shown while OCR is running</comment>
+  </data>
+  <data name="ProcessingHint.Text" xml:space="preserve">
+    <value>Translation can take a while, especially with a local provider.</value>
+    <comment>Hint shown while Screen Translator is processing a capture</comment>
+  </data>
+  <data name="CancelProcessingButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that cancels OCR or translation</comment>
+  </data>
+  <data name="CancelProcessingButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Cancel translation</value>
+    <comment>Accessible name for the processing cancel button</comment>
+  </data>
+</root>

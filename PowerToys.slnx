@@ -993,6 +993,19 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/ScreenTranslator/">
+    <Project Path="src/modules/ScreenTranslator/ScreenTranslator/ScreenTranslator.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/ScreenTranslator/ScreenTranslatorModuleInterface/ScreenTranslatorModuleInterface.vcxproj" Id="9e3a5912-78b1-4a2d-a37e-83b92e898a11" />
+  </Folder>
+  <Folder Name="/modules/ScreenTranslator/Tests/">
+    <Project Path="src/modules/ScreenTranslator/ScreenTranslator.UnitTests/ScreenTranslator.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/powerrename/">
     <Project Path="src/modules/powerrename/dll/PowerRenameExt.vcxproj" Id="b25ac7a5-fb9f-4789-b392-d5c85e948670">
       <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />

@@ -1,0 +1,11 @@
+#pragma once
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <shellapi.h>
+#include <Shlwapi.h>
+#include <stdexcept>
+#include <unordered_set>
+#include <shared_mutex>
+#include <common/utils/winapi_error.h>
+#include <common/utils/logger_helper.h>
+#include <winrt/base.h>

@@ -289,6 +289,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
             L"PowerToys.AltWindowCycle.dll",
+            L"PowerToys.ScreenTranslatorModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)
@@ -302,7 +303,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
                 errorMessage += moduleSubdir;
-                
+
 #ifdef _DEBUG
                 // In debug mode, simply log the warning and continue execution.
                 // This contrasts with the past approach where developers had to build all modules

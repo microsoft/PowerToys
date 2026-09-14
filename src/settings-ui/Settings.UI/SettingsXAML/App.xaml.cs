@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -447,6 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);
+                case "ScreenTranslator": return typeof(ScreenTranslatorPage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);

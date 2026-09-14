@@ -1,0 +1,70 @@
+<common:TransparentWindow
+    x:Class="ScreenTranslator.ProcessingOverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ScreenTranslatorProcessing"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsTitleBarVisible="False"
+    mc:Ignorable="d">
+
+    <Canvas
+        x:Name="ProcessingCanvas"
+        Background="Transparent">
+        <Border
+            x:Name="ProcessingCard"
+            MinWidth="320"
+            Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+            BackgroundSizing="InnerBorderEdge"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Padding="12">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ProgressRing
+                    Width="24"
+                    Height="24"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Translation in progress"
+                    IsActive="True" />
+
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="4">
+                    <TextBlock
+                        x:Name="StatusText"
+                        x:Uid="ProcessingStatus"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="Recognizing text..." />
+                    <TextBlock
+                        x:Uid="ProcessingHint"
+                        MaxWidth="360"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Translation can take a while, especially with a local provider."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Button
+                    x:Name="CancelButton"
+                    x:Uid="CancelProcessingButton"
+                    Grid.Column="2"
+                    AutomationProperties.AutomationId="BtnCancelTranslation"
+                    AutomationProperties.Name="Cancel translation"
+                    Click="CancelButton_Click"
+                    Content="Cancel" />
+            </Grid>
+        </Border>
+    </Canvas>
+</common:TransparentWindow>

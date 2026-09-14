@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -71,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(PowerLauncherSettings))]
     [JsonSerializable(typeof(PowerOcrSettings))]
+    [JsonSerializable(typeof(ScreenTranslatorSettings))]
     [JsonSerializable(typeof(PowerPreviewSettings))]
     [JsonSerializable(typeof(PowerRenameSettings))]
     [JsonSerializable(typeof(RegistryPreviewSettings))]
@@ -110,6 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PowerDisplayProperties))]
     [JsonSerializable(typeof(PowerLauncherProperties))]
     [JsonSerializable(typeof(PowerOcrProperties))]
+    [JsonSerializable(typeof(ScreenTranslatorProperties))]
     [JsonSerializable(typeof(PowerPreviewProperties))]
     [JsonSerializable(typeof(PowerRenameProperties))]
     [JsonSerializable(typeof(PowerRenameLocalProperties))]

@@ -6646,4 +6646,100 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="ScreenTranslator.ModuleTitle" xml:space="preserve">
+    <value>Screen Translator</value>
+    <comment>{Locked="Screen Translator"}</comment>
+  </data>
+  <data name="ScreenTranslator.ModuleDescription" xml:space="preserve">
+    <value>Translate on-screen text in-place using OCR and translation services.</value>
+  </data>
+  <data name="Shell_ScreenTranslator.Content" xml:space="preserve">
+    <value>Screen Translator</value>
+    <comment>{Locked="Screen Translator"}</comment>
+  </data>
+  <data name="ScreenTranslator_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Screen Translator</value>
+    <comment>{Locked="Screen Translator"}</comment>
+  </data>
+  <data name="ScreenTranslator_LanguageGroup.Header" xml:space="preserve">
+    <value>Language Settings</value>
+  </data>
+  <data name="ScreenTranslator_OcrLanguageNotice.Title" xml:space="preserve">
+    <value>OCR Language Support</value>
+  </data>
+  <data name="ScreenTranslator_OcrLanguageNotice.Message" xml:space="preserve">
+    <value>Windows OCR requires the corresponding Windows language pack installed. Screen resolution, fonts, vertical text, and protected overlays may affect recognition accuracy.</value>
+  </data>
+  <data name="ScreenTranslator_SourceLanguageCard.Header" xml:space="preserve">
+    <value>OCR / Source Language</value>
+  </data>
+  <data name="ScreenTranslator_SourceLanguageCard.Description" xml:space="preserve">
+    <value>Select the language of on-screen text to recognize.</value>
+  </data>
+  <data name="ScreenTranslator_TargetLanguageCard.Header" xml:space="preserve">
+    <value>Target Language</value>
+  </data>
+  <data name="ScreenTranslator_TargetLanguageCard.Description" xml:space="preserve">
+    <value>Select the language into which detected text should be translated.</value>
+  </data>
+  <data name="ScreenTranslator_ProviderGroup.Header" xml:space="preserve">
+    <value>Translation Provider</value>
+  </data>
+  <data name="ScreenTranslator_ProviderCard.Header" xml:space="preserve">
+    <value>Translation Service</value>
+  </data>
+  <data name="ScreenTranslator_ProviderCard.Description" xml:space="preserve">
+    <value>Choose how detected text is translated.</value>
+  </data>
+  <data name="ScreenTranslator_CloudConsentCard.Header" xml:space="preserve">
+    <value>Allow Online Translation Services</value>
+  </data>
+  <data name="ScreenTranslator_CloudConsentCard.Description" xml:space="preserve">
+    <value>Allows sending captured text to external translation APIs (Azure / Remote LibreTranslate). API keys are stored securely in Windows Credential Vault.</value>
+  </data>
+  <data name="ScreenTranslator_AzureExpander.Header" xml:space="preserve">
+    <value>Azure AI Translator Configuration</value>
+  </data>
+  <data name="ScreenTranslator_AzureExpander.Description" xml:space="preserve">
+    <value>Configure Microsoft Azure Cognitive Services Translator v3 endpoint and credentials.</value>
+  </data>
+  <data name="ScreenTranslator_AzureEndpointCard.Header" xml:space="preserve">
+    <value>Azure Endpoint URL</value>
+  </data>
+  <data name="ScreenTranslator_AzureEndpointCard.Description" xml:space="preserve">
+    <value>Default: https://api.cognitive.microsofttranslator.com</value>
+  </data>
+  <data name="ScreenTranslator_AzureRegionCard.Header" xml:space="preserve">
+    <value>Azure Region</value>
+  </data>
+  <data name="ScreenTranslator_AzureRegionCard.Description" xml:space="preserve">
+    <value>Optional resource region (e.g. eastus, westeurope, global).</value>
+  </data>
+  <data name="ScreenTranslator_AzureKeyCard.Header" xml:space="preserve">
+    <value>Azure Subscription Key</value>
+  </data>
+  <data name="ScreenTranslator_AzureKeyCard.Description" xml:space="preserve">
+    <value>API key is encrypted and stored in Windows Credential Vault.</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateExpander.Header" xml:space="preserve">
+    <value>LibreTranslate Configuration</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateExpander.Description" xml:space="preserve">
+    <value>Configure LibreTranslate self-hosted or remote instance.</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateEndpointCard.Header" xml:space="preserve">
+    <value>Endpoint URL</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateEndpointCard.Description" xml:space="preserve">
+    <value>Local instance (e.g. http://localhost:5000) or remote HTTPS server.</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateKeyCard.Header" xml:space="preserve">
+    <value>API Key (Optional)</value>
+  </data>
+  <data name="ScreenTranslator_LibreTranslateKeyCard.Description" xml:space="preserve">
+    <value>Optional for self-hosted instances. Stored in Windows Credential Vault.</value>
+  </data>
+  <data name="LearnMore_ScreenTranslator.Text" xml:space="preserve">
+    <value>Learn more about Screen Translator</value>
+  </data>
 </root>

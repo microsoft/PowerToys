@@ -88,6 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
+                ModuleType.ScreenTranslator => typeof(ScreenTranslatorPage),
                 ModuleType.PowerDisplay => typeof(PowerDisplayPage),
                 ModuleType.ZoomIt => typeof(ZoomItPage),
                 ModuleType.GrabAndMove => typeof(GrabAndMovePage),

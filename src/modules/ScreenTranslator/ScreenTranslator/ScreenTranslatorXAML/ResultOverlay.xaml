@@ -1,0 +1,226 @@
+<common:TransparentWindow
+    x:Class="ScreenTranslator.ResultOverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ScreenTranslatorResult"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsTitleBarVisible="False"
+    mc:Ignorable="d">
+
+    <Grid Background="Transparent">
+        <Canvas x:Name="ResultCanvas" Background="Transparent" />
+        <Canvas x:Name="ContextMenuCanvas" IsHitTestVisible="False">
+            <Border
+                x:Name="CardContextMenu"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
+                Padding="4"
+                Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button
+                        x:Name="HideCardButton"
+                        x:Uid="HideCardButton"
+                        AutomationProperties.AutomationId="BtnHideOverlayCard"
+                        Click="HideCardButton_Click"
+                        Content="Hide"
+                        Padding="8,4" />
+                    <Button
+                        x:Name="EditCardButton"
+                        x:Uid="EditCardButton"
+                        AutomationProperties.AutomationId="BtnEditOverlayText"
+                        Click="EditCardButton_Click"
+                        Padding="6,4">
+                        <FontIcon Glyph="&#xE70F;" FontSize="14" />
+                    </Button>
+                    <Button
+                        x:Name="CopyCardButton"
+                        x:Uid="CopyCardButton"
+                        AutomationProperties.AutomationId="BtnCopyOverlayText"
+                        Click="CopyCardButton_Click"
+                        Padding="6,4">
+                        <FontIcon Glyph="&#xE8C8;" FontSize="14" />
+                    </Button>
+                    <Button
+                        x:Name="BackgroundColorButton"
+                        x:Uid="BackgroundColorButton"
+                        AutomationProperties.AutomationId="BtnOverlayBackgroundColor"
+                        Padding="6,4">
+                        <Button.Flyout>
+                            <Flyout Placement="Bottom">
+                                <ColorPicker
+                                    x:Name="BackgroundColorPicker"
+                                    x:Uid="BackgroundColorPicker"
+                                    AutomationProperties.AutomationId="PickerOverlayBackground"
+                                    IsAlphaEnabled="True"
+                                    ColorChanged="BackgroundColorPicker_ColorChanged" />
+                            </Flyout>
+                        </Button.Flyout>
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <TextBlock Text="BG" FontWeight="SemiBold" />
+                            <FontIcon Glyph="&#xE790;" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        x:Name="TextColorButton"
+                        x:Uid="TextColorButton"
+                        AutomationProperties.AutomationId="BtnOverlayTextColor"
+                        Padding="6,4">
+                        <Button.Flyout>
+                            <Flyout Placement="Bottom">
+                                <ColorPicker
+                                    x:Name="TextColorPicker"
+                                    x:Uid="TextColorPicker"
+                                    AutomationProperties.AutomationId="PickerOverlayText"
+                                    IsAlphaEnabled="False"
+                                    ColorChanged="TextColorPicker_ColorChanged" />
+                            </Flyout>
+                        </Button.Flyout>
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <TextBlock Text="T" FontWeight="SemiBold" />
+                            <FontIcon Glyph="&#xE790;" FontSize="12" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        x:Name="DecreaseFontSizeButton"
+                        x:Uid="DecreaseFontSizeButton"
+                        AutomationProperties.AutomationId="BtnDecreaseOverlayFontSize"
+                        Click="DecreaseFontSizeButton_Click"
+                        Padding="6,4">
+                        <TextBlock Text="A−" FontWeight="SemiBold" />
+                    </Button>
+                    <Button
+                        x:Name="IncreaseFontSizeButton"
+                        x:Uid="IncreaseFontSizeButton"
+                        AutomationProperties.AutomationId="BtnIncreaseOverlayFontSize"
+                        Click="IncreaseFontSizeButton_Click"
+                        Padding="6,4">
+                        <TextBlock Text="A+" FontWeight="SemiBold" />
+                    </Button>
+                    <Button
+                        x:Name="RestoreInitialButton"
+                        x:Uid="RestoreInitialButton"
+                        AutomationProperties.AutomationId="BtnRestoreInitialOverlay"
+                        Click="RestoreInitialButton_Click"
+                        Padding="6,4">
+                        <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                    </Button>
+                    <ComboBox
+                        x:Name="CardSourceLanguageComboBox"
+                        AutomationProperties.AutomationId="ComboCardSourceLanguage"
+                        PlaceholderText="From"
+                        Width="92">
+                        <ComboBoxItem Content="Auto" Tag="auto" />
+                        <ComboBoxItem Content="English" Tag="en" />
+                        <ComboBoxItem Content="Chinese" Tag="zh" />
+                        <ComboBoxItem Content="Japanese" Tag="ja" />
+                        <ComboBoxItem Content="Korean" Tag="ko" />
+                        <ComboBoxItem Content="French" Tag="fr" />
+                        <ComboBoxItem Content="German" Tag="de" />
+                        <ComboBoxItem Content="Spanish" Tag="es" />
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="CardTargetLanguageComboBox"
+                        AutomationProperties.AutomationId="ComboCardTargetLanguage"
+                        PlaceholderText="To"
+                        Width="92">
+                        <ComboBoxItem Content="English" Tag="en-US" />
+                        <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
+                        <ComboBoxItem Content="Japanese" Tag="ja" />
+                        <ComboBoxItem Content="Korean" Tag="ko" />
+                        <ComboBoxItem Content="French" Tag="fr" />
+                        <ComboBoxItem Content="German" Tag="de" />
+                        <ComboBoxItem Content="Spanish" Tag="es" />
+                    </ComboBox>
+                    <Button
+                        x:Name="ApplyCardLanguageButton"
+                        x:Uid="ApplyCardLanguageButton"
+                        AutomationProperties.AutomationId="BtnApplyCardLanguage"
+                        Click="ApplyCardLanguageButton_Click"
+                        Content="Translate"
+                        Padding="8,4" />
+                </StackPanel>
+            </Border>
+        </Canvas>
+
+        <!-- Floating toolbar to dismiss the overlay -->
+        <Border
+            x:Name="FloatingToolbar"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Padding="8,4"
+            Margin="16,16,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon Glyph="&#xE774;" VerticalAlignment="Center" FontSize="16" />
+                <TextBlock
+                    x:Uid="OverlayTitle"
+                    Text="Screen Translator"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    VerticalAlignment="Center" />
+                <Button
+                    x:Name="CloseButton"
+                    Click="CloseButton_Click"
+                    AutomationProperties.Name="Close translated overlay"
+                    AutomationProperties.AutomationId="BtnCloseOverlay"
+                    Padding="8,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <SymbolIcon Symbol="Cancel" />
+                        <TextBlock x:Uid="CloseButtonText" Text="Close (Esc)" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    x:Name="RestoreHiddenButton"
+                    x:Uid="RestoreHiddenButton"
+                    AutomationProperties.AutomationId="BtnRestoreHidden"
+                    AutomationProperties.Name="Restore hidden translated text"
+                    Click="RestoreHiddenButton_Click"
+                    Content="Restore hidden" />
+                <ComboBox
+                    x:Name="OverallSourceLanguageComboBox"
+                    AutomationProperties.AutomationId="ComboOverallSourceLanguage"
+                    PlaceholderText="From"
+                    Width="92">
+                    <ComboBoxItem Content="Auto" Tag="auto" />
+                    <ComboBoxItem Content="English" Tag="en" />
+                    <ComboBoxItem Content="Chinese" Tag="zh" />
+                    <ComboBoxItem Content="Japanese" Tag="ja" />
+                    <ComboBoxItem Content="Korean" Tag="ko" />
+                    <ComboBoxItem Content="French" Tag="fr" />
+                    <ComboBoxItem Content="German" Tag="de" />
+                    <ComboBoxItem Content="Spanish" Tag="es" />
+                </ComboBox>
+                <ComboBox
+                    x:Name="OverallTargetLanguageComboBox"
+                    AutomationProperties.AutomationId="ComboOverallTargetLanguage"
+                    PlaceholderText="To"
+                    Width="92">
+                    <ComboBoxItem Content="English" Tag="en-US" />
+                    <ComboBoxItem Content="Chinese" Tag="zh-Hans" />
+                    <ComboBoxItem Content="Japanese" Tag="ja" />
+                    <ComboBoxItem Content="Korean" Tag="ko" />
+                    <ComboBoxItem Content="French" Tag="fr" />
+                    <ComboBoxItem Content="German" Tag="de" />
+                    <ComboBoxItem Content="Spanish" Tag="es" />
+                </ComboBox>
+                <Button
+                    x:Name="ApplyOverallLanguageButton"
+                    x:Uid="ApplyOverallLanguageButton"
+                    AutomationProperties.AutomationId="BtnApplyOverallLanguage"
+                    Click="ApplyOverallLanguageButton_Click"
+                    Content="Translate all"
+                    Padding="8,2" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</common:TransparentWindow>

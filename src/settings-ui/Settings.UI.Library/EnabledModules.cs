@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -343,6 +343,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     advancedPaste = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool screenTranslator = true;
+
+        [JsonPropertyName("ScreenTranslator")]
+        public bool ScreenTranslator
+        {
+            get => screenTranslator;
+            set
+            {
+                if (screenTranslator != value)
+                {
+                    LogTelemetryEvent(value);
+                    screenTranslator = value;
                     NotifyChange();
                 }
             }

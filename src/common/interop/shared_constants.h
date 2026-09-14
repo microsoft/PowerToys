@@ -85,6 +85,10 @@ namespace CommonSharedConstants
 
     const wchar_t TERMINATE_POWEROCR_SHARED_EVENT[] = L"Local\\TerminatePowerOCREvent-08e5de9d-15df-4ea8-8840-487c13435a67";
 
+    // Path to the events used by ScreenTranslator
+    const wchar_t SHOW_SCREEN_TRANSLATOR_SHARED_EVENT[] = L"Local\\PowerToys_ScreenTranslator_ShowEvent-7f28d8a1-432a-4318-971c-4b5b7b05eb4c";
+    const wchar_t TERMINATE_SCREEN_TRANSLATOR_SHARED_EVENT[] = L"Local\\PowerToys_ScreenTranslator_TerminateEvent-93c6f4b2-5f6e-4123-b68a-2c49e7b41e98";
+
     // Path to the events used by Mouse Jump
     const wchar_t MOUSE_JUMP_SHOW_PREVIEW_EVENT[] = L"Local\\MouseJumpEvent-aa0be051-3396-4976-b7ba-1a9cc7d236a5";
 
