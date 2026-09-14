@@ -726,9 +726,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
         bool dragging = m_draggingState.IsDragging();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
-        // Require Win+Ctrl+Alt even while dragging to prevent accidental layout switches
-        // when drag state is stuck (root cause of #410 "steals number keys")
-        bool changeLayoutWhileDragging = dragging && win && ctrl && alt && digitPressed != -1;
+        bool changeLayoutWhileDragging = dragging && digitPressed != -1;
 
         if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
         {
