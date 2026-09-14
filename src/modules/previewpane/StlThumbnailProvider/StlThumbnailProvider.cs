@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         /// <returns>A thumbnail rendered from the Stl model.</returns>
         public static Bitmap GetThumbnail(Stream stream, uint cx)
         {
-            if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
+            if (cx > MaxThumbnailSize || !IsSafeToParse(stream))
             {
                 return null;
             }
@@ -117,6 +117,56 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
             }
 
             return thumbnail;
+        }
+
+        /// <summary>
+        /// Checks that HelixToolkit cannot mistake a wrapped binary facet count for a valid payload length.
+        /// </summary>
+        /// <param name="stream">The STL stream.</param>
+        /// <returns><see langword="true"/> when the stream can be delegated to HelixToolkit.</returns>
+        public static bool IsSafeToParse(Stream stream)
+        {
+            if (stream == null || !stream.CanRead || !stream.CanSeek || stream.Position < 0 || stream.Position >= stream.Length)
+            {
+                return false;
+            }
+
+            var initialPosition = stream.Position;
+            try
+            {
+                var remainingLength = stream.Length - initialPosition;
+                if (remainingLength < 84)
+                {
+                    return true;
+                }
+
+                stream.Position = initialPosition + 80;
+                Span<byte> triangleCountBytes = stackalloc byte[sizeof(uint)];
+                if (stream.Read(triangleCountBytes) != triangleCountBytes.Length)
+                {
+                    return false;
+                }
+
+                var triangleCount = BitConverter.ToUInt32(triangleCountBytes);
+                var payloadLength = (ulong)(remainingLength - 84);
+
+                // HelixToolkit 2.24 tries binary first and compares the payload length with a
+                // 32-bit triangleCount * 50 expression. Reject an overflow that would make that
+                // check succeed and then drive billions of binary facet reads.
+                var helixPayloadLength = unchecked(triangleCount * 50U);
+                if (payloadLength == helixPayloadLength)
+                {
+                    return payloadLength == 50UL * triangleCount;
+                }
+
+                // HelixToolkit delegates every other stream to its ASCII parser. Do not duplicate
+                // that parser's grammar here, because doing so would reject supported extensions.
+                return true;
+            }
+            finally
+            {
+                stream.Position = initialPosition;
+            }
         }
 
         /// <summary>
