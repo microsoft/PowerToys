@@ -510,8 +510,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
-            // Reuse the issuer's validity window so certificate creation cannot cross its expiry boundary.
-            using var intermediate = request.Create(root, root.NotBefore.ToUniversalTime(), root.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
+            using var intermediate = request.Create(root, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7), RandomNumberGenerator.GetBytes(16));
             return intermediate.CopyWithPrivateKey(intermediateKey);
         }
 
@@ -533,7 +532,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             };
             request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhancedKeyUsage, true));
 
-            return request.Create(intermediate, intermediate.NotBefore.ToUniversalTime(), intermediate.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
+            return request.Create(intermediate, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7), RandomNumberGenerator.GetBytes(16));
         }
 
         private static X509Certificate2 CreateSubjectCertificate(string subject, RSA key)
