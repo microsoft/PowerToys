@@ -33,6 +33,13 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsRunHoursOption, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="StartHourNumberBox" />
+                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="StartMinuteNumberBox" />
+                    <TextBlock>-</TextBlock>
+                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="EndHourNumberBox" />
+                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="EndMinuteNumberBox" />
+                </StackPanel>
             </StackPanel>
         </CheckBox>
     </Grid>

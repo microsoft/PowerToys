@@ -192,4 +192,118 @@
   <data name="COPYOptionU.OptionDescription" xml:space="preserve">
     <value>Auditing info</value>
   </data>
+  <data name="NOCOPYOption.OptionDescription" xml:space="preserve">
+    <value>Copy no file info.</value>
+  </data>
+  <data name="SECFIXOption.OptionDescription" xml:space="preserve">
+    <value>Fix file security on all files, even skipped files.</value>
+  </data>
+  <data name="TIMFIXOption.OptionDescription" xml:space="preserve">
+    <value>Fix file times on all files, even skipped files.</value>
+  </data>
+  <data name="PURGEOption.OptionDescription" xml:space="preserve">
+    <value>Delete dest files/dirs that no longer exist in source.</value>
+  </data>
+  <data name="MIROption.OptionDescription" xml:space="preserve">
+    <value>Mirror a directory tree.</value>
+  </data>
+  <data name="MOVOption.OptionDescription" xml:space="preserve">
+    <value>Move files and directories (delete from source).</value>
+  </data>
+  <data name="MOVEOption.OptionDescription" xml:space="preserve">
+    <value>Move files (delete from source).</value>
+  </data>
+  <data name="AMinusOption.OptionDescription" xml:space="preserve">
+    <value>Removes the given attributes to copied files.</value>
+  </data>
+  <data name="AOptionR.OptionDescription" xml:space="preserve">
+    <value>Read only</value>
+  </data>
+  <data name="AOptionA.OptionDescription" xml:space="preserve">
+    <value>Archive</value>
+  </data>
+  <data name="AOptionS.OptionDescription" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="AOptionH.OptionDescription" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="AOptionC.OptionDescription" xml:space="preserve">
+    <value>Compressed</value>
+  </data>
+  <data name="APlusOption.OptionDescription" xml:space="preserve">
+    <value>Add the given attributes to copied files.</value>
+  </data>
+  <data name="AOptionN.OptionDescription" xml:space="preserve">
+    <value>Not content indexed</value>
+  </data>
+  <data name="AOptionE.OptionDescription" xml:space="preserve">
+    <value>Encrypted</value>
+  </data>
+  <data name="AOptionT.OptionDescription" xml:space="preserve">
+    <value>Temporary</value>
+  </data>
+  <data name="AOptionO.OptionDescription" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="CREATEOption.OptionDescription" xml:space="preserve">
+    <value>Create directory tree and zero-length files only.</value>
+  </data>
+  <data name="FATOption.OptionDescription" xml:space="preserve">
+    <value>Create destination files using 8.3 FAT file names only.</value>
+  </data>
+  <data name="256Option.OptionDescription" xml:space="preserve">
+    <value>Turn off very long path (&gt; 256 characters) support.</value>
+  </data>
+  <data name="MONOption.OptionDescription" xml:space="preserve">
+    <value>Monitor source; run again after number of changes:</value>
+  </data>
+  <data name="MOTOption.OptionDescription" xml:space="preserve">
+    <value>Monitor source; run again after number of minutes, if changed:</value>
+  </data>
+  <data name="RHOption.OptionDescription" xml:space="preserve">
+    <value>Times when new copies may be started:</value>
+  </data>
+  <data name="PFOption.OptionDescription" xml:space="preserve">
+    <value>Check run hours on a per file basis.</value>
+  </data>
+  <data name="IPGOption.OptionDescription" xml:space="preserve">
+    <value>Inter-Packet gap (ms):</value>
+  </data>
+  <data name="SJOption.OptionDescription" xml:space="preserve">
+    <value>Copy Junctions as junctions instead of as the junction targets.</value>
+  </data>
+  <data name="SLOption.OptionDescription" xml:space="preserve">
+    <value>Copy Symbolic Links as links instead of as the link targets.</value>
+  </data>
+  <data name="MTOption.OptionDescription" xml:space="preserve">
+    <value>Do multi-threaded copies with number of threads:</value>
+  </data>
+  <data name="DCOPYOption.OptionDescription" xml:space="preserve">
+    <value>What to copy in directories.</value>
+  </data>
+  <data name="COPYOption.OptionDescription" xml:space="preserve">
+    <value>What to copy for files.</value>
+  </data>
+  <data name="COPYOptionsE" xml:space="preserve">
+    <value>Extended attribute</value>
+  </data>
+  <data name="NODCOPY.OptionDescription" xml:space="preserve">
+    <value>Copy no directory info.</value>
+  </data>
+  <data name="NOOFFLOADOption.OptionDescription" xml:space="preserve">
+    <value>Copy files without using the Windows Copy Offload mechanism.</value>
+  </data>
+  <data name="COMPRESSOption.OptionDescription" xml:space="preserve">
+    <value>Request network compression during file transfer, if applicable.</value>
+  </data>
+  <data name="SPARSEOptionY.OptionDescription" xml:space="preserve">
+    <value>Enable retaining the sparse state during copy.</value>
+  </data>
+  <data name="SPARSEOptionN.OptionDescription" xml:space="preserve">
+    <value>Disable retaining the sparse state during copy.</value>
+  </data>
+  <data name="NOCLONEOption.OptionDescription" xml:space="preserve">
+    <value>Do not attempt block cloning as an optimization.</value>
+  </data>
 </root>

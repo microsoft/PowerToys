@@ -42,6 +42,15 @@ namespace RobocopyUI
             set { SetValue(MultiSelectOptionsProperty, value); }
         }
 
+        public bool IsRunHoursOption
+        {
+            get { return (bool)GetValue(IsRunHoursOptionProperty); }
+            set { SetValue(IsRunHoursOptionProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsRunHoursOptionProperty =
+            DependencyProperty.Register("IsRunHoursOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+
         public static readonly DependencyProperty MultiSelectOptionsProperty =
             DependencyProperty.Register("MultiSelectOptions", typeof(List<OptionEntry>), typeof(OptionEntry), new PropertyMetadata(null));
 
@@ -82,6 +91,11 @@ namespace RobocopyUI
                 if (IsMultiSelectOption)
                 {
                     return $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.OptionEnabledCheckBox.IsChecked ?? false).Select(o => o.OptionName))}";
+                }
+
+                if (IsRunHoursOption)
+                {
+                    return $"{OptionName}:{(int)StartHourNumberBox.Value:D2}{(int)StartMinuteNumberBox.Value:D2}-{(int)EndHourNumberBox.Value:D2}{(int)EndMinuteNumberBox.Value:D2}";
                 }
 
                 return $"{OptionName}";
