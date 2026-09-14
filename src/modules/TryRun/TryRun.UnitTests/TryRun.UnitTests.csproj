@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <ProjectReference Include="..\TryRun.Explorer\TryRun.Explorer.csproj" />
     <ProjectReference Include="..\TryRun.FuzzTests\TryRun.FuzzTests.csproj" />
   </ItemGroup>
 </Project>

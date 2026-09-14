@@ -42,6 +42,18 @@ public sealed class FuzzSmokeTests
     public void WorkspaceNamesPreviewsAndFileRoundTripsHandleFuzzInputs()
     {
         var random = new Random(73);
+        foreach (var paths in new[] { new[] { "C:\\run.ps1" }, new[] { "C:\\folder with spaces\\脚本.sh", "C:\\data & notes.txt" }, new[] { "C:\\one", "C:\\two" } })
+        {
+            var seed = Encoding.UTF8.GetBytes(SelectionPayload.Encode(paths));
+            WorkspaceFuzzer.FuzzTarget(seed);
+            for (var iteration = 0; iteration < 250; iteration++)
+            {
+                var mutation = seed.ToArray();
+                mutation[random.Next(mutation.Length)] = (byte)random.Next(256);
+                WorkspaceFuzzer.FuzzTarget(mutation);
+            }
+        }
+
         foreach (var seed in new[] { "..\\escape", "CON.txt", "file.txt:stream", "folder/你好.txt", "\\\\?\\C:\\file", "result.txt", "a\0b" })
         {
             WorkspaceFuzzer.FuzzTarget(Encoding.UTF8.GetBytes(seed));

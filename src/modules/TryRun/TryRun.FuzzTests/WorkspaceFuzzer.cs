@@ -34,6 +34,20 @@ public static class WorkspaceFuzzer
             // Launch payloads contain only bounded absolute local paths.
         }
 
+        try
+        {
+            var paths = SelectionPayload.Decode(Encoding.UTF8.GetString(data));
+            var roundTrip = SelectionPayload.Decode(SelectionPayload.Encode(paths));
+            if (!paths.SequenceEqual(roundTrip, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Selection transport changed the paths.");
+            }
+        }
+        catch (Exception exception) when (exception is ArgumentException or System.Text.Json.JsonException)
+        {
+            // Invalid selection frames must fail before any file inspection.
+        }
+
         var preview = WorkspaceSnapshot.FormatPreview(data, false);
         if (preview.Length > WorkspaceSnapshot.PreviewBytes + 100)
         {

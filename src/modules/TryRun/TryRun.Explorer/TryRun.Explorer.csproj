@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>PowerToys.TryRun.Explorer</AssemblyName>
+    <RootNamespace>PowerToys.TryRun.Explorer</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>..\TryRun\app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\..\runner\svgs\icon.ico</ApplicationIcon>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\Explorer\</OutputPath>
+    <OutputPath Condition="'$(TryRunOutputRoot)' != ''">$(TryRunOutputRoot)\Explorer\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+  </ItemGroup>
+</Project>

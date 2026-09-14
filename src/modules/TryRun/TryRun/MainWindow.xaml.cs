@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly HashSet<string> unexported = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<WorkloadKind, (string Script, string File, string Arguments, string Interpreter)> drafts = [];
     private readonly string[] startupPaths;
+    private readonly string? startupError;
     private CancellationTokenSource? cancellation;
     private RunSession? session;
     private bool closeWhenStopped;
@@ -39,9 +40,10 @@ public partial class MainWindow : Window
     private WorkloadKind kind;
     private bool updatingSelection;
 
-    public MainWindow(string[] startupPaths)
+    public MainWindow(string[] startupPaths, string? startupError = null)
     {
         this.startupPaths = startupPaths;
+        this.startupError = startupError;
         InitializeComponent();
         InputList.ItemsSource = inputs;
         ProfileBox.ItemsSource = new[]
@@ -76,6 +78,11 @@ public partial class MainWindow : Window
         Loaded -= OnLoaded;
         if (!canProbe)
         {
+            if (startupError is not null)
+            {
+                StatusText.Text = startupError;
+            }
+
             if (startupPaths.Length > 0)
             {
                 await ImportSelectionAsync(startupPaths);
@@ -117,6 +124,11 @@ public partial class MainWindow : Window
         if (startupPaths.Length > 0 && !closeWhenStopped && IsVisible)
         {
             await ImportSelectionAsync(startupPaths);
+        }
+
+        if (startupError is not null && IsVisible)
+        {
+            StatusText.Text = startupError;
         }
     }
 

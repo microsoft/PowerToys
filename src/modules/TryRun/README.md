@@ -21,8 +21,9 @@ Complete and validate each milestone before starting the next.
 4. **Selection-driven tasks — implemented, tests and startup UI flow passing**: drag/drop or startup paths,
    read-only entry point detection, copied Windows application bundles, nested
    working folders, and a simpler run summary with optional advanced controls.
-5. **Explorer entry — next**: a thin multiselect context-menu handler passes
-   selection to the same task workflow; it does not inspect files inside Explorer.
+5. **Explorer entry — implemented, registration and native tests passing**: a per-user classic
+   menu verb passes the entire selection through an out-of-process COM helper
+   to the same task workflow; it does not inspect files inside Explorer.
 6. **Remaining MXC capability coverage — not started**: configurable policies,
    denial capture, session lifecycle, and additional supported backends.
 7. **Command Palette entry — not started**: an explicitly enabled developer command opens the
@@ -57,6 +58,76 @@ The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
 
+### Explorer context menu
+
+Build the complete standalone solution, then register the built copy for the
+current user. Keep a File Explorer window open while running the script:
+
+```powershell
+./Set-ExplorerIntegration.ps1 -Action Register -TryRunDirectory 'C:\source\PowerToys\x64\Debug\TryRun-Explorer'
+```
+
+Select files or folders in Explorer, right-click, choose **Show more options →
+Try Run**. All selected items arrive in one new Try Run window. Resolve multiple
+entry points if needed, then click Run. Opening the menu or importing selection
+does not run a workload. This milestone intentionally uses the classic menu;
+Windows 11's first-level menu needs a separate packaged extension and is not
+registered by this prototype.
+
+Use the same script with `-Action Status` to check this build's registration or
+`-Action Unregister` to remove the experimental entry. Registration affects only
+the Try Run verb under `HKCU\Software\Classes\*\shell` and `Directory\shell`,
+and its dedicated CLSID and AppID `{D2B3BC02-CFF8-4A26-94B4-62441A1FF659}`. Unregistering
+refuses to delete keys without the Try Run ownership marker. Registering another
+build updates this entry; unregister removes the currently registered prototype.
+It does not modify file associations, default actions, installer, Runner/GPO,
+or system policy, and does not restart Explorer. Keep the registered build in
+place; unregister before deleting it.
+
+The script dispatches registration through the desktop Shell object obtained
+from a running Explorer window. It does not create a new Shell.Application
+object and use that object's ShellExecute directly. The developer host can
+present a different registry view: writes and status checks succeeded there,
+while Explorer omitted the verb and COM returned `REGDB_E_CLASSNOTREG`.
+Registering in the desktop Explorer context resolved automatic COM activation
+and made Try Run appear in the Shell's actual menu enumeration.
+
+Registration now returns a correlated receipt from that desktop helper and
+verifies activation of the registered `IExecuteCommand` before reporting success.
+The receipt uses a generated GUID filename in the helper's build folder and is
+removed after reading. It carries registration status only, not selected files.
+`Status` and `Unregister` use the same desktop context. Reopen a menu that was
+already visible before registration; the script sends an association-change
+notification without restarting Explorer.
+
+The helper follows Microsoft's [ExecuteCommand verb sample](https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/Win7Samples/winui/shell/appshellintegration/ExecuteCommandVerb/ExecuteCommandVerb.cpp):
+`IExecuteCommand` + `IObjectWithSelection`, `LocalServer32`, `DelegateExecute`,
+`MultiSelectModel=Player`. There is no managed or native Try Run DLL loaded into
+Explorer. The COM call queues work and returns promptly. A single-use helper
+receives the whole `IShellItemArray`, reads only filesystem names, starts the
+fixed adjacent UI, and exits. Abandoned activation has a 60-second idle limit.
+Each invocation has its own helper and UI, so concurrent selections do not merge.
+
+The UI receives versioned JSON on redirected standard input, with a fixed
+`--selection-stdin` switch. Names are never interpolated into a command, file
+association, or temporary manifest. The message is bounded to 200,000 characters,
+1,000 paths and 32,768 total path characters, with a 10-second receive timeout.
+Malformed, missing, non-local and oversized selections produce an error instead
+of a direct-execution fallback. Shell-provided parameters, current directory and
+silent-execution hints are ignored. The UI performs the same bounded file
+inspection and copying as drag/drop; MXC is loaded only by the execution Worker.
+
+Validation: standalone x64 Debug build exits 0. The original Explorer milestone
+passed all 81 tests in `explorer-full.trx`. After the desktop-context fix, all
+11 targeted registration/protocol/fuzz regressions passed in
+`explorer-desktop-final.trx`, including the added receipt-path test and 753
+selection-message seeds/mutations. A desktop-context unregister/status/register
+round trip also passed, with the entry left enabled.
+Native checks verified automatic COM activation and the expected delegate for
+files, directories, `.txt`, and `.ps1`; enumerating the current sample file's
+Shell verbs returned **Try Run**. Full right-click-to-Run mouse automation remains
+pending after the user stopped Computer Use; no GUI gesture completion is claimed.
+
 ### Select files and run
 
 Drop files or a folder anywhere in the window, or use **Add files / Add folder**.
@@ -90,8 +161,8 @@ automatic run switch. For example:
 & 'C:\source\PowerToys\x64\Debug\TryRun-Selection\PowerToys.TryRun.exe' -- 'C:\Downloads\my package' 'C:\Downloads\data.csv'
 ```
 
-Explorer registration and Command Palette integration are not part of this
-milestone. Output, errors, Stop, timeout, before/after review and explicit export
+Command Palette integration is not part of this milestone. Output, errors,
+Stop, timeout, before/after review and explicit export
 continue to use the same MXC worker and file workflow.
 
 Current selection milestone verification: the standalone x64 Debug solution
