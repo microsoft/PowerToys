@@ -267,12 +267,20 @@
                 <Grid x:Name="OutputContent" Margin="12" Visibility="Collapsed">
                     <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
                 </Grid>
-                <Button HorizontalAlignment="Right" Margin="0,12,0,12" Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE768;" />
-                        <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Margin="0,12,0,12" Click="SaveButton_Click" x:Name="SaveButton">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE78C;" />
+                            <TextBlock Margin="4,0,0,0" x:Uid="SaveButtonLabel" />
+                        </StackPanel>
+                    </Button>
+                    <Button Margin="0,12,0,12" Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE768;" />
+                            <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>
