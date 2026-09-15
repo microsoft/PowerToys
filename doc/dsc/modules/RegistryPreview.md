@@ -53,12 +53,10 @@ PowerToys.DSC.exe set --resource 'settings' --module RegistryPreview --input $co
 
 This example configures Registry Preview as the default handler.
 
-```bash
-dsc config set --file registrypreview-default.dsc.yaml
-```
+Save the following configuration as `registrypreview-default.dsc.config.yaml`:
 
 ```yaml
-# registrypreview-default.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Set Registry Preview as default
@@ -71,17 +69,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file registrypreview-default.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and sets Registry Preview as the default .reg
 handler.
 
-```bash
-winget configure winget-registrypreview.yaml
-```
+Save the following configuration as `registrypreview.dsc.config.winget`:
 
 ```yaml
-# winget-registrypreview.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -103,16 +105,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure registrypreview.dsc.config.winget
+```
+
 ### Example 4 - Disable as default handler
 
 This example ensures Registry Preview is not the default .reg handler.
 
-```bash
-dsc config set --file registrypreview-notdefault.dsc.yaml
-```
+Save the following configuration as `registrypreview-notdefault.dsc.config.yaml`:
 
 ```yaml
-# registrypreview-notdefault.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Do not use as default
@@ -123,6 +129,12 @@ resources:
           DefaultRegApp: false
         name: RegistryPreview
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file registrypreview-notdefault.dsc.config.yaml
 ```
 
 ## Use cases

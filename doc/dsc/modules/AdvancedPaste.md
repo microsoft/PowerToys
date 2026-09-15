@@ -100,12 +100,10 @@ PowerToys.DSC.exe set --resource 'settings' --module AdvancedPaste `
 
 This example customizes keyboard shortcuts for different paste formats.
 
-```bash
-dsc config set --file advancedpaste-hotkeys.dsc.yaml
-```
+Save the following configuration as `advancedpaste-hotkeys.dsc.config.yaml`:
 
 ```yaml
-# advancedpaste-hotkeys.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Advanced Paste hotkeys
@@ -131,17 +129,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file advancedpaste-hotkeys.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Advanced Paste with AI
 enabled.
 
-```bash
-winget configure winget-advancedpaste.yaml
-```
+Save the following configuration as `advancedpaste.dsc.config.winget`:
 
 ```yaml
-# winget-advancedpaste.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -165,16 +167,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure advancedpaste.dsc.config.winget
+```
+
 ### Example 4 - Enable with custom preview settings
 
 This example configures preview behavior for custom paste formats.
 
-```bash
-dsc config set --file advancedpaste-preview.dsc.yaml
-```
+Save the following configuration as `advancedpaste-preview.dsc.config.yaml`:
 
 ```yaml
-# advancedpaste-preview.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure preview settings
@@ -186,6 +192,12 @@ resources:
           CloseAfterLosingFocus: false
         name: AdvancedPaste
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file advancedpaste-preview.dsc.config.yaml
 ```
 
 ### Example 5 - Test AI enablement
