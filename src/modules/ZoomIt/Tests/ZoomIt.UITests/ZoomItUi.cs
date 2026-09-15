@@ -153,8 +153,19 @@ internal sealed class ZoomItUi(Session session, TestContext context)
                 candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
                 10_000);
             Assert.IsNotNull(window, "The main Settings window was not available for its native dialog.");
-            Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000), "Settings did not acquire foreground for its native dialog.");
-            var bounds = WindowHelper.GetVisibleBounds(new IntPtr(window.WindowHandle));
+            var handle = new IntPtr(window.WindowHandle);
+            var bounds = WindowHelper.GetVisibleBounds(handle);
+            if (!WindowControl.WaitForForeground(handle, 2_000))
+            {
+                var titleX = bounds.Left + ((bounds.Right - bounds.Left) / 4);
+                var titleY = bounds.Top + 16;
+                if (WindowControl.IsPointOwnedByWindow(handle, titleX, titleY))
+                {
+                    MouseHelper.LeftClickAt(titleX, titleY);
+                }
+            }
+
+            Assert.IsTrue(WindowControl.WaitForForeground(handle, 10_000), $"Settings did not acquire foreground for its native dialog: {WindowControl.GetForegroundWindowInfo()}.");
             var middleTop = bounds.Top + ((bounds.Bottom - bounds.Top) / 4);
             var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
             MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
@@ -162,7 +173,7 @@ internal sealed class ZoomItUi(Session session, TestContext context)
             target.ScrollIntoView();
             target.Focus();
             var ready = WaitHelper.WaitForStable(
-                () => session.Find<Button>(By.Slug(target.Selector), 0),
+                () => session.FindAll<Button>(By.Slug(target.Selector), 0).SingleOrDefault(),
                 button => button is not null && button.Width > 0 && button.Height > 0 &&
                     button.Y + (button.Height / 2) >= middleTop && button.Y + (button.Height / 2) <= middleBottom &&
                     WindowControl.IsPointOwnedByWindow(new IntPtr(window.WindowHandle), button.X + (button.Width / 2), button.Y + (button.Height / 2)),
@@ -172,7 +183,13 @@ internal sealed class ZoomItUi(Session session, TestContext context)
                 {
                     WindowControl.TryBringToForeground(new IntPtr(window.WindowHandle));
                     MouseHelper.MoveTo(bounds.Right - 100, bounds.Top + ((bounds.Bottom - bounds.Top) / 2));
-                    if (button is null || button.Y + (button.Height / 2) > middleBottom)
+                    if (button is null)
+                    {
+                        target = Control<Button>(cardId, "Button");
+                        target.ScrollIntoView();
+                        target.Focus();
+                    }
+                    else if (button.Y + (button.Height / 2) > middleBottom)
                     {
                         MouseHelper.ScrollDown();
                     }

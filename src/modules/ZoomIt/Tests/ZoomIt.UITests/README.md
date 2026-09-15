@@ -50,8 +50,10 @@ Settings changes under test use the actual UI and interop/IPC path, without rest
 the runner to apply them. A once-per-class Shell restart clears stale notifications from
 earlier interrupted runs. Teardown hides the tray icon before stopping ZoomIt, restores
 registry values, and closes test-owned windows and files.
-The Notepad fixture temporarily disables and then restores its Autocorrect option:
-recipient-side rewriting must not be confused with the literal text emitted by Demo Type.
+The Notepad fixture temporarily disables and then restores its spelling options:
+recipient-side rewriting and spell-check processing must not be confused with the literal
+text emitted by Demo Type. It also verifies the caret is after the existing prefix before
+activation; the exact output assertion still requires that prefix to remain in place.
 
 Successful screenshots, clipboard images, recordings, decoded frames, and microphone
 inventories are stored beside MSTest's deployment directory so they survive successful-run

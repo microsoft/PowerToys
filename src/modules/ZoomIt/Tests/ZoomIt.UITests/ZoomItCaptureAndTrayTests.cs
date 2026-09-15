@@ -256,33 +256,55 @@ public sealed partial class ZoomItTests
         var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
         MouseHelper.MoveTo(screen.Width / 2, screen.Height / 2);
         var explorer = Session.FromProcess("explorer");
-        bool OverflowVisible() => WindowsFinder.ListByApp("explorer").Any(window =>
+        WindowsFinder.WindowInfo? OverflowWindow() => WindowsFinder.ListByApp("explorer").FirstOrDefault(window =>
             window.ClassName is "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
             !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
-        var chevron = TrayChevronNames
+        Element? FindChevron() => TrayChevronNames
             .SelectMany(name => explorer.FindAll<Element>(By.Name(name), 0))
             .FirstOrDefault(item => item.ControlType == "Button" && item.Width > 0 && item.Height > 0 && item.Displayed);
-        if (chevron is not null)
-        {
-            ui.Step($"Notification chevron: '{chevron.Name}', overflow visible={OverflowVisible()}.");
-            if ((chevron.Name.StartsWith("Show", StringComparison.OrdinalIgnoreCase) &&
-                !chevron.Name.Contains("Hide", StringComparison.OrdinalIgnoreCase)) || !OverflowVisible())
-            {
-                chevron.Invoke(msPostAction: 0);
-            }
-
-            Assert.IsTrue(WaitHelper.WaitForStable(OverflowVisible, visible => visible, 10_000, 2).Succeeded, "The notification overflow did not open.");
-        }
+        var hasOverflow = FindChevron() is not null;
+        var opening = false;
 
         var result = WaitHelper.WaitForStable(
-            () => FindTrayIcons(explorer),
+            () =>
+            {
+                if (OverflowWindow() is not null)
+                {
+                    opening = false;
+                }
+
+                return FindTrayIcons(explorer);
+            },
             icons => icons is not null && icons.Length == (expected ? 1 : 0) &&
+                (!hasOverflow || OverflowWindow() is not null) &&
                 (!expected || WindowsFinder.ListByApp("explorer").Any(window =>
                     window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow" or "TopLevelWindowForOverflowXamlIsland" &&
                     WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), icons[0].X + (icons[0].Width / 2), icons[0].Y + (icons[0].Height / 2)))),
-            20_000,
+            30_000,
             3,
             pollIntervalMS: 250,
+            recover: _ =>
+            {
+                var overflow = OverflowWindow();
+                if (overflow is not null)
+                {
+                    // An open flyout can be behind the source window; do not toggle it closed.
+                    WindowControl.TryBringToForeground(new IntPtr(overflow.Hwnd));
+                }
+                else if (!opening && FindChevron() is { } chevron)
+                {
+                    var x = chevron.X + (chevron.Width / 2);
+                    var y = chevron.Y + (chevron.Height / 2);
+                    if (WindowsFinder.ListByApp("explorer").Any(window =>
+                        window.ClassName is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" &&
+                        WindowControl.IsPointOwnedByWindow(new IntPtr(window.Hwnd), x, y)))
+                    {
+                        ui.Step($"Opening the notification overflow with '{chevron.Name}'.");
+                        MouseHelper.LeftClickAt(x, y);
+                        opening = true;
+                    }
+                }
+            },
             shouldRetryException: ShellMenu.IsTransientElementException);
         if (!result.Succeeded)
         {

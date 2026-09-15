@@ -19,7 +19,7 @@ public sealed partial class ZoomItTests
     private Session? notepad;
     private string? notepadPath;
     private IntPtr notepadEditorWindow;
-    private bool? notepadAutoCorrect;
+    private readonly Dictionary<string, bool> notepadEditingOptions = [];
 
     [TestMethod]
     [DataRow("Top left corner", 0)]
@@ -158,6 +158,13 @@ public sealed partial class ZoomItTests
             WaitForNotepadText(prefix, 10_000);
         }
 
+        KeyboardHelper.SendChord(Key.Ctrl, Key.End);
+        var caret = WaitHelper.WaitForStable(
+            ReadNotepadSelection,
+            selection => selection.Start == prefix.Length && selection.End == prefix.Length,
+            10_000,
+            2);
+        Assert.IsTrue(caret.Succeeded, $"Notepad's caret must follow the existing text before Demo Type: {caret.LastObservation}.");
         ui.Step($"Typing the selected Demo Type file into Notepad; foreground: {WindowControl.GetForegroundWindowInfo()}");
         KeyboardHelper.SendChord(shortcut);
         WaitForNotepadText(prefix + expected, 90_000);
@@ -272,14 +279,17 @@ public sealed partial class ZoomItTests
         if (notepad.Has<Button>(By.Name("Settings"), 500))
         {
             notepad.Find<Button>(By.Name("Settings")).Invoke(msPostAction: 0);
-            if (notepad.Has<ToggleSwitch>(By.Name("Autocorrect"), 2_000))
+            foreach (var option in new[] { "Autocorrect", "Spell check" })
             {
-                var autocorrect = notepad.Find<ToggleSwitch>(By.Name("Autocorrect"));
-                notepadAutoCorrect = autocorrect.IsOn;
-                if (autocorrect.IsOn && autocorrect.IsEnabled)
+                if (notepad.Has<ToggleSwitch>(By.Name(option), 2_000))
                 {
-                    autocorrect.Invoke(msPostAction: 0);
-                    Assert.IsTrue(autocorrect.WaitForProperty("ToggleState", "Off", 10_000), "Notepad autocorrect did not turn off.");
+                    var toggle = notepad.Find<ToggleSwitch>(By.Name(option));
+                    notepadEditingOptions.Add(option, toggle.IsOn);
+                    if (toggle.IsOn && toggle.IsEnabled)
+                    {
+                        toggle.Invoke(msPostAction: 0);
+                        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", 10_000), $"Notepad {option} did not turn off.");
+                    }
                 }
             }
 
@@ -356,11 +366,25 @@ public sealed partial class ZoomItTests
         return buffer.ToString().TrimEnd('\r', '\n');
     }
 
+    private (uint Start, uint End) ReadNotepadSelection()
+    {
+        Assert.AreNotEqual(
+            IntPtr.Zero,
+            SendSelectionMessageTimeout(notepadEditorWindow, 0x00B0, out var start, out var end, 2, 2_000, out _),
+            "Could not read the test-owned Notepad selection.");
+        return (start, end);
+    }
+
     private void CloseNotepadDocument()
     {
         if (notepad is not null)
         {
             ui.Step("Saving and closing only the test-owned Notepad document");
+            if (notepad.Has<Button>(By.Name("Back"), 0))
+            {
+                notepad.FindAll<Button>(By.Name("Back")).Single(button => button.Name == "Back").Click(msPostAction: 0);
+            }
+
             FocusNotepad();
             KeyboardHelper.SendChord(Key.Esc);
             var editor = NotepadEditor();
@@ -383,14 +407,17 @@ public sealed partial class ZoomItTests
             }
             finally
             {
-                if (notepadAutoCorrect.HasValue)
+                if (notepadEditingOptions.Count > 0)
                 {
                     notepad!.Find<Button>(By.Name("Settings")).Invoke(msPostAction: 0);
-                    var autocorrect = notepad.Find<ToggleSwitch>(By.Name("Autocorrect"));
-                    if (autocorrect.IsEnabled && autocorrect.IsOn != notepadAutoCorrect.Value)
+                    foreach (var option in notepadEditingOptions.Reverse())
                     {
-                        autocorrect.Invoke(msPostAction: 0);
-                        Assert.IsTrue(autocorrect.WaitForProperty("ToggleState", notepadAutoCorrect.Value ? "On" : "Off", 10_000), "Could not restore Notepad autocorrect.");
+                        var toggle = notepad.Find<ToggleSwitch>(By.Name(option.Key));
+                        if (toggle.IsEnabled && toggle.IsOn != option.Value)
+                        {
+                            toggle.Invoke(msPostAction: 0);
+                            Assert.IsTrue(toggle.WaitForProperty("ToggleState", option.Value ? "On" : "Off", 10_000), $"Could not restore Notepad {option.Key}.");
+                        }
                     }
 
                     notepad.FindAll<Button>(By.Name("Back")).Single(button => button.Name == "Back").Click(msPostAction: 0);
@@ -472,4 +499,7 @@ public sealed partial class ZoomItTests
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern IntPtr SendMessageTimeoutW(IntPtr window, uint message, IntPtr parameter, StringBuilder text, uint flags, uint timeout, out UIntPtr result);
+
+    [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW", SetLastError = true)]
+    private static extern IntPtr SendSelectionMessageTimeout(IntPtr window, uint message, out uint start, out uint end, uint flags, uint timeout, out UIntPtr result);
 }
