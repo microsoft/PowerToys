@@ -30,9 +30,12 @@ Complete and validate each milestone before starting the next.
 7. **Windows window borders — implemented, native integration verified**: cyan, noninteractive borders for the
    running Windows process and observable descendants; track window geometry,
    visibility and session lifetime without marking ordinary instances.
-8. **Remaining MXC capability coverage — not started**: configurable policies,
+8. **Two-step workflow — implemented**: separate configuration and run/results
+   pages, an immediately accessible EXE chooser, persistent previous results,
+   and image preparation logs kept with environment setup.
+9. **Remaining MXC capability coverage — not started**: configurable policies,
    denial capture, session lifecycle, and additional supported backends.
-9. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+10. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
@@ -63,6 +66,46 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Configuration followed by run and review
+
+Try Run opens on **Prepare your run**. A standalone launch defaults to
+**Installed app / inline script** and **Windows · Application (.exe)**, with
+**Choose file…** immediately visible. Explorer selections open the same setup
+page in **Selected files / folder** mode with an automatically detected profile.
+Input files, the execution profile, Linux image/runtime, and time limit are
+configuration controls. Advanced options contain arguments, a local image
+archive, and denial-capture settings; choosing an EXE no longer requires them.
+
+**Run** validates the configuration before switching to the separate run page.
+It shows preparation/start/run/review stages and the terminal outcome, followed
+by **Output**, **Files**, and **Isolation report** tabs. Completion leaves the
+selected tab in place. Back navigation is disabled while work is active. Once
+finished, **Back to configuration** retains output, file review/export state,
+the actual run environment and status. **View previous run** reopens them.
+Starting another run still invokes the existing unexported-results confirmation.
+Editing the next configuration does not relabel the previous run.
+
+Image preparation stays on the configuration page with a separate log and
+cancel control. It never clears a previous workload's results. File drops are
+accepted only on the configuration page. The Run button stays disabled until a
+program, script or copied entry point has been selected.
+
+`WorkflowTests` covers initial EXE access, Explorer selection without execution,
+validation errors, page transitions through a real MXC run, retained unexported
+results, failed image preparation, reruns, and failed/stopped/timed-out outcomes.
+
+The x64 Debug build succeeded. All six workflow tests passed, and interactive
+acceptance covered EXE selection, the transition to a running/completed page,
+back navigation, and a Windows demo's output, file comparison and report tabs.
+The full run (`two-step-full.trx`) passed 105 of 106 tests with no skips,
+including the previously unavailable border raster test. The remaining
+`WindowsDemoReportsBlockedProbeAndUnchangedOriginals` check failed because MXC
+returned a completed capture containing zero native denial records. The demo
+still reported the host-only read as blocked/unavailable, and both selected
+original files were unchanged. The failure reproduced in isolated reruns; an
+older `TryRun-Explorer` worker passed the comparison. This capture discrepancy
+remains unresolved. Its assertion and the execution/capture policy are retained.
 
 ### Windows window borders
 
@@ -98,7 +141,7 @@ styles, minimize/restore, and stop/normal-close/timeout cleanup. Set
 needs mixed-DPI, multiple-monitor coverage before production integration.
 
 The separate raster test first renders a solid-color control. If even that
-control is empty (as observed in the current unavailable desktop capture
+control is empty (as observed in the earlier unavailable desktop capture
 session), the test reports **inconclusive**, rather than claiming that the
 border's pixels passed. Reconnect/unlock an interactive desktop to rerun
 `BorderPaintsCyanEdgesAndLeavesTheApplicationVisible` and visually inspect the
@@ -110,6 +153,10 @@ local deliverable and registered Explorer entry use `x64/Debug/TryRun-Borders`.
 Topmost/non-topmost transitions are also covered: the marker follows the target's
 band and never becomes topmost merely because an unrelated topmost window is
 immediately above the target.
+
+Interactive acceptance on 2026-09-15 also verified the cyan frame around
+`winver.exe` on the desktop, normal interaction with its OK button, and return
+to the completed run page after the application closed.
 
 ### Run environment and isolation report
 
@@ -272,7 +319,7 @@ use the real Windows verb/COM path and inspect the resulting window.
 Drop files or a folder anywhere in the window, or use **Add files / Add folder**.
 One recognized entry point is selected automatically. Multiple candidates require
 choosing one; data-only selections require adding a script/program or enabling
-**Use a custom command or installed application** under **Advanced options**.
+**Installed app / inline script** on the configuration page.
 Importing never starts the selected code. Select **Run** after reviewing the summary.
 
 Selected folders retain their names and contents. Overlapping parent/child
@@ -333,8 +380,9 @@ entry points and running with the original folder structure.
 
 ### Windows and Linux profiles
 
-For a custom run, expand **Advanced options**, enable **Use a custom command or
-installed application**, then choose an **Execution profile** and a file or script. Arguments
+For an installed application or inline script, select **Installed app / inline
+script**, choose the **Application type** under **Run environment**, and choose a
+file or enter a script. Arguments are in **Advanced options** and
 are one literal argument per line; surrounding quotes are unnecessary. Choosing
 a script file disables the inline editor for that run. Scripts and data are
 copied into the workspace; a custom-mode EXE is run from its original location with its
@@ -530,7 +578,8 @@ require that full build. ARM64 has not been validated on hardware.
 
 If an older window reports **Restricted workspace access is unavailable** with
 Run disabled, save its script, close it, rebuild, and reopen the application.
-For an inline command, enable custom mode in Advanced options, then
+For an inline command, select **Installed app / inline script**, choose
+**Windows · PowerShell** in **Run environment**, then
 try `Set-Content result.txt hello; Get-Content result.txt`; expect `hello` in the
 output and exit code 0. Setting the time limit to 2 seconds and running
 `Start-Sleep -Seconds 10` should report that the time limit was reached.

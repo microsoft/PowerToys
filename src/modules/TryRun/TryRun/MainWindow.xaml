@@ -1,531 +1,747 @@
-<Window
+﻿<Window
     x:Class="PowerToys.TryRun.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Try Run — PowerToys (Experimental)"
-    Width="1080"
-    Height="960"
-    MinWidth="800"
-    MinHeight="760"
+    Width="1100"
+    Height="820"
+    MinWidth="900"
+    MinHeight="640"
     AllowDrop="True"
+    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
     Closing="OnClosing"
     Loaded="OnLoaded"
     PreviewDragOver="OnDragOver"
     PreviewDrop="OnDrop"
     WindowStartupLocation="CenterScreen">
-    <Grid Margin="24">
+    <Window.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style x:Key="SectionHeading" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="MinHeight" Value="36" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonSurface"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.85" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.65" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonSurface" Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style
+            x:Key="PrimaryButton"
+            BasedOn="{StaticResource {x:Type Button}}"
+            TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="28,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="3*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel Margin="0,0,0,16">
-            <TextBlock
-                FontSize="26"
-                FontWeight="SemiBold"
-                Text="Try a program. Keep the results you choose." />
-            <TextBlock
-                Margin="0,6,0,0"
-                Text="Windows and Linux, powered by MXC. Experimental: MXC is not currently a security boundary."
-                TextWrapping="Wrap" />
-            <WrapPanel Margin="0,8,0,0">
-                <Button
-                    x:Name="WindowsDemoButton"
-                    Padding="10,4"
-                    Click="OnWindowsDemo"
-                    Content="Windows isolation demo" />
-                <Button
-                    x:Name="LinuxDemoButton"
-                    Margin="8,0,0,0"
-                    Padding="10,4"
-                    Click="OnLinuxDemo"
-                    Content="Linux isolation demo" />
-            </WrapPanel>
-        </StackPanel>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="3*" />
-            </Grid.ColumnDefinitions>
-            <Border
-                Margin="0,0,16,0"
-                Padding="12"
-                BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
-                BorderThickness="1"
-                CornerRadius="8">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,24">
+            <StackPanel
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                Orientation="Horizontal">
+                <TextBlock
+                    x:Name="ConfigureStepText"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Text="1  Configure" />
+                <TextBlock
+                    Margin="16,0"
+                    Opacity="0.5"
+                    Text="→" />
+                <TextBlock
+                    x:Name="ResultsStepText"
+                    FontSize="14"
+                    Text="2  Run &amp; review" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock
+                    FontSize="26"
+                    FontWeight="SemiBold"
+                    Text="Try Run" />
+                <TextBlock
+                    Margin="0,4,0,0"
+                    Opacity="0.7"
+                    Text="Windows and Linux · Powered by MXC" />
+            </StackPanel>
+        </DockPanel>
+        <Grid x:Name="SetupPage" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Margin="0,0,0,20">
+                <TextBlock
+                    FontSize="28"
+                    FontWeight="SemiBold"
+                    Text="Prepare your run" />
+                <TextBlock
+                    Margin="0,6,0,0"
+                    Text="Choose a program and its environment. Nothing runs until you select Run."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <ScrollViewer
+                Grid.Row="1"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <Grid Margin="0,0,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock
-                            FontSize="17"
-                            FontWeight="SemiBold"
-                            Text="Drop files or a folder here" />
-                        <TextBlock
-                            Margin="0,6,0,0"
-                            Text="Include the program or script and the data it needs."
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                    <WrapPanel Grid.Row="1" Margin="0,10,0,8">
-                        <Button
-                            x:Name="AddFilesButton"
-                            Padding="10,5"
-                            Click="OnAddFiles"
-                            Content="Add _files…" />
-                        <Button
-                            x:Name="AddFolderButton"
-                            Margin="8,0,0,0"
-                            Padding="10,5"
-                            Click="OnAddFolder"
-                            Content="Add fol_der…" />
-                        <Button
-                            x:Name="RemoveInputButton"
-                            Margin="8,0,0,0"
-                            Padding="10,5"
-                            Click="OnRemoveInput"
-                            Content="_Remove" />
-                    </WrapPanel>
-                    <ListBox
-                        x:Name="InputList"
-                        Grid.Row="2"
-                        AutomationProperties.Name="Selected files and folders"
-                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        SelectionMode="Extended" />
-                    <TextBlock
-                        x:Name="SelectionText"
-                        Grid.Row="3"
-                        Margin="0,8,0,0"
-                        FontSize="12"
-                        Text="Up to 1,000 entries, 32 MiB per file, 100 MiB total. Links are rejected."
-                        TextWrapping="Wrap" />
-                </Grid>
-            </Border>
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Margin="0,0,8,0">
-                    <TextBlock
-                        FontSize="17"
-                        FontWeight="SemiBold"
-                        Text="What would you like to run?" />
-                    <ComboBox
-                        x:Name="EntryPointBox"
-                        Margin="0,8,0,8"
-                        AutomationProperties.Name="Entry point"
-                        DisplayMemberPath="DisplayName"
-                        SelectionChanged="OnEntryPointChanged" />
-                    <TextBlock
-                        x:Name="RunSummary"
-                        Text="Drop files or a folder, then choose an entry point. Nothing runs until you select Run."
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        x:Name="BackendText"
-                        Margin="0,8,0,0"
-                        Text="Checking execution backends…"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        x:Name="EnvironmentSummaryText"
-                        Margin="0,8,0,0"
-                        AutomationProperties.Name="Run environment summary"
-                        TextWrapping="Wrap" />
-                    <DockPanel
-                        x:Name="LinuxImageHeader"
-                        Margin="0,8,0,0"
-                        Visibility="Collapsed">
-                        <Button
-                            x:Name="PrepareImageButton"
-                            Margin="8,0,0,0"
-                            Padding="10,4"
-                            Click="OnPrepareImage"
-                            Content="Prepare image…"
-                            DockPanel.Dock="Right" />
-                        <Label Content="Linux image" Target="{Binding ElementName=ImageBox}" />
-                        <TextBox
-                            x:Name="ImageBox"
-                            AutomationProperties.Name="Linux container image"
-                            MaxLength="256"
-                            Text="alpine:3.22"
-                            TextChanged="OnEnvironmentChanged" />
-                    </DockPanel>
-                    <Expander Margin="0,12,0,0" Header="Advanced options">
-                        <StackPanel Margin="0,8,0,0">
-                            <StackPanel x:Name="CaptureOption" Margin="0,0,0,8">
-                                <CheckBox
-                                    x:Name="CaptureBox"
-                                    Checked="OnEnvironmentChanged"
-                                    Content="Record blocked access with MXC"
-                                    IsChecked="True"
-                                    Unchecked="OnEnvironmentChanged" />
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionHeading}" Text="Program or script" />
+                                <WrapPanel Margin="0,0,0,16">
+                                    <RadioButton
+                                        x:Name="CopiedModeBox"
+                                        Margin="0,0,16,8"
+                                        Checked="OnManualModeChanged"
+                                        Content="Selected files / folder"
+                                        GroupName="WorkloadSource" />
+                                    <RadioButton
+                                        x:Name="ManualModeBox"
+                                        Margin="0,0,0,8"
+                                        Checked="OnManualModeChanged"
+                                        Content="Installed app / inline script"
+                                        GroupName="WorkloadSource" />
+                                </WrapPanel>
+                                <StackPanel x:Name="CopiedEntryPanel">
+                                    <Label Content="Entry point" Target="{Binding ElementName=EntryPointBox}" />
+                                    <ComboBox
+                                        x:Name="EntryPointBox"
+                                        MinHeight="36"
+                                        AutomationProperties.Name="Entry point"
+                                        DisplayMemberPath="DisplayName"
+                                        SelectionChanged="OnEntryPointChanged" />
+                                </StackPanel>
+                                <StackPanel x:Name="ManualOptions">
+                                    <DockPanel>
+                                        <Button
+                                            x:Name="BrowseWorkloadButton"
+                                            Margin="8,0,0,0"
+                                            Click="OnBrowseWorkload"
+                                            Content="Choose file…"
+                                            DockPanel.Dock="Right"
+                                            Style="{StaticResource PrimaryButton}" />
+                                        <Button
+                                            x:Name="ClearWorkloadButton"
+                                            Margin="8,0,0,0"
+                                            Click="OnClearWorkload"
+                                            Content="Clear"
+                                            DockPanel.Dock="Right" />
+                                        <TextBox
+                                            x:Name="WorkloadFileBox"
+                                            MinHeight="36"
+                                            VerticalContentAlignment="Center"
+                                            AutomationProperties.Name="Program or script file"
+                                            IsReadOnly="True"
+                                            TextChanged="OnWorkloadChanged"
+                                            ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                                    </DockPanel>
+                                    <StackPanel x:Name="ScriptEditorPanel" Margin="0,12,0,0">
+                                        <Label Content="Or write a script" Target="{Binding ElementName=ScriptBox}" />
+                                        <TextBox
+                                            x:Name="ScriptBox"
+                                            Height="120"
+                                            AcceptsReturn="True"
+                                            AcceptsTab="True"
+                                            AutomationProperties.Name="Script"
+                                            FontFamily="Cascadia Mono, Consolas"
+                                            MaxLength="8192"
+                                            Text="Get-ChildItem -Recurse"
+                                            TextChanged="OnWorkloadChanged"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto" />
+                                    </StackPanel>
+                                </StackPanel>
                                 <TextBlock
-                                    x:Name="CaptureHint"
-                                    Margin="0,4,0,0"
-                                    FontSize="12"
+                                    x:Name="RunSummary"
+                                    Margin="0,12,0,0"
+                                    Opacity="0.75"
                                     TextWrapping="Wrap" />
                             </StackPanel>
-                            <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
-                            <TextBox
-                                x:Name="ArgumentsBox"
-                                Height="48"
-                                AcceptsReturn="True"
-                                AutomationProperties.Name="Program arguments, one per line"
-                                MaxLength="8192"
-                                VerticalScrollBarVisibility="Auto" />
-                            <StackPanel
-                                x:Name="LinuxOptions"
-                                Margin="0,8,0,0"
-                                Visibility="Collapsed">
-                                <DockPanel Margin="0,0,0,6">
+                        </Border>
+                        <Border Margin="0,16,0,16" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionHeading}" Text="Input files" />
+                                <TextBlock
+                                    Opacity="0.75"
+                                    Text="Drop a program folder, scripts or supporting data here. These files run on copies."
+                                    TextWrapping="Wrap" />
+                                <WrapPanel Margin="0,12,0,10">
+                                    <Button
+                                        x:Name="AddFilesButton"
+                                        Click="OnAddFiles"
+                                        Content="Add _files…" />
+                                    <Button
+                                        x:Name="AddFolderButton"
+                                        Margin="8,0,0,0"
+                                        Click="OnAddFolder"
+                                        Content="Add fol_der…" />
+                                    <Button
+                                        x:Name="RemoveInputButton"
+                                        Margin="8,0,0,0"
+                                        Click="OnRemoveInput"
+                                        Content="_Remove" />
+                                </WrapPanel>
+                                <ListBox
+                                    x:Name="InputList"
+                                    Height="96"
+                                    AutomationProperties.Name="Selected files and folders"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                    SelectionMode="Extended" />
+                                <TextBlock
+                                    x:Name="SelectionText"
+                                    Margin="0,8,0,0"
+                                    FontSize="12"
+                                    Opacity="0.7"
+                                    Text="Up to 1,000 entries · 32 MiB per file · 100 MiB total"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionHeading}" Text="Run environment" />
+                                <Label Content="Application type" Target="{Binding ElementName=ProfileBox}" />
+                                <ComboBox
+                                    x:Name="ProfileBox"
+                                    MinHeight="36"
+                                    AutomationProperties.Name="Execution profile"
+                                    DisplayMemberPath="Name"
+                                    SelectionChanged="OnProfileChanged" />
+                                <TextBlock
+                                    x:Name="ProfileHint"
+                                    Margin="0,6,0,0"
+                                    FontSize="12"
+                                    Opacity="0.7"
+                                    TextWrapping="Wrap" />
+                                <StackPanel
+                                    x:Name="LinuxImageHeader"
+                                    Margin="0,12,0,0"
+                                    Visibility="Collapsed">
+                                    <Label Content="Linux image" Target="{Binding ElementName=ImageBox}" />
+                                    <TextBox
+                                        x:Name="ImageBox"
+                                        MinHeight="32"
+                                        VerticalContentAlignment="Center"
+                                        AutomationProperties.Name="Linux container image"
+                                        MaxLength="256"
+                                        Text="alpine:3.22"
+                                        TextChanged="OnEnvironmentChanged" />
+                                    <Button
+                                        x:Name="PrepareImageButton"
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Left"
+                                        Click="OnPrepareImage"
+                                        Content="Prepare image…" />
+                                </StackPanel>
+                                <StackPanel
+                                    x:Name="LinuxOptions"
+                                    Margin="0,8,0,0"
+                                    Visibility="Collapsed">
                                     <Label Content="Script runtime" Target="{Binding ElementName=InterpreterBox}" />
                                     <TextBox
                                         x:Name="InterpreterBox"
+                                        MinHeight="32"
+                                        VerticalContentAlignment="Center"
                                         AutomationProperties.Name="Script runtime inside Linux image"
                                         MaxLength="256"
                                         Text="/bin/sh"
                                         TextChanged="OnEnvironmentChanged" />
-                                </DockPanel>
-                                <DockPanel>
-                                    <Button
-                                        x:Name="BrowseImageButton"
-                                        Margin="8,0,0,0"
-                                        Padding="10,4"
-                                        Click="OnBrowseImage"
-                                        Content="Image archive…"
-                                        DockPanel.Dock="Right" />
+                                </StackPanel>
+                                <DockPanel Margin="0,16,0,0">
                                     <TextBox
-                                        x:Name="ImageTarBox"
-                                        AutomationProperties.Name="Optional local image archive"
-                                        MaxLength="1024" />
+                                        x:Name="TimeoutBox"
+                                        Width="64"
+                                        MinHeight="32"
+                                        VerticalContentAlignment="Center"
+                                        AutomationProperties.Name="Timeout in seconds"
+                                        DockPanel.Dock="Right"
+                                        MaxLength="3"
+                                        Text="60"
+                                        TextChanged="OnEnvironmentChanged" />
+                                    <Label Content="Time limit (seconds)" Target="{Binding ElementName=TimeoutBox}" />
                                 </DockPanel>
                                 <TextBlock
-                                    Margin="0,4,0,0"
-                                    FontSize="12"
-                                    Text="Prepare the image once before running. Choose an image containing the runtime and dependencies your program needs. Runs have networking off."
+                                    x:Name="PolicySummaryText"
+                                    Margin="0,16,0,0"
                                     TextWrapping="Wrap" />
+                                <Expander Margin="0,16,0,0" Header="Advanced options">
+                                    <StackPanel Margin="0,12,0,0">
+                                        <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
+                                        <TextBox
+                                            x:Name="ArgumentsBox"
+                                            Height="64"
+                                            AcceptsReturn="True"
+                                            AutomationProperties.Name="Program arguments, one per line"
+                                            MaxLength="8192"
+                                            VerticalScrollBarVisibility="Auto" />
+                                        <StackPanel Margin="0,12,0,0" Visibility="{Binding Visibility, ElementName=LinuxOptions}">
+                                            <Button
+                                                x:Name="BrowseImageButton"
+                                                HorizontalAlignment="Left"
+                                                Click="OnBrowseImage"
+                                                Content="Image archive…" />
+                                            <TextBox
+                                                x:Name="ImageTarBox"
+                                                Margin="0,6,0,0"
+                                                AutomationProperties.Name="Optional local image archive"
+                                                MaxLength="1024" />
+                                        </StackPanel>
+                                        <StackPanel x:Name="CaptureOption" Margin="0,12,0,0">
+                                            <CheckBox
+                                                x:Name="CaptureBox"
+                                                Checked="OnEnvironmentChanged"
+                                                Content="Record blocked access with MXC"
+                                                IsChecked="True"
+                                                Unchecked="OnEnvironmentChanged" />
+                                            <TextBlock
+                                                x:Name="CaptureHint"
+                                                Margin="0,6,0,0"
+                                                FontSize="12"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <TextBlock
+                                            x:Name="PermissionText"
+                                            Margin="0,12,0,0"
+                                            FontSize="12"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Expander>
+                                <Expander Margin="0,12,0,0" Header="Environment details">
+                                    <StackPanel Margin="0,8,0,0">
+                                        <TextBlock
+                                            x:Name="BackendText"
+                                            Text="Checking execution backends…"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            x:Name="EnvironmentSummaryText"
+                                            Margin="0,8,0,0"
+                                            AutomationProperties.Name="Run environment summary"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Expander>
                             </StackPanel>
-                            <CheckBox
-                                x:Name="ManualModeBox"
-                                Margin="0,12,0,6"
-                                Checked="OnManualModeChanged"
-                                Content="Use a custom command or installed application"
-                                Unchecked="OnManualModeChanged" />
-                            <StackPanel x:Name="ManualOptions" IsEnabled="False">
-                                <ComboBox
-                                    x:Name="ProfileBox"
-                                    AutomationProperties.Name="Execution profile"
-                                    DisplayMemberPath="Name"
-                                    SelectionChanged="OnProfileChanged" />
-                                <DockPanel Margin="0,6,0,6">
-                                    <Button
-                                        x:Name="BrowseWorkloadButton"
-                                        Margin="8,0,0,0"
-                                        Padding="10,4"
-                                        Click="OnBrowseWorkload"
-                                        Content="Choose file…"
-                                        DockPanel.Dock="Right" />
-                                    <Button
-                                        x:Name="ClearWorkloadButton"
-                                        Margin="8,0,0,0"
-                                        Padding="10,4"
-                                        Click="OnClearWorkload"
-                                        Content="Clear"
-                                        DockPanel.Dock="Right" />
-                                    <TextBox
-                                        x:Name="WorkloadFileBox"
-                                        AutomationProperties.Name="Program or script file"
-                                        IsReadOnly="True" />
-                                </DockPanel>
-                                <Label Content="Script (used when no file is selected)" Target="{Binding ElementName=ScriptBox}" />
+                        </Border>
+                        <Border
+                            x:Name="PreparationPanel"
+                            Margin="0,16,0,0"
+                            Style="{StaticResource Card}"
+                            Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionHeading}" Text="Image preparation" />
                                 <TextBox
-                                    x:Name="ScriptBox"
-                                    Height="100"
-                                    AcceptsReturn="True"
-                                    AcceptsTab="True"
-                                    AutomationProperties.Name="Script"
-                                    FontFamily="Cascadia Mono, Consolas"
-                                    MaxLength="8192"
-                                    Text="Get-ChildItem -Recurse"
+                                    x:Name="PreparationOutputBox"
+                                    Height="120"
+                                    AutomationProperties.Name="Image preparation output"
+                                    IsReadOnly="True"
                                     TextWrapping="Wrap"
                                     VerticalScrollBarVisibility="Auto" />
                             </StackPanel>
-                            <TextBlock
-                                x:Name="PermissionText"
-                                Margin="0,8,0,0"
-                                FontSize="12"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Expander>
-                </StackPanel>
+                        </Border>
+                        <WrapPanel Margin="0,16,0,16">
+                            <Button
+                                x:Name="WindowsDemoButton"
+                                Margin="0,0,8,8"
+                                Click="OnWindowsDemo"
+                                Content="Windows demo" />
+                            <Button
+                                x:Name="LinuxDemoButton"
+                                Margin="0,0,0,8"
+                                Click="OnLinuxDemo"
+                                Content="Linux demo" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
             </ScrollViewer>
+            <Grid Grid.Row="2" Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,16,0" VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="SetupStatusText"
+                        AutomationProperties.LiveSetting="Polite"
+                        Text="Checking availability…"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontSize="12"
+                        Opacity="0.65"
+                        Text="Experimental: MXC is not currently a security boundary."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="SetupStopButton"
+                        Margin="0,0,8,0"
+                        Click="OnStop"
+                        Content="Cancel"
+                        Visibility="Collapsed" />
+                    <Button
+                        x:Name="ViewResultsButton"
+                        Margin="0,0,8,0"
+                        Click="OnViewResults"
+                        Content="View previous run"
+                        Visibility="Collapsed" />
+                    <Button
+                        x:Name="RunButton"
+                        MinWidth="112"
+                        Padding="24,10"
+                        Click="OnRun"
+                        Content="_Run →"
+                        IsEnabled="False"
+                        Style="{StaticResource PrimaryButton}" />
+                </StackPanel>
+            </Grid>
         </Grid>
-        <StackPanel Grid.Row="2" Margin="0,12,0,12">
-            <TextBlock Text="Network: off · Writes: run copies and temporary data · Review results before exporting" TextWrapping="Wrap" />
-            <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
-                <Button
-                    x:Name="RunButton"
-                    Padding="20,6"
-                    Click="OnRun"
-                    Content="_Run"
-                    IsEnabled="False" />
-                <Button
-                    x:Name="StopButton"
-                    Margin="8,0,16,0"
-                    Padding="16,6"
-                    Click="OnStop"
-                    Content="_Stop"
-                    IsEnabled="False" />
-                <Label Content="Time limit (seconds)" Target="{Binding ElementName=TimeoutBox}" />
-                <TextBox
-                    x:Name="TimeoutBox"
-                    Width="64"
-                    VerticalContentAlignment="Center"
-                    AutomationProperties.Name="Timeout in seconds"
-                    MaxLength="3"
-                    Text="60"
-                    TextChanged="OnEnvironmentChanged" />
-            </StackPanel>
-        </StackPanel>
-        <TabControl x:Name="ResultsTabs" Grid.Row="3">
-            <TabItem Header="_Output">
-                <TextBox
-                    x:Name="OutputBox"
-                    Margin="8"
-                    AcceptsReturn="True"
-                    AutomationProperties.Name="Run output"
-                    FontFamily="Cascadia Mono, Consolas"
-                    IsReadOnly="True"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto" />
-            </TabItem>
-            <TabItem Header="Review file _changes">
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <DockPanel Margin="0,0,0,8">
+        <Grid
+            x:Name="RunPage"
+            Grid.Row="1"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border Margin="0,0,0,20" Style="{StaticResource Card}">
+                <StackPanel>
+                    <DockPanel>
                         <Button
-                            x:Name="ReviewButton"
-                            Margin="8,0,0,0"
-                            Padding="10,5"
-                            Click="OnRefreshReview"
-                            Content="Refresh review"
-                            DockPanel.Dock="Right"
-                            IsEnabled="False" />
-                        <Button
-                            x:Name="ExportButton"
-                            Margin="12,0,0,0"
-                            Padding="12,5"
-                            Click="OnExport"
-                            Content="_Export checked files…"
-                            DockPanel.Dock="Right"
-                            IsEnabled="False" />
-                        <Button
-                            x:Name="OpenExportButton"
-                            Margin="8,0,0,0"
-                            Padding="10,5"
-                            Click="OnOpenExport"
-                            Content="Open export folder"
+                            x:Name="StopButton"
+                            Margin="16,0,0,0"
+                            HorizontalAlignment="Right"
+                            Click="OnStop"
+                            Content="_Stop run"
                             DockPanel.Dock="Right"
                             IsEnabled="False" />
                         <TextBlock
-                            x:Name="ChangesSummary"
-                            VerticalAlignment="Center"
-                            Text="Run a script to review files. Originals are kept unchanged."
-                            TextWrapping="Wrap" />
+                            x:Name="RunPhaseText"
+                            FontSize="28"
+                            FontWeight="SemiBold"
+                            Text="Starting" />
                     </DockPanel>
-                    <DataGrid
-                        x:Name="ChangesGrid"
-                        Grid.Row="1"
-                        AutoGenerateColumns="False"
-                        AutomationProperties.Name="File changes and export selection"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        CanUserReorderColumns="False"
-                        EnableRowVirtualization="True"
-                        HeadersVisibility="Column"
-                        SelectionChanged="OnChangeSelected"
-                        SelectionMode="Single">
-                        <DataGrid.Columns>
-                            <DataGridTemplateColumn Width="76" Header="Export">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <CheckBox
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.Name="{Binding RelativePath}"
-                                            IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                            IsEnabled="{Binding CanExport}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn
-                                Width="90"
-                                Binding="{Binding Kind}"
-                                Header="Change"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding RelativePath}"
-                                Header="File"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="110"
-                                Binding="{Binding BeforeSize}"
-                                Header="Before (bytes)"
-                                IsReadOnly="True" />
-                            <DataGridTextColumn
-                                Width="110"
-                                Binding="{Binding AfterSize}"
-                                Header="After (bytes)"
-                                IsReadOnly="True" />
-                        </DataGrid.Columns>
-                    </DataGrid>
                     <TextBlock
-                        Grid.Row="2"
-                        Margin="0,8,0,4"
-                        FontSize="12"
-                        Text="Select a row to preview its contents. Deleted files have no export. Exports always use a new folder."
-                        TextWrapping="Wrap" />
-                    <Grid Grid.Row="3">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid Margin="0,0,4,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock
-                                Margin="0,0,0,4"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Text="Before — copied input" />
-                            <TextBox
-                                x:Name="BeforePreview"
-                                Grid.Row="1"
-                                AcceptsReturn="True"
-                                AutomationProperties.Name="File contents before run"
-                                FontFamily="Cascadia Mono, Consolas"
-                                IsReadOnly="True"
-                                TextWrapping="Wrap"
-                                VerticalScrollBarVisibility="Auto" />
-                        </Grid>
-                        <Grid Grid.Column="1" Margin="4,0,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock
-                                Margin="0,0,0,4"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Text="After — run result" />
-                            <TextBox
-                                x:Name="AfterPreview"
-                                Grid.Row="1"
-                                AcceptsReturn="True"
-                                AutomationProperties.Name="File contents after run"
-                                FontFamily="Cascadia Mono, Consolas"
-                                IsReadOnly="True"
-                                TextWrapping="Wrap"
-                                VerticalScrollBarVisibility="Auto" />
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </TabItem>
-            <TabItem x:Name="IsolationTab" Header="Isolation _report">
-                <Grid Margin="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="90" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Expander Header="Configured environment for this run">
-                        <TextBox
-                            x:Name="ReportEnvironmentBox"
-                            MaxHeight="180"
-                            AutomationProperties.Name="Configured environment for the completed run"
-                            IsReadOnly="True"
-                            TextWrapping="Wrap"
-                            VerticalScrollBarVisibility="Auto" />
-                    </Expander>
-                    <TextBlock
-                        x:Name="CaptureStatusText"
-                        Grid.Row="1"
-                        Margin="0,8,0,4"
-                        Text="Run a task to collect an isolation report."
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        x:Name="OriginalCheckText"
-                        Grid.Row="2"
-                        Margin="0,0,0,8"
-                        TextWrapping="Wrap" />
-                    <DataGrid
-                        x:Name="IsolationGrid"
-                        Grid.Row="3"
-                        AutoGenerateColumns="False"
-                        AutomationProperties.Name="Isolation evidence and observations"
-                        CanUserAddRows="False"
-                        IsReadOnly="True"
-                        SelectionChanged="OnIsolationEventSelected">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn
-                                Width="190"
-                                Binding="{Binding Source}"
-                                Header="Source" />
-                            <DataGridTextColumn
-                                Width="130"
-                                Binding="{Binding Outcome}"
-                                Header="Outcome" />
-                            <DataGridTextColumn
-                                Width="90"
-                                Binding="{Binding Access}"
-                                Header="Access" />
-                            <DataGridTextColumn
-                                Width="*"
-                                Binding="{Binding Resource}"
-                                Header="Resource" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <TextBox
-                        x:Name="IsolationDetails"
-                        Grid.Row="4"
+                        x:Name="ActiveRunText"
                         Margin="0,8,0,0"
-                        AutomationProperties.Name="Selected isolation observation details"
+                        Opacity="0.7"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                    <ProgressBar
+                        x:Name="RunProgress"
+                        Height="4"
+                        Margin="0,16,0,12"
+                        IsIndeterminate="True" />
+                    <TextBlock
+                        x:Name="RunStatusText"
+                        Margin="0,6,0,0"
+                        AutomationProperties.LiveSetting="Polite"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        x:Name="WindowBorderText"
+                        Margin="0,8,0,0"
+                        FontSize="12"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+            <TabControl x:Name="ResultsTabs" Grid.Row="1">
+                <TabItem Header="_Output">
+                    <TextBox
+                        x:Name="OutputBox"
+                        Margin="8"
+                        AcceptsReturn="True"
+                        AutomationProperties.Name="Run output"
+                        FontFamily="Cascadia Mono, Consolas"
                         IsReadOnly="True"
                         TextWrapping="Wrap"
                         VerticalScrollBarVisibility="Auto" />
-                    <TextBlock
-                        x:Name="ReportEvidenceText"
-                        Grid.Row="5"
-                        Margin="0,8,0,0"
-                        FontSize="12"
-                        TextWrapping="Wrap" />
-                </Grid>
-            </TabItem>
-        </TabControl>
-        <StackPanel Grid.Row="4" Margin="0,12,0,0">
-            <TextBlock
-                x:Name="WindowBorderText"
-                Margin="0,0,0,4"
-                AutomationProperties.LiveSetting="Polite"
-                TextWrapping="Wrap"
-                Visibility="Collapsed" />
-            <TextBlock
-                x:Name="StatusText"
-                AutomationProperties.LiveSetting="Polite"
-                Text="Checking availability…"
-                TextWrapping="Wrap" />
-        </StackPanel>
+                </TabItem>
+                <TabItem x:Name="FilesTab" Header="_Files">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Margin="0,0,0,8">
+                            <Button
+                                x:Name="ReviewButton"
+                                Margin="8,0,0,0"
+                                Padding="10,5"
+                                Click="OnRefreshReview"
+                                Content="Refresh review"
+                                DockPanel.Dock="Right"
+                                IsEnabled="False" />
+                            <Button
+                                x:Name="ExportButton"
+                                Margin="12,0,0,0"
+                                Padding="12,5"
+                                Click="OnExport"
+                                Content="_Export checked files…"
+                                DockPanel.Dock="Right"
+                                IsEnabled="False" />
+                            <Button
+                                x:Name="OpenExportButton"
+                                Margin="8,0,0,0"
+                                Padding="10,5"
+                                Click="OnOpenExport"
+                                Content="Open export folder"
+                                DockPanel.Dock="Right"
+                                IsEnabled="False" />
+                            <TextBlock
+                                x:Name="ChangesSummary"
+                                VerticalAlignment="Center"
+                                Text="Run a script to review files. Originals are kept unchanged."
+                                TextWrapping="Wrap" />
+                        </DockPanel>
+                        <DataGrid
+                            x:Name="ChangesGrid"
+                            Grid.Row="1"
+                            AutoGenerateColumns="False"
+                            AutomationProperties.Name="File changes and export selection"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="False"
+                            EnableRowVirtualization="True"
+                            HeadersVisibility="Column"
+                            SelectionChanged="OnChangeSelected"
+                            SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="76" Header="Export">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.Name="{Binding RelativePath}"
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                IsEnabled="{Binding CanExport}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding Kind}"
+                                    Header="Change"
+                                    IsReadOnly="True" />
+                                <DataGridTextColumn
+                                    Width="*"
+                                    Binding="{Binding RelativePath}"
+                                    Header="File"
+                                    IsReadOnly="True" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding BeforeSize}"
+                                    Header="Before (bytes)"
+                                    IsReadOnly="True" />
+                                <DataGridTextColumn
+                                    Width="110"
+                                    Binding="{Binding AfterSize}"
+                                    Header="After (bytes)"
+                                    IsReadOnly="True" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock
+                            Grid.Row="2"
+                            Margin="0,8,0,4"
+                            FontSize="12"
+                            Text="Select a row to preview its contents. Deleted files have no export. Exports always use a new folder."
+                            TextWrapping="Wrap" />
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Margin="0,0,4,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Text="Before — copied input" />
+                                <TextBox
+                                    x:Name="BeforePreview"
+                                    Grid.Row="1"
+                                    AcceptsReturn="True"
+                                    AutomationProperties.Name="File contents before run"
+                                    FontFamily="Cascadia Mono, Consolas"
+                                    IsReadOnly="True"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </Grid>
+                            <Grid Grid.Column="1" Margin="4,0,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Text="After — run result" />
+                                <TextBox
+                                    x:Name="AfterPreview"
+                                    Grid.Row="1"
+                                    AcceptsReturn="True"
+                                    AutomationProperties.Name="File contents after run"
+                                    FontFamily="Cascadia Mono, Consolas"
+                                    IsReadOnly="True"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="IsolationTab" Header="Isolation _report">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="90" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Expander Header="Configured environment for this run">
+                            <TextBox
+                                x:Name="ReportEnvironmentBox"
+                                MaxHeight="180"
+                                AutomationProperties.Name="Configured environment for the completed run"
+                                IsReadOnly="True"
+                                TextWrapping="Wrap"
+                                VerticalScrollBarVisibility="Auto" />
+                        </Expander>
+                        <TextBlock
+                            x:Name="CaptureStatusText"
+                            Grid.Row="1"
+                            Margin="0,8,0,4"
+                            Text="Run a task to collect an isolation report."
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="OriginalCheckText"
+                            Grid.Row="2"
+                            Margin="0,0,0,8"
+                            TextWrapping="Wrap" />
+                        <DataGrid
+                            x:Name="IsolationGrid"
+                            Grid.Row="3"
+                            AutoGenerateColumns="False"
+                            AutomationProperties.Name="Isolation evidence and observations"
+                            CanUserAddRows="False"
+                            IsReadOnly="True"
+                            SelectionChanged="OnIsolationEventSelected">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="190"
+                                    Binding="{Binding Source}"
+                                    Header="Source" />
+                                <DataGridTextColumn
+                                    Width="130"
+                                    Binding="{Binding Outcome}"
+                                    Header="Outcome" />
+                                <DataGridTextColumn
+                                    Width="90"
+                                    Binding="{Binding Access}"
+                                    Header="Access" />
+                                <DataGridTextColumn
+                                    Width="*"
+                                    Binding="{Binding Resource}"
+                                    Header="Resource" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBox
+                            x:Name="IsolationDetails"
+                            Grid.Row="4"
+                            Margin="0,8,0,0"
+                            AutomationProperties.Name="Selected isolation observation details"
+                            IsReadOnly="True"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />
+                        <TextBlock
+                            x:Name="ReportEvidenceText"
+                            Grid.Row="5"
+                            Margin="0,8,0,0"
+                            FontSize="12"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            <DockPanel Grid.Row="2" Margin="0,18,0,0">
+                <Button
+                    x:Name="BackButton"
+                    Padding="18,10"
+                    Click="OnBackToSetup"
+                    Content="← Back to configuration"
+                    DockPanel.Dock="Left" />
+                <TextBlock
+                    Margin="16,0,0,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Opacity="0.7"
+                    Text="Review changes and export the files you want to keep."
+                    TextWrapping="Wrap" />
+            </DockPanel>
+        </Grid>
     </Grid>
 </Window>

@@ -18,7 +18,8 @@ namespace PowerToys.TryRun;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "WPF owns the window lifetime. Closing cancels active work and disposes the session; the run's finally block disposes its cancellation source.")]
 public partial class MainWindow : Window
 {
-    private readonly string workerPath = Path.Combine(AppContext.BaseDirectory, "Worker", "PowerToys.TryRun.Worker.exe");
+    private readonly string workerPath;
+    private readonly Func<bool>? confirmDiscard;
     private readonly ObservableCollection<string> inputs = [];
     private readonly HashSet<string> unexported = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<WorkloadKind, (string Script, string File, string Arguments, string Interpreter)> drafts = [];
@@ -42,9 +43,18 @@ public partial class MainWindow : Window
     private bool isolationDemo;
     private IsolationReport? isolationReport;
     private RunWindowBorders? windowBorders;
+    private bool showingRun;
+    private bool hasRunResult;
 
     public MainWindow(string[] startupPaths, string? startupError = null)
+        : this(startupPaths, startupError, null, null)
     {
+    }
+
+    internal MainWindow(string[] startupPaths, string? startupError, string? workerExecutable, Func<bool>? confirmDiscard)
+    {
+        workerPath = workerExecutable ?? Path.Combine(AppContext.BaseDirectory, "Worker", "PowerToys.TryRun.Worker.exe");
+        this.confirmDiscard = confirmDiscard;
         this.startupPaths = startupPaths;
         this.startupError = startupError;
         InitializeComponent();
@@ -58,7 +68,17 @@ public partial class MainWindow : Window
             new ExecutionProfile(WorkloadKind.LinuxPython, "Linux · Python / other runtime"),
             new ExecutionProfile(WorkloadKind.LinuxApplication, "Linux · Executable"),
         };
-        ProfileBox.SelectedIndex = 0;
+        ProfileBox.SelectedIndex = startupPaths.Length == 0 ? 1 : 0;
+        if (startupPaths.Length == 0)
+        {
+            ManualModeBox.IsChecked = true;
+        }
+        else
+        {
+            CopiedModeBox.IsChecked = true;
+        }
+
+        ShowPage(false);
         var reason = RuntimeRequirements.GetUnavailableReason();
         if (reason is null && !File.Exists(workerPath))
         {
@@ -67,12 +87,58 @@ public partial class MainWindow : Window
 
         if (reason is not null)
         {
-            StatusText.Text = reason;
+            Status = reason;
             RunButton.IsEnabled = false;
         }
         else
         {
             canProbe = true;
+        }
+    }
+
+    private string Status
+    {
+        get => showingRun ? RunStatusText.Text : SetupStatusText.Text;
+        set
+        {
+            if (showingRun)
+            {
+                RunStatusText.Text = value;
+            }
+            else
+            {
+                SetupStatusText.Text = value;
+            }
+        }
+    }
+
+    private void ShowPage(bool run)
+    {
+        showingRun = run;
+        SetupPage.Visibility = run ? Visibility.Collapsed : Visibility.Visible;
+        RunPage.Visibility = run ? Visibility.Visible : Visibility.Collapsed;
+        ConfigureStepText.FontWeight = run ? FontWeights.Normal : FontWeights.SemiBold;
+        ResultsStepText.FontWeight = run ? FontWeights.SemiBold : FontWeights.Normal;
+        ConfigureStepText.Opacity = run ? 0.5 : 1;
+        ResultsStepText.Opacity = run ? 1 : 0.5;
+        ViewResultsButton.Visibility = hasRunResult ? Visibility.Visible : Visibility.Collapsed;
+        SetRunning(cancellation is not null);
+    }
+
+    private void OnBackToSetup(object sender, RoutedEventArgs e)
+    {
+        if (cancellation is null)
+        {
+            ShowPage(false);
+            Status = "Adjust the configuration for your next run. The previous run's results are still available.";
+        }
+    }
+
+    private void OnViewResults(object sender, RoutedEventArgs e)
+    {
+        if (cancellation is null && hasRunResult)
+        {
+            ShowPage(true);
         }
     }
 
@@ -83,7 +149,7 @@ public partial class MainWindow : Window
         {
             if (startupError is not null)
             {
-                StatusText.Text = startupError;
+                Status = startupError;
             }
 
             if (startupPaths.Length > 0)
@@ -97,7 +163,7 @@ public partial class MainWindow : Window
         canProbe = false;
         cancellation = new CancellationTokenSource();
         SetRunning(true);
-        StatusText.Text = "Checking restricted workspace access…";
+        Status = "Checking restricted workspace access…";
         try
         {
             var client = new WorkerClient(workerPath);
@@ -109,15 +175,15 @@ public partial class MainWindow : Window
             }
 
             UpdateProfileState();
-            StatusText.Text = available ? "Ready. Drop files or a folder to begin." : BackendText.Text;
+            Status = available ? "Ready. Choose a program or add files to begin." : BackendText.Text;
         }
         catch (OperationCanceledException)
         {
-            StatusText.Text = "Availability check stopped. Reopen Try Run to check again.";
+            Status = "Availability check stopped. Reopen Try Run to check again.";
         }
         catch (Exception exception)
         {
-            StatusText.Text = exception.Message;
+            Status = exception.Message;
         }
         finally
         {
@@ -131,7 +197,7 @@ public partial class MainWindow : Window
 
         if (startupError is not null && IsVisible)
         {
-            StatusText.Text = startupError;
+            Status = startupError;
         }
     }
 
@@ -163,6 +229,7 @@ public partial class MainWindow : Window
         }
 
         UpdateProfileState();
+        UpdateRunSummary();
         SetRunning(cancellation is not null);
     }
 
@@ -176,6 +243,11 @@ public partial class MainWindow : Window
         PermissionText.Text = linux ? "Linux: isolated WSLC container, 2 CPUs / 2 GiB. Only this run's data folders are mounted. No existing WSL distribution is used." : "Windows: MXC ProcessContainer. Copied applications use the run workspace; installed application directories are read-only. Clipboard and input injection: off. Windows are allowed.";
         CaptureOption.Visibility = linux ? Visibility.Collapsed : Visibility.Visible;
         CaptureHint.Text = backends?.NativeDenialCaptureAvailable == true ? "Native MXC capture is available. Blocked access stays blocked." : "Native capture unavailable on this host. Runs keep their restrictions; no elevated capture fallback is used.";
+        if (backends is not null && cancellation is null)
+        {
+            SetupStatusText.Text = available ? "Ready. Choose a program or add files to begin." : BackendText.Text;
+        }
+
         UpdateEnvironmentSummary();
     }
 
@@ -203,6 +275,14 @@ public partial class MainWindow : Window
         SetRunning(false);
     }
 
+    private void OnWorkloadChanged(object sender, TextChangedEventArgs e)
+    {
+        if (IsInitialized)
+        {
+            SetRunning(cancellation is not null);
+        }
+    }
+
     private void OnBrowseImage(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Title = "Choose a local container image archive", Filter = "Image archives|*.tar;*.tar.gz;*.tgz|All files|*.*", CheckFileExists = true };
@@ -214,11 +294,16 @@ public partial class MainWindow : Window
 
     private async void OnPrepareImage(object sender, RoutedEventArgs e)
     {
+        if (showingRun || cancellation is not null)
+        {
+            return;
+        }
+
         cancellation = new CancellationTokenSource();
         SetRunning(true);
-        OutputBox.Clear();
-        ResultsTabs.SelectedIndex = 0;
-        StatusText.Text = "Preparing image using MXC. This step downloads into the dedicated image cache…";
+        PreparationPanel.Visibility = Visibility.Visible;
+        PreparationOutputBox.Clear();
+        Status = "Preparing image using MXC. This step downloads into the dedicated image cache…";
         var buffer = new OutputBuffer();
         try
         {
@@ -234,20 +319,20 @@ public partial class MainWindow : Window
                 if (message.Kind is WorkerMessage.Output or WorkerMessage.Error)
                 {
                     buffer.Append(message.Text);
-                    OutputBox.Text = buffer.ToString();
-                    OutputBox.ScrollToEnd();
+                    PreparationOutputBox.Text = buffer.ToString();
+                    PreparationOutputBox.ScrollToEnd();
                 }
             });
             var result = await new WorkerClient(workerPath).RunAsync(request, progress, cancellation.Token);
-            StatusText.Text = result.ExitCode == 0 ? "Image ready. Runs use the cached image with networking off." : "Image preparation failed. See output for MXC details.";
+            Status = result.ExitCode == 0 ? "Image ready. Runs use the cached image with networking off." : "Image preparation failed. See the preparation log for details.";
         }
         catch (OperationCanceledException)
         {
-            StatusText.Text = "Image preparation stopped.";
+            Status = "Image preparation stopped.";
         }
         catch (Exception exception)
         {
-            StatusText.Text = exception.Message;
+            Status = exception.Message;
         }
         finally
         {
@@ -260,6 +345,7 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog { Title = "Choose files to copy into this run", Multiselect = true, CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
+            SelectCopiedModeForEmptyApplication();
             await ImportSelectionAsync(inputs.Concat(dialog.FileNames));
         }
     }
@@ -269,7 +355,16 @@ public partial class MainWindow : Window
         var dialog = new OpenFolderDialog { Title = "Choose a folder to copy into this run" };
         if (dialog.ShowDialog(this) == true)
         {
+            SelectCopiedModeForEmptyApplication();
             await ImportSelectionAsync(inputs.Append(dialog.FolderName));
+        }
+    }
+
+    private void SelectCopiedModeForEmptyApplication()
+    {
+        if (kind == WorkloadKind.WindowsApplication && string.IsNullOrWhiteSpace(WorkloadFileBox.Text))
+        {
+            CopiedModeBox.IsChecked = true;
         }
     }
 
@@ -280,7 +375,7 @@ public partial class MainWindow : Window
         var previous = (EntryPointBox.SelectedItem as TaskEntryPoint)?.RelativePath;
         cancellation = new CancellationTokenSource();
         SetRunning(true);
-        StatusText.Text = "Reading selection and identifying entry points…";
+        Status = "Reading selection and identifying entry points…";
         try
         {
             var inspected = await Task.Run(() => TaskBundle.Inspect(selection, cancellation.Token));
@@ -296,20 +391,20 @@ public partial class MainWindow : Window
             updatingSelection = false;
             ApplyEntryPoint();
             SelectionText.Text = $"{inspected.EntryCount} files and folders · {inspected.Bytes / 1048576.0:F1} MiB. Directory structure is preserved.";
-            StatusText.Text = inspected.EntryPoints.Count switch
+            Status = inspected.EntryPoints.Count switch
             {
-                0 => "No supported entry point found. Add a program/script, or use a custom command in Advanced options.",
+                0 => "No supported entry point found. Add a program/script, or select Installed app / inline script.",
                 1 => "Entry point selected. Review the run summary, then select Run.",
                 _ => "Choose one entry point. The other selected files accompany it as data or dependencies.",
             };
         }
         catch (OperationCanceledException)
         {
-            StatusText.Text = "Selection inspection stopped. The previous selection is unchanged.";
+            Status = "Selection inspection stopped. The previous selection is unchanged.";
         }
         catch (Exception exception)
         {
-            StatusText.Text = "Could not import selection: " + exception.Message;
+            Status = "Could not import selection: " + exception.Message;
         }
         finally
         {
@@ -326,15 +421,16 @@ public partial class MainWindow : Window
 
     private void OnDragOver(object sender, DragEventArgs e)
     {
-        e.Effects = cancellation is null && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Effects = !showingRun && cancellation is null && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
     {
         e.Handled = true;
-        if (cancellation is null && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
+        if (!showingRun && cancellation is null && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
+            SelectCopiedModeForEmptyApplication();
             await ImportSelectionAsync(inputs.Concat(paths));
         }
     }
@@ -375,7 +471,7 @@ public partial class MainWindow : Window
     private void UpdateRunSummary()
     {
         RunSummary.Text = ManualModeBox.IsChecked == true
-            ? "Custom run: copied inputs plus the command below. Installed Windows applications use their original directory read-only."
+            ? kind == WorkloadKind.WindowsApplication ? "Choose an installed EXE. Its application folder is read-only; selected input data runs on copies." : "Choose a script file or write one here. Selected files are copied before running."
             : EntryPointBox.SelectedItem is TaskEntryPoint entry
                 ? $"Run {entry.RelativePath}\nWorking folder: {entry.WorkingSubdirectory ?? "selection root"}. All selected files are copied. The original folders are not granted access. Changes stay in this run until you export them."
                 : "Drop files or a folder, then choose an entry point. Nothing runs until you select Run.";
@@ -394,6 +490,7 @@ public partial class MainWindow : Window
     {
         var linux = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
         var installed = ManualModeBox.IsChecked == true && kind == WorkloadKind.WindowsApplication;
+        PolicySummaryText.Text = "Network: off\n" + (installed ? "Installed application folder: read-only\nInput data: writable copies" : "Input files: writable copies") + (linux ? "\nLinux environment: 2 CPUs / 2 GiB" : "\nWindows applications: cyan window border");
         var capture = linux ? "Windows denial capture does not apply to WSLC." : CaptureBox.IsChecked != true ? "Denial capture off." : backends?.NativeDenialCaptureAvailable == true ? "Native denial capture: block and record." : "Native denial capture unavailable.";
         var runtime = linux ? $"Linux / MXC WSLC · {ImageBox.Text}\nRuntime: {(kind == WorkloadKind.LinuxApplication ? "Selected executable" : InterpreterBox.Text)} · 2 CPUs / 2 GiB" : "Windows / MXC ProcessContainer · " + (ProfileBox.SelectedItem as ExecutionProfile)?.Name;
         EnvironmentSummaryText.Text = $"{runtime}\nFiles: selected copies and temporary data are writable. {(installed ? "Selected installation folder is read-only." : "Original input folders are not granted access.")}\nNetwork: off · Time limit: {TimeoutBox.Text} seconds\n{capture}" + (isolationDemo ? "\nDemo: a harmless host-only fixture is supplied for an access check." : string.Empty);
@@ -405,7 +502,7 @@ public partial class MainWindow : Window
 
     private async Task LoadDemoAsync(string name)
     {
-        ManualModeBox.IsChecked = false;
+        CopiedModeBox.IsChecked = true;
         await ImportSelectionAsync([Path.Combine(AppContext.BaseDirectory, "Samples", name)]);
         isolationDemo = inputs.Count == 1 && Path.GetFileName(inputs[0]) == name;
         if (isolationDemo)
@@ -416,7 +513,7 @@ public partial class MainWindow : Window
                 ImageBox.Text = "alpine:3.22";
             }
 
-            StatusText.Text = "Demo ready. Select Run to change a copy, check access to a harmless host-only file, and review the isolation report.";
+            Status = "Demo ready. Select Run to change a copy, check access to a harmless host-only file, and review the isolation report.";
             UpdateEnvironmentSummary();
         }
     }
@@ -440,22 +537,27 @@ public partial class MainWindow : Window
 
     private async void OnRun(object sender, RoutedEventArgs e)
     {
+        if (cancellation is not null || showingRun)
+        {
+            return;
+        }
+
         if (!int.TryParse(TimeoutBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out var timeout) || timeout is < 1 or > 300)
         {
-            StatusText.Text = "Choose a timeout between 1 and 300 seconds.";
+            Status = "Choose a timeout between 1 and 300 seconds.";
             return;
         }
 
         var entry = ManualModeBox.IsChecked == true ? null : EntryPointBox.SelectedItem as TaskEntryPoint;
         if (ManualModeBox.IsChecked != true && entry is null)
         {
-            StatusText.Text = "Choose an entry point first.";
+            Status = "Choose an entry point first.";
             return;
         }
 
         if (ManualModeBox.IsChecked == true && string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
         {
-            StatusText.Text = "Choose a program or enter a script first.";
+            Status = "Choose a program or enter a script first.";
             return;
         }
 
@@ -464,9 +566,14 @@ public partial class MainWindow : Window
             return;
         }
 
+        hasRunResult = true;
+        ShowPage(true);
+        RunPhaseText.Text = "Preparing files";
+        ActiveRunText.Text = $"{entry?.RelativePath ?? (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? "Inline script" : WorkloadFileBox.Text)} · {(ProfileBox.SelectedItem as ExecutionProfile)?.Name} · {timeout}s limit";
         cancellation = new CancellationTokenSource();
         SetRunning(true);
         changes = [];
+        exportDirectory = null;
         unexported.Clear();
         canReview = false;
         hasUnreviewedResults = false;
@@ -477,7 +584,8 @@ public partial class MainWindow : Window
         ResultsTabs.SelectedIndex = 0;
         var buffer = new OutputBuffer();
         OutputBox.Clear();
-        StatusText.Text = "Copying inputs…";
+        FilesTab.Header = "_Files";
+        Status = "Copying inputs…";
         ReportEnvironmentBox.Text = "Preparing this run's environment…";
         OriginalCheckText.Text = "Original file check pending.";
         IsolationDetails.Clear();
@@ -485,6 +593,7 @@ public partial class MainWindow : Window
         var workloadFile = entry is null ? WorkloadFileBox.Text : string.Empty;
         var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
+        var finalPhase = "Failed";
         using var runBorders = new RunWindowBorders(message => WindowBorderText.Text = message);
         windowBorders = runBorders;
         WindowBorderText.Visibility = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication ? Visibility.Collapsed : Visibility.Visible;
@@ -505,7 +614,8 @@ public partial class MainWindow : Window
             prepared = true;
             canReview = true;
             hasUnreviewedResults = true;
-            StatusText.Text = "Starting a restricted run…";
+            Status = "Starting a restricted run…";
+            RunPhaseText.Text = "Starting";
             var request = new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
             {
                 Kind = kind,
@@ -519,10 +629,22 @@ public partial class MainWindow : Window
                 CaptureDenials = kind is not WorkloadKind.LinuxShell and not WorkloadKind.LinuxPython and not WorkloadKind.LinuxApplication && CaptureBox.IsChecked == true,
                 IsolationDemo = isolationDemo,
             };
+            var environmentReceived = false;
+            void MarkRunning()
+            {
+                if (RunPhaseText.Text == "Starting" && cancellation?.IsCancellationRequested == false)
+                {
+                    RunPhaseText.Text = "Running";
+                    Status = "Running. Output and errors appear below.";
+                }
+            }
+
             var progress = new Progress<WorkerMessage>(message =>
             {
                 if (message.Kind == WorkerMessage.ProcessStarted && message.Process is { } process && !request.IsLinux)
                 {
+                    MarkRunning();
+                    WindowBorderText.Text = "Cyan borders identify windows belonging to this run.";
                     runBorders.Start(process);
                 }
 
@@ -533,6 +655,7 @@ public partial class MainWindow : Window
 
                 if (message.Environment is { } environment)
                 {
+                    environmentReceived = true;
                     ReportEnvironmentBox.Text = environment.Describe();
                 }
 
@@ -543,21 +666,28 @@ public partial class MainWindow : Window
 
                 if (message.Kind is WorkerMessage.Output or WorkerMessage.Error)
                 {
+                    if (environmentReceived)
+                    {
+                        MarkRunning();
+                    }
+
                     buffer.Append(message.Text);
                     OutputBox.Text = buffer.ToString();
                     OutputBox.ScrollToEnd();
                 }
             });
             var result = await new WorkerClient(workerPath).RunAsync(request, progress, cancellation.Token);
-            StatusText.Text = result.TimedOut ? "Stopped: time limit reached." : result.ExitCode == 0 ? "Finished. Exit code: 0." : $"Run failed. Exit code: {result.ExitCode}. See the output for details.";
+            finalPhase = result.TimedOut ? "Time limit reached" : result.ExitCode == 0 ? "Completed" : "Failed";
+            Status = result.TimedOut ? "Stopped: time limit reached." : result.ExitCode == 0 ? "Finished. Exit code: 0." : $"Run failed. Exit code: {result.ExitCode}. See the output for details.";
         }
         catch (OperationCanceledException)
         {
-            StatusText.Text = "Stopped.";
+            finalPhase = "Stopped";
+            Status = "Stopped.";
         }
         catch (Exception exception)
         {
-            StatusText.Text = exception.Message;
+            Status = exception.Message;
         }
         finally
         {
@@ -566,18 +696,20 @@ public partial class MainWindow : Window
             WindowBorderText.Visibility = Visibility.Collapsed;
             if (prepared && !closeWhenStopped)
             {
+                RunPhaseText.Text = "Reviewing files";
                 if (isolationReport?.CaptureStatus is "Pending" or "Collecting")
                 {
                     ShowIsolationReport(new IsolationReport("Incomplete", "The worker did not finish report collection. Available output and copied files can still be reviewed.", []));
                 }
 
-                var outcome = StatusText.Text;
+                var outcome = Status;
                 cancellation.Dispose();
                 cancellation = new CancellationTokenSource();
                 StopButton.IsEnabled = true;
                 await ReviewResultsAsync(outcome);
             }
 
+            RunPhaseText.Text = finalPhase;
             FinishOperation();
         }
     }
@@ -603,7 +735,7 @@ public partial class MainWindow : Window
         ChangesGrid.ItemsSource = changes;
         BeforePreview.Clear();
         AfterPreview.Clear();
-        StatusText.Text = "Reviewing result files…";
+        Status = "Reviewing result files…";
         try
         {
             var originals = await Task.Run(() => workspace!.CheckOriginals(cancellation!.Token));
@@ -622,15 +754,15 @@ public partial class MainWindow : Window
             if (changes.Count > 0)
             {
                 ChangesGrid.SelectedItem = changes.FirstOrDefault(change => change.Kind != FileChangeKind.Unchanged) ?? changes[0];
-                ResultsTabs.SelectedIndex = 1;
             }
 
-            StatusText.Text = outcome + " Review files before exporting.";
+            FilesTab.Header = $"_Files ({changes.Count(change => change.Kind != FileChangeKind.Unchanged)})";
+            Status = outcome + " Review files before exporting.";
         }
         catch (Exception exception)
         {
             ChangesSummary.Text = "File review did not finish. Export is unavailable; choose Refresh review to retry.";
-            StatusText.Text = outcome + " " + exception.Message;
+            Status = outcome + " " + exception.Message;
         }
     }
 
@@ -648,7 +780,7 @@ public partial class MainWindow : Window
         var selected = changes.Where(change => change.IsSelected && change.CanExport).Select(change => change.RelativePath).ToArray();
         if (selected.Length == 0)
         {
-            StatusText.Text = "Check one or more result files to export.";
+            Status = "Check one or more result files to export.";
             return;
         }
 
@@ -660,16 +792,16 @@ public partial class MainWindow : Window
 
         cancellation = new CancellationTokenSource();
         SetRunning(true);
-        StatusText.Text = "Verifying and exporting checked files…";
+        Status = "Verifying and exporting checked files…";
         try
         {
             exportDirectory = await Task.Run(() => workspace!.Export(dialog.FolderName, selected, cancellation.Token));
             unexported.ExceptWith(selected);
-            StatusText.Text = $"Exported {selected.Length} files to: {exportDirectory}";
+            Status = $"Exported {selected.Length} files to: {exportDirectory}";
         }
         catch (Exception exception)
         {
-            StatusText.Text = exception.Message;
+            Status = exception.Message;
         }
         finally
         {
@@ -690,18 +822,36 @@ public partial class MainWindow : Window
     private void OnStop(object sender, RoutedEventArgs e)
     {
         windowBorders?.Dispose();
-        StatusText.Text = "Stopping…";
+        Status = "Stopping…";
+        if (showingRun)
+        {
+            RunPhaseText.Text = "Stopping";
+        }
+
         StopButton.IsEnabled = false;
+        SetupStopButton.IsEnabled = false;
         cancellation?.Cancel();
     }
 
     private void SetRunning(bool running)
     {
         var manual = ManualModeBox.IsChecked == true;
+        ManualOptions.Visibility = manual ? Visibility.Visible : Visibility.Collapsed;
+        CopiedEntryPanel.Visibility = manual ? Visibility.Collapsed : Visibility.Visible;
+        ScriptEditorPanel.Visibility = manual && kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication && string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+        ProfileHint.Text = manual ? "Choose the environment your program needs." : "Detected from the selected entry point.";
+        CopiedModeBox.IsEnabled = !running;
+        BackButton.IsEnabled = !running;
+        ViewResultsButton.IsEnabled = !running;
+        SetupStopButton.IsEnabled = running;
+        SetupStopButton.Visibility = running && !showingRun ? Visibility.Visible : Visibility.Collapsed;
+        StopButton.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+        RunProgress.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
         WindowsDemoButton.IsEnabled = !running;
         LinuxDemoButton.IsEnabled = !running;
         CaptureBox.IsEnabled = !running && backends?.NativeDenialCaptureAvailable == true;
-        RunButton.IsEnabled = available && !running && (manual || EntryPointBox.SelectedItem is TaskEntryPoint);
+        var hasCommand = !string.IsNullOrWhiteSpace(WorkloadFileBox.Text) || (kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ScriptBox.Text));
+        RunButton.IsEnabled = available && !running && (manual ? hasCommand : EntryPointBox.SelectedItem is TaskEntryPoint);
         EntryPointBox.IsEnabled = !running && !manual;
         ManualModeBox.IsEnabled = !running;
         ManualOptions.IsEnabled = !running && manual;
@@ -710,7 +860,7 @@ public partial class MainWindow : Window
         TimeoutBox.IsEnabled = !running;
         AddFilesButton.IsEnabled = !running;
         AddFolderButton.IsEnabled = !running;
-        RemoveInputButton.IsEnabled = !running;
+        RemoveInputButton.IsEnabled = !running && inputs.Count > 0;
         InputList.IsEnabled = !running;
         ChangesGrid.IsEnabled = !running;
         ExportButton.IsEnabled = !running && changes.Any(change => change.CanExport);
@@ -718,7 +868,7 @@ public partial class MainWindow : Window
         OpenExportButton.IsEnabled = !running && exportDirectory is not null;
         ProfileBox.IsEnabled = !running && manual;
         BrowseWorkloadButton.IsEnabled = !running;
-        ClearWorkloadButton.IsEnabled = !running;
+        ClearWorkloadButton.IsEnabled = !running && WorkloadFileBox.Text.Length > 0;
         ArgumentsBox.IsEnabled = !running;
         ImageBox.IsEnabled = !running;
         ImageTarBox.IsEnabled = !running;
@@ -741,7 +891,7 @@ public partial class MainWindow : Window
 
     private bool ConfirmDiscard()
     {
-        return (!hasUnreviewedResults && unexported.Count == 0) || MessageBox.Show(this, "This run may have result files that have not been exported. Discard these temporary results?", "Try Run", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) == MessageBoxResult.OK;
+        return (!hasUnreviewedResults && unexported.Count == 0) || (confirmDiscard?.Invoke() ?? MessageBox.Show(this, "This run may have result files that have not been exported. Discard these temporary results?", "Try Run", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) == MessageBoxResult.OK);
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)
