@@ -6,9 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.Windows.Storage.Pickers;
+using RobocopyUI.Helpers;
 using RobocopyUI.Models;
 
 namespace RobocopyUI;
@@ -85,9 +89,24 @@ public sealed partial class HomePage : Page
     private string GetCommandLine()
     {
         StringBuilder additionalArgs = new();
+
+        // Aggregate from left column
         foreach (var option in OptionsListView.Items)
         {
             if (OptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
+            {
+                additionalArgs.Append(entry.GetCommandLine());
+                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
+                {
+                    additionalArgs.Append(' ');
+                }
+            }
+        }
+
+        // Aggregate from right column
+        foreach (var option in OptionsListViewRight.Items)
+        {
+            if (OptionsListViewRight.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
             {
                 additionalArgs.Append(entry.GetCommandLine());
                 if (!string.IsNullOrEmpty(entry.GetCommandLine()))
@@ -260,53 +279,61 @@ public sealed partial class HomePage : Page
 
     private void InflateOptions()
     {
+        var copyGroupName = ResourceLoaderInstance.ResourceLoader.GetString("CopyOptionsLabel/Text");
+        var throttleGroupName = ResourceLoaderInstance.ResourceLoader.GetString("CopyFileThrottlingOptionsLabel/Text");
+        var retryGroupName = ResourceLoaderInstance.ResourceLoader.GetString("RetryOptionsLabel/Text");
+
         mainOptions =
         [
-            new OptionContent { OptionName = "/S" },
-            new OptionContent { OptionName = "/E" },
-            new OptionContent { OptionName = "/LEV", IsNumberOption = true },
-            new OptionContent { OptionName = "/Z" },
-            new OptionContent { OptionName = "/B" },
-            new OptionContent { OptionName = "/ZB" },
-            new OptionContent { OptionName = "/J" },
-            new OptionContent { OptionName = "/EFSRAW" },
+            new OptionContent { OptionName = "/S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("EOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/LEV", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LEVOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/Z", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ZOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/B", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("BOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/ZB", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ZBOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/J", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("JOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/EFSRAW", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("EFSRAWOption/OptionDescription"), GroupName = copyGroupName },
             new OptionContent
             {
                 OptionName = "/COPY",
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "D" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "T" },
-                    new OptionContent { OptionName = "X" },
-                    new OptionContent { OptionName = "S" },
-                    new OptionContent { OptionName = "O" },
-                    new OptionContent { OptionName = "U" },
+                    new OptionContent { OptionName = "D", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionD/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionT/OptionDescription") },
+                    new OptionContent { OptionName = "X", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionX/OptionDescription") },
+                    new OptionContent { OptionName = "S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionS/OptionDescription") },
+                    new OptionContent { OptionName = "O", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionO/OptionDescription") },
+                    new OptionContent { OptionName = "U", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionU/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOption/OptionDescription"),
+                GroupName = copyGroupName,
             },
-            new OptionContent { OptionName = "/NOCOPY" },
-            new OptionContent { OptionName = "/SECFIX" },
-            new OptionContent { OptionName = "/TIMFIX" },
-            new OptionContent { OptionName = "/PURGE" },
-            new OptionContent { OptionName = "/MIR" },
-            new OptionContent { OptionName = "/MOV" },
-            new OptionContent { OptionName = "/MOVE" },
+            new OptionContent { OptionName = "/NOCOPY", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NOCOPYOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/SECFIX", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SECFIXOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/TIMFIX", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("TIMFIXOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/PURGE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("PURGEOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MIR", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MIROption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MOV", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MOVOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MOVE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MOVEOption/OptionDescription"), GroupName = copyGroupName },
             new OptionContent
             {
                 OptionName = "/A+",
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "R" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "S" },
-                    new OptionContent { OptionName = "H" },
-                    new OptionContent { OptionName = "C" },
-                    new OptionContent { OptionName = "N" },
-                    new OptionContent { OptionName = "E" },
-                    new OptionContent { OptionName = "T" },
+                    new OptionContent { OptionName = "R", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionR/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionS/OptionDescription") },
+                    new OptionContent { OptionName = "H", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionH/OptionDescription") },
+                    new OptionContent { OptionName = "C", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionC/OptionDescription") },
+                    new OptionContent { OptionName = "N", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionN/OptionDescription") },
+                    new OptionContent { OptionName = "E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionE/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionT/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("APlusOption/OptionDescription"),
+                GroupName = copyGroupName,
             },
             new OptionContent
             {
@@ -314,78 +341,88 @@ public sealed partial class HomePage : Page
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "R" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "S" },
-                    new OptionContent { OptionName = "H" },
-                    new OptionContent { OptionName = "C" },
-                    new OptionContent { OptionName = "N" },
-                    new OptionContent { OptionName = "E" },
-                    new OptionContent { OptionName = "T" },
-                    new OptionContent { OptionName = "O" },
+                    new OptionContent { OptionName = "R", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionR/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionS/OptionDescription") },
+                    new OptionContent { OptionName = "H", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionH/OptionDescription") },
+                    new OptionContent { OptionName = "C", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionC/OptionDescription") },
+                    new OptionContent { OptionName = "N", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionN/OptionDescription") },
+                    new OptionContent { OptionName = "E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionE/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionT/OptionDescription") },
+                    new OptionContent { OptionName = "O", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOptionO/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AMinusOption/OptionDescription"),
+                GroupName = copyGroupName,
             },
-            new OptionContent { OptionName = "/CREATE" },
-            new OptionContent { OptionName = "/FAT" },
-            new OptionContent { OptionName = "/256" },
-            new OptionContent { OptionName = "/MON", IsNumberOption = true },
-            new OptionContent { OptionName = "/MOT", IsNumberOption = true },
-            new OptionContent { OptionName = "/RH", IsRunHoursOption = true },
-            new OptionContent { OptionName = "/PF" },
-            new OptionContent { OptionName = "/IPG", IsNumberOption = true },
-            new OptionContent { OptionName = "/SJ" },
-            new OptionContent { OptionName = "/SL" },
-            new OptionContent { OptionName = "/MT", IsNumberOption = true },
+            new OptionContent { OptionName = "/CREATE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("CREATEOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/FAT", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("FATOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/256", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("256Option/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MON", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MONOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MOT", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MOTOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/RH", IsRunHoursOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("RHOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/PF", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("PFOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/IPG", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IPGOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/SJ", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SJOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/SL", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SLOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/MT", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MTOption/OptionDescription"), GroupName = copyGroupName },
             new OptionContent
             {
                 OptionName = "/DCOPY",
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "D" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "T" },
-                    new OptionContent { OptionName = "X" },
-                    new OptionContent { OptionName = "E" },
+                    new OptionContent { OptionName = "D", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionD/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionT/OptionDescription") },
+                    new OptionContent { OptionName = "X", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionX/OptionDescription") },
+                    new OptionContent { OptionName = "E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOptionE/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("DCOPYOption/OptionDescription"),
+                GroupName = copyGroupName,
             },
-            new OptionContent { OptionName = "/NODCOPY" },
-            new OptionContent { OptionName = "/NOOFFLOAD" },
-            new OptionContent { OptionName = "/COMPRESS" },
-            new OptionContent { OptionName = "/SPARSE:Y" },
-            new OptionContent { OptionName = "/SPARSE:N" },
-            new OptionContent { OptionName = "/NOCLONE" },
-            new OptionContent { OptionName = "/IoMaxSize", IsNumberOption = true, IsStorageOption = true },
-            new OptionContent { OptionName = "/IoRate", IsNumberOption = true, IsStorageOption = true },
-            new OptionContent { OptionName = "/Threshold", IsNumberOption = true, IsStorageOption = true },
-            new OptionContent { OptionName = "/R", IsNumberOption = true },
-            new OptionContent { OptionName = "/W", IsNumberOption = true },
-            new OptionContent { OptionName = "/REG" },
-            new OptionContent { OptionName = "/TBD" },
-            new OptionContent { OptionName = "/LFSM" },
-            new OptionContent { OptionName = "/LFSM", IsNumberOption = true, IsStorageOption = true },
+            new OptionContent { OptionName = "/NODCOPY", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NODCOPYOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/NOOFFLOAD", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NOOFFLOADOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/COMPRESS", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COMPRESSOption/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/SPARSE:Y", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SPARSEOptionY/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/SPARSE:N", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SPARSEOptionN/OptionDescription"), GroupName = copyGroupName },
+            new OptionContent { OptionName = "/NOCLONE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NOCLONEOption/OptionDescription"), GroupName = copyGroupName },
+
+            // *** Right column items **** //
+            // Copy File Throttling Options
+            new OptionContent { OptionName = "/IoMaxSize", IsNumberOption = true, IsStorageOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IoMaxSizeOption/OptionDescription"), GroupName = throttleGroupName },
+            new OptionContent { OptionName = "/IoRate", IsNumberOption = true, IsStorageOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IoRateOption/OptionDescription"), GroupName = throttleGroupName },
+            new OptionContent { OptionName = "/Threshold", IsNumberOption = true, IsStorageOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ThresholdOption/OptionDescription"), GroupName = throttleGroupName },
+
+            // Retry Options
+            new OptionContent { OptionName = "/R", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ROption/OptionDescription"), GroupName = retryGroupName },
+            new OptionContent { OptionName = "/W", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("WOption/OptionDescription"), GroupName = retryGroupName },
+            new OptionContent { OptionName = "/REG", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("REGOption/OptionDescription"), GroupName = retryGroupName },
+            new OptionContent { OptionName = "/TBD", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("TBDOption/OptionDescription"), GroupName = retryGroupName },
+            new OptionContent { OptionName = "/LFSM", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LFSMOption/OptionDescription"), GroupName = retryGroupName },
+            new OptionContent { OptionName = "/LFSM", IsNumberOption = true, IsStorageOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LFSMNOption/OptionDescription"), GroupName = retryGroupName },
         ];
 
         filterOptions =
         [
-            new OptionContent { OptionName = "/A" },
-            new OptionContent { OptionName = "/M" },
+            new OptionContent { OptionName = "/A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("AOption/OptionDescription") },
+            new OptionContent { OptionName = "/M", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MOption/OptionDescription") },
             new OptionContent
             {
                 OptionName = "/IA",
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "R" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "S" },
-                    new OptionContent { OptionName = "H" },
-                    new OptionContent { OptionName = "C" },
-                    new OptionContent { OptionName = "N" },
-                    new OptionContent { OptionName = "E" },
-                    new OptionContent { OptionName = "T" },
-                    new OptionContent { OptionName = "O" },
+                    new OptionContent { OptionName = "R", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionR/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionS/OptionDescription") },
+                    new OptionContent { OptionName = "H", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionH/OptionDescription") },
+                    new OptionContent { OptionName = "C", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionC/OptionDescription") },
+                    new OptionContent { OptionName = "N", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionN/OptionDescription") },
+                    new OptionContent { OptionName = "E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionE/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionT/OptionDescription") },
+                    new OptionContent { OptionName = "O", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOptionO/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IAOption/OptionDescription"),
             },
             new OptionContent
             {
@@ -393,74 +430,97 @@ public sealed partial class HomePage : Page
                 IsMultiSelectOption = true,
                 MultiSelectOptions =
                 [
-                    new OptionContent { OptionName = "R" },
-                    new OptionContent { OptionName = "A" },
-                    new OptionContent { OptionName = "S" },
-                    new OptionContent { OptionName = "H" },
-                    new OptionContent { OptionName = "C" },
-                    new OptionContent { OptionName = "N" },
-                    new OptionContent { OptionName = "E" },
-                    new OptionContent { OptionName = "T" },
-                    new OptionContent { OptionName = "O" },
+                    new OptionContent { OptionName = "R", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionR/OptionDescription") },
+                    new OptionContent { OptionName = "A", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionA/OptionDescription") },
+                    new OptionContent { OptionName = "S", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionS/OptionDescription") },
+                    new OptionContent { OptionName = "H", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionH/OptionDescription") },
+                    new OptionContent { OptionName = "C", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionC/OptionDescription") },
+                    new OptionContent { OptionName = "N", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionN/OptionDescription") },
+                    new OptionContent { OptionName = "E", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionE/OptionDescription") },
+                    new OptionContent { OptionName = "T", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionT/OptionDescription") },
+                    new OptionContent { OptionName = "O", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOptionO/OptionDescription") },
                 ],
+                OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XAOption/OptionDescription"),
             },
-            new OptionContent { OptionName = "/XC" },
-            new OptionContent { OptionName = "/XN" },
-            new OptionContent { OptionName = "/XO" },
-            new OptionContent { OptionName = "/XX" },
-            new OptionContent { OptionName = "/XL" },
-            new OptionContent { OptionName = "/IS" },
-            new OptionContent { OptionName = "/IT" },
-            new OptionContent { OptionName = "/MAX", IsNumberOption = true },
-            new OptionContent { OptionName = "/MIN", IsNumberOption = true },
-            new OptionContent { OptionName = "/MAXAGE", IsNumberOption = true },
-            new OptionContent { OptionName = "/MINAGE", IsNumberOption = true },
-            new OptionContent { OptionName = "/MAXLAD", IsNumberOption = true },
-            new OptionContent { OptionName = "/MINLAD", IsNumberOption = true },
-            new OptionContent { OptionName = "/FFT" },
-            new OptionContent { OptionName = "/DST" },
-            new OptionContent { OptionName = "/XJ" },
-            new OptionContent { OptionName = "/XJD" },
-            new OptionContent { OptionName = "/XJF" },
-            new OptionContent { OptionName = "/IM" },
-            new OptionContent { OptionName = "/XF", IsTextOption = true },
-            new OptionContent { OptionName = "/XD", IsTextOption = true },
+            new OptionContent { OptionName = "/XC", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XCOption/OptionDescription") },
+            new OptionContent { OptionName = "/XN", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XNOption/OptionDescription") },
+            new OptionContent { OptionName = "/XO", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XOOption/OptionDescription") },
+            new OptionContent { OptionName = "/XX", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XXOption/OptionDescription") },
+            new OptionContent { OptionName = "/XL", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XLOption/OptionDescription") },
+            new OptionContent { OptionName = "/IS", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ISOption/OptionDescription") },
+            new OptionContent { OptionName = "/IT", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ITOption/OptionDescription") },
+            new OptionContent { OptionName = "/MAX", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MAXOption/OptionDescription") },
+            new OptionContent { OptionName = "/MIN", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MINOption/OptionDescription") },
+            new OptionContent { OptionName = "/MAXAGE", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MAXAGEOption/OptionDescription") },
+            new OptionContent { OptionName = "/MINAGE", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MINAGEOption/OptionDescription") },
+            new OptionContent { OptionName = "/MAXLAD", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MAXLADOption/OptionDescription") },
+            new OptionContent { OptionName = "/MINLAD", IsNumberOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("MINLADOption/OptionDescription") },
+            new OptionContent { OptionName = "/FFT", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("FFTOption/OptionDescription") },
+            new OptionContent { OptionName = "/DST", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("DSTOption/OptionDescription") },
+            new OptionContent { OptionName = "/XJ", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XJOption/OptionDescription") },
+            new OptionContent { OptionName = "/XJD", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XJDOption/OptionDescription") },
+            new OptionContent { OptionName = "/XJF", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XJFOption/OptionDescription") },
+            new OptionContent { OptionName = "/IM", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("IMOption/OptionDescription") },
+            new OptionContent { OptionName = "/XF", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XFOption/OptionDescription") },
+            new OptionContent { OptionName = "/XD", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XDOption/OptionDescription") },
         ];
 
         loggingOptions =
         [
-            new OptionContent { OptionName = "/L" },
-            new OptionContent { OptionName = "/X" },
-            new OptionContent { OptionName = "/V" },
-            new OptionContent { OptionName = "/TS" },
-            new OptionContent { OptionName = "/FP" },
-            new OptionContent { OptionName = "/BYTES" },
-            new OptionContent { OptionName = "/NS" },
-            new OptionContent { OptionName = "/NC" },
-            new OptionContent { OptionName = "/NFL" },
-            new OptionContent { OptionName = "/NDL" },
-            new OptionContent { OptionName = "/NP" },
-            new OptionContent { OptionName = "/ETA" },
-            new OptionContent { OptionName = "/LOG", IsTextOption = true },
-            new OptionContent { OptionName = "/LOG+", IsTextOption = true },
-            new OptionContent { OptionName = "/UNILOG", IsTextOption = true },
-            new OptionContent { OptionName = "/UNILOG+", IsTextOption = true },
-            new OptionContent { OptionName = "/TEE" },
-            new OptionContent { OptionName = "/NJH" },
-            new OptionContent { OptionName = "/NJS" },
-            new OptionContent { OptionName = "/UNICODE" },
+            new OptionContent { OptionName = "/L", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LOption/OptionDescription") },
+            new OptionContent { OptionName = "/X", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("XOption/OptionDescription") },
+            new OptionContent { OptionName = "/V", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("VOption/OptionDescription") },
+            new OptionContent { OptionName = "/TS", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("TSOption/OptionDescription") },
+            new OptionContent { OptionName = "/FP", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("FPOption/OptionDescription") },
+            new OptionContent { OptionName = "/BYTES", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("BYTESOption/OptionDescription") },
+            new OptionContent { OptionName = "/NS", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NSOption/OptionDescription") },
+            new OptionContent { OptionName = "/NC", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NCOption/OptionDescription") },
+            new OptionContent { OptionName = "/NFL", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NFLOption/OptionDescription") },
+            new OptionContent { OptionName = "/NDL", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NDLOption/OptionDescription") },
+            new OptionContent { OptionName = "/NP", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NPOption/OptionDescription") },
+            new OptionContent { OptionName = "/ETA", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("ETAOption/OptionDescription") },
+            new OptionContent { OptionName = "/LOG", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LOGOption/OptionDescription") },
+            new OptionContent { OptionName = "/LOG+", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("LogPlusOption/OptionDescription") },
+            new OptionContent { OptionName = "/UNILOG", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("UNILOGOption/OptionDescription") },
+            new OptionContent { OptionName = "/UNILOG+", IsTextOption = true, OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("UNILOGPlusOption/OptionDescription") },
+            new OptionContent { OptionName = "/TEE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("TEEOption/OptionDescription") },
+            new OptionContent { OptionName = "/NJH", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NJHOption/OptionDescription") },
+            new OptionContent { OptionName = "/NJS", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NJSOption/OptionDescription") },
+            new OptionContent { OptionName = "/UNICODE", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("UNICODEOption/OptionDescription") },
         ];
 
         advancedOptions =
         [
-            new OptionContent { OptionName = "/QUIT" },
-            new OptionContent { OptionName = "/NOSD" },
-            new OptionContent { OptionName = "/NODD" },
+            new OptionContent { OptionName = "/QUIT", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("QUITOption/OptionDescription") },
+            new OptionContent { OptionName = "/NOSD", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NOSDOption/OptionDescription") },
+            new OptionContent { OptionName = "/NODD", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NODDOption/OptionDescription") },
         ];
 
-        OptionsListView.ItemsSource = mainOptions;
+        var mainOptionsLeft = mainOptions.Where(x => x.GroupName == copyGroupName);
+        OptionsListView.ItemsSource = CreateGroupedView(mainOptionsLeft);
+
+        var mainOptionsRight = mainOptions.Where(x => x.GroupName != copyGroupName);
+        OptionsListViewRight.ItemsSource = CreateGroupedView(mainOptionsRight);
+
         FilterOptionsListView.ItemsSource = filterOptions;
         LoggingOptionsListView.ItemsSource = loggingOptions;
         AdvancedOptionsListView.ItemsSource = advancedOptions;
+    }
+
+    private static object CreateGroupedView(IEnumerable<OptionContent> options)
+    {
+        var groups = options
+            .GroupBy(x => x.GroupName)
+            .Select(g => new OptionGroup(g.Key, [.. g]))
+            .ToList();
+
+        var source = new CollectionViewSource
+        {
+            IsSourceGrouped = true,
+            Source = groups,
+            ItemsPath = new PropertyPath(nameof(OptionGroup.Items)),
+        };
+
+        return source.View;
     }
 }

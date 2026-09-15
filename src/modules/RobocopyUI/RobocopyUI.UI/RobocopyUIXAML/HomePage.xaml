@@ -75,7 +75,11 @@
                     </SelectorBarItem>
                 </SelectorBar>
                 <Grid x:Name="OptionsContent" Margin="12">
-                    <ListView x:Name="OptionsListView" SelectionMode="None" IsItemClickEnabled="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ListView x:Name="OptionsListView" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="models:OptionContent">
                                 <controls:OptionEntry
@@ -89,6 +93,39 @@
                                     IsTextOption="{Binding IsTextOption}" />
                             </DataTemplate>
                         </ListView.ItemTemplate>
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+                    </ListView>
+                    <ListView x:Name="OptionsListViewRight" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:OptionContent">
+                                <controls:OptionEntry
+                                    OptionName="{Binding OptionName}"
+                                    OptionDescription="{Binding OptionDescription}"
+                                    IsNumberOption="{Binding IsNumberOption}"
+                                    IsMultiSelectOption="{Binding IsMultiSelectOption}"
+                                    MultiSelectOptions="{Binding MultiSelectOptions}"
+                                    IsRunHoursOption="{Binding IsRunHoursOption}"
+                                    IsStorageOption="{Binding IsStorageOption}"
+                                    IsTextOption="{Binding IsTextOption}" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
                     </ListView>
                 </Grid>
                 <Grid x:Name="FiltersContent" Margin="12">

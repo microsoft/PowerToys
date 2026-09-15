@@ -12,7 +12,7 @@
 
     <Grid>
         <CheckBox x:Name="OptionEnabledCheckBox">
-            <StackPanel Orientation="Horizontal" Spacing="5">
+            <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{x:Bind OptionName, Mode=OneWay}" FontFamily="Cascadia Mono" VerticalAlignment="Center" FontWeight="Bold"/>
                 <TextBlock Text="{x:Bind OptionDescription, Mode=OneWay}" VerticalAlignment="Center" />
                 <TextBox x:Name="OptionTextValue" Width="400" Visibility="{x:Bind IsTextOption, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
