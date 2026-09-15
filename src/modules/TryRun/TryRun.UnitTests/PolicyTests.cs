@@ -170,8 +170,6 @@ public sealed class PolicyTests
         policy.Values["egressDefault"] = "Allow";
         policy.Values["ingressDefault"] = "Allow";
         policy.Values["hostLoopback"] = "Allow";
-        policy.Values["networkProxy"] = "http://127.0.0.1:8080";
-        policy.Values["allowedProxyPeer"] = "test-peer";
         policy.Values["egressDeny"] = JsonSerializer.Serialize(new[] { new PolicyNetworkRule { Destinations = [new() { Cidr = "10.0.0.0/8", Except = ["10.1.0.0/16"] }], Ports = [new() { Protocol = "Tcp", Port = 80, EndPort = 90 }] } });
         var request = new ExecutionRequest("Set-Content must-not-run.txt bad", run.WorkingDirectory, run.TemporaryDirectory, 30) { Policy = policy };
         using var snapshot = await DescribeAsync(request);
@@ -194,14 +192,14 @@ public sealed class PolicyTests
         Assert.AreEqual("display", ui.GetProperty("systemSettings").GetString());
         Assert.IsTrue(ui.GetProperty("desktopSystemControl").GetBoolean());
         Assert.IsTrue(ui.GetProperty("ime").GetBoolean());
-        Assert.AreEqual("test-peer", containment.GetProperty("network").GetProperty("allowedProxyPeer").GetString());
+        Assert.IsFalse(containment.TryGetProperty("network", out _));
         var network = configured.GetProperty("network");
         Assert.AreEqual("allow", network.GetProperty("egress").GetProperty("default").GetString());
         Assert.AreEqual(90, network.GetProperty("egress").GetProperty("deny")[0].GetProperty("ports")[0].GetProperty("endPort").GetInt32());
         Assert.AreEqual("10.1.0.0/16", network.GetProperty("egress").GetProperty("deny")[0].GetProperty("to")[0].GetProperty("except")[0].GetString());
         Assert.AreEqual("allow", network.GetProperty("ingress").GetProperty("default").GetString());
         Assert.AreEqual("allow", network.GetProperty("ingress").GetProperty("hostLoopback").GetString());
-        Assert.AreEqual("http://127.0.0.1:8080", network.GetProperty("runtimeConfig").GetProperty("networkProxy").GetString());
+        Assert.IsFalse(network.TryGetProperty("runtimeConfig", out _));
         Assert.AreEqual("override", root.GetProperty("Environment").GetProperty("POLICY_TEST").GetString());
         Assert.AreEqual(" value ", root.GetProperty("Environment").GetProperty("POLICY_SPACE").GetString());
         Assert.IsTrue(root.GetProperty("InheritDefaultEnvironment").GetBoolean());
@@ -433,7 +431,7 @@ public sealed class PolicyTests
         }
     }
 
-    private static async Task<JsonDocument> DescribeAsync(ExecutionRequest request)
+    internal static async Task<JsonDocument> DescribeAsync(ExecutionRequest request)
     {
         using var process = new Process { StartInfo = new ProcessStartInfo(MultiBackendTests.Worker()) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true } };
         process.StartInfo.ArgumentList.Add("--describe-policy");

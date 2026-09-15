@@ -50,7 +50,7 @@ internal sealed class NetworkRulesEditor : ContentControl
         {
             var row = new StackPanel { Margin = new Thickness(0, 4, 0, 8) };
             destinationPanel.Children.Add(row);
-            var cidr = Field(row, "IP/CIDR", peer.Cidr);
+            var cidr = Field(row, "Network CIDR (base address, e.g. 192.0.2.0/24)", peer.Cidr);
             var except = Field(row, "Except (comma-separated CIDRs)", string.Join(", ", peer.Except));
             Func<PolicyNetworkPeer> read = () => new() { Cidr = cidr.Text, Except = except.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) };
             destinations.Add(read);

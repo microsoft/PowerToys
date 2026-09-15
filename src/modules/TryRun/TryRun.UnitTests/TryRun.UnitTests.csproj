@@ -10,6 +10,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="..\policy-coverage.json" Link="policy-coverage.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\mxc-version.txt" Link="mxc-version.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MxcRoot)\schemas\dev\mxc-config.schema.0.9.0-alpha.json" Link="mxc-contract.schema.json" CopyToOutputDirectory="PreserveNewest" Condition="'$(MxcRoot)' != ''" />
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
     <ProjectReference Include="..\TryRun\TryRun.csproj" />

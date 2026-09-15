@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -25,7 +24,7 @@ public sealed class PolicySettings
         new("readonlyPaths", "Read-only paths", "Files", "$runtime\n$app\n$fonts", "One local path per line. $app is the installed application folder; $runtime and $fonts are Windows runtime resources. Empty tokens are omitted.", "paths", LinuxDefault: string.Empty),
         new("readwritePaths", "Writable paths", "Files", "$work\n$temp", "One local path per line. $work and $temp are this run's copies and temporary files. Adding a host path allows changes to the ORIGINAL files.", "paths"),
         new("deniedPaths", "Denied paths", "Files", string.Empty, "One local path per line. WSLC cannot exclude a child of a mounted folder.", "paths"),
-        new("clearPolicyOnExit", "Clear filesystem policy when the process exits", "Files", "true", "Windows policy lifetime. Disabling may leave backend policy state on the host.", "bool", Backend: "Windows"),
+        new("clearPolicyOnExit", "Clear retained policy when the process exits", "Files", "true", "Inverse of MXC lifecycle.preservePolicy. Applies to retained filesystem and network policy. Disabling may leave policy state on the host.", "bool", Backend: "Windows"),
         new("networkMode", "Network configuration", "Network", "Basic", "Basic uses outbound/LAN/host rules. Directional uses separate inbound/outbound rules; inactive settings must remain at defaults.", "choice", ["Basic", "Directional"]),
         new("allowOutbound", "Allow outbound network", "Network", "false", "WSLC networking is all-or-nothing; enabling it also makes reachable local networks accessible.", "bool"),
         new("allowLocalNetwork", "Allow local network", "Network", "false", "Windows basic network policy. WSLC uses its overall network mode.", "bool", Backend: "Windows"),
@@ -33,13 +32,13 @@ public sealed class PolicySettings
         new("blockedHosts", "Blocked hosts", "Network", string.Empty, "One host per line. Requires a host-filtering backend.", "lines", Backend: "Windows"),
         new("proxyKind", "Proxy", "Network", "None", "Linux URL proxies are cooperative environment variables, not enforced proxy-only traffic.", "choice", ["None", "Host port", "URL"]),
         new("proxyPort", "Host proxy port", "Network", "8080", "Used with Host port. Windows only.", "number", Backend: "Windows"),
-        new("proxyUrl", "Proxy URL", "Network", string.Empty, "HTTP or HTTPS URL. Required when Proxy is URL."),
+        new("proxyUrl", "Proxy URL", "Network", string.Empty, "HTTP or HTTPS URL with an explicit non-default port, for example http://proxy.example:8080. Required when Proxy is URL."),
         new("egressDefault", "Default outbound action", "Network", "Deny", "Used in Directional mode.", "choice", ["Deny", "Allow"], Backend: "Windows"),
         new("egressAllow", "Outbound allow rules", "Network", "[]", "Destination networks, exclusions, protocols and port ranges. Windows PSEC support is required.", "rules", Backend: "Windows"),
         new("egressDeny", "Outbound deny rules", "Network", "[]", "Deny rules take precedence. Empty destinations/ports mean any.", "rules", Backend: "Windows"),
         new("ingressDefault", "Default inbound action", "Network", "Deny", "Used in Directional mode.", "choice", ["Deny", "Allow"], Backend: "Windows"),
         new("hostLoopback", "Host loopback access", "Network", "Deny", "Allowing this requires Windows PSEC support.", "choice", ["Deny", "Allow"], Backend: "Windows"),
-        new("networkProxy", "Runtime loopback proxy URL", "Network", string.Empty, "Directional mode only. Requires Windows PSEC support.", Backend: "Windows"),
+        new("networkProxy", "Runtime loopback proxy URL", "Network", string.Empty, "Directional mode: loopback HTTP/S with a non-default port. Requires outbound Deny without direct rules and inbound Allow. A proxy peer requires host loopback Deny; otherwise Allow. Windows PSEC support required.", Backend: "Windows"),
         new("allowedProxyPeer", "Authorized proxy peer", "Network", string.Empty, "Package family or AppContainer profile identity. Directional mode only.", Backend: "Windows"),
         new("allowWindows", "Allow application windows", "Windows", "true", "PowerShell also needs Windows UI initialization. Turning this off can prevent it from starting.", "bool", Backend: "Windows"),
         new("clipboard", "Clipboard access", "Windows", "None", "Read: paste host contents into the application. Write: copy application contents to the host.", "choice", ["None", "Read", "Write", "All"], Backend: "Windows"),
@@ -159,7 +158,7 @@ public sealed class PolicySettings
 
         if (Get("proxyKind") == "URL")
         {
-            ValidateUrl(Get("proxyUrl"));
+            PolicyNetworkValidation.ValidateUrl(Get("proxyUrl"));
         }
         else if (Get("proxyUrl").Length != 0)
         {
@@ -168,7 +167,7 @@ public sealed class PolicySettings
 
         if (Get("networkProxy").Length > 0)
         {
-            ValidateUrl(Get("networkProxy"));
+            PolicyNetworkValidation.ValidateUrl(Get("networkProxy"));
         }
 
         if (Enabled("captureEnabled") && Enabled("learningMode"))
@@ -235,16 +234,7 @@ public sealed class PolicySettings
                 foreach (var peer in rule.Destinations)
                 {
                     ArgumentNullException.ThrowIfNull(peer);
-                    ValidateCidr(peer.Cidr);
-                    if (peer.Except is null || peer.Except.Length > 64)
-                    {
-                        throw new ArgumentException("Choose at most 64 destination exclusions.");
-                    }
-
-                    foreach (var exception in peer.Except)
-                    {
-                        ValidateCidr(exception);
-                    }
+                    PolicyNetworkValidation.ValidatePeer(peer);
                 }
 
                 foreach (var port in rule.Ports)
@@ -259,6 +249,8 @@ public sealed class PolicySettings
                 }
             }
         }
+
+        PolicyNetworkValidation.ValidateProxyAndHosts(this, linux);
     }
 
     public static (ushort Host, ushort Container) ParsePortMapping(string line)
@@ -270,23 +262,6 @@ public sealed class PolicySettings
         }
 
         return (host, container);
-    }
-
-    private static void ValidateUrl(string value)
-    {
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not "http" and not "https" || string.IsNullOrEmpty(uri.Host))
-        {
-            throw new ArgumentException("Enter an absolute HTTP or HTTPS proxy URL.");
-        }
-    }
-
-    private static void ValidateCidr(string value)
-    {
-        var parts = value?.Split('/');
-        if (parts is not { Length: 2 } || !IPAddress.TryParse(parts[0], out var address) || !int.TryParse(parts[1], out var prefix) || prefix < 0 || prefix > address.GetAddressBytes().Length * 8)
-        {
-            throw new ArgumentException("Network destinations and exclusions must be IP/CIDR ranges.");
-        }
     }
 
     public string Describe(bool linux) => string.Join("\n", Fields.Where(field => field.AppliesTo(linux)).Select(field => $"{field.Title}: {(Get(field.Key, linux).Length == 0 ? "(none)" : Get(field.Key, linux))}"));

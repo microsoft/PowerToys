@@ -1,0 +1,1505 @@
+{
+  "revision": "4a941b0b913c39d91a9fb1ad1824c537a896eef5",
+  "schema": "schemas/dev/mxc-config.schema.0.9.0-alpha.json",
+  "schemaSha256": "2E686AA13118F172310B570666CB095BA9ED30E6D43B24736A9F7B775E56BE0A",
+  "description": "Native field inventory. Mapped, fixed, gaps, metadata and testing-only rows are distinct. Evidence names are traceability links, not exhaustive enforcement claims.",
+  "fields": [
+    {
+      "native": "CaptureDenials.mode",
+      "status": "mapped",
+      "controls": [
+        "captureMode"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "CaptureDenials.outputPath",
+      "status": "mapped",
+      "controls": [
+        "captureOutputPath"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "CaptureDenials.retainEtl",
+      "status": "mapped",
+      "controls": [
+        "retainEtl"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "DeprovisionRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "DeprovisionRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "DeprovisionRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "DeprovisionRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "DeprovisionRequest.sandboxId",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "DeprovisionRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "DeprovisionRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "ExecRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "ExecRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.network",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.process",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.sandboxId",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "ExecRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Fallback.allowDaclMutation",
+      "status": "gap",
+      "controls": [],
+      "evidence": [],
+      "note": "Not authored by Try Run or exposed by the one-shot .NET request. The pinned native parser defaults this to true; a future user control should default to false and pass it before backend selection."
+    },
+    {
+      "native": "Filesystem.deniedPaths",
+      "status": "mapped",
+      "controls": [
+        "deniedPaths"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Filesystem.readonlyPaths",
+      "status": "mapped",
+      "controls": [
+        "readonlyPaths"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Filesystem.readwritePaths",
+      "status": "mapped",
+      "controls": [
+        "readwritePaths"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "IsolationSessionNetwork.allowLocalNetwork",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionNetwork.defaultPolicy",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvision.appId",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionExperimental.isolation_session",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.containment",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.network",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "IsolationSessionProvisionRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Lifecycle.destroyOnExit",
+      "status": "fixed",
+      "controls": [],
+      "evidence": [],
+      "note": "The SDK builder fixes this to true; Try Run also tears down the one-shot run."
+    },
+    {
+      "native": "Lifecycle.preservePolicy",
+      "status": "mapped",
+      "controls": [
+        "clearPolicyOnExit"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Inverse of clearPolicyOnExit. Applies to retained policy, not just filesystem policy; lifecycle as a whole is not editable."
+    },
+    {
+      "native": "Lxc.distribution",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Lxc.release",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Network.allowedHosts",
+      "status": "mapped",
+      "controls": [
+        "allowedHosts"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.allowLocalNetwork",
+      "status": "mapped",
+      "controls": [
+        "allowLocalNetwork"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.blockedHosts",
+      "status": "mapped",
+      "controls": [
+        "blockedHosts"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.defaultPolicy",
+      "status": "mapped",
+      "controls": [
+        "allowOutbound"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.egress",
+      "status": "mapped",
+      "controls": [
+        "networkMode"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.enforcementMode",
+      "status": "gap",
+      "controls": [],
+      "evidence": [],
+      "note": "Native capabilities/firewall/both choice is not exposed by the one-shot .NET NetworkPolicy."
+    },
+    {
+      "native": "Network.ingress",
+      "status": "mapped",
+      "controls": [
+        "networkMode"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Network.proxy",
+      "status": "mapped",
+      "controls": [
+        "proxyKind"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkEgress.allow",
+      "status": "mapped",
+      "controls": [
+        "egressAllow"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.WildcardSelectorsAreOmittedAndAcceptedByNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkEgress.default",
+      "status": "mapped",
+      "controls": [
+        "egressDefault"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.WildcardSelectorsAreOmittedAndAcceptedByNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkEgress.deny",
+      "status": "mapped",
+      "controls": [
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.WildcardSelectorsAreOmittedAndAcceptedByNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkIngress.default",
+      "status": "mapped",
+      "controls": [
+        "ingressDefault"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.RuntimeProxyCombinationsAgreeWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkIngress.hostLoopback",
+      "status": "mapped",
+      "controls": [
+        "hostLoopback"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.RuntimeProxyCombinationsAgreeWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkPeer.cidr",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.ExclusionContainmentAgreesWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkPeer.except",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.ExclusionContainmentAgreesWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkPort.endPort",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.NetworkRulesKeepAllDestinationsExclusionsAndPortRanges"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkPort.port",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.NetworkRulesKeepAllDestinationsExclusionsAndPortRanges"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkPort.protocol",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.NetworkRulesKeepAllDestinationsExclusionsAndPortRanges"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkProxy.builtinTestServer",
+      "status": "testing-only",
+      "controls": [],
+      "evidence": [],
+      "note": "Deliberately permissive native test feature. Requires testing opt-in; not exposed in normal Try Run."
+    },
+    {
+      "native": "NetworkProxy.localhost",
+      "status": "mapped",
+      "controls": [
+        "proxyKind",
+        "proxyPort"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkProxy.url",
+      "status": "mapped",
+      "controls": [
+        "proxyKind",
+        "proxyUrl"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.CaptureAndBasicNetworkOptionsReachTheWorker"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkRule.ports",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.WildcardSelectorsAreOmittedAndAcceptedByNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "NetworkRule.to",
+      "status": "mapped",
+      "controls": [
+        "egressAllow",
+        "egressDeny"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.WildcardSelectorsAreOmittedAndAcceptedByNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotExperimental.test",
+      "status": "testing-only",
+      "controls": [],
+      "evidence": [],
+      "note": "Deliberately permissive native test feature. Requires testing opt-in; not exposed in normal Try Run."
+    },
+    {
+      "native": "OneShotExperimental.windows_sandbox",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotExperimental.wslc",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "OneShotRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "OneShotRequest.appContainer",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.containerId",
+      "status": "mapped",
+      "controls": [
+        "containerName"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotRequest.containment",
+      "status": "fixed",
+      "controls": [],
+      "evidence": [],
+      "note": "Derived from the Windows/Linux execution profile; other native backend choices are not wired."
+    },
+    {
+      "native": "OneShotRequest.experimental",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.fallback",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.filesystem",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.lifecycle",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.lxc",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotRequest.macos_sandbox",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotRequest.network",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.process",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.processContainer",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.runtimeConfig",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.seatbelt",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotRequest.telemetry",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.ui",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "OneShotRequest.version",
+      "status": "mapped",
+      "controls": [
+        "version"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWindowsSandbox.daemonPipeName",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotWindowsSandbox.idleTimeout",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotWindowsSandbox.idleTimeoutMs",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "OneShotWslc.cpuCount",
+      "status": "mapped",
+      "controls": [
+        "cpuCount"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.gpu",
+      "status": "mapped",
+      "controls": [
+        "gpu"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.image",
+      "status": "mapped",
+      "controls": [
+        "@ImageBox"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.imageTarPath",
+      "status": "mapped",
+      "controls": [
+        "@ImageTarBox"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.memoryMb",
+      "status": "mapped",
+      "controls": [
+        "memoryMb"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "WSLC setting is mapped; Try Run currently bounds numeric inputs to uint32 whereas the native memory field is uint64."
+    },
+    {
+      "native": "OneShotWslc.portMappings",
+      "status": "mapped",
+      "controls": [
+        "portMappings"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.storagePath",
+      "status": "mapped",
+      "controls": [
+        "storagePath"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "OneShotWslc.targetOs",
+      "status": "fixed",
+      "controls": [],
+      "evidence": [],
+      "note": "Fixed to Linux by WSLC selection."
+    },
+    {
+      "native": "PortMapping.containerPort",
+      "status": "mapped",
+      "controls": [
+        "portMappings"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "PortMapping.protocol",
+      "status": "fixed",
+      "controls": [],
+      "evidence": [],
+      "note": "Fixed to TCP by the current .NET WslcPortMapping type."
+    },
+    {
+      "native": "PortMapping.windowsPort",
+      "status": "mapped",
+      "controls": [
+        "portMappings"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsLinuxResourcesAndBasicNetworkConfiguration"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Process.commandLine",
+      "status": "mapped",
+      "controls": [
+        "@WorkloadFileBox",
+        "@ScriptBox",
+        "@ArgumentsBox"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Authored from program/script and literal arguments, rather than accepting unrestricted native config JSON."
+    },
+    {
+      "native": "Process.cwd",
+      "status": "fixed",
+      "controls": [],
+      "evidence": [],
+      "note": "Derived from this run workspace and selected entry point; arbitrary host cwd is not editable."
+    },
+    {
+      "native": "Process.env",
+      "status": "mapped",
+      "controls": [
+        "environment"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Process.inheritDefaultEnv",
+      "status": "mapped",
+      "controls": [
+        "inheritDefaultEnvironment"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Process.timeout",
+      "status": "mapped",
+      "controls": [
+        "timeoutMs"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainer.capabilities",
+      "status": "mapped",
+      "controls": [
+        "capabilities"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainer.captureDenials",
+      "status": "mapped",
+      "controls": [
+        "captureEnabled"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainer.learningMode",
+      "status": "mapped",
+      "controls": [
+        "learningMode"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainer.leastPrivilege",
+      "status": "mapped",
+      "controls": [
+        "leastPrivilege"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainer.network",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "ProcessContainer.ui",
+      "status": "structural",
+      "controls": [],
+      "evidence": [],
+      "note": "Parent or alias section; coverage is determined by its child entries, not by the presence of this section."
+    },
+    {
+      "native": "ProcessContainerNetwork.allowedProxyPeer",
+      "status": "mapped",
+      "controls": [
+        "allowedProxyPeer"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.RuntimeProxyCombinationsAgreeWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainerUi.desktopSystemControl",
+      "status": "mapped",
+      "controls": [
+        "desktopSystemControl"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainerUi.ime",
+      "status": "mapped",
+      "controls": [
+        "ime"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainerUi.isolation",
+      "status": "mapped",
+      "controls": [
+        "uiIsolation"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "ProcessContainerUi.systemSettings",
+      "status": "mapped",
+      "controls": [
+        "systemSettings"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "RuntimeConfig.networkProxy",
+      "status": "mapped",
+      "controls": [
+        "networkProxy"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyNetworkTests.RuntimeProxyCombinationsAgreeWithNativeParser"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Seatbelt.extraMachLookups",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Seatbelt.guiAccess",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Seatbelt.keychainAccess",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Seatbelt.launchMethod",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Seatbelt.nestedPty",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Seatbelt.profileOverride",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StartRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "StartRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "StartRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StartRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StartRequest.sandboxId",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StartRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StartRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StateAwareIsolationSession.provision",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StateAwareWslc.provision",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StopRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "StopRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "StopRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StopRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StopRequest.sandboxId",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StopRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "StopRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "Telemetry.enabled",
+      "status": "mapped",
+      "controls": [
+        "telemetry"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "TestFeature.message",
+      "status": "testing-only",
+      "controls": [],
+      "evidence": [],
+      "note": "Deliberately permissive native test feature. Requires testing opt-in; not exposed in normal Try Run."
+    },
+    {
+      "native": "Ui.clipboard",
+      "status": "mapped",
+      "controls": [
+        "clipboard"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "Ui.disable",
+      "status": "mapped",
+      "controls": [
+        "allowWindows"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Inverse of allowWindows. Windows only; WSLC rejects the UI section."
+    },
+    {
+      "native": "Ui.injection",
+      "status": "mapped",
+      "controls": [
+        "allowInputInjection"
+      ],
+      "evidence": [
+        "PolicyTests.EveryOptionHasADefaultAndAnEditor",
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+      ],
+      "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.containment",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.filesystem",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WindowsSandboxProvisionRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvision.image",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvision.imageTarPath",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionExperimental.wslc",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest._comment",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "WslcProvisionRequest.$schema",
+      "status": "metadata",
+      "controls": [],
+      "evidence": [],
+      "note": "Editor annotation only; not an execution permission."
+    },
+    {
+      "native": "WslcProvisionRequest.containment",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.experimental",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.filesystem",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.network",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.phase",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.telemetry",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    },
+    {
+      "native": "WslcProvisionRequest.version",
+      "status": "backend-gap",
+      "controls": [],
+      "evidence": [],
+      "note": "This backend or multi-call phase is not connected to the Try Run execution workflow."
+    }
+  ],
+  "backends": [
+    {
+      "native": "process",
+      "status": "mapped",
+      "note": "Resolves to Windows ProcessContainer on this host."
+    },
+    {
+      "native": "processcontainer",
+      "status": "mapped",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "appcontainer",
+      "status": "mapped",
+      "note": "Native alias for ProcessContainer."
+    },
+    {
+      "native": "lxc",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "bubblewrap",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "seatbelt",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "macos_sandbox",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "vm",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "windows_sandbox",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "microvm",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "hyperlight",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "wslc",
+      "status": "mapped",
+      "note": "Host availability and selected-policy support must be checked separately."
+    },
+    {
+      "native": "isolation_session",
+      "status": "backend-gap",
+      "note": "Host availability and selected-policy support must be checked separately."
+    }
+  ]
+}

@@ -145,8 +145,9 @@ internal static class PolicyMapper
 
     private static List<NetworkRulePolicy> Rules(PolicyNetworkRule[] rules) => rules.Select(rule => new NetworkRulePolicy
     {
-        To = rule.Destinations.Select(peer => new NetworkPeerPolicy(peer.Cidr) { Except = peer.Except.ToList() }).ToList(),
-        Ports = rule.Ports.Select(port => new NetworkPortPolicy { Protocol = Enum.Parse<NetworkProtocol>(port.Protocol), Port = port.Port, EndPort = port.EndPort }).ToList(),
+        // MXC represents a wildcard by omission. An explicit empty array is invalid.
+        To = rule.Destinations.Length == 0 ? null : rule.Destinations.Select(peer => new NetworkPeerPolicy(peer.Cidr) { Except = peer.Except.ToList() }).ToList(),
+        Ports = rule.Ports.Length == 0 ? null : rule.Ports.Select(port => new NetworkPortPolicy { Protocol = Enum.Parse<NetworkProtocol>(port.Protocol), Port = port.Port, EndPort = port.EndPort }).ToList(),
     }).ToList();
 
     internal static string Snapshot(SandboxRequest request) => JsonSerializer.Serialize(new { request.Policy, request.Containment, request.ContainerName, request.WorkingDirectory, request.Environment, request.InheritDefaultEnvironment }, SnapshotOptions);

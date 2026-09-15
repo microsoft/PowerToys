@@ -33,18 +33,19 @@ Complete and validate each milestone before starting the next.
 8. **Two-step workflow — implemented**: separate configuration and run/results
    pages, an immediately accessible EXE chooser, persistent previous results,
    and image preparation logs kept with environment setup.
-9. **Configurable policies — implemented**: the full public
-   policy and backend configuration surface used by the pinned MXC .NET Windows
+9. **Configurable policies — SDK controls implemented; native coverage incomplete**:
+   policy and backend configuration controls used by the pinned MXC .NET Windows
    ProcessContainer and Linux WSLC paths. See [Run permissions](POLICY-OPTIONS.md)
    for every option, default and backend limitation. Session lifecycle and
-   additional backends remain separate work.
+   additional backends remain separate work. The [native coverage audit](POLICY-COVERAGE.md)
+   records missing controls and distinguishes mapping, parsing and runtime evidence.
 10. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
-Installer, Runner/GPO registration, automatic write-back, multi-call session
-lifecycle, and additional backend entry points are outside this
-prototype. Production integration needs the normal PowerToys dependency, signing,
+Installer, Runner/GPO registration and automatic write-back are outside this
+prototype. Multi-call lifecycle and additional backend entry points are pending
+in the coverage roadmap. Production integration needs the normal PowerToys dependency, signing,
 privacy and security reviews and resolution of MXC's preview limitations.
 
 Before running, select **Run permissions…** to edit the default policy. All
@@ -77,6 +78,26 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Native policy audit and network-rule corrections
+
+The native coverage matrix classifies all 162 definition/property entries and
+13 containment spellings in the pinned 0.9.0-alpha schema. It also checks that
+all 44 policy controls have native destinations and that evidence links name
+existing tests. These counts include metadata, structural nodes and gaps, and
+must not be interpreted as a count of implemented permissions.
+
+All 49 targeted checks passed in **policy-coverage-regression.trx**, including
+the prior policy and fuzz regressions. The new tests compare wildcard selectors,
+CIDR exclusions and runtime-proxy combinations with the actual MXC parser.
+Both schema 0.8 and 0.9 accept the corrected wildcard mappings; the old empty-array
+form is rejected. A real Windows workload also completed with a wildcard deny
+rule. An additional 1,503 fuzz seeds/mutations cover network-specific inputs.
+Tests found and corrected the native requirement for zero CIDR host bits.
+
+This stage fixes mapping and validation; it does not implement the native
+enforcement-mode selector, DACL-fallback consent or persistent sessions. See
+[POLICY-COVERAGE.md](POLICY-COVERAGE.md) for the remaining work and evidence scope.
 
 ### Configurable permissions
 

@@ -6,13 +6,18 @@ updates only the configuration; Cancel discards the dialog draft. Windows and
 Linux keep separate drafts for the lifetime of the window. Previous run reports
 retain their own submitted policy snapshot.
 
-The scope is the complete public policy surface of the pinned MXC .NET
-SandboxPolicy, ProcessContainerContainment and WslcContainment types at
+The controls map the public policy surface of the pinned MXC .NET
+SandboxPolicy, ProcessContainerContainment and WslcContainment types, with the
+constraints described below, at
 4a941b0b913c39d91a9fb1ad1824c537a896eef5. This is the API used by Try Run's
 Windows and Linux execution paths. It is not an editor for every native CLI
 lifecycle/backend configuration (for example macOS Seatbelt or IsolationSession).
 The obsolete SandboxPolicy.CaptureDenials alias is represented by the supported
 ProcessContainerContainment.CaptureDenials controls.
+
+See [the native coverage audit](POLICY-COVERAGE.md) for the complete inventory,
+fixed values, missing native controls and unconnected backends. Field coverage
+does not mean that every combination has been validated or can run on this host.
 
 The form uses ordinary controls and nested network-rule editors, not executable
 configuration or a raw JSON input box. Values are validated again in the worker.
@@ -29,7 +34,7 @@ Backend availability does not imply support for every policy combination.
 | filesystem.readonlyPaths | Read-only paths | Windows runtime, installed app folder when applicable, fonts for EXEs; empty on Linux |
 | filesystem.readwritePaths | Writable paths | This run's Work and Temp |
 | filesystem.deniedPaths | Denied paths | Empty |
-| filesystem.clearPolicyOnExit | Clear filesystem policy on exit | On for Windows; not submitted to WSLC |
+| filesystem.clearPolicyOnExit | Clear retained policy on exit | On for Windows; inverse of lifecycle.preservePolicy, including retained network policy; not submitted to WSLC |
 | network.allowOutbound | Allow outbound network | Off |
 | network.allowLocalNetwork | Allow local network | Off; Windows only |
 | network.allowedHosts | Allowed hosts | Empty; Windows only |
@@ -75,6 +80,12 @@ Backend availability does not imply support for every policy combination.
 Basic networking is the initial mode. Directional mode exposes the separate
 outbound/inbound fields. A non-default value in an inactive network mode is
 rejected until reset; switching modes never silently discards a grant or deny.
+
+Empty destination/port lists are submitted by omitting those fields, meaning any.
+CIDRs must be network base addresses and exclusions must belong to the parent
+network. Proxy URLs require an explicit non-default port. Runtime loopback proxies
+require egress Deny with no direct rules, ingress Allow, and host-loopback Deny
+with a named peer (Allow without a peer). Invalid combinations fail before launch.
 
 ## Files, diagnostics and backend differences
 
