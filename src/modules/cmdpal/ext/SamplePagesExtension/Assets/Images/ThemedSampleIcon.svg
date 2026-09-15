@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="{{AccentColor}}" fill-opacity="0.18" />
+  <circle cx="16" cy="16" r="9.5" fill="{{AccentColor}}" stroke="{{ThemeColor}}" stroke-width="1.5" />
+  <path d="M11.5 16.2l3 3 6.4-7" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
