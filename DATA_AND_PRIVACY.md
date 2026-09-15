@@ -99,6 +99,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
 | Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
+### Auto Hide Cursor
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether Auto Hide Cursor is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
+
 ### Awake
 
 | Event Name | Description |
@@ -145,6 +151,8 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPalHotkeySummoned | Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys. |
 | Microsoft.PowerToys.CmdPalInvokeResult | Records the result type of a Command Palette invocation. |
 | Microsoft.PowerToys.CmdPalProcessStarted | Triggered when the Command Palette process is started. |
+| Microsoft.PowerToys.CmdPal_SearchResults | Triggered when a search is triggered on the main list, including query length, result count, and duration. |
+| Microsoft.PowerToys.CmdPal_SearchResultSelected | Triggered when a search result is selected, including query length, selection index, and result tier. |
 
 ### Crop and lock
 

@@ -100,25 +100,30 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 {
     const unsigned long powertoys_pid = GetCurrentProcessId();
 
-    const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+    const auto launch_direct_exe = [&]() -> HRESULT {
+        // Fallback: launch exe directly (dev builds without GenerateAppxPackageOnBuild)
+        const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
 
-    SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
-    sei.nShow = SW_SHOWNORMAL;
-    sei.lpParameters = executable_args.data();
-    if (ShellExecuteExW(&sei))
-    {
-        Logger::trace("Successfully started Advanced Paste process");
-        terminate_process();
-        m_hProcess = sei.hProcess;
-        return S_OK;
-    }
-    else
-    {
-        Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
-        return E_FAIL;
-    }
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace("Successfully started Advanced Paste process (direct)");
+            terminate_process();
+            m_hProcess = sei.hProcess;
+            return S_OK;
+        }
+        else
+        {
+            Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
+            return E_FAIL;
+        }
+    };
+
+    return launch_direct_exe();
 }
 
 HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring& pipe_name)
@@ -175,8 +180,9 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
         }
     }
 
-    // Wait for client.
-    const constexpr DWORD client_timeout_millis = 5000;
+    // Wait for client. AdvancedPaste under sparse identity can take >5s on cold start to
+    // bootstrap WinAppSDK + DI host before connecting back to this pipe.
+    const constexpr DWORD client_timeout_millis = 15000;
     switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
     {
         case WAIT_OBJECT_0:

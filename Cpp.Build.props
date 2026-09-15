@@ -65,6 +65,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <!-- TODO: _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING for compatibility with VS 17.8. Check if we can remove. -->
       <!-- TODO: _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS for VS 2026 (MSVC 14.51+). The STL turned
            <experimental/coroutine> into a hard error (STL1011), and C++/WinRT's base.h still falls back to it when

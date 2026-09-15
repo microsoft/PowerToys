@@ -10,6 +10,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseHighlighterProperties
     {
+        public const string DefaultLeftButtonClickColor = "#a6BFFF00";
+        public const string DefaultRightButtonClickColor = "#a600BFFF";
+
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48);
 
@@ -65,8 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            LeftButtonClickColor = new StringProperty("#a6FFFF00");
-            RightButtonClickColor = new StringProperty("#a60000FF");
+            LeftButtonClickColor = new StringProperty(DefaultLeftButtonClickColor);
+            RightButtonClickColor = new StringProperty(DefaultRightButtonClickColor);
             AlwaysColor = new StringProperty("#00FF0000");
             HighlightOpacity = new IntProperty(166); // for migration from <=1.1 to 1.2
             HighlightRadius = new IntProperty(30);

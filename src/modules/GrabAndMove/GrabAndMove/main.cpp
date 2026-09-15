@@ -27,6 +27,7 @@ static ULONG_PTR g_gdiplusToken = 0; // GDI+ token for overlay border rendering
 static HHOOK g_hhkKeyboard = nullptr;
 static HHOOK g_hhkMouse = nullptr;
 static HWND g_hMsgWnd = nullptr;
+static bool g_systemSessionEnding = false;
 
 // 0 = Alt (default), 1 = Win
 enum class GrabAndMoveModifier
@@ -1740,8 +1741,30 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         return 0;
 
     case WM_DESTROY:
-        RemoveTrayIcon();
+        if (!g_systemSessionEnding)
+        {
+            RemoveTrayIcon();
+        }
         PostQuitMessage(0);
+        return 0;
+    }
+
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+    case WM_QUERYENDSESSION:
+        return TRUE;
+
+    case WM_ENDSESSION:
+        if (wParam)
+        {
+            g_systemSessionEnding = !(lParam & ENDSESSION_CLOSEAPP);
+            PostQuitMessage(0);
+        }
         return 0;
     }
 
@@ -1821,7 +1844,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     // Register the overlay window class (layered per-pixel-alpha surface, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
-    overlayWindowClass.lpfnWndProc = DefWindowProcW;
+    overlayWindowClass.lpfnWndProc = OverlayWndProc;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     overlayWindowClass.hbrBackground = nullptr; // per-pixel alpha via UpdateLayeredWindow
@@ -1836,6 +1859,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     g_hMsgWnd = CreateWindowExW(0, CLASS_NAME, APP_TITLE, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, hInstance, nullptr);
     if (!g_hMsgWnd)
     {
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
+
+    // The message-only window does not receive session-end broadcasts. Keep a
+    // hidden top-level overlay window so the process can exit its message loop.
+    EnsureOverlayWindow();
+    if (!g_hOverlay)
+    {
+        DestroyWindow(g_hMsgWnd);
         TraceLoggingUnregister(g_hProvider);
         return 1;
     }
@@ -1912,7 +1945,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         DestroyWindow(g_hOverlay);
         g_hOverlay = nullptr;
     }
-    RemoveTrayIcon();
+    if (!g_systemSessionEnding)
+    {
+        RemoveTrayIcon();
+    }
     if (g_gdiplusToken)
     {
         Gdiplus::GdiplusShutdown(g_gdiplusToken);

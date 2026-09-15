@@ -54,6 +54,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_JUMP = L"ConfigureEnabledUtilityMouseJump";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
+    const std::wstring POLICY_CONFIGURE_ENABLED_AUTO_HIDE_CURSOR = L"ConfigureEnabledUtilityAutoHideCursor";
     const std::wstring POLICY_CONFIGURE_ENABLED_CURSOR_WRAP = L"ConfigureEnabledUtilityCursorWrap";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
@@ -80,6 +81,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_SUSPEND_NEW_UPDATE_TOAST = L"SuspendNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_NEW_UPDATE_TOAST = L"DisableNewUpdateAvailableToast";
     const std::wstring POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES = L"DoNotShowWhatsNewAfterUpdates";
+    const std::wstring POLICY_DISABLE_PREVIEW_UPDATES = L"PreviewUpdatesDisabled";
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
@@ -106,6 +108,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
     const std::wstring POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU = L"NewPlusHideBuiltInNewContextMenu";
+    const std::wstring POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES = L"MarkdownAllowLocalImages";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -429,6 +432,11 @@ namespace powertoys_gpo
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS);
     }
 
+    inline gpo_rule_configured_t getConfiguredAutoHideCursorEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AUTO_HIDE_CURSOR);
+    }
+
     inline gpo_rule_configured_t getConfiguredCursorWrapEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CURSOR_WRAP);
@@ -546,6 +554,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getDisableShowWhatsNewAfterUpdatesValue()
     {
         return getConfiguredValue(POLICY_DISABLE_SHOW_WHATS_NEW_AFTER_UPDATES);
+    }
+
+    inline gpo_rule_configured_t getDisablePreviewUpdatesValue()
+    {
+        return getConfiguredValue(POLICY_DISABLE_PREVIEW_UPDATES);
     }
 
     inline gpo_rule_configured_t getAllowExperimentationValue()
@@ -716,6 +729,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredNewPlusHideBuiltInNewContextMenuValue()
     {
         return getConfiguredValue(POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMarkdownLocalImagesEnabledValue()
+    {
+        return getConfiguredValue(POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES);
     }
 
 #pragma endregion IndividualModuleSettingPolicies

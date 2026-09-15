@@ -8,8 +8,8 @@ using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Views;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -28,6 +28,8 @@ namespace Hosts
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
 
             var loader = new ResourceLoader("PowerToys.HostsUILib.pri", "PowerToys.HostsUILib/Resources");

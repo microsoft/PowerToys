@@ -164,7 +164,7 @@ Reference: [PowertoyModuleIface definition](https://github.com/microsoft/PowerTo
 
 #### 3.2 Implement Module UI
 
-Create a UI for your module using either WPF (like ColorPicker) or WinUI3 (like Advanced Paste).
+Create a UI for your module using either WPF (like PowerOCR) or WinUI3 (like Advanced Paste).
 
 ### 4. Runner Integration
 

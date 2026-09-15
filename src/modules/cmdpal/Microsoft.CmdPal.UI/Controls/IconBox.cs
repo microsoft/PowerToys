@@ -89,11 +89,12 @@ public partial class IconBox : ContentControl
 
     private void UpdateLastFontSize()
     {
+        // Auto-sized icons need a stable intrinsic size. Feeding ActualWidth or
+        // ActualHeight back into FontSize creates a measure/size-change cycle
+        // inside a Viewbox, especially when a container is recycled to a new glyph.
         _lastFontSize =
             Pick(Width)
             ?? Pick(Height)
-            ?? Pick(ActualWidth)
-            ?? Pick(ActualHeight)
             ?? DefaultIconFontSize;
 
         return;
@@ -112,7 +113,14 @@ public partial class IconBox : ContentControl
         }
     }
 
-    private void UpdatePaddingForFontIcon() => Padding = new Thickness(Math.Round(_lastFontSize * -0.2));
+    private void UpdatePaddingForFontIcon()
+    {
+        // Fixed icon slots compensate for font metrics. An auto-sized icon
+        // must measure its full glyph, otherwise a Viewbox scales a cropped box.
+        Padding = double.IsFinite(Width) || double.IsFinite(Height)
+            ? new Thickness(Math.Round(_lastFontSize * -0.2))
+            : default;
+    }
 
     private void OnActualThemeChanged(FrameworkElement sender, object args)
     {

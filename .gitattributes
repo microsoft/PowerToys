@@ -17,3 +17,5 @@
 *.gcode linguist-detectable=false
 
 *.vsconfig linguist-language=json
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours

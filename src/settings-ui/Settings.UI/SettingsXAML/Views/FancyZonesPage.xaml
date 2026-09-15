@@ -216,6 +216,27 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
+                        Name="FancyZonesMonitorRotation"
+                        x:Uid="FancyZones_MonitorRotation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8AB;}"
+                        IsExpanded="True">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="FancyZonesMonitorRotationToggle"
+                            IsOn="{x:Bind ViewModel.MonitorRotation, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
+                            <tkcontrols:SettingsCard Name="FancyZonesMonitorRotationPlaceholder" Visibility="Collapsed" />
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesMonitorRotationHotkeyControl"
+                                x:Uid="FancyZones_MonitorRotationHotkeyControl"
+                                IsEnabled="{x:Bind ViewModel.MonitorRotationCategoryEnabled, Mode=OneWay}">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MonitorRotationHotkey, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
                         Name="FancyZonesOverrideSnapHotkeys"
                         x:Uid="FancyZones_OverrideSnapHotkeys"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE90C;}"

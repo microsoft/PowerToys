@@ -21,6 +21,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredMarkdownLocalImagesEnabledValue();
         static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
@@ -38,6 +39,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseJumpEnabledValue();
         static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
+        static GpoRuleConfigured GetConfiguredAutoHideCursorEnabledValue();
         static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
@@ -51,6 +53,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableNewUpdateToastValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
+        static GpoRuleConfigured GetDisablePreviewUpdatesValue();
         static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue();
         static GpoRuleConfigured GetAllowExperimentationValue();
         static GpoRuleConfigured GetRunPluginEnabledValue(winrt::hstring const& pluginID);

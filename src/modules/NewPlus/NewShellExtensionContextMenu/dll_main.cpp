@@ -8,6 +8,7 @@
 
 HMODULE module_instance_handle = 0;
 Shared::Trace::ETWTrace trace(L"NewPlusShellExtension");
+std::atomic_uint32_t active_rename_workers = 0;
 
 BOOL APIENTRY DllMain(HMODULE module_handle, DWORD ul_reason_for_call, LPVOID reserved)
 {
@@ -33,7 +34,7 @@ STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IAc
 
 STDAPI DllCanUnloadNow()
 {
-    return Module<InProc>::GetModule().GetObjectCount() == 0 ? S_OK : S_FALSE;
+    return Module<InProc>::GetModule().GetObjectCount() == 0 && active_rename_workers.load() == 0 ? S_OK : S_FALSE;
 }
 
 STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv)

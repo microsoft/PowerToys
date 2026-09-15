@@ -10,11 +10,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ShortcutGuideProperties
     {
+        public const int DefaultPressTimeMs = 900;
+        public const int MinimumPressTimeMs = 100;
+        public const int MaximumPressTimeMs = 5000;
+
         [CmdConfigureIgnore]
         public HotkeySettings DefaultOpenShortcutGuide => new HotkeySettings(true, false, false, true, 0xBF);
 
         public ShortcutGuideProperties()
         {
+            WindowsKeyAction = new IntProperty((int)ShortcutGuideWindowsKeyAction.TaskbarIndicators);
+            PressTime = new IntProperty(DefaultPressTimeMs);
+            CloseOnWindowsKeyRelease = new BoolProperty(true);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
             OpenShortcutGuide = DefaultOpenShortcutGuide;
@@ -24,6 +31,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("open_shortcutguide")]
         public HotkeySettings OpenShortcutGuide { get; set; }
+
+        [JsonPropertyName("win_key_action")]
+        public IntProperty WindowsKeyAction { get; set; }
+
+        [JsonPropertyName("press_time")]
+        public IntProperty PressTime { get; set; }
+
+        [JsonPropertyName("close_on_windows_key_release")]
+        public BoolProperty CloseOnWindowsKeyRelease { get; set; }
 
         [JsonPropertyName("theme")]
         public StringProperty Theme { get; set; }

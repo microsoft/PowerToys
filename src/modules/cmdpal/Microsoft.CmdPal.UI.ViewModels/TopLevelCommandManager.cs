@@ -181,6 +181,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
         // out clone would be stale at the end of this method.
+        List<TopLevelViewModel> removedTopLevel;
         lock (TopLevelCommands)
         {
             // Work on a clone of the list, so that we can just do one atomic
@@ -193,9 +194,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             clone.InsertRange(startIndex, newItems);
 
-            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone, out removedTopLevel);
         }
 
+        List<TopLevelViewModel> removedDockBands;
         lock (_dockBandsLock)
         {
             // Same idea as TopLevelCommands above, but we deliberately use
@@ -205,7 +207,23 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             dockClone.InsertRange(dockStartIndex, newBands);
+
+            // ReplaceWith doesn't report what it dropped, so diff the current
+            // contents against the new ones before we overwrite them. Bands
+            // that get re-inserted from newBands are correctly not reported.
+            removedDockBands = [.. DockBands.Except(dockClone)];
+
             DockBands.ReplaceWith(dockClone);
+        }
+
+        foreach (var item in removedTopLevel)
+        {
+            item.Cleanup();
+        }
+
+        foreach (var item in removedDockBands)
+        {
+            item.Cleanup();
         }
 
         return;
@@ -298,19 +316,33 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 await service.SignalStopAsync().ConfigureAwait(false);
             }
 
+            List<TopLevelViewModel> removedTopLevel;
             lock (TopLevelCommands)
             {
+                removedTopLevel = [.. TopLevelCommands];
                 TopLevelCommands.Clear();
             }
 
+            List<TopLevelViewModel> removedDockBands;
             lock (_dockBandsLock)
             {
+                removedDockBands = [.. DockBands];
                 DockBands.Clear();
             }
 
             lock (_commandProvidersLock)
             {
                 _commandProviders.Clear();
+            }
+
+            foreach (var item in removedTopLevel)
+            {
+                item.Cleanup();
+            }
+
+            foreach (var item in removedDockBands)
+            {
+                item.Cleanup();
             }
 
             var ct = _currentExtensionLoadCancellationToken;
@@ -338,18 +370,20 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
             if (!isEnabled)
             {
+                List<TopLevelViewModel> commandsToRemove;
                 lock (TopLevelCommands)
                 {
-                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
+                    commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
                     foreach (var command in commandsToRemove)
                     {
                         TopLevelCommands.Remove(command);
                     }
                 }
 
+                List<TopLevelViewModel> dockBandsToRemove;
                 lock (_dockBandsLock)
                 {
-                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
+                    dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
                     foreach (var band in dockBandsToRemove)
                     {
                         DockBands.Remove(band);
@@ -363,6 +397,19 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     {
                         PinnedCommands.Remove(command);
                     }
+                }
+
+                // Re-enabling the provider reloads its commands, which builds
+                // brand new view-models, so the ones we just dropped are never
+                // coming back and can release their extension event handlers.
+                foreach (var command in commandsToRemove)
+                {
+                    command.Cleanup();
+                }
+
+                foreach (var band in dockBandsToRemove)
+                {
+                    band.Cleanup();
                 }
             }
             else
@@ -643,6 +690,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                                 DockBands.Remove(deleted);
                             }
                         }
+                    }
+
+                    foreach (var deleted in commandsToRemove)
+                    {
+                        deleted.Cleanup();
+                    }
+
+                    foreach (var deleted in bandsToRemove)
+                    {
+                        deleted.Cleanup();
                     }
                 },
                 CancellationToken.None,

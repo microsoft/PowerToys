@@ -1,56 +1,57 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows;
+using System.Threading;
 
 using ManagedCommon;
-
-using static ColorPicker.NativeMethods;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace ColorPicker.Helpers
 {
-    public static class ClipboardHelper
+    internal static class ClipboardHelper
     {
-        /// <summary>
-        /// Defined error code for "clipboard can't open"
-        /// </summary>
-        private const uint ErrorCodeClipboardCantOpen = 0x800401D0;
+        private const int MaxAttempts = 10;
+        private const int RetryDelayMilliseconds = 10;
 
-        public static void CopyToClipboard(string colorRepresentationToCopy)
+        internal static void CopyToClipboard(string text)
         {
-            if (!string.IsNullOrEmpty(colorRepresentationToCopy))
+            if (string.IsNullOrEmpty(text))
             {
-                // nasty hack - sometimes clipboard can be in use and it will raise and exception
-                for (int i = 0; i < 10; i++)
+                return;
+            }
+
+            Exception lastException = null;
+
+            for (int attempt = 1; attempt <= MaxAttempts; attempt++)
+            {
+                try
                 {
-                    try
-                    {
-                        Clipboard.SetDataObject(colorRepresentationToCopy);
-                        break;
-                    }
-                    catch (COMException ex)
-                    {
-                        var hwnd = GetOpenClipboardWindow();
-                        var sb = new StringBuilder(501);
-                        _ = GetWindowText(hwnd.ToInt32(), sb, 500);
-                        var applicationUsingClipboard = sb.ToString();
+                    // Both Color Picker copy paths run on the WinUI STA thread.
+                    var package = new DataPackage();
+                    package.SetText(text);
+                    Clipboard.SetContent(package);
+                    Clipboard.Flush(); // Keep the text available if Color Picker exits.
+                    return;
+                }
+                catch (COMException ex)
+                {
+                    lastException = ex;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    lastException = ex;
+                }
 
-                        if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
-                        {
-                            Logger.LogError("Failed to set text into clipboard", ex);
-                        }
-                        else
-                        {
-                            Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
-                        }
-                    }
-
-                    System.Threading.Thread.Sleep(10);
+                if (attempt < MaxAttempts)
+                {
+                    Thread.Sleep(RetryDelayMilliseconds);
                 }
             }
+
+            Logger.LogError("Failed to set text into clipboard", lastException);
         }
     }
 }

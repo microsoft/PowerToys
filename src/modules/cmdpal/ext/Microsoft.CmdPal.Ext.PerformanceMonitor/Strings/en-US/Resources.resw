@@ -191,6 +191,16 @@
   <data name="Next_Network_Title" xml:space="preserve">
     <value>Next network</value>
   </data>
+  <data name="Set_Default_Network_Title" xml:space="preserve">
+    <value>Set as default</value>
+  </data>
+  <data name="Set_Default_Network_Success" xml:space="preserve">
+    <value>Default network set to {0}</value>
+    <comment>{0} is the network adapter name.</comment>
+  </data>
+  <data name="All_Physical_Network_Adapters" xml:space="preserve">
+    <value>All physical network adapters</value>
+  </data>
   <data name="NetworkUsage_Widget_Template.Ethernet_Heading" xml:space="preserve">
     <value>Ethernet</value>
   </data>
@@ -326,6 +336,9 @@
   </data>
   <data name="Network_Usage_Title" xml:space="preserve">
     <value>Network Usage</value>
+  </data>
+  <data name="Network_Speed_Title" xml:space="preserve">
+    <value>Network Speed</value>
   </data>
   <data name="Network_Usage_Label" xml:space="preserve">
     <value>Network ({0}): {1}</value>

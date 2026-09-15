@@ -22,7 +22,6 @@ namespace Common.UI
             LightSwitch,
             FancyZones,
             FileLocksmith,
-            Run,
             ImageResizer,
             KBM,
             MouseUtils,
@@ -30,7 +29,6 @@ namespace Common.UI
             Peek,
             PowerAccent,
             PowerLauncher,
-            PowerPreview,
             PowerRename,
             FileExplorer,
             ShortcutGuide,
@@ -45,7 +43,6 @@ namespace Common.UI
             NewPlus,
             CmdPal,
             ZoomIt,
-            PowerDisplay,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -70,8 +67,6 @@ namespace Common.UI
                     return "FancyZones";
                 case SettingsWindow.FileLocksmith:
                     return "FileLocksmith";
-                case SettingsWindow.Run:
-                    return "Run";
                 case SettingsWindow.ImageResizer:
                     return "ImageResizer";
                 case SettingsWindow.KBM:
@@ -86,8 +81,6 @@ namespace Common.UI
                     return "PowerAccent";
                 case SettingsWindow.PowerLauncher:
                     return "PowerLauncher";
-                case SettingsWindow.PowerPreview:
-                    return "PowerPreview";
                 case SettingsWindow.PowerRename:
                     return "PowerRename";
                 case SettingsWindow.FileExplorer:
@@ -116,8 +109,6 @@ namespace Common.UI
                     return "CmdPal";
                 case SettingsWindow.ZoomIt:
                     return "ZoomIt";
-                case SettingsWindow.PowerDisplay:
-                    return "PowerDisplay";
                 default:
                     {
                         return string.Empty;
