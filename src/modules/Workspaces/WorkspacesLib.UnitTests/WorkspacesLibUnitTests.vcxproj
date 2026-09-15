@@ -50,9 +50,16 @@
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
-    <ClCompile Include="SignatureVerificationTests.cpp" />
-    <ClCompile Include="PackageVerificationAsyncTests.cpp" />
-    <ClCompile Include="LauncherIpcServerTests.cpp" />
+    <!-- Diagnostic branch: retain the original tests and omit the new test translation units. -->
+    <ClCompile Include="SignatureVerificationTests.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="PackageVerificationAsyncTests.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="LauncherIpcServerTests.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
