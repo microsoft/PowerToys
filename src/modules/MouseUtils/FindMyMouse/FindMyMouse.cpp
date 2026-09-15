@@ -7,8 +7,10 @@
 #include "common/utils/game_mode.h"
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
+#include "common/utils/haptic_feedback.h"
 #include "common/utils/MsWindowsSettings.h"
 #include <winrt/Windows.Graphics.h>
+#include <winrt/Windows.Devices.Haptics.h>
 
 #include <winrt/Microsoft.UI.Composition.Interop.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -56,6 +58,7 @@ protected:
     void AfterMoveSonar() {}
     void SetSonarVisibility(bool visible) = delete;
     void UpdateMouseSnooping();
+    void UpdateHapticInputWindows();
     bool IsForegroundAppExcluded();
 
 protected:
@@ -85,6 +88,11 @@ protected:
     int m_shakeIntervalMs = FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS;
     // By which factor must travelled distance be than the diagonal of the rectangle containing the movements. (value in percent)
     int m_shakeFactor = FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR;
+    HapticFeedback::Player m_hapticFeedback;
+    HMONITOR m_activeMonitor = nullptr;
+    HMONITOR m_candidateMonitor = nullptr;
+    int m_candidateMonitorInputCount = 0;
+    bool m_isAtNonTraversableEdge = false;
 
 private:
     // Save the mouse movement that occurred in any direction.
@@ -114,7 +122,11 @@ private:
 
     static constexpr POINT ptNowhere = { LONG_MIN, LONG_MIN };
     static constexpr DWORD TIMER_ID_TRACK = 100;
+    static constexpr UINT_PTR TIMER_ID_HAPTIC_INPUT = 101;
     static constexpr DWORD IdlePeriod = 1000;
+    static constexpr int HapticInputWindowSize = 96;
+    static constexpr auto hapticInputWindowClassName = L"FindMyMouseHapticInputWindow";
+    static constexpr auto hapticEdgeWindowClassName = L"FindMyMouseHapticEdgeWindow";
 
     // Activate sonar: Hit LeftControl twice.
     enum class SonarState
@@ -127,6 +139,7 @@ private:
     };
 
     HWND m_hwndOwner{};
+    HINSTANCE m_hinstance{};
     SonarState m_sonarState = SonarState::Idle;
     POINT m_lastKeyPos{};
     ULONGLONG m_lastKeyTime{};
@@ -135,6 +148,10 @@ private:
     static constexpr DWORD SonarWaitingForMouseMove = 1;
     ULONGLONG m_sonarStart = NoSonar;
     bool m_isSnoopingMouse = false;
+    HWND m_hapticInputWindow = nullptr;
+    std::vector<HWND> m_hapticEdgeWindows;
+    uint16_t m_pendingHapticWaveform = 0;
+    bool m_isAcquiringHapticController = false;
 
 private:
     static constexpr auto className = L"FindMyMouse";
@@ -152,6 +169,20 @@ private:
 
     void DetectShake();
     bool KeyboardInputCanActivate();
+    void InitializeHaptics();
+    bool TryPlayHaptic(uint16_t waveform);
+    void RequestHaptic(uint16_t waveform);
+    void PrepareHapticControllerAcquisition();
+    void CompletePendingHaptic();
+    void CancelPendingHaptic();
+    bool EnsureHapticInputWindow();
+    void PositionHapticInputWindow(const POINT& cursorPos);
+    void RegisterHapticEdgeWindows();
+    void UnregisterHapticEdgeWindows();
+    void UpdatePointerHapticsState();
+    static bool IsAtNonTraversableEdge(const POINT& cursorPos, HMONITOR monitor);
+    static LRESULT CALLBACK HapticInputWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK HapticEdgeWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void StartSonar(FindMyMouseActivationMethod activationMethod);
     void StopSonar();
@@ -160,6 +191,7 @@ private:
 template<typename D>
 bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 {
+    m_hinstance = hinst;
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     WNDCLASS wc{};
@@ -204,6 +236,12 @@ void SuperSonar<D>::Terminate()
     auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
     bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
         m_destroyed = true;
+        CancelPendingHaptic();
+        if (m_hapticInputWindow)
+        {
+            DestroyWindow(m_hapticInputWindow);
+            m_hapticInputWindow = nullptr;
+        }
         DestroyWindow(m_hwndOwner);
     });
     if (!enqueueSucceeded)
@@ -252,6 +290,11 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
         OnSonarDestroy();
         break;
 
+    case WM_DISPLAYCHANGE:
+        UnregisterHapticEdgeWindows();
+        UpdateHapticInputWindows();
+        break;
+
     case WM_INPUT:
         OnSonarInput(wParam, reinterpret_cast<HRAWINPUT>(lParam));
         break;
@@ -292,12 +335,25 @@ BOOL SuperSonar<D>::OnSonarCreate()
     keyboard.usUsage = HID_USAGE_GENERIC_KEYBOARD;
     keyboard.dwFlags = RIDEV_INPUTSINK;
     keyboard.hwndTarget = m_hwnd;
-    return RegisterRawInputDevices(&keyboard, 1, sizeof(keyboard));
+    const BOOL registered = RegisterRawInputDevices(&keyboard, 1, sizeof(keyboard));
+    if (registered)
+    {
+        InitializeHaptics();
+        RegisterHapticEdgeWindows();
+    }
+    return registered;
 }
 
 template<typename D>
 void SuperSonar<D>::OnSonarDestroy()
 {
+    CancelPendingHaptic();
+    UnregisterHapticEdgeWindows();
+    if (m_hapticInputWindow)
+    {
+        DestroyWindow(m_hapticInputWindow);
+        m_hapticInputWindow = nullptr;
+    }
     PostQuitMessage(0);
 }
 
@@ -438,6 +494,10 @@ void SuperSonar<D>::DetectShake()
 
     if (distanceTravelled < m_shakeMinimumDistance)
     {
+        if (distanceTravelled >= m_shakeMinimumDistance / 2.0)
+        {
+            PrepareHapticControllerAcquisition();
+        }
         return;
     }
 
@@ -462,6 +522,8 @@ bool SuperSonar<D>::KeyboardInputCanActivate()
 template<typename D>
 void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 {
+    UpdatePointerHapticsState();
+
     if (m_activationMethod == FindMyMouseActivationMethod::ShakeMouse)
     {
         LONG relativeX = 0;
@@ -538,6 +600,14 @@ void SuperSonar<D>::StartSonar(FindMyMouseActivationMethod activationMethod)
     OnMouseTimer();
     UpdateMouseSnooping();
     Shim()->SetSonarVisibility(true);
+    if (activationMethod == FindMyMouseActivationMethod::ShakeMouse)
+    {
+        const auto waveform = winrt::Windows::Devices::Haptics::KnownSimpleHapticsControllerWaveforms::Success();
+        if (!TryPlayHaptic(waveform))
+        {
+            RequestHaptic(waveform);
+        }
+    }
 }
 
 template<typename D>
@@ -596,7 +666,10 @@ void SuperSonar<D>::OnMouseTimer()
 template<typename D>
 void SuperSonar<D>::UpdateMouseSnooping()
 {
-    bool wantSnoopingMouse = m_sonarStart != NoSonar || m_sonarState != SonarState::Idle || m_activationMethod == FindMyMouseActivationMethod::ShakeMouse;
+    bool wantSnoopingMouse = m_sonarStart != NoSonar ||
+                             m_sonarState != SonarState::Idle ||
+                             m_activationMethod == FindMyMouseActivationMethod::ShakeMouse ||
+                             m_hapticFeedback.IsPlaybackEnabled();
     if (m_isSnoopingMouse != wantSnoopingMouse)
     {
         m_isSnoopingMouse = wantSnoopingMouse;
@@ -615,6 +688,407 @@ void SuperSonar<D>::UpdateMouseSnooping()
         }
         RegisterRawInputDevices(&mouse, 1, sizeof(mouse));
     }
+}
+
+template<typename D>
+void SuperSonar<D>::InitializeHaptics()
+{
+    try
+    {
+        m_hapticFeedback.InitializeForCurrentThread();
+        Logger::info("Find My Mouse haptic feedback supported={}, device present={}", m_hapticFeedback.IsSupported(), m_hapticFeedback.IsDevicePresent());
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        Logger::warn(L"Find My Mouse haptics initialization failed: {}", error.message());
+    }
+}
+
+template<typename D>
+bool SuperSonar<D>::TryPlayHaptic(uint16_t waveform)
+{
+    try
+    {
+        const bool sent = m_hapticFeedback.TryPlay(waveform);
+#ifdef _DEBUG
+        Logger::info(
+            "Find My Mouse haptic waveform={} controller={} device_type={} sent={}",
+            waveform,
+            m_hapticFeedback.HasCurrentController(),
+            static_cast<int>(m_hapticFeedback.CurrentControllerDeviceType()),
+            sent);
+#endif
+        return sent;
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        Logger::warn(L"Find My Mouse failed to play haptic feedback: {}", error.message());
+        return false;
+    }
+}
+
+template<typename D>
+void SuperSonar<D>::RequestHaptic(uint16_t waveform)
+{
+    if (!m_hapticFeedback.IsPlaybackEnabled())
+    {
+        return;
+    }
+
+    if (m_hapticFeedback.HasCurrentController() && TryPlayHaptic(waveform))
+    {
+        return;
+    }
+
+    if (m_pendingHapticWaveform != 0 || !EnsureHapticInputWindow())
+    {
+        return;
+    }
+
+    POINT cursorPos{};
+    if (!GetCursorPos(&cursorPos))
+    {
+        return;
+    }
+
+    m_pendingHapticWaveform = waveform;
+    PositionHapticInputWindow(cursorPos);
+    SetTimer(m_hapticInputWindow, TIMER_ID_HAPTIC_INPUT, 250, nullptr);
+}
+
+template<typename D>
+void SuperSonar<D>::PrepareHapticControllerAcquisition()
+{
+    if (!m_hapticFeedback.IsPlaybackEnabled() || m_hapticFeedback.HasCurrentController() || m_pendingHapticWaveform != 0 || m_isAcquiringHapticController || !EnsureHapticInputWindow())
+    {
+        return;
+    }
+
+    POINT cursorPos{};
+    if (!GetCursorPos(&cursorPos))
+    {
+        return;
+    }
+
+    m_isAcquiringHapticController = true;
+    PositionHapticInputWindow(cursorPos);
+    SetTimer(m_hapticInputWindow, TIMER_ID_HAPTIC_INPUT, 250, nullptr);
+}
+
+template<typename D>
+void SuperSonar<D>::CompletePendingHaptic()
+{
+    if (m_pendingHapticWaveform == 0)
+    {
+        return;
+    }
+
+    if (TryPlayHaptic(m_pendingHapticWaveform))
+    {
+        CancelPendingHaptic();
+    }
+}
+
+template<typename D>
+void SuperSonar<D>::CancelPendingHaptic()
+{
+    m_pendingHapticWaveform = 0;
+    m_isAcquiringHapticController = false;
+    if (m_hapticInputWindow)
+    {
+        KillTimer(m_hapticInputWindow, TIMER_ID_HAPTIC_INPUT);
+        ShowWindow(m_hapticInputWindow, SW_HIDE);
+    }
+}
+
+template<typename D>
+bool SuperSonar<D>::EnsureHapticInputWindow()
+{
+    if (m_hapticInputWindow)
+    {
+        return true;
+    }
+
+    WNDCLASSEXW windowClass{ sizeof(windowClass) };
+    windowClass.lpfnWndProc = HapticInputWindowProc;
+    windowClass.hInstance = GetModuleHandleW(nullptr);
+    windowClass.lpszClassName = hapticInputWindowClassName;
+    RegisterClassExW(&windowClass);
+
+    m_hapticInputWindow = CreateWindowExW(
+        WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST | WS_EX_LAYERED,
+        hapticInputWindowClassName,
+        nullptr,
+        WS_POPUP,
+        0,
+        0,
+        0,
+        0,
+        nullptr,
+        nullptr,
+        GetModuleHandleW(nullptr),
+        this);
+    if (!m_hapticInputWindow)
+    {
+        Logger::warn("Find My Mouse failed to create haptic input window. GetLastError={}", GetLastError());
+        return false;
+    }
+
+    SetLayeredWindowAttributes(m_hapticInputWindow, 0, 1, LWA_ALPHA);
+    return true;
+}
+
+template<typename D>
+void SuperSonar<D>::PositionHapticInputWindow(const POINT& cursorPos)
+{
+    const int virtualLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    const int virtualTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    const int virtualRight = virtualLeft + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    const int virtualBottom = virtualTop + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    const int left = std::clamp(static_cast<int>(cursorPos.x) - HapticInputWindowSize / 2, virtualLeft, virtualRight - HapticInputWindowSize);
+    const int top = std::clamp(static_cast<int>(cursorPos.y) - HapticInputWindowSize / 2, virtualTop, virtualBottom - HapticInputWindowSize);
+
+    SetWindowPos(
+        m_hapticInputWindow,
+        HWND_TOPMOST,
+        left,
+        top,
+        HapticInputWindowSize,
+        HapticInputWindowSize,
+        SWP_NOACTIVATE | SWP_SHOWWINDOW);
+}
+
+template<typename D>
+LRESULT CALLBACK SuperSonar<D>::HapticInputWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    SuperSonar* self = nullptr;
+    if (message == WM_NCCREATE)
+    {
+        const auto createInfo = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+        self = static_cast<SuperSonar*>(createInfo->lpCreateParams);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+    }
+    else
+    {
+        self = reinterpret_cast<SuperSonar*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    }
+
+    if (self)
+    {
+        if (message == WM_MOUSEMOVE)
+        {
+            if (self->m_pendingHapticWaveform != 0)
+            {
+                self->CompletePendingHaptic();
+            }
+            else if (self->m_isAcquiringHapticController && self->m_hapticFeedback.HasCurrentController())
+            {
+                self->CancelPendingHaptic();
+            }
+            return 0;
+        }
+
+        if (message == WM_TIMER && wParam == TIMER_ID_HAPTIC_INPUT)
+        {
+            self->CancelPendingHaptic();
+            return 0;
+        }
+
+        if (message >= WM_LBUTTONDOWN && message <= WM_XBUTTONDBLCLK)
+        {
+            self->CancelPendingHaptic();
+        }
+    }
+
+    return DefWindowProcW(hwnd, message, wParam, lParam);
+}
+
+template<typename D>
+void SuperSonar<D>::UpdateHapticInputWindows()
+{
+    if (m_hapticFeedback.IsPlaybackEnabled())
+    {
+        RegisterHapticEdgeWindows();
+    }
+    else
+    {
+        CancelPendingHaptic();
+        UnregisterHapticEdgeWindows();
+    }
+}
+
+template<typename D>
+void SuperSonar<D>::RegisterHapticEdgeWindows()
+{
+    if (!m_hapticFeedback.IsPlaybackEnabled() || !m_hapticEdgeWindows.empty())
+    {
+        return;
+    }
+
+    WNDCLASSEXW windowClass{ sizeof(windowClass) };
+    windowClass.lpfnWndProc = HapticEdgeWindowProc;
+    windowClass.hInstance = m_hinstance;
+    windowClass.lpszClassName = hapticEdgeWindowClassName;
+    RegisterClassExW(&windowClass);
+
+    std::vector<RECT> monitorRects;
+    EnumDisplayMonitors(
+        nullptr,
+        nullptr,
+        [](HMONITOR monitor, HDC, LPRECT, LPARAM context) -> BOOL {
+            MONITORINFO monitorInfo{ sizeof(monitorInfo) };
+            if (GetMonitorInfoW(monitor, &monitorInfo))
+            {
+                reinterpret_cast<std::vector<RECT>*>(context)->push_back(monitorInfo.rcMonitor);
+            }
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&monitorRects));
+
+    for (const auto& rect : monitorRects)
+    {
+        const RECT edgeRects[]{
+            { rect.left, rect.top, rect.left + 1, rect.bottom },
+            { rect.right - 1, rect.top, rect.right, rect.bottom },
+            { rect.left, rect.top, rect.right, rect.top + 1 },
+            { rect.left, rect.bottom - 1, rect.right, rect.bottom }
+        };
+
+        for (const auto& edgeRect : edgeRects)
+        {
+            const HWND window = CreateWindowExW(
+                WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST | WS_EX_LAYERED,
+                hapticEdgeWindowClassName,
+                nullptr,
+                WS_POPUP,
+                edgeRect.left,
+                edgeRect.top,
+                edgeRect.right - edgeRect.left,
+                edgeRect.bottom - edgeRect.top,
+                nullptr,
+                nullptr,
+                m_hinstance,
+                this);
+            if (window)
+            {
+                SetLayeredWindowAttributes(window, 0, 1, LWA_ALPHA);
+                ShowWindow(window, SW_SHOWNOACTIVATE);
+                m_hapticEdgeWindows.push_back(window);
+            }
+        }
+    }
+}
+
+template<typename D>
+void SuperSonar<D>::UnregisterHapticEdgeWindows()
+{
+    for (const HWND window : m_hapticEdgeWindows)
+    {
+        DestroyWindow(window);
+    }
+    m_hapticEdgeWindows.clear();
+}
+
+template<typename D>
+LRESULT CALLBACK SuperSonar<D>::HapticEdgeWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    SuperSonar* self = nullptr;
+    if (message == WM_NCCREATE)
+    {
+        const auto createInfo = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+        self = static_cast<SuperSonar*>(createInfo->lpCreateParams);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+    }
+    else
+    {
+        self = reinterpret_cast<SuperSonar*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    }
+
+    if (self && message == WM_MOUSEMOVE)
+    {
+        self->UpdatePointerHapticsState();
+        self->CompletePendingHaptic();
+        return 0;
+    }
+
+    return DefWindowProcW(hwnd, message, wParam, lParam);
+}
+
+template<typename D>
+void SuperSonar<D>::UpdatePointerHapticsState()
+{
+    POINT cursorPos{};
+    if (!GetCursorPos(&cursorPos))
+    {
+        return;
+    }
+
+    const HMONITOR currentMonitor = MonitorFromPoint(cursorPos, MONITOR_DEFAULTTONEAREST);
+    if (!m_activeMonitor)
+    {
+        m_activeMonitor = currentMonitor;
+    }
+    else if (currentMonitor == m_activeMonitor)
+    {
+        m_candidateMonitor = nullptr;
+        m_candidateMonitorInputCount = 0;
+    }
+    else
+    {
+        if (currentMonitor != m_candidateMonitor)
+        {
+            m_candidateMonitor = currentMonitor;
+            m_candidateMonitorInputCount = 1;
+        }
+        else if (++m_candidateMonitorInputCount >= 2)
+        {
+            m_activeMonitor = currentMonitor;
+            m_candidateMonitor = nullptr;
+            m_candidateMonitorInputCount = 0;
+            RequestHaptic(winrt::Windows::Devices::Haptics::KnownSimpleHapticsControllerWaveforms::Hover());
+        }
+    }
+
+    const bool isAtNonTraversableEdge = IsAtNonTraversableEdge(cursorPos, currentMonitor);
+    if (isAtNonTraversableEdge && !m_isAtNonTraversableEdge)
+    {
+        RequestHaptic(winrt::Windows::Devices::Haptics::KnownSimpleHapticsControllerWaveforms::Collide());
+    }
+    m_isAtNonTraversableEdge = isAtNonTraversableEdge;
+}
+
+template<typename D>
+bool SuperSonar<D>::IsAtNonTraversableEdge(const POINT& cursorPos, HMONITOR monitor)
+{
+    MONITORINFO monitorInfo{ sizeof(monitorInfo) };
+    if (!GetMonitorInfoW(monitor, &monitorInfo))
+    {
+        return false;
+    }
+
+    const RECT& rect = monitorInfo.rcMonitor;
+    const POINT probes[]{
+        { rect.left - 1, cursorPos.y },
+        { rect.right, cursorPos.y },
+        { cursorPos.x, rect.top - 1 },
+        { cursorPos.x, rect.bottom }
+    };
+    const bool atEdges[]{
+        cursorPos.x <= rect.left,
+        cursorPos.x >= rect.right - 1,
+        cursorPos.y <= rect.top,
+        cursorPos.y >= rect.bottom - 1
+    };
+
+    for (size_t index = 0; index < std::size(probes); ++index)
+    {
+        if (atEdges[index] && MonitorFromPoint(probes[index], MONITOR_DEFAULTTONULL) == nullptr)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 template<typename D>
@@ -709,7 +1183,7 @@ private:
     bool OnCompositionCreate()
     try
     {
-    // Creating composition resources
+        // Creating composition resources
         // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
         if (!m_dispatcherQueueController)
         {
@@ -880,9 +1354,7 @@ private:
         radiusExpression.SetReferenceParameter(L"Root", m_root);
         wchar_t expressionText[256];
         winrt::check_hresult(StringCchPrintfW(
-            expressionText, ARRAYSIZE(expressionText),
-            L"Lerp(Vector2(%.1f, %.1f), Vector2(%.1f, %.1f), Root.Opacity)",
-            startRadiusDip, startRadiusDip, endRadiusDip, endRadiusDip));
+            expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%.1f, %.1f), Vector2(%.1f, %.1f), Root.Opacity)", startRadiusDip, startRadiusDip, endRadiusDip, endRadiusDip));
         radiusExpression.Expression(expressionText);
         m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
 
@@ -891,9 +1363,7 @@ private:
         featherExpression.SetReferenceParameter(L"Root", m_root);
         wchar_t featherExpressionText[256];
         winrt::check_hresult(StringCchPrintfW(
-            featherExpressionText, ARRAYSIZE(featherExpressionText),
-            L"1.0f - %.1ff / Lerp(%.1ff, %.1ff, Root.Opacity)",
-            featherPixels, startRadiusDip, endRadiusDip));
+            featherExpressionText, ARRAYSIZE(featherExpressionText), L"1.0f - %.1ff / Lerp(%.1ff, %.1ff, Root.Opacity)", featherPixels, startRadiusDip, endRadiusDip));
         featherExpression.Expression(featherExpressionText);
         m_maskStopInner.StartAnimation(L"Offset", featherExpression);
 
@@ -941,6 +1411,8 @@ public:
             m_shakeMinimumDistance = settings.shakeMinimumDistance;
             m_shakeIntervalMs = settings.shakeIntervalMs;
             m_shakeFactor = settings.shakeFactor;
+            m_hapticFeedback.Configure(settings.hapticsEnabled);
+            UpdateHapticInputWindows();
         }
         else
         {
@@ -967,6 +1439,8 @@ public:
                     m_shakeMinimumDistance = localSettings.shakeMinimumDistance;
                     m_shakeIntervalMs = localSettings.shakeIntervalMs;
                     m_shakeFactor = localSettings.shakeFactor;
+                    m_hapticFeedback.Configure(localSettings.hapticsEnabled);
+                    UpdateHapticInputWindows();
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.
