@@ -50,10 +50,8 @@
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
-    <!-- Diagnostic branch: retain the original tests and omit the new test translation units. -->
-    <ClCompile Include="SignatureVerificationTests.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
+    <!-- Diagnostic branch: isolate signature tests while the other new test files remain excluded. -->
+    <ClCompile Include="SignatureVerificationTests.cpp" />
     <ClCompile Include="PackageVerificationAsyncTests.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
