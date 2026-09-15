@@ -16,6 +16,10 @@
                 <ptcontrols:ShortcutWithTextLabelControl x:Name="AdvancedPasteUIHotkeyControl" x:Uid="Oobe_AdvancedPasteUI_HowToUse" />
                 <ptcontrols:ShortcutWithTextLabelControl x:Name="PasteAsPlainTextHotkeyControl" x:Uid="Oobe_AdvancedPastePlain_HowToUse" />
                 <ptcontrols:ShortcutWithTextLabelControl
+                    x:Name="PasteAsSingleLineHotkeyControl"
+                    x:Uid="Oobe_AdvancedPasteSingleLine_HowToUse"
+                    Visibility="Collapsed" />
+                <ptcontrols:ShortcutWithTextLabelControl
                     x:Name="PasteAsMarkdownHotkeyControl"
                     x:Uid="Oobe_AdvancedPasteMarkdown_HowToUse"
                     Visibility="Collapsed" />
