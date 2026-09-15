@@ -27,6 +27,7 @@ public sealed partial class ContentFormControl : UserControl
     // form will do seemingly nothing.
     private RenderedAdaptiveCard? _renderedCard;
     private AdaptiveCard? _adaptiveCard;
+    private bool _isThemeRefreshPending;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
@@ -70,8 +71,7 @@ public sealed partial class ContentFormControl : UserControl
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+        UpdateRendererTheme();
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".
@@ -81,8 +81,43 @@ public sealed partial class ContentFormControl : UserControl
             _renderer.OverrideStyles = CardOverrideStyles;
         }
 
-        // TODO in the future, we should handle ActualThemeChanged and replace
-        // our rendered card with one for that theme. But today is not that day
+        ActualThemeChanged += ContentFormControl_ActualThemeChanged;
+    }
+
+    private void ContentFormControl_ActualThemeChanged(FrameworkElement sender, object args)
+    {
+        // Theme changes can raise this event multiple times while WinUI refreshes
+        // its resources. Re-render once the final theme has been applied.
+        if (_isThemeRefreshPending)
+        {
+            return;
+        }
+
+        _isThemeRefreshPending = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                UpdateRendererTheme();
+                if (_adaptiveCard is not null)
+                {
+                    DisplayCard(_adaptiveCard);
+                }
+            }
+            finally
+            {
+                _isThemeRefreshPending = false;
+            }
+        }))
+        {
+            _isThemeRefreshPending = false;
+        }
+    }
+
+    private void UpdateRendererTheme()
+    {
+        var lightTheme = ActualTheme == ElementTheme.Light;
+        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
     }
 
     private void AttachViewModel(ContentFormViewModel? vm)
@@ -125,8 +160,13 @@ public sealed partial class ContentFormControl : UserControl
 
     private void DisplayCard(AdaptiveCardParseResult result)
     {
-        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        _adaptiveCard = result.AdaptiveCard;
+        DisplayCard(result.AdaptiveCard);
+    }
+
+    private void DisplayCard(AdaptiveCard adaptiveCard)
+    {
+        _renderedCard = _renderer.RenderAdaptiveCard(adaptiveCard);
+        _adaptiveCard = adaptiveCard;
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
         {
