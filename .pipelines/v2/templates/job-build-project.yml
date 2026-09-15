@@ -514,15 +514,6 @@ jobs:
         testResultsFiles: '**/*.trx'
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
-    # Temporary, PR-scoped evidence collection for the native-host completion stall.
-    - pwsh: |-
-        & "$(Build.SourcesDirectory)\.pipelines\traceNativeTestHost.ps1" `
-          -Action Start `
-          -LogDirectory "$(Build.ArtifactStagingDirectory)\logs" `
-          -BinariesDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)"
-      displayName: Start native test host stack diagnostics
-      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50508'))
-
     # Native dlls
     - task: VSTest@2
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
@@ -538,13 +529,6 @@ jobs:
           **\*UnitTest*.dll
           !**\obj\**
           !**\*.resources.dll
-
-    - pwsh: |-
-        & "$(Build.SourcesDirectory)\.pipelines\traceNativeTestHost.ps1" `
-          -Action Stop `
-          -LogDirectory "$(Build.ArtifactStagingDirectory)\logs"
-      displayName: Stop native test host stack diagnostics
-      condition: and(always(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50508'))
 
   - pwsh: |-
       $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
