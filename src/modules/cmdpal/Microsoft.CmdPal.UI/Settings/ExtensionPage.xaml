@@ -63,7 +63,13 @@
                                         DiagnosticScope="ExtensionSummary"
                                         RequestSite="Settings"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
+                                        SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}">
+                                        <cpcontrols:IconBox.FallbackSource>
+                                            <BitmapIconSource
+                                                ShowAsMonochrome="False"
+                                                UriSource="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                                        </cpcontrols:IconBox.FallbackSource>
+                                    </cpcontrols:IconBox>
                                 </cpcontrols:ContentIcon.Content>
                             </cpcontrols:ContentIcon>
                         </controls:SettingsCard.HeaderIcon>
