@@ -50,14 +50,12 @@
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
-    <!-- Diagnostic branch: isolate signature tests while the other new test files remain excluded. -->
-    <ClCompile Include="SignatureVerificationTests.cpp" />
-    <ClCompile Include="PackageVerificationAsyncTests.cpp">
+    <!-- Diagnostic branch: isolate asynchronous verification and launcher IPC tests. -->
+    <ClCompile Include="SignatureVerificationTests.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="LauncherIpcServerTests.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="PackageVerificationAsyncTests.cpp" />
+    <ClCompile Include="LauncherIpcServerTests.cpp" />
     <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
