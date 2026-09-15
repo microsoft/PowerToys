@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -41,6 +42,170 @@ public sealed class WorkflowTests
             }
 
             return Task.CompletedTask;
+        });
+    }
+
+    [TestMethod]
+    public async Task SingleExeSelectionAllowsHardLinksAndPreservesSupportingInputs()
+    {
+        using var source = new RunSession();
+        var application = Path.Combine(source.WorkingDirectory, "application.EXE");
+        var alias = Path.Combine(source.WorkingDirectory, "alias.exe");
+        var data = Path.Combine(source.WorkingDirectory, "data.txt");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "findstr.exe"), application);
+        File.WriteAllText(data, "supporting input");
+        Assert.IsTrue(CreateHardLink(alias, application, IntPtr.Zero), $"Hard link setup failed: {Marshal.GetLastWin32Error()}");
+        Assert.ThrowsException<IOException>(() => TaskBundle.Inspect([application], CancellationToken.None));
+        await OnDispatcherAsync(async () =>
+        {
+            var window = new MainWindow([]);
+            try
+            {
+                await window.SelectPathsAsync([data]);
+                Assert.IsTrue(window.CopiedModeBox.IsChecked == true);
+                await window.SelectPathsAsync([application]);
+                Assert.IsTrue(window.ManualModeBox.IsChecked == true);
+                Assert.AreEqual(WorkloadKind.WindowsApplication, ((ExecutionProfile)window.ProfileBox.SelectedItem).Kind);
+                Assert.AreEqual(RuntimeFile.Resolve(application), window.WorkloadFileBox.Text);
+                window.ArgumentsBox.Text = "arguments for the previous application";
+                var systemApplication = Path.Combine(Environment.SystemDirectory, "winver.exe");
+                await window.SelectPathsAsync([systemApplication]);
+                Assert.AreEqual(RuntimeFile.Resolve(systemApplication), window.WorkloadFileBox.Text);
+                Assert.AreEqual(string.Empty, window.ArgumentsBox.Text);
+                CollectionAssert.AreEqual(new[] { data }, window.InputList.Items.Cast<string>().ToArray());
+                Assert.AreEqual(Visibility.Visible, window.SetupPage.Visibility);
+                Assert.AreEqual(Visibility.Collapsed, window.RunPage.Visibility);
+                Assert.AreEqual(Visibility.Collapsed, window.ViewResultsButton.Visibility);
+                Assert.AreEqual(string.Empty, window.OutputBox.Text);
+                StringAssert.Contains(window.SetupStatusText.Text, "folder is read-only");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    public async Task FailedImportsPreserveConfigurationAndKeepCopiedInputLinkChecks()
+    {
+        using var source = new RunSession();
+        var data = Path.Combine(source.WorkingDirectory, "data.txt");
+        File.WriteAllText(data, "previous selection");
+        var folder = Directory.CreateDirectory(Path.Combine(source.WorkingDirectory, "linked bundle")).FullName;
+        var application = Path.Combine(folder, "application.exe");
+        var alias = Path.Combine(folder, "alias.exe");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "findstr.exe"), application);
+        Assert.IsTrue(CreateHardLink(alias, application, IntPtr.Zero), $"Hard link setup failed: {Marshal.GetLastWin32Error()}");
+        await OnDispatcherAsync(async () =>
+        {
+            var window = new MainWindow([]);
+            try
+            {
+                await window.SelectPathsAsync([data]);
+                window.ManualModeBox.IsChecked = true;
+                var entries = window.EntryPointBox.ItemsSource;
+                foreach (var invalid in new[] { new[] { folder }, new[] { application, data }, new[] { Path.Combine(folder, "missing.exe") } })
+                {
+                    await window.SelectPathsAsync(invalid);
+                    StringAssert.StartsWith(window.SetupStatusText.Text, "Could not import selection:");
+                    Assert.IsTrue(window.ManualModeBox.IsChecked == true, "A rejected import must not switch to copied mode.");
+                    Assert.AreEqual(string.Empty, window.WorkloadFileBox.Text);
+                    CollectionAssert.AreEqual(new[] { data }, window.InputList.Items.Cast<string>().ToArray());
+                    Assert.AreSame(entries, window.EntryPointBox.ItemsSource);
+                }
+
+                await window.SelectPathsAsync([application]);
+                var previousApplication = window.WorkloadFileBox.Text;
+                window.ArgumentsBox.Text = "keep arguments";
+                await window.SelectPathsAsync([Path.Combine(folder, "missing.exe")]);
+                Assert.AreEqual(previousApplication, window.WorkloadFileBox.Text);
+                Assert.AreEqual("keep arguments", window.ArgumentsBox.Text);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task FolderAndMultipleFileSelectionsKeepTheCopiedWorkflow(bool selectFolder)
+    {
+        using var source = new RunSession();
+        var folder = Directory.CreateDirectory(Path.Combine(source.WorkingDirectory, "bundle.exe")).FullName;
+        var application = Path.Combine(folder, "findstr.exe");
+        var data = Path.Combine(folder, "data.txt");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "findstr.exe"), application);
+        File.WriteAllText(data, "copied input");
+        await OnDispatcherAsync(async () =>
+        {
+            var window = new MainWindow([]);
+            try
+            {
+                await window.SelectPathsAsync(selectFolder ? [folder] : [application, data]);
+                Assert.IsTrue(window.CopiedModeBox.IsChecked == true);
+                Assert.AreEqual(WorkloadKind.WindowsApplication, ((ExecutionProfile)window.ProfileBox.SelectedItem).Kind);
+                Assert.AreEqual(string.Empty, window.WorkloadFileBox.Text);
+                Assert.AreEqual(1, window.EntryPointBox.Items.Count);
+                Assert.IsNotNull(window.EntryPointBox.SelectedItem);
+                Assert.AreEqual(selectFolder ? 1 : 2, window.InputList.Items.Count);
+                StringAssert.StartsWith(window.SetupStatusText.Text, "Entry point selected.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [TestMethod]
+    [TestCategory("MXCIntegration")]
+    public async Task ExplorerExeSelectionAndDroppedApplicationUseTheInstalledApplicationWorkflow()
+    {
+        var worker = MultiBackendTests.Worker();
+        using var source = new RunSession();
+        var data = Path.Combine(source.WorkingDirectory, "data.txt");
+        File.WriteAllText(data, "dropped application input\n");
+        await OnDispatcherAsync(async () =>
+        {
+            var application = Path.Combine(Environment.SystemDirectory, "winver.exe");
+            var window = new MainWindow([application], null, worker, () => true);
+            try
+            {
+                window.Show();
+                await UntilAsync(() => window.RunButton.IsEnabled, () => window.SetupStatusText.Text);
+                Assert.IsTrue(window.ManualModeBox.IsChecked == true);
+                Assert.AreEqual(RuntimeFile.Resolve(application), window.WorkloadFileBox.Text);
+                Assert.AreEqual(0, window.InputList.Items.Count);
+                Assert.AreEqual(Visibility.Collapsed, window.RunPage.Visibility);
+                Assert.AreEqual(string.Empty, window.OutputBox.Text);
+                await window.SelectPathsAsync([data]);
+                await window.SelectPathsAsync([Path.Combine(Environment.SystemDirectory, "findstr.exe")]);
+                window.ArgumentsBox.Text = "/c:input\ndata.txt";
+                Click(window.RunButton);
+                var selectedApplication = window.WorkloadFileBox.Text;
+                await window.SelectPathsAsync([application]);
+                Assert.AreEqual(selectedApplication, window.WorkloadFileBox.Text, "Drops must be ignored during an active run.");
+                await UntilAsync(() => window.BackButton.IsEnabled, () => window.RunStatusText.Text);
+                Assert.AreEqual("Completed", window.RunPhaseText.Text, window.RunStatusText.Text + "\n" + window.OutputBox.Text);
+                StringAssert.Contains(window.OutputBox.Text, "dropped application input");
+                StringAssert.Contains(window.ReportEnvironmentBox.Text, "ProcessContainer");
+                Assert.AreEqual("dropped application input\n", File.ReadAllText(data));
+                var output = window.OutputBox.Text;
+                await window.SelectPathsAsync([application]);
+                Assert.AreEqual(selectedApplication, window.WorkloadFileBox.Text, "The results page must ignore drops even after completion.");
+                Click(window.BackButton);
+                await window.SelectPathsAsync([application]);
+                Assert.AreEqual(RuntimeFile.Resolve(application), window.WorkloadFileBox.Text);
+                Assert.AreEqual(output, window.OutputBox.Text, "Configuring an application must preserve previous results.");
+            }
+            finally
+            {
+                await CloseAsync(window);
+            }
         });
     }
 
@@ -209,6 +374,10 @@ public sealed class WorkflowTests
     }
 
     private static void SelectProfile(MainWindow window, WorkloadKind kind) => window.ProfileBox.SelectedItem = window.ProfileBox.Items.Cast<ExecutionProfile>().Single(profile => profile.Kind == kind);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CreateHardLink(string fileName, string existingFileName, IntPtr securityAttributes);
 
     private static void Click(Button button) => button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 

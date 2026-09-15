@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="PowerToys.TryRun.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -216,7 +216,7 @@
                                 <TextBlock Style="{StaticResource SectionHeading}" Text="Input files" />
                                 <TextBlock
                                     Opacity="0.75"
-                                    Text="Drop a program folder, scripts or supporting data here. These files run on copies."
+                                    Text="Drop one EXE to select an application (its folder is read-only). Drop a folder, scripts or supporting data to run on copies."
                                     TextWrapping="Wrap" />
                                 <WrapPanel Margin="0,12,0,10">
                                     <Button

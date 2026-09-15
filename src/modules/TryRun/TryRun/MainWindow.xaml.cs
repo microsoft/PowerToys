@@ -154,7 +154,7 @@ public partial class MainWindow : Window
 
             if (startupPaths.Length > 0)
             {
-                await ImportSelectionAsync(startupPaths);
+                await SelectPathsAsync(startupPaths);
             }
 
             return;
@@ -192,7 +192,7 @@ public partial class MainWindow : Window
 
         if (startupPaths.Length > 0 && !closeWhenStopped && IsVisible)
         {
-            await ImportSelectionAsync(startupPaths);
+            await SelectPathsAsync(startupPaths);
         }
 
         if (startupError is not null && IsVisible)
@@ -345,8 +345,7 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog { Title = "Choose files to copy into this run", Multiselect = true, CheckFileExists = true };
         if (dialog.ShowDialog(this) == true)
         {
-            SelectCopiedModeForEmptyApplication();
-            await ImportSelectionAsync(inputs.Concat(dialog.FileNames));
+            await ImportSelectionAsync(inputs.Concat(dialog.FileNames), ShouldSelectCopiedMode());
         }
     }
 
@@ -355,22 +354,48 @@ public partial class MainWindow : Window
         var dialog = new OpenFolderDialog { Title = "Choose a folder to copy into this run" };
         if (dialog.ShowDialog(this) == true)
         {
-            SelectCopiedModeForEmptyApplication();
-            await ImportSelectionAsync(inputs.Append(dialog.FolderName));
+            await ImportSelectionAsync(inputs.Append(dialog.FolderName), ShouldSelectCopiedMode());
         }
     }
 
-    private void SelectCopiedModeForEmptyApplication()
+    private bool ShouldSelectCopiedMode() => kind == WorkloadKind.WindowsApplication && string.IsNullOrWhiteSpace(WorkloadFileBox.Text);
+
+    internal async Task SelectPathsAsync(IEnumerable<string> paths)
     {
-        if (kind == WorkloadKind.WindowsApplication && string.IsNullOrWhiteSpace(WorkloadFileBox.Text))
+        if (showingRun || cancellation is not null)
         {
-            CopiedModeBox.IsChecked = true;
+            return;
+        }
+
+        try
+        {
+            var selection = TaskBundle.ParseLaunchArguments(paths);
+            if (selection.Length == 1 && Path.GetExtension(selection[0]).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !Directory.Exists(selection[0]))
+            {
+                // Installed applications may be hard-linked Windows components. Resolve them
+                // using the runtime-file policy; copied input keeps its stricter link checks.
+                var application = RuntimeFile.Resolve(selection[0]);
+                isolationDemo = false;
+                ManualModeBox.IsChecked = true;
+                ProfileBox.SelectedItem = ProfileBox.Items.Cast<ExecutionProfile>().First(profile => profile.Kind == WorkloadKind.WindowsApplication);
+                WorkloadFileBox.Text = application;
+                ArgumentsBox.Clear();
+                UpdateRunSummary();
+                SetRunning(false);
+                Status = "Application selected. Its folder is read-only; supporting inputs run on copies. Review the configuration, then select Run.";
+                return;
+            }
+
+            await ImportSelectionAsync(inputs.Concat(selection), ShouldSelectCopiedMode());
+        }
+        catch (Exception exception)
+        {
+            Status = "Could not import selection: " + exception.Message;
         }
     }
 
-    private async Task ImportSelectionAsync(IEnumerable<string> paths)
+    private async Task ImportSelectionAsync(IEnumerable<string> paths, bool selectCopiedMode = false)
     {
-        isolationDemo = false;
         var selection = paths.ToArray();
         var previous = (EntryPointBox.SelectedItem as TaskEntryPoint)?.RelativePath;
         cancellation = new CancellationTokenSource();
@@ -379,6 +404,7 @@ public partial class MainWindow : Window
         try
         {
             var inspected = await Task.Run(() => TaskBundle.Inspect(selection, cancellation.Token));
+            isolationDemo = false;
             inputs.Clear();
             foreach (var path in inspected.Inputs)
             {
@@ -389,6 +415,11 @@ public partial class MainWindow : Window
             EntryPointBox.ItemsSource = inspected.EntryPoints;
             EntryPointBox.SelectedItem = inspected.EntryPoints.FirstOrDefault(entry => entry.RelativePath == previous) ?? (inspected.EntryPoints.Count == 1 ? inspected.EntryPoints[0] : null);
             updatingSelection = false;
+            if (selectCopiedMode)
+            {
+                CopiedModeBox.IsChecked = true;
+            }
+
             ApplyEntryPoint();
             SelectionText.Text = $"{inspected.EntryCount} files and folders · {inspected.Bytes / 1048576.0:F1} MiB. Directory structure is preserved.";
             Status = inspected.EntryPoints.Count switch
@@ -430,8 +461,7 @@ public partial class MainWindow : Window
         e.Handled = true;
         if (!showingRun && cancellation is null && e.Data.GetData(DataFormats.FileDrop) is string[] paths)
         {
-            SelectCopiedModeForEmptyApplication();
-            await ImportSelectionAsync(inputs.Concat(paths));
+            await SelectPathsAsync(paths);
         }
     }
 

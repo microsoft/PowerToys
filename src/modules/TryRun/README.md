@@ -72,7 +72,8 @@ The window permissions are shown before execution. This is not a no-GUI policy.
 Try Run opens on **Prepare your run**. A standalone launch defaults to
 **Installed app / inline script** and **Windows · Application (.exe)**, with
 **Choose file…** immediately visible. Explorer selections open the same setup
-page in **Selected files / folder** mode with an automatically detected profile.
+page. A single EXE selects **Installed app / inline script**; other selections use
+**Selected files / folder** with an automatically detected profile.
 Input files, the execution profile, Linux image/runtime, and time limit are
 configuration controls. Advanced options contain arguments, a local image
 archive, and denial-capture settings; choosing an EXE no longer requires them.
@@ -106,6 +107,22 @@ still reported the host-only read as blocked/unavailable, and both selected
 original files were unchanged. The failure reproduced in isolated reruns; an
 older `TryRun-Explorer` worker passed the comparison. This capture discrepancy
 remains unresolved. Its assertion and the execution/capture policy are retained.
+
+The single-EXE import fix built with no errors or warnings. Targeted workflow,
+file-safety, selection and fuzz checks passed 41 of 42 cases on the first run
+(`exe-selection-import.trx`). The new native application test supplied arguments
+on one line instead of using the UI's one-argument-per-line format; correcting
+that test made the remaining case pass (`exe-selection-run-recheck.trx`). The
+checks cover hard-linked EXEs, application replacement with retained data,
+unchanged configuration after failed imports, copied folders/multiple files,
+Explorer EXE startup, actual MXC execution, and ignored drops during runs/results.
+The full native suite, including the known capture discrepancy above, was not
+rerun for this UI-only fix.
+Interactive acceptance of Explorer's **Show more options → Try Run** for
+`C:\Windows\System32\winver.exe` opened the installed-application configuration
+with Run enabled and no import error. Cross-window mouse dragging could not be
+automated because the desktop tool only permits drag endpoints in its target
+window; the shared drop/Explorer selection handler is covered by the tests.
 
 ### Windows window borders
 
@@ -316,7 +333,17 @@ use the real Windows verb/COM path and inspect the resulting window.
 
 ### Select files and run
 
-Drop files or a folder anywhere in the window, or use **Add files / Add folder**.
+Drop a single EXE on the configuration page to select it as an installed
+application, just like **Choose file…**. This also applies to a single EXE sent
+from Explorer. Its application directory is read-only, existing supporting inputs
+are retained, and arguments from a previous application are cleared. Windows
+components such as `winver.exe` may be hard-linked; this path uses the existing
+runtime-file policy instead of trying to import them as copied data. It still
+requires an explicit **Run** and uses MXC. A failed selection leaves the previous
+application, arguments, input files and mode intact.
+
+Drop a folder, scripts or multiple files on the configuration page, or use
+**Add files / Add folder**, to use the copied-input workflow.
 One recognized entry point is selected automatically. Multiple candidates require
 choosing one; data-only selections require adding a script/program or enabling
 **Installed app / inline script** on the configuration page.
@@ -326,8 +353,9 @@ Selected folders retain their names and contents. Overlapping parent/child
 selections are deduplicated; unselected siblings are never implicitly imported.
 Different roots with the same name are rejected with an explanation. A script
 or program runs in its copied parent folder, so relative data paths work. All
-selected files accompany it. Downloaded EXEs run from the copy and may write
-alongside themselves; the original application directory is not granted access.
+selected files accompany it. EXEs selected in a folder or with other files run
+from the copy and may write alongside themselves; the original application
+directory is not granted access.
 Include dependencies by selecting them or their containing folder.
 
 Detection reads extensions and at most 4 KiB of each regular file. It recognizes
