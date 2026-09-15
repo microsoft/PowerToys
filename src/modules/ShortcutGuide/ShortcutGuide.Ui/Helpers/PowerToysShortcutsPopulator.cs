@@ -192,21 +192,22 @@ namespace ShortcutGuide.Helpers
         /// <returns>Yaml code for the manifest file.</returns>
         private static string HotkeySettingsToYaml(HotkeySettings hotkeySettings, string moduleName, string? description = null)
         {
-            string content = string.Empty;
-            content += "      - Name: " + moduleName + Environment.NewLine;
-            content += "        Shortcut: " + Environment.NewLine;
-            content += "        - Win: " + hotkeySettings.Win.ToString() + Environment.NewLine;
-            content += "          Ctrl: " + hotkeySettings.Ctrl.ToString() + Environment.NewLine;
-            content += "          Alt: " + hotkeySettings.Alt.ToString() + Environment.NewLine;
-            content += "          Shift: " + hotkeySettings.Shift.ToString() + Environment.NewLine;
-            content += "          Keys:" + Environment.NewLine;
-            content += "            - " + hotkeySettings.Code.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+            var sb = new StringBuilder();
+            sb.Append("      - Name: ").AppendLine(moduleName)
+              .AppendLine("        Shortcut: ")
+              .Append("        - Win: ").AppendLine(hotkeySettings.Win.ToString())
+              .Append("          Ctrl: ").AppendLine(hotkeySettings.Ctrl.ToString())
+              .Append("          Alt: ").AppendLine(hotkeySettings.Alt.ToString())
+              .Append("          Shift: ").AppendLine(hotkeySettings.Shift.ToString())
+              .AppendLine("          Keys:")
+              .Append("            - ").AppendLine(hotkeySettings.Code.ToString(CultureInfo.InvariantCulture));
+
             if (description != null)
             {
-                content += "        Description: " + description + Environment.NewLine;
+                sb.Append("        Description: ").AppendLine(description);
             }
 
-            return content;
+            return sb.ToString();
         }
 
         /// <inheritdoc cref="HotkeySettingsToYaml(HotkeySettings, string, string?)"/>
