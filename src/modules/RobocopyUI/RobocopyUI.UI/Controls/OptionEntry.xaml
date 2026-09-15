@@ -34,7 +34,10 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:OptionContent">
                                         <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}">
-                                            <TextBlock Text="{Binding OptionName}" FontFamily="Cascadia Mono" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding OptionName}" FontFamily="Cascadia Mono" VerticalAlignment="Center" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding OptionDescription}" VerticalAlignment="Center" />
+                                            </StackPanel>
                                         </CheckBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
