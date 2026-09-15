@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text;
 using Microsoft.Mxc.Sdk;
 using PowerToys.TryRun.Core;
@@ -13,17 +14,40 @@ internal sealed class RunDiagnostics(ExecutionRequest input, BackendAvailability
     private string? probeText;
     private string? probePath;
 
-    public bool CaptureEnabled => input.CaptureDenials && !input.IsLinux && backends.NativeDenialCaptureAvailable;
+    private string? captureRoot;
+
+    private bool CaptureRequested => input.Policy?.Enabled("captureEnabled") ?? input.CaptureDenials;
+
+    public bool CaptureEnabled => CaptureRequested && !input.IsLinux && backends.NativeDenialCaptureAvailable;
+
+    public bool Permissive => CaptureEnabled && input.Policy?.Get("captureMode") == "Allow";
 
     public void Configure(SandboxRequest request)
     {
+        if (input.Policy is not null && CaptureRequested && !CaptureEnabled)
+        {
+            throw new InvalidOperationException("Native MXC capture is unavailable. Turn off access capture or use a compatible host.");
+        }
+
         if (CaptureEnabled && request.Containment is ProcessContainerContainment containment)
         {
+            if (containment.LeastPrivilege || request.Policy.Network?.Proxy is not null || request.Policy.Filesystem?.DeniedPaths.Count > 0)
+            {
+                throw new InvalidOperationException("This policy can require MXC's elevated capture fallback. Try Run uses native capture only. Disable access capture when using least-privilege mode, a legacy proxy, or denied paths.");
+            }
+
+            var path = (input.Policy?.Get("captureOutputPath") ?? "$diagnostics\\denials.json").Replace("$diagnostics\\", RunArtifacts.DiagnosticsDirectory(input) + "\\", StringComparison.Ordinal);
+            captureRoot = PolicyPaths.ResolveExisting(Path.GetDirectoryName(path)!);
+            if (!Directory.Exists(captureRoot))
+            {
+                throw new ArgumentException("Capture output requires an existing parent directory.");
+            }
+
             containment.CaptureDenials = new CaptureDenialsPolicy
             {
-                Mode = CaptureDenialsMode.Block,
-                OutputPath = Path.Combine(RunArtifacts.DiagnosticsDirectory(input), "denials.json"),
-                RetainEtl = false,
+                Mode = Permissive ? CaptureDenialsMode.Allow : CaptureDenialsMode.Block,
+                OutputPath = Path.Combine(captureRoot, Path.GetFileName(path)),
+                RetainEtl = input.Policy?.Enabled("retainEtl") == true,
             };
         }
 
@@ -49,17 +73,21 @@ internal sealed class RunDiagnostics(ExecutionRequest input, BackendAvailability
             input.IsLinux ? CommandEncoding.LinuxPath(Path.Combine(input.WorkingDirectory, input.WorkingSubdirectory ?? string.Empty)) : request.WorkingDirectory ?? input.WorkingDirectory,
             request.Policy.Filesystem?.ReadonlyPaths?.ToArray() ?? [],
             request.Policy.Filesystem?.ReadwritePaths?.ToArray() ?? [],
-            "Outbound and local-network access disabled",
-            input.IsLinux ? "No desktop UI policy" : "Windows allowed; clipboard and input injection disabled",
-            input.IsLinux ? $"Image {input.Image}; 2 CPUs / 2 GiB; only Work and Temp mounted" : "No additional CPU or memory cap configured",
+            input.Policy?.DescribeNetwork(input.IsLinux) ?? "Outbound and local-network access disabled",
+            input.IsLinux ? "No desktop UI policy" : $"Windows: {request.Policy.Ui?.AllowWindows}; clipboard: {request.Policy.Ui?.Clipboard}; input injection: {request.Policy.Ui?.AllowInputInjection}",
+            request.Containment is WslcContainment linux ? $"Image {linux.Image}; CPUs: {linux.CpuCount?.ToString(CultureInfo.InvariantCulture) ?? "backend default"}; Memory: {linux.MemoryMb?.ToString(CultureInfo.InvariantCulture) ?? "backend default"} MiB; GPU: {linux.Gpu}" : "No additional CPU or memory cap configured",
             input.TimeoutSeconds,
-            backends.NativeVersion);
+            backends.NativeVersion)
+        {
+            TimeLimit = request.Policy.TimeoutMs is { } timeout ? timeout + " milliseconds" : "None",
+            PolicySnapshot = PolicyMapper.Snapshot(request),
+        };
     }
 
     public IsolationReport Pending()
     {
         return CaptureEnabled
-            ? new IsolationReport("Collecting", "MXC native denial capture, block mode. Requests remain denied while being recorded.", [])
+            ? new IsolationReport("Collecting", Permissive ? "PERMISSIVE capture: ungranted access is allowed and recorded. This run does not enforce deny-by-default." : "MXC native denial capture, block mode. Requests remain denied while being recorded.", [])
             : new IsolationReport(
                 "Not collected",
                 input.IsLinux ? "MXC WSLC does not expose Windows denial capture. See configured mounts and clearly labeled workload observations." : input.CaptureDenials ? "Native denial capture is unavailable on this host. The configured restrictions remain in effect; no elevated capture fallback is used." : "Native denial capture was not requested. Configured restrictions remain in effect.",
@@ -80,8 +108,9 @@ internal sealed class RunDiagnostics(ExecutionRequest input, BackendAvailability
                 }
 
                 var capture = metadata?.CaptureDenials ?? throw new IOException("MXC did not return a denial document.");
-                var bytes = RunArtifacts.ReadFile(capture.OutputPath, RunArtifacts.DiagnosticsDirectory(input), IsolationReportParser.MaximumDocumentBytes);
-                report = IsolationReportParser.ReadDenials(bytes);
+                var bytes = RunArtifacts.ReadFile(capture.OutputPath, captureRoot!, IsolationReportParser.MaximumDocumentBytes);
+                report = IsolationReportParser.ReadDenials(bytes, Permissive);
+                report = report with { CaptureDetail = report.CaptureDetail + "\nCapture file: " + capture.OutputPath + (capture.EtlPath is null ? string.Empty : "\nRetained trace: " + capture.EtlPath) };
             }
             catch (Exception exception)
             {
@@ -109,7 +138,7 @@ internal sealed class RunDiagnostics(ExecutionRequest input, BackendAvailability
             try
             {
                 var actual = Encoding.UTF8.GetString(RunArtifacts.ReadFile(probePath, RunArtifacts.DiagnosticsDirectory(input), 1024));
-                events.Add(new IsolationEvent("Host verification", "Harmless file outside granted workspace", "Read / compare", actual == probeText ? "Unchanged" : "Changed", "The host verified this fixture was readable before the run and compared its contents after the run. The fixture directory was not granted to the workload."));
+                events.Add(new IsolationEvent("Host verification", "Harmless host fixture", "Read / compare", actual == probeText ? "Unchanged" : "Changed", "The host verified this fixture was readable before the run and compared its contents after the run. See the submitted policy for this run's grants."));
             }
             catch (Exception exception)
             {

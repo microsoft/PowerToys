@@ -32,6 +32,11 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
     public bool IsolationDemo { get; init; }
 
+    public PolicySettings? Policy { get; init; }
+
+    [JsonIgnore]
+    public uint? EffectiveTimeoutMs => Policy is null ? checked((uint)TimeoutSeconds * 1000) : Policy.TimeoutMs;
+
     [JsonIgnore]
     public bool IsLinux => Kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
 
@@ -56,6 +61,7 @@ public sealed record ExecutionRequest(string Script, string WorkingDirectory, st
 
         ValidateDirectory(WorkingDirectory);
         ValidateDirectory(TemporaryDirectory);
+        Policy?.Validate(IsLinux);
         if (WorkingSubdirectory is not null)
         {
             WorkspacePath.ValidateRelative(WorkingSubdirectory);

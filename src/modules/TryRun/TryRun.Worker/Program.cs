@@ -56,17 +56,30 @@ internal static class Program
                 throw new InvalidOperationException(input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail);
             }
 
-            Send(new WorkerMessage(WorkerMessage.Output, (input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail) + "\n"));
             var request = SandboxRequestFactory.Create(input);
             diagnostics = new RunDiagnostics(input, backends);
             diagnostics.Configure(request);
+            if (args is ["--describe-policy"])
+            {
+                Console.WriteLine(PolicyMapper.Snapshot(request));
+                return 0;
+            }
+
+            Send(new WorkerMessage(WorkerMessage.Output, (input.IsLinux ? backends.LinuxDetail : backends.WindowsDetail) + "\n"));
             Send(new WorkerMessage(WorkerMessage.EnvironmentReady, "Configured execution environment.") { Environment = diagnostics.Describe(request) });
             Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics started.") { Report = diagnostics.Pending() });
             using var process = MxcSandbox.Spawn(request);
-            if (process.Warnings.Count > 0)
+            const string permissiveWarning = "*** SECURITY WARNING *** permissiveLearningMode is ENABLED: every access check is logged AND ALLOWED (audit mode); the container is not enforcing deny-by-default.";
+            var unexpectedWarnings = process.Warnings.Where(warning => !diagnostics.Permissive || warning != permissiveWarning).ToArray();
+            if (unexpectedWarnings.Length > 0)
             {
                 process.Kill();
-                throw new InvalidOperationException("MXC reported a policy warning; the run was stopped: " + string.Join("; ", process.Warnings));
+                throw new InvalidOperationException("MXC reported a policy warning; the run was stopped: " + string.Join("; ", unexpectedWarnings));
+            }
+
+            foreach (var warning in process.Warnings)
+            {
+                Send(new WorkerMessage(WorkerMessage.Output, warning + "\n"));
             }
 
             process.StandardInput?.Dispose();

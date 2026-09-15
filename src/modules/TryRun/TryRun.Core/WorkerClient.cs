@@ -96,9 +96,15 @@ public sealed class WorkerClient(string executablePath)
         var errorReader = DrainErrorsAsync(process.StandardError, errors);
         try
         {
-            await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(request)).ConfigureAwait(false);
+            await process.StandardInput.WriteLineAsync(RequestCodec.Serialize(request)).ConfigureAwait(false);
             await process.StandardInput.FlushAsync(cancellationToken).ConfigureAwait(false);
-            using var watchdog = new CancellationTokenSource(TimeSpan.FromSeconds(request.TimeoutSeconds + 30));
+            using var watchdog = new CancellationTokenSource();
+            if (request.EffectiveTimeoutMs is { } timeoutMs)
+            {
+                // CancellationTokenSource has a UINT32 millisecond ceiling.
+                watchdog.CancelAfter(TimeSpan.FromMilliseconds(Math.Min((ulong)timeoutMs + 30000, uint.MaxValue - 1)));
+            }
+
             using var waitCancellation = CancellationTokenSource.CreateLinkedTokenSource(watchdog.Token);
             using var registration = cancellationToken.Register(() =>
             {

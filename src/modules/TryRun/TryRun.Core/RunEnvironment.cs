@@ -6,5 +6,9 @@ namespace PowerToys.TryRun.Core;
 
 public sealed record RunEnvironment(string Backend, string EntryPoint, string WorkingFolder, IReadOnlyList<string> ReadOnlyFolders, IReadOnlyList<string> WritableFolders, string Network, string UserInterface, string Resources, int TimeoutSeconds, string NativeVersion)
 {
-    public string Describe() => $"Backend: {Backend}\nEntry: {EntryPoint}\nWorking folder: {WorkingFolder}\nRead-only grants: {string.Join("; ", ReadOnlyFolders)}\nWritable grants: {string.Join("; ", WritableFolders)}\nNetwork: {Network}\nUI: {UserInterface}\nResources: {Resources}\nTime limit: {TimeoutSeconds} seconds\nMXC: {NativeVersion}\nThese are configured restrictions; individual observations are listed below.";
+    public string? PolicySnapshot { get; init; }
+
+    public string? TimeLimit { get; init; }
+
+    public string Describe() => $"Backend: {Backend}\nEntry: {EntryPoint}\nWorking folder: {WorkingFolder}\nRead-only grants: {string.Join("; ", ReadOnlyFolders)}\nWritable grants: {string.Join("; ", WritableFolders)}\nNetwork: {Network}\nUI: {UserInterface}\nResources: {Resources}\nTime limit: {TimeLimit ?? TimeoutSeconds + " seconds"}\nMXC: {NativeVersion}\nThese are configured restrictions; individual observations are listed below." + (PolicySnapshot is null ? string.Empty : "\n\nSubmitted MXC policy and backend configuration:\n" + PolicySnapshot);
 }

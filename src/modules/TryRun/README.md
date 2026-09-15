@@ -33,16 +33,27 @@ Complete and validate each milestone before starting the next.
 8. **Two-step workflow — implemented**: separate configuration and run/results
    pages, an immediately accessible EXE chooser, persistent previous results,
    and image preparation logs kept with environment setup.
-9. **Remaining MXC capability coverage — not started**: configurable policies,
-   denial capture, session lifecycle, and additional supported backends.
+9. **Configurable policies — implemented**: the full public
+   policy and backend configuration surface used by the pinned MXC .NET Windows
+   ProcessContainer and Linux WSLC paths. See [Run permissions](POLICY-OPTIONS.md)
+   for every option, default and backend limitation. Session lifecycle and
+   additional backends remain separate work.
 10. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
-Installer, Runner/GPO registration, automatic write-back, workload network
-access, and permission-learning UI are outside this
+Installer, Runner/GPO registration, automatic write-back, multi-call session
+lifecycle, and additional backend entry points are outside this
 prototype. Production integration needs the normal PowerToys dependency, signing,
 privacy and security reviews and resolution of MXC's preview limitations.
+
+Before running, select **Run permissions…** to edit the default policy. All
+44 top-level controls and nested network-rule fields are documented in
+[Run permissions](POLICY-OPTIONS.md), including backend-specific availability.
+The descriptions of offline execution below refer to the default configuration.
+Explicit writable host grants allow changes to originals, and permissive capture
+allows ungranted access; the configuration page and run report identify those
+choices. Changing permissions does not execute the selected program.
 
 ## Dependency
 
@@ -60,12 +71,40 @@ WSL distribution. It never runs a workload directly when MXC is
 missing or unavailable. Only Windows 11 24H2+ is supported. Elevated sessions
 are refused. Script text and output are not sent to telemetry.
 
-PowerShell requires Windows UI initialization. The fixed policy therefore allows
+PowerShell requires Windows UI initialization. The default policy therefore allows
 windows and uses MXC's documented `Desktop` UI compatibility setting; clipboard,
 input injection, system-settings changes and desktop system control stay blocked.
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Configurable permissions
+
+The x64 Debug standalone build passed. The full run in **policy-full.trx**
+passed all 124 tests with no skips, including the previously failing
+Windows native-denial demo and the border raster test. This records a successful
+run with the new build; it does not establish the cause of the older capture
+discrepancy described below. The native build retains its existing Windows Python
+Store-alias advisory; Linux Python uses the prepared image.
+
+The policy tests verify every catalog field has a default and a form control,
+round-trip and reject malformed policy requests, exercise 2,007 policy-protocol
+fuzz inputs, preserve nested network-rule details, inspect the mapped SDK request,
+and run Windows/Linux workloads with customized read-only grants and environment
+variables. They also verify the policy time limit and preserve backend drafts and
+previous-result snapshots.
+
+After preserving whitespace in environment values and correcting the EXE-import
+hint for customized permissions, the final build passed and all 17 targeted
+checks in **policy-final-regression.trx** passed. This includes an additional
+real native allow-mode capture run of the trusted Windows findstr utility against
+an owned read-only fixture; its report never labels the permitted read as blocked.
+
+The Explorer entry was updated to **x64/Debug/TryRun-Policies** and the registered
+COM-to-window test passed. Interactive screenshot acceptance could not launch the
+window because the desktop tool returned **GetCursorPos failed: Access is denied
+(0x80070005)** on both attempts. WPF control/default coverage and real two-step
+window workflows passed in the tests; a visual walkthrough remains pending.
 
 ### Configuration followed by run and review
 

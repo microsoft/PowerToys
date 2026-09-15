@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<string> inputs = [];
     private readonly HashSet<string> unexported = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<WorkloadKind, (string Script, string File, string Arguments, string Interpreter)> drafts = [];
+    private readonly Dictionary<bool, PolicySettings> policyDrafts = [];
     private readonly string[] startupPaths;
     private readonly string? startupError;
     private CancellationTokenSource? cancellation;
@@ -45,6 +46,61 @@ public partial class MainWindow : Window
     private RunWindowBorders? windowBorders;
     private bool showingRun;
     private bool hasRunResult;
+
+    private bool IsLinuxProfile => kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
+
+    internal PolicySettings CurrentPolicy()
+    {
+        if (policyDrafts.TryGetValue(IsLinuxProfile, out var configured))
+        {
+            return configured.Clone();
+        }
+
+        var policy = PolicySettings.Defaults(IsLinuxProfile);
+        if (int.TryParse(TimeoutBox.Text, out var seconds) && seconds is >= 1 and <= 300)
+        {
+            policy.Values["timeoutMs"] = (seconds * 1000).ToString(CultureInfo.InvariantCulture);
+        }
+
+        policy.Values["captureEnabled"] = !IsLinuxProfile && CaptureBox.IsChecked == true && backends?.NativeDenialCaptureAvailable == true ? "true" : "false";
+        return policy;
+    }
+
+    internal void ApplyPolicy(PolicySettings policy)
+    {
+        if (cancellation is not null || showingRun)
+        {
+            return;
+        }
+
+        policy.Validate(IsLinuxProfile);
+        policyDrafts[IsLinuxProfile] = policy.Clone();
+        UpdateRunSummary();
+        SetRunning(false);
+        Status = "Permissions updated. Review the summary before running.";
+    }
+
+    private void OnEditPolicy(object sender, RoutedEventArgs e)
+    {
+        if (cancellation is not null || showingRun)
+        {
+            return;
+        }
+
+        var dialog = new PolicyWindow(CurrentPolicy(), IsLinuxProfile, backends?.NativeDenialCaptureAvailable == true) { Owner = this };
+        if (dialog.ShowDialog() == true && dialog.Result is { } policy)
+        {
+            ApplyPolicy(policy);
+        }
+    }
+
+    private PolicySettings PreparationPolicy()
+    {
+        var preparation = PolicySettings.Defaults(true);
+        preparation.Values["timeoutMs"] = "300000";
+        preparation.Values["storagePath"] = CurrentPolicy().Get("storagePath");
+        return preparation;
+    }
 
     public MainWindow(string[] startupPaths, string? startupError = null)
         : this(startupPaths, startupError, null, null)
@@ -313,6 +369,7 @@ public partial class MainWindow : Window
                 Kind = WorkloadKind.LinuxShell,
                 Image = ImageBox.Text.Trim(),
                 PrepareImage = true,
+                Policy = PreparationPolicy(),
             };
             var progress = new Progress<WorkerMessage>(message =>
             {
@@ -382,7 +439,9 @@ public partial class MainWindow : Window
                 ArgumentsBox.Clear();
                 UpdateRunSummary();
                 SetRunning(false);
-                Status = "Application selected. Its folder is read-only; supporting inputs run on copies. Review the configuration, then select Run.";
+                Status = policyDrafts.ContainsKey(false)
+                    ? "Application selected. It will use the configured run permissions. Review the configuration, then select Run."
+                    : "Application selected. Its folder is read-only; supporting inputs run on copies. Review the configuration, then select Run.";
                 return;
             }
 
@@ -500,6 +559,14 @@ public partial class MainWindow : Window
 
     private void UpdateRunSummary()
     {
+        if (policyDrafts.ContainsKey(IsLinuxProfile))
+        {
+            RunSummary.Text = (ManualModeBox.IsChecked == true ? "Run the selected program or script." : EntryPointBox.SelectedItem is TaskEntryPoint selected ? $"Run {selected.RelativePath}." : "Choose an entry point.") +
+                "\nSelected inputs are copied. Host access and writable locations follow Run permissions.";
+            UpdateEnvironmentSummary();
+            return;
+        }
+
         RunSummary.Text = ManualModeBox.IsChecked == true
             ? kind == WorkloadKind.WindowsApplication ? "Choose an installed EXE. Its application folder is read-only; selected input data runs on copies." : "Choose a script file or write one here. Selected files are copied before running."
             : EntryPointBox.SelectedItem is TaskEntryPoint entry
@@ -519,6 +586,17 @@ public partial class MainWindow : Window
     private void UpdateEnvironmentSummary()
     {
         var linux = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication;
+        if (policyDrafts.TryGetValue(linux, out var configured))
+        {
+            PermissionText.Text = "This run uses the permissions shown in Run permissions. Explicit writable host paths allow changes to originals.";
+            var time = configured.TimeoutMs is { } milliseconds ? $"{milliseconds} ms" : "No time limit";
+            PolicySummaryText.Text = configured.DescribeNetwork(linux) + $"\nTime limit: {time}\nRead-only: {configured.Get("readonlyPaths", linux).Replace("\n", "; ", StringComparison.Ordinal)}\nWritable: {configured.Get("readwritePaths", linux).Replace("\n", "; ", StringComparison.Ordinal)}" +
+                (linux ? $"\nCPUs: {configured.Get("cpuCount")} · Memory: {configured.Get("memoryMb")} MiB" : $"\nClipboard: {configured.Get("clipboard")}") +
+                (configured.Enabled("captureEnabled") && configured.Get("captureMode") == "Allow" ? "\nPERMISSIVE: ungranted access will be allowed and recorded." : string.Empty);
+            EnvironmentSummaryText.Text = configured.Describe(linux);
+            return;
+        }
+
         var installed = ManualModeBox.IsChecked == true && kind == WorkloadKind.WindowsApplication;
         PolicySummaryText.Text = "Network: off\n" + (installed ? "Installed application folder: read-only\nInput data: writable copies" : "Input files: writable copies") + (linux ? "\nLinux environment: 2 CPUs / 2 GiB" : "\nWindows applications: cyan window border");
         var capture = linux ? "Windows denial capture does not apply to WSLC." : CaptureBox.IsChecked != true ? "Denial capture off." : backends?.NativeDenialCaptureAvailable == true ? "Native denial capture: block and record." : "Native denial capture unavailable.";
@@ -572,9 +650,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (!int.TryParse(TimeoutBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out var timeout) || timeout is < 1 or > 300)
+        var timeout = 60;
+        if (!policyDrafts.ContainsKey(IsLinuxProfile) && (!int.TryParse(TimeoutBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out timeout) || timeout is < 1 or > 300))
         {
             Status = "Choose a timeout between 1 and 300 seconds.";
+            return;
+        }
+
+        var policy = CurrentPolicy();
+        try
+        {
+            policy.Validate(IsLinuxProfile);
+        }
+        catch (Exception exception)
+        {
+            Status = exception.Message;
             return;
         }
 
@@ -599,7 +689,7 @@ public partial class MainWindow : Window
         hasRunResult = true;
         ShowPage(true);
         RunPhaseText.Text = "Preparing files";
-        ActiveRunText.Text = $"{entry?.RelativePath ?? (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? "Inline script" : WorkloadFileBox.Text)} · {(ProfileBox.SelectedItem as ExecutionProfile)?.Name} · {timeout}s limit";
+        ActiveRunText.Text = $"{entry?.RelativePath ?? (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? "Inline script" : WorkloadFileBox.Text)} · {(ProfileBox.SelectedItem as ExecutionProfile)?.Name} · {(policy.TimeoutMs is { } milliseconds ? milliseconds + " ms limit" : "No time limit")}";
         cancellation = new CancellationTokenSource();
         SetRunning(true);
         changes = [];
@@ -648,6 +738,7 @@ public partial class MainWindow : Window
             RunPhaseText.Text = "Starting";
             var request = new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
             {
+                Policy = policy,
                 Kind = kind,
                 ApplicationPath = entry is null && kind == WorkloadKind.WindowsApplication ? workloadFile : null,
                 FileRelativePath = relativeFile,
@@ -656,7 +747,7 @@ public partial class MainWindow : Window
                 Image = ImageBox.Text.Trim(),
                 ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
                 Interpreter = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython ? InterpreterBox.Text.Trim() : null,
-                CaptureDenials = kind is not WorkloadKind.LinuxShell and not WorkloadKind.LinuxPython and not WorkloadKind.LinuxApplication && CaptureBox.IsChecked == true,
+                CaptureDenials = policy.Enabled("captureEnabled"),
                 IsolationDemo = isolationDemo,
             };
             var environmentReceived = false;
@@ -879,7 +970,8 @@ public partial class MainWindow : Window
         RunProgress.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
         WindowsDemoButton.IsEnabled = !running;
         LinuxDemoButton.IsEnabled = !running;
-        CaptureBox.IsEnabled = !running && backends?.NativeDenialCaptureAvailable == true;
+        CaptureBox.IsEnabled = !running && !policyDrafts.ContainsKey(IsLinuxProfile) && backends?.NativeDenialCaptureAvailable == true;
+        PolicyButton.IsEnabled = !running && !showingRun;
         var hasCommand = !string.IsNullOrWhiteSpace(WorkloadFileBox.Text) || (kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ScriptBox.Text));
         RunButton.IsEnabled = available && !running && (manual ? hasCommand : EntryPointBox.SelectedItem is TaskEntryPoint);
         EntryPointBox.IsEnabled = !running && !manual;
@@ -887,7 +979,10 @@ public partial class MainWindow : Window
         ManualOptions.IsEnabled = !running && manual;
         StopButton.IsEnabled = running;
         ScriptBox.IsEnabled = !running && WorkloadFileBox.Text.Length == 0 && kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication;
-        TimeoutBox.IsEnabled = !running;
+        TimeoutBox.IsEnabled = !running && !policyDrafts.ContainsKey(IsLinuxProfile);
+        TimeoutPanel.Visibility = policyDrafts.ContainsKey(IsLinuxProfile) ? Visibility.Collapsed : Visibility.Visible;
+        CaptureOption.Visibility = !IsLinuxProfile && !policyDrafts.ContainsKey(IsLinuxProfile) ? Visibility.Visible : Visibility.Collapsed;
+        TimeoutBox.ToolTip = policyDrafts.ContainsKey(IsLinuxProfile) ? "Time limit is configured in Run permissions." : null;
         AddFilesButton.IsEnabled = !running;
         AddFolderButton.IsEnabled = !running;
         RemoveInputButton.IsEnabled = !running && inputs.Count > 0;

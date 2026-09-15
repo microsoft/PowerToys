@@ -398,7 +398,7 @@ public sealed class WorkflowTests
         Assert.IsTrue(predicate(), "Timed out waiting for the workflow. " + detail());
     }
 
-    private static async Task OnDispatcherAsync(Func<Task> action)
+    internal static async Task OnDispatcherAsync(Func<Task> action)
     {
         var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var thread = new Thread(() =>

@@ -18,9 +18,43 @@ public static class RequestCodec
             throw new InvalidDataException("The execution request is too large.");
         }
 
-        var request = JsonSerializer.Deserialize<ExecutionRequest>(json) ?? throw new InvalidDataException("Missing execution request.");
+        var root = JsonSerializer.Deserialize<JsonElement>(json);
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException("Missing execution request object.");
+        }
+
+        var enveloped = root.TryGetProperty("PolicyProtocol", out var version);
+        if (enveloped)
+        {
+            if (version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var protocol) || protocol != 1 || !root.TryGetProperty("Request", out var nested) || nested.ValueKind != JsonValueKind.Object)
+            {
+                throw new InvalidDataException("Unsupported policy protocol. Rebuild the matching Try Run UI and worker.");
+            }
+
+            root = nested;
+        }
+
+        var request = root.Deserialize<ExecutionRequest>() ?? throw new InvalidDataException("Missing execution request.");
+        if (request.Policy is not null && !enveloped)
+        {
+            throw new InvalidDataException("Configurable policies require the versioned policy protocol.");
+        }
+
         request.Validate();
         return request;
+    }
+
+    public static string Serialize(ExecutionRequest request)
+    {
+        request.Validate();
+        var json = request.Policy is null ? JsonSerializer.Serialize(request) : JsonSerializer.Serialize(new { PolicyProtocol = 1, Request = request });
+        if (json.Length > MaximumMessageLength)
+        {
+            throw new InvalidDataException("The execution request is too large.");
+        }
+
+        return json;
     }
 
     public static async Task<ExecutionRequest> ReadAsync(TextReader reader, CancellationToken cancellationToken)

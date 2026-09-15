@@ -11,7 +11,7 @@ public static class IsolationReportParser
     public const int MaximumDocumentBytes = 4 * 1024 * 1024;
     public const int MaximumObservationBytes = 32768;
 
-    public static IsolationReport ReadDenials(ReadOnlyMemory<byte> json)
+    public static IsolationReport ReadDenials(ReadOnlyMemory<byte> json, bool permissive = false)
     {
         if (json.Length > MaximumDocumentBytes)
         {
@@ -36,7 +36,7 @@ public static class IsolationReportParser
             var resource = Text(denial.GetProperty("resource"));
             var type = Text(denial.GetProperty("resourceType"));
             var access = Text(denial.GetProperty("accessType"));
-            events.Add(new IsolationEvent("MXC denial capture (block)", resource, access, "Blocked", $"Resource type: {type}. Recorded by MXC while deny-by-default remained enabled."));
+            events.Add(new IsolationEvent(permissive ? "MXC access capture (allow)" : "MXC denial capture (block)", resource, access, permissive ? "Allowed (recorded)" : "Blocked", $"Resource type: {type}. " + (permissive ? "Permissive capture: ungranted access was allowed and recorded." : "Recorded by MXC while deny-by-default remained enabled.")));
         }
 
         var limited = truncated || count > events.Count;

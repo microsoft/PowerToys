@@ -33,7 +33,9 @@ internal static class SandboxRequestFactory
 
         if (input.IsLinux)
         {
-            return CreateLinux(input);
+            var linux = CreateLinux(input);
+            PolicyMapper.Apply(linux, input);
+            return linux;
         }
 
         var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -113,7 +115,7 @@ internal static class SandboxRequestFactory
             command = $"{CommandEncoding.WindowsArgument(Path.Combine(Environment.SystemDirectory, "cmd.exe"))} /d /v:off /s /c \"\"{batchPath}\" {batchArguments}\"";
         }
 
-        return new SandboxRequest(policy, command)
+        var request = new SandboxRequest(policy, command)
         {
             Containment = new ProcessContainerContainment
             {
@@ -136,6 +138,8 @@ internal static class SandboxRequestFactory
                 ["PSModulePath"] = Path.Combine(powerShellDirectory, "Modules"),
             },
         };
+        PolicyMapper.Apply(request, input);
+        return request;
     }
 
     private static SandboxRequest CreateLinux(ExecutionRequest input)

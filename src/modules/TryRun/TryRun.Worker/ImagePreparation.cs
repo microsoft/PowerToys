@@ -17,7 +17,7 @@ internal static class ImagePreparation
             throw new FileNotFoundException("Build the MXC image preparation helper with MxcWithWslc=true.", executable);
         }
 
-        var store = Path.Combine(AppContext.BaseDirectory, "WslcImages");
+        var store = input.Policy?.Get("storagePath") is { Length: > 0 } selectedStore ? PolicyPaths.ResolveExisting(selectedStore) : Path.Combine(AppContext.BaseDirectory, "WslcImages");
         Directory.CreateDirectory(store);
         using var process = new Process
         {
