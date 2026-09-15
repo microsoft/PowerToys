@@ -629,38 +629,48 @@ public partial class MainWindow : Window
     private void ShowIsolationReport(IsolationReport report)
     {
         isolationReport = report;
-        CaptureStatusText.Text = $"Denial capture: {report.CaptureStatus}\n{report.CaptureDetail}";
+        CaptureStatusText.Text = $"Denial capture: {report.CaptureStatus}\n{report.CaptureDetail.Split('\n')[0]}";
+        CaptureDetailsBox.Text = report.CaptureDetail;
         ReportEvidenceText.Text = report.EvidenceNote;
         IsolationGrid.ItemsSource = report.Events;
         if (report.Events.Count > 0)
         {
             IsolationGrid.SelectedIndex = 0;
         }
+
+        UpdateFileAccessActions();
     }
 
     private void OnIsolationEventSelected(object sender, SelectionChangedEventArgs e)
     {
-        IsolationDetails.Text = IsolationGrid.SelectedItem is IsolationEvent observation ? $"{observation.Source}\n{observation.Resource}\n{observation.Detail}" : string.Empty;
+        IsolationDetails.Text = IsolationGrid.SelectedItem is IsolationEvent observation ? $"{observation.Source}\n{ResourceDetail(observation)}\nAccess: {observation.NativeDenial?.Access ?? observation.Access}\n{observation.Detail}" : string.Empty;
+        UpdateFileAccessActions();
     }
 
     private async void OnRun(object sender, RoutedEventArgs e)
     {
-        if (cancellation is not null || showingRun)
+        await RunConfiguredAsync();
+    }
+
+    private async Task RunConfiguredAsync(FileAccessRun? retry = null)
+    {
+        if (cancellation is not null || (showingRun && retry is null))
         {
             return;
         }
 
-        var timeout = 60;
-        if (!policyDrafts.ContainsKey(IsLinuxProfile) && (!int.TryParse(TimeoutBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out timeout) || timeout is < 1 or > 300))
+        var timeout = retry?.Request.TimeoutSeconds ?? 60;
+        var runKind = retry?.Request.Kind ?? kind;
+        if (retry is null && !policyDrafts.ContainsKey(IsLinuxProfile) && (!int.TryParse(TimeoutBox.Text, NumberStyles.None, CultureInfo.InvariantCulture, out timeout) || timeout is < 1 or > 300))
         {
             Status = "Choose a timeout between 1 and 300 seconds.";
             return;
         }
 
-        var policy = CurrentPolicy();
+        var policy = retry?.Request.Policy?.Clone() ?? CurrentPolicy();
         try
         {
-            policy.Validate(IsLinuxProfile);
+            policy.Validate(retry?.Request.IsLinux ?? IsLinuxProfile);
         }
         catch (Exception exception)
         {
@@ -668,14 +678,14 @@ public partial class MainWindow : Window
             return;
         }
 
-        var entry = ManualModeBox.IsChecked == true ? null : EntryPointBox.SelectedItem as TaskEntryPoint;
-        if (ManualModeBox.IsChecked != true && entry is null)
+        var entry = retry is not null || ManualModeBox.IsChecked == true ? null : EntryPointBox.SelectedItem as TaskEntryPoint;
+        if (retry is null && ManualModeBox.IsChecked != true && entry is null)
         {
             Status = "Choose an entry point first.";
             return;
         }
 
-        if (ManualModeBox.IsChecked == true && string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
+        if (retry is null && ManualModeBox.IsChecked == true && string.IsNullOrWhiteSpace(WorkloadFileBox.Text) && (kind is WorkloadKind.WindowsApplication or WorkloadKind.LinuxApplication || string.IsNullOrWhiteSpace(ScriptBox.Text)))
         {
             Status = "Choose a program or enter a script first.";
             return;
@@ -687,9 +697,11 @@ public partial class MainWindow : Window
         }
 
         hasRunResult = true;
+        fileAccessRun = null;
+        fileAccessEnvironment = null;
         ShowPage(true);
         RunPhaseText.Text = "Preparing files";
-        ActiveRunText.Text = $"{entry?.RelativePath ?? (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? "Inline script" : WorkloadFileBox.Text)} · {(ProfileBox.SelectedItem as ExecutionProfile)?.Name} · {(policy.TimeoutMs is { } milliseconds ? milliseconds + " ms limit" : "No time limit")}";
+        ActiveRunText.Text = retry?.Description ?? $"{entry?.RelativePath ?? (string.IsNullOrWhiteSpace(WorkloadFileBox.Text) ? "Inline script" : WorkloadFileBox.Text)} · {(ProfileBox.SelectedItem as ExecutionProfile)?.Name} · {(policy.TimeoutMs is { } milliseconds ? milliseconds + " ms limit" : "No time limit")}";
         cancellation = new CancellationTokenSource();
         SetRunning(true);
         changes = [];
@@ -711,12 +723,12 @@ public partial class MainWindow : Window
         IsolationDetails.Clear();
         ShowIsolationReport(new IsolationReport("Pending", "The run has not started.", []));
         var workloadFile = entry is null ? WorkloadFileBox.Text : string.Empty;
-        var inputPaths = inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var inputPaths = retry?.InputPaths.ToArray() ?? inputs.Concat(!string.IsNullOrWhiteSpace(workloadFile) && kind != WorkloadKind.WindowsApplication ? new[] { workloadFile } : []).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var prepared = false;
         var finalPhase = "Failed";
         using var runBorders = new RunWindowBorders(message => WindowBorderText.Text = message);
         windowBorders = runBorders;
-        WindowBorderText.Visibility = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication ? Visibility.Collapsed : Visibility.Visible;
+        WindowBorderText.Visibility = runKind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication ? Visibility.Collapsed : Visibility.Visible;
         WindowBorderText.Text = "Windows in this run will have a cyan border after MXC starts the application.";
         try
         {
@@ -729,14 +741,21 @@ public partial class MainWindow : Window
                 throw new IOException("The selected entry point changed or was removed. Select the files again.");
             }
 
-            var relativeFile = entry?.RelativePath ?? (kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? runBundle.GetRelativePath(workloadFile) : null);
+            var relativeFile = retry is not null ? retry.Request.FileRelativePath : entry?.RelativePath ?? (kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? runBundle.GetRelativePath(workloadFile) : null);
             await Task.Run(() => workspace.Import(runBundle.Inputs, cancellation.Token));
             prepared = true;
             canReview = true;
             hasUnreviewedResults = true;
             Status = "Starting a restricted run…";
             RunPhaseText.Text = "Starting";
-            var request = new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
+            var request = retry is not null ? retry.Request with
+            {
+                Policy = policy,
+                WorkingDirectory = session.WorkingDirectory,
+                TemporaryDirectory = session.TemporaryDirectory,
+                Arguments = retry.Request.Arguments.ToArray(),
+            }
+            : new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
             {
                 Policy = policy,
                 Kind = kind,
@@ -750,6 +769,8 @@ public partial class MainWindow : Window
                 CaptureDenials = policy.Enabled("captureEnabled"),
                 IsolationDemo = isolationDemo,
             };
+            request.Validate();
+            fileAccessRun = new FileAccessRun(request with { Policy = policy.Clone(), Arguments = request.Arguments.ToArray() }, inputPaths.ToArray(), ActiveRunText.Text);
             var environmentReceived = false;
             void MarkRunning()
             {
@@ -776,6 +797,7 @@ public partial class MainWindow : Window
 
                 if (message.Environment is { } environment)
                 {
+                    fileAccessEnvironment = environment;
                     environmentReceived = true;
                     ReportEnvironmentBox.Text = environment.Describe();
                 }
@@ -1000,6 +1022,7 @@ public partial class MainWindow : Window
         InterpreterBox.IsEnabled = !running && kind != WorkloadKind.LinuxApplication;
         BrowseImageButton.IsEnabled = !running;
         PrepareImageButton.IsEnabled = !running && backends?.LinuxAvailable == true;
+        UpdateFileAccessActions();
     }
 
     private void FinishOperation()

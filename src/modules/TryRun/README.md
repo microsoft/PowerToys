@@ -41,7 +41,11 @@ Complete and validate each milestone before starting the next.
    distinguishes mapping, parsing and runtime evidence. Native DACL fallback and
    network enforcement now have typed SDK/FFI controls; other backend and session
    configuration remains unconnected.
-10. **Command Palette entry — not started**: an explicitly enabled developer command opens the
+10. **Windows file-access review — implemented**: native blocked-read records retain
+    their full identifiers; explicit file selection covers missing native events.
+    Both routes preview an exact read-only file grant and retry the recorded task
+    in a fresh workspace. See [File access review](FILE-ACCESS-REVIEW.md).
+11. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
 
@@ -80,6 +84,28 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Windows file-access review
+
+The x64 Debug standalone build succeeded (exit 0). The full regression in
+**file-access-full.trx** passed **189 tests**, with **1 skipped** and no failures.
+The existing border-pixel test could not rasterize its solid-color control on
+this desktop; its pixels were not verified. Window identity/lifetime tests and
+the new access-report layout checks passed.
+
+All **21** targeted file-access tests passed in **file-access-milestone.trx**.
+The retry is validated with Windows `sort.exe`, a PowerShell file and a batch
+script. It adds one read-only path while preserving the recorded task and other
+permissions. Writes and sibling reads remain denied. Native denial provenance,
+explicit user selection, canceled previews, canceled result disposal and file
+replacement protection are covered separately.
+
+On this host, denied reads of owned fixture files were absent even from the
+sealed native ETL. Explicit file selection therefore remains available and is
+clearly labeled as a user grant, not native evidence. Some application access
+patterns (observed with `findstr` and CMD `type`) still fail with only a file grant;
+the feature never expands that grant into a directory automatically. Details and
+demo steps are in [File access review](FILE-ACCESS-REVIEW.md).
 
 ### Native fallback and network execution controls
 

@@ -5,6 +5,12 @@ It audits the pinned revision **3eef7d60ce35d4d0ba568ddd0a9108beadb35b9a**.
 The machine-readable inventory is [policy-coverage.json](policy-coverage.json).
 Control defaults are in [POLICY-OPTIONS.md](POLICY-OPTIONS.md).
 
+Windows now has a [file-access review workflow](FILE-ACCESS-REVIEW.md) that adds
+one read-only file grant after preview. Native blocked-read evidence and explicit
+user file selection are distinct inputs. Some actual file denials were absent
+from the native ETL on the tested host; this is an observability limitation, not
+a missing configuration field or evidence that the operation was allowed.
+
 ## What is being counted
 
 The inventory contains **162 definition/property entries** from MXC's generated

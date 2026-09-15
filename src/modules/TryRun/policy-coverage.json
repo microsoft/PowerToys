@@ -185,7 +185,10 @@
       ],
       "evidence": [
         "PolicyTests.EveryOptionHasADefaultAndAnEditor",
-        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload"
+        "PolicyTests.WorkerMapsEveryWindowsPolicyGroupWithoutExecutingTheWorkload",
+        "FileReadGrantTests.GrantChangesOnlyOneReadOnlyPathAndProtectsAgainstReplacement",
+        "FileAccessWorkflowTests.SelectedReadOnlyGrantDoesNotPermitWritesOrSiblingReads",
+        "FileAccessWorkflowTests.ReviewCancelAndRetryUseTheRecordedWindowsTask"
       ],
       "note": "Control and request mapping exist; this is not a claim that every backend enforces every combination."
     },

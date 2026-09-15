@@ -33,10 +33,16 @@ public static class IsolationReportParser
         var events = new List<IsolationEvent>();
         foreach (var denial in denials.EnumerateArray().Take(IsolationReport.MaximumNativeEvents))
         {
+            var nativeResource = NativeText(denial.GetProperty("resource"), 32767);
+            var nativeType = NativeText(denial.GetProperty("resourceType"), 128);
+            var nativeAccess = NativeText(denial.GetProperty("accessType"), 128);
             var resource = Text(denial.GetProperty("resource"));
             var type = Text(denial.GetProperty("resourceType"));
             var access = Text(denial.GetProperty("accessType"));
-            events.Add(new IsolationEvent(permissive ? "MXC access capture (allow)" : "MXC denial capture (block)", resource, access, permissive ? "Allowed (recorded)" : "Blocked", $"Resource type: {type}. " + (permissive ? "Permissive capture: ungranted access was allowed and recorded." : "Recorded by MXC while deny-by-default remained enabled.")));
+            events.Add(new IsolationEvent(permissive ? "MXC access capture (allow)" : "MXC denial capture (block)", resource, access, permissive ? "Allowed (recorded)" : "Blocked", $"Resource type: {type}. " + (permissive ? "Permissive capture: ungranted access was allowed and recorded." : "Recorded by MXC while deny-by-default remained enabled."))
+            {
+                NativeDenial = permissive ? null : new NativeAccessDenial(nativeResource, nativeType, nativeAccess),
+            });
         }
 
         var limited = truncated || count > events.Count;
@@ -78,6 +84,12 @@ public static class IsolationReportParser
     {
         var text = value.GetString() ?? throw new InvalidDataException("Missing observation text.");
         return new string(text.Take(512).Select(character => char.IsControl(character) ? ' ' : character).ToArray());
+    }
+
+    private static string NativeText(JsonElement value, int maximum)
+    {
+        var text = value.GetString() ?? throw new InvalidDataException("Missing native resource identifier.");
+        return text.Length <= maximum ? text : throw new InvalidDataException("Oversized native resource identifier.");
     }
 
     private static ReadOnlyMemory<byte> WithoutBom(ReadOnlyMemory<byte> json) => json.Span.StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }) ? json[3..] : json;

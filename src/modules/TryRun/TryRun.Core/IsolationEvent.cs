@@ -4,4 +4,7 @@
 
 namespace PowerToys.TryRun.Core;
 
-public sealed record IsolationEvent(string Source, string Resource, string Access, string Outcome, string Detail);
+public sealed record IsolationEvent(string Source, string Resource, string Access, string Outcome, string Detail)
+{
+    public NativeAccessDenial? NativeDenial { get; init; }
+}

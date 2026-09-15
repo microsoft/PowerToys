@@ -20,9 +20,21 @@ public static class IsolationReportFuzzer
         try
         {
             var report = IsolationReportParser.ReadDenials(bytes);
-            if (report.Events.Count > IsolationReport.MaximumNativeEvents || report.Events.Any(row => row.Resource.Length > 512))
+            if (report.Events.Count > IsolationReport.MaximumNativeEvents || report.Events.Any(row => row.Resource.Length > 512 || row.NativeDenial?.Resource.Length > 32767))
             {
                 throw new NotSupportedException("Unbounded denial report.");
+            }
+
+            foreach (var observation in report.Events.Where(FileReadGrant.CanReview))
+            {
+                try
+                {
+                    FileReadGrant.ValidatePath(observation.NativeDenial!.Resource);
+                }
+                catch (Exception exception) when (exception is ArgumentException or IOException)
+                {
+                    // Path validation never authorizes or opens a resource.
+                }
             }
         }
         catch (Exception exception) when (IsMalformed(exception))
@@ -33,7 +45,7 @@ public static class IsolationReportFuzzer
         try
         {
             var events = IsolationReportParser.ReadObservations(bytes);
-            if (events.Any(row => row.Source != "Workload file (self-reported)"))
+            if (events.Any(row => row.Source != "Workload file (self-reported)" || row.NativeDenial is not null))
             {
                 throw new NotSupportedException("Workload file changed evidence provenance.");
             }

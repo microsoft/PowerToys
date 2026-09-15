@@ -477,6 +477,14 @@
                             Content="_Stop run"
                             DockPanel.Dock="Right"
                             IsEnabled="False" />
+                        <Button
+                            x:Name="ViewBlockedAccessButton"
+                            Margin="16,0,0,0"
+                            Padding="12,6"
+                            Click="OnViewBlockedAccess"
+                            Content="View blocked access"
+                            DockPanel.Dock="Right"
+                            Visibility="Collapsed" />
                         <TextBlock
                             x:Name="RunPhaseText"
                             FontSize="28"
@@ -659,24 +667,34 @@
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem x:Name="IsolationTab" Header="Isolation _report">
+                <TabItem x:Name="IsolationTab" Header="Access _report">
                     <Grid Margin="8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
-                            <RowDefinition Height="90" />
+                            <RowDefinition Height="80" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Expander Header="Configured environment for this run">
-                            <TextBox
-                                x:Name="ReportEnvironmentBox"
-                                MaxHeight="180"
-                                AutomationProperties.Name="Configured environment for the completed run"
-                                IsReadOnly="True"
-                                TextWrapping="Wrap"
-                                VerticalScrollBarVisibility="Auto" />
+                        <Expander Header="Run configuration and capture details">
+                            <StackPanel>
+                                <TextBox
+                                    x:Name="CaptureDetailsBox"
+                                    MaxHeight="100"
+                                    AutomationProperties.Name="Native capture details"
+                                    IsReadOnly="True"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                                <TextBox
+                                    x:Name="ReportEnvironmentBox"
+                                    MaxHeight="180"
+                                    AutomationProperties.Name="Configured environment for the completed run"
+                                    IsReadOnly="True"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
                         </Expander>
                         <TextBlock
                             x:Name="CaptureStatusText"
@@ -726,10 +744,32 @@
                             VerticalScrollBarVisibility="Auto" />
                         <TextBlock
                             x:Name="ReportEvidenceText"
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Margin="0,8,0,0"
                             FontSize="12"
                             TextWrapping="Wrap" />
+                        <DockPanel Grid.Row="5" Margin="0,8,0,0">
+                            <Button
+                                x:Name="ChooseReadOnlyFileButton"
+                                Margin="12,0,0,0"
+                                Padding="12,8"
+                                Click="OnChooseReadOnlyFile"
+                                Content="Choose a file to read…"
+                                DockPanel.Dock="Right"
+                                IsEnabled="False" />
+                            <Button
+                                x:Name="ReviewFileReadButton"
+                                Margin="12,0,0,0"
+                                Padding="12,8"
+                                Click="OnReviewFileRead"
+                                Content="Review read-only access…"
+                                DockPanel.Dock="Right"
+                                IsEnabled="False" />
+                            <TextBlock
+                                x:Name="FileAccessHint"
+                                VerticalAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </DockPanel>
                     </Grid>
                 </TabItem>
             </TabControl>
