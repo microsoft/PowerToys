@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -24,6 +25,7 @@ public sealed partial class ListItemsView
     private bool _gridSynchronizationQueued;
     private bool _gridLayoutTracked;
     private bool _processingGridLayout;
+    private bool _focusGridNavigationTarget;
     private ListItemViewModel? _pendingGridHeaderScroll;
 
     public GridItemsViewModel GridItems { get; private set; } = new();
@@ -115,6 +117,11 @@ public sealed partial class ListItemsView
     private bool ReleaseGridProjection()
     {
         CancelPendingGridActions();
+        if (_selectedGridSectionCommand is not null)
+        {
+            SetSectionCommandSelection(_selectedListSectionCommand, null);
+        }
+
         if (GridItemsSource.Source is null && GridItems.Groups.Count == 0)
         {
             // Already released. Still stop observing: an empty grid page reaches
@@ -216,6 +223,7 @@ public sealed partial class ListItemsView
         SynchronizeGridItems();
         if (GridItems.ItemCount == 0)
         {
+            TryNavigateHeaderOnlyGrid(key);
             return;
         }
 
@@ -237,9 +245,21 @@ public sealed partial class ListItemsView
             return false;
         }
 
+        if (_selectedGridSectionCommand is not null)
+        {
+            if (!GridItems.Groups.Contains(_selectedGridSectionCommand) || !_selectedGridSectionCommand.HasSectionCommand)
+            {
+                SetSectionCommandSelection(null, null);
+            }
+            else
+            {
+                return TryNavigateFromGridSectionCommand(_selectedGridSectionCommand, key);
+            }
+        }
+
         if (GridItems.ItemCount == 0)
         {
-            return true;
+            return TryNavigateHeaderOnlyGrid(key);
         }
 
         var current = ItemsGrid.SelectedIndex;
@@ -274,6 +294,25 @@ public sealed partial class ListItemsView
             }
 
             var column = _gridNavigationColumn ??= layout.GetColumn(current);
+
+            if (key is VirtualKey.Up or VirtualKey.Down &&
+                GridItems.GroupFromItemIndex(current) is { } currentGroup)
+            {
+                var relativeIndex = current - currentGroup.FirstItemIndex;
+                var row = relativeIndex / _gridColumns;
+                var rowCount = 1 + ((currentGroup.Items.Count - 1) / _gridColumns);
+
+                if (key == VirtualKey.Up && row == 0)
+                {
+                    return TrySelectGridTargetBeforeTiles(currentGroup, column, wrap: true);
+                }
+
+                if (key == VirtualKey.Down && row == rowCount - 1)
+                {
+                    return TrySelectGridTargetAfterGroup(currentGroup, column, wrap: true);
+                }
+            }
+
             target = key switch
             {
                 VirtualKey.Up => layout.MoveVertical(current, down: false, column, wrap: true),
@@ -286,21 +325,244 @@ public sealed partial class ListItemsView
 
         if (target >= 0 && target != current)
         {
-            _isGridNavigationSelection = true;
-            try
-            {
-                _scrollOnNextSelectionChange = true;
-                ItemsGrid.SelectedIndex = target;
-            }
-            finally
-            {
-                _isGridNavigationSelection = false;
-            }
-
-            PushSelectionToVm();
+            SelectGridItem(target);
         }
 
         return true;
+    }
+
+    private bool TryNavigateFromGridSectionCommand(GridItemGroupViewModel group, VirtualKey key)
+    {
+        var column = _gridNavigationColumn ?? 0;
+        return key switch
+        {
+            VirtualKey.Up or VirtualKey.PageUp => TrySelectGridTargetBeforeGroup(group, column, wrap: true),
+            VirtualKey.Down or VirtualKey.PageDown when group.Items.Count > 0 => SelectGridItemInFirstRow(group, column),
+            VirtualKey.Down or VirtualKey.PageDown => TrySelectGridTargetAfterGroup(group, column, wrap: true),
+            VirtualKey.Left or VirtualKey.Right => true,
+            _ => true,
+        };
+    }
+
+    private bool TryNavigateHeaderOnlyGrid(VirtualKey key)
+    {
+        if (key is not (VirtualKey.Up or VirtualKey.Down or VirtualKey.PageUp or VirtualKey.PageDown))
+        {
+            return true;
+        }
+
+        var down = key is VirtualKey.Down or VirtualKey.PageDown;
+        var selectedIndex = _selectedGridSectionCommand is null ? -1 : IndexOfGridGroup(_selectedGridSectionCommand);
+        if (selectedIndex < 0)
+        {
+            return TrySelectGridSectionCommand(down ? 0 : GridItems.Groups.Count - 1, down ? 1 : -1, 0);
+        }
+
+        return TrySelectGridSectionCommand(selectedIndex + (down ? 1 : -1), down ? 1 : -1, 0, wrap: true);
+    }
+
+    private bool TrySelectGridTargetBeforeTiles(GridItemGroupViewModel group, int column, bool wrap)
+    {
+        if (group.HasSectionCommand)
+        {
+            return SelectGridSectionCommand(group, column);
+        }
+
+        return TrySelectGridTargetBeforeGroup(group, column, wrap);
+    }
+
+    private bool TrySelectGridTargetBeforeGroup(GridItemGroupViewModel group, int column, bool wrap)
+    {
+        var groupIndex = IndexOfGridGroup(group);
+        if (groupIndex < 0)
+        {
+            return false;
+        }
+
+        for (var i = groupIndex - 1; i >= 0; i--)
+        {
+            if (TrySelectLastTargetInGridGroup(GridItems.Groups[i], column))
+            {
+                return true;
+            }
+        }
+
+        if (wrap)
+        {
+            for (var i = GridItems.Groups.Count - 1; i >= groupIndex; i--)
+            {
+                if (TrySelectLastTargetInGridGroup(GridItems.Groups[i], column))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool TrySelectGridTargetAfterGroup(GridItemGroupViewModel group, int column, bool wrap)
+    {
+        var groupIndex = IndexOfGridGroup(group);
+        if (groupIndex < 0)
+        {
+            return false;
+        }
+
+        for (var i = groupIndex + 1; i < GridItems.Groups.Count; i++)
+        {
+            if (TrySelectFirstTargetInGridGroup(GridItems.Groups[i], column))
+            {
+                return true;
+            }
+        }
+
+        if (wrap)
+        {
+            for (var i = 0; i <= groupIndex; i++)
+            {
+                if (TrySelectFirstTargetInGridGroup(GridItems.Groups[i], column))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool TrySelectFirstTargetInGridGroup(GridItemGroupViewModel group, int column)
+    {
+        if (group.HasSectionCommand)
+        {
+            return SelectGridSectionCommand(group, column);
+        }
+
+        return group.Items.Count > 0 && SelectGridItemInFirstRow(group, column);
+    }
+
+    private bool TrySelectLastTargetInGridGroup(GridItemGroupViewModel group, int column)
+    {
+        if (group.Items.Count > 0)
+        {
+            var columns = Math.Max(1, _gridColumns);
+            var lastRowStart = group.FirstItemIndex + (((group.Items.Count - 1) / columns) * columns);
+            var index = lastRowStart + Math.Min(column, group.Items.Count - (lastRowStart - group.FirstItemIndex) - 1);
+            return SelectGridItem(index);
+        }
+
+        return group.HasSectionCommand && SelectGridSectionCommand(group, column);
+    }
+
+    private bool SelectGridItemInFirstRow(GridItemGroupViewModel group, int column)
+    {
+        var index = group.FirstItemIndex + Math.Min(column, group.Items.Count - 1);
+        return SelectGridItem(index);
+    }
+
+    private bool SelectGridItem(int target)
+    {
+        if (target < 0 || target >= ItemsGrid.Items.Count)
+        {
+            return false;
+        }
+
+        SetSectionCommandSelection(null, null);
+        _isGridNavigationSelection = true;
+        try
+        {
+            _scrollOnNextSelectionChange = true;
+            ItemsGrid.SelectedIndex = target;
+        }
+        finally
+        {
+            _isGridNavigationSelection = false;
+        }
+
+        PushSelectionToVm();
+        return true;
+    }
+
+    private bool SelectGridSectionCommand(GridItemGroupViewModel group, int column)
+    {
+        if (!group.HasSectionCommand || group.Header is null)
+        {
+            return false;
+        }
+
+        using (SuppressSelectionChangedScope())
+        {
+            ItemsGrid.SelectedIndex = -1;
+        }
+
+        SetSectionCommandSelection(null, group);
+        _gridNavigationColumn = column;
+        _stickySelectedItem = group.Header;
+        _lastPushedToVm = null;
+        _scrollOnNextSelectionChange = false;
+        ViewModel?.UpdateSelectedItemCommand.Execute(null);
+        AnnounceSelection($"{group.Title}, {group.SectionCommandName}");
+        ScrollGridToSectionCommand(group);
+        return true;
+    }
+
+    private bool TrySelectGridSectionCommand(int startIndex, int step, int column, bool wrap = false)
+    {
+        if (step == 0 || GridItems.Groups.Count == 0)
+        {
+            return false;
+        }
+
+        for (var i = startIndex; i >= 0 && i < GridItems.Groups.Count; i += step)
+        {
+            if (SelectGridSectionCommand(GridItems.Groups[i], column))
+            {
+                return true;
+            }
+        }
+
+        if (!wrap)
+        {
+            return false;
+        }
+
+        var wrappedStart = step > 0 ? 0 : GridItems.Groups.Count - 1;
+        var wrappedEnd = Math.Clamp(startIndex - step, 0, GridItems.Groups.Count - 1);
+        for (var i = wrappedStart; step > 0 ? i <= wrappedEnd : i >= wrappedEnd; i += step)
+        {
+            if (SelectGridSectionCommand(GridItems.Groups[i], column))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int IndexOfGridGroup(GridItemGroupViewModel group)
+    {
+        for (var i = 0; i < GridItems.Groups.Count; i++)
+        {
+            if (ReferenceEquals(GridItems.Groups[i], group))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void ScrollGridToSectionCommand(GridItemGroupViewModel group)
+    {
+        if (group.Items.Count == 0)
+        {
+            return;
+        }
+
+        var firstItem = group.Items[0];
+        _pendingGridHeaderScroll = firstItem;
+        TrackGridLayout();
+        ItemsGrid.ScrollIntoView(firstItem);
     }
 
     private void ScrollGridToItem(ListItemViewModel item)
@@ -323,6 +585,50 @@ public sealed partial class ListItemsView
         {
             ItemsGrid.LayoutUpdated += Grid_LayoutUpdated;
             _gridLayoutTracked = true;
+        }
+    }
+
+    private void RequestGridNavigationTargetFocus()
+    {
+        _focusGridNavigationTarget = true;
+        if (_pendingGridNavigation.Count == 0)
+        {
+            TryFocusGridNavigationTarget();
+        }
+
+        if (_focusGridNavigationTarget)
+        {
+            TrackGridLayout();
+        }
+    }
+
+    private void TryFocusGridNavigationTarget()
+    {
+        if (!_focusGridNavigationTarget)
+        {
+            return;
+        }
+
+        Control? target;
+        if (_selectedGridSectionCommand is { } group)
+        {
+            target = ItemsGrid.FindDescendants()
+                .OfType<Button>()
+                .FirstOrDefault(button => ReferenceEquals(button.DataContext, group));
+        }
+        else if (ItemsGrid.SelectedIndex >= 0 && ItemsGrid.SelectedIndex < ItemsGrid.Items.Count)
+        {
+            target = ItemsGrid.ContainerFromIndex(ItemsGrid.SelectedIndex) as GridViewItem;
+        }
+        else
+        {
+            _focusGridNavigationTarget = false;
+            return;
+        }
+
+        if (target?.Focus(FocusState.Keyboard) == true)
+        {
+            _focusGridNavigationTarget = false;
         }
     }
 
@@ -361,7 +667,9 @@ public sealed partial class ListItemsView
                 }
             }
 
-            if (_pendingGridNavigation.Count == 0 && _pendingGridHeaderScroll is null)
+            TryFocusGridNavigationTarget();
+
+            if (_pendingGridNavigation.Count == 0 && _pendingGridHeaderScroll is null && !_focusGridNavigationTarget)
             {
                 StopTrackingGridLayout();
             }
@@ -386,6 +694,7 @@ public sealed partial class ListItemsView
         StopTrackingGridLayout();
         _pendingGridNavigation.Clear();
         _pendingGridHeaderScroll = null;
+        _focusGridNavigationTarget = false;
         _gridNavigationColumn = null;
         _gridNavigationLayout = null;
     }

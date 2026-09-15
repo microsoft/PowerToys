@@ -5,6 +5,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,6 +19,11 @@ public partial class ListViewModelTests
     private sealed partial class TestAppExtensionHost : AppExtensionHost
     {
         public override string? GetExtensionDisplayName() => "Test Host";
+    }
+
+    private sealed class MessageRecipient
+    {
+        public int MessageCount { get; set; }
     }
 
     private sealed partial class RecursiveItemsChangedPage : ListPage
@@ -78,6 +85,38 @@ public partial class ListViewModelTests
 
     private static ListViewModel CreateViewModel(IListPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+
+    [TestMethod]
+    public void InvokeItem_SectionHeaderWithSectionCommand_DoesNotInvokePrimaryCommand()
+    {
+        var page = new RecursiveItemsChangedPage
+        {
+            Id = "list.page",
+            Name = "List Page",
+            Title = "List Page",
+        };
+        var listViewModel = CreateViewModel(page);
+        var separator = new Separator("Recent", new NoOpCommand { Name = "Show more..." });
+        var itemViewModel = new ListItemViewModel(separator, listViewModel.PageContext, DefaultContextMenuFactory.Instance);
+        var recipient = new MessageRecipient();
+        WeakReferenceMessenger.Default.Register<MessageRecipient, PerformCommandMessage>(recipient, static (r, _) => r.MessageCount++);
+
+        try
+        {
+            itemViewModel.InitializeProperties();
+
+            listViewModel.InvokeItemCommand.Execute(itemViewModel);
+
+            Assert.AreEqual(0, recipient.MessageCount);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            itemViewModel.SafeCleanup();
+            listViewModel.SafeCleanup();
+            listViewModel.Dispose();
+        }
+    }
 
     [TestMethod]
     public async Task RecursiveItemsChangedDuringGetItems_IsDeferredUntilGetItemsReturns()

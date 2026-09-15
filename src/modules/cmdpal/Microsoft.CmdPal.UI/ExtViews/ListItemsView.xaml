@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -175,7 +175,7 @@
         </Style>
 
         <Style x:Key="GridGroupHeaderStyle" TargetType="GridViewHeaderItem">
-            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsHitTestVisible" Value="{Binding HasSectionCommand, Mode=OneWay}" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
@@ -197,8 +197,14 @@
             <Grid
                 Height="{StaticResource ListViewSectionHeight}"
                 Margin="0,0,8,8"
+                AutomationProperties.Name="{x:Bind SectionCommandAccessibleName, Mode=OneWay}"
                 Visibility="{x:Bind HasHeader}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <TextBlock
+                    Grid.Column="0"
                     Margin="4,8,12,0"
                     VerticalAlignment="Bottom"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -206,11 +212,37 @@
                     Text="{x:Bind Title, Mode=OneWay}"
                     Visibility="{x:Bind IsSectionHeader, Mode=OneWay}" />
                 <Rectangle
+                    Grid.ColumnSpan="2"
                     Height="1"
                     Margin="4,0,12,0"
                     VerticalAlignment="Center"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
                     Visibility="{x:Bind IsSeparator, Mode=OneWay}" />
+                <Border
+                    Grid.Column="1"
+                    Margin="0,8,12,0"
+                    VerticalAlignment="Bottom"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}">
+                    <Grid>
+                        <Border
+                            Background="{ThemeResource ListViewItemBackgroundSelected}"
+                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                            IsHitTestVisible="False"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
+                        <Button
+                            Style="{StaticResource SubtleButtonStyle}"
+                            MinWidth="0"
+                            MinHeight="0"
+                            Padding="4,0"
+                            AutomationProperties.Name="{x:Bind SectionCommandName, Mode=OneWay}"
+                            Command="{x:Bind SectionCommand, Mode=OneWay}">
+                            <TextBlock
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind SectionCommandName, Mode=OneWay}" />
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
         </DataTemplate>
 
@@ -270,6 +302,60 @@
                 SelectionIndicatorVisualEnabled="False" />
         </ControlTemplate>
 
+        <!--
+            Section headers are structural. When they contain a command, the nested
+            borderless subtle button is the only interactive surface; the item container must
+            not present pointer-over, pressed, focused, or selected list-item chrome.
+        -->
+        <ControlTemplate x:Key="ListSectionContainerTemplate" TargetType="ListViewItem">
+            <ListViewItemPresenter
+                x:Name="Root"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                CheckBoxBorderBrush="{ThemeResource ListViewItemCheckBoxBorderBrush}"
+                CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}"
+                CheckBoxCornerRadius="{ThemeResource ListViewItemCheckBoxCornerRadius}"
+                CheckBoxDisabledBorderBrush="{ThemeResource ListViewItemCheckBoxDisabledBorderBrush}"
+                CheckBoxDisabledBrush="{ThemeResource ListViewItemCheckBoxDisabledBrush}"
+                CheckBoxPointerOverBorderBrush="{ThemeResource ListViewItemCheckBoxPointerOverBorderBrush}"
+                CheckBoxPointerOverBrush="{ThemeResource ListViewItemCheckBoxPointerOverBrush}"
+                CheckBoxPressedBorderBrush="{ThemeResource ListViewItemCheckBoxPressedBorderBrush}"
+                CheckBoxPressedBrush="{ThemeResource ListViewItemCheckBoxPressedBrush}"
+                CheckBoxSelectedBrush="{ThemeResource ListViewItemCheckBoxSelectedBrush}"
+                CheckBoxSelectedDisabledBrush="{ThemeResource ListViewItemCheckBoxSelectedDisabledBrush}"
+                CheckBoxSelectedPointerOverBrush="{ThemeResource ListViewItemCheckBoxSelectedPointerOverBrush}"
+                CheckBoxSelectedPressedBrush="{ThemeResource ListViewItemCheckBoxSelectedPressedBrush}"
+                CheckBrush="{ThemeResource ListViewItemCheckBrush}"
+                CheckDisabledBrush="{ThemeResource ListViewItemCheckDisabledBrush}"
+                CheckMode="{ThemeResource ListViewItemCheckMode}"
+                CheckPressedBrush="{ThemeResource ListViewItemCheckPressedBrush}"
+                ContentMargin="{TemplateBinding Padding}"
+                ContentTransitions="{TemplateBinding ContentTransitions}"
+                Control.IsTemplateFocusTarget="False"
+                CornerRadius="{ThemeResource ListViewItemCornerRadius}"
+                DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                DragBackground="{ThemeResource ListViewItemDragBackground}"
+                DragForeground="{ThemeResource ListViewItemDragForeground}"
+                DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}"
+                PointerOverBackground="Transparent"
+                PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                PressedBackground="Transparent"
+                ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                SelectedBackground="Transparent"
+                SelectedDisabledBackground="Transparent"
+                SelectedForeground="{ThemeResource ListViewItemForegroundSelected}"
+                SelectedPointerOverBackground="Transparent"
+                SelectedPressedBackground="Transparent"
+                SelectionCheckMarkVisualEnabled="False"
+                SelectionIndicatorVisualEnabled="False" />
+        </ControlTemplate>
+
         <Style
             x:Key="ListSingleRowItemContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
@@ -285,18 +371,21 @@
             x:Key="ListSectionContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
-            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="IsEnabled" Value="{Binding HasSectionCommand, Mode=OneWay}" />
             <Setter Property="AllowFocusWhenDisabled" Value="False" />
             <Setter Property="AllowFocusOnInteraction" Value="False" />
-            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsHitTestVisible" Value="{Binding HasSectionCommand, Mode=OneWay}" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="CanDrag" Value="False" />
             <Setter Property="Padding" Value="16,0,12,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Bottom" />
             <Setter Property="MinHeight" Value="{StaticResource ListViewSectionHeight}" />
             <Setter Property="Height" Value="{StaticResource ListViewSectionHeight}" />
+            <Setter Property="Template" Value="{StaticResource ListSectionContainerTemplate}" />
         </Style>
 
         <Style
@@ -445,12 +534,37 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     Grid.Column="0"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Text="{x:Bind Section}" />
+                <Border
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}">
+                    <Grid>
+                        <Border
+                            Background="{ThemeResource ListViewItemBackgroundSelected}"
+                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                            IsHitTestVisible="False"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
+                        <Button
+                            Style="{StaticResource SubtleButtonStyle}"
+                            MinWidth="0"
+                            MinHeight="0"
+                            Padding="4,0"
+                            AutomationProperties.Name="{x:Bind SectionCommandName, Mode=OneWay}"
+                            Command="{x:Bind InvokeSectionCommandCommand}">
+                            <TextBlock
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind SectionCommandName, Mode=OneWay}" />
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
         </DataTemplate>
 
