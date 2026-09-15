@@ -120,10 +120,6 @@
                         <FontIcon Glyph="&#xE72C;" FontSize="14" />
                     </Button>
                     <StackPanel Spacing="4" VerticalAlignment="Center">
-                        <TextBlock
-                            x:Uid="CardLanguageLabel"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="Translate this text" />
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBlock
                                 x:Uid="CardSourceLanguageLabel"
@@ -212,10 +208,6 @@
                     Click="RestoreHiddenButton_Click"
                     Content="Restore hidden" />
                 <StackPanel Spacing="4" VerticalAlignment="Center">
-                    <TextBlock
-                        x:Uid="OverallLanguageLabel"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="Translate capture" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <TextBlock
                             x:Uid="OverallSourceLanguageLabel"
@@ -260,6 +252,13 @@
                             AutomationProperties.AutomationId="BtnApplyOverallLanguage"
                             Click="ApplyOverallLanguageButton_Click"
                             Content="Translate"
+                            Padding="8,2" />
+                        <Button
+                            x:Name="OriginalAllTextButton"
+                            x:Uid="OriginalAllTextButton"
+                            AutomationProperties.AutomationId="BtnToggleAllOriginalText"
+                            Click="OriginalAllTextButton_Click"
+                            Content="Original"
                             Padding="8,2" />
                     </StackPanel>
                 </StackPanel>

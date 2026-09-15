@@ -170,6 +170,30 @@
     <value>Show translated text</value>
     <comment>Tooltip for returning the selected card to translated text</comment>
   </data>
+  <data name="OriginalAllTextButton.Content" xml:space="preserve">
+    <value>Original</value>
+    <comment>Shows the original OCR text in all overlay cards</comment>
+  </data>
+  <data name="OriginalAllTextButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Show original text for all cards</value>
+    <comment>Accessible name for showing original text in all overlay cards</comment>
+  </data>
+  <data name="OriginalAllTextButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show original text for all cards</value>
+    <comment>Tooltip for showing original text in all overlay cards</comment>
+  </data>
+  <data name="TranslatedAllTextButton.Content" xml:space="preserve">
+    <value>Translated</value>
+    <comment>Shows translated text in all overlay cards</comment>
+  </data>
+  <data name="TranslatedAllTextButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Show translated text for all cards</value>
+    <comment>Accessible name for restoring translated text in all overlay cards</comment>
+  </data>
+  <data name="TranslatedAllTextButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show translated text for all cards</value>
+    <comment>Tooltip for restoring translated text in all overlay cards</comment>
+  </data>
   <data name="EditCardButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit translated text</value>
     <comment>Accessible name for editing the selected translated text</comment>
@@ -249,14 +273,6 @@
   <data name="ApplyOverallLanguageButton.Content" xml:space="preserve">
     <value>Translate</value>
     <comment>Retranslates the current capture using the chosen languages</comment>
-  </data>
-  <data name="CardLanguageLabel.Text" xml:space="preserve">
-    <value>Translate this text</value>
-    <comment>Labels the per-card language controls</comment>
-  </data>
-  <data name="OverallLanguageLabel.Text" xml:space="preserve">
-    <value>Translate capture</value>
-    <comment>Labels the whole-capture language controls</comment>
   </data>
   <data name="CardSourceLanguageLabel.Text" xml:space="preserve">
     <value>Source Language</value>

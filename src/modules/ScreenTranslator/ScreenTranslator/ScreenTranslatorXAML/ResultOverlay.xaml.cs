@@ -132,6 +132,7 @@ public sealed partial class ResultOverlay : TransparentWindow
         PositionToolbar();
         SelectLanguage(OverallSourceLanguageComboBox, sourceLanguage);
         SelectLanguage(OverallTargetLanguageComboBox, targetLanguage);
+        SetOriginalAllTextButtonState(ResourceLoader.GetForViewIndependentUse(), showOriginalText: true);
     }
 
     private void ResultOverlay_Closed(object sender, WindowEventArgs args)
@@ -312,6 +313,7 @@ public sealed partial class ResultOverlay : TransparentWindow
             SetOriginalTextButtonState(resources, showOriginalText: false);
         }
 
+        SetOriginalAllTextButtonState(resources, _showingOriginalText.Count != _lines.Count);
         textBlock.InvalidateMeasure();
         _contextMenuCard.InvalidateMeasure();
     }
@@ -322,33 +324,37 @@ public sealed partial class ResultOverlay : TransparentWindow
         _contextMenuLine = line;
         _contextMenuCard = card;
 
-        _isInitializingColorPickers = true;
-        try
-        {
-            if (card.Background is SolidColorBrush backgroundBrush)
-            {
-                BackgroundColorPicker.Color = backgroundBrush.Color;
-            }
-
-            if (card.Child is TextBlock textBlock &&
-                textBlock.Foreground is SolidColorBrush foregroundBrush)
-            {
-                TextColorPicker.Color = foregroundBrush.Color;
-            }
-        }
-        finally
-        {
-            _isInitializingColorPickers = false;
-        }
-
         SelectLanguage(CardSourceLanguageComboBox, _sourceLanguage);
         SelectLanguage(CardTargetLanguageComboBox, _targetLanguage);
         ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
         SetOriginalTextButtonState(resources, !_showingOriginalText.Contains(lineIndex));
+        SetOriginalAllTextButtonState(resources, _showingOriginalText.Count != _lines.Count);
 
         PositionContextMenu(card);
-        ContextMenuCanvas.IsHitTestVisible = true;
         CardContextMenu.Visibility = Visibility.Visible;
+        ContextMenuCanvas.IsHitTestVisible = true;
+
+        _isInitializingColorPickers = true;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (card.Background is SolidColorBrush backgroundBrush)
+                {
+                    BackgroundColorPicker.Color = backgroundBrush.Color;
+                }
+
+                if (card.Child is TextBlock textBlock &&
+                    textBlock.Foreground is SolidColorBrush foregroundBrush)
+                {
+                    TextColorPicker.Color = foregroundBrush.Color;
+                }
+            }
+            finally
+            {
+                _isInitializingColorPickers = false;
+            }
+        });
     }
 
     private void PositionContextMenu(Border card)
@@ -367,6 +373,40 @@ public sealed partial class ResultOverlay : TransparentWindow
 
         CardContextMenu.Visibility = Visibility.Collapsed;
         ContextMenuCanvas.IsHitTestVisible = false;
+        _isInitializingColorPickers = false;
+    }
+
+    private void OriginalAllTextButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool showOriginalText = _showingOriginalText.Count != _lines.Count;
+        for (int lineIndex = 0; lineIndex < _cardHitRegions.Count; lineIndex++)
+        {
+            if (_cardHitRegions[lineIndex].Card.Child is not TextBlock textBlock)
+            {
+                continue;
+            }
+
+            if (showOriginalText)
+            {
+                _showingOriginalText.Add(lineIndex);
+                textBlock.Text = _lines[lineIndex].OriginalText;
+            }
+            else
+            {
+                _showingOriginalText.Remove(lineIndex);
+                textBlock.Text = _translatedTexts[lineIndex];
+            }
+
+            textBlock.InvalidateMeasure();
+            _cardHitRegions[lineIndex].Card.InvalidateMeasure();
+        }
+
+        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
+        SetOriginalAllTextButtonState(resources, !showOriginalText);
+        if (_contextMenuLineIndex >= 0)
+        {
+            SetOriginalTextButtonState(resources, !_showingOriginalText.Contains(_contextMenuLineIndex));
+        }
     }
 
     private void EditCardButton_Click(object sender, RoutedEventArgs e)
@@ -627,6 +667,9 @@ public sealed partial class ResultOverlay : TransparentWindow
             _showingOriginalText.Remove(_contextMenuLineIndex);
             _translatedTexts[_contextMenuLineIndex] = initial.Text;
             SetOriginalTextButtonState(ResourceLoader.GetForViewIndependentUse(), showOriginalText: true);
+            SetOriginalAllTextButtonState(
+                ResourceLoader.GetForViewIndependentUse(),
+                _showingOriginalText.Count != _lines.Count);
             PositionContextMenu(card);
 
             Logger.LogInfo($"Restored initial overlay text, appearance, and position for line {_contextMenuLineIndex}.");
@@ -714,6 +757,23 @@ public sealed partial class ResultOverlay : TransparentWindow
         OriginalTextButton.Content = resources.GetString(contentKey);
         AutomationProperties.SetName(OriginalTextButton, resources.GetString(accessibleNameKey));
         ToolTipService.SetToolTip(OriginalTextButton, resources.GetString(tooltipKey));
+    }
+
+    private void SetOriginalAllTextButtonState(ResourceLoader resources, bool showOriginalText)
+    {
+        string contentKey = showOriginalText
+            ? "OriginalAllTextButton/Content"
+            : "TranslatedAllTextButton/Content";
+        string accessibleNameKey = showOriginalText
+            ? "OriginalAllTextButton/AutomationProperties/Name"
+            : "TranslatedAllTextButton/AutomationProperties/Name";
+        string tooltipKey = showOriginalText
+            ? "OriginalAllTextButton/ToolTipService/ToolTip"
+            : "TranslatedAllTextButton/ToolTipService/ToolTip";
+
+        OriginalAllTextButton.Content = resources.GetString(contentKey);
+        AutomationProperties.SetName(OriginalAllTextButton, resources.GetString(accessibleNameKey));
+        ToolTipService.SetToolTip(OriginalAllTextButton, resources.GetString(tooltipKey));
     }
 
     private static void SelectLanguage(ComboBox comboBox, string language)
