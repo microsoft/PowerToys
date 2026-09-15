@@ -246,6 +246,60 @@
   <data name="AOptionO.OptionDescription" xml:space="preserve">
     <value>Offline</value>
   </data>
+  <data name="IAOptionR.OptionDescription" xml:space="preserve">
+    <value>Read only</value>
+  </data>
+  <data name="IAOptionA.OptionDescription" xml:space="preserve">
+    <value>Archive</value>
+  </data>
+  <data name="IAOptionS.OptionDescription" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="IAOptionH.OptionDescription" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="IAOptionC.OptionDescription" xml:space="preserve">
+    <value>Compressed</value>
+  </data>
+  <data name="IAOptionN.OptionDescription" xml:space="preserve">
+    <value>Not content indexed</value>
+  </data>
+  <data name="IAOptionE.OptionDescription" xml:space="preserve">
+    <value>Encrypted</value>
+  </data>
+  <data name="IAOptionT.OptionDescription" xml:space="preserve">
+    <value>Temporary</value>
+  </data>
+  <data name="IAOptionO.OptionDescription" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="XAOptionR.OptionDescription" xml:space="preserve">
+    <value>Read only</value>
+  </data>
+  <data name="XAOptionA.OptionDescription" xml:space="preserve">
+    <value>Archive</value>
+  </data>
+  <data name="XAOptionS.OptionDescription" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="XAOptionH.OptionDescription" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="XAOptionC.OptionDescription" xml:space="preserve">
+    <value>Compressed</value>
+  </data>
+  <data name="XAOptionN.OptionDescription" xml:space="preserve">
+    <value>Not content indexed</value>
+  </data>
+  <data name="XAOptionE.OptionDescription" xml:space="preserve">
+    <value>Encrypted</value>
+  </data>
+  <data name="XAOptionT.OptionDescription" xml:space="preserve">
+    <value>Temporary</value>
+  </data>
+  <data name="XAOptionO.OptionDescription" xml:space="preserve">
+    <value>Offline</value>
+  </data>
   <data name="CREATEOption.OptionDescription" xml:space="preserve">
     <value>Create directory tree and zero-length files only.</value>
   </data>
@@ -285,7 +339,7 @@
   <data name="COPYOption.OptionDescription" xml:space="preserve">
     <value>What to copy for files.</value>
   </data>
-  <data name="COPYOptionsE" xml:space="preserve">
+  <data name="COPYOptionE.OptionDescription" xml:space="preserve">
     <value>Extended attribute</value>
   </data>
   <data name="NODCOPYOption.OptionDescription" xml:space="preserve">
@@ -313,13 +367,13 @@
     <value>Advanced</value>
   </data>
   <data name="FiltersContentHeaderLabel.Text" xml:space="preserve">
-    <value>FILTER CONTENT HERE</value>
+    <value>Filter options</value>
   </data>
   <data name="LoggingContentHeaderLabel.Text" xml:space="preserve">
-    <value>LOGGING CONTENT HERE</value>
+    <value>Logging options</value>
   </data>
   <data name="AdvancedContentHeaderLabel.Text" xml:space="preserve">
-    <value>ADVANCED CONTENT HERE</value>
+    <value>Advanced options</value>
   </data>
   <data name="FiltersSelectorBarLabel.Text" xml:space="preserve">
     <value>Filters</value>
