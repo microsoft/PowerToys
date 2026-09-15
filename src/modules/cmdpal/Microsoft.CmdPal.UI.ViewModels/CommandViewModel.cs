@@ -9,9 +9,13 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandViewModel : ExtensionObjectViewModel
 {
+    private ExtensionPropertySubscription _modelSubscription;
+
     public ExtensionObject<ICommand> Model { get; private set; } = new(null);
 
     public bool IsSet => Model.Unsafe is not null;
+
+    protected bool IsCleanedUp => _modelSubscription.IsClosed;
 
     protected bool IsInitialized { get; private set; }
 
@@ -49,7 +53,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public void FastInitializeProperties()
     {
-        if (IsFastInitialized)
+        if (IsFastInitialized || IsCleanedUp)
         {
             return;
         }
@@ -67,7 +71,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
+        if (IsInitialized || IsCleanedUp)
         {
             return;
         }
@@ -96,11 +100,19 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             UpdatePropertiesFromExtension(command2);
         }
 
-        model.PropChanged += Model_PropChanged;
+        if (_modelSubscription.TrySubscribe(model, Model_PropChanged))
+        {
+            IsInitialized = true;
+        }
     }
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
         try
         {
             FetchProperty(args.PropertyName);
@@ -140,12 +152,13 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     protected override void UnsafeCleanup()
     {
+        var wasSubscribed = _modelSubscription.Close();
         base.UnsafeCleanup();
 
         Icon = new(null); // necessary?
 
         var model = Model.Unsafe;
-        if (model is not null)
+        if (wasSubscribed && model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }
