@@ -132,7 +132,6 @@ public sealed partial class ResultOverlay : TransparentWindow
         PositionToolbar();
         SelectLanguage(OverallSourceLanguageComboBox, sourceLanguage);
         SelectLanguage(OverallTargetLanguageComboBox, targetLanguage);
-        SetOriginalAllTextButtonState(ResourceLoader.GetForViewIndependentUse(), showOriginalText: true);
     }
 
     private void ResultOverlay_Closed(object sender, WindowEventArgs args)
