@@ -403,8 +403,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 RefreshModuleList();
                 RefreshShortcutModules();
 
-                OnPropertyChanged(nameof(ShortcutModules));
-
                 // Request updated conflicts after module state change.
                 RequestConflictData();
             }
@@ -415,8 +413,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Rebuilds ShortcutModules and ActionModules collections by filtering AllModules
-        /// to only include enabled modules and their respective shortcut/action items.
+        /// Reconciles ShortcutModules in place and rebuilds ActionModules by filtering
+        /// AllModules to only include enabled modules and their respective items.
         /// </summary>
         private void RefreshShortcutModules()
         {
@@ -431,31 +429,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            ShortcutModules.Clear();
+            DashboardShortcutProjection.Refresh(AllModules, ShortcutModules);
             ActionModules.Clear();
-
-            foreach (var x in AllModules.Where(x => x.IsEnabled))
-            {
-                var filteredItems = x.DashboardModuleItems
-                    .Where(m => m is DashboardModuleShortcutItem || m is DashboardModuleActivationItem)
-                    .ToList();
-
-                if (filteredItems.Count != 0)
-                {
-                    var newItem = new DashboardListItem
-                    {
-                        Icon = x.Icon,
-                        IsLocked = x.IsLocked,
-                        Label = x.Label,
-                        Tag = x.Tag,
-                        IsEnabled = x.IsEnabled,
-                        DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                    };
-
-                    ShortcutModules.Add(newItem);
-                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
-                }
-            }
 
             foreach (var x in AllModules.Where(x => x.IsEnabled))
             {
