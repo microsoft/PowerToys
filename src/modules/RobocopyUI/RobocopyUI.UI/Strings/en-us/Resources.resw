@@ -501,4 +501,40 @@
   <data name="SaveButtonLabel.Text" xml:space="preserve">
     <value>Save options</value>
   </data>
+  <data name="OutputStatusLabel.Text" xml:space="preserve">
+    <value>Status: </value>
+  </data>
+  <data name="Status_Running" xml:space="preserve">
+    <value>Running...</value>
+  </data>
+  <data name="Status_0" xml:space="preserve">
+    <value>No files were copied.</value>
+  </data>
+  <data name="StatusCodeLabel.Text" xml:space="preserve">
+    <value>Status code: </value>
+  </data>
+  <data name="Status_1" xml:space="preserve">
+    <value>All files were copied successfully.</value>
+  </data>
+  <data name="Status_2" xml:space="preserve">
+    <value>No files were copied, but there are some additional files in the destination directory.</value>
+  </data>
+  <data name="Status_3" xml:space="preserve">
+    <value>Some files were copied. Additional files were present.</value>
+  </data>
+  <data name="Status_5" xml:space="preserve">
+    <value>Some files were copied. Some files were mismatched.</value>
+  </data>
+  <data name="Status_6" xml:space="preserve">
+    <value>Additional files and mismatched files exist.</value>
+  </data>
+  <data name="Status_7" xml:space="preserve">
+    <value>Files were copied. A file mismatch was present. Additional files were present.</value>
+  </data>
+  <data name="Status_8" xml:space="preserve">
+    <value>Several files didn't copy.</value>
+  </data>
+  <data name="Status_Fail" xml:space="preserve">
+    <value>Operation failed.</value>
+  </data>
 </root>

@@ -148,9 +148,20 @@
                 <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
                     <TextBox x:Name="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
                 </Grid>
-                <Grid x:Name="OutputContent" Margin="12" Visibility="Collapsed">
+                <StackPanel x:Name="OutputContent" Margin="12" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Margin="4">
+                        <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock>&#160;</TextBlock>
+                        <TextBlock x:Name="OutputStatusText" Style="{StaticResource BodyTextBlockStyle}" />
+                        <TextBlock>&#160;</TextBlock>
+                        <TextBlock>(</TextBlock>
+                        <TextBlock x:Uid="StatusCodeLabel" />
+                        <TextBlock>&#160;</TextBlock>
+                        <TextBlock x:Name="StatusCodeText" Style="{StaticResource BodyTextBlockStyle}" />
+                        <TextBlock>)</TextBlock>
+                    </StackPanel>
                     <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
-                </Grid>
+                </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
                     <Button Margin="0,12,0,12" Click="SaveButton_Click" x:Name="SaveButton">
                         <StackPanel Orientation="Horizontal">
