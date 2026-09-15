@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>PowerToys.FileLocksmithUI.UnitTests</RootNamespace>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\FileLocksmithUI.UnitTests\</OutputPath>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\FileLocksmithUI\Services\FileLocksmithProcessInfo.cs" Link="FileLocksmithProcessInfo.cs" />
+    <Compile Include="..\..\FileLocksmithUI\Services\FileLocksmithQueryResult.cs" Link="FileLocksmithQueryResult.cs" />
+    <Compile Include="..\..\FileLocksmithUI\Services\FileLocksmithQueryService.cs" Link="FileLocksmithQueryService.cs" />
+    <Compile Include="..\..\FileLocksmithUI\Services\FileLocksmithQueryStatus.cs" Link="FileLocksmithQueryStatus.cs" />
+    <Compile Include="..\..\FileLocksmithUI\Services\WorkerProcessJob.cs" Link="WorkerProcessJob.cs" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FileLocksmithCLI\FileLocksmithCLI.vcxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <BuildProject>true</BuildProject>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+</Project>

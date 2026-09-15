@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +13,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using PowerToys.FileLocksmithLib.Interop;
+using PowerToys.FileLocksmithUI.Helpers;
+using PowerToys.FileLocksmithUI.Services;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
@@ -23,13 +24,29 @@ namespace PowerToys.FileLocksmithUI.ViewModels
     {
         public IAsyncRelayCommand LoadProcessesCommand { get; }
 
+        private readonly FileLocksmithQueryService _queryService = new();
         private bool _isLoading;
         private bool _isElevated;
         private string[] paths;
         private bool _disposed;
         private CancellationTokenSource _cancelProcessWatching;
+        private CancellationTokenSource _cancelQuery;
+        private string _queryErrorMessage;
 
         public ObservableCollection<ProcessResult> Processes { get; } = new();
+
+        public string QueryErrorMessage
+        {
+            get => _queryErrorMessage;
+            private set
+            {
+                _queryErrorMessage = value;
+                OnPropertyChanged(nameof(QueryErrorMessage));
+                OnPropertyChanged(nameof(HasQueryError));
+            }
+        }
+
+        public bool HasQueryError => !string.IsNullOrEmpty(QueryErrorMessage);
 
         public bool IsLoading
         {
@@ -87,36 +104,51 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         private async Task LoadProcessesAsync()
         {
             IsLoading = true;
+            QueryErrorMessage = null;
             Processes.Clear();
 
-            if (_cancelProcessWatching is not null)
-            {
-                _cancelProcessWatching.Cancel();
-            }
-
+            _cancelProcessWatching?.Cancel();
+            _cancelProcessWatching?.Dispose();
             _cancelProcessWatching = new CancellationTokenSource();
 
-            var processes_found = await FindProcesses(paths);
-            if (processes_found is not null)
+            _cancelQuery?.Cancel();
+            _cancelQuery?.Dispose();
+            _cancelQuery = new CancellationTokenSource();
+            var cancellationToken = _cancelQuery.Token;
+            var stopwatch = Stopwatch.StartNew();
+
+            try
             {
-                foreach (ProcessResult p in processes_found)
+                var queryResult = await _queryService.FindProcessesAsync(paths, cancellationToken);
+                stopwatch.Stop();
+
+                if (queryResult.Status == FileLocksmithQueryStatus.Success)
                 {
-                    Processes.Add(p);
-                    WatchProcess(p, _cancelProcessWatching.Token);
+                    Logger.LogInfo($"File Locksmith worker query completed in {stopwatch.ElapsedMilliseconds} ms with exit code 0 and {queryResult.Processes.Count} processes.");
+                    foreach (var processInfo in queryResult.Processes)
+                    {
+                        var process = new ProcessResult(processInfo.Name, processInfo.Pid, processInfo.User, processInfo.Files);
+                        Processes.Add(process);
+                        WatchProcess(process, _cancelProcessWatching.Token);
+                    }
+                }
+                else
+                {
+                    var exitCode = queryResult.ExitCode?.ToString(CultureInfo.InvariantCulture) ?? "unavailable";
+                    Logger.LogError($"File Locksmith worker query failed at stage enumeration after {stopwatch.ElapsedMilliseconds} ms with status {queryResult.Status} and exit code {exitCode}.");
+                    QueryErrorMessage = queryResult.Status == FileLocksmithQueryStatus.TimedOut
+                        ? ResourceLoaderInstance.ResourceLoader.GetString("QueryTimeoutError")
+                        : ResourceLoaderInstance.ResourceLoader.GetString("QueryFailedError");
                 }
             }
-
-            IsLoading = false;
-        }
-
-        private async Task<List<ProcessResult>> FindProcesses(string[] paths)
-        {
-            var results = new List<ProcessResult>();
-            await Task.Run(() =>
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                results = NativeMethods.FindProcessesRecursive(paths)?.ToList();
-            });
-            return results;
+                Logger.LogInfo($"File Locksmith worker query canceled at stage enumeration after {stopwatch.ElapsedMilliseconds} ms.");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private async void WatchProcess(ProcessResult process, CancellationToken token)
@@ -168,10 +200,16 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         }
 
         [RelayCommand]
-        public void RestartElevated()
+        public async Task RestartElevated()
         {
             if (NativeMethods.StartAsElevated(paths))
             {
+                _cancelQuery?.Cancel();
+                if (LoadProcessesCommand.ExecutionTask is not null)
+                {
+                    await LoadProcessesCommand.ExecutionTask;
+                }
+
                 // TODO gentler exit
                 Environment.Exit(0);
             }
@@ -194,6 +232,10 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             {
                 if (disposing)
                 {
+                    _cancelQuery?.Cancel();
+                    _cancelQuery?.Dispose();
+                    _cancelProcessWatching?.Cancel();
+                    _cancelProcessWatching?.Dispose();
                     _disposed = true;
                 }
             }
