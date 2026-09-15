@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
@@ -76,6 +77,39 @@ public partial class QuickAccessShelfResolverTests
         Assert.IsTrue(recent.CanPin);
         Assert.IsTrue(pinned.IsPinned);
         Assert.IsFalse(pinned.CanPin);
+    }
+
+    [TestMethod]
+    public void GetContextMenuItem_PinnedItemUsesOriginalPresentation()
+    {
+        var item = new ListItem { Title = "Pinned" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse(
+            [],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: true);
+
+        Assert.AreSame(item, shelfItem.GetContextMenuItem());
+    }
+
+    [TestMethod]
+    public void GetContextMenuItem_RecentItemUsesRecentPresentation()
+    {
+        var item = new ListItem { Title = "Recent" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse(
+            [],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: false);
+
+        var contextItem = shelfItem.GetContextMenuItem();
+
+        Assert.IsInstanceOfType<RecentCommandListItem>(contextItem);
+        var recentItem = (RecentCommandListItem)contextItem;
+        Assert.AreSame(item, recentItem.Source);
+        Assert.AreEqual(shelfItem.CommandId, recentItem.CommandId);
     }
 
     [TestMethod]
