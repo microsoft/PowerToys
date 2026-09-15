@@ -14,6 +14,47 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public sealed class IconLoadEventSourceTests
 {
     [TestMethod]
+    public void DemandStageEtwValuesRemainStable()
+    {
+        Assert.AreEqual(0, (int)IconLoadDemandStage.Unlinked);
+        Assert.AreEqual(1, (int)IconLoadDemandStage.BeforeEnqueue);
+        Assert.AreEqual(2, (int)IconLoadDemandStage.Queued);
+        Assert.AreEqual(3, (int)IconLoadDemandStage.WorkerActive);
+        Assert.AreEqual(4, (int)IconLoadDemandStage.Completed);
+        Assert.AreEqual(5, (int)IconLoadDemandStage.Rejected);
+        Assert.AreEqual(6, (int)IconLoadDemandStage.Abandoned);
+        Assert.AreEqual(7, (int)IconLoadDemandStage.AwaitingSharedLoad);
+    }
+
+    [TestMethod]
+    public void ShellIconStepEtwValuesRemainStable()
+    {
+        Assert.AreEqual(0, (int)ShellIconDiagnosticStep.Request);
+        Assert.AreEqual(1, (int)ShellIconDiagnosticStep.LocationCacheHit);
+        Assert.AreEqual(2, (int)ShellIconDiagnosticStep.LocationCacheMiss);
+        Assert.AreEqual(3, (int)ShellIconDiagnosticStep.RawInFlightJoin);
+        Assert.AreEqual(4, (int)ShellIconDiagnosticStep.IdentityResolved);
+        Assert.AreEqual(5, (int)ShellIconDiagnosticStep.CanonicalCacheHit);
+        Assert.AreEqual(6, (int)ShellIconDiagnosticStep.CanonicalInFlightJoin);
+        Assert.AreEqual(7, (int)ShellIconDiagnosticStep.CanonicalNewLoad);
+        Assert.AreEqual(8, (int)ShellIconDiagnosticStep.ExtractionSucceeded);
+        Assert.AreEqual(9, (int)ShellIconDiagnosticStep.ExtractionEmpty);
+        Assert.AreEqual(10, (int)ShellIconDiagnosticStep.ExtractionFailed);
+        Assert.AreEqual(11, (int)ShellIconDiagnosticStep.AssociationChangedNotification);
+        Assert.AreEqual(12, (int)ShellIconDiagnosticStep.LocationCacheInvalidated);
+        Assert.AreEqual(13, (int)ShellIconDiagnosticStep.TypeFallbackSucceeded);
+        Assert.AreEqual(14, (int)ShellIconDiagnosticStep.TypeFallbackEmpty);
+        Assert.AreEqual(15, (int)ShellIconDiagnosticStep.TypeFallbackFailed);
+        Assert.AreEqual(16, (int)ShellIconDiagnosticStep.IntermediateDispatchAccepted);
+        Assert.AreEqual(17, (int)ShellIconDiagnosticStep.IntermediateDispatchRejected);
+        Assert.AreEqual(18, (int)ShellIconDiagnosticStep.ExactRefinementSame);
+        Assert.AreEqual(19, (int)ShellIconDiagnosticStep.ExactRefinementDifferent);
+        Assert.AreEqual(20, (int)ShellIconDiagnosticStep.ExactRefinementFailed);
+        Assert.AreEqual(21, (int)ShellIconDiagnosticStep.IntermediatePresentationApplied);
+        Assert.AreEqual(22, (int)ShellIconDiagnosticStep.IntermediatePresentationSkipped);
+    }
+
+    [TestMethod]
     public void EventPayloadsPreserveDeclaredTypesAndOrder()
     {
         using var listener = new CollectingEventListener();
@@ -52,8 +93,11 @@ public sealed class IconLoadEventSourceTests
         log.DispatcherAsyncSuspensionCompleted(11, 14, 55, isDemanded: false, 56);
         log.UiResponsivenessProbeCompleted(11, 57);
         log.SpeculativeDispatchDeferralCompleted(11, 69);
+        log.ShellIconStepCompleted(11, 70, 71, 72);
+        log.ShellImageListExtractionCompleted(11, 73, 74, 75, 76, 77);
+        log.LoadWorkerReleased(11, 14, 3);
 
-        Assert.AreEqual(31, listener.Events.Count);
+        Assert.AreEqual(34, listener.Events.Count);
         Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
 
         CollectionAssert.AreEqual(
@@ -92,6 +136,15 @@ public sealed class IconLoadEventSourceTests
         CollectionAssert.AreEqual(
             new object?[] { 11L, 69L },
             listener.GetEvent(38).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 70, 71, 72L },
+            listener.GetEvent(39).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 73, 74, 75, 76, 77L },
+            listener.GetEvent(40).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 14L, 3L },
+            listener.GetEvent(41).Payload!.ToArray());
     }
 
     private sealed class CollectingEventListener : EventListener
