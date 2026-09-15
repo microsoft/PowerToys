@@ -13,13 +13,13 @@
         <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
             <controls:OptionEntry
                 OptionName="{x:Bind OptionName}"
-                OptionDescription="{Binding OptionDescription}"
-                IsNumberOption="{Binding IsNumberOption}"
-                IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                MultiSelectOptions="{Binding MultiSelectOptions}"
-                IsRunHoursOption="{Binding IsRunHoursOption}"
-                IsStorageOption="{Binding IsStorageOption}"
-                IsTextOption="{Binding IsTextOption}" />
+                OptionDescription="{x:Bind OptionDescription}"
+                IsNumberOption="{x:Bind IsNumberOption}"
+                IsMultiSelectOption="{x:Bind IsMultiSelectOption}"
+                MultiSelectOptions="{x:Bind MultiSelectOptions}"
+                IsRunHoursOption="{x:Bind IsRunHoursOption}"
+                IsStorageOption="{x:Bind IsStorageOption}"
+                IsTextOption="{x:Bind IsTextOption}" />
         </DataTemplate>
 
         <DataTemplate x:Key="OptionGroupStyleHeaderTemplate">
