@@ -197,7 +197,7 @@
                                                     VerticalAlignment="Top"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     Source="{x:Bind Icon, Mode=OneWay}"
-                                                    ToolTipService.ToolTip="{x:Bind Label}" />
+                                                    ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
                                                 <ItemsControl
                                                     Grid.Column="1"
                                                     IsTabStop="False"

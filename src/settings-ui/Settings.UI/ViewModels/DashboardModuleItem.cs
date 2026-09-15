@@ -33,17 +33,56 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
     public partial class DashboardModuleShortcutItem : DashboardModuleItem
     {
-        public List<object> Shortcut { get; set; }
+        private List<object> _shortcut;
+
+        public List<object> Shortcut
+        {
+            get => _shortcut;
+            set
+            {
+                if (_shortcut != value)
+                {
+                    _shortcut = value;
+                    NotifyPropertyChanged(nameof(Shortcut));
+                }
+            }
+        }
     }
 
     public partial class DashboardModuleActivationItem : DashboardModuleItem
     {
-        public string Activation { get; set; }
+        private string _activation;
+
+        public string Activation
+        {
+            get => _activation;
+            set
+            {
+                if (_activation != value)
+                {
+                    _activation = value;
+                    NotifyPropertyChanged(nameof(Activation));
+                }
+            }
+        }
     }
 
     public partial class DashboardModuleItem : INotifyPropertyChanged
     {
-        public string Label { get; set; }
+        private string _label;
+
+        public string Label
+        {
+            get => _label;
+            set
+            {
+                if (_label != value)
+                {
+                    _label = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
