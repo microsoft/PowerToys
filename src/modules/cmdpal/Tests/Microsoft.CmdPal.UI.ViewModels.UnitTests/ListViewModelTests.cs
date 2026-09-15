@@ -76,8 +76,73 @@ public partial class ListViewModelTests
         public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
     }
 
+    private sealed partial class FirstFetchNotificationPage(bool publishOnBackgroundThread) : ListPage
+    {
+        private readonly IListItem[] _readyItems = [new ListItem(new NoOpCommand() { Name = "Loaded item" })];
+        private int _getItemsCallCount;
+
+        public int GetItemsCallCount => Volatile.Read(ref _getItemsCallCount);
+
+        public override IListItem[] GetItems()
+        {
+            if (Interlocked.Increment(ref _getItemsCallCount) == 1)
+            {
+                if (publishOnBackgroundThread)
+                {
+                    Task.Run(() => RaiseItemsChanged(1)).GetAwaiter().GetResult();
+                }
+                else
+                {
+                    RaiseItemsChanged(1);
+                }
+
+                return [];
+            }
+
+            return _readyItems;
+        }
+    }
+
     private static ListViewModel CreateViewModel(IListPage page) =>
         new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty, DefaultContextMenuFactory.Instance);
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task InitializeProperties_ItemsPublishedDuringFirstFetch_DisplaysLoadedItems(bool publishOnBackgroundThread)
+    {
+        var page = new FirstFetchNotificationPage(publishOnBackgroundThread)
+        {
+            Id = "first.fetch.page",
+            Name = "First Fetch Page",
+        };
+        var viewModel = CreateViewModel(page);
+        var itemsLoaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args)
+        {
+            if (sender.FilteredItems.Count == 1 && sender.FilteredItems[0].Name == "Loaded item")
+            {
+                itemsLoaded.TrySetResult(true);
+            }
+        }
+
+        viewModel.ItemsUpdated += OnItemsUpdated;
+        try
+        {
+            viewModel.InitializeProperties();
+            await itemsLoaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+            Assert.HasCount(1, viewModel.FilteredItems);
+            Assert.AreEqual("Loaded item", viewModel.FilteredItems[0].Name);
+            Assert.AreEqual(2, page.GetItemsCallCount);
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
 
     [TestMethod]
     public async Task RecursiveItemsChangedDuringGetItems_IsDeferredUntilGetItemsReturns()

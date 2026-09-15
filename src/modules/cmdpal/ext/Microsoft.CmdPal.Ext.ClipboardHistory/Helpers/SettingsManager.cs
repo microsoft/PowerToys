@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
-internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
+internal sealed class SettingsManager : JsonSettingsManager, IClipboardHistorySettings
 {
     private const string Namespace = "clipboardHistory";
 
@@ -43,6 +43,8 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 
     public PrimaryAction PrimaryAction => Enum.TryParse<PrimaryAction>(_primaryAction.Value, out var action) ? action : PrimaryAction.Default;
 
+    public event EventHandler? Changed;
+
     private static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -61,6 +63,12 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 
         LoadSettings();
 
-        Settings.SettingsChanged += (_, _) => SaveSettings();
+        Settings.SettingsChanged += OnSettingsChanged;
+    }
+
+    private void OnSettingsChanged(object sender, Settings settings)
+    {
+        SaveSettings();
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }
