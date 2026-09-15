@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{6B4BC04D-59A7-44B2-9AB5-4ED9A5607AB9}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>LightSwitchServiceUnitTests</RootNamespace>
+    <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <ProjectName>LightSwitchService.UnitTests</ProjectName>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\LightSwitchService\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..;..\..\LightSwitchService;..\..\LightSwitchLib;$(RepoRoot)src;$(RepoRoot)src\common;$(RepoRoot)src\common\logger;$(RepoRoot)src\common\utils;$(RepoRoot)src\common\SettingsAPI;$(RepoRoot)src\common\Telemetry;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <UseFullPaths>true</UseFullPaths>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RuntimeObject.lib;Advapi32.lib;Shell32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CliIdentityTests.cpp" />
+    <ClCompile Include="CliProtocolTests.cpp" />
+    <ClCompile Include="CliPipeServerTests.cpp" />
+    <ClCompile Include="ScheduleCommandQueueTests.cpp" />
+    <ClCompile Include="StateManagerTests.cpp" />
+    <ClCompile Include="SettingsTests.cpp" />
+    <ClCompile Include="ThemeHelperTests.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\CliIdentity.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\CliProtocol.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\CliPipeServer.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\LightSwitchStateManager.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\LightSwitchSettings.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\ThemeScheduler.cpp" />
+    <ClCompile Include="..\..\LightSwitchService\trace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestSupport.h" />
+    <ClInclude Include="..\..\LightSwitchService\CliIdentity.h" />
+    <ClInclude Include="..\..\LightSwitchService\CliProtocol.h" />
+    <ClInclude Include="..\..\LightSwitchService\CliPipeServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446D-23F7-4023-9BB3-8657F904AF99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LightSwitchLib\LightSwitchLib.vcxproj">
+      <Project>{79267138-2895-4346-9021-21408D65379F}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+  </ImportGroup>
+</Project>

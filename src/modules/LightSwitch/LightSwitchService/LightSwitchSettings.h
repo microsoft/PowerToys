@@ -69,14 +69,34 @@ struct LightSwitchConfig
     bool changeApps = false;
 };
 
+enum class SunTimesSaveResult
+{
+    // Includes an unchanged cache that required no write.
+    Saved,
+    // A newer effective configuration takes precedence over the calculation.
+    Superseded,
+    Failed,
+};
+
+// Parsing and patching preserve the existing settings schema.
+bool TryParseLightSwitchConfig(const json::JsonObject& values, LightSwitchConfig& config, std::wstring& error);
+// Startup only: create defaults if the file is absent, preserving any existing file.
+bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfig& config, std::wstring& error);
+bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode, LightSwitchConfig& config, std::wstring& error);
+// The service calls this through SaveSunTimes to serialize its settings writes.
+SunTimesSaveResult SaveLightSwitchSunTimes(const std::wstring& path, const LightSwitchConfig& expected, int lightMinutes, int darkMinutes, LightSwitchConfig& config, std::wstring& error);
+bool HasSameEffectiveLightSwitchSettings(const LightSwitchConfig& left, const LightSwitchConfig& right);
+
 class LightSwitchSettings
 {
 public:
     static LightSwitchSettings& instance();
 
-    static inline const LightSwitchConfig& settings()
+    static inline LightSwitchConfig settings()
     {
-        return instance().m_settings;
+        auto& instanceRef = instance();
+        std::lock_guard<std::mutex> guard(instanceRef.m_settingsMutex);
+        return instanceRef.m_settings;
     }
 
     void InitFileWatcher();
@@ -86,6 +106,9 @@ public:
     void RemoveObserver(SettingsObserver& observer);
 
     void LoadSettings();
+    bool TryLoadSettings(LightSwitchConfig& config, std::wstring& error);
+    bool TrySetScheduleMode(ScheduleMode mode, LightSwitchConfig& config, std::wstring& error);
+    SunTimesSaveResult SaveSunTimes(const LightSwitchConfig& expected, int lightMinutes, int darkMinutes, std::wstring& error);
 
     HANDLE GetSettingsChangedEvent() const;
 
@@ -98,6 +121,7 @@ private:
     std::unordered_set<SettingsObserver*> m_observers;
 
     void NotifyObservers(SettingId id) const;
+    void ApplySettingsLocked(const LightSwitchConfig& config);
 
     HANDLE m_settingsChangedEvent = nullptr;
     mutable std::mutex m_settingsMutex;
