@@ -20,7 +20,7 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
     private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
@@ -53,6 +53,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     public string Id => string.IsNullOrWhiteSpace(IdFromModel) ? _generatedId : IdFromModel;
 
     public CommandPaletteHost ExtensionHost { get; private set; }
+
+    AppExtensionHost? ICommandContextSource.ExtensionHost => ExtensionHost;
 
     public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
 

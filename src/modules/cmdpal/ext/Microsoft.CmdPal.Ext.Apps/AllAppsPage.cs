@@ -20,7 +20,7 @@ public sealed partial class AllAppsPage : ListPage
     private readonly Lock _listLock = new();
     private readonly IAppCache _appCache;
 
-    private AppListItem[] allAppListItems = [];
+    private volatile AppListSnapshot _snapshot = AppListSnapshot.Empty;
 
     public AllAppsPage()
         : this(AppCache.Instance.Value)
@@ -50,12 +50,26 @@ public sealed partial class AllAppsPage : ListPage
         // Build or update the list if needed
         BuildListItems();
 
-        return allAppListItems;
+        return _snapshot.Items;
+    }
+
+    /// <summary>
+    /// Looks up an item in the most recently published app catalog without waiting for a reload.
+    /// </summary>
+    public bool TryGetCurrentItem(string commandId, out AppListItem? item)
+    {
+        if (string.IsNullOrEmpty(commandId))
+        {
+            item = null;
+            return false;
+        }
+
+        return _snapshot.ItemsByCommandId.TryGetValue(commandId, out item);
     }
 
     private void BuildListItems()
     {
-        if (allAppListItems.Length == 0 || _appCache.ShouldReload())
+        if (_snapshot.Items.Length == 0 || _appCache.ShouldReload())
         {
             lock (_listLock)
             {
@@ -64,7 +78,18 @@ public sealed partial class AllAppsPage : ListPage
                 Stopwatch stopwatch = new();
                 stopwatch.Start();
 
-                this.allAppListItems = GetPrograms();
+                var items = GetPrograms();
+                var itemsByCommandId = new Dictionary<string, AppListItem>(items.Length, StringComparer.Ordinal);
+                foreach (var item in items)
+                {
+                    var commandId = item.Command?.Id;
+                    if (!string.IsNullOrEmpty(commandId))
+                    {
+                        itemsByCommandId.TryAdd(commandId, item);
+                    }
+                }
+
+                _snapshot = new AppListSnapshot(items, itemsByCommandId);
 
                 this.IsLoading = false;
 
@@ -107,5 +132,12 @@ public sealed partial class AllAppsPage : ListPage
         }
 
         return [.. items];
+    }
+
+    private sealed record AppListSnapshot(
+        AppListItem[] Items,
+        IReadOnlyDictionary<string, AppListItem> ItemsByCommandId)
+    {
+        public static AppListSnapshot Empty { get; } = new([], new Dictionary<string, AppListItem>(StringComparer.Ordinal));
     }
 }

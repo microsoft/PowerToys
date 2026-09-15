@@ -35,6 +35,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private readonly List<CommandProviderWrapper> _commandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+    private readonly Lock _pinnedCommandsUpdateLock = new();
 
     // watch out: if you add code that locks CommandProviders, be sure to always
     // lock CommandProviders before locking DockBands, or you will cause a
@@ -43,8 +44,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly SupersedingAsyncGate _reloadCommandsGate;
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
+    private IReadOnlyList<PinnedCommandSettings> _pinnedCommands = [];
 
-    private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
+    internal event EventHandler? PinnedCommandsChanged;
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
     {
@@ -66,8 +68,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
         }
     }
-
-    public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -92,16 +92,24 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal bool IsPinned(string providerId, string commandId)
-    {
-        return _pinnedCommandSet.Contains((providerId, commandId));
-    }
+    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot() => Volatile.Read(ref _pinnedCommands);
 
     internal void RebuildPinnedCache()
     {
-        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
-        _pinnedCommandSet = new(settings.PinnedCommands.Select(p => (p.ProviderId, p.CommandId)));
-        ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
+        bool changed;
+        var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+
+        lock (_pinnedCommandsUpdateLock)
+        {
+            var pinnedCommands = settingsService.Settings.PinnedCommands;
+            changed = !_pinnedCommands.SequenceEqual(pinnedCommands);
+            Volatile.Write(ref _pinnedCommands, pinnedCommands);
+        }
+
+        if (changed)
+        {
+            PinnedCommandsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     // May be called from a background thread
@@ -387,15 +395,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     foreach (var band in dockBandsToRemove)
                     {
                         DockBands.Remove(band);
-                    }
-                }
-
-                lock (PinnedCommands)
-                {
-                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId).ToList();
-                    foreach (var command in pinnedToRemove)
-                    {
-                        PinnedCommands.Remove(command);
                     }
                 }
 

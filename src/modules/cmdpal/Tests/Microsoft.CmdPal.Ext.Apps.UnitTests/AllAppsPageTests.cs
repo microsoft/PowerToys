@@ -76,6 +76,22 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
+    public async Task AllAppsPage_TryGetCurrentItemUsesPublishedCatalogWithoutReloading()
+    {
+        var mockCache = new MockAppCache();
+        mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe"));
+        var page = new AllAppsPage(mockCache);
+        await Task.Delay(100);
+
+        var expected = page.GetItems().OfType<AppListItem>().Single();
+
+        Assert.IsTrue(page.TryGetCurrentItem(expected.Command.Id, out var actual));
+        Assert.AreSame(expected, actual);
+        Assert.IsFalse(page.TryGetCurrentItem("missing", out var missing));
+        Assert.IsNull(missing);
+    }
+
+    [TestMethod]
     public async Task AllAppsPage_GetItems_HidesSubtitlesWhenSettingEnabled()
     {
         // Arrange
