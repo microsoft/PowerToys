@@ -239,7 +239,7 @@ internal sealed class PolicyWindow : Window
             Editors[key].IsEnabled = !linux && directional;
         }
 
-        foreach (var key in new[] { "allowOutbound", "allowLocalNetwork", "allowedHosts", "blockedHosts", "proxyKind" })
+        foreach (var key in new[] { "allowOutbound", "allowLocalNetwork", "allowedHosts", "blockedHosts", "proxyKind", "networkEnforcement" })
         {
             Editors[key].IsEnabled &= !directional;
         }

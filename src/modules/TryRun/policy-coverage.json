@@ -1,5 +1,5 @@
 {
-  "revision": "4a941b0b913c39d91a9fb1ad1824c537a896eef5",
+  "revision": "3eef7d60ce35d4d0ba568ddd0a9108beadb35b9a",
   "schema": "schemas/dev/mxc-config.schema.0.9.0-alpha.json",
   "schemaSha256": "2E686AA13118F172310B570666CB095BA9ED30E6D43B24736A9F7B775E56BE0A",
   "description": "Native field inventory. Mapped, fixed, gaps, metadata and testing-only rows are distinct. Evidence names are traceability links, not exhaustive enforcement claims.",
@@ -154,10 +154,16 @@
     },
     {
       "native": "Fallback.allowDaclMutation",
-      "status": "gap",
-      "controls": [],
-      "evidence": [],
-      "note": "Not authored by Try Run or exposed by the one-shot .NET request. The pinned native parser defaults this to true; a future user control should default to false and pass it before backend selection."
+      "status": "mapped",
+      "controls": [
+        "allowDaclMutation"
+      ],
+      "evidence": [
+        "PolicyNativeControlsTests.WorkerMapsNativeControlsBeforeRunning",
+        "PolicyNativeControlsTests.LegacyRequestsAlsoForbidHostDaclMutation",
+        "PolicyNativeControlsTests.WindowsBatchRunsWithHostDaclMutationForbidden"
+      ],
+      "note": "Default false, including legacy requests. The extended ProcessContainer binding authors native fallback.allowDaclMutation before parsing and tier selection. Opt-in allows DACL changes; unexpected backend warnings still stop a run."
     },
     {
       "native": "Filesystem.deniedPaths",
@@ -374,10 +380,16 @@
     },
     {
       "native": "Network.enforcementMode",
-      "status": "gap",
-      "controls": [],
-      "evidence": [],
-      "note": "Native capabilities/firewall/both choice is not exposed by the one-shot .NET NetworkPolicy."
+      "status": "mapped",
+      "controls": [
+        "networkEnforcement"
+      ],
+      "evidence": [
+        "PolicyNativeControlsTests.WorkerMapsNativeControlsBeforeRunning",
+        "PolicyNativeControlsTests.NativeControlsRejectUnsupportedOrIneffectiveCombinations",
+        "PolicyNativeControlsTests.NativeControlsHaveSafeDefaultsAndBackendAwareEditors"
+      ],
+      "note": "Auto preserves SDK derivation; explicit capabilities/firewall/both reaches native legacy network.enforcementMode. Directional and WSLC reject explicit modes. Capabilities rejects host lists. Firewall modes have mapping/parser coverage, not a host firewall runtime guarantee."
     },
     {
       "native": "Network.ingress",

@@ -1,7 +1,7 @@
 # MXC policy coverage audit
 
 This matrix replaces any broad claim that Try Run exposes all MXC configuration.
-It audits the pinned revision **4a941b0b913c39d91a9fb1ad1824c537a896eef5**.
+It audits the pinned revision **3eef7d60ce35d4d0ba568ddd0a9108beadb35b9a**.
 The machine-readable inventory is [policy-coverage.json](policy-coverage.json).
 Control defaults are in [POLICY-OPTIONS.md](POLICY-OPTIONS.md).
 
@@ -14,9 +14,9 @@ Shared types can be referenced by multiple backends and phases.
 
 | Classification | Entries | Meaning |
 |---|---:|---|
-| mapped | 57 | A Try Run control or setup field authors this value, sometimes through an inverse or translation |
+| mapped | 59 | A Try Run control or setup field authors this value, sometimes through an inverse or translation |
 | fixed | 5 | The current workflow or SDK fixes/derives the value; it is not freely configurable |
-| gap | 2 | A native one-shot control is not exposed by the current .NET request path |
+| gap | 0 | No remaining control gaps in the audited one-shot ProcessContainer/WSLC request surface |
 | backend-gap | 65 | Its backend or multi-call phase is not connected to Try Run |
 | structural | 14 | Parent/alias sections; child entries determine actual coverage |
 | metadata | 16 | Schema/comment annotations, not execution permissions |
@@ -41,19 +41,34 @@ Evidence is deliberately separated from availability:
 | Filesystem grants and denies | Read-only, writable and denied path controls | Windows/Linux custom read-only runtime tests; copied-workspace tests. Explicit writable host paths affect originals |
 | Policy retention | Clear retained policy maps to the inverse of lifecycle.preservePolicy | Mapped; applies to retained filesystem/network policy, not just files |
 | Legacy network | Outbound, LAN, host rules and URL/host-port proxies | Mapped; backend-dependent enforcement; host rules require outbound access on Windows |
-| Network enforcement mechanism | Native network.enforcementMode is missing | capabilities/firewall/both cannot be selected through the current one-shot .NET type |
+| Network enforcement mechanism | Auto plus explicit capabilities/firewall/both | Extended typed SDK/FFI mapping before native parsing. Basic Windows only; incompatible modes and ineffective capability host filtering are rejected. Firewall modes tested by mapping/parsing, not host firewall mutation |
 | Directional network | Egress allow/deny, CIDRs/exclusions, protocols/port ranges, ingress and host loopback | Native parser comparisons in schemas 0.8/0.9; a wildcard-deny runtime smoke test. Arbitrary Windows filtering still needs a compatible PSEC contract |
 | Runtime proxy and peer identity | Configured in Directional mode | Native parser checks for loopback, port, egress/ingress and peer constraints; not a claim that all proxy applications work |
 | Windows UI and capabilities | Window, clipboard, input injection, handles/atoms, system settings, IME, least privilege and capabilities | Mapping coverage plus representative GUI runs; no exhaustive behavioral test of every UI permission |
 | Denial capture | Block/allow, output path and ETL retention | Real block/allow runs and report-label tests. No elevated capture fallback; incompatible combinations are rejected |
 | WSLC image and resources | Image/archive, CPU, memory, GPU, storage and TCP port mappings | Mapping and representative Linux runtime tests. Numeric UI inputs are bounded; resource settings are not all independently measured |
 | Process metadata | Time limit, environment overrides/inheritance, container name | Mapping and timeout/environment runtime tests. Command/cwd are derived from the selected workload and workspace |
-| Host ACL fallback consent | Native fallback.allowDaclMutation is missing | Important gap: the pinned native parser defaults it to true. Try Run has not yet authored a false override |
+| Host ACL fallback consent | Explicit false by default, including legacy requests; editable before running | Extended typed SDK/FFI mapping before native parsing and tier selection. Native tests retain omitted SDK default compatibility; Try Run always authors its choice |
 | Container lifetime | destroyOnExit is fixed true; the worker also cleans up | Persistent/reusable sessions and phase-specific settings are not implemented |
 | Other backends | Windows Sandbox, IsolationSession, LXC, Bubblewrap, Seatbelt and micro-VM choices remain unconnected | Not implemented or not applicable to this Windows workflow; they are not counted as completed policy controls |
 | Native test proxy | builtinTestServer is absent | Deliberately test-only; native SDK rejects it without its separate testing route |
 
 ## Corrections in this stage
+
+The native request bridge adds `ProcessContainerContainment.AllowDaclMutation`
+and `ProcessContainerNetworkPolicy.EnforcementMode`, with corresponding typed
+Rust/FFI fields. They author the existing native schema before parsing and tier
+selection. Omitted SDK values retain their previous defaults, while Try Run
+explicitly sends false for DACL fallback even for legacy requests.
+
+The full **169/169** Try Run regression passed in `policy-native-controls-full.trx`
+with no skips, including 13 new control/default/mapping/runtime cases. MXC's
+10 builder, 16 FFI request, 27 fallback-detector and 15 managed request tests also
+passed. The fallback-detector checks use synthetic probes; actual host DACL
+opt-in and firewall mutations were not exercised. The 0.9 native schema is
+unchanged, so its inventory and SHA-256 remain the same at the new revision.
+
+The preceding network-audit stage corrected these mappings:
 
 1. An empty destination or port-selector list now omits the corresponding native
    field. MXC requires a present list to be nonempty. Omission means any destination
@@ -88,13 +103,9 @@ separate from the actual contained wildcard-deny smoke run.
 
 ## Next implementation milestones
 
-1. Extend the native request path for **fallback.allowDaclMutation** and
-   **network.enforcementMode**. Proposed Try Run default: no host DACL mutation;
-   retain explicit, visible network mechanism selection. These must reach MXC before
-   backend selection. Do not add UI-only placeholders or infer safety after spawn.
-2. Add a typed multi-call session workflow with owned session identity and verified
+1. Add a typed multi-call session workflow with owned session identity and verified
    stop/deprovision behavior, then expose supported lifecycle choices.
-3. Add other backend-specific configuration only with its actual backend adapter,
+2. Add other backend-specific configuration only with its actual backend adapter,
    capability checks and runtime tests.
-4. Treat application-internal document import, copy-on-write behavior and Word
+3. Treat application-internal document import, copy-on-write behavior and Word
    handoff compatibility as separate file/workflow capabilities, not policy toggles.

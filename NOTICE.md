@@ -22,7 +22,7 @@ This software incorporates material from third parties.
 **Source**: <https://github.com/microsoft/mxc>
 
 The optional developer execution worker links the C# SDK and native libraries
-from MXC revision `4a941b0b913c39d91a9fb1ad1824c537a896eef5`. These are not included
+from MXC revision `3eef7d60ce35d4d0ba568ddd0a9108beadb35b9a`. These are not included
 in the PowerToys installer. Production redistribution also requires an inventory
 and review of the native build's transitive dependencies and their notices.
 

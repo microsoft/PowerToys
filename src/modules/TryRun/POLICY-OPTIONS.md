@@ -9,7 +9,7 @@ retain their own submitted policy snapshot.
 The controls map the public policy surface of the pinned MXC .NET
 SandboxPolicy, ProcessContainerContainment and WslcContainment types, with the
 constraints described below, at
-4a941b0b913c39d91a9fb1ad1824c537a896eef5. This is the API used by Try Run's
+3eef7d60ce35d4d0ba568ddd0a9108beadb35b9a. This is the API used by Try Run's
 Windows and Linux execution paths. It is not an editor for every native CLI
 lifecycle/backend configuration (for example macOS Seatbelt or IsolationSession).
 The obsolete SandboxPolicy.CaptureDenials alias is represented by the supported
@@ -35,6 +35,8 @@ Backend availability does not imply support for every policy combination.
 | filesystem.readwritePaths | Writable paths | This run's Work and Temp |
 | filesystem.deniedPaths | Denied paths | Empty |
 | filesystem.clearPolicyOnExit | Clear retained policy on exit | On for Windows; inverse of lifecycle.preservePolicy, including retained network policy; not submitted to WSLC |
+| fallback.allowDaclMutation | Allow host file permission changes for fallback | Off, including requests without custom permissions; Windows only |
+| network.enforcementMode | Network enforcement | Auto; Capabilities / Firewall / Both selectable in Windows Basic mode |
 | network.allowOutbound | Allow outbound network | Off |
 | network.allowLocalNetwork | Allow local network | Off; Windows only |
 | network.allowedHosts | Allowed hosts | Empty; Windows only |
@@ -80,6 +82,18 @@ Backend availability does not imply support for every policy combination.
 Basic networking is the initial mode. Directional mode exposes the separate
 outbound/inbound fields. A non-default value in an inactive network mode is
 rejected until reset; switching modes never silently discards a grant or deny.
+
+Network enforcement **Auto** keeps MXC's existing choice: capabilities without
+host rules, both with host rules. Explicit Capabilities cannot filter host lists
+and is rejected with either list. Explicit mechanisms cannot be combined with
+Directional mode or WSLC. Firewall/Both depend on host privileges and support;
+Try Run does not elevate to enable them.
+
+Host DACL fallback is **off** by default, including older requests without a
+policy envelope. If MXC needs a tier that changes host file permissions, it must
+refuse before starting the workload. Enabling the option permits that fallback;
+it does not grant file-content access by itself or suppress backend warnings.
+This switch controls fallback DACL changes, not every possible host effect.
 
 Empty destination/port lists are submitted by omitting those fields, meaning any.
 CIDRs must be network base addresses and exclusions must belong to the parent

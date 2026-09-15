@@ -33,12 +33,14 @@ Complete and validate each milestone before starting the next.
 8. **Two-step workflow — implemented**: separate configuration and run/results
    pages, an immediately accessible EXE chooser, persistent previous results,
    and image preparation logs kept with environment setup.
-9. **Configurable policies — SDK controls implemented; native coverage incomplete**:
+9. **Configurable policies — audited one-shot controls implemented**:
    policy and backend configuration controls used by the pinned MXC .NET Windows
    ProcessContainer and Linux WSLC paths. See [Run permissions](POLICY-OPTIONS.md)
    for every option, default and backend limitation. Session lifecycle and
    additional backends remain separate work. The [native coverage audit](POLICY-COVERAGE.md)
-   records missing controls and distinguishes mapping, parsing and runtime evidence.
+   distinguishes mapping, parsing and runtime evidence. Native DACL fallback and
+   network enforcement now have typed SDK/FFI controls; other backend and session
+   configuration remains unconnected.
 10. **Command Palette entry — not started**: an explicitly enabled developer command opens the
    window, without changing ordinary Run or existing module settings; build and
    launch validation.
@@ -49,7 +51,7 @@ in the coverage roadmap. Production integration needs the normal PowerToys depen
 privacy and security reviews and resolution of MXC's preview limitations.
 
 Before running, select **Run permissions…** to edit the default policy. All
-44 top-level controls and nested network-rule fields are documented in
+46 top-level controls and nested network-rule fields are documented in
 [Run permissions](POLICY-OPTIONS.md), including backend-specific availability.
 The descriptions of offline execution below refer to the default configuration.
 Explicit writable host grants allow changes to originals, and permissive capture
@@ -59,7 +61,7 @@ choices. Changing permissions does not execute the selected program.
 ## Dependency
 
 Use the separate Microsoft MXC checkout at commit
-`4a941b0b` (the full revision is recorded in `mxc-version.txt`). Pass its absolute
+`3eef7d60` (the full revision is recorded in `mxc-version.txt`). Pass its absolute
 root as `MxcRoot` when building the worker. The managed SDK and native libraries
 are built together; do not mix releases. Rust 1.93 and the Windows C++ build tools
 are required. No Node runtime is required. See the root `NOTICE.md` entry.
@@ -79,12 +81,43 @@ The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
 
+### Native fallback and network execution controls
+
+Try Run now sends an explicit `fallback.allowDaclMutation=false` through the
+extended MXC request path, including requests without custom permissions. The
+**Files** tab can opt in to host permission changes for fallback. This is distinct
+from granting read/write access to file contents; backend warnings remain visible
+and unexpected warnings still stop a run.
+
+The **Network** tab offers **Auto / Capabilities / Firewall / Both** in Windows
+Basic mode. Auto retains existing derivation. Directional/WSLC requests reject
+explicit mechanisms, and Capabilities rejects host lists it cannot enforce.
+No elevation or host preparation is performed. Firewall modes require host
+support and privileges; mapping/parser checks are not firewall runtime proof.
+
+The matching MXC extension lives on `codex/try-run-policy-bridge`. It preserves
+omitted defaults for existing SDK callers and tightens generic `process` requests
+to reject unknown backend settings instead of silently ignoring them.
+
+Validation: x64 Debug standalone build succeeded (exit 0). All **169 tests**
+passed with no skips in **policy-native-controls-full.trx**, including 13 new
+native-control cases, Windows/Linux runtime, capture, Explorer, window-border,
+workflow, schema-coverage and fuzz regressions. The default-denied DACL setting
+was used in an actual Windows batch run; explicit DACL opt-in and firewall modes
+were checked without executing host permission/firewall changes.
+
+MXC validation also passed: 10 ProcessContainer builder tests, 16 FFI request
+tests, 27 fallback-detector tests and 15 managed compatibility/serialization
+tests. Managed and native builds used the same pinned revision. The existing
+native helper warning about the Windows Python Store alias remains; no host
+setup or elevation was performed.
+
 ### Native policy audit and network-rule corrections
 
 The native coverage matrix classifies all 162 definition/property entries and
-13 containment spellings in the pinned 0.9.0-alpha schema. It also checks that
-all 44 policy controls have native destinations and that evidence links name
-existing tests. These counts include metadata, structural nodes and gaps, and
+13 containment spellings in the pinned 0.9.0-alpha schema. At that stage, all 44
+policy controls had native destinations and evidence links named existing tests;
+the subsequent native-control stage increases that count to 46. These counts include metadata, structural nodes and gaps, and
 must not be interpreted as a count of implemented permissions.
 
 All 49 targeted checks passed in **policy-coverage-regression.trx**, including
@@ -95,8 +128,8 @@ form is rejected. A real Windows workload also completed with a wildcard deny
 rule. An additional 1,503 fuzz seeds/mutations cover network-specific inputs.
 Tests found and corrected the native requirement for zero CIDR host bits.
 
-This stage fixes mapping and validation; it does not implement the native
-enforcement-mode selector, DACL-fallback consent or persistent sessions. See
+That earlier stage fixed mapping and validation. The subsequent stage above
+adds enforcement-mode and DACL-fallback controls; persistent sessions remain pending. See
 [POLICY-COVERAGE.md](POLICY-COVERAGE.md) for the remaining work and evidence scope.
 
 ### Configurable permissions

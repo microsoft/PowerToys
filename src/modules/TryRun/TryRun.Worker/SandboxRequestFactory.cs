@@ -119,6 +119,9 @@ internal static class SandboxRequestFactory
         {
             Containment = new ProcessContainerContainment
             {
+                // Also protect legacy requests that have no editable policy envelope.
+                AllowDaclMutation = false,
+
                 // PowerShell initializes desktop handles even for noninteractive
                 // commands. See MXC docs/playground-limitations.md.
                 Ui = new ProcessContainerUiPolicy { Isolation = ProcessContainerUiIsolation.Desktop },

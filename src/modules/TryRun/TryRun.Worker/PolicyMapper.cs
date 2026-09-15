@@ -68,6 +68,7 @@ internal static class PolicyMapper
 
         if (request.Containment is ProcessContainerContainment windows)
         {
+            windows.AllowDaclMutation = options.Enabled("allowDaclMutation");
             request.Policy.Ui = new UiPolicy
             {
                 AllowWindows = options.Enabled("allowWindows"),
@@ -84,7 +85,11 @@ internal static class PolicyMapper
                 DesktopSystemControl = options.Enabled("desktopSystemControl"),
                 Ime = options.Enabled("ime"),
             };
-            windows.Network = options.Get("allowedProxyPeer").Length == 0 ? null : new ProcessContainerNetworkPolicy { AllowedProxyPeer = options.Get("allowedProxyPeer") };
+            windows.Network = options.Get("allowedProxyPeer").Length == 0 && options.Get("networkEnforcement") == "Auto" ? null : new ProcessContainerNetworkPolicy
+            {
+                AllowedProxyPeer = Empty(options.Get("allowedProxyPeer")),
+                EnforcementMode = options.Get("networkEnforcement") == "Auto" ? null : Enum.Parse<ProcessContainerNetworkEnforcementMode>(options.Get("networkEnforcement")),
+            };
         }
         else if (request.Containment is WslcContainment linux)
         {

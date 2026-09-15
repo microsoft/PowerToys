@@ -25,7 +25,9 @@ public sealed class PolicySettings
         new("readwritePaths", "Writable paths", "Files", "$work\n$temp", "One local path per line. $work and $temp are this run's copies and temporary files. Adding a host path allows changes to the ORIGINAL files.", "paths"),
         new("deniedPaths", "Denied paths", "Files", string.Empty, "One local path per line. WSLC cannot exclude a child of a mounted folder.", "paths"),
         new("clearPolicyOnExit", "Clear retained policy when the process exits", "Files", "true", "Inverse of MXC lifecycle.preservePolicy. Applies to retained filesystem and network policy. Disabling may leave policy state on the host.", "bool", Backend: "Windows"),
+        new("allowDaclMutation", "Allow host file permission changes for fallback", "Files", "false", "Off: MXC refuses isolation tiers that need to change host DACLs. On: permits those permission changes; this is separate from granting access to file contents. Backend warnings can still stop the run.", "bool", Backend: "Windows"),
         new("networkMode", "Network configuration", "Network", "Basic", "Basic uses outbound/LAN/host rules. Directional uses separate inbound/outbound rules; inactive settings must remain at defaults.", "choice", ["Basic", "Directional"]),
+        new("networkEnforcement", "Network enforcement", "Network", "Auto", "Windows Basic mode only. Auto uses capabilities, or Both for host rules. Capabilities cannot filter individual hosts. Firewall and Both may require host privileges; Try Run does not elevate.", "choice", ["Auto", "Capabilities", "Firewall", "Both"], Backend: "Windows"),
         new("allowOutbound", "Allow outbound network", "Network", "false", "WSLC networking is all-or-nothing; enabling it also makes reachable local networks accessible.", "bool"),
         new("allowLocalNetwork", "Allow local network", "Network", "false", "Windows basic network policy. WSLC uses its overall network mode.", "bool", Backend: "Windows"),
         new("allowedHosts", "Allowed hosts", "Network", string.Empty, "One host per line. Requires a host-filtering backend; MXC validates the requested combination.", "lines", Backend: "Windows"),
@@ -137,7 +139,7 @@ public sealed class PolicySettings
 
         var inactive = Get("networkMode") == "Basic"
             ? new[] { "egressDefault", "egressAllow", "egressDeny", "ingressDefault", "hostLoopback", "networkProxy", "allowedProxyPeer" }
-            : ["allowOutbound", "allowLocalNetwork", "allowedHosts", "blockedHosts", "proxyKind", "proxyUrl"];
+            : ["allowOutbound", "allowLocalNetwork", "allowedHosts", "blockedHosts", "proxyKind", "proxyUrl", "networkEnforcement"];
         foreach (var key in inactive)
         {
             if (Get(key, linux) != Fields.Single(field => field.Key == key).DefaultFor(linux))
@@ -149,6 +151,11 @@ public sealed class PolicySettings
         if (Get("proxyKind") == "Host port" && Number("proxyPort") is < 1 or > 65535)
         {
             throw new ArgumentException("Choose a proxy port between 1 and 65535.");
+        }
+
+        if (Get("networkEnforcement") == "Capabilities" && (Lines("allowedHosts").Length > 0 || Lines("blockedHosts").Length > 0))
+        {
+            throw new ArgumentException("Capabilities cannot filter individual hosts. Choose Auto, Firewall or Both.");
         }
 
         if (Get("proxyKind") != "Host port" && Get("proxyPort") != "8080")
@@ -270,5 +277,5 @@ public sealed class PolicySettings
         ? $"WSLC network: {(Enabled("allowOutbound") ? "on (includes reachable local networks)" : "off")}; proxy: {Get("proxyKind")}"
         : Get("networkMode") == "Directional"
             ? $"Directional; outbound {Get("egressDefault")}, inbound {Get("ingressDefault")}; host loopback {Get("hostLoopback")}"
-            : $"Outbound: {(Enabled("allowOutbound") ? "on" : "off")}; local network permission: {(Enabled("allowLocalNetwork") ? "on" : "off")}; proxy: {Get("proxyKind")}; host rules: {Lines("allowedHosts").Length} allow / {Lines("blockedHosts").Length} block";
+            : $"Outbound: {(Enabled("allowOutbound") ? "on" : "off")}; local network permission: {(Enabled("allowLocalNetwork") ? "on" : "off")}; proxy: {Get("proxyKind")}; host rules: {Lines("allowedHosts").Length} allow / {Lines("blockedHosts").Length} block; enforcement: {Get("networkEnforcement")}";
 }
