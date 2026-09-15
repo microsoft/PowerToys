@@ -154,17 +154,11 @@
     <ClInclude Include="Converters.h">
       <DependentUpon>Converters.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="IconPathConverter.h">
-      <DependentUpon>IconPathConverter.idl</DependentUpon>
-    </ClInclude>
     <ClInclude Include="RunHistory.h">
       <DependentUpon>RunHistory.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="FontIconGlyphClassifier.h">
-      <DependentUpon>FontIconGlyphClassifier.idl</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -175,9 +169,6 @@
     <ClCompile Include="Converters.cpp">
       <DependentUpon>Converters.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="IconPathConverter.cpp">
-      <DependentUpon>IconPathConverter.idl</DependentUpon>
-    </ClCompile>
     <ClCompile Include="RunHistory.cpp">
       <DependentUpon>RunHistory.idl</DependentUpon>
     </ClCompile>
@@ -185,17 +176,12 @@
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="FontIconGlyphClassifier.cpp">
-      <DependentUpon>FontIconGlyphClassifier.idl</DependentUpon>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Converters.idl" />
-    <Midl Include="IconPathConverter.idl" />
     <Midl Include="RunHistory.idl" />
     <Midl Include="IDirectKeyListener.idl" />
     <Midl Include="ResourceString.idl" />
-    <Midl Include="FontIconGlyphClassifier.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.Terminal.UI.def" />

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,9 +29,12 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCacheRemovalReason.cs" Link="Helpers\AdaptiveCacheRemovalReason.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\BinaryIconReference.cs" Link="Helpers\Icons\BinaryIconReference.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherMaterializationKind.cs" Link="Helpers\Icons\IconDispatcherMaterializationKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherUiSliceKind.cs" Link="Helpers\Icons\IconDispatcherUiSliceKind.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconGlyphClassifier.cs" Link="Helpers\Icons\FontIconGlyphClassifier.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconGlyphKind.cs" Link="Helpers\Icons\FontIconGlyphKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\FontIconSizeCalculator.cs" Link="Helpers\Icons\FontIconSizeCalculator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemand.cs" Link="Helpers\Icons\IconLoadDemand.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemandStage.cs" Link="Helpers\Icons\IconLoadDemandStage.cs" />
@@ -49,6 +53,8 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestOrigin.cs" Link="Helpers\Icons\IconRequestOrigin.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestReason.cs" Link="Helpers\Icons\IconRequestReason.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestStatus.cs" Link="Helpers\Icons\IconRequestStatus.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconPathConverter.cs" Link="Helpers\Icons\IconPathConverter.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconPathParser.cs" Link="Helpers\Icons\IconPathParser.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestDemand.cs" Link="Helpers\Icons\IconRequestDemand.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestDemandState.cs" Link="Helpers\Icons\IconRequestDemandState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
