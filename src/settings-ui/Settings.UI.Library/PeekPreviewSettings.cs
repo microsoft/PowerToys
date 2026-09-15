@@ -13,6 +13,9 @@ namespace Settings.UI.Library
     {
         public const string FileName = "preview-settings.json";
 
+        // Default cap for the source-code preview in kilobytes, files above the limit fall back to the info preview.
+        public const int DefaultSourceCodeMaxFileSize = 10240;
+
         public BoolProperty SourceCodeWrapText { get; set; }
 
         public BoolProperty SourceCodeTryFormat { get; set; }
@@ -23,6 +26,8 @@ namespace Settings.UI.Library
 
         public BoolProperty SourceCodeMinimap { get; set; }
 
+        public IntProperty SourceCodeMaxFileSize { get; set; }
+
         public PeekPreviewSettings()
         {
             SourceCodeWrapText = new BoolProperty(false);
@@ -30,6 +35,7 @@ namespace Settings.UI.Library
             SourceCodeFontSize = new IntProperty(14);
             SourceCodeStickyScroll = new BoolProperty(true);
             SourceCodeMinimap = new BoolProperty(false);
+            SourceCodeMaxFileSize = new IntProperty(DefaultSourceCodeMaxFileSize);
         }
 
         public string ToJsonString()
