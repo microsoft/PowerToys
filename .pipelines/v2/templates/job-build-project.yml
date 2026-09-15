@@ -514,6 +514,18 @@ jobs:
         testResultsFiles: '**/*.trx'
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
+    # Temporary stack collection is restricted to the diagnostic PR.
+    - pwsh: |-
+        $debugger = & "$(Build.SourcesDirectory)\.pipelines\getNativeTestDebugger.ps1" `
+          -OutputDirectory "$(Agent.TempDirectory)\NativeTestDebugger-$(Build.BuildId)-$(System.JobId)"
+        & "$(Build.SourcesDirectory)\.pipelines\traceNativeTestHost.ps1" `
+          -Action Start `
+          -LogDirectory "$(Build.ArtifactStagingDirectory)\logs" `
+          -BinariesDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)" `
+          -DebuggerPath $debugger
+      displayName: Start native test host stack diagnostics
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50576'))
+
     # Native dlls
     - task: VSTest@2
       condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
@@ -529,6 +541,13 @@ jobs:
           **\*UnitTest*.dll
           !**\obj\**
           !**\*.resources.dll
+
+    - pwsh: |-
+        & "$(Build.SourcesDirectory)\.pipelines\traceNativeTestHost.ps1" `
+          -Action Stop `
+          -LogDirectory "$(Build.ArtifactStagingDirectory)\logs"
+      displayName: Stop native test host stack diagnostics
+      condition: and(always(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50576'))
 
   - pwsh: |-
       $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"

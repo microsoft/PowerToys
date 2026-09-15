@@ -23,4 +23,12 @@ Describe 'Native test task diagnostic inputs' {
         $nativeTask.Contains('CollectDump') | Should Be $false
         $nativeTask.Contains('TestSessionTimeout') | Should Be $false
     }
+
+    It 'prepares the verified debugger only for the diagnostic PR and stops on failure' {
+        $template.Contains('getNativeTestDebugger.ps1') | Should Be $true
+        $template.Contains('-DebuggerPath $debugger') | Should Be $true
+        $template.Contains("condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50576'))") | Should Be $true
+        $template.Contains("condition: and(always(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50576'))") | Should Be $true
+        $template.Contains("-Action Stop") | Should Be $true
+    }
 }
