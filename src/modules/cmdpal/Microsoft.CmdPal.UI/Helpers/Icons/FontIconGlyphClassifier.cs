@@ -20,6 +20,37 @@ internal static partial class FontIconGlyphClassifier
     private const char TextVariationSelector = '\uFE0E';
     private const char EmojiVariationSelector = '\uFE0F';
 
+    /// <summary>
+    /// Reports whether <paramref name="text" /> is a glyph candidate without resolving
+    /// the font family needed to render it.
+    /// </summary>
+    public static bool IsGlyphCandidate(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+
+        if (text.Length == 1)
+        {
+            // Match Classify's compatibility behavior for isolated surrogates.
+            return !char.IsHighSurrogate(text[0]);
+        }
+
+        if (text.Length == 2 && char.IsSurrogatePair(text[0], text[1]))
+        {
+            return true;
+        }
+
+        if (text[0] <= 0x7F && text[1] <= 0x7F)
+        {
+            return false;
+        }
+
+        var textElementLength = StringInfo.GetNextTextElementLength(text.AsSpan());
+        return textElementLength != 0 && textElementLength == text.Length;
+    }
+
     public static FontIconGlyphKind Classify(string? text)
     {
         if (string.IsNullOrEmpty(text))
