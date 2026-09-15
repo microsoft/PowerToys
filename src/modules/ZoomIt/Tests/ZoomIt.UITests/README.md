@@ -34,6 +34,8 @@ Run in an isolated, English-language interactive desktop with winappcli, .NET 10
 a PowerToys runtime. The executable embeds a PerMonitorV2 manifest. Pipeline-like runs
 normalize the desktop to 1920x1080. Recording requires a working Windows Graphics Capture
 display; lack of captured frames is an explicit failure, not a skipped or passing recording.
+Suppress unrelated desktop notifications in the test environment before running: Shell
+toasts can cover pixel samples even when ZoomIt's window is topmost.
 
 ```powershell
 dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:Platform=x64

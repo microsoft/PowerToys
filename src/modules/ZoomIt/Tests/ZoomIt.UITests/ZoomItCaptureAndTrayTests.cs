@@ -265,7 +265,8 @@ public sealed partial class ZoomItTests
         if (chevron is not null)
         {
             ui.Step($"Notification chevron: '{chevron.Name}', overflow visible={OverflowVisible()}.");
-            if (chevron.Name.StartsWith("Show", StringComparison.OrdinalIgnoreCase) || !OverflowVisible())
+            if ((chevron.Name.StartsWith("Show", StringComparison.OrdinalIgnoreCase) &&
+                !chevron.Name.Contains("Hide", StringComparison.OrdinalIgnoreCase)) || !OverflowVisible())
             {
                 chevron.Invoke(msPostAction: 0);
             }

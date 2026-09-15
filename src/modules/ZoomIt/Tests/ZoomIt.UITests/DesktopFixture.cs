@@ -52,23 +52,54 @@ internal sealed class DesktopFixture : IDisposable
             };
             window.Shown += (_, _) => ready.SetResult(window);
             Forms.Application.Run(window);
-        });
+        })
+        {
+            IsBackground = true,
+        };
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
         form = ready.Task.WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
-        Show();
-        Assert.IsTrue(
-            WaitHelper.WaitForStable(ReadMarkerWidth, width => Math.Abs(width - MarkerSize) <= 2, 5_000, 2).Succeeded,
-            "The unzoomed source must render an 80-pixel green marker before testing magnification.");
+        try
+        {
+            Show();
+            Assert.IsTrue(
+                WaitHelper.WaitForStable(ReadMarkerWidth, width => Math.Abs(width - MarkerSize) <= 2, 5_000, 2).Succeeded,
+                "The unzoomed source must render an 80-pixel green marker before testing magnification.");
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     internal Point Center => new(screen.Width / 2, screen.Height / 2);
 
     internal void Show()
     {
-        form.Invoke(() => form.Show());
+        form.Invoke(() =>
+        {
+            form.Show();
+            form.Activate();
+        });
+        var focused = WindowControl.WaitForForeground(form.Handle, 2_000);
+        Point[] activationPoints = [Center, new(80, 80), new(screen.Width - 80, 80)];
+        foreach (var point in activationPoints)
+        {
+            if (focused)
+            {
+                break;
+            }
+
+            if (WindowControl.IsPointOwnedByWindow(form.Handle, point.X, point.Y))
+            {
+                MouseHelper.LeftClickAt(point.X, point.Y);
+                focused = WindowControl.WaitForForeground(form.Handle, 10_000);
+            }
+        }
+
         Assert.IsTrue(
-            WindowControl.WaitForForeground(form.Handle, 10_000),
+            focused,
             $"Source window did not acquire foreground: {WindowControl.GetForegroundWindowInfo()}");
         MouseHelper.MoveTo(Center.X, Center.Y);
     }

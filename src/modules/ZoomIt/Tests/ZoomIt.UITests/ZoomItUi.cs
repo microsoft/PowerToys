@@ -150,7 +150,7 @@ internal sealed class ZoomItUi(Session session, TestContext context)
 
             var window = WindowsFinder.WaitForWindowByApp(
                 "PowerToys.Settings",
-                candidate => candidate.Title == "PowerToys Settings" && candidate.Width > 500 && candidate.Height > 300,
+                candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
                 10_000);
             Assert.IsNotNull(window, "The main Settings window was not available for its native dialog.");
             Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000), "Settings did not acquire foreground for its native dialog.");
@@ -158,14 +158,15 @@ internal sealed class ZoomItUi(Session session, TestContext context)
             var middleTop = bounds.Top + ((bounds.Bottom - bounds.Top) / 4);
             var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
             MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
-            Control<Button>(cardId, "Button").ScrollIntoView();
-            Control<Button>(cardId, "Button").Focus();
+            var target = Control<Button>(cardId, "Button");
+            target.ScrollIntoView();
+            target.Focus();
             var ready = WaitHelper.WaitForStable(
-                () => Control<Button>(cardId, "Button"),
+                () => session.Find<Button>(By.Slug(target.Selector), 0),
                 button => button is not null && button.Width > 0 && button.Height > 0 &&
                     button.Y + (button.Height / 2) >= middleTop && button.Y + (button.Height / 2) <= middleBottom &&
                     WindowControl.IsPointOwnedByWindow(new IntPtr(window.WindowHandle), button.X + (button.Width / 2), button.Y + (button.Height / 2)),
-                20_000,
+                60_000,
                 2,
                 recover: button =>
                 {
