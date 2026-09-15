@@ -2,13 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using RobocopyUI.Models;
 
-namespace RobocopyUI
+namespace RobocopyUI.Controls
 {
     public sealed partial class OptionEntry : UserControl
     {
@@ -36,9 +36,9 @@ namespace RobocopyUI
             set { SetValue(IsMultiSelectOptionProperty, value); }
         }
 
-        public List<OptionEntry> MultiSelectOptions
+        public List<OptionContent> MultiSelectOptions
         {
-            get { return (List<OptionEntry>)GetValue(MultiSelectOptionsProperty); }
+            get { return (List<OptionContent>)GetValue(MultiSelectOptionsProperty); }
             set { SetValue(MultiSelectOptionsProperty, value); }
         }
 
@@ -70,7 +70,7 @@ namespace RobocopyUI
             DependencyProperty.Register("IsRunHoursOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty MultiSelectOptionsProperty =
-            DependencyProperty.Register("MultiSelectOptions", typeof(List<OptionEntry>), typeof(OptionEntry), new PropertyMetadata(null));
+            DependencyProperty.Register("MultiSelectOptions", typeof(List<OptionContent>), typeof(OptionEntry), new PropertyMetadata(null));
 
         public static readonly DependencyProperty IsNumberOptionProperty =
             DependencyProperty.Register("IsNumberOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
@@ -88,7 +88,6 @@ namespace RobocopyUI
         {
             MultiSelectOptions ??= [];
             InitializeComponent();
-            DataContext = this;
 
             if (App.Options.TryGetValue(OptionName, out var optionContent))
             {
@@ -118,7 +117,7 @@ namespace RobocopyUI
 
                 if (IsMultiSelectOption)
                 {
-                    return $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.OptionEnabledCheckBox.IsChecked ?? false).Select(o => o.OptionName))}";
+                    return $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.Enabled).Select(o => o.OptionName))}";
                 }
 
                 if (IsRunHoursOption)

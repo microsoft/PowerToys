@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="RobocopyUI.HomePage"
+<Page x:Class="RobocopyUI.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:RobocopyUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:RobocopyUI.Controls"
+    xmlns:models="using:RobocopyUI.Models"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
+            <controls:OptionEntry
+                OptionName="{x:Bind OptionName}"
+                OptionDescription="{x:Bind OptionDescription}"
+                IsNumberOption="{x:Bind IsNumberOption}"
+                IsMultiSelectOption="{x:Bind IsMultiSelectOption}"
+                MultiSelectOptions="{x:Bind MultiSelectOptions}"
+                IsRunHoursOption="{x:Bind IsRunHoursOption}"
+                IsStorageOption="{x:Bind IsStorageOption}"
+                IsTextOption="{x:Bind IsTextOption}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="OptionGroupStyleHeaderTemplate">
+            <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
+        </DataTemplate>
+
+        <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+    </Page.Resources>
 
     <ScrollViewer>
         <StackPanel Margin="12">
@@ -76,190 +96,40 @@
                 </SelectorBar>
                 <Grid x:Name="OptionsContent" Margin="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" x:Name="OptionsContentLeft">
-                        <TextBlock x:Uid="CopyOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                        <local:OptionEntry OptionName="/S" x:Uid="SOption"/>
-                        <local:OptionEntry OptionName="/E" x:Uid="EOption"/>
-                        <local:OptionEntry OptionName="/LEV" x:Uid="LEVOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/Z" x:Uid="ZOption"/>
-                        <local:OptionEntry OptionName="/B" x:Uid="BOption"/>
-                        <local:OptionEntry OptionName="/ZB" x:Uid="ZBOption"/>
-                        <local:OptionEntry OptionName="/J" x:Uid="JOption"/>
-                        <local:OptionEntry OptionName="/EFSRAW" x:Uid="EFSRAWOption"/>
-                        <local:OptionEntry OptionName="/COPY" x:Uid="COPYOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="D" x:Uid="COPYOptionD"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="COPYOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="COPYOptionT"></local:OptionEntry>
-                                <local:OptionEntry OptionName="X" x:Uid="COPYOptionX"></local:OptionEntry>
-                                <local:OptionEntry OptionName="S" x:Uid="COPYOptionS"></local:OptionEntry>
-                                <local:OptionEntry OptionName="O" x:Uid="COPYOptionO"></local:OptionEntry>
-                                <local:OptionEntry OptionName="U" x:Uid="COPYOptionU"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/NOCOPY" x:Uid="NOCOPYOption"/>
-                        <local:OptionEntry OptionName="/SECFIX" x:Uid="SECFIXOption"/>
-                        <local:OptionEntry OptionName="/TIMFIX" x:Uid="TIMFIXOption"/>
-                        <local:OptionEntry OptionName="/PURGE" x:Uid="PURGEOption"/>
-                        <local:OptionEntry OptionName="/MIR" x:Uid="MIROption"/>
-                        <local:OptionEntry OptionName="/MOV" x:Uid="MOVOption"/>
-                        <local:OptionEntry OptionName="/MOVE" x:Uid="MOVEOption"/>
-                        <local:OptionEntry OptionName="/A+" x:Uid="APlusOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="R" x:Uid="AOptionR"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="AOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="S" x:Uid="AOptionS"></local:OptionEntry>
-                                <local:OptionEntry OptionName="H" x:Uid="AOptionH"></local:OptionEntry>
-                                <local:OptionEntry OptionName="C" x:Uid="AOptionC"></local:OptionEntry>
-                                <local:OptionEntry OptionName="N" x:Uid="AOptionN"></local:OptionEntry>
-                                <local:OptionEntry OptionName="E" x:Uid="AOptionE"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="AOptionT"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/A-" x:Uid="AMinusOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="R" x:Uid="AOptionR"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="AOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="S" x:Uid="AOptionS"></local:OptionEntry>
-                                <local:OptionEntry OptionName="H" x:Uid="AOptionH"></local:OptionEntry>
-                                <local:OptionEntry OptionName="C" x:Uid="AOptionC"></local:OptionEntry>
-                                <local:OptionEntry OptionName="N" x:Uid="AOptionN"></local:OptionEntry>
-                                <local:OptionEntry OptionName="E" x:Uid="AOptionE"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="AOptionT"></local:OptionEntry>
-                                <local:OptionEntry OptionName="O" x:Uid="AOptionO"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/CREATE" x:Uid="CREATEOption"/>
-                        <local:OptionEntry OptionName="/FAT" x:Uid="FATOption"/>
-                        <local:OptionEntry OptionName="/256" x:Uid="256Option"/>
-                        <local:OptionEntry OptionName="/MON" x:Uid="MONOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MOT" x:Uid="MOTOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/RH" x:Uid="RHOption" IsRunHoursOption="True"/>
-                        <local:OptionEntry OptionName="/PF" x:Uid="PFOption"/>
-                        <local:OptionEntry OptionName="/IPG" x:Uid="IPGOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/SJ" x:Uid="SJOption"/>
-                        <local:OptionEntry OptionName="/SL" x:Uid="SLOption"/>
-                        <local:OptionEntry OptionName="/MT" x:Uid="MTOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/DCOPY" x:Uid="DCOPYOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="D" x:Uid="COPYOptionD"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="COPYOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="COPYOptionT"></local:OptionEntry>
-                                <local:OptionEntry OptionName="X" x:Uid="COPYOptionX"></local:OptionEntry>
-                                <local:OptionEntry OptionName="E" x:Uid="COPYOptionE"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/NODCOPY" x:Uid="NODCOPYOption"/>
-                        <local:OptionEntry OptionName="/NOOFFLOAD" x:Uid="NOOFFLOADOption"/>
-                        <local:OptionEntry OptionName="/COMPRESS" x:Uid="COMPRESSOption"/>
-                        <local:OptionEntry OptionName="/SPARSE:Y" x:Uid="SPARSEOptionY"/>
-                        <local:OptionEntry OptionName="/SPARSE:N" x:Uid="SPARSEOptionN"/>
-                        <local:OptionEntry OptionName="/NOCLONE" x:Uid="NOCLONEOption"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" x:Name="OptionsContentRight">
-                        <TextBlock x:Uid="CopyFileThrottlingOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                        <local:OptionEntry OptionName="/IoMaxSize" x:Uid="IoMaxSizeOption" IsNumberOption="True" IsStorageOption="True"/>
-                        <local:OptionEntry OptionName="/IoRate" x:Uid="IoRateOption" IsNumberOption="True" IsStorageOption="True"/>
-                        <local:OptionEntry OptionName="/Threshold" x:Uid="ThresholdOption" IsNumberOption="True" IsStorageOption="True"/>
-
-                        <TextBlock x:Uid="RetryOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                        <local:OptionEntry OptionName="/R" x:Uid="ROption" IsNumberOption="True" />
-                        <local:OptionEntry OptionName="/W" x:Uid="WOption" IsNumberOption="True" />
-                        <local:OptionEntry OptionName="/REG" x:Uid="REGOption" />
-                        <local:OptionEntry OptionName="/TBD" x:Uid="TBDOption" />
-                        <local:OptionEntry OptionName="/LFSM" x:Uid="LFSMOption" />
-                        <local:OptionEntry OptionName="/LFSM" x:Uid="LFSMNOption" IsNumberOption="True" IsStorageOption="True" />
-                    </StackPanel>
+                    <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                    <ListView x:Name="OptionsListViewRight" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
                 </Grid>
                 <Grid x:Name="FiltersContent" Margin="12">
-                    <StackPanel x:Name="FilterOptions">
-                        <TextBlock x:Uid="FileSelectionOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                        <local:OptionEntry OptionName="/A" x:Uid="AOption"/>
-                        <local:OptionEntry OptionName="/M" x:Uid="MOption"/>
-                        <local:OptionEntry OptionName="/IA" x:Uid="IAOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="R" x:Uid="AOptionR"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="AOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="S" x:Uid="AOptionS"></local:OptionEntry>
-                                <local:OptionEntry OptionName="H" x:Uid="AOptionH"></local:OptionEntry>
-                                <local:OptionEntry OptionName="C" x:Uid="AOptionC"></local:OptionEntry>
-                                <local:OptionEntry OptionName="N" x:Uid="AOptionN"></local:OptionEntry>
-                                <local:OptionEntry OptionName="E" x:Uid="AOptionE"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="AOptionT"></local:OptionEntry>
-                                <local:OptionEntry OptionName="O" x:Uid="AOptionO"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/XA" x:Uid="XAOption" IsMultiSelectOption="True">
-                            <local:OptionEntry.MultiSelectOptions>
-                                <local:OptionEntry OptionName="R" x:Uid="AOptionR"></local:OptionEntry>
-                                <local:OptionEntry OptionName="A" x:Uid="AOptionA"></local:OptionEntry>
-                                <local:OptionEntry OptionName="S" x:Uid="AOptionS"></local:OptionEntry>
-                                <local:OptionEntry OptionName="H" x:Uid="AOptionH"></local:OptionEntry>
-                                <local:OptionEntry OptionName="C" x:Uid="AOptionC"></local:OptionEntry>
-                                <local:OptionEntry OptionName="N" x:Uid="AOptionN"></local:OptionEntry>
-                                <local:OptionEntry OptionName="E" x:Uid="AOptionE"></local:OptionEntry>
-                                <local:OptionEntry OptionName="T" x:Uid="AOptionT"></local:OptionEntry>
-                                <local:OptionEntry OptionName="O" x:Uid="AOptionO"></local:OptionEntry>
-                            </local:OptionEntry.MultiSelectOptions>
-                        </local:OptionEntry>
-                        <local:OptionEntry OptionName="/XC" x:Uid="XCOption"/>
-                        <local:OptionEntry OptionName="/XN" x:Uid="XNOption"/>
-                        <local:OptionEntry OptionName="/XO" x:Uid="XOOption"/>
-                        <local:OptionEntry OptionName="/XX" x:Uid="XXOption"/>
-                        <local:OptionEntry OptionName="/XL" x:Uid="XLOption"/>
-                        <local:OptionEntry OptionName="/IS" x:Uid="ISOption"/>
-                        <local:OptionEntry OptionName="/IT" x:Uid="ITOption"/>
-                        <local:OptionEntry OptionName="/MAX" x:Uid="MAXOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MIN" x:Uid="MINOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MAXAGE" x:Uid="MAXAGEOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MINAGE" x:Uid="MINAGEOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MAXLAD" x:Uid="MAXLADOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/MINLAD" x:Uid="MINLADOption" IsNumberOption="True"/>
-                        <local:OptionEntry OptionName="/FFT" x:Uid="FFTOption"/>
-                        <local:OptionEntry OptionName="/DST" x:Uid="DSTOption"/>
-                        <local:OptionEntry OptionName="/XJ" x:Uid="XJOption"/>
-                        <local:OptionEntry OptionName="/XJD" x:Uid="XJDOption"/>
-                        <local:OptionEntry OptionName="/XJF" x:Uid="XJFOption"/>
-                        <local:OptionEntry OptionName="/IM" x:Uid="IMOption"/>
-                        <local:OptionEntry OptionName="/XF" x:Uid="XFOption" IsTextOption="True"/>
-                        <local:OptionEntry OptionName="/XD" x:Uid="XDOption" IsTextOption="True"/>
-                    </StackPanel>
+                    <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
                 </Grid>
                 <Grid x:Name="LoggingContent" Margin="12">
-                    <StackPanel x:Name="LoggingOptions">
-                        <local:OptionEntry OptionName="/L" x:Uid="LOption"/>
-                        <local:OptionEntry OptionName="/X" x:Uid="XOption"/>
-                        <local:OptionEntry OptionName="/V" x:Uid="VOption"/>
-                        <local:OptionEntry OptionName="/TS" x:Uid="TSOption"/>
-                        <local:OptionEntry OptionName="/FP" x:Uid="FPOption"/>
-                        <local:OptionEntry OptionName="/BYTES" x:Uid="BYTESOption"/>
-                        <local:OptionEntry OptionName="/NS" x:Uid="NSOption"/>
-                        <local:OptionEntry OptionName="/NC" x:Uid="NCOption"/>
-                        <local:OptionEntry OptionName="/NFL" x:Uid="NFLOption"/>
-                        <local:OptionEntry OptionName="/NDL" x:Uid="NDLOption"/>
-                        <local:OptionEntry OptionName="/NP" x:Uid="NPOption"/>
-                        <local:OptionEntry OptionName="/ETA" x:Uid="ETAOption"/>
-                        <local:OptionEntry OptionName="/LOG" x:Uid="LOGOption" IsTextOption="True"/>
-                        <local:OptionEntry OptionName="/LOG+" x:Uid="LOGPlusOption" IsTextOption="True"/>
-                        <local:OptionEntry OptionName="/UNILOG" x:Uid="UNILOGOption" IsTextOption="True"/>
-                        <local:OptionEntry OptionName="/UNILOG+" x:Uid="UNILOGPlusOption" IsTextOption="True"/>
-                        <local:OptionEntry OptionName="/TEE" x:Uid="TEEOption"/>
-                        <local:OptionEntry OptionName="/NJH" x:Uid="NJHOption"/>
-                        <local:OptionEntry OptionName="/NJS" x:Uid="NJSOption"/>
-                        <local:OptionEntry OptionName="/UNICODE" x:Uid="UNICODEOption"/>
-                    </StackPanel>
+                    <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
                 </Grid>
                 <Grid x:Name="AdvancedContent" Margin="12">
-                    <StackPanel x:Name="AdvancedOptions">
-                        <local:OptionEntry OptionName="/QUIT" x:Uid="QUITOption"/>
-                        <!-- TODO: Do not require the fields if these are checked -->
-                        <local:OptionEntry OptionName="/NOSD" x:Uid="NOSDOption" x:Name="NOSDOption"/>
-                        <local:OptionEntry OptionName="/NODD" x:Uid="NODDOption" x:Name="NODDOption"/>
-                    </StackPanel>
+                    <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
                 </Grid>
                 <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
                     <TextBox x:Name="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
