@@ -1767,7 +1767,7 @@ internal sealed class IconLoadDiagnosticsSession
         AppendValue(builder, "Later cache-hit requests", retainedResultCacheHits);
         withoutRequesterToWorkerStart.Append(builder, "No-requester time before worker start");
         withoutRequesterToCompletion.Append(builder, "No-requester time before load completion");
-        builder.AppendLine("  Scope: UI IconBox requests and IconLoader work only. Extension-side icon-data preloading, including CommandItemViewModel.InitializeProperties reading AppListItem.Icon for Installed Apps, occurs before this pipeline and is not classified as unused work.");
+        builder.AppendLine("  Scope: UI IconBox requests and IconLoader work only. Installed Apps icon extraction enters this pipeline as SpecializedAppIcon work. Other extension-side icon-data preloading before this pipeline is not classified as unused work.");
     }
 
     private void AppendDemandQueueMeasurements(StringBuilder builder)

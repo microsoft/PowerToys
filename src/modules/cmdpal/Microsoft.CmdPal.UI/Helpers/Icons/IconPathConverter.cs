@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -22,11 +23,30 @@ internal static partial class IconPathConverter
     private const string InvalidGlyph = "\u25CC";
     private const int DefaultBinaryIconSize = 256;
 
-    public static PreparedIcon Prepare(string iconPath, string? fontFamily, int targetSize)
+    public static PreparedIcon Prepare(
+        string iconPath,
+        string? fontFamily,
+        int targetSize,
+        ElementTheme theme = ElementTheme.Default)
     {
         if (string.IsNullOrEmpty(iconPath))
         {
             return PreparedIcon.Empty();
+        }
+
+        if (IconProtocolRegistry.Find(iconPath) is { } protocolProcessor)
+        {
+            try
+            {
+                return protocolProcessor.TryPrepareSynchronously(iconPath, targetSize, theme, out var protocolIcon)
+                    ? protocolIcon
+                    : PreparedIcon.Empty();
+            }
+            catch
+            {
+                // A claimed protocol must not fall through and become a glyph or URI.
+                return PreparedIcon.Empty();
+            }
         }
 
         if (IconPathParser.TryParseBinaryIconReference(iconPath, out var binaryIcon))
@@ -47,6 +67,47 @@ internal static partial class IconPathConverter
         var glyph = glyphKind == FontIconGlyphKind.Invalid ? InvalidGlyph : iconPath;
         var family = FontIconGlyphClassifier.GetFontFamily(glyphKind, fontFamily);
         return PreparedIcon.FromGlyph(glyph, family, targetSize > 0 ? targetSize : 8);
+    }
+
+    public static PreparedIcon PrepareFirstAvailable(
+        ReadOnlySpan<string> candidates,
+        string? fontFamily,
+        int targetSize,
+        ElementTheme theme = ElementTheme.Default)
+    {
+        foreach (var candidate in candidates)
+        {
+            PreparedIcon prepared;
+            try
+            {
+                prepared = Prepare(candidate, fontFamily, targetSize, theme);
+            }
+            catch
+            {
+                // Failed candidate must not prevent later candidates from being tried.
+                continue;
+            }
+
+            // Ordinary conversion can produce an empty source or a placeholder glyph.
+            // Neither should stop an ordered fallback search.
+            var isAvailable = prepared.Kind switch
+            {
+                PreparedIconKind.Empty => false,
+                PreparedIconKind.Binary => prepared.SoftwareBitmap is not null,
+                PreparedIconKind.Glyph => FontIconGlyphClassifier.IsGlyphCandidate(candidate),
+                PreparedIconKind.BitmapUri or PreparedIconKind.SvgUri => !prepared.Uri!.IsFile || File.Exists(prepared.Uri.LocalPath),
+                _ => false,
+            };
+
+            if (isAvailable)
+            {
+                return prepared;
+            }
+
+            prepared.Dispose();
+        }
+
+        return PreparedIcon.Empty();
     }
 
     public static Task<IconSource> CreateIconSourceAsync(PreparedIcon icon)
