@@ -7,6 +7,8 @@
 
 #include <LauncherUIHelper.h>
 #include <WindowArrangerHelper.h>
+#include <WorkspacesLib/PendingLaunchApproval.h>
+#include <thread>
 
 class Launcher
 {
@@ -21,6 +23,11 @@ private:
     const std::chrono::steady_clock::time_point m_start;
     std::atomic<bool> m_launchedSuccessfully{};
     LaunchingStatus m_launchingStatus;
+    PendingLaunchApproval m_approval;
+    std::atomic<bool> m_uiFailed{};
+    std::atomic<bool> m_launchStarted{};
+    std::mutex m_launchThreadMutex;
+    std::thread m_launchThread;
 
     std::unique_ptr<LauncherUIHelper> m_uiHelper;
     std::mutex m_uiHelperMutex;
@@ -34,4 +41,6 @@ private:
     void Launch();
     void handleWindowArrangerMessage(const std::wstring& msg);
     void handleUIMessage(const std::wstring& msg);
+    void handleUIFailure(LauncherIpcFailure failure);
+    LaunchDecision requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result);
 };
