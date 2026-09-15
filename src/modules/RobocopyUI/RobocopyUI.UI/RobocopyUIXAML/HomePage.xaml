@@ -279,6 +279,12 @@
                     <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+                    <Button Margin="0,12,0,12" Click="LoadButton_Click" x:Name="LoadButton">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE78C;" />
+                            <TextBlock Margin="4,0,0,0" x:Uid="LoadButtonLabel" />
+                        </StackPanel>
+                    </Button>
                     <Button Margin="0,12,0,12" Click="SaveButton_Click" x:Name="SaveButton">
                         <StackPanel Orientation="Horizontal">
                             <FontIcon Glyph="&#xE78C;" />

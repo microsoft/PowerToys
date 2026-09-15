@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
@@ -274,6 +275,27 @@ namespace RobocopyUI
             }
 
             DestinationTextBox.Text = result.Path;
+        }
+
+        private async void LoadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            FileOpenPicker fileOpenPicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
+            fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            fileOpenPicker.FileTypeFilter.Add(".rcj");
+            var result = await fileOpenPicker.PickSingleFileAsync();
+            if (result is null)
+            {
+                return;
+            }
+
+            RCJParser parser = new(await File.ReadAllTextAsync(result.Path));
+
+            var commands = parser.Parse();
+
+            foreach (var command in commands)
+            {
+
+            }
         }
     }
 }
