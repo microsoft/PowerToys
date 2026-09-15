@@ -23,4 +23,11 @@ Describe 'Native test task diagnostic inputs' {
         $nativeTask.Contains('CollectDump') | Should Be $false
         $nativeTask.Contains('TestSessionTimeout') | Should Be $false
     }
+
+    It 'scopes temporary stack collection to this PR and always stops the watcher' {
+        $template.Contains("-Action Start") | Should Be $true
+        $template.Contains("-Action Stop") | Should Be $true
+        $template.Contains("condition: and(always(), ne(variables['BuildPlatform'], 'arm64'), eq(variables['System.PullRequest.PullRequestNumber'], '50508'))") | Should Be $true
+        $template.Contains('-BinariesDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)"') | Should Be $true
+    }
 }
