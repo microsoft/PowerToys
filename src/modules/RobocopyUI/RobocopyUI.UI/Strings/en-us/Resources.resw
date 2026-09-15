@@ -367,13 +367,13 @@
     <value>Advanced</value>
   </data>
   <data name="FiltersContentHeaderLabel.Text" xml:space="preserve">
-    <value>FILTER CONTENT HERE</value>
+    <value>Filter options</value>
   </data>
   <data name="LoggingContentHeaderLabel.Text" xml:space="preserve">
-    <value>LOGGING CONTENT HERE</value>
+    <value>Logging options</value>
   </data>
   <data name="AdvancedContentHeaderLabel.Text" xml:space="preserve">
-    <value>ADVANCED CONTENT HERE</value>
+    <value>Advanced options</value>
   </data>
   <data name="FiltersSelectorBarLabel.Text" xml:space="preserve">
     <value>Filters</value>

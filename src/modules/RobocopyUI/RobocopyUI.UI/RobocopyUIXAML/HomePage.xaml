@@ -9,6 +9,26 @@
     xmlns:models="using:RobocopyUI.Models"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
+            <controls:OptionEntry
+                OptionName="{x:Bind OptionName}"
+                OptionDescription="{Binding OptionDescription}"
+                IsNumberOption="{Binding IsNumberOption}"
+                IsMultiSelectOption="{Binding IsMultiSelectOption}"
+                MultiSelectOptions="{Binding MultiSelectOptions}"
+                IsRunHoursOption="{Binding IsRunHoursOption}"
+                IsStorageOption="{Binding IsStorageOption}"
+                IsTextOption="{Binding IsTextOption}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="OptionGroupStyleHeaderTemplate">
+            <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
+        </DataTemplate>
+
+        <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+    </Page.Resources>
+
     <ScrollViewer>
         <StackPanel Margin="12">
             <TextBlock Margin="4" x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}" />
@@ -79,107 +99,36 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <ListView x:Name="OptionsListView" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:OptionContent">
-                                <controls:OptionEntry
-                                    OptionName="{Binding OptionName}"
-                                    OptionDescription="{Binding OptionDescription}"
-                                    IsNumberOption="{Binding IsNumberOption}"
-                                    IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                                    MultiSelectOptions="{Binding MultiSelectOptions}"
-                                    IsRunHoursOption="{Binding IsRunHoursOption}"
-                                    IsStorageOption="{Binding IsStorageOption}"
-                                    IsTextOption="{Binding IsTextOption}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
+                    <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                         <ListView.GroupStyle>
-                            <GroupStyle>
-                                <GroupStyle.HeaderTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
-                                    </DataTemplate>
-                                </GroupStyle.HeaderTemplate>
-                            </GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
                         </ListView.GroupStyle>
                     </ListView>
-                    <ListView x:Name="OptionsListViewRight" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:OptionContent">
-                                <controls:OptionEntry
-                                    OptionName="{Binding OptionName}"
-                                    OptionDescription="{Binding OptionDescription}"
-                                    IsNumberOption="{Binding IsNumberOption}"
-                                    IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                                    MultiSelectOptions="{Binding MultiSelectOptions}"
-                                    IsRunHoursOption="{Binding IsRunHoursOption}"
-                                    IsStorageOption="{Binding IsStorageOption}"
-                                    IsTextOption="{Binding IsTextOption}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
+                    <ListView x:Name="OptionsListViewRight" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
                         <ListView.GroupStyle>
-                            <GroupStyle>
-                                <GroupStyle.HeaderTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
-                                    </DataTemplate>
-                                </GroupStyle.HeaderTemplate>
-                            </GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
                         </ListView.GroupStyle>
                     </ListView>
                 </Grid>
                 <Grid x:Name="FiltersContent" Margin="12">
-                    <StackPanel>
-                        <TextBlock x:Uid="FileSelectionOptionsLabel" Style="{StaticResource BodyLargeStrongTextBlockStyle}" />
-                        <ListView x:Name="FilterOptionsListView" SelectionMode="None" IsItemClickEnabled="False">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="models:OptionContent">
-                                    <controls:OptionEntry
-                                        OptionName="{x:Bind OptionName}"
-                                        OptionDescription="{Binding OptionDescription}"
-                                        IsNumberOption="{Binding IsNumberOption}"
-                                        IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                                        MultiSelectOptions="{Binding MultiSelectOptions}"
-                                        IsRunHoursOption="{Binding IsRunHoursOption}"
-                                        IsStorageOption="{Binding IsStorageOption}"
-                                        IsTextOption="{Binding IsTextOption}" />
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
+                    <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
                 </Grid>
                 <Grid x:Name="LoggingContent" Margin="12">
-                    <ListView x:Name="LoggingOptionsListView" SelectionMode="None" IsItemClickEnabled="False">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:OptionContent">
-                                <controls:OptionEntry
-                                    OptionName="{Binding OptionName}"
-                                    OptionDescription="{Binding OptionDescription}"
-                                    IsNumberOption="{Binding IsNumberOption}"
-                                    IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                                    MultiSelectOptions="{Binding MultiSelectOptions}"
-                                    IsRunHoursOption="{Binding IsRunHoursOption}"
-                                    IsStorageOption="{Binding IsStorageOption}"
-                                    IsTextOption="{Binding IsTextOption}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
+                    <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
                     </ListView>
                 </Grid>
                 <Grid x:Name="AdvancedContent" Margin="12">
-                    <ListView x:Name="AdvancedOptionsListView" SelectionMode="None" IsItemClickEnabled="False">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:OptionContent">
-                                <controls:OptionEntry
-                                    OptionName="{Binding OptionName}"
-                                    OptionDescription="{Binding OptionDescription}"
-                                    IsNumberOption="{Binding IsNumberOption}"
-                                    IsMultiSelectOption="{Binding IsMultiSelectOption}"
-                                    MultiSelectOptions="{Binding MultiSelectOptions}"
-                                    IsRunHoursOption="{Binding IsRunHoursOption}"
-                                    IsStorageOption="{Binding IsStorageOption}"
-                                    IsTextOption="{Binding IsTextOption}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
+                    <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
                     </ListView>
                 </Grid>
                 <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
