@@ -45,7 +45,10 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
+    <ItemsRepeater
+        x:Name="DashboardView"
+        ElementPrepared="OnElementPrepared"
+        ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
         <ItemsRepeater.Layout>
             <StackLayout Orientation="Vertical" Spacing="0" />
         </ItemsRepeater.Layout>
