@@ -16,8 +16,10 @@
             x:Name="ZoomImage"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            DiagnosticScope="Viewer"
             IsTabStop="False"
             RenderTransformOrigin="0.5,0.5"
+            RequestSite="Image"
             SourceRequested="{x:Bind help:IconProvider.SourceRequestedOriginal}">
             <controls:IconBox.RenderTransform>
                 <TransformGroup>

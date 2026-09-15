@@ -147,7 +147,8 @@ public class CachedIconSourceProviderTests
             Size iconSize,
             double scale,
             TaskCompletionSource<IconSource?> tcs,
-            IconLoadPriority priority)
+            IconLoadPriority priority,
+            IconLoadMeasurement? diagnostics = null)
         {
             Interlocked.Increment(ref _enqueueCount);
             if (!AcceptLoads)
