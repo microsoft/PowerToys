@@ -2257,6 +2257,17 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsPngFile.Header" xml:space="preserve">
     <value>Paste as .png file</value>
   </data>
+  <data name="PasteAsJpgFile.Header" xml:space="preserve">
+    <value>Paste as .jpg file</value>
+  </data>
+  <data name="PasteAsJpgQuality.Header" xml:space="preserve">
+    <value>JPEG quality level</value>
+    <comment>JPEG is the image compression format, used when pasting the clipboard image as a .jpg file</comment>
+  </data>
+  <data name="PasteAsJpgQuality.Description" xml:space="preserve">
+    <value>Higher values produce better image quality but larger files</value>
+    <comment>Describes the JPEG quality level slider</comment>
+  </data>
   <data name="PasteAsHtmlFile.Header" xml:space="preserve">
     <value>Paste as .html file</value>
   </data>

@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public static readonly HotkeySettings DefaultPasteAsPlainTextShortcut = new HotkeySettings(true, true, true, false, 0x56); // Ctrl+Win+Alt+V
 
+        public const int DefaultPasteAsJpgQuality = 90;
+
         public AdvancedPasteProperties()
         {
             AdvancedPasteUIShortcut = DefaultAdvancedPasteUIShortcut;
@@ -30,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
             AutoCopySelectionForCustomActionHotkey = false;
+            PasteAsJpgQuality = new IntProperty(DefaultPasteAsJpgQuality);
             PasteAIConfiguration = new();
         }
 
@@ -106,6 +109,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("additional-actions")]
         [CmdConfigureIgnoreAttribute]
         public AdvancedPasteAdditionalActions AdditionalActions { get; set; }
+
+        [JsonPropertyName("paste-as-jpg-quality")]
+        public IntProperty PasteAsJpgQuality { get; set; }
 
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]
