@@ -66,14 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public List<object> Keys
         {
             get => (List<object>)GetValue(KeysProperty);
-
-            set
-            {
-if (!JudgeIfKeyValueSame(value))
-                {
-                    SetValue(KeysProperty, value);
-                }
-            }
+            set => SetValue(KeysProperty, value);
         }
 
         public bool IsError
