@@ -146,6 +146,30 @@
     <value>Hide</value>
     <comment>Tooltip for hiding the selected translated text card</comment>
   </data>
+  <data name="OriginalTextButton.Content" xml:space="preserve">
+    <value>Original</value>
+    <comment>Shows the original OCR text in the selected card</comment>
+  </data>
+  <data name="OriginalTextButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Show original text</value>
+    <comment>Accessible name for toggling the selected card between original and translated text</comment>
+  </data>
+  <data name="OriginalTextButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show original text</value>
+    <comment>Tooltip for toggling the selected card between original and translated text</comment>
+  </data>
+  <data name="TranslatedTextButton.Content" xml:space="preserve">
+    <value>Translated</value>
+    <comment>Shows the translated text in the selected card</comment>
+  </data>
+  <data name="TranslatedTextButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Show translated text</value>
+    <comment>Accessible name for returning the selected card to translated text</comment>
+  </data>
+  <data name="TranslatedTextButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show translated text</value>
+    <comment>Tooltip for returning the selected card to translated text</comment>
+  </data>
   <data name="EditCardButton.AutomationProperties.Name" xml:space="preserve">
     <value>Edit translated text</value>
     <comment>Accessible name for editing the selected translated text</comment>
@@ -235,19 +259,19 @@
     <comment>Labels the whole-capture language controls</comment>
   </data>
   <data name="CardSourceLanguageLabel.Text" xml:space="preserve">
-    <value>From</value>
+    <value>Source Language</value>
     <comment>Labels the source language selector for a card</comment>
   </data>
   <data name="CardTargetLanguageLabel.Text" xml:space="preserve">
-    <value>To</value>
+    <value>Target Language</value>
     <comment>Labels the target language selector for a card</comment>
   </data>
   <data name="OverallSourceLanguageLabel.Text" xml:space="preserve">
-    <value>From</value>
+    <value>Source Language</value>
     <comment>Labels the source language selector for the capture</comment>
   </data>
   <data name="OverallTargetLanguageLabel.Text" xml:space="preserve">
-    <value>To</value>
+    <value>Target Language</value>
     <comment>Labels the target language selector for the capture</comment>
   </data>
   <data name="CardSourceAuto.Content" xml:space="preserve"><value>Auto detect</value></data>

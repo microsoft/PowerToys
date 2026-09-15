@@ -12,6 +12,7 @@ using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -19,6 +20,7 @@ using ScreenTranslator.Core.Layout;
 using ScreenTranslator.Core.Translation;
 using ScreenTranslator.Helpers;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -46,6 +48,9 @@ public sealed partial class ResultOverlay : TransparentWindow
         double Top,
         double Width,
         double MinHeight)> _initialAppearance = new();
+
+    private readonly Dictionary<int, string> _translatedTexts = new();
+    private readonly HashSet<int> _showingOriginalText = new();
 
     private readonly DispatcherQueueTimer _windowSwitchTimer;
     private readonly IntPtr _sourceWindow;
@@ -255,7 +260,6 @@ public sealed partial class ResultOverlay : TransparentWindow
                 TextWrapping = TextWrapping.Wrap,
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            ToolTipService.SetToolTip(card, $"Original: {line.OriginalText}");
             card.PointerPressed += Card_PointerPressed;
             card.PointerMoved += Card_PointerMoved;
             card.PointerReleased += Card_PointerReleased;
@@ -278,10 +282,38 @@ public sealed partial class ResultOverlay : TransparentWindow
                 topDip,
                 card.Width,
                 card.MinHeight);
+            _translatedTexts[lineIndex] = line.TranslatedText;
 
             ResultCanvas.Children.Add(card);
             _cardHitRegions.Add((line.BoundingBox, card));
         }
+    }
+
+    private void OriginalTextButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contextMenuLine is null ||
+            _contextMenuCard is null ||
+            _contextMenuLineIndex < 0 ||
+            _contextMenuCard.Child is not TextBlock textBlock)
+        {
+            return;
+        }
+
+        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
+        if (_showingOriginalText.Remove(_contextMenuLineIndex))
+        {
+            textBlock.Text = _translatedTexts[_contextMenuLineIndex];
+            SetOriginalTextButtonState(resources, showOriginalText: true);
+        }
+        else
+        {
+            _showingOriginalText.Add(_contextMenuLineIndex);
+            textBlock.Text = _contextMenuLine.OriginalText;
+            SetOriginalTextButtonState(resources, showOriginalText: false);
+        }
+
+        textBlock.InvalidateMeasure();
+        _contextMenuCard.InvalidateMeasure();
     }
 
     private void ShowCardContextMenu(Border card, int lineIndex, TranslatedLine line)
@@ -311,6 +343,8 @@ public sealed partial class ResultOverlay : TransparentWindow
 
         SelectLanguage(CardSourceLanguageComboBox, _sourceLanguage);
         SelectLanguage(CardTargetLanguageComboBox, _targetLanguage);
+        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
+        SetOriginalTextButtonState(resources, !_showingOriginalText.Contains(lineIndex));
 
         PositionContextMenu(card);
         ContextMenuCanvas.IsHitTestVisible = true;
@@ -428,6 +462,11 @@ public sealed partial class ResultOverlay : TransparentWindow
             VerticalAlignment = VerticalAlignment.Center,
         };
         _editingCard.Child = textBlock;
+        if (_contextMenuLineIndex >= 0 && !_showingOriginalText.Contains(_contextMenuLineIndex))
+        {
+            _translatedTexts[_contextMenuLineIndex] = textBlock.Text;
+        }
+
         Logger.LogInfo($"Committed edited overlay text for line {_contextMenuLineIndex}.");
         ClearEditState();
     }
@@ -585,6 +624,9 @@ public sealed partial class ResultOverlay : TransparentWindow
             textBlock.InvalidateMeasure();
             card.InvalidateMeasure();
             _hiddenLineIndices.Remove(_contextMenuLineIndex);
+            _showingOriginalText.Remove(_contextMenuLineIndex);
+            _translatedTexts[_contextMenuLineIndex] = initial.Text;
+            SetOriginalTextButtonState(ResourceLoader.GetForViewIndependentUse(), showOriginalText: true);
             PositionContextMenu(card);
 
             Logger.LogInfo($"Restored initial overlay text, appearance, and position for line {_contextMenuLineIndex}.");
@@ -639,7 +681,12 @@ public sealed partial class ResultOverlay : TransparentWindow
 
         if (card.Child is TextBlock textBlock)
         {
-            textBlock.Text = result.Lines[0].TranslatedText;
+            _translatedTexts[cardLineIndex] = result.Lines[0].TranslatedText;
+            if (!_showingOriginalText.Contains(cardLineIndex))
+            {
+                textBlock.Text = _translatedTexts[cardLineIndex];
+            }
+
             textBlock.InvalidateMeasure();
             card.InvalidateMeasure();
         }
@@ -650,6 +697,23 @@ public sealed partial class ResultOverlay : TransparentWindow
         return comboBox.SelectedItem is ComboBoxItem item && item.Tag is string tag && !string.IsNullOrWhiteSpace(tag)
             ? tag
             : fallback;
+    }
+
+    private void SetOriginalTextButtonState(ResourceLoader resources, bool showOriginalText)
+    {
+        string contentKey = showOriginalText
+            ? "OriginalTextButton/Content"
+            : "TranslatedTextButton/Content";
+        string accessibleNameKey = showOriginalText
+            ? "OriginalTextButton/AutomationProperties/Name"
+            : "TranslatedTextButton/AutomationProperties/Name";
+        string tooltipKey = showOriginalText
+            ? "OriginalTextButton/ToolTipService/ToolTip"
+            : "TranslatedTextButton/ToolTipService/ToolTip";
+
+        OriginalTextButton.Content = resources.GetString(contentKey);
+        AutomationProperties.SetName(OriginalTextButton, resources.GetString(accessibleNameKey));
+        ToolTipService.SetToolTip(OriginalTextButton, resources.GetString(tooltipKey));
     }
 
     private static void SelectLanguage(ComboBox comboBox, string language)

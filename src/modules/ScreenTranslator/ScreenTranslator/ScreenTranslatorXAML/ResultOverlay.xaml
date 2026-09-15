@@ -33,6 +33,13 @@
                         Content="Hide"
                         Padding="8,4" />
                     <Button
+                        x:Name="OriginalTextButton"
+                        x:Uid="OriginalTextButton"
+                        AutomationProperties.AutomationId="BtnToggleOriginalText"
+                        Click="OriginalTextButton_Click"
+                        Content="Original"
+                        Padding="8,4" />
+                    <Button
                         x:Name="EditCardButton"
                         x:Uid="EditCardButton"
                         AutomationProperties.AutomationId="BtnEditOverlayText"
@@ -121,7 +128,7 @@
                             <TextBlock
                                 x:Uid="CardSourceLanguageLabel"
                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="From"
+                                Text="Source Language"
                                 VerticalAlignment="Center" />
                             <ComboBox
                                 x:Name="CardSourceLanguageComboBox"
@@ -140,7 +147,7 @@
                             <TextBlock
                                 x:Uid="CardTargetLanguageLabel"
                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="To"
+                                Text="Target Language"
                                 VerticalAlignment="Center" />
                             <ComboBox
                                 x:Name="CardTargetLanguageComboBox"
@@ -213,7 +220,7 @@
                         <TextBlock
                             x:Uid="OverallSourceLanguageLabel"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="From"
+                            Text="Source Language"
                             VerticalAlignment="Center" />
                         <ComboBox
                             x:Name="OverallSourceLanguageComboBox"
@@ -232,7 +239,7 @@
                         <TextBlock
                             x:Uid="OverallTargetLanguageLabel"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="To"
+                            Text="Target Language"
                             VerticalAlignment="Center" />
                         <ComboBox
                             x:Name="OverallTargetLanguageComboBox"
