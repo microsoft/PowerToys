@@ -20,7 +20,6 @@ using ScreenTranslator.Core.Layout;
 using ScreenTranslator.Core.Translation;
 using ScreenTranslator.Helpers;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.Resources;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -299,20 +298,19 @@ public sealed partial class ResultOverlay : TransparentWindow
             return;
         }
 
-        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
         if (_showingOriginalText.Remove(_contextMenuLineIndex))
         {
             textBlock.Text = _translatedTexts[_contextMenuLineIndex];
-            SetOriginalTextButtonState(resources, showOriginalText: true);
+            SetOriginalTextButtonState(showOriginalText: true);
         }
         else
         {
             _showingOriginalText.Add(_contextMenuLineIndex);
             textBlock.Text = _contextMenuLine.OriginalText;
-            SetOriginalTextButtonState(resources, showOriginalText: false);
+            SetOriginalTextButtonState(showOriginalText: false);
         }
 
-        SetOriginalAllTextButtonState(resources, _showingOriginalText.Count != _lines.Count);
+        SetOriginalAllTextButtonState(_showingOriginalText.Count != _lines.Count);
         textBlock.InvalidateMeasure();
         _contextMenuCard.InvalidateMeasure();
     }
@@ -325,9 +323,8 @@ public sealed partial class ResultOverlay : TransparentWindow
 
         SelectLanguage(CardSourceLanguageComboBox, _sourceLanguage);
         SelectLanguage(CardTargetLanguageComboBox, _targetLanguage);
-        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
-        SetOriginalTextButtonState(resources, !_showingOriginalText.Contains(lineIndex));
-        SetOriginalAllTextButtonState(resources, _showingOriginalText.Count != _lines.Count);
+        SetOriginalTextButtonState(!_showingOriginalText.Contains(lineIndex));
+        SetOriginalAllTextButtonState(_showingOriginalText.Count != _lines.Count);
 
         PositionContextMenu(card);
         CardContextMenu.Visibility = Visibility.Visible;
@@ -400,11 +397,10 @@ public sealed partial class ResultOverlay : TransparentWindow
             _cardHitRegions[lineIndex].Card.InvalidateMeasure();
         }
 
-        ResourceLoader resources = ResourceLoader.GetForViewIndependentUse();
-        SetOriginalAllTextButtonState(resources, !showOriginalText);
+        SetOriginalAllTextButtonState(!showOriginalText);
         if (_contextMenuLineIndex >= 0)
         {
-            SetOriginalTextButtonState(resources, !_showingOriginalText.Contains(_contextMenuLineIndex));
+            SetOriginalTextButtonState(!_showingOriginalText.Contains(_contextMenuLineIndex));
         }
     }
 
@@ -665,10 +661,8 @@ public sealed partial class ResultOverlay : TransparentWindow
             _hiddenLineIndices.Remove(_contextMenuLineIndex);
             _showingOriginalText.Remove(_contextMenuLineIndex);
             _translatedTexts[_contextMenuLineIndex] = initial.Text;
-            SetOriginalTextButtonState(ResourceLoader.GetForViewIndependentUse(), showOriginalText: true);
-            SetOriginalAllTextButtonState(
-                ResourceLoader.GetForViewIndependentUse(),
-                _showingOriginalText.Count != _lines.Count);
+            SetOriginalTextButtonState(showOriginalText: true);
+            SetOriginalAllTextButtonState(_showingOriginalText.Count != _lines.Count);
             PositionContextMenu(card);
 
             Logger.LogInfo($"Restored initial overlay text, appearance, and position for line {_contextMenuLineIndex}.");
@@ -741,38 +735,14 @@ public sealed partial class ResultOverlay : TransparentWindow
             : fallback;
     }
 
-    private void SetOriginalTextButtonState(ResourceLoader resources, bool showOriginalText)
+    private void SetOriginalTextButtonState(bool showOriginalText)
     {
-        string contentKey = showOriginalText
-            ? "OriginalTextButton/Content"
-            : "TranslatedTextButton/Content";
-        string accessibleNameKey = showOriginalText
-            ? "OriginalTextButton/AutomationProperties/Name"
-            : "TranslatedTextButton/AutomationProperties/Name";
-        string tooltipKey = showOriginalText
-            ? "OriginalTextButton/ToolTipService/ToolTip"
-            : "TranslatedTextButton/ToolTipService/ToolTip";
-
-        OriginalTextButton.Content = resources.GetString(contentKey);
-        AutomationProperties.SetName(OriginalTextButton, resources.GetString(accessibleNameKey));
-        ToolTipService.SetToolTip(OriginalTextButton, resources.GetString(tooltipKey));
+        OriginalTextButton.Content = showOriginalText ? "Original" : "Translated";
     }
 
-    private void SetOriginalAllTextButtonState(ResourceLoader resources, bool showOriginalText)
+    private void SetOriginalAllTextButtonState(bool showOriginalText)
     {
-        string contentKey = showOriginalText
-            ? "OriginalAllTextButton/Content"
-            : "TranslatedAllTextButton/Content";
-        string accessibleNameKey = showOriginalText
-            ? "OriginalAllTextButton/AutomationProperties/Name"
-            : "TranslatedAllTextButton/AutomationProperties/Name";
-        string tooltipKey = showOriginalText
-            ? "OriginalAllTextButton/ToolTipService/ToolTip"
-            : "TranslatedAllTextButton/ToolTipService/ToolTip";
-
-        OriginalAllTextButton.Content = resources.GetString(contentKey);
-        AutomationProperties.SetName(OriginalAllTextButton, resources.GetString(accessibleNameKey));
-        ToolTipService.SetToolTip(OriginalAllTextButton, resources.GetString(tooltipKey));
+        OriginalAllTextButton.Content = showOriginalText ? "Original" : "Translated";
     }
 
     private static void SelectLanguage(ComboBox comboBox, string language)
