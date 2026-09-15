@@ -87,7 +87,7 @@ public sealed partial class HomePage : Page
         StringBuilder additionalArgs = new();
         foreach (var option in OptionsListView.Items)
         {
-            if (OptionsListView.ContainerFromItem(option) is ListViewItem container && container.ContentTemplateRoot is Controls.OptionEntry entry)
+            if (OptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
             {
                 additionalArgs.Append(entry.GetCommandLine());
                 if (!string.IsNullOrEmpty(entry.GetCommandLine()))
@@ -99,7 +99,7 @@ public sealed partial class HomePage : Page
 
         foreach (var option in FilterOptionsListView.Items)
         {
-            if (FilterOptionsListView.ContainerFromItem(option) is ListViewItem container && container.ContentTemplateRoot is Controls.OptionEntry entry)
+            if (FilterOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
             {
                 additionalArgs.Append(entry.GetCommandLine());
                 if (!string.IsNullOrEmpty(entry.GetCommandLine()))
@@ -111,7 +111,7 @@ public sealed partial class HomePage : Page
 
         foreach (var option in LoggingOptionsListView.Items)
         {
-            if (LoggingOptionsListView.ContainerFromItem(option) is ListViewItem container && container.ContentTemplateRoot is Controls.OptionEntry entry)
+            if (LoggingOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
             {
                 additionalArgs.Append(entry.GetCommandLine());
                 if (!string.IsNullOrEmpty(entry.GetCommandLine()))
@@ -123,7 +123,7 @@ public sealed partial class HomePage : Page
 
         foreach (var option in AdvancedOptionsListView.Items)
         {
-            if (AdvancedOptionsListView.ContainerFromItem(option) is ListViewItem container && container.ContentTemplateRoot is Controls.OptionEntry entry)
+            if (AdvancedOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
             {
                 additionalArgs.Append(entry.GetCommandLine());
                 if (!string.IsNullOrEmpty(entry.GetCommandLine()))
@@ -146,7 +146,7 @@ public sealed partial class HomePage : Page
         OutputTextBox.Text = string.Empty;
         OutputSelectorBarItem.IsEnabled = true;
         OutputSelectorBarItem.IsSelected = true;
-        ProcessStartInfo startInfo = new ProcessStartInfo
+        var startInfo = new ProcessStartInfo
         {
             FileName = "robocopy.exe",
             Arguments = arguments,
@@ -156,7 +156,7 @@ public sealed partial class HomePage : Page
             CreateNoWindow = true,
         };
 
-        Process process = new Process
+        var process = new Process
         {
             StartInfo = startInfo,
             EnableRaisingEvents = true,
@@ -219,9 +219,7 @@ public sealed partial class HomePage : Page
 
     private void SwapButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        string temp = SourceTextBox.Text;
-        SourceTextBox.Text = DestinationTextBox.Text;
-        DestinationTextBox.Text = temp;
+        (SourceTextBox.Text, DestinationTextBox.Text) = (DestinationTextBox.Text, SourceTextBox.Text);
     }
 
     private async void SourceBrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
