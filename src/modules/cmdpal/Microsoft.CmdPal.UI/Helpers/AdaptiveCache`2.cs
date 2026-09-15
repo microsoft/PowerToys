@@ -19,6 +19,7 @@ internal sealed class AdaptiveCache<TKey, TValue>
     private readonly int _capacity;
     private readonly double _decayFactor;
     private readonly TimeSpan _decayInterval;
+    private readonly Action<TKey, TValue, AdaptiveCacheRemovalReason, int, int>? _removalCallback;
 
     private readonly ConcurrentDictionary<TKey, CacheEntry> _map;
     private readonly ConcurrentStack<CacheEntry> _pool = [];
@@ -33,11 +34,16 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
     internal int ApproximateCount => Volatile.Read(ref _entryCount);
 
-    public AdaptiveCache(int capacity = 384, TimeSpan? decayInterval = null, double decayFactor = 0.5)
+    public AdaptiveCache(
+        int capacity = 384,
+        TimeSpan? decayInterval = null,
+        double decayFactor = 0.5,
+        Action<TKey, TValue, AdaptiveCacheRemovalReason, int, int>? removalCallback = null)
     {
         _capacity = capacity;
         _decayInterval = decayInterval ?? TimeSpan.FromMinutes(5);
         _decayFactor = decayFactor;
+        _removalCallback = removalCallback;
         _map = new ConcurrentDictionary<TKey, CacheEntry>(Environment.ProcessorCount, capacity);
 
         _maintenanceCallback = static state =>
@@ -115,6 +121,12 @@ internal sealed class AdaptiveCache<TKey, TValue>
         if (_map.TryGetValue(key, out var existing))
         {
             existing.Update(tick);
+            _removalCallback?.Invoke(
+                key,
+                existing.Value,
+                AdaptiveCacheRemovalReason.Replaced,
+                ApproximateCount,
+                _capacity);
             existing.SetValue(value);
             return;
         }
@@ -142,11 +154,14 @@ internal sealed class AdaptiveCache<TKey, TValue>
         }
     }
 
-    public bool TryRemove(TKey key)
+    public bool TryRemove(TKey key) => TryRemove(key, AdaptiveCacheRemovalReason.Explicit);
+
+    private bool TryRemove(TKey key, AdaptiveCacheRemovalReason reason)
     {
         if (_map.TryRemove(key, out var evicted))
         {
             Interlocked.Decrement(ref _entryCount);
+            _removalCallback?.Invoke(key, evicted.Value, reason, ApproximateCount, _capacity);
             evicted.Clear();
             _pool.Push(evicted);
             return true;
@@ -161,7 +176,7 @@ internal sealed class AdaptiveCache<TKey, TValue>
         // while Keys snapshots under every stripe lock.
         foreach (var (key, _) in _map)
         {
-            TryRemove(key);
+            TryRemove(key, AdaptiveCacheRemovalReason.Clear);
         }
 
         Interlocked.Exchange(ref _currentTick, 0);
@@ -200,9 +215,12 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
             var score = CalculateScore(entry, currentTick);
 
-            if (score < 0.1 || ApproximateCount > _capacity)
+            var overCapacity = ApproximateCount > _capacity;
+            if (score < 0.1 || overCapacity)
             {
-                TryRemove(key);
+                TryRemove(
+                    key,
+                    overCapacity ? AdaptiveCacheRemovalReason.Capacity : AdaptiveCacheRemovalReason.LowScore);
             }
         }
     }
