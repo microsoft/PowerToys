@@ -22,13 +22,15 @@ namespace RobocopyUI.Models
 
         private bool isMultiSelectOption;
 
-        private List<OptionContent> multiSelectOptions = new();
+        private List<OptionContent> multiSelectOptions = [];
 
         private bool isRunHoursOption;
 
         private bool isStorageOption;
 
         private bool isTextOption;
+
+        private string groupName = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -90,6 +92,12 @@ namespace RobocopyUI.Models
         {
             get => isTextOption;
             set => SetProperty(ref isTextOption, value);
+        }
+
+        public string GroupName
+        {
+            get => groupName;
+            set => SetProperty(ref groupName, value);
         }
 
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
