@@ -50,12 +50,13 @@ Complete and validate each milestone before starting the next.
     path through the existing selection protocol. Catalog discovery, COM activation
     and window handoff are validated. See [CmdPal integration](CMDPAL-INTEGRATION.md)
     for registration and the remaining host-UI validation boundary.
-12. **Native Command Palette result actions — implemented; host validation pending**:
+12. **Native Command Palette result actions — implemented; provider tests passing**:
     built-in app/file search and folder-browser results expose **Open in Try Run**.
     Resolved Windows programs and shortcut arguments open the existing setup page;
-    files and folders use the selection workflow. The native host build requires
-    missing MSVC Spectre libraries. See [CmdPal integration](CMDPAL-INTEGRATION.md)
-    for build steps and the separate handoff tests.
+    files and folders use the selection workflow. Packaged desktop EXEs and Visual
+    Studio's AppX deployment layout are supported. Native provider and handoff
+    checks pass; the full menu walkthrough remains manual. See
+    [CmdPal integration](CMDPAL-INTEGRATION.md) for build and test steps.
 
 Installer, Runner/GPO registration and automatic write-back are outside this
 prototype. Multi-call lifecycle and additional backend entry points are pending

@@ -10,6 +10,11 @@ indexed file search, direct-path file results and the folder browser.
 - For Win32 apps, the action uses CmdPal's resolved executable path and shortcut
   arguments. EXE, PowerShell, CMD and BAT are supported. It never activates the
   shortcut through the host shell. UWP/AUMID and URL activation are not supported.
+- Packaged desktop applications, including Windows Notepad, also expose the
+  action when their manifest declares `Windows.FullTrustApplication` and a local
+  executable within the package. The manifest's EXE is passed to Try Run directly.
+  Apps that require package activation rather than direct EXE startup may still
+  fail during execution; the launcher does not fall back to host activation.
 - Files and folders open the existing input-selection workflow. A single EXE
   selects the application; scripts and supporting files use copied inputs.
   A document without an entry point still needs the user to choose a program.
@@ -35,7 +40,9 @@ indexed file search, direct-path file results and the folder browser.
    in the PowerToys output root. For another output location, set
    `POWERTOYS_TRYRUN_APP` to the absolute Try Run executable path in the environment
    used to start CmdPal. An invalid explicit override produces an error.
-4. Search for a Win32 app, select it, and open its action menu. Choose **Open in
+   Visual Studio's extra `CmdPal\AppX` deployment directory is recognized too.
+4. Search for a desktop app (for example **Notepad**), select it, and press
+   **Ctrl+K** to open its action menu. Choose **Open in
    Try Run**, check the prefilled program and arguments, then select **Run**.
 5. Repeat with a local `.ps1` or `.cmd` file, and with a folder containing a script.
    Opening the action alone must not execute anything. Running a script that
@@ -61,19 +68,36 @@ real-window handoff test. The normal Apps and Indexer test projects also contain
 result-menu regression tests. Try Run's tests cover prefilled arguments, unchanged
 permissions, configuration-only navigation, and 3,000 mutated handoff messages.
 
-The native CmdPal build is currently blocked by missing MSVC Spectre libraries
-(`MSB8040` in `version.vcxproj` and `Microsoft.CommandPalette.Extensions.vcxproj`).
-The native provider tests and complete CmdPal menu walkthrough require those
-prerequisites. No compiler security setting was disabled to bypass this failure.
+The missing MSVC Spectre prerequisites have now been installed. The Apps and
+Indexer test projects build successfully with exit code 0. For these projects,
+use `/restore`, `/p:EnableMSTestRunner=false` and
+`/p:CopyLocalLockFileAssemblies=true` when building for `vstest.console.exe`.
+This supplies the test host while preserving the repository's default test setup.
 
-Current x64 Debug validation: `TryRun.slnx`, including the standalone native-action
+The packaged-desktop/AppX fix passes **37/37** checks:
+
+- `tryrun-packaged-context.trx`: 11 native provider tests, including an installed
+  packaged desktop application's manifest, package-path validation, ordinary
+  app results, file search and folder browsing.
+- `packaged-handoff.trx`: 26 command/protocol tests, including both normal and
+  `AppX` deployment layouts and a real configuration-window handoff.
+
+The tested `Microsoft.CmdPal.Common.dll` and `Microsoft.CmdPal.Ext.Apps.dll` were
+copied into this workspace's registered `Microsoft.CommandPalette.Dev` AppX
+directory after backing up the previous files. Their hashes match the tested
+binaries. The development host was restarted through `x-cmdpal://background`.
+No UI input automation was used for this update; the complete menu walkthrough
+remains a manual check. Future Visual Studio builds/deployments include the fix
+from source normally.
+
+Previous x64 Debug validation: `TryRun.slnx`, including the standalone native-action
 test project, builds with exit code 0. `cmdpal-native-final.trx` passes **78/78**:
 25 context-command/handoff checks and 53 Try Run, Explorer, file-access, selection
 and setup/results regressions. This includes a real context-command invocation
 opening Try Run without executing the selected script, and the Unicode fuzz
 regression. Results are in `x64/Debug/tests/TryRun.UnitTests/TestResults/`.
-The Apps/Indexer provider menu tests are not included in this count; their normal
-build still needs the missing native prerequisites.
+The Apps/Indexer provider tests were not included in that earlier count; they
+are covered by the newer native-provider run above.
 
 ## Optional top-level development extension
 

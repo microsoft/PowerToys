@@ -144,12 +144,24 @@ public static partial class CmdPalHandoff
 
         // Installed layout, then the sibling output of the standalone development build.
         // Never search the current working directory, the selection's folder, or PATH.
-        foreach (var directory in new[] { "TryRun", ".", @"..\..\TryRun", @"..\..\TryRun-Policies" })
+        var baseDirectories = new[] { baseDirectory };
+        var normalizedBase = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(baseDirectory));
+        if (System.IO.Path.GetFileName(normalizedBase).Equals("AppX", StringComparison.OrdinalIgnoreCase))
         {
-            var candidate = System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDirectory, directory, ApplicationName));
-            if (File.Exists(candidate))
+            // Visual Studio deploys the development package one level below the
+            // CmdPal output. Keep the package's own files first in the search order.
+            baseDirectories = [normalizedBase, System.IO.Path.GetDirectoryName(normalizedBase)!];
+        }
+
+        foreach (var root in baseDirectories)
+        {
+            foreach (var directory in new[] { "TryRun", ".", @"..\..\TryRun", @"..\..\TryRun-Policies" })
             {
-                return ValidateApplication(candidate);
+                var candidate = System.IO.Path.GetFullPath(System.IO.Path.Combine(root, directory, ApplicationName));
+                if (File.Exists(candidate))
+                {
+                    return ValidateApplication(candidate);
+                }
             }
         }
 

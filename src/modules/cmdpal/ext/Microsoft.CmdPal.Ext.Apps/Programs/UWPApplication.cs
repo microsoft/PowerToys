@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Xml;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -43,6 +44,8 @@ public class UWPApplication : IUWPApplication
     public string BackgroundColor { get; set; }
 
     public string EntryPoint { get; set; }
+
+    public string Executable { get; set; } = string.Empty;
 
     public string Name => DisplayName;
 
@@ -84,6 +87,11 @@ public class UWPApplication : IUWPApplication
     public List<IContextItem> GetCommands()
     {
         List<IContextItem> commands = [];
+
+        if (CreateTryRunCommand(Location, Executable, EntryPoint) is { } tryRun)
+        {
+            commands.Add(tryRun);
+        }
 
         if (CanRunElevated)
         {
@@ -136,6 +144,30 @@ public class UWPApplication : IUWPApplication
         return commands;
     }
 
+    internal static CommandContextItem? CreateTryRunCommand(string packageDirectory, string executable, string entryPoint)
+    {
+        // A packaged desktop EXE can be selected directly. An AUMID/UWP activation
+        // must never be used here, since that would start the application on the host.
+        if (entryPoint != "Windows.FullTrustApplication" || string.IsNullOrWhiteSpace(packageDirectory) ||
+            string.IsNullOrWhiteSpace(executable) || System.IO.Path.IsPathRooted(executable))
+        {
+            return null;
+        }
+
+        try
+        {
+            var directory = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(packageDirectory));
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(directory, executable));
+            return path.StartsWith(directory + "\\", StringComparison.OrdinalIgnoreCase)
+                ? OpenInTryRunCommand.ForApplication(path, string.Empty)
+                : null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
     internal unsafe UWPApplication(IAppxManifestApplication* manifestApp, UWP package)
     {
         ArgumentNullException.ThrowIfNull(manifestApp);
@@ -157,6 +189,19 @@ public class UWPApplication : IUWPApplication
 
         manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
         EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
+
+        if (EntryPoint == "Windows.FullTrustApplication")
+        {
+            var executableResult = manifestApp->GetStringValue("Executable", out var executablePtr);
+            if (executableResult.Value >= 0)
+            {
+                Executable = ComFreeHelper.GetStringAndFree(executableResult, executablePtr);
+            }
+            else
+            {
+                PInvoke.CoTaskMemFree(executablePtr);
+            }
+        }
 
         Package = package ?? throw new ArgumentNullException(nameof(package));
 

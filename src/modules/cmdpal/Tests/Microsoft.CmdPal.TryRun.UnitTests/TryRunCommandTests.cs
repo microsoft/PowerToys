@@ -85,16 +85,18 @@ public sealed class TryRunCommandTests
     }
 
     [TestMethod]
-    public void DiscoveryUsesSiblingBuildAndRejectsInvalidOverride()
+    [DataRow("CmdPal")]
+    [DataRow("CmdPal\\AppX")]
+    public void DiscoveryUsesSiblingBuildAndRejectsInvalidOverride(string cmdPalDirectory)
     {
         var root = Path.Combine(Path.GetTempPath(), "CmdPal-TryRun-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(Path.Combine(root, "WinUI3Apps", "CmdPal"));
+        var cmdPal = Directory.CreateDirectory(Path.Combine(root, "WinUI3Apps", cmdPalDirectory)).FullName;
         var tryRun = Directory.CreateDirectory(Path.Combine(root, "TryRun-Policies")).FullName;
         var application = Path.Combine(tryRun, CmdPalHandoff.ApplicationName);
         try
         {
             File.WriteAllText(application, "Discovery fixture, never executed.");
-            Assert.AreEqual(application, CmdPalHandoff.FindApplication(Path.Combine(root, "WinUI3Apps", "CmdPal"), null));
+            Assert.AreEqual(application, CmdPalHandoff.FindApplication(cmdPal, null));
             Assert.ThrowsException<FileNotFoundException>(() => CmdPalHandoff.FindApplication(root, @"C:\missing\PowerToys.TryRun.exe"));
             Assert.ThrowsException<FileNotFoundException>(() => CmdPalHandoff.FindApplication(root, @"C:\Windows\System32\cmd.exe"));
             Assert.ThrowsException<FileNotFoundException>(() => CmdPalHandoff.FindApplication(tryRun, "PowerToys.TryRun.exe"));
