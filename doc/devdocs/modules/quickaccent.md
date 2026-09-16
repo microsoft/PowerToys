@@ -15,7 +15,7 @@ Quick Accent (formerly known as Power Accent) is a PowerToys module that allows 
 
 ## Architecture
 
-The Quick Accent module consists of five projects:
+The Quick Accent module consists of six projects:
 
 ```
 poweraccent/
@@ -23,7 +23,8 @@ poweraccent/
 ├── PowerAccent.Core/               # Accent logic, settings, positioning, usage statistics
 ├── PowerAccent.UI/                 # WinUI 3 character selector app (PowerToys.PowerAccent.exe)
 ├── PowerAccentKeyboardService/     # WinRT keyboard-hook component
-└── PowerAccentModuleInterface/     # Native runner module DLL
+├── PowerAccentModuleInterface/     # Native runner module DLL
+└── PowerAccent.UITests/            # winappcli end-to-end UI tests
 ```
 
 ### Module Interface (PowerAccentModuleInterface)
@@ -67,6 +68,13 @@ This component:
 - Manages the trigger mechanism for displaying the accent toolbar
 - Handles keyboard input processing
 
+### UI Tests (PowerAccent.UITests)
+
+`PowerAccent.UITests` uses `Microsoft.PowerToys.UITest.Next` and `winappcli` to drive Quick Accent
+through the Settings UI and a real Notepad window. The suite covers activation and character
+selection, module lifecycle, language filtering, every toolbar position, input delay, excluded
+applications, usage-frequency sorting, and start-from-left behavior.
+
 ## Implementation Details
 
 ### Activation Mechanism
@@ -108,6 +116,24 @@ The module includes multiple language-specific character sets and special charac
 - Potential refinements to the activation timing mechanism
 - Additional language and special character sets
 - Improved UI positioning in different application contexts
+
+## UI tests
+
+The UI tests require a live interactive desktop with the en-US keyboard layout selected and Caps Lock
+off. Build the test executable from the repository root:
+
+```powershell
+tools\build\build.cmd -Path src\modules\poweraccent\PowerAccent.UITests -Platform x64 -Configuration Debug
+```
+
+Run the produced Microsoft Testing Platform executable with the `PowerAccent` category:
+
+```powershell
+x64\Debug\tests\PowerAccent.UITests\net10.0-windows10.0.26100.0\PowerAccent.UITests.exe `
+  --filter "TestCategory=PowerAccent"
+```
+
+See the [UI tests framework](../development/ui-tests.md) for local-VM and pipeline workflows.
 
 ## Debugging
 

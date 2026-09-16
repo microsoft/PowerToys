@@ -50,8 +50,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsTitle));
                 UpdateShowsTitle();
             }
         }
@@ -62,8 +64,10 @@ public partial class ListItemViewModel : CommandItemViewModel
         get;
         set
         {
-            if (SetProperty(ref field, value))
+            if (field != value)
             {
+                field = value;
+                UpdateProperty(nameof(LayoutShowsSubtitle));
                 UpdateShowsSubtitle();
             }
         }
@@ -348,6 +352,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void UnsafeCleanup()
     {
+        CleanupInitializationState();
+
         base.UnsafeCleanup();
 
         // Tags don't have event handlers or anything to cleanup

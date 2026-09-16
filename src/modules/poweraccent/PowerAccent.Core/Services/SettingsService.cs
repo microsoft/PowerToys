@@ -88,9 +88,6 @@ public class SettingsService
                                 .Select(lang => lang!.Value)
                                 .ToArray();
 
-                        Logger.LogInfo(
-                            $"Languages selected: {(isAllSelected ? "ALL" : string.Join(", ", SelectedLang))}");
-
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
                             case "Top center":
@@ -125,6 +122,9 @@ public class SettingsService
                         ShowUnicodeDescription = settings.Properties.ShowUnicodeDescription;
                         SortByUsageFrequency = settings.Properties.SortByUsageFrequency;
                         StartSelectionFromTheLeft = settings.Properties.StartSelectionFromTheLeft;
+
+                        Logger.LogInfo(
+                            $"Languages selected: {(isAllSelected ? "ALL" : string.Join(", ", SelectedLang))}");
                     }
                 }
                 catch (Exception ex)

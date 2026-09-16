@@ -371,7 +371,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Use low-level keyboard hook</value>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
-    <value>Use this if the shortcut cannot focus Command Palette from an elevated app</value>
+    <value>May fix shortcut issues, but won't work while an elevated app has focus</value>
   </data>
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
     <value>Ignore shortcut in fullscreen mode</value>

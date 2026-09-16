@@ -25,13 +25,35 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
+        <TitleBar
+            x:Name="titleBar"
+            Title="Keyboard Manager"
+            IsTabStop="False">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
             </TitleBar.IconSource>
+            <TitleBar.Content>
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    x:Uid="FilterSearchBox"
+                    MinWidth="286"
+                    MaxWidth="360"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    QueryIcon="Find"
+                    Text="{x:Bind MainPageContent.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="F"
+                            Invoked="SearchBox_FindInvoked"
+                            Modifiers="Control" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
+            </TitleBar.Content>
         </TitleBar>
 
         <pages:MainPage
+            x:Name="MainPageContent"
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch" />

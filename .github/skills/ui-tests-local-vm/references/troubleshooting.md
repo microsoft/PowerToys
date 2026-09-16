@@ -12,6 +12,7 @@ Classify the first failed boundary before changing test code.
 | Guest boots to `0xc000000e` after applying an image on the host | Native-VHD boot entries | Do not `bcdboot` a mounted VHDX from the host: the BCD keeps `vhd=[X:]\...` device references that only resolve in the host's drive view. Create the guest by running Windows Setup inside the VM from an answer-file ISO, which is what `New-UiTestVm.ps1` does. |
 | Guest boots to Setup instead of the desktop | Answer file was not applied | Confirm the disk was built by `New-UiTestVm.ps1` rather than attached from an unprepared image, and read the guest's `C:\Windows\Panther\setupact.log`. |
 | Setup shows a cancel prompt, or stops around 10% | Key injection overshoot | Installation media waits for "Press any key to boot from CD or DVD", so the script types Enter through `Msvm_Keyboard` - but only until the framebuffer brightens, and at most a bounded number of times. Do not send unbounded keystrokes; later Enters land on Setup's Cancel button. |
+| Windows 10 servicing fails just after reboot with `0x8024001E` | Windows Update service transition | Refresh the skill scripts and rerun `Update-LocalVmGuest.ps1`. The updater retries this bounded `WU_E_SERVICE_STOP` transition while the service settles; do not recreate the guest. |
 | Guest cleanly shuts down about hourly; System event 1074 names `wlms.exe` | Expired Windows evaluation | Check `slmgr.vbs /dlv` or `SoftwareLicensingProduct`. Do not bypass licensing enforcement. Recreate the VM with current evaluation media or a properly licensed Windows image. The controller blocks expired time-based evaluations before test dispatch. |
 | Console shows a second, empty session | Enhanced session mode | Turn enhanced session off in the VMConnect View menu. It opens an RDP session that displaces the console session where the standard user is logged on. |
 | Guest disk grows without bound | Accumulated checkpoints | `Reset-LocalVm.ps1 -List`, then remove obsolete checkpoints. Budget at least twice `DiskSizeGB` plus `MemoryStartupGB` per standard checkpoint. |
@@ -26,13 +27,14 @@ Classify the first failed boundary before changing test code.
 | A large archive copy stalls near completion | Session-copy fallback on a big file | `Copy-Item -ToSession` stalls on archives approaching a gigabyte. Confirm `Copy-VMFile` is being used; run with `-Verbose` to see why it fell back. |
 | Desktop probe times out | No logged-on standard user | Read the console image, verify `PTUser` is the active console user, Explorer is running, and the scheduled task uses `Interactive`/`Limited`. Refresh the scaffold and use the current stop/start scripts: `Set-UiTestAutoLogon.ps1` must update the protected LSA secret and remove stale Winlogon password/count values. |
 | Probe says user is administrator | Wrong account/baseline | Remove the test user from Administrators and log on again. Do not accept `RunLevel=Limited` as proof when UAC is disabled; inspect the token as the probe does. |
-| Probe reports wrong dimensions | Resolution task did not run | Provisioning registers a logon task that calls `ChangeDisplaySettings` in the interactive session; check `C:\PowerToysUiTestRun\set-resolution.json`. Display settings cannot be applied from the PowerShell Direct session. Use zero for both desktop parameters only for nonvisual tests. |
+| Probe reports wrong dimensions | Resolution task did not run or the synthetic display was still initializing | Provisioning registers a logon task that retries `ChangeDisplaySettings` in the interactive session; check `C:\PowerToysUiTestRun\set-resolution.json`. Refresh the skill scripts and rerun the task after Explorer is stable if an older baseline still reports `ChangeDisplaySettingsResult=-1`. Display settings cannot be applied from the PowerShell Direct session. Use zero for both desktop parameters only for nonvisual tests. |
 
 ## Run dispatch and evidence
 
 | Symptom | Boundary | Action |
 |---|---|---|
-| No `status.json` but the task ended | Guest runner/finalization | Inspect scheduled-task `LastTaskResult`, the guest-local transcript, and the request path. A completed UI is not a completion signal. |
+| No `status.json` but the task ended | Guest runner/finalization | The controller stops on the bounded task-state check. Inspect `LastTaskResult`, the guest-local transcript, and the request path; task exit is not completion. |
+| Test task remains `Ready` and has no `LastRunTime` | Task dispatch | The controller stops after the 30-second launch deadline. Verify the interactive PTUser session and Task Scheduler rather than waiting for the suite timeout. |
 | Interactive `powershell.exe` task stays `Running`, but a local `cmd.exe` probe writes immediately | PTUser PowerShell task host | Stop and unregister only the failed task. Stage and extract payloads through the administrator session, then run a guest-local `.cmd` as an `Interactive`/`Limited` PTUser task. Write the exit code and TRX locally and export one evidence archive afterwards. |
 | `status.json` exists but is temporarily empty | Create/write race | Wait for parseable JSON with matching `RunId`; never finish on file existence alone. The controller already does this. |
 | One attachment subtree fails export | Transient copy failure | Inspect `ExportErrors`. The shared runner uses bounded `robocopy` retries for directories and writes status even when an artifact cannot be copied. |
@@ -79,7 +81,7 @@ if (-not (Wait-Job $job -Timeout 30)) { 'BLOCKED: VMMS is not responding' }
 Use the administrator DPAPI credential over PowerShell Direct:
 
 ```pwsh
-pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
+& .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
   -VmName PowerToysUiTest-Win11 `
   -ScriptBlock {
       Get-ScheduledTask -TaskName 'PowerToysUiTest-*' -ErrorAction SilentlyContinue |

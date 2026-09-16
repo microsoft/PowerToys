@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -254,13 +255,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return;
         }
 
-        var inStartBands = _settingsService.Settings.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inCenterBands = _settingsService.Settings.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inEndBands = _settingsService.Settings.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
-        var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
-                            _settingsService.Settings.DockSettings.PinnedCommands.Contains(this.Id)**/
+        var dockCommandId = commandItem.DockCommandId ?? itemId;
+        var dockSettings = _settingsService.Settings.DockSettings;
+        var alreadyPinned = dockSettings.StartBands
+            .Concat(dockSettings.CenterBands)
+            .Concat(dockSettings.EndBands)
+            .Any(band => MatchesBand(band, dockCommandId, providerId));
         var pinToTopLevelCommand = new PinToCommand(
-            commandId: itemId,
+            commandId: dockCommandId,
             providerId: providerId,
             pin: !alreadyPinned,
             PinLocation.Dock,
@@ -424,14 +426,46 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void PinToDock()
         {
-            var title = _commandItemViewModel?.Title ?? string.Empty;
-            var subtitle = _commandItemViewModel?.Subtitle ?? string.Empty;
-            var icon = _commandItemViewModel?.Icon;
+            var (title, subtitle, icon) = GetDockPreview();
             var dockSettings = _settingsService.Settings.DockSettings;
             var dockSide = dockSettings.Side;
             IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
+        }
+
+        private (string Title, string Subtitle, IconInfoViewModel? Icon) GetDockPreview()
+        {
+            var dockCommandItem = _topLevelCommandManager.LookupDockBand(_commandId)?.ItemViewModel;
+            if (dockCommandItem is not null)
+            {
+                try
+                {
+                    var items = DockBandViewModel.GetItemsForDisplay(dockCommandItem);
+                    if (items is [var item])
+                    {
+                        IconInfoViewModel? icon = null;
+                        var itemIcon = item.Icon;
+                        if (itemIcon is not null)
+                        {
+                            icon = new IconInfoViewModel(itemIcon);
+                            icon.InitializeProperties();
+                        }
+
+                        return (item.Title, item.Subtitle, icon);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to load dock preview for {_providerId}/{_commandId}: {ex.Message}");
+                }
+            }
+
+            var previewItem = dockCommandItem ?? _commandItemViewModel;
+            return (
+                previewItem?.Title ?? string.Empty,
+                previewItem?.Subtitle ?? string.Empty,
+                previewItem?.Icon);
         }
 
         // Only list monitors where the dock is currently enabled, so users can't
