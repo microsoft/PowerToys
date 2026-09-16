@@ -6,6 +6,21 @@ namespace PowerToys.TryRun.Core;
 
 public static class RuntimeFile
 {
+    public static string ResolveInstallationDirectory(string application)
+    {
+        // Resolve through the selected file, which Windows can allow even when
+        // a protected ancestor (such as WindowsApps) cannot be opened directly.
+        var expected = Path.GetDirectoryName(Resolve(application))!;
+        using var directory = WorkspaceFileSystem.OpenDirectory(expected);
+        var resolved = PhysicalDirectory.Resolve(directory);
+        if (!string.Equals(expected, resolved, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new IOException("The application folder was redirected while being inspected. Select the application again.");
+        }
+
+        return resolved;
+    }
+
     public static string Resolve(string path)
     {
         path = WorkspacePath.LocalPath(path);

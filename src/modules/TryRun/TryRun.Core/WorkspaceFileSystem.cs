@@ -73,7 +73,7 @@ internal static partial class WorkspaceFileSystem
         // occupies the name. Export never merges with an existing directory.
         if (!CreateDirectoryW(path, IntPtr.Zero))
         {
-            throw Error("Could not create a new result directory.");
+            throw Error($"Could not create a new result directory '{path}'.");
         }
 
         return PhysicalDirectory.Resolve(path);
@@ -88,7 +88,7 @@ internal static partial class WorkspaceFileSystem
         {
             if (handle.IsInvalid || !GetFileInformationByHandle(handle, out var info))
             {
-                throw Error("Could not safely open a workspace entry.");
+                throw Error($"Could not safely open workspace {(directory ? "directory" : "file")} '{path}'.");
             }
 
             var attributes = (FileAttributes)info.Attributes;
@@ -108,7 +108,8 @@ internal static partial class WorkspaceFileSystem
 
     private static IOException Error(string message)
     {
-        return new IOException(message, new Win32Exception(Marshal.GetLastPInvokeError()));
+        var error = new Win32Exception(Marshal.GetLastPInvokeError());
+        return new IOException($"{message} Windows error {error.NativeErrorCode}: {error.Message}", error);
     }
 
     [StructLayout(LayoutKind.Sequential)]

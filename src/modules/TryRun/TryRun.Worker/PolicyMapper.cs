@@ -36,11 +36,32 @@ internal static class PolicyMapper
             ["$app"] = input.ApplicationPath is null ? null : Path.GetDirectoryName(RuntimeFile.Resolve(input.ApplicationPath)),
             ["$fonts"] = input.IsLinux || input.Kind != WorkloadKind.WindowsApplication ? null : Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
         };
-        List<string> Resolve(string key) => options.Lines(key, input.IsLinux)
-            .Select(path => tokens.TryGetValue(path, out var resolved) ? resolved : path)
-            .Where(path => !string.IsNullOrWhiteSpace(path))
-            .Select(path => key == "deniedPaths" ? PolicyPaths.Normalize(path!) : PolicyPaths.ResolveExisting(path!))
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        List<string> Resolve(string key)
+        {
+            List<string> paths = [];
+            foreach (var entry in options.Lines(key, input.IsLinux))
+            {
+                var path = tokens.TryGetValue(entry, out var resolved) ? resolved : entry;
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    continue;
+                }
+
+                if (key == "readonlyPaths" && entry == "$app")
+                {
+                    // This grant is derived from a validated installed executable.
+                    // Copied inputs and user-supplied/writable grants still use
+                    // the ancestor-locking workspace validator below.
+                    paths.Add(RuntimeFile.ResolveInstallationDirectory(input.ApplicationPath!));
+                    continue;
+                }
+
+                paths.Add(key == "deniedPaths" ? PolicyPaths.Normalize(path) : PolicyPaths.ResolveExisting(path));
+            }
+
+            return paths.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
         filesystem.ReadonlyPaths = Resolve("readonlyPaths");
         filesystem.ReadwritePaths = Resolve("readwritePaths");
         filesystem.DeniedPaths = Resolve("deniedPaths");

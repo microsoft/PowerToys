@@ -53,8 +53,9 @@ Complete and validate each milestone before starting the next.
 12. **Native Command Palette result actions — implemented; provider tests passing**:
     built-in app/file search and folder-browser results expose **Open in Try Run**.
     Resolved Windows programs and shortcut arguments open the existing setup page;
-    files and folders use the selection workflow. Packaged desktop EXEs and Visual
-    Studio's AppX deployment layout are supported. Native provider and handoff
+    files and folders use the selection workflow. Packaged desktop EXEs can be
+    selected and Visual Studio's AppX layout is recognized. Runtime compatibility
+    is separate: the tested Windows Notepad currently fails MXC startup. Native provider and handoff
     checks pass; the full menu walkthrough remains manual. See
     [CmdPal integration](CMDPAL-INTEGRATION.md) for build and test steps.
 

@@ -117,7 +117,13 @@ internal static class Program
             }
 
             await Task.WhenAll(stdout, stderr).ConfigureAwait(false);
-            Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics completed.") { Report = diagnostics.Complete(process) });
+            var report = diagnostics.Complete(process);
+            Send(new WorkerMessage(WorkerMessage.Isolation, "Isolation diagnostics completed.") { Report = report });
+            if (input.Kind == WorkloadKind.WindowsApplication && WindowsApplicationFailure.Describe(result.ExitCode, result.TimedOut, report) is { } failure)
+            {
+                Send(new WorkerMessage(WorkerMessage.Error, failure + "\n"));
+            }
+
             Send(new WorkerMessage(WorkerMessage.Completed, result.TimedOut ? "Time limit reached." : "Finished.", result.ExitCode, result.TimedOut));
             return result.TimedOut ? 124 : 0;
         }

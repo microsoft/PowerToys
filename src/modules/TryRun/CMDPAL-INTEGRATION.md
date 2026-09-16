@@ -15,6 +15,9 @@ indexed file search, direct-path file results and the folder browser.
   executable within the package. The manifest's EXE is passed to Try Run directly.
   Apps that require package activation rather than direct EXE startup may still
   fail during execution; the launcher does not fall back to host activation.
+  **Known limitation:** Notepad 11.2501.31.0 starts a child process but exits with
+  `0xC0000409` under the pinned MXC policy on this machine. See the diagnostics
+  section below; menu availability does not mean runtime compatibility.
 - Files and folders open the existing input-selection workflow. A single EXE
   selects the application; scripts and supporting files use copied inputs.
   A document without an entry point still needs the user to choose a program.
@@ -41,9 +44,11 @@ indexed file search, direct-path file results and the folder browser.
    `POWERTOYS_TRYRUN_APP` to the absolute Try Run executable path in the environment
    used to start CmdPal. An invalid explicit override produces an error.
    Visual Studio's extra `CmdPal\AppX` deployment directory is recognized too.
-4. Search for a desktop app (for example **Notepad**), select it, and press
+4. Search for a desktop app, select it, and press
    **Ctrl+K** to open its action menu. Choose **Open in
    Try Run**, check the prefilled program and arguments, then select **Run**.
+   For an execution smoke test use `C:\Windows\System32\winver.exe`. Notepad can
+   test the menu and configuration handoff but currently fails isolated startup.
 5. Repeat with a local `.ps1` or `.cmd` file, and with a folder containing a script.
    Opening the action alone must not execute anything. Running a script that
    writes `result.txt` should show its output and copied results in Try Run.
@@ -98,6 +103,46 @@ opening Try Run without executing the selected script, and the Unicode fuzz
 regression. Results are in `x64/Debug/tests/TryRun.UnitTests/TestResults/`.
 The Apps/Indexer provider tests were not included in that earlier count; they
 are covered by the newer native-provider run above.
+
+### Protected installation folders and packaged-app diagnostics
+
+The old `Could not safely open a workspace entry` error was reproduced while
+resolving Notepad's default `$app` read-only grant. The executable was readable,
+but the copied-workspace directory validator attempted to open its protected
+`C:\Program Files\WindowsApps` ancestor and received Windows error 5.
+
+The worker now derives that read-only grant through the selected executable's
+physical path and validates its immediate installation directory. It does not
+grant its ancestors. Copied inputs and explicit/writable policy paths continue
+to use the ancestor-locking validator. Filesystem failures include the failed
+path and the underlying Windows error code.
+
+After this fix, Notepad's policy generation succeeds. Its actual MXC startup
+still exits with `0xC0000409`. Native block-mode capture recorded denied access
+to Windows app activation-store files and AppModel registry state. These records
+identify a compatibility problem to investigate, not permission to grant writes
+to system folders. No extra system grants, permissive mode, host ACL changes or
+host activation fallback were applied. Failed Windows applications now report
+the hexadecimal exit code and, when native evidence is present, an app-activation
+compatibility explanation.
+
+The unsuccessful startup evidence is retained in `packaged-startup-diagnostics.trx`.
+`InstalledApplicationTests.PackagedApplicationOpensItsOwnWindowAndCanBeStopped`
+is explicitly ignored as a known compatibility failure, with the runnable probe
+retained for future MXC work. Its environment inputs are
+`POWERTOYS_TRYRUN_GUI_TESTS=1` and `POWERTOYS_TRYRUN_PACKAGED_APP` set to the
+package's Notepad EXE. The passing policy test uses the same executable via
+`--describe-policy` and verifies that only its installation directory is read-only.
+
+The standalone solution and tests built successfully for x64 Debug. The final
+`workspace-fix-final.trx` run passes 43 checks and skips the one known Notepad
+compatibility probe. Coverage includes the protected installation-directory
+grant, error reporting, copied-file/link safeguards, read-only file grants,
+Windows policy mapping, and actual `winver.exe` / `findstr.exe` runs.
+The complete tested worker bundle was updated in `TryRun-Policies\Worker`, with
+the previous bundle retained under `WorkerUpdateBackups`. Existing Try Run
+windows use the new worker on their next run. The complete rebuilt application
+is also available in `TryRun-WorkspaceFix`.
 
 ## Optional top-level development extension
 
