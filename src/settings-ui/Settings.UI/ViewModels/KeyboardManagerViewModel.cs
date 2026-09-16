@@ -422,8 +422,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             try
                             {
-                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(ModuleName, fileName);
+                                // Profiles are user-authored configuration. A malformed entry must not
+                                // replace the whole profile with a newly persisted default profile.
+                                _profile = _settingsUtils.GetSettings<KeyboardManagerProfile>(ModuleName, fileName);
                                 readSuccessfully = true;
+                            }
+                            catch (JsonException e)
+                            {
+                                Logger.LogError($"Exception encountered when reading {ModuleName} settings", e);
+                                break;
                             }
                             catch (Exception e)
                             {
