@@ -34,8 +34,8 @@ public sealed partial class SpecialFolderInformationalPreviewControl : UserContr
 
     public string FormatFileDateModified(string? fileDateModified) => FormatField("UnsupportedFile_DateModified", fileDateModified);
 
-    private static string FormatField(string resourceId, string? fieldValue)
-    {
-        return string.IsNullOrWhiteSpace(fieldValue) ? string.Empty : ReadableStringHelper.FormatResourceString(resourceId, fieldValue);
-    }
+    private static string FormatField(string resourceId, string? fieldValue) =>
+        string.IsNullOrWhiteSpace(fieldValue)
+            ? string.Empty
+            : ResourceLoaderInstance.FormatString(resourceId, fieldValue);
 }
