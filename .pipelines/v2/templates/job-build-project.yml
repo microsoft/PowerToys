@@ -522,13 +522,11 @@ jobs:
         platform: '$(BuildPlatform)'
         configuration: '$(BuildConfiguration)'
         testSelector: 'testAssemblies'
-        otherConsoleOptions: '/Diag:"$(Build.ArtifactStagingDirectory)\logs\native-tests.diag.log";tracelevel=info'
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
           **\*UnitTest*.dll
           !**\obj\**
-          !**\*.resources.dll
 
   - pwsh: |-
       $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
