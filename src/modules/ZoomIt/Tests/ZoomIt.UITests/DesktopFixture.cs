@@ -25,6 +25,7 @@ internal sealed class DesktopFixture : IDisposable
     private bool pulse;
     private int animationFrames;
     private Forms.TextBox? editor;
+    private Forms.Timer? fontDialogDelay;
 
     internal DesktopFixture()
     {
@@ -140,6 +141,21 @@ internal sealed class DesktopFixture : IDisposable
         FocusEditor();
     }
 
+    internal void ShowFontDialogAfterDelay(int delayMS)
+    {
+        form.Invoke(() =>
+        {
+            fontDialogDelay = new Forms.Timer { Interval = delayMS };
+            fontDialogDelay.Tick += (_, _) =>
+            {
+                fontDialogDelay.Stop();
+                using var dialog = new Forms.FontDialog();
+                dialog.ShowDialog(form);
+            };
+            fontDialogDelay.Start();
+        });
+    }
+
     internal void FocusEditor()
     {
         Show();
@@ -218,6 +234,7 @@ internal sealed class DesktopFixture : IDisposable
         form.Invoke(() =>
         {
             animation?.Dispose();
+            fontDialogDelay?.Dispose();
             form.Close();
         });
         Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(10)), "The test source's UI thread did not exit.");

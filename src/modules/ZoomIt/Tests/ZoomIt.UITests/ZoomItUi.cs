@@ -129,7 +129,7 @@ internal sealed class ZoomItUi(Session session, TestContext context)
     internal void PickFile(string cardId, string path, string registryName)
     {
         Step($"Choosing {path} for {cardId}");
-        var dialog = OpenDialog(cardId);
+        var dialog = OpenDialog<TextBox>(cardId, "1148");
         var filename = dialog.Find<TextBox>(By.AccessibilityId("1148"));
         filename.SetText(path);
         Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(dialog.WindowHandle), 10_000), "The file picker did not acquire foreground.");
@@ -138,79 +138,100 @@ internal sealed class ZoomItUi(Session session, TestContext context)
         WaitForSetting(registryName, path);
     }
 
-    internal Session OpenDialog(string cardId)
+    internal Session OpenDialog<TInput>(string cardId, string inputAutomationId)
+        where TInput : Element, new()
     {
-        for (var attempt = 1; attempt <= 3; attempt++)
+        var existing = WindowsFinder.WaitForWindowByApp("PowerToys.Settings", candidate => candidate.ClassName == "#32770", 100);
+        if (existing is not null)
         {
-            var existing = WindowsFinder.WaitForWindowByApp("PowerToys.Settings", candidate => candidate.ClassName == "#32770", 100);
-            if (existing is not null)
-            {
-                return existing;
-            }
+            WaitForDialogControls<TInput>(existing, inputAutomationId);
+            return existing;
+        }
 
-            var window = WindowsFinder.WaitForWindowByApp(
-                "PowerToys.Settings",
-                candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
-                10_000);
-            Assert.IsNotNull(window, "The main Settings window was not available for its native dialog.");
-            var handle = new IntPtr(window.WindowHandle);
-            var bounds = WindowHelper.GetVisibleBounds(handle);
-            if (!WindowControl.WaitForForeground(handle, 2_000))
+        var window = WindowsFinder.WaitForWindowByApp(
+            "PowerToys.Settings",
+            candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
+            10_000);
+        Assert.IsNotNull(window, "The main Settings window was not available for its native dialog.");
+        var handle = new IntPtr(window.WindowHandle);
+        var bounds = WindowHelper.GetVisibleBounds(handle);
+        if (!WindowControl.WaitForForeground(handle, 2_000))
+        {
+            var titleX = bounds.Left + ((bounds.Right - bounds.Left) / 4);
+            var titleY = bounds.Top + 16;
+            if (WindowControl.IsPointOwnedByWindow(handle, titleX, titleY))
             {
-                var titleX = bounds.Left + ((bounds.Right - bounds.Left) / 4);
-                var titleY = bounds.Top + 16;
-                if (WindowControl.IsPointOwnedByWindow(handle, titleX, titleY))
-                {
-                    MouseHelper.LeftClickAt(titleX, titleY);
-                }
-            }
-
-            Assert.IsTrue(WindowControl.WaitForForeground(handle, 10_000), $"Settings did not acquire foreground for its native dialog: {WindowControl.GetForegroundWindowInfo()}.");
-            var middleTop = bounds.Top + ((bounds.Bottom - bounds.Top) / 4);
-            var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
-            MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
-            var target = Control<Button>(cardId, "Button");
-            target.ScrollIntoView();
-            target.Focus();
-            var ready = WaitHelper.WaitForStable(
-                () => session.FindAll<Button>(By.Slug(target.Selector), 0).SingleOrDefault(),
-                button => button is not null && button.Width > 0 && button.Height > 0 &&
-                    button.Y + (button.Height / 2) >= middleTop && button.Y + (button.Height / 2) <= middleBottom &&
-                    WindowControl.IsPointOwnedByWindow(new IntPtr(window.WindowHandle), button.X + (button.Width / 2), button.Y + (button.Height / 2)),
-                60_000,
-                2,
-                recover: button =>
-                {
-                    WindowControl.TryBringToForeground(new IntPtr(window.WindowHandle));
-                    MouseHelper.MoveTo(bounds.Right - 100, bounds.Top + ((bounds.Bottom - bounds.Top) / 2));
-                    if (button is null)
-                    {
-                        target = Control<Button>(cardId, "Button");
-                        target.ScrollIntoView();
-                        target.Focus();
-                    }
-                    else if (button.Y + (button.Height / 2) > middleBottom)
-                    {
-                        MouseHelper.ScrollDown();
-                    }
-                    else if (button.Y + (button.Height / 2) < middleTop)
-                    {
-                        MouseHelper.ScrollUp();
-                    }
-                });
-            Assert.IsTrue(ready.Succeeded, $"The {cardId} button was not ready for physical input.");
-            var button = ready.LastObservation!;
-            Step($"Opening {cardId} native dialog (attempt {attempt})");
-            MouseHelper.LeftClickAt(button.X + (button.Width / 2), button.Y + (button.Height / 2));
-            var dialog = WindowsFinder.WaitForWindowByApp("PowerToys.Settings", candidate => candidate.ClassName == "#32770", 5_000);
-            if (dialog is not null)
-            {
-                return dialog;
+                MouseHelper.LeftClickAt(titleX, titleY);
             }
         }
 
-        Assert.Fail($"The native dialog for {cardId} did not open.");
-        return null!;
+        Assert.IsTrue(WindowControl.WaitForForeground(handle, 10_000), $"Settings did not acquire foreground for its native dialog: {WindowControl.GetForegroundWindowInfo()}.");
+        var middleTop = bounds.Top + ((bounds.Bottom - bounds.Top) / 4);
+        var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
+        MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
+        var target = Control<Button>(cardId, "Button");
+        target.ScrollIntoView();
+        target.Focus();
+        var ready = WaitHelper.WaitForStable(
+            () => session.FindAll<Button>(By.Slug(target.Selector), 0).SingleOrDefault(),
+            button => button is not null && button.Width > 0 && button.Height > 0 &&
+                button.Y + (button.Height / 2) >= middleTop && button.Y + (button.Height / 2) <= middleBottom &&
+                WindowControl.IsPointOwnedByWindow(handle, button.X + (button.Width / 2), button.Y + (button.Height / 2)),
+            60_000,
+            2,
+            recover: button =>
+            {
+                WindowControl.TryBringToForeground(handle);
+                MouseHelper.MoveTo(bounds.Right - 100, bounds.Top + ((bounds.Bottom - bounds.Top) / 2));
+                if (button is null)
+                {
+                    target = Control<Button>(cardId, "Button");
+                    target.ScrollIntoView();
+                    target.Focus();
+                }
+                else if (button.Y + (button.Height / 2) > middleBottom)
+                {
+                    MouseHelper.ScrollDown();
+                }
+                else if (button.Y + (button.Height / 2) < middleTop)
+                {
+                    MouseHelper.ScrollUp();
+                }
+            });
+        Assert.IsTrue(ready.Succeeded, $"The {cardId} button was not ready for physical input.");
+        var button = ready.LastObservation!;
+        Step($"Opening {cardId} native dialog");
+        MouseHelper.LeftClickAt(button.X + (button.Width / 2), button.Y + (button.Height / 2));
+        return WaitForNativeDialog<TInput>("PowerToys.Settings", inputAutomationId);
+    }
+
+    internal Session WaitForNativeDialog<TInput>(string appNameOrPid, string inputAutomationId)
+        where TInput : Element, new()
+    {
+        var timer = Stopwatch.StartNew();
+        var dialog = WindowsFinder.WaitForWindowByApp(appNameOrPid, candidate => candidate.ClassName == "#32770", 30_000);
+        Assert.IsNotNull(dialog, $"The native dialog for {appNameOrPid} did not appear within 30 seconds.");
+        Step($"Native dialog HWND {dialog.WindowHandle} appeared after {timer.ElapsedMilliseconds} ms");
+        WaitForDialogControls<TInput>(dialog, inputAutomationId);
+        return dialog;
+    }
+
+    private void WaitForDialogControls<TInput>(Session dialog, string inputAutomationId)
+        where TInput : Element, new()
+    {
+        var timer = Stopwatch.StartNew();
+        var ready = WaitHelper.WaitForStable(
+            () => (
+                Input: dialog.FindAll<TInput>(By.AccessibilityId(inputAutomationId), 0).SingleOrDefault(),
+                Accept: dialog.FindAll<Element>(By.AccessibilityId("1"), 0)
+                    .Where(element => element.ControlType is "Button" or "SplitButton").SingleOrDefault()),
+            controls => controls.Input is { Width: > 0, Height: > 0 } && controls.Input.IsEnabled && controls.Input.Displayed &&
+                controls.Accept is { Width: > 0, Height: > 0 } && controls.Accept.IsEnabled && controls.Accept.Displayed,
+            30_000,
+            2,
+            shouldRetryException: ShellMenu.IsTransientElementException);
+        Assert.IsTrue(ready.Succeeded, $"Native dialog HWND {dialog.WindowHandle} appeared, but input {inputAutomationId} and its accept button were not ready. {ready.LastException?.Message}");
+        Step($"Native dialog controls became ready after {timer.ElapsedMilliseconds} ms");
     }
 
     internal void WaitForSetting(string name, object expected)

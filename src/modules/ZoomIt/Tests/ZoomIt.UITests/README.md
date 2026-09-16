@@ -36,6 +36,9 @@ normalize the desktop to 1920x1080. Recording requires a working Windows Graphic
 display; lack of captured frames is an explicit failure, not a skipped or passing recording.
 Suppress unrelated desktop notifications in the test environment before running: Shell
 toasts can cover pixel samples even when ZoomIt's window is topmost.
+Native dialogs are clicked once, then polled separately for window appearance and
+HWND-scoped control readiness. A delayed Font dialog regression covers an eight-second
+opening delay, beyond the previous five-second discovery timeout.
 
 ```powershell
 dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:Platform=x64

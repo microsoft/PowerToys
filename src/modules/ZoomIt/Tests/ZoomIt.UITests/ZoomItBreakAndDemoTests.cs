@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerToys.UITest.Next;
@@ -118,7 +119,7 @@ public sealed partial class ZoomItTests
         ui.Exit();
 
         ui.Step("Choosing Courier New through the native font dialog");
-        var dialog = ui.OpenDialog("ZoomItTypeTextFont");
+        var dialog = ui.OpenDialog<ComboBox>("ZoomItTypeTextFont", "1136");
         Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(dialog.WindowHandle), 10_000), "The font picker did not acquire foreground.");
         dialog.Find<ComboBox>(By.AccessibilityId("1136")).Focus();
         Assert.IsTrue(ClipboardHelper.SetText("Courier New"), "Could not prepare the font name.");
@@ -138,6 +139,29 @@ public sealed partial class ZoomItTests
         Assert.IsTrue(Math.Abs(changed.Width - original.Width) > original.Width * 0.05, $"Changing the font did not change timer glyph geometry: {original} -> {changed}.");
         SaveDesktop("timer-courier-new");
         ui.Exit();
+    }
+
+    [TestMethod]
+    public void NativeFontDialogWaitsForDelayedAppearance()
+    {
+        var process = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
+        desktop = new DesktopFixture();
+        var timer = Stopwatch.StartNew();
+        desktop.ShowFontDialogAfterDelay(8_000);
+        try
+        {
+            var dialog = ui.WaitForNativeDialog<ComboBox>(process, "1136");
+            Assert.IsTrue(timer.Elapsed >= TimeSpan.FromSeconds(8), "The regression dialog must appear after the former five-second timeout.");
+            Assert.IsTrue(dialog.Find<ComboBox>(By.AccessibilityId("1136")).IsEnabled, "The delayed font selector must be ready for input.");
+            SaveDesktop("delayed-font-dialog");
+        }
+        finally
+        {
+            foreach (var dialog in WindowsFinder.ListByApp(process).Where(window => window.ClassName == "#32770"))
+            {
+                Assert.IsTrue(WindowControl.TryCloseWindow(dialog.Hwnd), "The test-owned delayed font dialog did not close.");
+            }
+        }
     }
 
     [TestMethod]
