@@ -110,7 +110,8 @@ corrected. The updated fixture has completed real pairing, peer TCP transport,
 local/remote input assertions and bidirectional clipboard checks.
 See the implementation checkpoint in [CONTINUATION-PLAN.md](CONTINUATION-PLAN.md)
 and the new test project's README before attempting another run. CI remains
-default-off and has not been queued.
+default-off. Its Debug run-in-place path omits installer packaging; normal Release
+and installer-based runs retain their existing behavior.
 
 ## 1. Prepare only (safe to do before disconnecting)
 

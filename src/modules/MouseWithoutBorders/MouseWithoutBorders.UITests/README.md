@@ -6,7 +6,8 @@ remote keyboard/mouse, clipboard both ways, negative controls and cleanup, witho
 operator actions. Repeat reliability is not established: the later persistent-
 evidence run `localvm-20260915-173353-3804112e` passed the receiver probe but stalled
 in guest Settings initialization. This is feasibility evidence, not clean-baseline,
-Win11 or full module sign-off; the CI pilot has not been queued.
+Win11 or full module sign-off. The first CI diagnostic was blocked in installer
+packaging before either OS test stage; the Debug pilot now omits that unused path.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI
@@ -249,3 +250,10 @@ directory (including `recovery-result.json`), and separately run the administrat
 exact-rule cleanup on every outcome. Release compilation is supported; selecting
 or executing this nested Debug pilot remains behind the pipeline's default-off
 opt-in condition, not an implicit all-suite test run.
+
+The MWB `buildNow` pilot sets the shared build job's `buildInstallers=false`:
+it consumes the Debug product/test directory directly, so WiX/MSI/bootstrapper
+builds, installer staging and installer hashes are not needed. Other callers keep
+the default `true`, including Release `buildNow` and `buildNowSlim` runs.
+After pushing a pipeline fix, queue a new run from the updated branch; retrying
+an old job continues to use that run's original source revision.

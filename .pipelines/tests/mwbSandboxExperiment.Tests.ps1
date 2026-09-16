@@ -131,3 +131,42 @@ Describe 'MWB public recovery path' {
         Test-Path -LiteralPath $root | Should Be $false
     }
 }
+
+Describe 'MWB run-in-place build selection' {
+    BeforeEach {
+        $templates = Join-Path $PSScriptRoot '..\v2\templates'
+        $buildTemplate = Get-Content -LiteralPath (Join-Path $templates 'job-build-project.yml') -Raw
+        $pipelineTemplate = Get-Content -LiteralPath (Join-Path $templates 'pipeline-ui-tests-full-build.yml') -Raw
+        $installerGroups = @([regex]::Matches($buildTemplate,
+            '(?ms)^  - \$\{\{ if eq\(parameters\.buildInstallers, true\) \}\}:\r?\n(?<steps>.*?)(?=^  - |\z)'))
+    }
+
+    It 'keeps installer production enabled by default for existing callers' {
+        $buildTemplate | Should Match '(?m)^  - name: buildInstallers\r?\n    type: boolean\r?\n    default: true'
+    }
+
+    It 'disables installers only in the explicit MWB Debug branch' {
+        $pipelineTemplate | Should Match '(?m)^          \$\{\{ if eq\(parameters\.mwbSandboxExperiment, true\) \}\}:\r?\n            buildConfigurations: \[Debug\]\r?\n            buildInstallers: false\r?\n          \$\{\{ else \}\}:\r?\n            buildConfigurations: \[Release\]'
+        ([regex]::Matches($pipelineTemplate, 'buildInstallers:')).Count | Should Be 1
+    }
+
+    It 'guards each installer-only step group' -TestCases @(
+        @{ Step = 'template: steps-build-installer-vnext.yml' }
+        @{ Step = 'displayName: Stage Installers' }
+        @{ Step = 'displayName: Calculate file hashes for all installers' }
+    ) {
+        param($Step)
+        $matches = @($installerGroups | Where-Object { $_.Groups['steps'].Value.Contains($Step) })
+        $matches.Count | Should Be 1
+        ([regex]::Matches($buildTemplate, [regex]::Escape($Step))).Count | Should Be 1
+    }
+
+    It 'retains product/test output publication independently of installers' {
+        $installerGroups.Count | Should Be 3
+        foreach ($group in $installerGroups) {
+            $group.Groups['steps'].Value | Should Not Match 'Move entire output directory into artifacts|Publish all outputs'
+        }
+        $buildTemplate | Should Match 'displayName: Move entire output directory into artifacts'
+        $buildTemplate | Should Match 'displayName: Publish all outputs'
+    }
+}

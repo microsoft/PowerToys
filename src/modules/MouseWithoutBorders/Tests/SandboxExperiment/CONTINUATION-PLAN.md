@@ -7,8 +7,16 @@ was enabled for `PowerToysUiTest-Win10` (now 15 vCPUs, 24 GB static RAM). The ne
 `MouseWithoutBorders.UITests` project, legacy Sandbox fixture, privileged firewall
 setup, Limited-user recovery, lean/native dependency packaging, and default-off
 Debug CI wiring now exist. **The full unfiltered Win10 experimental suite has
-completed once (2/2); a repeat was not green, and CI has not been queued.** This is
+completed once (2/2); a repeat was not green, and CI has not reached the test stages.** This is
 not yet two restored-baseline passes or Win11/module sign-off.
+
+The first CI diagnostic and a retry of its original revision built the Debug
+product successfully, then entered the unused VNext installer path. Its
+local-publish fallback requested the unavailable Windows SDK 10.0.19041.0.
+The pilot now sets `buildInstallers=false` in the shared build template, keeping
+product/test artifact publication and both OS test stages. Normal Release
+installer builds remain enabled by default. A new pipeline run must select the
+updated branch; retrying the old job does not pick up source changes.
 
 Nested bootstrap and receiver-only UIA execution succeeded. The full-runtime
 15 vCPU/24 GB run `localvm-20260914-150422-1be2acf6` reached New key/Connect but

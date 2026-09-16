@@ -44,6 +44,7 @@ stages:
             - ${{ parameters.platform }}
           ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
             buildConfigurations: [Debug]
+            buildInstallers: false
           ${{ else }}:
             buildConfigurations: [Release]
           enablePackageCaching: true
