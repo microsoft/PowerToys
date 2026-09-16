@@ -106,6 +106,11 @@ are covered by the newer native-provider run above.
 
 ### Protected installation folders and packaged-app diagnostics
 
+The subsequent [direct MXC comparison](NOTEPAD-MXC-COMPARISON.md) reproduces the
+Notepad failure through both the SDK and native CLI, documents environment and
+read-only dependency controls, and identifies the CLI's existing `packaged_app`
+diagnostic that is absent from the streaming wait result.
+
 The old `Could not safely open a workspace entry` error was reproduced while
 resolving Notepad's default `$app` read-only grant. The executable was readable,
 but the copied-workspace directory validator attempted to open its protected

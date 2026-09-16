@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <MxcRuntimeRoot Condition="'$(MxcRuntimeRoot)' == ''">$(RepoRoot)$(Platform)\$(Configuration)\TryRun-Policies\Worker</MxcRuntimeRoot>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\MxcAppComparison\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Pin comparisons to the actual deployed runtime; do not rebuild MXC between cases. -->
+    <Reference Include="Microsoft.Mxc.Sdk" HintPath="$(MxcRuntimeRoot)\Microsoft.Mxc.Sdk.dll" />
+    <Reference Include="TryRun.Core" HintPath="$(MxcRuntimeRoot)\TryRun.Core.dll" />
+    <Content Include="$(MxcRuntimeRoot)\*.dll" Exclude="$(MxcRuntimeRoot)\Microsoft.Mxc.Sdk.dll;$(MxcRuntimeRoot)\TryRun.Core.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MxcRuntimeRoot)\plm.exe" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
