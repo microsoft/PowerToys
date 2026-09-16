@@ -7,19 +7,46 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cstring>
 #include <filesystem>
+#include <future>
 #include <utility>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace WorkspacesLibUnitTests
 {
+    class LauncherIpcFixtureTests;
+
     namespace
     {
         constexpr DWORD OperationTimeoutMs = 3000;
         constexpr DWORD StopTimeoutMs = 2000;
         constexpr DWORD FrameTimeoutWaitMs = 8000;
+
+        struct CallbackGate
+        {
+            wil::unique_event entered{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
+            wil::unique_event released{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
+            std::atomic<DWORD> waitResult{ WAIT_FAILED };
+
+            CallbackGate()
+            {
+                Assert::IsTrue(entered && released);
+            }
+
+            void Wait() noexcept
+            {
+                SetEvent(entered.get());
+                waitResult = WaitForSingleObject(released.get(), INFINITE);
+            }
+
+            void Release() noexcept
+            {
+                SetEvent(released.get());
+            }
+        };
 
         DWORD Remaining(ULONGLONG deadline)
         {
@@ -150,10 +177,13 @@ namespace WorkspacesLibUnitTests
 
         class PipeClient
         {
+            friend class WorkspacesLibUnitTests::LauncherIpcFixtureTests;
+
             struct Connection
             {
                 wil::unique_hfile pipe;
                 PTP_IO io = nullptr;
+                std::shared_ptr<CallbackGate> completionGate;
 
                 ~Connection()
                 {
@@ -188,6 +218,10 @@ namespace WorkspacesLibUnitTests
                 owner->error = result;
                 owner->transferred = static_cast<DWORD>(transferred);
                 SetEvent(owner->completed.get());
+                if (owner->connection->completionGate)
+                {
+                    owner->connection->completionGate->Wait();
+                }
             }
 
             DWORD Transfer(const BYTE* outgoing, BYTE* incoming, DWORD size, DWORD& transferred, DWORD timeout)
@@ -211,8 +245,8 @@ namespace WorkspacesLibUnitTests
                     memcpy(operation->buffer.data(), outgoing, size);
                 }
 
-                // Completion owns the OVERLAPPED, buffer and pipe even if a timed-out caller
-                // has already cancelled and left. No cancellation drain can hang the testhost.
+                // Completion retains the OVERLAPPED, buffer and pipe after a transfer timeout.
+                // Close cancels outstanding I/O and drains callbacks before releasing the connection.
                 operation->pending = operation;
                 StartThreadpoolIo(m_connection->io);
                 const auto succeeded = write ?
@@ -282,10 +316,11 @@ namespace WorkspacesLibUnitTests
 
             void Close()
             {
-                if (m_connection)
+                auto connection = std::move(m_connection);
+                if (connection)
                 {
-                    CancelIoEx(m_connection->pipe.get(), nullptr);
-                    m_connection.reset();
+                    CancelIoEx(connection->pipe.get(), nullptr);
+                    WaitForThreadpoolIoCallbacks(connection->io, FALSE);
                 }
             }
 
@@ -349,6 +384,8 @@ namespace WorkspacesLibUnitTests
             wil::unique_event completed{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
             PTP_WORK work = nullptr;
             std::shared_ptr<StopState> pending;
+            std::shared_ptr<CallbackGate> beforeStopGate;
+            std::shared_ptr<CallbackGate> completionGate;
 
             ~StopState()
             {
@@ -362,13 +399,23 @@ namespace WorkspacesLibUnitTests
             {
                 auto state = std::move(static_cast<StopState*>(context)->pending);
                 CallbackMayRunLong(instance);
+                if (state->beforeStopGate)
+                {
+                    state->beforeStopGate->Wait();
+                }
                 state->server->Stop();
                 SetEvent(state->completed.get());
+                if (state->completionGate)
+                {
+                    state->completionGate->Wait();
+                }
             }
         };
 
         class ServerSession
         {
+            friend class WorkspacesLibUnitTests::LauncherIpcFixtureTests;
+
             std::shared_ptr<StopState> m_stop = std::make_shared<StopState>();
             bool m_stopSubmitted = false;
 
@@ -391,7 +438,10 @@ namespace WorkspacesLibUnitTests
             ~ServerSession()
             {
                 client.Close();
-                Stop();
+                if (!Stop())
+                {
+                    Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"IPC fixture cleanup could not stop the server within the deadline.");
+                }
             }
 
             void OpenClient()
@@ -437,13 +487,17 @@ namespace WorkspacesLibUnitTests
             {
                 if (!m_stopSubmitted)
                 {
-                    // Preallocated work makes teardown bounded without a future/thread destructor
-                    // joining a regressed server. Its callback retains all captured state.
+                    // A regressed server must report a stop timeout rather than block the test.
                     m_stop->pending = m_stop;
                     m_stopSubmitted = true;
                     SubmitThreadpoolWork(m_stop->work);
                 }
-                return WaitForSingleObject(m_stop->completed.get(), StopTimeoutMs) == WAIT_OBJECT_0;
+                if (WaitForSingleObject(m_stop->completed.get(), StopTimeoutMs) != WAIT_OBJECT_0)
+                {
+                    return false;
+                }
+                WaitForThreadpoolWorkCallbacks(m_stop->work, FALSE);
+                return true;
             }
 
             void ExpectFailure(LauncherIpcFailure expected, DWORD timeout = OperationTimeoutMs)
@@ -486,6 +540,86 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(session.callbacks->Messages().empty());
         }
     }
+
+    TEST_CLASS (LauncherIpcFixtureTests)
+    {
+    public:
+        TEST_METHOD (ClientCloseWaitsForIoCallbackReturn)
+        {
+            ServerSession session;
+            session.Connect();
+            const auto connection = session.client.m_connection;
+            const auto gate = std::make_shared<CallbackGate>();
+            connection->completionGate = gate;
+            auto release = wil::scope_exit([&] {
+                gate->Release();
+                WaitForThreadpoolIoCallbacks(connection->io, FALSE);
+            });
+
+            Assert::AreEqual<DWORD>(ERROR_SUCCESS, session.client.Write(MakeFrame("{\"probe\":true}")));
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, WaitForSingleObject(gate->entered.get(), OperationTimeoutMs));
+            wil::unique_event closing{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
+            Assert::IsTrue(static_cast<bool>(closing));
+            auto close = std::async(std::launch::async, [&] {
+                SetEvent(closing.get());
+                session.client.Close();
+            });
+            auto unblock = wil::scope_exit([&] { gate->Release(); });
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, WaitForSingleObject(closing.get(), OperationTimeoutMs));
+            const auto beforeCallbackReturn = close.wait_for(std::chrono::milliseconds(200));
+            gate->Release();
+            close.get();
+            WaitForThreadpoolIoCallbacks(connection->io, FALSE);
+            Assert::IsTrue(session.Stop());
+
+            Assert::IsTrue(beforeCallbackReturn == std::future_status::timeout, L"Close returned while its I/O callback was still active.");
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, gate->waitResult.load());
+        }
+
+        TEST_METHOD (ServerStopWaitsForWorkCallbackReturn)
+        {
+            ServerSession session;
+            session.Connect();
+            const auto state = session.m_stop;
+            const auto gate = std::make_shared<CallbackGate>();
+            state->completionGate = gate;
+            auto stop = std::async(std::launch::async, [&] { return session.Stop(); });
+            auto release = wil::scope_exit([&] {
+                gate->Release();
+                WaitForThreadpoolWorkCallbacks(state->work, FALSE);
+            });
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, WaitForSingleObject(gate->entered.get(), OperationTimeoutMs));
+            const auto beforeCallbackReturn = stop.wait_for(std::chrono::milliseconds(200));
+            gate->Release();
+            Assert::IsTrue(stop.get());
+            WaitForThreadpoolWorkCallbacks(state->work, FALSE);
+
+            Assert::IsTrue(beforeCallbackReturn == std::future_status::timeout, L"Stop returned while its work callback was still active.");
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, gate->waitResult.load());
+        }
+
+        TEST_METHOD (StopTimeoutIsObservableAndCanBeDrained)
+        {
+            ServerSession session;
+            session.Connect();
+            const auto state = session.m_stop;
+            const auto gate = std::make_shared<CallbackGate>();
+            state->beforeStopGate = gate;
+            auto stop = std::async(std::launch::async, [&] { return session.Stop(); });
+            auto release = wil::scope_exit([&] {
+                gate->Release();
+                WaitForThreadpoolWorkCallbacks(state->work, FALSE);
+            });
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, WaitForSingleObject(gate->entered.get(), OperationTimeoutMs));
+            const bool stopped = stop.get();
+            gate->Release();
+            Assert::IsTrue(session.Stop());
+            WaitForThreadpoolWorkCallbacks(state->work, FALSE);
+
+            Assert::IsFalse(stopped, L"A blocked Stop operation must report a timeout.");
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, gate->waitResult.load());
+        }
+    };
 
     TEST_CLASS (LauncherIpcServerTests)
     {
