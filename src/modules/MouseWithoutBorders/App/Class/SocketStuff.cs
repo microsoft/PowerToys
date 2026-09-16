@@ -903,8 +903,7 @@ namespace MouseWithoutBorders.Class
 
                 if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
                 {
-                    string combinedName2ipList = Setting.Values.Name2IpPolicyList + Separator + Setting.Values.Name2IP;
-                    string[] name2ip = combinedName2ipList.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+                    string[] name2ip = GetName2IpMappingLines(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP);
                     string[] nameNip;
 
                     if (name2ip != null)
@@ -1257,6 +1256,12 @@ namespace MouseWithoutBorders.Class
         private long lastRemoteMachineID;
         internal static readonly string[] Separator = new string[] { "\r\n" };
         internal static readonly char[] BlankSeparator = new char[] { ' ' };
+
+        internal static string[] GetName2IpMappingLines(string policyMappings, string userMappings)
+        {
+            string combinedMappings = policyMappings + Separator[0] + userMappings;
+            return combinedMappings.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        }
 
         private void MainTCPRoutine(TcpSk tcp, string machineName, bool isClient)
         {
