@@ -64,6 +64,33 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x42), false);
         }
 
+        TEST_METHOD (BidirectionalModifierRemap_ShouldHandlePhysicalEvent_WithExtraInfo)
+        {
+            testState.AddSingleKeyRemap(VK_LMENU, (DWORD)VK_LWIN);
+            testState.AddSingleKeyRemap(VK_LWIN, (DWORD)VK_LMENU);
+
+            KBDLLHOOKSTRUCT inputData{};
+            inputData.vkCode = VK_LWIN;
+            inputData.dwExtraInfo = CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG | 0x1000;
+
+            LowlevelKeyboardEvent inputEvent{};
+            inputEvent.lParam = &inputData;
+            inputEvent.wParam = WM_KEYDOWN;
+
+            const auto keyDownResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, &inputEvent, testState);
+
+            Assert::AreEqual(static_cast<intptr_t>(1), keyDownResult);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LMENU));
+
+            inputEvent.wParam = WM_KEYUP;
+            const auto keyUpResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, &inputEvent, testState);
+
+            Assert::AreEqual(static_cast<intptr_t>(1), keyUpResult);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LMENU));
+        }
+
         // When injecting the remapped key fails (e.g. SendInput is blocked by UIPI or
         // another hook), the handler must let the ORIGINAL key through instead of
         // silently swallowing it, so the user is never left with a dead key. This
