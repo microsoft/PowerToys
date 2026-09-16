@@ -131,6 +131,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // subsequent FetchItems(true).
     private volatile bool _forceFirstItemPending;
 
+    // GH #48670: Enter pressed before the current query's results are published
+    // is queued and executed against the first match once that search settles.
+    private int _searchEpoch;
+    private int _readySearchEpoch;
+    private int _searchAppliedEpoch;
+    private int _minValidFetchGeneration = -1;
+    private int _pendingActivation;
+
     // For cancelling a deferred SafeSlowInit when the user navigates rapidly
     private CancellationTokenSource? _selectedItemCts;
 
@@ -176,6 +184,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        var epoch = Interlocked.Increment(ref _searchEpoch);
+        if (string.IsNullOrEmpty(searchTextBox))
+        {
+            ClearPendingActivation();
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -196,9 +210,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                     try
                     {
+                        // Snapshot the fetch generation *immediately* before
+                        // applying search text so a fetch that starts as a
+                        // result of this update is considered current, while a
+                        // fetch already in flight is not. Write minValid first
+                        // so a synchronous ItemsChanged during SearchText can
+                        // publish against this generation.
+                        var previousGeneration = Volatile.Read(ref _workState).Generation;
+                        Volatile.Write(ref _minValidFetchGeneration, previousGeneration);
                         if (_model.Unsafe is IDynamicListPage dynamic)
                         {
                             dynamic.SearchText = searchTextBox;
+                        }
+
+                        if (epoch == Volatile.Read(ref _searchEpoch))
+                        {
+                            Volatile.Write(ref _searchAppliedEpoch, epoch);
+                            MarkCurrentSearchReadyIfPublished();
                         }
                     }
                     catch (OperationCanceledException)
@@ -221,9 +249,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
+            Volatile.Write(ref _readySearchEpoch, epoch);
             ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: true, ensureSelectionVisible: true));
             UpdateEmptyContent();
             _isLoadingMore.Clear();
+            TryConsumePendingActivation();
         }
     }
 
@@ -593,6 +623,28 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ensureSelectionVisible: work.EnsureSelectionVisible));
         _isLoadingMore.Clear();
         AdvanceFetchPhase(fetchGeneration, ListPageFetchPhase.Published);
+        MarkSearchResultsReady(fetchGeneration);
+        TryConsumePendingActivation();
+    }
+
+    private void MarkSearchResultsReady(int fetchGeneration)
+    {
+        if (fetchGeneration > Volatile.Read(ref _minValidFetchGeneration) &&
+            Volatile.Read(ref _searchAppliedEpoch) == Volatile.Read(ref _searchEpoch))
+        {
+            Volatile.Write(ref _readySearchEpoch, Volatile.Read(ref _searchEpoch));
+        }
+    }
+
+    private void MarkCurrentSearchReadyIfPublished()
+    {
+        var work = Volatile.Read(ref _workState);
+        if (work.Status == ListPageWorkStatus.Active &&
+            work.Phase == ListPageFetchPhase.Published)
+        {
+            MarkSearchResultsReady(work.Generation);
+            TryConsumePendingActivation();
+        }
     }
 
     private void StartItemInitialization(int fetchGeneration, CancellationToken fetchCancellationToken)
@@ -883,6 +935,122 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 EmptyContent.SecondaryCommand.Model));
         }
     }
+
+    /// <summary>
+    /// Invokes the current selection, or queues Enter until the active query's
+    /// first result is published (GH #48670).
+    /// </summary>
+    public void InvokeSelectedItemOrQueue() => InvokeSelectedItemOrQueue(_lastSelectedItem);
+
+    public void InvokeSelectedItemOrQueue(ListItemViewModel? selectedItem) =>
+        InvokeOrQueue(selectedItem, PendingActivation.Primary);
+
+    /// <summary>
+    /// Invokes the current selection's secondary command, or queues Ctrl+Enter
+    /// until the active query's first result is published.
+    /// </summary>
+    public void InvokeSecondaryCommandOrQueue() => InvokeSecondaryCommandOrQueue(_lastSelectedItem);
+
+    public void InvokeSecondaryCommandOrQueue(ListItemViewModel? selectedItem) =>
+        InvokeOrQueue(selectedItem, PendingActivation.Secondary);
+
+    private bool AreSearchResultsReady =>
+        Volatile.Read(ref _readySearchEpoch) == Volatile.Read(ref _searchEpoch) &&
+        !IsFetching;
+
+    private void InvokeOrQueue(ListItemViewModel? selectedItem, PendingActivation kind)
+    {
+        if (!IsWorkActive || kind == PendingActivation.None)
+        {
+            return;
+        }
+
+        if (AreSearchResultsReady)
+        {
+            if (TryInvokePending(kind, selectedItem))
+            {
+                return;
+            }
+
+            // Results are in but the first row isn't available yet (the
+            // catalog is still initializing). Queue until it is.
+            if (!IsInitialized || IsLoading)
+            {
+                Interlocked.Exchange(ref _pendingActivation, (int)kind);
+            }
+
+            return;
+        }
+
+        Interlocked.Exchange(ref _pendingActivation, (int)kind);
+    }
+
+    private void TryConsumePendingActivation()
+    {
+        var pending = (PendingActivation)Volatile.Read(ref _pendingActivation);
+        if (pending == PendingActivation.None || !IsWorkActive || !AreSearchResultsReady)
+        {
+            return;
+        }
+
+        pending = (PendingActivation)Interlocked.Exchange(ref _pendingActivation, (int)PendingActivation.None);
+        if (pending == PendingActivation.None)
+        {
+            return;
+        }
+
+        if (!TryInvokePending(pending, selectedItem: null) &&
+            (!IsInitialized || IsLoading || IsFetching))
+        {
+            Interlocked.CompareExchange(ref _pendingActivation, (int)pending, (int)PendingActivation.None);
+        }
+    }
+
+    private bool TryInvokePending(PendingActivation kind, ListItemViewModel? selectedItem)
+    {
+        var item = SelectedItemIfCurrent(selectedItem) ?? FirstInteractiveItem();
+        if (item is null && !ShowEmptyContent)
+        {
+            return false;
+        }
+
+        if (kind == PendingActivation.Secondary)
+        {
+            InvokeSecondaryCommand(item);
+        }
+        else
+        {
+            InvokeItem(item);
+        }
+
+        return true;
+    }
+
+    private ListItemViewModel? SelectedItemIfCurrent(ListItemViewModel? selectedItem)
+    {
+        if (selectedItem is { IsInteractive: true } && FilteredItems.Contains(selectedItem))
+        {
+            return selectedItem;
+        }
+
+        return null;
+    }
+
+    private ListItemViewModel? FirstInteractiveItem()
+    {
+        foreach (var item in FilteredItems)
+        {
+            if (item.IsInteractive)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    private void ClearPendingActivation() =>
+        Interlocked.Exchange(ref _pendingActivation, (int)PendingActivation.None);
 
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
@@ -1202,6 +1370,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
+                TryConsumePendingActivation();
                 break;
         }
 
@@ -1405,6 +1574,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         // The status transition already invalidated callbacks and retained their
         // unfinished phase atomically. Never take worker-owned locks on navigation.
+        ClearPendingActivation();
         CancelAndDisposeTokenSource(ref _selectedItemCts);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
         Interlocked.Exchange(ref _itemInitializationCoordinator, null)?.Stop();
@@ -1481,5 +1651,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         public bool Equals(IListItem? x, IListItem? y) => ReferenceEquals(x, y);
 
         public int GetHashCode(IListItem obj) => RuntimeHelpers.GetHashCode(obj);
+    }
+
+    private enum PendingActivation
+    {
+        None = 0,
+        Primary = 1,
+        Secondary = 2,
     }
 }

@@ -212,6 +212,13 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
+        // Apply any debounced query immediately so Enter (handled by the shell)
+        // sees the text that's actually in the box, not the previous keystroke.
+        if (e.Key is VirtualKey.Enter)
+        {
+            FlushPendingFilterUpdate();
+        }
+
         if (e.Key == VirtualKey.Back)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -437,6 +444,16 @@ public sealed partial class SearchBar : UserControl,
         {
             flyout.SecondaryCommands.Add(_helpMenuItem);
         }
+    }
+
+    private void FlushPendingFilterUpdate()
+    {
+        if (_debounceTimer.IsRunning)
+        {
+            _debounceTimer.Stop();
+        }
+
+        DoFilterBoxUpdate();
     }
 
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)

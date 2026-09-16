@@ -1023,7 +1023,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (ItemActionsAllowed && TryHandleItemAction(e))
+        if (ShouldHandleItemAction(e) && TryHandleItemAction(e))
         {
             return;
         }
@@ -1035,19 +1035,55 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private static bool TryHandleItemAction(KeyRoutedEventArgs e)
+    /// <summary>
+    /// Compact-collapsed palettes hide the list, so item chords are ignored.
+    /// Enter (and Ctrl+Enter) still need to run — or queue — so a fast
+    /// "type + enter" isn't dropped before results appear (GH #48670).
+    /// </summary>
+    private bool ShouldHandleItemAction(KeyRoutedEventArgs e)
+    {
+        if (ItemActionsAllowed)
+        {
+            return true;
+        }
+
+        if (e.Key != VirtualKey.Enter)
+        {
+            return false;
+        }
+
+        return !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
+    }
+
+    private bool TryHandleItemAction(KeyRoutedEventArgs e)
     {
         var mods = KeyModifiers.GetCurrent();
         switch (e.Key)
         {
             // Ctrl+Enter
             case VirtualKey.Enter when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+                if (ViewModel.CurrentPage is ListViewModel listForSecondary)
+                {
+                    listForSecondary.InvokeSecondaryCommandOrQueue();
+                }
+                else
+                {
+                    WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+                }
+
                 break;
 
             // Enter
             case VirtualKey.Enter when mods.None:
-                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                if (ViewModel.CurrentPage is ListViewModel list)
+                {
+                    list.InvokeSelectedItemOrQueue();
+                }
+                else
+                {
+                    WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                }
+
                 break;
 
             // Ctrl+K
