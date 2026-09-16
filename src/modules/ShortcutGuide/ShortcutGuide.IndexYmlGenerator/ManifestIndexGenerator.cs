@@ -56,9 +56,11 @@ namespace ShortcutGuide.IndexYmlGenerator
         /// </summary>
         /// <param name="path">The directory containing manifest files and index.yml.
         /// </param>
-        /// <returns><c>true</c> if index.yml is missing or older than any manifest;
-        /// otherwise <c>false</c>.</returns>
-        public static bool NeedsIndexRegeneration(string path)
+        /// <param name="ignoredFileNames">Optional collection of file names to exclude
+        /// from the timestamp comparison.</param>
+        /// <returns><c>true</c> if index.yml is missing or older than any unignored
+        /// manifest; otherwise <c>false</c>.</returns>
+        public static bool NeedsIndexRegeneration(string path, IEnumerable<string>? ignoredFileNames = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -75,11 +77,16 @@ namespace ShortcutGuide.IndexYmlGenerator
 
             DateTime indexWriteTimeUtc = File.GetLastWriteTimeUtc(indexPath);
 
+            HashSet<string>? ignoredSet = ignoredFileNames != null
+                ? new HashSet<string>(ignoredFileNames, StringComparer.OrdinalIgnoreCase)
+                : null;
+
             foreach (string manifestPath in Directory.EnumerateFiles(path, "*.yml"))
             {
                 string fileName = Path.GetFileName(manifestPath);
                 if (string.Equals(fileName, IndexFileName, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(fileName, TempIndexFileName, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(fileName, TempIndexFileName, StringComparison.OrdinalIgnoreCase) ||
+                    (ignoredSet != null && ignoredSet.Contains(fileName)))
                 {
                     continue;
                 }
@@ -104,6 +111,8 @@ namespace ShortcutGuide.IndexYmlGenerator
             ConcurrentBag<(string FileName, Exception Exception)> errors = [];
             ConcurrentBag<(string FileName, string Warning)> warnings = [];
 
+            bool indexFileExists = false;
+
             // Parallel I/O and parsing hide Windows Defender/NTFS file handle inspection
             // latency, especially when manifests have just been copied and scanned.
             Parallel.ForEach(files, file =>
@@ -111,6 +120,7 @@ namespace ShortcutGuide.IndexYmlGenerator
                 string filename = Path.GetFileName(file);
                 if (string.Equals(filename, IndexFileName, StringComparison.OrdinalIgnoreCase))
                 {
+                    indexFileExists = true;
                     return;
                 }
 
@@ -190,7 +200,7 @@ namespace ShortcutGuide.IndexYmlGenerator
             File.Move(tempPath, indexPath, overwrite: true);
 
             return new IndexGenerationResult(
-                TotalFiles: files.Length,
+                TotalFiles: files.Length - (indexFileExists ? 1 : 0), // exclude index.yml itself from the count
                 IndexedFiles: parsedHeaders.Count,
                 Errors: errors.ToArray(),
                 Warnings: warnings.ToArray());

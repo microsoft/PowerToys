@@ -136,14 +136,18 @@ namespace ShortcutGuide.Controls
         /// </summary>
         private async Task InitializeNavItemsAsync(int generation)
         {
-            if (_getAppIdsTask == null)
+            // Capture to a local so Hide()/OnUnloaded() setting the field to
+            // null on the UI thread between this check and the await below
+            // cannot turn this into a NullReferenceException.
+            var appIdsTask = _getAppIdsTask;
+            if (appIdsTask == null)
             {
                 return;
             }
 
             try
             {
-                var appIds = await _getAppIdsTask.ConfigureAwait(true);
+                var appIds = await appIdsTask.ConfigureAwait(true);
                 if (generation != _openGeneration)
                 {
                     Logger.LogInfo($"MainPaneControl: Stale nav item initialization ignored (generation {generation} vs current {_openGeneration}).");

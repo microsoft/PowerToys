@@ -19,20 +19,23 @@ namespace ShortcutGuide.Helpers
     /// </summary>
     internal sealed partial class PowerToysShortcutsPopulator
     {
+        public static string PowerToysManifestPath { get; } = Path.Combine(
+            ManifestInterpreter.PathOfManifestFiles,
+            $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
+
         /// <summary>
         /// Populates the PowerToys shortcuts in the manifest files.
         /// </summary>
         public static void Populate()
         {
-            string path = Path.Combine(ManifestInterpreter.PathOfManifestFiles, $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
-
-            if (!File.Exists(path))
+            if (!File.Exists(PowerToysManifestPath))
             {
-                Logger.LogWarning($"PowerToys manifest file not found: '{path}'. PowerToys-specific shortcuts will not appear in ShortcutGuide.");
+                Logger.LogWarning($"PowerToys manifest file not found: '{PathAnonymizer.Anonymize(PowerToysManifestPath)}'. PowerToys-specific shortcuts will not appear in ShortcutGuide.");
                 return;
             }
 
-            StringBuilder content = new(File.ReadAllText(path));
+            string originalContent = File.ReadAllText(PowerToysManifestPath);
+            StringBuilder content = new(originalContent);
 
             const string populateStartString = "# <Populate start>";
             const string populateEndString = "# <Populate end>";
@@ -180,7 +183,11 @@ namespace ShortcutGuide.Helpers
 
             content.Append(populateEndString);
 
-            File.WriteAllText(path, content.ToString());
+            string updatedContent = content.ToString();
+            if (!string.Equals(originalContent, updatedContent, StringComparison.Ordinal))
+            {
+                File.WriteAllText(PowerToysManifestPath, updatedContent);
+            }
         }
 
         /// <summary>

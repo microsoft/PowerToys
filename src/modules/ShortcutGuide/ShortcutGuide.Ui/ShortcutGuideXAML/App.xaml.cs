@@ -429,7 +429,7 @@ namespace ShortcutGuide
                                         or UnauthorizedAccessException)
                 {
                     // Fall back to the empty default if the file is corrupt or unreadable.
-                    Logger.LogWarning($"Failed to load pinned shortcuts from '{pinnedPath}'. Falling back to empty list. Reason: {ex.Message}");
+                    Logger.LogWarning($"Failed to load pinned shortcuts from '{PathAnonymizer.Anonymize(pinnedPath)}'. Falling back to empty list. Reason: {ex.Message}");
                 }
             }
 

@@ -89,7 +89,7 @@ namespace ShortcutGuide
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{AnonymizePath(sourceManifestFolder)}'.", ex);
+                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{PathAnonymizer.Anonymize(sourceManifestFolder)}'.", ex);
                 }
 
                 copyStopwatch.Stop();
@@ -106,7 +106,8 @@ namespace ShortcutGuide
                 }
 
                 bool needsRegeneration = IndexYmlGenerator.ManifestIndexGenerator.NeedsIndexRegeneration(
-                    ManifestInterpreter.PathOfManifestFiles);
+                    ManifestInterpreter.PathOfManifestFiles,
+                    [Path.GetFileName(PowerToysShortcutsPopulator.PowerToysManifestPath)]);
 
                 if (!needsRegeneration)
                 {
@@ -136,7 +137,7 @@ namespace ShortcutGuide
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError($"Failed to generate index in-process. There may be a corrupt shortcuts file in \"{AnonymizePath(ManifestInterpreter.PathOfManifestFiles)}\".", ex);
+                        Logger.LogError($"Failed to generate index in-process. There may be a corrupt shortcuts file in \"{PathAnonymizer.Anonymize(ManifestInterpreter.PathOfManifestFiles)}\".", ex);
                     }
                 }
             });
@@ -216,19 +217,6 @@ namespace ShortcutGuide
             {
                 Logger.LogError("Failed to send settings telemetry.", ex);
             }
-        }
-
-        private static string AnonymizePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            string userName = Environment.UserName;
-            return !string.IsNullOrEmpty(userName)
-                ? path.Replace(userName, "<username>", StringComparison.OrdinalIgnoreCase)
-                : path;
         }
 
         /// <summary>

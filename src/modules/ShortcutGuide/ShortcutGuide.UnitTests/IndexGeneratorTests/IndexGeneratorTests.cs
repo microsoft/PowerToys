@@ -543,4 +543,29 @@ BackgroundProcess: false
 
         Assert.IsFalse(needsRegen, "NeedsIndexRegeneration should ignore index.yml and index.yml.tmp.");
     }
+
+    [TestMethod]
+    public void NeedsIndexRegeneration_IgnoresSpecifiedFileNames()
+    {
+        string indexPath = Path.Combine(_tempDirectory, "index.yml");
+        File.WriteAllText(indexPath, "DefaultShellName: +WindowsNT.Shell\nIndex:\n");
+        File.SetLastWriteTimeUtc(indexPath, DateTime.UtcNow.AddMinutes(-5));
+
+        // When a caller passes an ignored file name (such as PowerToysShortcutsPopulator.PowerToysManifestPath),
+        // timestamp changes on that specific manifest should not trigger index regeneration.
+        const string ignoredFileName = "Microsoft.PowerToys.en-US.yml";
+        string ptManifestPath = Path.Combine(_tempDirectory, ignoredFileName);
+        string ptContent = @"
+PackageName: Microsoft.PowerToys
+Name: PowerToys
+WindowFilter: powertoys.exe
+BackgroundProcess: true
+";
+        File.WriteAllText(ptManifestPath, ptContent);
+        File.SetLastWriteTimeUtc(ptManifestPath, DateTime.UtcNow);
+
+        bool needsRegen = ManifestIndexGenerator.NeedsIndexRegeneration(_tempDirectory, [ignoredFileName]);
+
+        Assert.IsFalse(needsRegen, "NeedsIndexRegeneration should ignore explicitly passed file names.");
+    }
 }
