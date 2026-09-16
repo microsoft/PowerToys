@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\CmdPal.TryRun\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Exercise the production bridge against the published SDK without the native host build. -->
+    <PackageReference Include="Microsoft.CommandPalette.Extensions" />
+    <PackageReference Include="MSTest" />
+    <Compile Include="..\..\Microsoft.CmdPal.Common\Commands\OpenInTryRunCommand.cs" Link="OpenInTryRunCommand.cs" />
+    <Compile Include="..\..\..\TryRun\Shared\CmdPalHandoff.cs" Link="CmdPalHandoff.cs" />
+    <Compile Include="..\..\..\TryRun\Shared\CmdPalSelection.cs" Link="CmdPalSelection.cs" />
+    <EmbeddedResource Include="..\..\Microsoft.CmdPal.Common\Commands\TryRun.resx" Link="TryRun.resx" LogicalName="Microsoft.CmdPal.Common.Commands.TryRun.resources" />
+    <EmbeddedResource Include="..\..\Microsoft.CmdPal.Common\Commands\TryRun.zh-Hans.resx" Link="TryRun.zh-Hans.resx" LogicalName="Microsoft.CmdPal.Common.Commands.TryRun.zh-Hans.resources" />
+  </ItemGroup>
+</Project>

@@ -9,12 +9,28 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.TryRun.CmdPal;
 using PowerToys.TryRun.Core;
 using PowerToys.TryRun.FuzzTests;
+using PowerToys.TryRun.Launching;
 
 namespace PowerToys.TryRun.UnitTests;
 
 [TestClass]
 public sealed class CmdPalTests
 {
+    [TestMethod]
+    public void NativeHandoffFuzzingPreservesAcceptedSelections()
+    {
+        var seed = Encoding.UTF8.GetBytes(CmdPalHandoff.Encode(new(@"C:\demo folder\应用.exe", ["--file", "a & b.txt", string.Empty, "$(literal)"])));
+        var random = new Random(916);
+        for (var index = 0; index < 3000; index++)
+        {
+            var data = seed.ToArray();
+            data[random.Next(data.Length)] = (byte)random.Next(256);
+            CmdPalHandoffFuzzer.FuzzTarget(data);
+        }
+
+        CmdPalHandoffFuzzer.FuzzTarget(new byte[(CmdPalHandoff.MaximumCharacters * 4) + 1]);
+    }
+
     [TestMethod]
     public void ProviderExposesSetupAndFileCommandsWithoutExecutingAnything()
     {

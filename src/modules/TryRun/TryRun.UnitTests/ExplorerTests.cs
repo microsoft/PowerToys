@@ -82,12 +82,12 @@ public sealed class ExplorerTests
         var before = AppWindows(application!);
         var selection = CreateSelection(paths);
         object? instance = null;
+        int[] opened = [];
         try
         {
             instance = Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid(ExplorerRegistration.CommandClassId), throwOnError: true)!);
             Assert.AreEqual(0, ((ShellInterop.IObjectWithSelection)instance!).SetSelection(selection));
             Assert.AreEqual(0, ((ShellInterop.IExecuteCommand)instance!).Execute());
-            int[] opened = [];
             for (var attempt = 0; attempt < 60 && opened.Length == 0; attempt++)
             {
                 await Task.Delay(250);
@@ -104,6 +104,16 @@ public sealed class ExplorerTests
             }
 
             Marshal.ReleaseComObject(selection);
+            foreach (var processId in opened)
+            {
+                using var process = Process.GetProcessById(processId);
+                process.CloseMainWindow();
+                if (!process.WaitForExit(10000))
+                {
+                    process.Kill(entireProcessTree: true);
+                    await process.WaitForExitAsync();
+                }
+            }
         }
     }
 

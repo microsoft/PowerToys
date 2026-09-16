@@ -97,6 +97,11 @@ internal sealed partial class IndexerListItem : ListItem
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
 
+        if (OpenInTryRunCommand.ForFile(fullPath) is { } tryRun)
+        {
+            commands.Add(tryRun);
+        }
+
         // Add Peek command if available (only for files, not directories)
         if (!isDir && PeekFileCommand.IsPeekAvailable)
         {

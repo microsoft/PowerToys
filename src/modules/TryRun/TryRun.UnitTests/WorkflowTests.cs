@@ -9,12 +9,52 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.TryRun.Core;
+using PowerToys.TryRun.Launching;
 
 namespace PowerToys.TryRun.UnitTests;
 
 [TestClass]
 public sealed class WorkflowTests
 {
+    [TestMethod]
+    public async Task CmdPalSelectionPrefillsArgumentsAndPermissionsRemainDefaults()
+    {
+        await OnDispatcherAsync(async () =>
+        {
+            var window = new MainWindow([]);
+            try
+            {
+                var before = window.CurrentPolicy();
+                var application = Path.Combine(Environment.SystemDirectory, "findstr.exe");
+                string[] arguments = ["/C:hello world", string.Empty, "data & notes.txt"];
+                await window.ApplyCmdPalSelectionAsync(new(application, arguments));
+                Assert.AreEqual(RuntimeFile.Resolve(application), window.WorkloadFileBox.Text);
+                CollectionAssert.AreEqual(arguments, window.GetConfiguredArguments());
+                Assert.IsTrue(window.ArgumentsOptions.IsExpanded);
+                CollectionAssert.AreEquivalent(before.Values.ToArray(), window.CurrentPolicy().Values.ToArray());
+                Assert.AreEqual(Visibility.Visible, window.SetupPage.Visibility);
+                Assert.AreEqual(Visibility.Collapsed, window.RunPage.Visibility);
+                Assert.AreEqual(string.Empty, window.OutputBox.Text);
+                window.ArgumentsBox.Text = "edited\nargument";
+                string[] editedArguments = ["edited", "argument"];
+                CollectionAssert.AreEqual(editedArguments, window.GetConfiguredArguments());
+                await window.ApplyCmdPalSelectionAsync(new(application, [string.Empty]));
+                CollectionAssert.AreEqual(new[] { string.Empty }, window.GetConfiguredArguments());
+                using var source = new RunSession();
+                var supportingFile = Path.Combine(source.WorkingDirectory, "data.txt");
+                File.WriteAllText(supportingFile, "supporting input");
+                await window.SelectPathsAsync([supportingFile]);
+                CollectionAssert.AreEqual(new[] { string.Empty }, window.GetConfiguredArguments(), "Adding input data must preserve shortcut arguments.");
+                await window.SelectPathsAsync([application]);
+                Assert.AreEqual(0, window.GetConfiguredArguments().Length, "Changing the selection must discard imported arguments.");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
     [TestMethod]
     public async Task OpensOnConfigurationWithAnAccessibleExeChooser()
     {

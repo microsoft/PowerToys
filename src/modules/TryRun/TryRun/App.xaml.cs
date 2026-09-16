@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using PowerToys.TryRun.Core;
+using PowerToys.TryRun.Launching;
 
 namespace PowerToys.TryRun;
 
@@ -17,6 +18,23 @@ public partial class App : Application
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
         var paths = e.Args;
         string? error = null;
+        CmdPalSelection? cmdPalSelection = null;
+        if (e.Args is [CmdPalHandoff.InputSwitch])
+        {
+            paths = [];
+            try
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                using var reader = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false, true));
+                cmdPalSelection = await CmdPalHandoff.ReadAsync(reader, timeout.Token).WaitAsync(timeout.Token);
+                paths = [cmdPalSelection.Path];
+            }
+            catch (Exception exception)
+            {
+                error = "Could not receive the Command Palette selection: " + exception.Message;
+            }
+        }
+
         if (e.Args is [SelectionPayload.InputSwitch])
         {
             try
@@ -32,7 +50,7 @@ public partial class App : Application
             }
         }
 
-        MainWindow = new MainWindow(paths, error);
+        MainWindow = new MainWindow(paths, error, cmdPalSelection);
         ShutdownMode = ShutdownMode.OnMainWindowClose;
         MainWindow.Show();
     }

@@ -1,11 +1,88 @@
-# Command Palette entry
+# Command Palette integration
+
+## Actions on built-in app and file results
+
+The native CmdPal Apps and Indexer providers now include **Open in Try Run**
+(**在 Try Run 中打开** in Simplified Chinese) in the selected result's action menu.
+The default Enter/Open action stays unchanged. This applies to app search,
+indexed file search, direct-path file results and the folder browser.
+
+- For Win32 apps, the action uses CmdPal's resolved executable path and shortcut
+  arguments. EXE, PowerShell, CMD and BAT are supported. It never activates the
+  shortcut through the host shell. UWP/AUMID and URL activation are not supported.
+- Files and folders open the existing input-selection workflow. A single EXE
+  selects the application; scripts and supporting files use copied inputs.
+  A document without an entry point still needs the user to choose a program.
+  Argument paths do not grant access to their host files automatically.
+- The Try Run setup page opens first. Imported shortcut arguments are expanded
+  for review. The user chooses permissions and selects **Run**. Existing MXC
+  execution, blocked-access review, output, errors and result export are reused.
+
+### Build and try the native menus
+
+1. Build `TryRun.slnx` with the MXC options in the README.
+2. Build the changed CmdPal host from this branch, using the repository build
+   script in `src/modules/cmdpal/Microsoft.CmdPal.UI`:
+
+   ```powershell
+   ../../../../tools/build/build.ps1 -Platform x64 -Configuration Debug -ExtraArgs @('/restore')
+   ```
+
+   Launch that build through its Visual Studio startup project after a successful
+   build. A previously installed CmdPal binary cannot show these source changes.
+3. CmdPal resolves `PowerToys.TryRun.exe` in its adjacent `TryRun` directory, its
+   own directory, or the `TryRun` / `TryRun-Policies` directory beside `WinUI3Apps`
+   in the PowerToys output root. For another output location, set
+   `POWERTOYS_TRYRUN_APP` to the absolute Try Run executable path in the environment
+   used to start CmdPal. An invalid explicit override produces an error.
+4. Search for a Win32 app, select it, and open its action menu. Choose **Open in
+   Try Run**, check the prefilled program and arguments, then select **Run**.
+5. Repeat with a local `.ps1` or `.cmd` file, and with a folder containing a script.
+   Opening the action alone must not execute anything. Running a script that
+   writes `result.txt` should show its output and copied results in Try Run.
+
+This native action needs no development-extension registration. The optional
+extension below provides additional top-level commands.
+
+### Native handoff contract and verification
+
+The two applications compile the same small handoff source in `Shared/`.
+The versioned `--cmdpal-stdin` message contains one local path and argument data;
+it cannot supply policies, elevation, a host-shell command or automatic execution.
+Its bounded JSON parser is AOT compatible. Shortcut arguments are parsed with
+Windows argument quoting, then shown in Try Run. Empty arguments are preserved
+until the argument text is edited. The Explorer selection protocol is unchanged.
+
+`cmdpal/Tests/Microsoft.CmdPal.TryRun.UnitTests` compiles the production context
+command and handoff against the repository's pinned published SDK, so its checks
+do not require a native CmdPal host build. Build it with the repository script
+and `/restore`, then use `vstest.console.exe`; set `POWERTOYS_TRYRUN_APP` for the
+real-window handoff test. The normal Apps and Indexer test projects also contain
+result-menu regression tests. Try Run's tests cover prefilled arguments, unchanged
+permissions, configuration-only navigation, and 3,000 mutated handoff messages.
+
+The native CmdPal build is currently blocked by missing MSVC Spectre libraries
+(`MSB8040` in `version.vcxproj` and `Microsoft.CommandPalette.Extensions.vcxproj`).
+The native provider tests and complete CmdPal menu walkthrough require those
+prerequisites. No compiler security setting was disabled to bypass this failure.
+
+Current x64 Debug validation: `TryRun.slnx`, including the standalone native-action
+test project, builds with exit code 0. `cmdpal-native-final.trx` passes **78/78**:
+25 context-command/handoff checks and 53 Try Run, Explorer, file-access, selection
+and setup/results regressions. This includes a real context-command invocation
+opening Try Run without executing the selected script, and the Unicode fuzz
+regression. Results are in `x64/Debug/tests/TryRun.UnitTests/TestResults/`.
+The Apps/Indexer provider menu tests are not included in this count; their normal
+build still needs the missing native prerequisites.
+
+## Optional top-level development extension
 
 Try Run is exposed through a standard out-of-process Command Palette extension.
 The development package is opt-in and separate from PowerToys installation/GPO
 registration. It reuses the published Command Palette SDK version already pinned
 by this repository's extension template.
 
-## Use
+### Use
 
 1. Build `TryRun.slnx` with the existing MXC options. The extension is produced in
    `<TryRun output>\CmdPal` beside the application and worker directories.
@@ -33,7 +110,7 @@ global fallback command. It does not inspect contents while searching, run paste
 shell text, select a more permissive policy or execute a workload automatically.
 Errors starting Try Run are shown as a CmdPal toast and keep the palette open.
 
-## Registration and lifecycle
+### Registration and lifecycle
 
 `Set-CmdPalIntegration.ps1` also supports:
 
@@ -57,7 +134,7 @@ Selections use the existing bounded UTF-8 `--selection-stdin` protocol. Paths ar
 data, not command-line fragments. The same MainWindow configuration, policies,
 MXC worker, output/file review and access-grant retry UI handle all execution.
 
-## Validation
+### Previous extension validation
 
 The x64 Debug extension, standalone Try Run solution and test project built with
 exit code 0. All 18 new tests passed in `cmdpal-integration.trx`: command discovery,

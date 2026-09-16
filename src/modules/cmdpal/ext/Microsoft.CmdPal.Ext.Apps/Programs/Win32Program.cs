@@ -11,6 +11,7 @@ using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -186,6 +187,15 @@ public partial class Win32Program : IProgram
     public List<IContextItem> GetCommands()
     {
         List<IContextItem> commands = [];
+
+        // FullPath is the resolved executable, not the .lnk or shell activation target.
+        var tryRun = AppType is ApplicationType.Folder or ApplicationType.GenericFile
+            ? OpenInTryRunCommand.ForFile(FullPath)
+            : OpenInTryRunCommand.ForApplication(FullPath, Arguments);
+        if (tryRun is not null)
+        {
+            commands.Add(tryRun);
+        }
 
         if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
         {

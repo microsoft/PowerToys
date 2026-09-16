@@ -48,6 +48,11 @@ internal sealed partial class ExploreListItem : ListItem
             Command = new OpenFileCommand(indexerItem.FullPath);
         }
 
+        if (OpenInTryRunCommand.ForFile(FilePath) is { } tryRun)
+        {
+            context.Add(tryRun);
+        }
+
         MoreCommands = [
             ..context,
             new CommandContextItem(new OpenWithCommand(indexerItem.FullPath)),

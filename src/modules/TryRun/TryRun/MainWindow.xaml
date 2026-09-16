@@ -324,7 +324,7 @@
                                     HorizontalAlignment="Left"
                                     Click="OnEditPolicy"
                                     Content="Run permissions…" />
-                                <Expander Margin="0,16,0,0" Header="Advanced options">
+                                <Expander x:Name="ArgumentsOptions" Margin="0,16,0,0" Header="Advanced options">
                                     <StackPanel Margin="0,12,0,0">
                                         <Label Content="Arguments (one per line)" Target="{Binding ElementName=ArgumentsBox}" />
                                         <TextBox

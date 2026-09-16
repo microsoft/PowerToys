@@ -6,4 +6,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>PowerToys.TryRun.Core</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\CmdPalHandoff.cs" Link="CmdPalHandoff.cs" />
+    <Compile Include="..\Shared\CmdPalSelection.cs" Link="CmdPalSelection.cs" />
+  </ItemGroup>
 </Project>

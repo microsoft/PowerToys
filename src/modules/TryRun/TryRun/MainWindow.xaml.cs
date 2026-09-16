@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
 using PowerToys.TryRun.Core;
+using PowerToys.TryRun.Launching;
 
 namespace PowerToys.TryRun;
 
@@ -26,6 +27,8 @@ public partial class MainWindow : Window
     private readonly Dictionary<bool, PolicySettings> policyDrafts = [];
     private readonly string[] startupPaths;
     private readonly string? startupError;
+    private CmdPalSelection? startupCmdPalSelection;
+    private string[]? importedArguments;
     private CancellationTokenSource? cancellation;
     private RunSession? session;
     private bool closeWhenStopped;
@@ -102,9 +105,10 @@ public partial class MainWindow : Window
         return preparation;
     }
 
-    public MainWindow(string[] startupPaths, string? startupError = null)
+    public MainWindow(string[] startupPaths, string? startupError = null, CmdPalSelection? cmdPalSelection = null)
         : this(startupPaths, startupError, null, null)
     {
+        startupCmdPalSelection = cmdPalSelection;
     }
 
     internal MainWindow(string[] startupPaths, string? startupError, string? workerExecutable, Func<bool>? confirmDiscard)
@@ -114,6 +118,7 @@ public partial class MainWindow : Window
         this.startupPaths = startupPaths;
         this.startupError = startupError;
         InitializeComponent();
+        ArgumentsBox.TextChanged += (_, _) => importedArguments = null;
         InputList.ItemsSource = inputs;
         ProfileBox.ItemsSource = new[]
         {
@@ -210,7 +215,7 @@ public partial class MainWindow : Window
 
             if (startupPaths.Length > 0)
             {
-                await SelectPathsAsync(startupPaths);
+                await ApplyStartupSelectionAsync();
             }
 
             return;
@@ -248,7 +253,7 @@ public partial class MainWindow : Window
 
         if (startupPaths.Length > 0 && !closeWhenStopped && IsVisible)
         {
-            await SelectPathsAsync(startupPaths);
+            await ApplyStartupSelectionAsync();
         }
 
         if (startupError is not null && IsVisible)
@@ -257,12 +262,51 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task ApplyStartupSelectionAsync()
+    {
+        if (startupCmdPalSelection is { } selection)
+        {
+            await ApplyCmdPalSelectionAsync(selection);
+            startupCmdPalSelection = null;
+        }
+        else
+        {
+            await SelectPathsAsync(startupPaths);
+        }
+    }
+
+    internal async Task ApplyCmdPalSelectionAsync(CmdPalSelection selection)
+    {
+        // Validate at the UI boundary as well as the process boundary. No policy or
+        // working-directory grants can be supplied by a CmdPal result.
+        CmdPalHandoff.Encode(selection);
+        if (!await SelectPathsAsync([selection.Path]))
+        {
+            return;
+        }
+
+        ArgumentsBox.Text = string.Join(Environment.NewLine, selection.Arguments);
+        importedArguments = selection.Arguments.ToArray();
+        if (selection.Arguments.Length > 0)
+        {
+            ArgumentsOptions.IsExpanded = true;
+            Status = $"Command Palette supplied {selection.Arguments.Length} shortcut arguments. Review the arguments and run permissions, then select Run.";
+        }
+    }
+
+    // Preserve empty shortcut arguments until the user edits the text. This also
+    // distinguishes a single empty argument from a launch with no arguments.
+    internal string[] GetConfiguredArguments() => importedArguments?.ToArray() ??
+        (ArgumentsBox.Text.Length == 0 ? [] : ArgumentsBox.Text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'));
+
     private void OnProfileChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsInitialized || ProfileBox.SelectedItem is not ExecutionProfile profile)
         {
             return;
         }
+
+        importedArguments = null;
 
         drafts[kind] = (ScriptBox.Text, WorkloadFileBox.Text, ArgumentsBox.Text, InterpreterBox.Text);
         kind = profile.Kind;
@@ -417,11 +461,11 @@ public partial class MainWindow : Window
 
     private bool ShouldSelectCopiedMode() => kind == WorkloadKind.WindowsApplication && string.IsNullOrWhiteSpace(WorkloadFileBox.Text);
 
-    internal async Task SelectPathsAsync(IEnumerable<string> paths)
+    internal async Task<bool> SelectPathsAsync(IEnumerable<string> paths)
     {
         if (showingRun || cancellation is not null)
         {
-            return;
+            return false;
         }
 
         try
@@ -432,6 +476,7 @@ public partial class MainWindow : Window
                 // Installed applications may be hard-linked Windows components. Resolve them
                 // using the runtime-file policy; copied input keeps its stricter link checks.
                 var application = RuntimeFile.Resolve(selection[0]);
+                importedArguments = null;
                 isolationDemo = false;
                 ManualModeBox.IsChecked = true;
                 ProfileBox.SelectedItem = ProfileBox.Items.Cast<ExecutionProfile>().First(profile => profile.Kind == WorkloadKind.WindowsApplication);
@@ -442,18 +487,19 @@ public partial class MainWindow : Window
                 Status = policyDrafts.ContainsKey(false)
                     ? "Application selected. It will use the configured run permissions. Review the configuration, then select Run."
                     : "Application selected. Its folder is read-only; supporting inputs run on copies. Review the configuration, then select Run.";
-                return;
+                return true;
             }
 
-            await ImportSelectionAsync(inputs.Concat(selection), ShouldSelectCopiedMode());
+            return await ImportSelectionAsync(inputs.Concat(selection), ShouldSelectCopiedMode());
         }
         catch (Exception exception)
         {
             Status = "Could not import selection: " + exception.Message;
+            return false;
         }
     }
 
-    private async Task ImportSelectionAsync(IEnumerable<string> paths, bool selectCopiedMode = false)
+    private async Task<bool> ImportSelectionAsync(IEnumerable<string> paths, bool selectCopiedMode = false)
     {
         var selection = paths.ToArray();
         var previous = (EntryPointBox.SelectedItem as TaskEntryPoint)?.RelativePath;
@@ -487,14 +533,17 @@ public partial class MainWindow : Window
                 1 => "Entry point selected. Review the run summary, then select Run.",
                 _ => "Choose one entry point. The other selected files accompany it as data or dependencies.",
             };
+            return true;
         }
         catch (OperationCanceledException)
         {
             Status = "Selection inspection stopped. The previous selection is unchanged.";
+            return false;
         }
         catch (Exception exception)
         {
             Status = "Could not import selection: " + exception.Message;
+            return false;
         }
         finally
         {
@@ -762,7 +811,7 @@ public partial class MainWindow : Window
                 ApplicationPath = entry is null && kind == WorkloadKind.WindowsApplication ? workloadFile : null,
                 FileRelativePath = relativeFile,
                 WorkingSubdirectory = entry?.WorkingSubdirectory,
-                Arguments = ArgumentsBox.Text.Length == 0 ? [] : ArgumentsBox.Text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'),
+                Arguments = GetConfiguredArguments(),
                 Image = ImageBox.Text.Trim(),
                 ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
                 Interpreter = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython ? InterpreterBox.Text.Trim() : null,
