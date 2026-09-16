@@ -33,6 +33,8 @@ bak
 HDP
 Bcl
 bgcode
+3mf
+threemf
 Deflatealgorithm
 exa
 exabyte
