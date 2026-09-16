@@ -524,27 +524,26 @@ public sealed partial class HomePage : Page
         };
 
         return source.View;
+    }
+
+    private async void LoadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        FileOpenPicker fileOpenPicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
+        fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        fileOpenPicker.FileTypeFilter.Add(".rcj");
+        var result = await fileOpenPicker.PickSingleFileAsync();
+        if (result is null)
+        {
+            return;
         }
 
-        private async void LoadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        RCJParser parser = new(await File.ReadAllTextAsync(result.Path));
+
+        var commands = parser.Parse();
+
+        foreach (var command in commands)
         {
-            FileOpenPicker fileOpenPicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
-            fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-            fileOpenPicker.FileTypeFilter.Add(".rcj");
-            var result = await fileOpenPicker.PickSingleFileAsync();
-            if (result is null)
-            {
-                return;
-            }
 
-            RCJParser parser = new(await File.ReadAllTextAsync(result.Path));
-
-            var commands = parser.Parse();
-
-            foreach (var command in commands)
-            {
-
-            }
         }
     }
 }
