@@ -60,6 +60,82 @@ namespace RobocopyUI.Controls
             set { SetValue(IsTextOptionProperty, value); }
         }
 
+        public bool IsSelected
+        {
+            get { return OptionEnabledCheckBox.IsChecked == true; }
+            set { OptionEnabledCheckBox.IsChecked = value; }
+        }
+
+        public double NumberValue
+        {
+            get { return OptionNumberValue.Value; }
+            set { OptionNumberValue.Value = value; }
+        }
+
+        public string TextValue
+        {
+            get { return OptionTextValue.Text; }
+            set { OptionTextValue.Text = value; }
+        }
+
+        public int StartHour
+        {
+            get { return (int)StartHourNumberBox.Value; }
+            set { StartHourNumberBox.Value = value; }
+        }
+
+        public int StartMinute
+        {
+            get { return (int)StartMinuteNumberBox.Value; }
+            set { StartMinuteNumberBox.Value = value; }
+        }
+
+        public int EndHour
+        {
+            get { return (int)EndHourNumberBox.Value; }
+            set { EndHourNumberBox.Value = value; }
+        }
+
+        public int EndMinute
+        {
+            get { return (int)EndMinuteNumberBox.Value; }
+            set { EndMinuteNumberBox.Value = value; }
+        }
+
+        public string StorageUnit
+        {
+            get
+            {
+                return (string)((ComboBoxItem)StorageUnitComboBox.SelectedItem).Content;
+            }
+
+            set
+            {
+                foreach (ComboBoxItem item in StorageUnitComboBox.Items)
+                {
+                    if ((string)item.Content == value)
+                    {
+                        StorageUnitComboBox.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public string SelectedItems
+        {
+            set
+            {
+                if (IsMultiSelectOption && MultiSelectOptions != null)
+                {
+                    foreach (var option in MultiSelectOptions)
+                    {
+                        option.Enabled = value.Contains(option.OptionName);
+                    }
+                }
+            }
+        }
+
         public static readonly DependencyProperty IsStorageOptionProperty =
             DependencyProperty.Register("IsStorageOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 

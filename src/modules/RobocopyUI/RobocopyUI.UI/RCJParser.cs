@@ -85,7 +85,7 @@ namespace RobocopyUI
                     continue;
                 }
 
-                if (_input[_position] == ':' && inArgument)
+                if (_input[_position] == ':' && inArgument && !inArgumentValue)
                 {
                     inArgumentValue = true;
                     _position++;

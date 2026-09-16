@@ -553,7 +553,7 @@
     <value>Output status as unicode.</value>
   </data>
   <data name="SaveButtonLabel.Text" xml:space="preserve">
-    <value>Save options</value>
+    <value>Save Job File</value>
   </data>
   <data name="OutputStatusLabel.Text" xml:space="preserve">
     <value>Status: </value>
@@ -590,5 +590,8 @@
   </data>
   <data name="Status_Fail" xml:space="preserve">
     <value>Operation failed.</value>
+  </data>
+  <data name="LoadButtonLabel.Text" xml:space="preserve">
+    <value>Load Job File</value>
   </data>
 </root>

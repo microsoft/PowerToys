@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -297,10 +297,121 @@ public sealed partial class HomePage : Page
 
         var commands = parser.Parse();
 
-        foreach (var command in commands)
+        if (commands is null || commands.Length == 0)
         {
+            return;
+        }
 
+        void SetOptionContent(Controls.OptionEntry optionEntry, RCJParser.RCJCommand command)
+        {
+            optionEntry.IsSelected = true;
+            if (command.Argument is null)
+            {
+                return;
+            }
+
+            if (optionEntry.IsStorageOption)
+            {
+                string numberPart = new string(command.Argument.TakeWhile(char.IsDigit).ToArray());
+                string unitPart = command.Argument.Substring(numberPart.Length);
+                optionEntry.StorageUnit = unitPart;
+                if (int.TryParse(numberPart, out int number))
+                {
+                    optionEntry.NumberValue = number;
+                }
+            }
+
+            if (optionEntry.IsNumberOption)
+            {
+                if (int.TryParse(command.Argument, out int number))
+                {
+                    optionEntry.NumberValue = number;
+                }
+            }
+
+            if (optionEntry.IsTextOption)
+            {
+                optionEntry.TextValue = command.Argument;
+            }
+
+            if (optionEntry.IsRunHoursOption)
+            {
+                var parts = command.Argument.Split('-');
+                if (parts.Length == 2 && parts.All(p => p.Length == 4 && int.TryParse(p, out _)))
+                {
+                    optionEntry.StartHour = int.Parse(parts[0][0..2], NumberStyles.None, CultureInfo.InvariantCulture);
+                    optionEntry.EndHour = int.Parse(parts[1][0..2], NumberStyles.None, CultureInfo.InvariantCulture);
+                    optionEntry.StartMinute = int.Parse(parts[0][2..4], NumberStyles.None, CultureInfo.InvariantCulture);
+                    optionEntry.EndMinute = int.Parse(parts[1][2..4], NumberStyles.None, CultureInfo.InvariantCulture);
+                }
+            }
+
+            if (optionEntry.IsMultiSelectOption)
+            {
+                optionEntry.SelectedItems = command.Argument;
+            }
+        }
+
+        // Aggregate from left column
+        foreach (var option in OptionsListView.Items)
+        {
+            if (OptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
+            {
+                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
+            }
+        }
+
+        // Aggregate from right column
+        foreach (var option in OptionsListViewRight.Items)
+        {
+            if (OptionsListViewRight.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
+            {
+                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
+            }
+        }
+
+        foreach (var option in FilterOptionsListView.Items)
+        {
+            if (FilterOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
+            {
+                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
+            }
+        }
+
+        foreach (var option in LoggingOptionsListView.Items)
+        {
+            if (LoggingOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
+            {
+                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
+            }
+        }
+
+        foreach (var option in AdvancedOptionsListView.Items)
+        {
+            if (AdvancedOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
+            {
+                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
+            }
+        }
+
+        if (commands.Any(e => e.Command == "NOSD") && string.IsNullOrWhiteSpace(SourceTextBox.Text))
+        {
+            SourceTextBox.Text = string.Empty;
+        }
+
+        if (commands.Any(e => e.Command == "NODD") && string.IsNullOrWhiteSpace(DestinationTextBox.Text))
+        {
+            DestinationTextBox.Text = string.Empty;
+        }
+
+        if (commands.Any(e => e.Command == "SD") && commands.First(e => e.Command == "SD").Argument is not null)
+        {
+            SourceTextBox.Text = commands.First(e => e.Command == "SD").Argument;
+        }
+
+        if (commands.Any(e => e.Command == "DD") && commands.First(e => e.Command == "DD").Argument is not null)
+        {
+            DestinationTextBox.Text = commands.First(e => e.Command == "DD").Argument;
         }
     }
-
 }

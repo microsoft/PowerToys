@@ -151,7 +151,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
                     <Button Margin="0,12,0,12" Click="LoadButton_Click" x:Name="LoadButton">
                         <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE78C;" />
+                            <FontIcon Glyph="&#xE8E5;" />
                             <TextBlock Margin="4,0,0,0" x:Uid="LoadButtonLabel" />
                         </StackPanel>
                     </Button>
