@@ -15,6 +15,7 @@
     <Content Include="$(MxcRoot)\schemas\dev\mxc-config.schema.0.9.0-alpha.json" Link="mxc-contract.schema.json" CopyToOutputDirectory="PreserveNewest" Condition="'$(MxcRoot)' != ''" />
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <ProjectReference Include="..\TryRun.CmdPal\TryRun.CmdPal.csproj" />
     <ProjectReference Include="..\TryRun\TryRun.csproj" />
     <ProjectReference Include="..\TryRun.Explorer\TryRun.Explorer.csproj" />
     <ProjectReference Include="..\TryRun.FuzzTests\TryRun.FuzzTests.csproj" />

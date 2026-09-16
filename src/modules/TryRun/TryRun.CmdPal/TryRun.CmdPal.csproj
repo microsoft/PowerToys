@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>PowerToys.TryRun.CmdPal</AssemblyName>
+    <RootNamespace>PowerToys.TryRun.CmdPal</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\..\runner\svgs\icon.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WindowsPackageType>None</WindowsPackageType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\CmdPal\</OutputPath>
+    <OutputPath Condition="'$(TryRunOutputRoot)' != ''">$(TryRunOutputRoot)\CmdPal\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TryRun.UnitTests" />
+    <!-- Use the same published SDK as the repository's external-extension template. -->
+    <PackageReference Include="Microsoft.CommandPalette.Extensions" />
+    <PackageReference Include="Shmuelie.WinRTServer" />
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+    <Content Include="AppxManifest.xml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Public\readme.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\cmdpal\Microsoft.CmdPal.UI\Assets\Stable\Square150x150Logo.scale-100.png" Link="Assets\Logo150.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\cmdpal\Microsoft.CmdPal.UI\Assets\Stable\Square44x44Logo.scale-100.png" Link="Assets\Logo44.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

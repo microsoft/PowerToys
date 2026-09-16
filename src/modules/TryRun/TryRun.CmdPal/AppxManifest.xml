@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap uap3 com rescap">
+  <Identity Name="PowerToys.TryRun.CmdPal.Dev" Publisher="CN=PowerToys.TryRun.Development" Version="0.1.0.0" />
+  <Properties>
+    <DisplayName>Try Run (experimental)</DisplayName>
+    <PublisherDisplayName>PowerToys Try Run development</PublisherDisplayName>
+    <Logo>Assets\Logo44.png</Logo>
+  </Properties>
+  <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.26100.0" MaxVersionTested="10.0.26100.0" /></Dependencies>
+  <Resources><Resource Language="en-US" /></Resources>
+  <Applications>
+    <Application Id="App" Executable="PowerToys.TryRun.CmdPal.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Try Run (experimental)" Description="Configure Windows applications and scripts in MXC through Try Run" BackgroundColor="transparent" Square150x150Logo="Assets\Logo150.png" Square44x44Logo="Assets\Logo44.png" AppListEntry="none" />
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="PowerToys.TryRun.CmdPal.exe" Arguments="-RegisterProcessAsComServer" DisplayName="Try Run">
+              <com:Class Id="E6E62235-B207-45CC-92A3-ABCB37AD63B1" DisplayName="Try Run" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.commandpalette" Id="TryRun" PublicFolder="Public" DisplayName="Try Run" Description="Configure a restricted Windows run">
+            <uap3:Properties><CmdPalProvider><Activation><CreateInstance ClassId="E6E62235-B207-45CC-92A3-ABCB37AD63B1" /></Activation><SupportedInterfaces><Commands /></SupportedInterfaces></CmdPalProvider></uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities><rescap:Capability Name="runFullTrust" /></Capabilities>
+</Package>

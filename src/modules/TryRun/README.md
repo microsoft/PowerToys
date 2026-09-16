@@ -45,9 +45,11 @@ Complete and validate each milestone before starting the next.
     their full identifiers; explicit file selection covers missing native events.
     Both routes preview an exact read-only file grant and retry the recorded task
     in a fresh workspace. See [File access review](FILE-ACCESS-REVIEW.md).
-11. **Command Palette entry — not started**: an explicitly enabled developer command opens the
-   window, without changing ordinary Run or existing module settings; build and
-   launch validation.
+11. **Command Palette entry — implemented as an opt-in development extension**:
+    **Try Run** opens configuration; **Try Run a file** passes a pasted file/folder
+    path through the existing selection protocol. Catalog discovery, COM activation
+    and window handoff are validated. See [CmdPal integration](CMDPAL-INTEGRATION.md)
+    for registration and the remaining host-UI validation boundary.
 
 Installer, Runner/GPO registration and automatic write-back are outside this
 prototype. Multi-call lifecycle and additional backend entry points are pending
@@ -84,6 +86,16 @@ input injection, system-settings changes and desktop system control stay blocked
 The window permissions are shown before execution. This is not a no-GUI policy.
 
 ## Validation record
+
+### Command Palette extension
+
+The Try Run solution and extension built in x64 Debug with exit code 0. All
+18 CmdPal-specific tests passed, followed by 43/43 focused regressions in
+**cmdpal-regression.trx**. The development extension is registered for this user;
+desktop catalog discovery, COM activation and invocation of the **Try Run**
+command successfully opened the configuration window. No CmdPal host executable
+was found in the checked locations, so search-page UI validation remains pending.
+See [CmdPal integration](CMDPAL-INTEGRATION.md) for setup, validation and scope.
 
 ### Windows file-access review
 
