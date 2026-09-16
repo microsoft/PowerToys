@@ -31,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("disable_cursor_wrap_on_single_monitor")]
         public BoolProperty DisableCursorWrapOnSingleMonitor { get; set; }
 
+        [JsonPropertyName("disable_cursor_wrap_in_game_mode")]
+        public BoolProperty DisableCursorWrapInGameMode { get; set; }
+
         public CursorWrapProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -39,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             WrapMode = new IntProperty(0); // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
             ActivationMode = new IntProperty(0); // 0=Always (default), 1=HoldingCtrl, 2=HoldingShift
             DisableCursorWrapOnSingleMonitor = new BoolProperty(false);
+            DisableCursorWrapInGameMode = new BoolProperty(false); // Default to false: only disable wrapping in game mode if the user opts in
         }
     }
 }
