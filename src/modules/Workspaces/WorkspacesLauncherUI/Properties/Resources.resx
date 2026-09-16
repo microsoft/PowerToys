@@ -175,11 +175,11 @@
   </data>
   <data name="SignatureWarningPath" xml:space="preserve">
     <value>Location</value>
-    <comment>Label for the launch target, which can be a file path or a Windows app-package activation identifier. The value is not translated and is displayed left to right, with misleading control characters escaped. Launching and copying preserve the original target.</comment>
+    <comment>Label for the executable file path. The value is not translated and is displayed left to right, with misleading control characters escaped. Launching and copying preserve the original target.</comment>
   </data>
   <data name="SignatureWarningReason" xml:space="preserve">
     <value>Reason</value>
-    <comment>Heading for the explanation of why signature or package verification did not succeed.</comment>
+    <comment>Heading for the explanation of why signature verification did not succeed.</comment>
   </data>
   <data name="SignatureWarningDetails" xml:space="preserve">
     <value>Details</value>
@@ -246,55 +246,11 @@
     <comment>Verification uses cached certificate revocation information on this computer, not a guaranteed online check. Unavailable cache data is inconclusive; it is not evidence that the certificate was revoked or that the app is safe.</comment>
   </data>
   <data name="SignatureWarningUnresolvedTarget" xml:space="preserve">
-    <value>The executable behind this launch target could not be verified. Protocols, shortcuts, and other indirect targets require confirmation.</value>
-    <comment>Reason for an indirect launch target whose actual executable could not be verified. "Protocols" means registered URI schemes, and "shortcuts" means application/file shortcuts, not keyboard shortcuts.</comment>
+    <value>The executable file could not be located or verified.</value>
+    <comment>Reason when the executable file to be launched could not be resolved for signature verification.</comment>
   </data>
   <data name="SignatureWarningUnavailable" xml:space="preserve">
     <value>Signature verification could not be completed.</value>
     <comment>Generic inconclusive verification result. Do not translate as a confirmed invalid signature, revocation, or malicious application.</comment>
-  </data>
-  <data name="SignatureWarningPackageExplanation" xml:space="preserve">
-    <value>PowerToys could not verify this installed app package for an elevated launch. Running it as administrator can allow it to change your system. Do you want to continue?</value>
-    <comment>App package means an installed Windows MSIX/AppX package. Continuing does not bypass Windows UAC or execution policies.</comment>
-  </data>
-  <data name="SignatureWarningPackageNotFound" xml:space="preserve">
-    <value>Windows could not resolve this launch target to a registered app package for the current user.</value>
-    <comment>Reason for an unresolved installed Windows MSIX/AppX application identity. This does not mean an executable file was found and classified as unsigned.</comment>
-  </data>
-  <data name="SignatureWarningPackageDevelopment" xml:space="preserve">
-    <value>This app is registered in development mode. Package verification cannot establish trust in its application files.</value>
-    <comment>This is development-mode registration, not the Developer category of package signing certificates.</comment>
-  </data>
-  <data name="SignatureWarningPackageExternalContent" xml:space="preserve">
-    <value>This package uses external or mutable application files that are not covered by the current package-verification policy.</value>
-    <comment>External or mutable means application payload outside the protected package or allowed to change after deployment. It does not mean downloaded from the Internet.</comment>
-  </data>
-  <data name="SignatureWarningPackageIntegrity" xml:space="preserve">
-    <value>Windows reports that this app package's contents were modified or could not pass an integrity check.</value>
-    <comment>Reason for a failed Windows MSIX/AppX content integrity check. Preserve the distinction from an unavailable check.</comment>
-  </data>
-  <data name="SignatureWarningPackageUnavailable" xml:space="preserve">
-    <value>Windows reports that this app package is unavailable or is not ready to run.</value>
-    <comment>Reason for an unhealthy, incomplete, or unavailable package deployment; not a claim that the package is unsigned.</comment>
-  </data>
-  <data name="SignatureWarningPackageUnsigned" xml:space="preserve">
-    <value>This app package is not signed.</value>
-    <comment>Reason when Windows reports no package signature. "Package" means an installed MSIX/AppX software package.</comment>
-  </data>
-  <data name="SignatureWarningPackageSigningPolicy" xml:space="preserve">
-    <value>The package's signing source could not be verified under the current launch policy.</value>
-    <comment>A signed package can be trusted by Windows deployment but not covered by the current launch policy. This does not mean the package is malicious or that Windows package trust guarantees safety.</comment>
-  </data>
-  <data name="SignatureWarningPackageVerificationUnavailable" xml:space="preserve">
-    <value>Package verification could not be completed.</value>
-    <comment>Generic inconclusive MSIX/AppX verification result, including unavailable APIs or timeouts. Do not imply a failed integrity check.</comment>
-  </data>
-  <data name="SignatureWarningPackageChanged" xml:space="preserve">
-    <value>The app's package registration changed or could no longer be confirmed. Try launching the workspace again.</value>
-    <comment>Reason when the installed application identity or package location changed during verification. "Workspace" refers to the saved PowerToys Workspaces layout.</comment>
-  </data>
-  <data name="SignatureWarningPreviewStatus" xml:space="preserve">
-    <value>Preview only — no app will be launched.</value>
-    <comment>Diagnostic status displayed only by the DEBUG-only elevation warning preview. Not available in release builds.</comment>
   </data>
 </root>

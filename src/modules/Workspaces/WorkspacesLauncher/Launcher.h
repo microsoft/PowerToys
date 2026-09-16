@@ -24,7 +24,6 @@ private:
     std::atomic<bool> m_launchedSuccessfully{};
     LaunchingStatus m_launchingStatus;
     PendingLaunchApproval m_approval;
-    std::atomic<bool> m_uiFailed{};
     std::atomic<bool> m_launchStarted{};
     std::mutex m_launchThreadMutex;
     std::thread m_launchThread;
@@ -41,6 +40,5 @@ private:
     void Launch();
     void handleWindowArrangerMessage(const std::wstring& msg);
     void handleUIMessage(const std::wstring& msg);
-    void handleUIFailure(LauncherIpcFailure failure);
     LaunchDecision requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result);
 };

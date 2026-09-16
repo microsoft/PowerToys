@@ -99,8 +99,7 @@ namespace AppLauncher
                 return Error(LaunchError{ ERROR_CANCELLED, L"Launch skipped or canceled." });
             }
             terminalResult = LaunchResult::Failed;
-            const auto reason = decision == LaunchDecision::TargetChanged ? L"Launch target changed after verification." :
-                                decision == LaunchDecision::TimedOut ? L"Elevation confirmation could not be displayed in time." :
+            const auto reason = decision == LaunchDecision::TimedOut ? L"Elevation confirmation could not be displayed in time." :
                                 decision == LaunchDecision::InvalidResponse ? L"Invalid elevation confirmation response." :
                                 L"Elevation confirmation UI is unavailable.";
             Logger::error(L"Elevated launch stopped: {}", reason);
@@ -131,7 +130,7 @@ namespace AppLauncher
             {
                 return stop(LaunchDecision::Canceled);
             }
-            if (!app.isElevated)
+            if (!app.isElevated || !SignatureVerification::IsExecutableTarget(path))
             {
                 return execute(path, arguments);
             }
@@ -152,10 +151,6 @@ namespace AppLauncher
                 {
                     return stop(decision);
                 }
-            }
-            if (!SignatureVerification::IsCurrent(target, isCanceled))
-            {
-                return stop(isCanceled() ? LaunchDecision::Canceled : LaunchDecision::TargetChanged);
             }
             if (isCanceled())
             {

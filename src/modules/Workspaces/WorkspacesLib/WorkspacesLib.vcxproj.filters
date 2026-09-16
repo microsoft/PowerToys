@@ -29,12 +29,6 @@
     <ClInclude Include="SignatureVerification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PackageVerification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PackageVerificationAsync.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PendingLaunchApproval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,9 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LaunchingStatus.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LauncherIpcServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LauncherUiMessage.h">
@@ -106,19 +97,10 @@
     <ClCompile Include="LaunchingStatus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LauncherIpcServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PwaHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SignatureVerification.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PackageVerification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CommandLineArgsHelper.cpp">

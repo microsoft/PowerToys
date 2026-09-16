@@ -4,7 +4,6 @@
 
 #include "pch.h"
 #include "SignatureVerification.h"
-#include "PackageVerification.h"
 
 #include <imagehlp.h>
 #include <mscat.h>
@@ -13,6 +12,7 @@
 
 #include <filesystem>
 #include <mutex>
+#include <string_view>
 #include <vector>
 
 #pragma comment(lib, "wintrust.lib")
@@ -270,10 +270,6 @@ namespace SignatureVerification
 
     std::wstring Result::Reason() const
     {
-        if (!detailReason.empty())
-        {
-            return detailReason;
-        }
         switch (error)
         {
         case CERT_E_REVOKED:
@@ -294,9 +290,30 @@ namespace SignatureVerification
         }
     }
 
-    bool IsCurrent(const LaunchTarget& target, const std::function<bool()>& isCanceled)
+    bool IsExecutableTarget(const std::wstring& path)
     {
-        return PackageVerification::IsCurrent(target, isCanceled);
+        // Classify what ShellExecute sees, but let Verify reject embedded NULs.
+        std::wstring_view target(path.c_str());
+        if (target.starts_with(L"\\\\?\\"))
+        {
+            target.remove_prefix(4);
+        }
+        const auto colon = target.find(L':');
+        if (colon != std::wstring_view::npos &&
+            (colon != 1 || !((target[0] >= L'A' && target[0] <= L'Z') || (target[0] >= L'a' && target[0] <= L'z')) ||
+             target.substr(colon + 1).starts_with(L"//")))
+        {
+            return false;
+        }
+
+        // Win32 file lookup ignores trailing spaces and dots in the final component.
+        const auto end = target.find_last_not_of(L" .");
+        if (end == std::wstring_view::npos)
+        {
+            return false;
+        }
+        target = target.substr(0, end + 1);
+        return target.size() >= 4 && _wcsnicmp(target.data() + target.size() - 4, L".exe", 4) == 0;
     }
 
     LaunchTarget Verify(const std::wstring& path, const std::function<bool()>& isCanceled)
@@ -309,14 +326,10 @@ namespace SignatureVerification
             target.result = Failure(HRESULT_FROM_WIN32(ERROR_CANCELLED));
             return target;
         }
-        if (PackageVerification::ParseTarget(path))
-        {
-            return PackageVerification::Verify(path, isCanceled);
-        }
         LaunchTarget executable;
         executable.path = path;
         if (path.empty() || path.find(L'\0') != std::wstring::npos ||
-            !std::filesystem::path(path).is_absolute() || _wcsicmp(std::filesystem::path(path).extension().c_str(), L".exe") != 0)
+            !std::filesystem::path(path).is_absolute() || !IsExecutableTarget(path))
         {
             return executable;
         }

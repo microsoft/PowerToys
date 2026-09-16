@@ -279,7 +279,7 @@ namespace WorkspacesLauncherUI.UnitTests
             }
         }
 
-        private static void RunOnSta(Action test)
+        internal static void RunOnSta(Action test)
         {
             ExceptionDispatchInfo failure = null;
             var thread = new Thread(() =>
@@ -300,7 +300,7 @@ namespace WorkspacesLauncherUI.UnitTests
             thread.SetApartmentState(ApartmentState.STA);
             thread.IsBackground = true;
             thread.Start();
-            Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(30)), "In-process WPF layout did not complete.");
+            Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(30)), "In-process WPF test did not complete.");
             failure?.Throw();
         }
     }

@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Markup;
+using ManagedCommon;
 using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI
@@ -16,7 +16,6 @@ namespace WorkspacesLauncherUI
     {
         private readonly SignatureWarningRequest _request;
         private bool _readyForChoice;
-        private bool _skipRequested;
         private bool _dismissedByOwner;
 
         public SignatureWarningWindow(SignatureWarningRequest request)
@@ -33,36 +32,39 @@ namespace WorkspacesLauncherUI
 
         internal void EnableRunChoice()
         {
-            _readyForChoice = true;
-            if (_skipRequested)
+            if (!_dismissedByOwner)
             {
-                Close();
-                return;
+                _readyForChoice = true;
+                RunAnywayButton.IsEnabled = true;
             }
-
-            RunAnywayButton.IsEnabled = true;
         }
 
         internal void DismissWithoutResponse()
         {
             _dismissedByOwner = true;
+            _readyForChoice = false;
+            RunAnywayButton.IsEnabled = false;
+
+            // Close modal children before destroying their owner so their dispatcher loops can exit.
+            foreach (Window ownedWindow in OwnedWindows)
+            {
+                ownedWindow.Close();
+            }
+
             Close();
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        internal void ShowCopyDetailsError()
         {
-            base.OnClosing(e);
-            if (!_readyForChoice && !_dismissedByOwner)
+            if (!_dismissedByOwner)
             {
-                // Remember an early Escape/X/Skip, but do not respond before warning-shown.
-                _skipRequested = true;
-                e.Cancel = true;
+                MessageBox.Show(this, _request.CopyDetailsErrorText, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         private void RunAnyway_Click(object sender, RoutedEventArgs e)
         {
-            if (RunAnywayButton.IsEnabled)
+            if (_readyForChoice && !_dismissedByOwner)
             {
                 DialogResult = true;
             }
@@ -74,9 +76,10 @@ namespace WorkspacesLauncherUI
             {
                 Clipboard.SetText(_request.DetailsText);
             }
-            catch (ExternalException)
+            catch (ExternalException exception)
             {
-                MessageBox.Show(this, _request.CopyDetailsErrorText, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                Logger.LogError("Unable to copy Workspaces elevation warning details", exception);
+                ShowCopyDetailsError();
             }
         }
     }

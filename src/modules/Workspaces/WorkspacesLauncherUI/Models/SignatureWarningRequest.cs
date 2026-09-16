@@ -37,9 +37,7 @@ namespace WorkspacesLauncherUI.Models
 
         public string Title => Resources.SignatureWarningTitle;
 
-        public string Explanation => Reason.StartsWith("package-", StringComparison.Ordinal)
-            ? Resources.SignatureWarningPackageExplanation
-            : Resources.SignatureWarningExplanation;
+        public string Explanation => Resources.SignatureWarningExplanation;
 
         public string TrustLimits => Resources.SignatureWarningTrustLimits;
 
@@ -94,15 +92,6 @@ namespace WorkspacesLauncherUI.Models
             "expired" => Resources.SignatureWarningExpired,
             "revocation-unavailable" => Resources.SignatureWarningRevocationUnavailable,
             "unresolved-target" => Resources.SignatureWarningUnresolvedTarget,
-            "package-not-found" => Resources.SignatureWarningPackageNotFound,
-            "package-development" => Resources.SignatureWarningPackageDevelopment,
-            "package-external-content" => Resources.SignatureWarningPackageExternalContent,
-            "package-integrity-failed" => Resources.SignatureWarningPackageIntegrity,
-            "package-unavailable" => Resources.SignatureWarningPackageUnavailable,
-            "package-unsigned" => Resources.SignatureWarningPackageUnsigned,
-            "package-signing-policy" => Resources.SignatureWarningPackageSigningPolicy,
-            "package-verification-unavailable" => Resources.SignatureWarningPackageVerificationUnavailable,
-            "package-changed" => Resources.SignatureWarningPackageChanged,
             _ => Resources.SignatureWarningUnavailable,
         };
 

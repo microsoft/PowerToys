@@ -241,110 +241,11 @@ namespace WorkspacesLauncherUI.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The app&apos;s package registration changed or could no longer be confirmed. Try launching the workspace again..
-        /// </summary>
-        public static string SignatureWarningPackageChanged {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageChanged", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to This app is registered in development mode. Package verification cannot establish trust in its application files..
-        /// </summary>
-        public static string SignatureWarningPackageDevelopment {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageDevelopment", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to PowerToys could not verify this installed app package for an elevated launch. Running it as administrator can allow it to change your system. Do you want to continue?.
-        /// </summary>
-        public static string SignatureWarningPackageExplanation {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageExplanation", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to This package uses external or mutable application files that are not covered by the current package-verification policy..
-        /// </summary>
-        public static string SignatureWarningPackageExternalContent {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageExternalContent", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Windows reports that this app package&apos;s contents were modified or could not pass an integrity check..
-        /// </summary>
-        public static string SignatureWarningPackageIntegrity {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageIntegrity", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Windows could not resolve this launch target to a registered app package for the current user..
-        /// </summary>
-        public static string SignatureWarningPackageNotFound {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageNotFound", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to The package&apos;s signing source could not be verified under the current launch policy..
-        /// </summary>
-        public static string SignatureWarningPackageSigningPolicy {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageSigningPolicy", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Windows reports that this app package is unavailable or is not ready to run..
-        /// </summary>
-        public static string SignatureWarningPackageUnavailable {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageUnavailable", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to This app package is not signed..
-        /// </summary>
-        public static string SignatureWarningPackageUnsigned {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageUnsigned", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Package verification could not be completed..
-        /// </summary>
-        public static string SignatureWarningPackageVerificationUnavailable {
-            get {
-                return ResourceManager.GetString("SignatureWarningPackageVerificationUnavailable", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Location.
         /// </summary>
         public static string SignatureWarningPath {
             get {
                 return ResourceManager.GetString("SignatureWarningPath", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Preview only — no app will be launched..
-        /// </summary>
-        public static string SignatureWarningPreviewStatus {
-            get {
-                return ResourceManager.GetString("SignatureWarningPreviewStatus", resourceCulture);
             }
         }
 
@@ -448,7 +349,7 @@ namespace WorkspacesLauncherUI.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The executable behind this launch target could not be verified. Protocols, shortcuts, and other indirect targets require confirmation..
+        ///   Looks up a localized string similar to The executable file could not be located or verified..
         /// </summary>
         public static string SignatureWarningUnresolvedTarget {
             get {

@@ -13,10 +13,8 @@ struct LauncherUiMessage
 {
     enum class Type
     {
-        Ready,
         Cancel,
         WarningShown,
-        Heartbeat,
         Response,
     };
 
@@ -26,22 +24,18 @@ struct LauncherUiMessage
 
     static std::optional<LauncherUiMessage> Parse(const std::wstring& text)
     {
+        if (text == L"cancel")
+        {
+            return LauncherUiMessage{ Type::Cancel };
+        }
         try
         {
             const auto message = json::JsonValue::Parse(text).GetObjectW();
-            if (message.GetNamedNumber(L"protocolVersion") != 1)
-            {
-                return std::nullopt;
-            }
             const auto type = message.GetNamedString(L"type");
-            if (type == L"ready" || type == L"cancel")
-            {
-                return LauncherUiMessage{ type == L"ready" ? Type::Ready : Type::Cancel };
-            }
             LauncherUiMessage result{};
             result.requestId = message.GetNamedString(L"requestId");
             GUID id{};
-            if (result.requestId.empty() || result.requestId.size() > 38 ||
+            if (result.requestId.size() != 38 || result.requestId.front() != L'{' || result.requestId.back() != L'}' ||
                 result.requestId.find(L'\0') != std::wstring::npos ||
                 FAILED(CLSIDFromString(result.requestId.c_str(), &id)))
             {
@@ -50,10 +44,6 @@ struct LauncherUiMessage
             if (type == L"warning-shown")
             {
                 result.type = Type::WarningShown;
-            }
-            else if (type == L"heartbeat")
-            {
-                result.type = Type::Heartbeat;
             }
             else if (type == L"elevation-response")
             {

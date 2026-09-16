@@ -5,16 +5,43 @@
 #include "pch.h"
 #include <WorkspacesLib/SignatureVerification.h>
 #include <WorkspacesLib/PendingLaunchApproval.h>
-#include <WorkspacesLib/PackageVerification.h>
 #include <WorkspacesLib/LauncherUiMessage.h>
+#include <WorkspacesLauncher/pch.h>
 #include <WorkspacesLauncher/AppLauncher.h>
+#include <WorkspacesLauncher/RegistryUtils.h>
 #include <softpub.h>
 #include <wincrypt.h>
 
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <future>
+
+namespace WorkspacesLibUnitTests
+{
+    namespace
+    {
+        thread_local std::function<BOOL(SHELLEXECUTEINFO*)> shellExecute;
+    }
+
+    BOOL WINAPI FakeShellExecute(SHELLEXECUTEINFO* information)
+    {
+        if (!shellExecute)
+        {
+            SetLastError(ERROR_ACCESS_DENIED);
+            Microsoft::VisualStudio::CppUnitTestFramework::Assert::Fail(L"Unexpected ShellExecuteEx call; tests must not launch applications.");
+        }
+        return shellExecute(information);
+    }
+}
+
+// Test-only interception: compile the real launcher once, without calling the Windows shell.
+#pragma push_macro("ShellExecuteEx")
+#undef ShellExecuteEx
+#define ShellExecuteEx ::WorkspacesLibUnitTests::FakeShellExecute
+#include <WorkspacesLauncher/AppLauncher.cpp>
+#pragma pop_macro("ShellExecuteEx")
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using SignatureVerification::Status;
@@ -26,12 +53,19 @@ namespace WorkspacesLibUnitTests
         struct TemporaryExecutable
         {
             std::wstring path;
+            std::wstring directory;
 
-            TemporaryExecutable()
+            explicit TemporaryExecutable(const std::wstring& fileName = {})
             {
                 wchar_t temporary[MAX_PATH]{};
                 Assert::IsTrue(GetTempFileNameW(std::filesystem::temp_directory_path().c_str(), L"wsg", 0, temporary) != 0);
                 path = std::wstring(temporary) + L".exe";
+                if (!fileName.empty())
+                {
+                    directory = std::wstring(temporary) + L".dir";
+                    Assert::IsTrue(CreateDirectoryW(directory.c_str(), nullptr) != FALSE);
+                    path = (std::filesystem::path(directory) / fileName).wstring();
+                }
                 Assert::IsTrue(MoveFileW(temporary, path.c_str()) != FALSE);
 
                 std::array<char, 1024> image{};
@@ -79,6 +113,10 @@ namespace WorkspacesLibUnitTests
                 if (!DeleteFileW(path.c_str()) && GetLastError() != ERROR_FILE_NOT_FOUND)
                 {
                     Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"Could not remove signature test fixture.");
+                }
+                if (!directory.empty() && !RemoveDirectoryW(directory.c_str()))
+                {
+                    Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"Could not remove signature test fixture directory.");
                 }
             }
         };
@@ -149,13 +187,15 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(executable.result.publisher.empty());
         }
 
-        TEST_METHOD (CheckedFileCannotBeRewrittenWhileHeld)
+        TEST_METHOD (CheckedFileCannotBeChangedWhileHeld)
         {
             TemporaryExecutable fixture;
             const auto executable = SignatureVerification::Verify(fixture.path);
             Assert::IsTrue(static_cast<bool>(executable.file));
             wil::unique_hfile writer(CreateFileW(fixture.path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr));
             Assert::IsFalse(static_cast<bool>(writer));
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SHARING_VIOLATION), GetLastError());
+            Assert::IsFalse(DeleteFileW(fixture.path.c_str()) != FALSE);
             Assert::AreEqual(static_cast<DWORD>(ERROR_SHARING_VIOLATION), GetLastError());
         }
 
@@ -189,268 +229,121 @@ namespace WorkspacesLibUnitTests
         }
     };
 
-    TEST_CLASS (PackageVerificationTests)
+    TEST_CLASS (ExecutableTargetTests)
     {
-        static PackageVerification::details::Registration RegisteredPackage()
-        {
-            PackageVerification::details::Registration registration;
-            registration.identity.fullName = L"PowerToys.Test_1.0.0.0_x64__8wekyb3d8bbwe";
-            registration.identity.applicationUserModelId = L"PowerToys.Test_8wekyb3d8bbwe!App";
-            registration.identity.installedPath = L"C:\\Packages\\Test";
-            registration.identity.effectivePath = registration.identity.installedPath;
-            registration.state = HealthyPackage();
-            registration.identity.signatureKind = static_cast<int32_t>(registration.state.signatureKind);
-            return registration;
-        }
-
-        static SignatureVerification::LaunchTarget MissingPackageTarget()
-        {
-            SignatureVerification::LaunchTarget target;
-            target.path = L"shell:AppsFolder\\" + RegisteredPackage().identity.applicationUserModelId;
-            target.result = { Status::UnableToVerify, HRESULT_FROM_WIN32(ERROR_NOT_FOUND) };
-            return target;
-        }
-
-        static constexpr PackageVerification::PackageState HealthyPackage()
-        {
-            PackageVerification::PackageState state;
-            state.identityMatches = true;
-            state.signatureKind = winrt::Windows::ApplicationModel::PackageSignatureKind::Store;
-            state.statusOk = true;
-            state.integrityChecked = true;
-            state.integrityValid = true;
-            return state;
-        }
-
     public:
-        TEST_METHOD (ParseRegisteredApplicationIdentity)
+        TEST_METHOD (FileExecutablePathsRequireVerification)
         {
-            const auto identity = PackageVerification::ParseTarget(L"shell:AppsFolder\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App");
-            Assert::IsTrue(identity.has_value());
-            Assert::AreEqual(std::wstring(L"Microsoft.WindowsTerminal_8wekyb3d8bbwe"), identity->familyName);
-            Assert::AreEqual(std::wstring(L"App"), identity->applicationId);
-            Assert::IsTrue(PackageVerification::ParseTarget(L"SHELL:APPSFOLDER\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App").has_value());
-        }
-
-        TEST_METHOD (OtherShellTargetsAreNotPackageIdentities)
-        {
-            for (const auto target : { L"shell:AppsFolder\\Example.App", L"shell:AppsFolder\\", L"https://example.invalid", L"Microsoft.WindowsTerminal_8wekyb3d8bbwe!App", L"C:\\application.exe" })
+            for (const auto path : {
+                     L"C:\\Example\\app.exe",
+                     L"C:\\Example\\APP.ExE",
+                     L"\\\\server\\share\\app.exe",
+                     L"\\\\?\\C:\\Example\\app.exe",
+                     L"\\\\?\\UNC\\server\\share\\app.exe",
+                     L"app.exe",
+                     L".\\app.exe",
+                     L"C:app.exe",
+                     L"\\app.exe",
+                 })
             {
-                Assert::IsFalse(PackageVerification::ParseTarget(target).has_value());
+                Assert::IsTrue(SignatureVerification::IsExecutableTarget(path), path);
             }
-            std::wstring embeddedNull = L"shell:AppsFolder\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App";
-            embeddedNull.push_back(L'\0');
-            embeddedNull += L"ignored";
-            Assert::IsFalse(PackageVerification::ParseTarget(embeddedNull).has_value());
         }
 
-        TEST_METHOD (StoreAndSystemPackagesNeedCompleteVerification)
+        TEST_METHOD (Win32NormalizedFileExtensionsRequireVerification)
         {
-            auto state = HealthyPackage();
-            Assert::IsTrue(PackageVerification::Evaluate(state).IsVerified());
-            state.signatureKind = winrt::Windows::ApplicationModel::PackageSignatureKind::System;
-            Assert::IsTrue(PackageVerification::Evaluate(state).IsVerified());
-            state.integrityChecked = false;
-            Assert::IsFalse(PackageVerification::Evaluate(state).IsVerified());
-            Assert::AreEqual(std::wstring(L"package-verification-unavailable"), PackageVerification::Evaluate(state).Reason());
+            for (const auto path : { L"C:\\app.exe ", L"C:\\app.exe.", L"C:\\app.ExE. . ", L"app.exe. " })
+            {
+                Assert::IsTrue(SignatureVerification::IsExecutableTarget(path), path);
+            }
+            TemporaryExecutable fixture;
+            const auto executable = SignatureVerification::Verify(fixture.path + L". ");
+            Assert::IsTrue(executable.result.status == Status::Unsigned);
+            Assert::IsTrue(std::filesystem::equivalent(fixture.path, executable.path));
         }
 
-        TEST_METHOD (DevelopmentRegistrationIsNotDeveloperSigning)
+        TEST_METHOD (RelativeExecutablePathsWarnRatherThanBypass)
         {
-            auto state = HealthyPackage();
-            state.developmentMode = true;
-            Assert::AreEqual(std::wstring(L"package-development"), PackageVerification::Evaluate(state).Reason());
-            state.developmentMode = false;
-            state.signatureKind = winrt::Windows::ApplicationModel::PackageSignatureKind::Developer;
-            const auto result = PackageVerification::Evaluate(state);
-            Assert::IsTrue(result.status == Status::UnableToVerify);
-            Assert::AreEqual(std::wstring(L"package-signing-policy"), result.Reason());
-            state.signatureKind = winrt::Windows::ApplicationModel::PackageSignatureKind::Enterprise;
-            Assert::AreEqual(std::wstring(L"package-signing-policy"), PackageVerification::Evaluate(state).Reason());
+            for (const auto path : { L"app.exe", L".\\app.exe", L"C:app.exe", L"\\app.exe" })
+            {
+                Assert::IsTrue(SignatureVerification::IsExecutableTarget(path), path);
+                const auto target = SignatureVerification::Verify(path);
+                Assert::IsFalse(target.result.IsVerified());
+                Assert::IsFalse(static_cast<bool>(target.file));
+                Assert::AreEqual(std::wstring(L"unresolved-target"), target.result.Reason());
+            }
         }
 
-        TEST_METHOD (UnsignedOrUnknownSigningSourceIsNotAccepted)
+        TEST_METHOD (ProtocolsAndShellTargetsBypassEvenWithExecutableSuffix)
         {
-            auto state = HealthyPackage();
-            state.signatureKind = winrt::Windows::ApplicationModel::PackageSignatureKind::None;
-            Assert::IsTrue(PackageVerification::Evaluate(state).status == Status::Unsigned);
-            state.signatureKind = static_cast<winrt::Windows::ApplicationModel::PackageSignatureKind>(99);
-            Assert::IsFalse(PackageVerification::Evaluate(state).IsVerified());
+            for (const auto path : {
+                     L"shell:AppsFolder\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App",
+                     L"SHELL:AppsFolder\\Example.exe",
+                     L"ms-settings:display",
+                     L"steam://rungameid/123",
+                     L"https://example.invalid/app.exe",
+                     L"custom:app.exe",
+                     L"file:///C:/app.exe",
+                     L"x://example.invalid/app.exe",
+                 })
+            {
+                Assert::IsFalse(SignatureVerification::IsExecutableTarget(path), path);
+                const auto target = SignatureVerification::Verify(path);
+                Assert::IsFalse(target.result.IsVerified());
+                Assert::IsFalse(static_cast<bool>(target.file));
+                Assert::AreEqual(std::wstring(L"unresolved-target"), target.result.Reason());
+            }
         }
 
-        TEST_METHOD (ExternalAndMutablePayloadsRequireConfirmation)
+        TEST_METHOD (OtherFileTypesAreNotExecutableTargets)
         {
-            auto state = HealthyPackage();
-            state.externalContent = true;
-            Assert::AreEqual(std::wstring(L"package-external-content"), PackageVerification::Evaluate(state).Reason());
-            state.externalContent = false;
-            state.mutableContent = true;
-            Assert::AreEqual(std::wstring(L"package-external-content"), PackageVerification::Evaluate(state).Reason());
+            for (const auto path : { L"", L" . ", L"C:\\app.lnk", L"C:\\app.msix", L"C:\\app.exe.txt", L"C:\\app.cmd", L"C:\\app.exe\\", L"C:\\app.exe\\data" })
+            {
+                Assert::IsFalse(SignatureVerification::IsExecutableTarget(path), path);
+            }
         }
 
-        TEST_METHOD (MissingUnavailableAndStubPackagesAreNotAccepted)
+        TEST_METHOD (EmbeddedNullCannotHideAnExecutableFromVerification)
         {
-            auto state = HealthyPackage();
-            state.identityMatches = false;
-            Assert::AreEqual(std::wstring(L"package-not-found"), PackageVerification::Evaluate(state).Reason());
-            state.identityMatches = true;
-            state.statusOk = false;
-            Assert::AreEqual(std::wstring(L"package-unavailable"), PackageVerification::Evaluate(state).Reason());
-            state.statusOk = true;
-            state.stub = true;
-            Assert::AreEqual(std::wstring(L"package-unavailable"), PackageVerification::Evaluate(state).Reason());
-        }
-
-        TEST_METHOD (ModifiedOrFailedIntegrityIsDistinctFromUnknown)
-        {
-            auto state = HealthyPackage();
-            state.modified = true;
-            Assert::IsTrue(PackageVerification::Evaluate(state).status == Status::InvalidSignature);
-            state.modified = false;
-            state.integrityValid = false;
-            Assert::AreEqual(std::wstring(L"package-integrity-failed"), PackageVerification::Evaluate(state).Reason());
-        }
-
-        TEST_METHOD (RegistrationIdentityIncludesVersionAndPayloadLocation)
-        {
-            SignatureVerification::PackageIdentity first;
-            first.fullName = L"Example_1.0.0.0_x64__8wekyb3d8bbwe";
-            first.applicationUserModelId = L"Example_8wekyb3d8bbwe!App";
-            first.installedPath = L"C:\\Packages\\Example";
-            first.effectivePath = first.installedPath;
-            auto second = first;
-            Assert::IsTrue(first == second);
-            second.fullName = L"Example_2.0.0.0_x64__8wekyb3d8bbwe";
-            Assert::IsFalse(first == second);
-            second = first;
-            second.externalPath = L"C:\\Other";
-            Assert::IsFalse(first == second);
-            second = first;
-            second.mutablePath = L"C:\\Modifiable";
-            Assert::IsFalse(first == second);
-            second = first;
-            second.applicationUserModelId = L"Example_8wekyb3d8bbwe!Other";
-            Assert::IsFalse(first == second);
-        }
-
-        TEST_METHOD (CanceledPackageVerificationDoesNotResolveOrLaunch)
-        {
-            const std::wstring path = L"shell:AppsFolder\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App";
-            const auto target = SignatureVerification::Verify(path, [] { return true; });
+            TemporaryExecutable fixture;
+            const auto path = fixture.path + std::wstring(1, L'\0') + L".txt";
+            Assert::IsTrue(SignatureVerification::IsExecutableTarget(path));
+            const auto target = SignatureVerification::Verify(path);
             Assert::IsFalse(target.result.IsVerified());
-            Assert::AreEqual(static_cast<LONG>(HRESULT_FROM_WIN32(ERROR_CANCELLED)), target.result.error);
-            Assert::AreEqual(path, target.path);
-        }
-
-        TEST_METHOD (UnregisteredPackageCannotBecomeVerifiedFromItsName)
-        {
-            const auto result = std::async(std::launch::async, [] {
-                                    winrt::init_apartment(winrt::apartment_type::multi_threaded);
-                                    auto uninitialize = wil::scope_exit([] { winrt::uninit_apartment(); });
-                                    return SignatureVerification::Verify(L"shell:AppsFolder\\PowerToys.NonexistentSignatureFixture_8wekyb3d8bbwe!App").result;
-                                }).get();
-            Assert::IsFalse(result.IsVerified());
-            Assert::AreEqual(std::wstring(L"package-not-found"), result.Reason());
-        }
-
-        TEST_METHOD (MissingPackageIdentityDoesNotSkipResolution)
-        {
-            auto target = MissingPackageTarget();
-            int lookups = 0;
-            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto& application, const auto&) -> std::optional<PackageVerification::details::Registration> {
-                ++lookups;
-                Assert::AreEqual(RegisteredPackage().identity.applicationUserModelId, application.aumid);
-                return RegisteredPackage();
-            });
-            Assert::IsFalse(current);
-            Assert::AreEqual(1, lookups);
-        }
-
-        TEST_METHOD (MissingPackageIdentityRejectsAResolutionError)
-        {
-            auto target = MissingPackageTarget();
-            int lookups = 0;
-            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> {
-                ++lookups;
-                winrt::throw_hresult(E_ACCESSDENIED);
-            });
-            Assert::IsFalse(current);
-            Assert::AreEqual(1, lookups);
-        }
-
-        TEST_METHOD (PublicRevalidationReachesLookupWithAMissingIdentity)
-        {
-            auto target = MissingPackageTarget();
-            int cancellationChecks = 0;
-            Assert::IsFalse(PackageVerification::IsCurrent(target, [&] {
-                // Stop inside the real resolver before it consults installed packages.
-                return ++cancellationChecks > 1;
-            }));
-            Assert::AreEqual(2, cancellationChecks);
-        }
-
-        TEST_METHOD (NonPackageTargetsDoNotResolvePackages)
-        {
-            SignatureVerification::LaunchTarget target;
-            target.path = L"C:\\Example\\app.exe";
-            int cancellationChecks = 0;
-            Assert::IsTrue(PackageVerification::IsCurrent(target, [&] {
-                ++cancellationChecks;
-                return false;
-            }));
-            Assert::AreEqual(1, cancellationChecks);
-            target.package.emplace();
-            Assert::IsFalse(PackageVerification::IsCurrent(target, {}));
-        }
-
-        TEST_METHOD (PackageRegistrationThatRemainsAbsentIsUnchanged)
-        {
-            auto target = MissingPackageTarget();
-            int lookups = 0;
-            const auto current = PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> {
-                ++lookups;
-                return std::nullopt;
-            });
-            Assert::IsTrue(current);
-            Assert::AreEqual(1, lookups);
-        }
-
-        TEST_METHOD (ExistingPackageRegistrationMustRemainPresentAndIdentical)
-        {
-            auto target = MissingPackageTarget();
-            const auto original = RegisteredPackage();
-            target.package = original.identity;
-            Assert::IsTrue(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ original }; }));
-            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [](const auto&, const auto&) -> std::optional<PackageVerification::details::Registration> { return std::nullopt; }));
-            auto updated = original;
-            updated.identity.fullName = L"PowerToys.Test_2.0.0.0_x64__8wekyb3d8bbwe";
-            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ updated }; }));
-        }
-
-        TEST_METHOD (PreviouslyVerifiedPackageMustRetainEligibleMetadata)
-        {
-            auto target = MissingPackageTarget();
-            auto current = RegisteredPackage();
-            target.package = current.identity;
-            target.result = { Status::Verified, ERROR_SUCCESS };
-            Assert::IsTrue(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ current }; }));
-            current.state.statusOk = false;
-            Assert::IsFalse(PackageVerification::details::IsCurrent(target, {}, [&](const auto&, const auto&) { return std::optional{ current }; }));
-        }
-
-        TEST_METHOD (CanceledRevalidationDoesNotConsultTheResolver)
-        {
-            auto target = MissingPackageTarget();
-            int lookups = 0;
-            Assert::IsFalse(PackageVerification::details::IsCurrent(target, [] { return true; }, [&](const auto&, const auto&) {
-                ++lookups;
-                return std::optional{ RegisteredPackage() }; }));
-            Assert::AreEqual(0, lookups);
+            Assert::IsFalse(static_cast<bool>(target.file));
+            Assert::AreEqual(std::wstring(L"unresolved-target"), target.result.Reason());
         }
     };
 
     TEST_CLASS (ElevatedLaunchGateTests)
     {
+        static void AssertElevatedTargetBypassesVerification(const WorkspacesData::WorkspacesProject::Application& app, const std::wstring& expectedTarget)
+        {
+            Assert::IsTrue(app.isElevated);
+            Assert::IsFalse(static_cast<bool>(shellExecute));
+            int launches = 0;
+            shellExecute = [&](SHELLEXECUTEINFO* information) {
+                ++launches;
+                Assert::IsNotNull(information);
+                Assert::AreEqual(L"runas", information->lpVerb);
+                Assert::AreEqual(expectedTarget.c_str(), information->lpFile);
+                Assert::AreEqual(app.commandLineArgs.c_str(), information->lpParameters);
+                information->hProcess = nullptr;
+                return TRUE;
+            };
+            auto resetCapture = wil::scope_exit([] { shellExecute = {}; });
+
+            AppLauncher::ErrorList errors;
+            int approvals = 0;
+            const auto result = AppLauncher::Launch(app, errors, [&](const auto&, const auto&, const auto&) {
+                ++approvals;
+                return LaunchDecision::Skipped; }, [] { return false; });
+            Assert::AreEqual(0, approvals, L"Elevated non-EXE targets must bypass signature approval.");
+            Assert::AreEqual(1, launches);
+            Assert::IsTrue(result == AppLauncher::LaunchResult::Launched);
+            Assert::IsTrue(errors.empty());
+        }
+
         static void AssertDecliningUnsignedExecutableDoesNotLaunch(const std::wstring& requestedPath)
         {
             WorkspacesData::WorkspacesProject::Application app{};
@@ -470,10 +363,93 @@ namespace WorkspacesLibUnitTests
         }
 
     public:
+        TEST_METHOD (ElevatedNonExecutableTargetBypassesSignatureVerification)
+        {
+            TemporaryExecutable fixture(L"application.com");
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = fixture.path;
+            app.commandLineArgs = L"--bypass-test \"unchanged arguments\"";
+            app.isElevated = true;
+            AssertElevatedTargetBypassesVerification(app, fixture.path);
+        }
+
+        TEST_METHOD (ElevatedPackagedTargetBypassesSignatureVerification)
+        {
+            TemporaryExecutable fixture;
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = fixture.path;
+            app.packageFullName = L"PowerToys.NonexistentSignatureFixture_0.0.0.0_neutral__0000000000000";
+            app.appUserModelId = L"PowerToys.NonexistentSignatureFixture_0000000000000!App";
+            app.commandLineArgs = L"--bypass-test \"unchanged arguments\"";
+            app.isElevated = true;
+            Assert::IsTrue(RegistryUtils::GetUriProtocolNames(app.packageFullName).empty());
+            AssertElevatedTargetBypassesVerification(app, L"shell:AppsFolder\\" + app.appUserModelId);
+        }
+
+        TEST_METHOD (ElevatedProtocolTargetsBypassSignatureVerification)
+        {
+            TemporaryExecutable fixture;
+            for (const auto target : { L"steam://rungameid/0", L"steam://rungameid/0.exe" })
+            {
+                WorkspacesData::WorkspacesProject::Application app{};
+                app.path = fixture.path;
+                app.appUserModelId = target;
+                app.commandLineArgs = L"--bypass-test \"unchanged arguments\"";
+                app.isElevated = true;
+                AssertElevatedTargetBypassesVerification(app, target);
+            }
+        }
+
+        TEST_METHOD (ApprovingUnsignedExecutableDispatchesCheckedTarget)
+        {
+            TemporaryExecutable fixture;
+            const std::filesystem::path path(fixture.path);
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = (path.parent_path() / L"." / path.filename()).wstring();
+            app.commandLineArgs = L"--run-anyway \"unchanged arguments\"";
+            app.isElevated = true;
+
+            Assert::IsFalse(static_cast<bool>(shellExecute));
+            int launches = 0;
+            std::wstring checkedPath;
+            shellExecute = [&](SHELLEXECUTEINFO* information) {
+                ++launches;
+                Assert::IsNotNull(information);
+                Assert::IsFalse(checkedPath.empty());
+                Assert::AreEqual(L"runas", information->lpVerb);
+                Assert::AreEqual(checkedPath.c_str(), information->lpFile);
+                Assert::AreEqual(app.commandLineArgs.c_str(), information->lpParameters);
+                wil::unique_hfile writer(CreateFileW(information->lpFile, GENERIC_WRITE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr));
+                const auto error = GetLastError();
+                Assert::IsFalse(static_cast<bool>(writer), L"The checked executable must stay locked through dispatch.");
+                Assert::AreEqual(static_cast<DWORD>(ERROR_SHARING_VIOLATION), error);
+                information->hProcess = nullptr;
+                return TRUE;
+            };
+            auto resetCapture = wil::scope_exit([] { shellExecute = {}; });
+
+            AppLauncher::ErrorList errors;
+            int approvals = 0;
+            const auto result = AppLauncher::Launch(app, errors, [&](const auto& target, const auto& arguments, const auto& verification) {
+                ++approvals;
+                Assert::IsTrue(verification.status == Status::Unsigned);
+                Assert::IsTrue(std::filesystem::equivalent(fixture.path, target));
+                Assert::AreNotEqual(app.path, target, L"Verification must resolve the dot component before dispatch.");
+                Assert::AreEqual(app.commandLineArgs, arguments);
+                checkedPath = target;
+                return LaunchDecision::Approved; }, [] { return false; });
+            Assert::AreEqual(1, approvals);
+            Assert::AreEqual(1, launches);
+            Assert::IsTrue(result == AppLauncher::LaunchResult::Launched);
+            Assert::IsTrue(errors.empty());
+            Assert::IsTrue(DeleteFileW(fixture.path.c_str()) != FALSE, L"Dispatch completion must release the checked file handle.");
+        }
+
         TEST_METHOD (DecliningUnsignedExecutableDoesNotLaunch)
         {
             TemporaryExecutable fixture;
             AssertDecliningUnsignedExecutableDoesNotLaunch(fixture.path);
+            Assert::IsTrue(DeleteFileW(fixture.path.c_str()) != FALSE, L"Skipping must release the checked file handle.");
         }
 
         TEST_METHOD (DecliningUnsignedExecutableWithDotComponentDoesNotLaunch)
@@ -483,6 +459,12 @@ namespace WorkspacesLibUnitTests
             const auto alternatePath = (path.parent_path() / L"." / path.filename()).wstring();
             Assert::AreNotEqual(fixture.path, alternatePath);
             AssertDecliningUnsignedExecutableDoesNotLaunch(alternatePath);
+        }
+
+        TEST_METHOD (DecliningUnsignedExecutableWithTrailingDotsAndSpacesDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            AssertDecliningUnsignedExecutableDoesNotLaunch(fixture.path + L". ");
         }
 
         TEST_METHOD (DecliningUnsignedExecutableWithShortPathDoesNotLaunch)
@@ -503,25 +485,30 @@ namespace WorkspacesLibUnitTests
             AssertDecliningUnsignedExecutableDoesNotLaunch(shortPath);
         }
 
-        TEST_METHOD (DecliningPwaTargetDoesNotTryNativeFallback)
+        TEST_METHOD (DecliningPwaExecutableFallbackDoesNotLaunch)
         {
-            TemporaryExecutable fixture;
-            WorkspacesData::WorkspacesProject::Application app{};
-            app.name = L"Signature test";
-            app.path = fixture.path;
-            app.isElevated = true;
-            app.pwaAppId = L"prototype-test";
-            app.appUserModelId = L"PowerToys.SignatureTest";
-            app.version = L"1";
-            AppLauncher::ErrorList errors;
-            int requests = 0;
-            const auto result = AppLauncher::Launch(app, errors, [&](const auto& path, const auto&, const auto&) {
-                ++requests;
-                Assert::AreEqual(std::wstring(L"shell:AppsFolder\\PowerToys.SignatureTest"), path);
-                return LaunchDecision::Skipped; }, [] { return false; });
-            Assert::IsTrue(result == AppLauncher::LaunchResult::Skipped);
-            Assert::AreEqual(1, requests);
-            Assert::IsTrue(errors.empty());
+            for (const auto& browser : { std::wstring(L"msedge"), std::wstring(L"chrome") })
+            {
+                TemporaryExecutable fixture(browser + L"_proxy.exe");
+                WorkspacesData::WorkspacesProject::Application app{};
+                app.name = L"Signature test";
+                app.path = (std::filesystem::path(fixture.directory) / (browser + L".exe")).wstring();
+                app.commandLineArgs = L"--test-argument";
+                app.isElevated = true;
+                app.pwaAppId = L"prototype-test";
+                app.version = L"0";
+                AppLauncher::ErrorList errors;
+                int requests = 0;
+                const auto result = AppLauncher::Launch(app, errors, [&](const auto& path, const auto& arguments, const auto& verification) {
+                    ++requests;
+                    Assert::IsTrue(std::filesystem::equivalent(fixture.path, path));
+                    Assert::AreEqual(std::wstring(L"--profile-directory=Default --app-id=prototype-test --test-argument"), arguments);
+                    Assert::IsTrue(verification.status == Status::Unsigned);
+                    return LaunchDecision::Skipped; }, [] { return false; });
+                Assert::IsTrue(result == AppLauncher::LaunchResult::Skipped);
+                Assert::AreEqual(1, requests);
+                Assert::IsTrue(errors.empty());
+            }
         }
 
         TEST_METHOD (CanceledWorkspaceDoesNotRequestApproval)
@@ -539,30 +526,41 @@ namespace WorkspacesLibUnitTests
             Assert::AreEqual(0, requests);
         }
 
-        TEST_METHOD (DecliningUnresolvedPackageDoesNotTryTheSavedExecutable)
+        TEST_METHOD (MissingExecutableFailsWithoutRequestingApproval)
         {
-            const auto result = std::async(std::launch::async, [] {
-                                    winrt::init_apartment(winrt::apartment_type::multi_threaded);
-                                    auto uninitialize = wil::scope_exit([] { winrt::uninit_apartment(); });
-                                    TemporaryExecutable fixture;
-                                    WorkspacesData::WorkspacesProject::Application app{};
-                                    app.path = fixture.path;
-                                    app.isElevated = true;
-                                    app.pwaAppId = L"test";
-                                    app.appUserModelId = L"PowerToys.NonexistentSignatureFixture_8wekyb3d8bbwe!App";
-                                    app.version = L"1";
-                                    AppLauncher::ErrorList errors;
-                                    int requests = 0;
-                                    const auto outcome = AppLauncher::Launch(app, errors, [&](const auto& path, const auto&, const auto& verification) {
-                    ++requests;
-                    Assert::AreEqual(std::wstring(L"shell:AppsFolder\\") + app.appUserModelId, path);
-                    Assert::AreEqual(std::wstring(L"package-not-found"), verification.Reason());
-                    return LaunchDecision::Skipped; }, [] { return false; });
-                                    Assert::AreEqual(1, requests);
-                                    Assert::IsTrue(errors.empty());
-                                    return outcome;
-                                }).get();
+            TemporaryExecutable fixture;
+            Assert::IsTrue(DeleteFileW(fixture.path.c_str()) != FALSE);
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = fixture.path;
+            app.isElevated = true;
+            AppLauncher::ErrorList errors;
+            int requests = 0;
+            const auto result = AppLauncher::Launch(app, errors, [&](const auto&, const auto&, const auto&) {
+                ++requests;
+                return LaunchDecision::Skipped; }, [] { return false; });
+            Assert::IsTrue(result == AppLauncher::LaunchResult::Failed);
+            Assert::AreEqual(0, requests);
+            Assert::AreEqual(size_t{ 1 }, errors.size());
+        }
+
+        TEST_METHOD (DecliningUnreadableExecutableDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            wil::unique_hfile writer(CreateFileW(fixture.path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr));
+            Assert::IsTrue(static_cast<bool>(writer));
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = fixture.path;
+            app.isElevated = true;
+            AppLauncher::ErrorList errors;
+            int requests = 0;
+            const auto result = AppLauncher::Launch(app, errors, [&](const auto&, const auto&, const auto& verification) {
+                ++requests;
+                Assert::IsTrue(verification.status == Status::UnableToVerify);
+                Assert::AreEqual(static_cast<LONG>(HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION)), verification.error);
+                return LaunchDecision::Skipped; }, [] { return false; });
             Assert::IsTrue(result == AppLauncher::LaunchResult::Skipped);
+            Assert::AreEqual(1, requests);
+            Assert::IsTrue(errors.empty());
         }
 
         TEST_METHOD (ConfirmationFailuresStopAllFallbacksAndAreNotUserCancellation)
@@ -573,8 +571,8 @@ namespace WorkspacesLibUnitTests
             app.isElevated = true;
             app.pwaAppId = L"test";
             app.appUserModelId = L"PowerToys.SignatureTest";
-            app.version = L"1";
-            for (const auto failure : { LaunchDecision::UiUnavailable, LaunchDecision::TimedOut, LaunchDecision::InvalidResponse, LaunchDecision::TargetChanged })
+            app.version = L"0";
+            for (const auto failure : { LaunchDecision::UiUnavailable, LaunchDecision::TimedOut, LaunchDecision::InvalidResponse })
             {
                 AppLauncher::ErrorList errors;
                 int requests = 0;
@@ -602,6 +600,22 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(errors.empty());
         }
 
+        TEST_METHOD (CancelingConfirmationDoesNotLaunch)
+        {
+            TemporaryExecutable fixture;
+            WorkspacesData::WorkspacesProject::Application app{};
+            app.path = fixture.path;
+            app.isElevated = true;
+            AppLauncher::ErrorList errors;
+            int requests = 0;
+            const auto result = AppLauncher::Launch(app, errors, [&](const auto&, const auto&, const auto&) {
+                ++requests;
+                return LaunchDecision::Canceled; }, [] { return false; });
+            Assert::IsTrue(result == AppLauncher::LaunchResult::Canceled);
+            Assert::AreEqual(1, requests);
+            Assert::IsTrue(errors.empty());
+        }
+
         TEST_METHOD (LaunchStatusSnapshotsAndSkipAreTerminal)
         {
             WorkspacesData::WorkspacesProject project{};
@@ -624,35 +638,48 @@ namespace WorkspacesLibUnitTests
     TEST_CLASS (PendingLaunchApprovalTests)
     {
     public:
-        TEST_METHOD (ProtocolRequiresVersionAndTypedChoice)
+        TEST_METHOD (MinimalMessagesRequireTypedChoice)
         {
-            const auto approved = LauncherUiMessage::Parse(LR"({"protocolVersion":1,"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"run"})");
+            const auto approved = LauncherUiMessage::Parse(LR"({"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"run"})");
             Assert::IsTrue(approved.has_value());
             Assert::IsTrue(approved->type == LauncherUiMessage::Type::Response);
             Assert::IsTrue(approved->decision == LaunchDecision::Approved);
-            const auto skipped = LauncherUiMessage::Parse(LR"({"protocolVersion":1,"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"skip"})");
+            const auto skipped = LauncherUiMessage::Parse(LR"({"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"skip"})");
             Assert::IsTrue(skipped.has_value());
             Assert::IsTrue(skipped->decision == LaunchDecision::Skipped);
-            Assert::IsTrue(LauncherUiMessage::Parse(LR"({"protocolVersion":1,"type":"ready"})")->type == LauncherUiMessage::Type::Ready);
-            Assert::IsTrue(LauncherUiMessage::Parse(LR"({"protocolVersion":1,"type":"cancel"})")->type == LauncherUiMessage::Type::Cancel);
+            const auto shown = LauncherUiMessage::Parse(LR"({"type":"warning-shown","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}"})");
+            Assert::IsTrue(shown.has_value());
+            Assert::IsTrue(shown->type == LauncherUiMessage::Type::WarningShown);
+            Assert::AreEqual(approved->requestId, shown->requestId);
+            const auto cancel = LauncherUiMessage::Parse(L"cancel");
+            Assert::IsTrue(cancel.has_value());
+            Assert::IsTrue(cancel->type == LauncherUiMessage::Type::Cancel);
         }
 
-        TEST_METHOD (MalformedOrLegacyMessagesCannotApprove)
+        TEST_METHOD (MalformedAndUnsupportedMessagesAreRejected)
         {
             for (const auto text : {
                      L"ready",
-                     L"cancel",
+                     L" cancel",
+                     L"cancel\n",
+                     L"\"cancel\"",
                      L"null",
                      L"[]",
                      LR"({"type":"ready"})",
-                     LR"({"protocolVersion":2,"type":"ready"})",
-                     LR"({"protocolVersion":"1","type":"ready"})",
-                     LR"({"protocolVersion":1,"type":"elevation-response","requestId":"request","choice":"run"})",
-                     LR"({"protocolVersion":1,"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","allow":true})",
-                     LR"({"protocolVersion":1,"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":true})",
-                     LR"({"protocolVersion":1,"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"always"})",
-                     LR"({"protocolVersion":1,"type":"other","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}"})",
-                     LR"({"protocolVersion":1,"type":"heartbeat","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB\u0000"})",
+                     LR"({"type":"cancel"})",
+                     LR"({"type":"warning-shown"})",
+                     LR"({"type":"warning-shown","requestId":1})",
+                     LR"({"type":"warning-shown","requestId":null})",
+                     LR"({"type":1,"requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}"})",
+                     LR"({"type":"elevation-response","requestId":"request","choice":"run"})",
+                     LR"({"type":"elevation-response","requestId":"F4CE1D14-2DAE-47F9-B775-D48D5B494CAB","choice":"run"})",
+                     LR"({"type":"elevation-response","requestId":"{G4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"run"})",
+                     LR"({"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","allow":true})",
+                     LR"({"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":true})",
+                     LR"({"type":"elevation-response","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}","choice":"always"})",
+                     LR"({"type":"other","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}"})",
+                     LR"({"type":"heartbeat","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB}"})",
+                     LR"({"type":"warning-shown","requestId":"{F4CE1D14-2DAE-47F9-B775-D48D5B494CAB\u0000"})",
                  })
             {
                 Assert::IsFalse(LauncherUiMessage::Parse(text).has_value());
@@ -675,12 +702,28 @@ namespace WorkspacesLibUnitTests
 
         TEST_METHOD (FirstDecisionCannotBeOverwritten)
         {
+            for (const auto first : { LaunchDecision::Approved, LaunchDecision::Skipped })
+            {
+                PendingLaunchApproval approval;
+                Assert::IsTrue(approval.Begin(L"request"));
+                Assert::IsTrue(approval.Acknowledge(L"request"));
+                Assert::IsTrue(approval.Complete(L"request", first));
+                Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved));
+                Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Skipped));
+                approval.Fail(LaunchDecision::UiUnavailable);
+                Assert::IsTrue(approval.Evaluate().value() == first);
+            }
+        }
+
+        TEST_METHOD (MatchingSkipCanFinishBeforeWarningIsShown)
+        {
             PendingLaunchApproval approval;
             Assert::IsTrue(approval.Begin(L"request"));
-            Assert::IsTrue(approval.Acknowledge(L"request"));
+            Assert::IsFalse(approval.Complete(L"other", LaunchDecision::Skipped));
             Assert::IsTrue(approval.Complete(L"request", LaunchDecision::Skipped));
-            Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved));
             Assert::IsTrue(approval.WaitFor(std::chrono::milliseconds(0)).value() == LaunchDecision::Skipped);
+            Assert::IsFalse(approval.Acknowledge(L"request"));
+            Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved));
         }
 
         TEST_METHOD (ApprovalDoesNotCarryOverToAnotherLaunch)
@@ -690,6 +733,8 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(approval.Acknowledge(L"first"));
             Assert::IsTrue(approval.Complete(L"first", LaunchDecision::Approved));
             approval.End();
+            Assert::IsFalse(approval.Complete(L"first", LaunchDecision::Approved));
+            Assert::IsFalse(approval.Acknowledge(L"first"));
             Assert::IsTrue(approval.Begin(L"second"));
             Assert::IsFalse(approval.Complete(L"first", LaunchDecision::Approved));
             Assert::IsFalse(approval.WaitFor(std::chrono::milliseconds(0)).has_value());
@@ -721,52 +766,47 @@ namespace WorkspacesLibUnitTests
             PendingLaunchApproval approval;
             const auto now = PendingLaunchApproval::Clock::now();
             Assert::IsTrue(approval.Begin(L"request", now));
-            Assert::IsFalse(approval.Acknowledge(L"request", now + PendingLaunchApproval::DisplayTimeout));
+            Assert::IsFalse(approval.Evaluate(now + std::chrono::milliseconds(9999)).has_value());
+            Assert::IsFalse(approval.Acknowledge(L"request", now + std::chrono::seconds(10)));
             Assert::IsTrue(approval.Evaluate(now).value() == LaunchDecision::TimedOut);
             Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved, now));
+            Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Skipped, now));
         }
 
-        TEST_METHOD (HeartbeatRequiresDisplayedMatchingRequest)
+        TEST_METHOD (OnlyRunAndSkipAreResponses)
         {
             PendingLaunchApproval approval;
-            const auto now = PendingLaunchApproval::Clock::now();
-            Assert::IsTrue(approval.Begin(L"request", now));
-            Assert::IsFalse(approval.Heartbeat(L"request", now));
-            Assert::IsTrue(approval.Acknowledge(L"request", now));
-            Assert::IsFalse(approval.Heartbeat(L"other", now + std::chrono::seconds(5)));
-            Assert::IsTrue(approval.Evaluate(now + PendingLaunchApproval::HeartbeatTimeout).value() == LaunchDecision::UiUnavailable);
+            Assert::IsTrue(approval.Begin(L"request"));
+            Assert::IsTrue(approval.Acknowledge(L"request"));
+            for (const auto decision : { LaunchDecision::Canceled, LaunchDecision::UiUnavailable, LaunchDecision::TimedOut, LaunchDecision::InvalidResponse })
+            {
+                Assert::IsFalse(approval.Complete(L"request", decision));
+                Assert::IsFalse(approval.Evaluate().has_value());
+            }
         }
 
-        TEST_METHOD (HumanDecisionTimeIsUnlimitedWhileTheUiIsResponsive)
+        TEST_METHOD (HumanDecisionHasNoDeadlineAfterDisplay)
         {
             PendingLaunchApproval approval;
             auto now = PendingLaunchApproval::Clock::now();
             Assert::IsTrue(approval.Begin(L"request", now));
             Assert::IsTrue(approval.Acknowledge(L"request", now));
-            for (int i = 0; i < 3600; ++i)
-            {
-                now += std::chrono::seconds(1);
-                Assert::IsTrue(approval.Heartbeat(L"request", now));
-                Assert::IsFalse(approval.Evaluate(now).has_value());
-            }
+            now += std::chrono::hours(24);
+            Assert::IsFalse(approval.Evaluate(now).has_value());
             Assert::IsTrue(approval.Complete(L"request", LaunchDecision::Approved, now));
         }
 
-        TEST_METHOD (LateHeartbeatAndApprovalCannotReviveAnUnresponsiveUi)
+        TEST_METHOD (DisplayAcknowledgementCannotReviveFailedRequest)
         {
-            for (const bool heartbeatFirst : { false, true })
+            for (const auto failure : { LaunchDecision::UiUnavailable, LaunchDecision::InvalidResponse, LaunchDecision::TimedOut })
             {
                 PendingLaunchApproval approval;
-                auto now = PendingLaunchApproval::Clock::now();
-                Assert::IsTrue(approval.Begin(L"request", now));
-                Assert::IsTrue(approval.Acknowledge(L"request", now));
-                now += PendingLaunchApproval::HeartbeatTimeout;
-                if (heartbeatFirst)
-                {
-                    Assert::IsFalse(approval.Heartbeat(L"request", now));
-                }
-                Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved, now));
-                Assert::IsTrue(approval.Evaluate(now).value() == LaunchDecision::UiUnavailable);
+                Assert::IsTrue(approval.Begin(L"request"));
+                approval.Fail(failure);
+                Assert::IsFalse(approval.Acknowledge(L"request"));
+                Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Skipped));
+                Assert::IsFalse(approval.Complete(L"request", LaunchDecision::Approved));
+                Assert::IsTrue(approval.Evaluate().value() == failure);
             }
         }
 

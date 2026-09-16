@@ -16,7 +16,6 @@ class PendingLaunchApproval
 public:
     using Clock = std::chrono::steady_clock;
     static constexpr auto DisplayTimeout = std::chrono::seconds(10);
-    static constexpr auto HeartbeatTimeout = std::chrono::seconds(10);
 
     bool Begin(const std::wstring& requestId, Clock::time_point now = Clock::now())
     {
@@ -29,7 +28,6 @@ public:
         m_decision.reset();
         m_shown = false;
         m_started = now;
-        m_lastHeartbeat = now;
         return true;
     }
 
@@ -42,20 +40,7 @@ public:
             return false;
         }
         m_shown = true;
-        m_lastHeartbeat = now;
         m_changed.notify_all();
-        return true;
-    }
-
-    bool Heartbeat(const std::wstring& requestId, Clock::time_point now = Clock::now())
-    {
-        std::lock_guard lock(m_mutex);
-        EvaluateLocked(now);
-        if (!MatchesPending(requestId) || !m_shown)
-        {
-            return false;
-        }
-        m_lastHeartbeat = now;
         return true;
     }
 
@@ -63,7 +48,7 @@ public:
     {
         std::lock_guard lock(m_mutex);
         EvaluateLocked(now);
-        if (!MatchesPending(requestId) || !m_shown ||
+        if (!MatchesPending(requestId) || (decision == LaunchDecision::Approved && !m_shown) ||
             (decision != LaunchDecision::Approved && decision != LaunchDecision::Skipped))
         {
             return false;
@@ -133,16 +118,9 @@ private:
         {
             return LaunchDecision::Canceled;
         }
-        if (!m_requestId.empty() && !m_decision)
+        if (!m_requestId.empty() && !m_decision && !m_shown && now - m_started >= DisplayTimeout)
         {
-            if (!m_shown && now - m_started >= DisplayTimeout)
-            {
-                m_decision = LaunchDecision::TimedOut;
-            }
-            else if (m_shown && now - m_lastHeartbeat >= HeartbeatTimeout)
-            {
-                m_decision = LaunchDecision::UiUnavailable;
-            }
+            m_decision = LaunchDecision::TimedOut;
         }
         return m_decision;
     }
@@ -152,7 +130,6 @@ private:
     std::wstring m_requestId;
     std::optional<LaunchDecision> m_decision;
     Clock::time_point m_started;
-    Clock::time_point m_lastHeartbeat;
     bool m_shown{};
     bool m_canceled{};
 };

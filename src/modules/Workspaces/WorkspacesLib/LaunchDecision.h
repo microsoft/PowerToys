@@ -12,5 +12,4 @@ enum class LaunchDecision
     UiUnavailable,
     TimedOut,
     InvalidResponse,
-    TargetChanged,
 };

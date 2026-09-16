@@ -47,19 +47,9 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow("expired", nameof(Resources.SignatureWarningExpired))]
         [DataRow("revocation-unavailable", nameof(Resources.SignatureWarningRevocationUnavailable))]
         [DataRow("unresolved-target", nameof(Resources.SignatureWarningUnresolvedTarget))]
-        [DataRow("package-not-found", nameof(Resources.SignatureWarningPackageNotFound))]
-        [DataRow("package-development", nameof(Resources.SignatureWarningPackageDevelopment))]
-        [DataRow("package-external-content", nameof(Resources.SignatureWarningPackageExternalContent))]
-        [DataRow("package-integrity-failed", nameof(Resources.SignatureWarningPackageIntegrity))]
-        [DataRow("package-unavailable", nameof(Resources.SignatureWarningPackageUnavailable))]
-        [DataRow("package-unsigned", nameof(Resources.SignatureWarningPackageUnsigned))]
-        [DataRow("package-signing-policy", nameof(Resources.SignatureWarningPackageSigningPolicy))]
-        [DataRow("package-verification-unavailable", nameof(Resources.SignatureWarningPackageVerificationUnavailable))]
-        [DataRow("package-changed", nameof(Resources.SignatureWarningPackageChanged))]
         [DataRow("unavailable", nameof(Resources.SignatureWarningUnavailable))]
         [DataRow("", nameof(Resources.SignatureWarningUnavailable))]
         [DataRow("unknown-future-reason", nameof(Resources.SignatureWarningUnavailable))]
-        [DataRow("package-unknown-future-reason", nameof(Resources.SignatureWarningUnavailable))]
         [DataRow("UNSIGNED", nameof(Resources.SignatureWarningUnavailable))]
         public void ReasonUsesExpectedNonemptyResource(string reason, string resourceKey)
         {
@@ -72,6 +62,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [DataTestMethod]
         [DataRow(nameof(SignatureWarningRequest.Title), nameof(Resources.SignatureWarningTitle))]
+        [DataRow(nameof(SignatureWarningRequest.Explanation), nameof(Resources.SignatureWarningExplanation))]
         [DataRow(nameof(SignatureWarningRequest.TrustLimits), nameof(Resources.SignatureWarningTrustLimits))]
         [DataRow(nameof(SignatureWarningRequest.EscapedDisplayExplanation), nameof(Resources.SignatureWarningEscapedDisplay))]
         [DataRow(nameof(SignatureWarningRequest.AppLabel), nameof(Resources.SignatureWarningApp))]
@@ -95,21 +86,6 @@ namespace WorkspacesLauncherUI.UnitTests
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(value));
             Assert.AreEqual(ReadNeutralResources()[resourceKey], value);
-        }
-
-        [DataTestMethod]
-        [DataRow("unsigned", nameof(Resources.SignatureWarningExplanation))]
-        [DataRow("", nameof(Resources.SignatureWarningExplanation))]
-        [DataRow("package-development", nameof(Resources.SignatureWarningPackageExplanation))]
-        [DataRow("package-unknown-future-reason", nameof(Resources.SignatureWarningPackageExplanation))]
-        [DataRow("PACKAGE-development", nameof(Resources.SignatureWarningExplanation))]
-        public void ExplanationDistinguishesPackageReasons(string reason, string resourceKey)
-        {
-            using var culture = new CultureScope("en-US");
-            var request = new SignatureWarningRequest { Reason = reason };
-
-            Assert.IsFalse(string.IsNullOrWhiteSpace(request.Explanation));
-            Assert.AreEqual(ReadNeutralResources()[resourceKey], request.Explanation);
         }
 
         [DataTestMethod]

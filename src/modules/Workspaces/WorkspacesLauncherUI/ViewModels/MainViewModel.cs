@@ -6,31 +6,37 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Windows;
 using System.Windows.Threading;
+using ManagedCommon;
 using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
-using WorkspacesLauncherUI.IPC;
 using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
-        private readonly LauncherConnection _connection;
+        private readonly Action<string> _sendMessage;
+        private readonly Func<SignatureWarningRequest, SignatureWarningWindow> _createWarning;
+        private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
-        private StatusWindow _snapshotWindow;
+        private Window _snapshotWindow;
         private ActiveWarning _warning;
         private bool _stopped;
 
-        internal MainViewModel(LauncherConnection connection)
+        public MainViewModel()
+            : this(App.SendIPCMessage, request => new SignatureWarningWindow(request))
         {
-            _connection = connection;
-
-            // Populate the shared PWA icon cache used by the launch-status list.
             _ = new PwaHelper();
+        }
+
+        internal MainViewModel(Action<string> sendMessage, Func<SignatureWarningRequest, SignatureWarningWindow> createWarning)
+        {
+            _sendMessage = sendMessage;
+            _createWarning = createWarning;
+            App.IPCMessageReceivedCallback = ReceiveMessage;
         }
 
         public ObservableCollection<AppLaunching> AppsListed { get; set; } = new ObservableCollection<AppLaunching>();
@@ -42,223 +48,232 @@ namespace WorkspacesLauncherUI.ViewModels
             PropertyChanged?.Invoke(this, e);
         }
 
-        internal void HandleMessage(LauncherMessage message)
+        private void ReceiveMessage(string message)
         {
-            if (_stopped || !_connection.IsOpen)
+            if (!_dispatcher.HasShutdownStarted)
+            {
+                _dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() => HandleMessage(message)));
+            }
+        }
+
+        private void HandleMessage(string message)
+        {
+            if (_stopped)
             {
                 return;
             }
 
-            switch (message.Type)
+            try
             {
-                case "launch-status":
-                    HandleAppLaunchingState(message.LaunchStatus);
-                    break;
-                case "elevation-warning":
-                    if (!_seenRequests.Add(message.RequestId) || (_warning != null && !_warning.ResponseStarted))
+                using var document = JsonDocument.Parse(message);
+                var root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object)
+                {
+                    throw new JsonException("Expected a Workspaces launcher message object.");
+                }
+
+                if (!root.TryGetProperty("type", out _))
+                {
+                    HandleAppLaunchingState(new AppLaunchData().Deserialize(message));
+                    return;
+                }
+
+                var type = RequiredString(root, "type");
+                if (type != "elevation-warning" && type != "dismiss-warning")
+                {
+                    throw new JsonException("Unexpected Workspaces launcher message type.");
+                }
+
+                var requestId = RequiredString(root, "requestId");
+                if (!Guid.TryParse(requestId, out var id) || id == Guid.Empty)
+                {
+                    throw new JsonException("Invalid elevation warning request ID.");
+                }
+
+                if (type == "dismiss-warning")
+                {
+                    _seenRequests.Add(id);
+                    if (_warning?.Id == id)
                     {
-                        throw new InvalidDataException("Replayed or overlapping elevation warning.");
+                        CompleteWarning(_warning, null);
                     }
 
-                    if (!_snapshotWindow.IsVisible)
-                    {
-                        throw new InvalidOperationException("The elevation warning owner is unavailable.");
-                    }
+                    return;
+                }
 
-                    var warning = new ActiveWarning(message.RequestId, message.Warning);
-                    _warning = warning;
+                var request = new SignatureWarningRequest
+                {
+                    RequestId = requestId,
+                    AppName = RequiredString(root, "appName"),
+                    Path = RequiredString(root, "path"),
+                    Arguments = RequiredString(root, "arguments"),
+                    Reason = RequiredString(root, "reason"),
+                    Status = RequiredString(root, "status"),
+                };
+                if (!_seenRequests.Add(id))
+                {
+                    Logger.LogWarning("Ignoring a replayed Workspaces elevation warning.");
+                    return;
+                }
 
-                    // Never await ShowDialog from the pipe reader. Dismissal and shutdown must run
-                    // inside its nested dispatcher, including before this scheduled dialog opens.
-                    _snapshotWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => ShowWarning(warning)));
-                    break;
-                case "dismiss-warning":
-                    _seenRequests.Add(message.RequestId);
-                    if (_warning?.Id == message.RequestId)
-                    {
-                        SuppressWarning(_warning);
-                    }
+                if (_warning != null)
+                {
+                    Logger.LogWarning("Skipping an overlapping Workspaces elevation warning.");
+                    SendResponse(requestId, false);
+                    return;
+                }
 
-                    break;
-                default:
-                    throw new InvalidDataException("Unexpected launcher UI message.");
+                var warning = new ActiveWarning(id, request);
+                _warning = warning;
+
+                // The pipe callback must return before ShowDialog enters a nested dispatcher.
+                _dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => ShowWarning(warning)));
             }
+            catch (Exception exception)
+            {
+                Logger.LogError("Unable to handle a Workspaces launcher message", exception);
+                CompleteWarning(_warning, false);
+            }
+        }
+
+        private static string RequiredString(JsonElement root, string name)
+        {
+            if (!root.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String)
+            {
+                throw new JsonException($"Missing or incorrectly typed Workspaces launcher field: {name}.");
+            }
+
+            return value.GetString();
         }
 
         private void ShowWarning(ActiveWarning warning)
         {
-            if (!CanUseWarning(warning))
+            if (!CanShowWarning(warning))
             {
-                FinishWarning(warning);
+                if (ReferenceEquals(_warning, warning))
+                {
+                    Logger.LogWarning("The Workspaces elevation warning owner is unavailable.");
+                }
+
+                CompleteWarning(warning, false);
                 return;
             }
 
             var run = false;
             EventHandler rendered = (_, _) => OnWarningRendered(warning);
-            EventHandler heartbeat = async (_, _) => await SendHeartbeatAsync(warning);
             try
             {
-                warning.Window = new SignatureWarningWindow(warning.Request) { Owner = _snapshotWindow };
-                warning.Timer = new DispatcherTimer(DispatcherPriority.Normal, _snapshotWindow.Dispatcher)
-                {
-                    Interval = TimeSpan.FromSeconds(1),
-                };
-                warning.Timer.Tick += heartbeat;
+                warning.Window = _createWarning(warning.Request);
+                warning.Window.Owner = _snapshotWindow;
                 warning.Window.ContentRendered += rendered;
-                run = warning.Window.ShowDialog() == true;
+                if (CanShowWarning(warning))
+                {
+                    run = warning.Window.ShowDialog() == true;
+                }
+                else
+                {
+                    warning.Window.DismissWithoutResponse();
+                }
             }
             catch (Exception exception)
             {
-                warning.Suppressed = true;
-                _connection.Fail("Unable to display the Workspaces elevation warning", exception);
+                Logger.LogError("Unable to display the Workspaces elevation warning", exception);
             }
             finally
             {
-                if (warning.Timer != null)
-                {
-                    warning.Timer.Stop();
-                    warning.Timer.Tick -= heartbeat;
-                }
-
                 if (warning.Window != null)
                 {
                     warning.Window.ContentRendered -= rendered;
-                    warning.Window = null;
                 }
 
-                _ = CompleteWarningAsync(warning, run);
+                CompleteWarning(warning, run);
+                warning.Window = null;
             }
         }
 
         private void OnWarningRendered(ActiveWarning warning)
         {
-            if (warning.Rendered || !CanUseWarning(warning))
+            if (warning.Rendered || !CanShowWarning(warning) || warning.Window?.IsVisible != true)
             {
                 return;
             }
 
             warning.Rendered = true;
-            warning.ShownTask = AcknowledgeWarningAsync(warning);
-        }
-
-        private async Task<bool> AcknowledgeWarningAsync(ActiveWarning warning)
-        {
-            try
+            if (TrySendMessage(JsonSerializer.Serialize(new { type = "warning-shown", requestId = warning.Request.RequestId })) &&
+                CanShowWarning(warning) && warning.Window.IsVisible)
             {
-                var sent = await _connection.SendWarningShownAsync(warning.Request.RequestId, warning.Cancellation.Token);
-                if (!sent || !CanUseWarning(warning))
-                {
-                    return false;
-                }
-
-                warning.Acknowledged = true;
-                if (warning.Window?.IsVisible == true)
-                {
-                    warning.Window.EnableRunChoice();
-                    if (warning.Window.IsVisible)
-                    {
-                        warning.Timer.Start();
-                    }
-                }
-
-                return true;
+                warning.Shown = true;
+                warning.Window.EnableRunChoice();
             }
-            catch (Exception exception)
+            else
             {
-                _connection.Fail("Unable to acknowledge the rendered Workspaces elevation warning", exception);
-                return false;
+                CompleteWarning(warning, false);
             }
         }
 
-        private async Task SendHeartbeatAsync(ActiveWarning warning)
+        private bool CanShowWarning(ActiveWarning warning)
         {
-            if (!CanUseWarning(warning) || !warning.Acknowledged ||
-                warning.Window?.IsVisible != true || warning.HeartbeatPending)
+            return !_stopped && ReferenceEquals(_warning, warning) && _snapshotWindow?.IsVisible == true;
+        }
+
+        private void CompleteWarning(ActiveWarning warning, bool? run)
+        {
+            if (warning == null || !ReferenceEquals(_warning, warning))
             {
                 return;
             }
 
-            warning.HeartbeatPending = true;
+            var allowRun = run == true && warning.Shown && CanShowWarning(warning);
+
+            // Clear before closing or sending: either can allow the next request to be dispatched.
+            _warning = null;
             try
             {
-                await _connection.SendHeartbeatAsync(warning.Request.RequestId, warning.Cancellation.Token);
+                warning.Window?.DismissWithoutResponse();
             }
             catch (Exception exception)
             {
-                _connection.Fail("Unable to send the Workspaces warning UI heartbeat", exception);
+                Logger.LogError("Unable to close the Workspaces elevation warning", exception);
+                allowRun = false;
             }
-            finally
+
+            if (run.HasValue)
             {
-                warning.HeartbeatPending = false;
+                SendResponse(warning.Request.RequestId, allowRun && !_stopped && _snapshotWindow?.IsVisible == true);
             }
         }
 
-        private async Task CompleteWarningAsync(ActiveWarning warning, bool run)
+        private void SendResponse(string requestId, bool run)
+        {
+            TrySendMessage(JsonSerializer.Serialize(new { type = "elevation-response", requestId, choice = run ? "run" : "skip" }));
+        }
+
+        private bool TrySendMessage(string message)
         {
             try
             {
-                if (!CanUseWarning(warning))
-                {
-                    return;
-                }
-
-                if (warning.ShownTask == null)
-                {
-                    _connection.Fail("The elevation warning closed before rendering", new InvalidOperationException());
-                    return;
-                }
-
-                if (await warning.ShownTask && CanUseWarning(warning))
-                {
-                    // A request is terminal before writing its sole response. The parent may send
-                    // its next request before the await continuation gets a dispatcher turn.
-                    warning.ResponseStarted = true;
-                    await _connection.SendResponseAsync(warning.Request.RequestId, run, warning.Cancellation.Token);
-                }
+                _sendMessage(message);
+                return true;
             }
             catch (Exception exception)
             {
-                _connection.Fail("Unable to complete the Workspaces elevation warning", exception);
+                Logger.LogError("Unable to queue a Workspaces launcher UI message", exception);
+                if (!_stopped)
+                {
+                    Stop(false);
+                    _snapshotWindow?.Close();
+                }
+
+                return false;
             }
-            finally
-            {
-                FinishWarning(warning);
-            }
-        }
-
-        private bool CanUseWarning(ActiveWarning warning)
-        {
-            return !_stopped && _connection.IsOpen && ReferenceEquals(_warning, warning) &&
-                !warning.Suppressed && !warning.ResponseStarted;
-        }
-
-        private void SuppressWarning(ActiveWarning warning)
-        {
-            warning.Suppressed = true;
-            if (ReferenceEquals(_warning, warning))
-            {
-                _warning = null;
-            }
-
-            warning.Timer?.Stop();
-            warning.Cancellation.Cancel();
-            warning.Window?.DismissWithoutResponse();
-        }
-
-        private void FinishWarning(ActiveWarning warning)
-        {
-            if (ReferenceEquals(_warning, warning))
-            {
-                _warning = null;
-            }
-
-            warning.Cancellation.Dispose();
         }
 
         private void HandleAppLaunchingState(AppLaunchData.AppLaunchDataWrapper appLaunchData)
         {
+            var launchInfos = appLaunchData.AppLaunchInfos.AppLaunchInfoList ??
+                throw new JsonException("Missing Workspaces application launch status.");
             List<AppLaunching> appLaunchingList = new List<AppLaunching>();
-            foreach (var app in appLaunchData.AppLaunchInfos.AppLaunchInfoList)
+            foreach (var app in launchInfos)
             {
                 appLaunchingList.Add(new AppLaunching()
                 {
@@ -277,27 +292,39 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public void Dispose()
         {
-            if (!_stopped)
-            {
-                _stopped = true;
-                if (_warning != null)
-                {
-                    SuppressWarning(_warning);
-                }
-            }
-
+            Stop(false);
             GC.SuppressFinalize(this);
         }
 
-        internal void SetSnapshotWindow(StatusWindow snapshotWindow)
+        internal void SetSnapshotWindow(Window snapshotWindow)
         {
             _snapshotWindow = snapshotWindow;
         }
 
-        internal async Task CancelLaunchAsync()
+        internal void CancelLaunch()
         {
-            Dispose();
-            await _connection.SendCancelAsync();
+            Stop(true);
+        }
+
+        private void Stop(bool cancel)
+        {
+            _dispatcher.VerifyAccess();
+            if (_stopped)
+            {
+                return;
+            }
+
+            _stopped = true;
+            if (App.IPCMessageReceivedCallback == ReceiveMessage)
+            {
+                App.IPCMessageReceivedCallback = null;
+            }
+
+            CompleteWarning(_warning, cancel ? null : false);
+            if (cancel)
+            {
+                TrySendMessage("cancel");
+            }
         }
 
         private sealed class ActiveWarning
@@ -312,23 +339,11 @@ namespace WorkspacesLauncherUI.ViewModels
 
             internal SignatureWarningRequest Request { get; }
 
-            internal CancellationTokenSource Cancellation { get; } = new CancellationTokenSource();
-
             internal SignatureWarningWindow Window { get; set; }
-
-            internal DispatcherTimer Timer { get; set; }
-
-            internal Task<bool> ShownTask { get; set; }
 
             internal bool Rendered { get; set; }
 
-            internal bool Acknowledged { get; set; }
-
-            internal bool HeartbeatPending { get; set; }
-
-            internal bool ResponseStarted { get; set; }
-
-            internal bool Suppressed { get; set; }
+            internal bool Shown { get; set; }
         }
     }
 }

@@ -19,15 +19,14 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
-                                               std::bind(&Launcher::handleUIFailure, this, std::placeholders::_1))),
+    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1))),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1))),
     m_launchingStatus(m_project)
 {
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    if (m_uiHelper->LaunchUI() && m_uiHelper->WaitForReady())
+    if (m_uiHelper->LaunchUI())
     {
         m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
     }
@@ -71,7 +70,6 @@ Launcher::~Launcher()
     }
     // Stop callbacks while all launch state and synchronization objects are still alive.
     m_windowArrangerHelper.reset();
-    m_uiHelper->Shutdown();
     m_uiHelper.reset();
     // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
@@ -255,39 +253,17 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
 
 void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
 {
-    if (m_uiFailed)
-    {
-        return;
-    }
     const auto message = LauncherUiMessage::Parse(msg);
     if (!message)
     {
-        handleUIFailure(LauncherIpcFailure::InvalidMessage);
-        return;
-    }
-    if (message->type == LauncherUiMessage::Type::Ready)
-    {
-        if (!m_uiHelper->MarkReady())
-        {
-            handleUIFailure(LauncherIpcFailure::InvalidMessage);
-        }
-        return;
-    }
-    if (!m_uiHelper->IsReady())
-    {
-        handleUIFailure(LauncherIpcFailure::InvalidMessage);
+        Logger::error(L"Invalid Workspaces UI message");
+        m_approval.Fail(LaunchDecision::InvalidResponse);
         return;
     }
     if (message->type == LauncherUiMessage::Type::Cancel)
     {
         m_approval.Cancel();
         m_launchingStatus.Cancel();
-        return;
-    }
-    if (message->type == LauncherUiMessage::Type::Heartbeat)
-    {
-        // A queued heartbeat can arrive after the decision; never revive that request.
-        m_approval.Heartbeat(message->requestId);
         return;
     }
     const bool accepted = message->type == LauncherUiMessage::Type::WarningShown ?
@@ -299,23 +275,13 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     }
 }
 
-void Launcher::handleUIFailure(LauncherIpcFailure failure)
-{
-    if (!m_uiFailed.exchange(true))
-    {
-        Logger::error(L"Workspaces UI channel failed: {}", static_cast<int>(failure));
-    }
-    m_approval.Fail(failure == LauncherIpcFailure::InvalidMessage ? LaunchDecision::InvalidResponse : LaunchDecision::UiUnavailable);
-    m_uiHelper->Disconnect();
-}
-
 LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result)
 {
     if (m_approval.IsCanceled())
     {
         return LaunchDecision::Canceled;
     }
-    if (m_uiFailed || !m_uiHelper->IsReady())
+    if (!m_uiHelper->IsRunning())
     {
         Logger::error(L"Cannot request elevation confirmation: Workspaces UI is unavailable");
         return LaunchDecision::UiUnavailable;
@@ -333,7 +299,7 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
     });
     {
         std::lock_guard lock(m_uiHelperMutex);
-        if (m_uiFailed || !m_uiHelper->RequestApproval(requestId, name, path, arguments, result))
+        if (!m_uiHelper->RequestApproval(requestId, name, path, arguments, result))
         {
             m_approval.Fail(LaunchDecision::UiUnavailable);
         }
@@ -344,7 +310,7 @@ LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::ws
         {
             return decision.value();
         }
-        if (m_uiFailed || !m_uiHelper->IsReady())
+        if (!m_uiHelper->IsRunning())
         {
             m_approval.Fail(LaunchDecision::UiUnavailable);
         }

@@ -27,11 +27,11 @@ namespace WorkspacesLauncherUI
             FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         }
 
-        private async void CancelButtonClicked(object sender, RoutedEventArgs e)
+        private void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
             CancelButton.IsEnabled = false;
             DismissButton.IsEnabled = false;
-            await _mainViewModel.CancelLaunchAsync();
+            _mainViewModel.CancelLaunch();
             Close();
         }
 
