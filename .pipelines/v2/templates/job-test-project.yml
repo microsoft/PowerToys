@@ -22,6 +22,9 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: mwbSandboxExperiment
+    type: boolean
+    default: false
   - name: autoSelectUiTests
     type: boolean
     default: false
@@ -47,6 +50,8 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   timeoutInMinutes: 300
+  ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    cancelTimeoutInMinutes: 15
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
       BuildPlatform: x64
@@ -81,9 +86,43 @@ jobs:
     fetchTags: false
 
   - pwsh: |
+      $modules = @($env:SELECTED_UI_TEST_MODULES -split ';' | Where-Object { $_ })
+      if ($env:AUTO_UI_TEST_MODULES) {
+        $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
+      }
+      if ('${{ parameters.mwbSandboxExperiment }}' -eq 'True') {
+        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+        try {
+          if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(
+              [Security.Principal.WindowsBuiltInRole]::Administrator)) {
+            throw 'BLOCKED_INFRASTRUCTURE: the MWB prerequisite needs an already elevated agent; no UAC is attempted.'
+          }
+        } finally {
+          $identity.Dispose()
+        }
+        if ('${{ parameters.buildSource }}' -cne 'buildNow' -or
+            '${{ parameters.configuration }}' -cne 'Debug' -or
+            '${{ parameters.platform }}' -cnotin @('x64Win10', 'x64Win11') -or
+            '${{ parameters.inputArtifactStem }}' -ne '' -or
+            '${{ parameters.autoSelectUiTests }}' -ne 'False' -or
+            '${{ parameters.installMode }}' -ne 'machine' -or
+            $modules.Count -ne 1 -or $modules[0] -cne 'MouseWithoutBorders.UITests') {
+          throw 'MWB Sandbox requires buildNow, the unmodified build-x64-Debug artifact, and exactly MouseWithoutBorders.UITests on x64Win10/x64Win11.'
+        }
+      } elseif ($modules -contains 'MouseWithoutBorders.UITests') {
+        throw 'MouseWithoutBorders.UITests is Debug-only. Set mwbSandboxExperiment=true with buildNow and buildPlatforms=[x64].'
+      }
+    displayName: Validate UI-test experiment selection before host setup
+    env:
+      SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      ${{ if eq(parameters.autoSelectUiTests, true) }}:
+        AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
+
+  - pwsh: |
       & "$(build.sourcesdirectory)\.pipelines\removeTestSigningCertificates.ps1" `
         -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
     displayName: Remove stale UI-test signing certificates
+    condition: and(succeeded(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
 
   - ${{ if eq(parameters.useLatestWebView2, true) }}:
     - powershell: |
@@ -142,6 +181,7 @@ jobs:
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
+    condition: and(succeeded(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
 
   # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness and isn't baked
   # into the agent image yet. winget / App Installer isn't available on these agents, so download
@@ -269,6 +309,7 @@ jobs:
         }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
+    condition: and(succeeded(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       env:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
@@ -308,6 +349,7 @@ jobs:
         Write-Host "##vso[task.logissue type=warning]WinAppDriver not found at $winapp; tests will launch it themselves."
       }
     displayName: Start WinAppDriver (shared, persistent)
+    condition: and(succeeded(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
 
   - pwsh: |
       $ErrorActionPreference = 'Stop'
@@ -330,7 +372,10 @@ jobs:
       # Each UI test project is a Microsoft.Testing.Platform app; its entry assembly is paired
       # with a *.runtimeconfig.json. Recurse under the staged 'tests' folders (tolerates TFM/RID subfolders).
       $entries = Get-ChildItem -Path $artifactRoot -Filter '*.runtimeconfig.json' -File -Recurse -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like '*UITests*' -and $_.FullName -match '\\tests\\' }
+        Where-Object {
+          $_.Name -like '*UITests*' -and $_.FullName -match '\\tests\\' -and
+          $_.Name -ne 'MouseWithoutBorders.UITests.runtimeconfig.json'
+        }
       if ($modules.Count -gt 0) {
         $entries = $entries | Where-Object {
           $projectName = $_.Name -replace '\.runtimeconfig\.json$', ''
@@ -387,6 +432,7 @@ jobs:
         exit 1
       }
     displayName: "Run UI Tests"
+    condition: and(succeeded(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
     # Expose 'platform' as an environment variable so the harness's EnvironmentConfig.IsInPipeline
     # is true and it captures failure media (screenshots / recording / logs). The legacy VSTest task
     # set `env: { platform: $(TestPlatform) }`; the MTP migration to this pwsh step dropped it.
@@ -395,6 +441,9 @@ jobs:
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
+  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    - template: steps-mwb-sandbox-experiment.yml
+
   - task: PublishTestResults@2
     displayName: "Publish UI Test Results"
     condition: always()
@@ -402,17 +451,19 @@ jobs:
       testResultsFormat: VSTest
       testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
       mergeTestResults: true
-      failTaskOnFailedTests: ${{ parameters.autoSelectUiTests }}
+      failTaskOnFailedTests: ${{ or(parameters.autoSelectUiTests, parameters.mwbSandboxExperiment) }}
+      ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+        failTaskOnMissingResultsFile: true
 
   # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
   # self-hosted agent between jobs. Best-effort and always runs.
   - pwsh: |
       Get-Process -Name 'WinAppDriver' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     displayName: Stop WinAppDriver
-    condition: always()
+    condition: and(always(), ${{ eq(parameters.mwbSandboxExperiment, false) }})
 
   - pwsh: |
       & "$(build.sourcesdirectory)\.pipelines\removeTestSigningCertificates.ps1" `
         -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
     displayName: Remove UI-test signing certificates
-    condition: always()
+    condition: and(always(), ${{ eq(parameters.mwbSandboxExperiment, false) }})

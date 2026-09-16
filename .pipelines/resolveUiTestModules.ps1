@@ -33,6 +33,8 @@ $uiTestModules = foreach ($module in $touchedModules) {
     }
 
     Get-ChildItem -LiteralPath $moduleRoot -Filter '*.csproj' -File -Recurse |
+        # The Debug-only Sandbox pilot is manual opt-in, never an affected-module Release suite.
+        Where-Object BaseName -ne 'MouseWithoutBorders.UITests' |
         Where-Object {
             [xml] $project = Get-Content -LiteralPath $_.FullName -Raw
             @($project.SelectNodes("//*[local-name()='ProjectReference']")) |

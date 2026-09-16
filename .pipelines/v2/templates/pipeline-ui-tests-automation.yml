@@ -39,28 +39,50 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: mwbSandboxExperiment
+    type: boolean
+    default: false
+    displayName: "Opt in to the Debug x64 Mouse Without Borders Sandbox pilot"
 
 stages:
-  - ${{ each platform in parameters.buildPlatforms }}:
-    # Full build path: build PowerToys + UI tests + run tests.
-    # buildNow downloads the whole build artifact and runs in place; buildNowSlim downloads only the
-    # installer from that same full build and installs it. Both require the full build, so they share this path.
-    - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
-      - template: pipeline-ui-tests-full-build.yml
-        parameters:
-          platform: ${{ platform }}
-          buildSource: ${{ parameters.buildSource }}
-          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-          useVSPreview: ${{ parameters.useVSPreview }}
-          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-          uiTestModules: ${{ parameters.uiTestModules }}
+  # Reject invalid selections instead of expanding any build/download/install jobs.
+  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), eq(length(parameters.buildPlatforms), 1), containsValue(parameters.buildPlatforms, 'x64'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))))) }}:
+    - stage: InvalidMwbSandboxSelection
+      displayName: Reject unsupported MWB Sandbox selection
+      jobs:
+        - job: ValidateSelection
+          displayName: Validate MWB Sandbox opt-in
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            demands: ImageOverride -equals SHINE-VS18-Latest
+          steps:
+            - checkout: none
+            - pwsh: |
+                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, buildPlatforms=[x64], and exactly uiTestModules=[MouseWithoutBorders.UITests]. Release/installed builds and ARM64 are not supported by this pilot.'
+              displayName: Fail before building or mutating a test host
 
-    # Official build path: build UI tests only + download official build + run tests
-    - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
-      - template: pipeline-ui-tests-official-build.yml
-        parameters:
-          platform: ${{ platform }}
-          buildSource: ${{ parameters.buildSource }}
-          specificBuildId: ${{ parameters.specificBuildId }}
-          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-          uiTestModules: ${{ parameters.uiTestModules }}
+  - ${{ else }}:
+    - ${{ each platform in parameters.buildPlatforms }}:
+      # buildNow runs the full artifact in place; buildNowSlim installs from that same build.
+      - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
+        - template: pipeline-ui-tests-full-build.yml
+          parameters:
+            platform: ${{ platform }}
+            buildSource: ${{ parameters.buildSource }}
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            useVSPreview: ${{ parameters.useVSPreview }}
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            uiTestModules: ${{ parameters.uiTestModules }}
+            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
+
+      - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
+        - template: pipeline-ui-tests-official-build.yml
+          parameters:
+            platform: ${{ platform }}
+            buildSource: ${{ parameters.buildSource }}
+            specificBuildId: ${{ parameters.specificBuildId }}
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            uiTestModules: ${{ parameters.uiTestModules }}

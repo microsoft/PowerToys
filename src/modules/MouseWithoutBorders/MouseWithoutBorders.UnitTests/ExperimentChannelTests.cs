@@ -1,0 +1,53 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.MouseWithoutBorders.UITests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace MouseWithoutBorders.UnitTests;
+
+[TestClass]
+public sealed class ExperimentChannelTests
+{
+    [TestMethod]
+    public void SuccessfulEvidenceLivesBesideTheDeploymentTree()
+    {
+        var results = Path.Combine(Path.GetTempPath(), "mwb-results");
+        var deployment = Path.Combine(results, "Deploy_TestUser");
+
+        Assert.AreEqual(results, RunFiles.PersistentResultsRoot(deployment));
+    }
+
+    [TestMethod]
+    public void LeasePublicationUsesImmutableCorrelatedGenerations()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "mwb-channel-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var runId = Guid.NewGuid().ToString();
+            var input = Path.Combine(root, "input");
+            var channel = new EndpointChannel(runId, input, Path.Combine(root, "output"));
+            channel.WriteLease();
+            var first = Path.Combine(input, "leases", "00000001.json");
+            Assert.IsTrue(File.Exists(first + ".ready"));
+            var original = File.ReadAllBytes(first);
+            using var held = new FileStream(first, FileMode.Open, FileAccess.Read, FileShare.Read);
+            channel.WriteLease();
+            var second = RunFiles.Read(Path.Combine(input, "leases", "00000002.json"));
+
+            Assert.AreEqual(runId, second["RunId"]!.GetValue<string>());
+            Assert.AreEqual(2, second["Sequence"]!.GetValue<int>());
+            Assert.IsTrue(File.Exists(Path.Combine(input, "leases", "00000002.json.ready")));
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(first));
+            Assert.IsFalse(File.Exists(Path.Combine(input, "lease.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+}

@@ -1,5 +1,112 @@
 # MWB autonomous Sandbox experiment: physical-devbox handoff
 
+## Implementation checkpoint
+
+Continuation was attempted on the existing cloud host after nested virtualization
+was enabled for `PowerToysUiTest-Win10` (now 15 vCPUs, 24 GB static RAM). The new
+`MouseWithoutBorders.UITests` project, legacy Sandbox fixture, privileged firewall
+setup, Limited-user recovery, lean/native dependency packaging, and default-off
+Debug CI wiring now exist. **The full unfiltered Win10 experimental suite has
+completed once (2/2); a repeat was not green, and CI has not been queued.** This is
+not yet two restored-baseline passes or Win11/module sign-off.
+
+Nested bootstrap and receiver-only UIA execution succeeded. The full-runtime
+15 vCPU/24 GB run `localvm-20260914-150422-1be2acf6` reached New key/Connect but
+failed transport. Guest logs showed a connection to the outer NIC
+`172.23.20.248`, not its intended gateway `172.21.16.1`.
+
+The mapping cause is now reproduced and corrected: `SocketStuff` concatenated
+the `Separator` string array rather than its CRLF element, inserting the literal
+`System.String[]` into the first mapping. Eight production regression cases
+failed before the correction and passed afterward. The fixture now records and
+checks persisted peer mappings before Connect and captures all owned TCP states.
+No policy gate, firewall scope, or timeout was relaxed.
+
+Follow-up attempts on September 15 UTC (September 14 local time):
+
+| Run | Result |
+| --- | --- |
+| `localvm-20260915-015535-6b4ed894` | 1 executed, 0 passed, 24m37s. Both mappings were seeded correctly and the host mapping survived New key. Guest UIA search exceeded 90s before Connect. Startup evidence showed an unresponsive `WinUI Desktop` placeholder and an empty UIA tree, not an initialized Settings surface. |
+| `localvm-20260915-022752-71bdf3f1` | 1 executed, 0 passed, 15m38s. Added responsive final-title readiness with two native samples before any UIA. The run timed out earlier in the existing 15-minute guest bootstrap budget; its last guest marker was `ExtractingLocalRuntime`, with no readiness acknowledgement. |
+
+Both runs used the corrected full runtime, exported evidence without errors,
+restored host settings/clipboard, and removed their exact firewall rules. No
+owned product/test/Sandbox processes remained afterward. The VM remains running
+at 15 vCPUs/24 GB. Debug builds and 26 targeted C# regressions passed; 71 isolated
+PowerShell preparation/readiness checks passed on PS5.1 and PS7.
+
+### Root-cause investigation and verified progress
+
+The mapping fix **has now been exercised through a live connection**. Run
+`localvm-20260915-153859-93f78e69` (26m20s, 1 executed/0 passed) passed nested
+bootstrap, both initialized Settings windows, real New key/Connect, owned
+bidirectional TCP transport and the local-input negative control. It failed the
+next assertion: the remote token appeared in the host receiver, not the guest.
+No clipboard assertion was reached. The next iteration verifies both routing
+slots and establishes pointer activity before keyboard switching.
+
+| Confirmed problem | Evidence and correction |
+| --- | --- |
+| Incomplete lean WinUI payload | A private WER dump reported `Cannot create instance of type 'CommunityToolkit.WinUI.FontIconExtension'`, with inner `0x80040111`. Its constructor accesses `Microsoft.UI.Text.FontWeights.Normal`; the SDK manifest maps that class to `WinUIEdit.dll`, which the lean archive omitted. Added the dynamically loaded SDK servers, including DirectManipulation/Graphics.Display, loose XAML/XBF and localized PRI/MUI sidecars. Subsequent resource/interface failures disappeared with the audited SDK payload. |
+| Bootstrap spent time doing unnecessary work | Replaying 378 obsolete lease files took 96s; cold NetTCPIP/CIM network discovery took over two minutes. Latest committed lease selection and direct .NET adapter enumeration each took about 5s after the fix. Bootstrap completed within the original 15-minute budget. |
+| Oversized/redirected staging | The full runtime contained 5,182 files/2.1 GiB. The SDK-complete lean archive is about 288 MiB compressed. Buffered local copying validates SHA-256 before local extraction; native code is not executed from redirected storage. |
+| Premature/overly narrow UI readiness | A `WinUI Desktop` placeholder and executable count were not proof of initialized Settings. Require two native observations of the one responsive final-title window owner, including when its launcher remains alive. |
+
+L0/L1 measurements did not show memory/CPU/disk exhaustion: L1 had about 20 GiB
+available, read the 750 MB archive in 1.1-1.4s and hashed it in 1.7-2.2s. The nested
+guest had about 3 GiB free of 4 GiB during extraction. These findings do not make
+Windows 10 a compatibility blocker or justify broader firewall rules.
+
+One later verification was invalidated by a documented guest-clock jump from
+07:38:16 to 14:25:35 UTC on September 15. It is not a product failure. Recovery
+completed, the owned VM was cold-booted without resizing, and subsequent runs
+used the same product fix. Temporary private dump collection was removed and
+both copies of the process-memory dump were deleted after extracting the
+exception text.
+
+### First complete unattended pass
+
+`localvm-20260915-170002-e841cb1a` passed both tests. The full smoke took 25m59s
+and completed actual pairing, peer transport, guest-only keyboard input, remote
+cursor motion/clicks, clipboard-off isolation, clipboard transfer both ways and
+cleanup. No operator input or manual firewall approval was needed.
+
+After the startup repair, the final two input defects were in the harness:
+the initial keyboard-only flow left MWB's simulated-input guard set (the next
+mouse-hook event resets it), and the guest returned a focus acknowledgement while
+Settings still owned foreground. The corrected run used a small pointer move
+before routing and a bounded input-queue foreground handoff, then required the
+receiver HWND and its edit control to own focus. The intermediate run with routing
+fixed sent/received all 35 keyboard packets but still had Settings foreground,
+confirming that the second problem was not a broken MWB network connection.
+
+The first pass retained TRX but MSTest deleted its attached deployment-tree
+artifacts. Run evidence now lives beside `TestContext.TestRunDirectory`, not
+inside its disposable deployment tree. The fast receiver probe confirmed that
+the success JSON survives and exports. Related builds and 27 C# regressions pass;
+the PowerShell preparation suite has 86 checks.
+
+The follow-up `localvm-20260915-173353-3804112e` executed both tests (1 passed,
+1 failed). Its full artifacts survived in `TestResults\mwb-<RunId>`. The smoke
+stopped at the unchanged eight-minute guest Settings readiness deadline: the
+process was alive with the final `Administrator: PowerToys Settings` title but
+unresponsive, and there were no application-crash events. This is an intermittent
+initialization stall, not the previously identified missing-class/MUI crash, and
+it must be investigated before claiming repeatable CI readiness. The run restored
+settings/clipboard and removed its scoped rule.
+
+The two restored-baseline passes, Win11 coverage and CI remain unfulfilled.
+
+On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
+Do not restore the older `provisioned-baseline`, which predates the nested setup.
+Runtime evidence is under
+`C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders\LocalVmResults`.
+Resume with the exact unattended command documented in the new test project's
+README. Use the SDK-complete runtime from the corrected archive builder, and
+continue with the intermittent Settings initialization stall, persistent success
+evidence and clean-baseline confirmation before CI. Do not
+count a placeholder HWND or a persisted mapping as a successful connection.
+
 ## Goal and starting point
 
 Continue on branch `gleb/ui-tests-mouse-borders`. Build an **MSTest-owned,
@@ -22,14 +129,16 @@ Do not launch CI until the new MSTest command passes unattended locally.
 | Product override | `App\Core\SessionPolicy.cs`, initialized in `App\Class\Program.cs` |
 | Override configuration | `POWERTOYS_MWB_ALLOW_NONCONSOLE=1`, process-scoped, Debug only, off by default |
 | Guards | Socket construction, lifecycle timer, desktop transitions, and original settings UI use the session policy |
-| Unchanged boundaries | Active desktop, Release behavior, service/LocalSystem/logon/screensaver restrictions, IPC authentication, encryption, and GPO |
+| Unchanged boundaries | Active desktop, Release console requirement, service/LocalSystem/logon/screensaver restrictions, IPC authentication, encryption, and GPO gates |
+| Mapping correction | `SocketStuff.GetName2IpMappingLines` separates policy/user rules with CRLF, not `System.String[]`; `SocketMappingTests.cs` covers first-line integrity and rule order |
 | Prototype orchestration | The scripts in this directory; currently require the modern Win11 `wsb` CLI for lifecycle |
 | Settings baseline | `MwbSettings.template.json`, with production-compatible boolean wrappers |
 | Regressions | `MouseWithoutBorders.UnitTests\Core\SessionPolicyTests.cs`, `ExperimentSettingsTests.cs`, and `Test-Preparation.ps1` |
 
-There is **no `MouseWithoutBorders.UITests` project yet**, no legacy Win10 Sandbox
-lifecycle adapter, no unattended firewall provisioner, and no Debug CI wiring.
-The existing scripts are a reference implementation, not the final MSTest suite.
+The remainder of this document preserves the original implementation plan. The
+project, legacy adapter, firewall provisioner, and opt-in Debug CI wiring have now
+been added; their validation status is recorded in the checkpoint above. The
+green experimental smoke is not a completed full-module migration or CI sign-off.
 
 ### What was actually proved on September 12, 2026
 

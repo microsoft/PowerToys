@@ -14,6 +14,10 @@ param(
     [Parameter(ParameterSetName = 'Controller')]
     [string] $Filter,
     [Parameter(ParameterSetName = 'Controller')]
+    [guid] $TaskRunId = [guid]::Empty,
+    [Parameter(ParameterSetName = 'Controller')]
+    [string] $MwbRecoveryJournal,
+    [Parameter(ParameterSetName = 'Controller')]
     [ValidateRange(1, 120)]
     [int] $TimeoutMinutes = 45,
     [Parameter(Mandatory, ParameterSetName = 'Worker')]
@@ -24,7 +28,7 @@ $ErrorActionPreference = 'Stop'
 $environmentNames = @(
     'DOTNET_ROOT', 'DOTNET_ROOT_X64', 'DOTNET_ROOT_ARM64',
     'WINAPP_CLI_PATH', 'WINAPP_CLI_INVOKE_TIMEOUT_SECONDS',
-    'platform', 'TF_BUILD', 'useInstallerForTest', 'POWERTOYS_INSTALL_DIR'
+    'platform', 'TF_BUILD', 'useInstallerForTest', 'POWERTOYS_INSTALL_DIR', 'POWERTOYS_MWB_RUN_ROOT'
 )
 
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {
@@ -93,6 +97,21 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
         if ($null -ne $request.Filter -and $request.Filter -isnot [string]) {
             throw 'Invalid UI-test request: Filter must be a string.'
         }
+        if ($null -ne $request.MwbRecoveryJournal) {
+            if ($request.MwbRecoveryJournal -isnot [string] -or
+                $request.MwbRecoveryJournal -notmatch '^[A-Za-z]:\\' -or
+                [IO.Path]::GetFileName($request.MwbRecoveryJournal) -cne 'cleanup-journal.json' -or
+                [IO.Path]::GetFileName($request.TestExecutable) -cne 'MouseWithoutBorders.UITests.exe' -or
+                $request.Filter) {
+                throw 'Invalid UI-test request: MwbRecoveryJournal requires a local cleanup-journal.json, the MWB executable, and no test filter.'
+            }
+            try {
+                $request.MwbRecoveryJournal = [IO.Path]::GetFullPath($request.MwbRecoveryJournal)
+            }
+            catch {
+                throw 'Invalid UI-test request: MwbRecoveryJournal must be a valid path.'
+            }
+        }
 
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         $principal = [Security.Principal.WindowsPrincipal]::new($identity)
@@ -110,18 +129,31 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
         foreach ($property in $request.Environment.PSObject.Properties) {
             [Environment]::SetEnvironmentVariable($property.Name, [string]$property.Value, 'Process')
         }
-        $start = [Diagnostics.ProcessStartInfo]::new([string]$request.TestExecutable)
+        if ($request.MwbRecoveryJournal) {
+            $recoveryScript = Join-Path (Split-Path $request.TestExecutable -Parent) 'Payload\Recover-Host.ps1'
+            if (-not (Test-Path -LiteralPath $recoveryScript -PathType Leaf)) {
+                throw 'The packaged MWB recovery script is missing.'
+            }
+            # Recovery is never sourced by the elevated controller. This worker has already
+            # verified the original non-elevated interactive identity.
+            $start = [Diagnostics.ProcessStartInfo]::new((Get-Process -Id $PID).Path)
+            $arguments = @('-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                '-File', $recoveryScript, '-JournalPath', [string]$request.MwbRecoveryJournal)
+        }
+        else {
+            $start = [Diagnostics.ProcessStartInfo]::new([string]$request.TestExecutable)
+            $arguments = @('--report-trx', '--results-directory', [string]$request.ResultsDirectory)
+            if ($request.Filter) {
+                $arguments += '--filter', [string]$request.Filter
+            }
+        }
         $start.WorkingDirectory = Split-Path $request.TestExecutable -Parent
         $start.UseShellExecute = $false
         $start.CreateNoWindow = $true
         $start.RedirectStandardOutput = $true
         $start.RedirectStandardError = $true
-        foreach ($argument in @('--report-trx', '--results-directory', [string]$request.ResultsDirectory)) {
+        foreach ($argument in $arguments) {
             $start.ArgumentList.Add($argument)
-        }
-        if ($request.Filter) {
-            $start.ArgumentList.Add('--filter')
-            $start.ArgumentList.Add([string]$request.Filter)
         }
         $process = [Diagnostics.Process]::Start($start)
         $stdout = $process.StandardOutput.ReadToEndAsync()
@@ -159,6 +191,25 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
 
 $TestExecutable = (Resolve-Path -LiteralPath $TestExecutable).Path
 $ResultsDirectory = [IO.Path]::GetFullPath($ResultsDirectory)
+if ($MwbRecoveryJournal) {
+    if ([IO.Path]::GetFileName($TestExecutable) -cne 'MouseWithoutBorders.UITests.exe' -or $Filter -or
+        $MwbRecoveryJournal -notmatch '^[A-Za-z]:\\' -or
+        [IO.Path]::GetFileName($MwbRecoveryJournal) -cne 'cleanup-journal.json') {
+        throw 'MWB recovery requires the staged MWB executable, a local cleanup-journal.json, and no test filter.'
+    }
+    $MwbRecoveryJournal = (Resolve-Path -LiteralPath $MwbRecoveryJournal).Path
+    $ancestor = $MwbRecoveryJournal
+    while ($ancestor) {
+        if ((Get-Item -LiteralPath $ancestor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'MWB recovery cannot grant access through a reparse point.'
+        }
+        $ancestor = Split-Path $ancestor -Parent
+    }
+    $recoveryScript = Join-Path (Split-Path $TestExecutable -Parent) 'Payload\Recover-Host.ps1'
+    if (-not (Test-Path -LiteralPath $recoveryScript -PathType Leaf)) {
+        throw 'The packaged MWB recovery script is missing.'
+    }
+}
 try {
     $sid = [Security.Principal.NTAccount]::new($InteractiveUser).Translate([Security.Principal.SecurityIdentifier])
     $InteractiveUser = $sid.Translate([Security.Principal.NTAccount]).Value
@@ -166,13 +217,14 @@ try {
 catch {
     throw "Could not resolve the interactive user '$InteractiveUser' to a Windows account."
 }
-$runId = [guid]::NewGuid().ToString('N')
+$runId = if ($TaskRunId -eq [guid]::Empty) { [guid]::NewGuid().ToString('N') } else { $TaskRunId.ToString('N') }
 # Keep MTP's already-long screenshot paths below MAX_PATH.
 $runDirectory = Join-Path $ResultsDirectory "ui-$($runId.Substring(0, 12))"
 $requestPath = Join-Path $runDirectory 'request.json'
 $statusPath = Join-Path $runDirectory 'status.json'
 $taskName = "PowerToys-InteractiveUiTest-$runId"
 $originalDacl = $null
+$recoveryOriginalDacl = $null
 $registered = $false
 try {
     New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
@@ -184,6 +236,16 @@ try {
     $acl.AddAccessRule($rule)
     Set-Acl -LiteralPath $runDirectory -AclObject $acl
 
+    if ($MwbRecoveryJournal) {
+        # The original launcher's finally may have restored a restrictive results-directory DACL.
+        # Grant only the public run's directory for recovery, never the whole artifact/results tree.
+        $recoveryDirectory = Split-Path $MwbRecoveryJournal -Parent
+        $acl = Get-Acl -LiteralPath $recoveryDirectory
+        $recoveryOriginalDacl = $acl.GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Access)
+        $acl.AddAccessRule($rule)
+        Set-Acl -LiteralPath $recoveryDirectory -AclObject $acl
+    }
+
     # Scheduled tasks inherit the desktop environment, not the pipeline agent's private runtime/tools.
     # Transfer only test configuration; never serialize the agent's credentials or complete environment.
     $environment = @{}
@@ -193,7 +255,7 @@ try {
             $environment[$name] = $value
         }
     }
-    @{
+    $request = @{
         RunId = $runId
         RunDirectory = $runDirectory
         TestExecutable = $TestExecutable
@@ -202,17 +264,29 @@ try {
         Filter = $Filter
         TimeoutMinutes = $TimeoutMinutes
         Environment = $environment
-    } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
+    }
+    if ($MwbRecoveryJournal) {
+        $request.MwbRecoveryJournal = $MwbRecoveryJournal
+    }
+    $request | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
 
     $powerShell = (Get-Process -Id $PID).Path
     $arguments = '-NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -File "{0}" -RequestPath "{1}"' -f $PSCommandPath, $requestPath
+    if ($TaskRunId -ne [guid]::Empty -or $MwbRecoveryJournal) {
+        $arguments = '-ExecutionPolicy Bypass ' + $arguments
+    }
     $action = New-ScheduledTaskAction -Execute $powerShell -Argument $arguments
     $principal = New-ScheduledTaskPrincipal -UserId $InteractiveUser -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes ($TimeoutMinutes + 1)) `
         -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
     Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal -Settings $settings | Out-Null
     $registered = $true
-    Write-Host "Running $TestExecutable non-elevated as $InteractiveUser. Launcher evidence: $runDirectory"
+    if ($MwbRecoveryJournal) {
+        Write-Host "Recovering MWB non-elevated as $InteractiveUser. Launcher evidence: $runDirectory"
+    }
+    else {
+        Write-Host "Running $TestExecutable non-elevated as $InteractiveUser. Launcher evidence: $runDirectory"
+    }
     $timer = [Diagnostics.Stopwatch]::StartNew()
     $launchObserved = $false
     $schedulerLaunchObserved = $false
@@ -283,10 +357,19 @@ finally {
         }
     }
     finally {
-        if ($null -ne $originalDacl) {
-            $acl = Get-Acl -LiteralPath $runDirectory
-            $acl.SetSecurityDescriptorSddlForm($originalDacl, [Security.AccessControl.AccessControlSections]::Access)
-            Set-Acl -LiteralPath $runDirectory -AclObject $acl
+        try {
+            if ($null -ne $originalDacl) {
+                $acl = Get-Acl -LiteralPath $runDirectory
+                $acl.SetSecurityDescriptorSddlForm($originalDacl, [Security.AccessControl.AccessControlSections]::Access)
+                Set-Acl -LiteralPath $runDirectory -AclObject $acl
+            }
+        }
+        finally {
+            if ($null -ne $recoveryOriginalDacl) {
+                $acl = Get-Acl -LiteralPath $recoveryDirectory
+                $acl.SetSecurityDescriptorSddlForm($recoveryOriginalDacl, [Security.AccessControl.AccessControlSections]::Access)
+                Set-Acl -LiteralPath $recoveryDirectory -AclObject $acl
+            }
         }
     }
 }

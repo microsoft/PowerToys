@@ -52,6 +52,66 @@ Release ignores it. It relaxes console-session eligibility only; active/unlocked
 default desktop and non-service restrictions remain. No settings schema/UI switch
 is added.
 
+## Autonomous Win10 VM path
+
+The manual scripts below remain useful for diagnosis. The MSTest continuation uses
+`MouseWithoutBorders.UITests` and its packaged legacy Sandbox worker instead of
+`Start-Experiment.ps1` or the modern `wsb` command.
+
+`Initialize-AutonomousHost.ps1` and `Remove-AutonomousHost.ps1` are privileged
+**setup/cleanup** entry points, not UI test processes. They never request UAC,
+enable Windows features, change group membership, disable firewall protection,
+or expose an arbitrary-command service. Setup pins the staged executable and
+test-user SID in an administrator-protected marker. It waits for Sandbox's
+`vEthernet (Default Switch)` to appear before installing one inbound rule for
+that executable, TCP 15100/15101, and the exact inner interface/subnet. Missing
+privileges, pending reboot, conflicting pre-existing rules, or ambiguous/missing
+network identity fail setup explicitly.
+
+Win10 creates the Default Switch only when Sandbox first boots after the outer
+VM starts. Thus the setup helper and test run concurrently: the marker initially
+says `WaitingForSandbox`, and the test may only start MWB after it becomes `Ready`.
+The test's guest gateway must match the provisioned host address. The helper has
+no writable command channel from the standard user. Cleanup terminates only the
+recorded setup process, if still waiting, and removes only its owned rule.
+
+The local wrapper uses the existing PowerShell Direct/standard-user VM controller:
+
+```powershell
+# Prepare the separate Sandbox archive from the coherent Debug output.
+.\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\New-MwbRuntimeArchive.ps1 `
+    -ProductRoot .\x64\Debug `
+    -ArchivePath C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders\mwb-guest-runtime.zip
+
+.\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\Invoke-AutonomousLocalVm.ps1 `
+    -VmRoot C:\PowerToysUiTestVm `
+    -VmName PowerToysUiTest-Win10 `
+    -ConfigurationPath C:\PowerToysUiTestVm\vm.config.win10.psd1 `
+    -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders `
+    -PlanOnly
+```
+
+Remove `-PlanOnly` only after building the test project and packaging the four
+archives required by the local-VM skill plus `mwb-guest-runtime.zip`. The guest
+archive includes managed dependencies, native PE import dependencies, and WinUI
+resources; it is fingerprinted by the protected provisioner and extracted to
+guest-local storage. `-GuestRuntimeArchive` selects a different prepared archive
+for a controlled payload comparison. The wrapper runs privileged provisioning
+through a protected, bounded scheduled task, runs MSTest in the already logged-on
+standard-user desktop, and performs firewall cleanup in `finally`. No provisioning
+occurs during `-PlanOnly`. It does not enable nesting or restore a VM checkpoint
+implicitly; image provisioning and clean-baseline selection remain explicit.
+
+The complete Win10 autonomous smoke has now **passed unattended**, but is not
+full-module or CI sign-off. A later repeat stalled in guest Settings initialization,
+so repeat reliability remains unresolved.
+The first-line name-to-IP parsing and incomplete WinUI payload defects are
+corrected. The updated fixture has completed real pairing, peer TCP transport,
+local/remote input assertions and bidirectional clipboard checks.
+See the implementation checkpoint in [CONTINUATION-PLAN.md](CONTINUATION-PLAN.md)
+and the new test project's README before attempting another run. CI remains
+default-off and has not been queued.
+
 ## 1. Prepare only (safe to do before disconnecting)
 
 From the repository root, choose a **new private directory outside the checkout**:

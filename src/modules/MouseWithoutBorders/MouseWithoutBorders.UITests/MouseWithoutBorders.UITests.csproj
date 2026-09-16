@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.MouseWithoutBorders.UITests</RootNamespace>
+    <AssemblyName>MouseWithoutBorders.UITests</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\MouseWithoutBorders.UITests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Payload\*.cs" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Payload\*.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Tests\SandboxExperiment\MwbSettings.template.json" Link="Payload\MwbSettings.template.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\settings-ui\Settings.UI.Library\EnabledModules.cs" Link="Payload\EnabledModules.source.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

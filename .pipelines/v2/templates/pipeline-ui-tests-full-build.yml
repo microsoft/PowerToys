@@ -19,6 +19,9 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: mwbSandboxExperiment
+    type: boolean
+    default: false
 
 stages:
   # Stage 1: Build full PowerToys project
@@ -39,7 +42,10 @@ stages:
               demands: ImageOverride -equals SHINE-VS18-Latest
           buildPlatforms:
             - ${{ parameters.platform }}
-          buildConfigurations: [Release]
+          ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+            buildConfigurations: [Debug]
+          ${{ else }}:
+            buildConfigurations: [Release]
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
@@ -56,10 +62,11 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win10
-            configuration: Release
+            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
     - stage: Test_x64Win11_FullBuild
       displayName: Test x64Win11 (Full Build)
@@ -68,10 +75,11 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win11
-            configuration: Release
+            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
 
   - ${{ if ne(parameters.platform, 'x64') }}:
     - stage: Test_${{ parameters.platform }}_FullBuild
@@ -85,3 +93,4 @@ stages:
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}

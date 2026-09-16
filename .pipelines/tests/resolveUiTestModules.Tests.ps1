@@ -68,4 +68,13 @@ Describe 'resolveUiTestModules' {
         $result.TouchedModules | Should Be @('Example')
         @($result.UiTestModules).Count | Should Be 0
     }
+
+    It 'never automatically selects the opt-in Debug MWB Sandbox pilot' {
+        New-UITestProject 'src\modules\MouseWithoutBorders\Tests\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj'
+
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/MouseWithoutBorders/App/Main.cs'
+
+        $result.TouchedModules | Should Be @('MouseWithoutBorders')
+        @($result.UiTestModules).Count | Should Be 0
+    }
 }

@@ -41,6 +41,89 @@ try {
         Assert-Check ($moduleSettings.properties.$name.value -ceq $false) "MWB $name uses the BoolProperty value wrapper"
     }
     Assert-Check ($moduleSettings.properties.Name2IP.value -eq 'PEER 192.0.2.1') 'MWB name mapping is retained in the typed settings schema'
+    & {
+        . "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\EndpointSupport.ps1"
+        $script:settingsRoot = "$fixture\mapping-settings"
+        $OutputRoot = "$fixture\endpoint"
+        $script:expectedPeerMapping = 'PEER 192.0.2.1'
+        $null = New-Item -ItemType Directory -Path "$script:settingsRoot\MouseWithoutBorders"
+        $path = "$script:settingsRoot\MouseWithoutBorders\settings.json"
+        Write-RunJson $path $moduleSettings
+        $result = Assert-PeerMapping 'seeded'
+        Assert-Check $result.MatchesExpected 'autonomous endpoint verifies its persisted peer mapping'
+        Assert-Check ((Read-RunJson "$OutputRoot\peer-mapping-seeded.json").Actual -ceq
+            $script:expectedPeerMapping) 'mapping evidence records the exact inner-network destination'
+        $moduleSettings.properties.Name2IP.value = 'PEER 192.0.2.2'
+        Write-RunJson $path $moduleSettings
+        Assert-Throws { Assert-PeerMapping 'before-connect' } 'Peer mapping changed at before-connect'
+        Assert-Check (-not (Read-RunJson "$OutputRoot\peer-mapping-before-connect.json").MatchesExpected) 'mismatched mapping evidence survives the failure'
+        $moduleSettings.properties.Name2IP.value = ''
+        Write-RunJson $path $moduleSettings
+        Assert-Throws { Assert-PeerMapping 'before-connect' } 'Peer mapping changed at before-connect'
+        $window = [pscustomobject]@{ Title = 'WinUI Desktop'; Visible = $true; HasOwner = $false }
+        Assert-Check (-not (Test-SettingsWindowReady $true @($window))) 'WinUI placeholder is not Settings readiness'
+        foreach ($title in @('PowerToys Settings', 'Administrator: PowerToys Settings')) {
+            $window.Title = $title
+            Assert-Check (Test-SettingsWindowReady $true @($window)) 'responsive initialized Settings is ready'
+            Assert-Check (-not (Test-SettingsWindowReady $false @($window))) 'unresponsive Settings is not ready'
+        }
+        Assert-Check (-not (Test-SettingsWindowReady $true @())) 'absent Settings is not ready'
+        Assert-Check (-not (Test-SettingsWindowReady $true @($window, $window))) 'ambiguous Settings windows are not ready'
+        $window.Visible = $false
+        Assert-Check (-not (Test-SettingsWindowReady $true @($window))) 'hidden Settings is not ready'
+        $window.Visible = $true
+        $window.HasOwner = $true
+        Assert-Check (-not (Test-SettingsWindowReady $true @($window))) 'owned Settings window is not the main surface'
+        $launcher = @{ ProcessId = 10; Responding = $true; Windows = @(
+            @{ Title = 'WinUI Desktop'; Visible = $true; HasOwner = $false }
+        ) }
+        $windowOwner = @{ ProcessId = 20; Responding = $true; Windows = @(
+            @{ Title = 'PowerToys Settings'; Visible = $true; HasOwner = $false }
+        ) }
+        $ready = @(Get-ReadySettingsCandidates @($launcher, $windowOwner))
+        Assert-Check ($ready.Count -eq 1 -and $ready[0].ProcessId -eq 20) 'a surviving launcher does not hide the initialized window owner'
+        Assert-Check (@(Get-ReadySettingsCandidates @($windowOwner, $windowOwner)).Count -eq 2) 'multiple initialized window owners remain ambiguous'
+        $script:config = @{ RunId = [Guid]::NewGuid().ToString(); Role = 'Guest' }
+        $script:bootstrapStageNumber = 0
+        $script:bootstrapWatch = [Diagnostics.Stopwatch]::StartNew()
+        $null = New-Item -ItemType Directory -Path "$fixture\archive-input", "$fixture\archive-output"
+        [IO.File]::WriteAllText("$fixture\archive-input\sample.txt", 'runtime fixture')
+        & tar.exe -a -cf "$fixture\runtime.zip" -C "$fixture\archive-input" .
+        if ($LASTEXITCODE -ne 0) { throw 'Could not create the isolated runtime fixture.' }
+        $archiveHash = (Get-FileHash "$fixture\runtime.zip").Hash
+        $copy = Copy-GuestRuntimeArchive "$fixture\runtime.zip" "$fixture\local-runtime.zip" $archiveHash
+        Assert-Check ($copy.Sha256 -ceq $archiveHash) 'buffered local archive copy matches protected source hash'
+        Assert-Check ((Get-FileHash "$fixture\local-runtime.zip").Hash -ceq $archiveHash) 'buffered archive copy preserves exact bytes'
+        Assert-Throws { Copy-GuestRuntimeArchive "$fixture\runtime.zip" "$fixture\bad-runtime.zip" ('0' * 64) } 'archive hash differs'
+        Expand-GuestRuntime "$fixture\local-runtime.zip" "$fixture\archive-output" ([DateTime]::UtcNow.AddSeconds(30))
+        Assert-Check ([IO.File]::ReadAllText("$fixture\archive-output\sample.txt") -ceq 'runtime fixture') 'instrumented extraction preserves archive contents'
+        Assert-Check ((Read-RunJson "$OutputRoot\bootstrap-001.json").Stage -ceq 'RuntimeExtracted') 'extraction completion has a distinct timing marker'
+        foreach ($bufferBytes in @(8KB, 4MB)) {
+            $read = Measure-RuntimeRead "$fixture\archive-output\sample.txt" $bufferBytes
+            Assert-Check ($read.BytesRead -eq (Get-Item "$fixture\archive-output\sample.txt").Length) 'runtime read measurement uses explicit PS5-compatible stream overloads'
+        }
+        $leaseRoot = "$fixture\leases"
+        $null = New-Item -ItemType Directory -Path $leaseRoot
+        foreach ($sequence in 1..400) {
+            Write-RunJson (Join-Path $leaseRoot ('{0:D8}.json' -f $sequence)) @{
+                RunId = $script:config.RunId; Sequence = $sequence; TimestampUtc = [DateTime]::UtcNow.ToString('o')
+            }
+        }
+        [IO.File]::WriteAllText("$leaseRoot\00000001.json", 'obsolete content must not be replayed')
+        $latest = Read-LatestEndpointLease $leaseRoot $script:config.RunId 0
+        Assert-Check ($latest.Sequence -eq 400) 'bootstrap consumes only the latest committed liveness snapshot'
+        Assert-Check ($null -eq (Read-LatestEndpointLease $leaseRoot $script:config.RunId 400)) 'unchanged lease generation is not reread'
+        [IO.File]::WriteAllText("$leaseRoot\00000401.json", '{}')
+        Assert-Check ((Read-LatestEndpointLease $leaseRoot $script:config.RunId 0).Sequence -eq 400) 'uncommitted newest lease is ignored'
+        Write-RunJson "$leaseRoot\00000401.json" @{ RunId = 'wrong-run'; Sequence = 401 }
+        Assert-Throws { Read-LatestEndpointLease $leaseRoot $script:config.RunId 400 } 'Lease generation correlation mismatch'
+        Write-RunJson "$leaseRoot\00000401.json" @{ RunId = $script:config.RunId; Sequence = 400 }
+        Assert-Throws { Read-LatestEndpointLease $leaseRoot $script:config.RunId 400 } 'Lease generation correlation mismatch'
+        $network = Get-EndpointNetwork
+        $loopback = @($network.Addresses | Where-Object IPAddress -eq '127.0.0.1')
+        Assert-Check ($loopback.Count -eq 1 -and $loopback[0].PrefixLength -eq 8 -and
+            $loopback[0].InterfaceIndex -gt 0) 'managed adapter enumeration retains IPv4 prefix and interface identity'
+    }
     Assert-Throws { & "$PSScriptRoot\Prepare-Experiment.ps1" -Destination "$fixture\forbidden" } 'outside the source checkout'
     Assert-Check (-not (Test-Path "$fixture\forbidden")) 'prepare refusal creates nothing'
     Assert-Throws { & "$PSScriptRoot\Start-Experiment.ps1" -Destination "$fixture\missing" } 'explicit -AllowNonConsole'

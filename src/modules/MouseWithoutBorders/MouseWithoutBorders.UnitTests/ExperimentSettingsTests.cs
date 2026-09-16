@@ -29,5 +29,6 @@ public sealed class ExperimentSettingsTests
         Assert.AreEqual(string.Empty, settings.Properties.SecurityKey.Value);
         Assert.AreEqual(string.Empty, settings.Properties.Name2IP.Value);
         Assert.AreEqual(0, settings.Properties.MachineMatrixString.Count);
+        Assert.AreEqual(0x70, settings.Properties.HotKeySwitchMachine.Value);
     }
 }

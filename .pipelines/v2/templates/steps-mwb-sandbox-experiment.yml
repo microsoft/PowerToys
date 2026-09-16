@@ -1,0 +1,30 @@
+# Debug-only pilot. Do not retry the suite or suppress Win11 infrastructure failures.
+steps:
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Prepare `
+        -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)"
+    displayName: Prepare asynchronous privileged MWB Sandbox prerequisite
+    timeoutInMinutes: 15
+
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Run `
+        -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
+        -ResultsDirectory "$(Common.TestResultsDirectory)"
+    displayName: Run MWB Sandbox MSTest once on the standard-user desktop
+    timeoutInMinutes: 48
+    env:
+      platform: $(TestPlatform)
+      WINAPP_CLI_PATH: $(WINAPP_CLI_PATH)
+
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Recover `
+        -RunId "$(System.JobId)" -ResultsDirectory "$(Common.TestResultsDirectory)"
+    displayName: Recover owned MWB desktop resources as the original standard user
+    condition: always()
+    timeoutInMinutes: 6
+
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Cleanup -RunId "$(System.JobId)"
+    displayName: Remove owned MWB firewall prerequisite and provisioning task
+    condition: always()
+    timeoutInMinutes: 5
