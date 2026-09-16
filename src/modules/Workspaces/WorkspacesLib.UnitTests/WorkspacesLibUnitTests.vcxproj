@@ -52,6 +52,7 @@
     <ClCompile Include="PwaHelperTests.cpp" />
     <ClCompile Include="SignatureVerificationTests.cpp" />
     <ClCompile Include="PackageVerificationAsyncTests.cpp" />
+    <ClCompile Include="LauncherIpcServerTests.cpp" />
     <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>

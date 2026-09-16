@@ -47,6 +47,9 @@
     <ClCompile Include="PackageVerificationAsyncTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LauncherIpcServerTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
