@@ -13,6 +13,10 @@ CI run passed native Sandbox readiness and produced a usable separate viewer
 video, then exposed an 80-second lease-publication gap before endpoint startup.
 Win11's captured provisioning error confirmed that its CI image has Windows
 Sandbox **Disabled**; image setup/reboot is required, not a test-side bypass.
+The process-isolated lease replacement has not yet reached CI UI execution:
+the second authorized run stopped at a new regression's fixed-delay assumption,
+now replaced by a bounded committed-generation wait. The two-run budget is
+exhausted; no end-to-end CI pass is claimed.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI

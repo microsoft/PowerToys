@@ -41,8 +41,12 @@ public sealed class LeasePublisherTests
         using (var held = new FileStream(first, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
             // No timer or callback in the owner is needed to keep both endpoints alive.
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-            publisher.ThrowIfFailed();
+            RunFiles.Wait(
+                () => File.Exists(Path.Combine(host.InputRoot, "leases", "00000004.json.ready")) &&
+                    File.Exists(Path.Combine(guest.InputRoot, "leases", "00000004.json.ready")),
+                TimeSpan.FromSeconds(30),
+                "Both endpoints did not receive committed generations while the owner waited.",
+                publisher.ThrowIfFailed);
             var state = RunFiles.Read(Path.Combine(root, "lease-publisher.json"));
             var sequence = state["Sequence"]!.GetValue<int>();
             Assert.IsTrue(sequence >= 4, $"Only {sequence} generations were published while the owner waited.");

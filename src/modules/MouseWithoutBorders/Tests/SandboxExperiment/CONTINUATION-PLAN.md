@@ -177,6 +177,15 @@ Win11's newly captured underlying error is definitive: **Windows Sandbox is
 Disabled** on that CI image. Enabling it and rebooting belongs to image
 preparation, not to the standard-user test fixture.
 
+The second authorized CI attempt failed during the main build, before either
+UI stage. The new publisher regression assumed four generations would exist
+after a fixed five-second sleep; the concurrent build had only reached three.
+It now waits for the same committed fourth generation on both endpoints to a
+bounded deadline, rather than asserting incidental scheduler throughput.
+Both authorized attempts are consumed. The isolated publisher still needs a
+newly authorized CI run; the second attempt supplied no Sandbox video or
+end-to-end verdict.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under
