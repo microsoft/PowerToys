@@ -190,6 +190,13 @@ approval/skip/cancel/failure. Managed tests cover the warning's actual lifecycle
 display, default actions, and localization. There are no product command-line
 verification or warning-preview switches.
 
+Trust regressions compile the production verifier with test-only Windows API
+seams for signature/provider results, catalog discovery, and final-path forms.
+They exercise embedded/secondary signatures, catalog matches, chain failures,
+and timestamps. Windows chain and Authenticode policy evaluation use a private
+memory-only root store; no machine trust, installed catalogs, or network state
+is modified. These controlled tests are not end-to-end signed-binary acceptance.
+
 For end-to-end acceptance, use a harmless unsigned EXE in a saved workspace,
 mark it **Run as administrator**, and exercise Skip, Run anyway, Escape/close,
 and workspace cancellation. Also confirm that ordinary launches and MSIX/URI

@@ -359,7 +359,9 @@ namespace SignatureVerification
         {
             resolved = L"\\\\" + resolved.substr(8);
         }
-        else if (resolved.starts_with(L"\\\\?\\"))
+        else if (resolved.size() >= 7 && resolved.starts_with(L"\\\\?\\") &&
+                 ((resolved[4] >= L'A' && resolved[4] <= L'Z') || (resolved[4] >= L'a' && resolved[4] <= L'z')) &&
+                 resolved[5] == L':' && resolved[6] == L'\\')
         {
             resolved.erase(0, 4);
         }

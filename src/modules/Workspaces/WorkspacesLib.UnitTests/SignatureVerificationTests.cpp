@@ -9,14 +9,396 @@
 #include <WorkspacesLauncher/pch.h>
 #include <WorkspacesLauncher/AppLauncher.h>
 #include <WorkspacesLauncher/RegistryUtils.h>
+#include <mscat.h>
+#include <ncrypt.h>
 #include <softpub.h>
 #include <wincrypt.h>
 
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <future>
+
+#pragma comment(lib, "ncrypt.lib")
+
+namespace WorkspacesLibUnitTests::TrustApi
+{
+    using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
+
+    struct Fixture;
+    thread_local Fixture* active{};
+
+    struct Fixture
+    {
+        wil::unique_cert_context certificate;
+        wil::unique_hcertstore roots;
+        wil::unique_any<HCERTCHAINENGINE, decltype(&::CertFreeCertificateChainEngine), ::CertFreeCertificateChainEngine> engine;
+        wil::unique_cert_chain_context chain;
+        CERT_CHAIN_CONTEXT chainView{};
+        CRYPT_PROVIDER_DATA provider{};
+        CRYPT_PROVIDER_CERT providerCertificate{};
+        CRYPT_PROVIDER_SGNR signer{};
+        CRYPT_PROVIDER_SGNR timestamp{};
+        std::vector<LONG> embedded{ ERROR_SUCCESS };
+        std::vector<LONG> catalogs;
+        std::vector<std::wstring> algorithms;
+        std::wstring catalogAlgorithm{ L"SHA256" };
+        std::wstring finalPath;
+        DWORD signerErrors{};
+        DWORD timestampErrors{};
+        bool missingProvider{};
+        bool missingSigner{};
+        bool chainFailure{};
+        bool catalogFailure{};
+        bool checkingTimestamp{};
+        size_t catalogIndex{};
+        unsigned verified{};
+        unsigned closed{};
+        unsigned chainCalls{};
+        unsigned policyCalls{};
+        unsigned adminsOpened{};
+        unsigned adminsClosed{};
+        unsigned catalogsOpened{};
+        unsigned catalogsClosed{};
+
+        static constexpr FILETIME ShiftDays(FILETIME time, int days)
+        {
+            const auto ticks = static_cast<LONGLONG>((static_cast<ULONGLONG>(time.dwHighDateTime) << 32) | time.dwLowDateTime);
+            const auto shifted = static_cast<ULONGLONG>(ticks + days * 864000000000LL);
+            return { static_cast<DWORD>(shifted), static_cast<DWORD>(shifted >> 32) };
+        }
+
+        explicit Fixture(bool trustedRoot = true, int validityOffsetDays = 0)
+        {
+            Assert::IsNull(active);
+            wil::unique_ncrypt_prov keyProvider;
+            wil::unique_ncrypt_key key;
+            Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptOpenStorageProvider(keyProvider.put(), MS_KEY_STORAGE_PROVIDER, 0));
+            Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptCreatePersistedKey(keyProvider.get(), key.put(), NCRYPT_RSA_ALGORITHM, nullptr, 0, 0));
+            Assert::AreEqual(static_cast<SECURITY_STATUS>(ERROR_SUCCESS), NCryptFinalizeKey(key.get(), NCRYPT_SILENT_FLAG));
+
+            DWORD nameSize{};
+            constexpr auto name = L"CN=Workspaces signature unit test";
+            Assert::IsTrue(CertStrToNameW(X509_ASN_ENCODING, name, CERT_X500_NAME_STR, nullptr, nullptr, &nameSize, nullptr) != FALSE);
+            std::vector<BYTE> encodedName(nameSize);
+            Assert::IsTrue(CertStrToNameW(X509_ASN_ENCODING, name, CERT_X500_NAME_STR, nullptr, encodedName.data(), &nameSize, nullptr) != FALSE);
+            CERT_NAME_BLOB subject{ nameSize, encodedName.data() };
+            char algorithm[] = szOID_RSA_SHA256RSA;
+            CRYPT_ALGORITHM_IDENTIFIER signatureAlgorithm{ algorithm, {} };
+            GetSystemTimeAsFileTime(&signer.sftVerifyAsOf);
+            const auto from = ShiftDays(signer.sftVerifyAsOf, validityOffsetDays - 1);
+            const auto until = ShiftDays(signer.sftVerifyAsOf, validityOffsetDays + 1);
+            SYSTEMTIME start{}, end{};
+            Assert::IsTrue(FileTimeToSystemTime(&from, &start) != FALSE);
+            Assert::IsTrue(FileTimeToSystemTime(&until, &end) != FALSE);
+            certificate.reset(CertCreateSelfSignCertificate(key.get(), &subject, CERT_CREATE_SELFSIGN_NO_KEY_INFO, nullptr, &signatureAlgorithm, &start, &end, nullptr));
+            Assert::IsTrue(static_cast<bool>(certificate));
+
+            roots.reset(CertOpenStore(CERT_STORE_PROV_MEMORY, 0, 0, 0, nullptr));
+            Assert::IsTrue(static_cast<bool>(roots));
+            if (trustedRoot)
+            {
+                Assert::IsTrue(CertAddCertificateContextToStore(roots.get(), certificate.get(), CERT_STORE_ADD_ALWAYS, nullptr) != FALSE);
+            }
+            CERT_CHAIN_ENGINE_CONFIG configuration{};
+            configuration.cbSize = sizeof(configuration);
+            configuration.hExclusiveRoot = roots.get();
+            Assert::IsTrue(CertCreateCertificateChainEngine(&configuration, engine.put()) != FALSE);
+
+            providerCertificate.cbStruct = sizeof(providerCertificate);
+            providerCertificate.pCert = certificate.get();
+            signer.cbStruct = sizeof(signer);
+            signer.csCertChain = 1;
+            signer.pasCertChain = &providerCertificate;
+            timestamp = signer;
+            active = this;
+        }
+
+        ~Fixture()
+        {
+            active = nullptr;
+        }
+
+        SignatureVerification::LaunchTarget Verify(const std::wstring& path)
+        {
+            auto result = SignatureVerification::Verify(path);
+            Assert::AreEqual(verified, closed, L"Every WinVerifyTrust state must be closed, including failures.");
+            Assert::IsFalse(static_cast<bool>(chain), L"Machine/timestamp chains must be released.");
+            Assert::AreEqual(adminsOpened, adminsClosed);
+            Assert::AreEqual(catalogsOpened, catalogsClosed);
+            return result;
+        }
+    };
+
+    DWORD WINAPI FinalPath(HANDLE file, LPWSTR buffer, DWORD size, DWORD flags)
+    {
+        if (!active || active->finalPath.empty())
+        {
+            return ::GetFinalPathNameByHandleW(file, buffer, size, flags);
+        }
+        Assert::AreEqual(static_cast<DWORD>(FILE_NAME_NORMALIZED | VOLUME_NAME_DOS), flags);
+        const auto& path = active->finalPath;
+        if (size <= path.size())
+        {
+            return static_cast<DWORD>(path.size() + 1);
+        }
+        std::copy(path.c_str(), path.c_str() + path.size() + 1, buffer);
+        return static_cast<DWORD>(path.size());
+    }
+
+    LONG WINAPI VerifyTrust(HWND window, GUID* action, LPVOID information)
+    {
+        if (!active)
+        {
+            return ::WinVerifyTrust(window, action, information);
+        }
+        auto& data = *static_cast<WINTRUST_DATA*>(information);
+        GUID expectedAction = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        Assert::IsTrue(*action == expectedAction);
+        Assert::AreEqual(static_cast<DWORD>(WTD_UI_NONE), data.dwUIChoice);
+        Assert::AreEqual(static_cast<DWORD>(WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT | WTD_DISABLE_MD2_MD4), data.dwProvFlags);
+        if (data.dwStateAction == WTD_STATEACTION_CLOSE)
+        {
+            Assert::IsTrue(data.hWVTStateData == active);
+            ++active->closed;
+            data.hWVTStateData = nullptr;
+            return ERROR_SUCCESS;
+        }
+        Assert::AreEqual(static_cast<DWORD>(WTD_STATEACTION_VERIFY), data.dwStateAction);
+        data.hWVTStateData = active;
+        ++active->verified;
+        if (data.dwUnionChoice == WTD_CHOICE_FILE)
+        {
+            Assert::IsNotNull(data.pFile);
+            Assert::IsTrue(data.pFile->hFile != INVALID_HANDLE_VALUE);
+            Assert::IsNotNull(data.pSignatureSettings);
+            auto& signatures = *data.pSignatureSettings;
+            Assert::IsTrue((signatures.dwFlags & WSS_VERIFY_SPECIFIC) != 0);
+            Assert::IsTrue(signatures.dwIndex < active->embedded.size());
+            if (signatures.dwIndex == 0)
+            {
+                Assert::IsTrue((signatures.dwFlags & WSS_GET_SECONDARY_SIG_COUNT) != 0);
+                signatures.cSecondarySigs = static_cast<DWORD>(active->embedded.size() - 1);
+            }
+            return active->embedded[signatures.dwIndex];
+        }
+        Assert::AreEqual(static_cast<DWORD>(WTD_CHOICE_CATALOG), data.dwUnionChoice);
+        Assert::IsNotNull(data.pCatalog);
+        Assert::IsTrue(data.pCatalog->hCatAdmin == active);
+        Assert::AreEqual(L"C:\\WorkspacesTest\\signature.cat", data.pCatalog->pcwszCatalogFilePath);
+        Assert::AreEqual(L"01AB00FF", data.pCatalog->pcwszMemberTag);
+        Assert::AreEqual(static_cast<DWORD>(4), data.pCatalog->cbCalculatedFileHash);
+        Assert::IsTrue(data.pCatalog->hMemberFile != INVALID_HANDLE_VALUE);
+        return active->catalogs.at(active->catalogIndex);
+    }
+
+    CRYPT_PROVIDER_DATA* WINAPI Provider(HANDLE state)
+    {
+        if (!active)
+        {
+            return ::WTHelperProvDataFromStateData(state);
+        }
+        Assert::IsTrue(state == active);
+        return active->missingProvider ? nullptr : &active->provider;
+    }
+
+    CRYPT_PROVIDER_SGNR* WINAPI Signer(CRYPT_PROVIDER_DATA* provider, DWORD index, BOOL counterSigner, DWORD counterIndex)
+    {
+        if (!active)
+        {
+            return ::WTHelperGetProvSignerFromChain(provider, index, counterSigner, counterIndex);
+        }
+        Assert::IsTrue(provider == &active->provider);
+        Assert::AreEqual(static_cast<DWORD>(0), index);
+        Assert::IsFalse(counterSigner != FALSE);
+        return active->missingSigner ? nullptr : &active->signer;
+    }
+
+    BOOL WINAPI CertificateChain(HCERTCHAINENGINE engine, PCCERT_CONTEXT certificate, LPFILETIME time, HCERTSTORE store,
+                                PCERT_CHAIN_PARA parameters, DWORD flags, LPVOID reserved, PCCERT_CHAIN_CONTEXT* chain)
+    {
+        if (!active)
+        {
+            return ::CertGetCertificateChain(engine, certificate, time, store, parameters, flags, reserved, chain);
+        }
+        Assert::IsTrue(engine == HCCE_LOCAL_MACHINE);
+        Assert::AreEqual(static_cast<DWORD>(CERT_CHAIN_CACHE_ONLY_URL_RETRIEVAL | CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY | CERT_CHAIN_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT), flags);
+        Assert::AreEqual(static_cast<DWORD>(USAGE_MATCH_TYPE_AND), parameters->RequestedUsage.dwType);
+        Assert::AreEqual(static_cast<DWORD>(1), parameters->RequestedUsage.Usage.cUsageIdentifier);
+        const auto usage = parameters->RequestedUsage.Usage.rgpszUsageIdentifier[0];
+        active->checkingTimestamp = strcmp(usage, szOID_PKIX_KP_TIMESTAMP_SIGNING) == 0;
+        Assert::AreEqual(active->checkingTimestamp ? szOID_PKIX_KP_TIMESTAMP_SIGNING : szOID_PKIX_KP_CODE_SIGNING, usage);
+        const auto expectedTime = active->checkingTimestamp ? active->timestamp.sftVerifyAsOf : active->signer.sftVerifyAsOf;
+        Assert::AreEqual(expectedTime.dwLowDateTime, time->dwLowDateTime);
+        Assert::AreEqual(expectedTime.dwHighDateTime, time->dwHighDateTime);
+        Assert::IsFalse(static_cast<bool>(active->chain));
+        ++active->chainCalls;
+        if (active->chainFailure)
+        {
+            SetLastError(ERROR_INVALID_DATA);
+            return FALSE;
+        }
+        // Real Windows chain/policy evaluation with a private memory-only root, never machine trust.
+        if (!::CertGetCertificateChain(active->engine.get(), certificate, time, store, parameters, flags, reserved, active->chain.put()))
+        {
+            return FALSE;
+        }
+        active->chainView = *active->chain.get();
+        active->chainView.TrustStatus.dwErrorStatus |= active->checkingTimestamp ? active->timestampErrors : active->signerErrors;
+        *chain = &active->chainView;
+        return TRUE;
+    }
+
+    void WINAPI FreeChain(PCCERT_CHAIN_CONTEXT chain)
+    {
+        if (active && chain == &active->chainView)
+        {
+            active->chain.reset();
+            return;
+        }
+        ::CertFreeCertificateChain(chain);
+    }
+
+    BOOL WINAPI ChainPolicy(LPCSTR policy, PCCERT_CHAIN_CONTEXT chain, PCERT_CHAIN_POLICY_PARA parameters, PCERT_CHAIN_POLICY_STATUS status)
+    {
+        if (active)
+        {
+            Assert::IsTrue(chain == &active->chainView);
+            Assert::IsTrue(policy == (active->checkingTimestamp ? CERT_CHAIN_POLICY_AUTHENTICODE_TS : CERT_CHAIN_POLICY_AUTHENTICODE));
+            Assert::AreEqual(static_cast<DWORD>(0), parameters->dwFlags);
+            ++active->policyCalls;
+        }
+        return ::CertVerifyCertificateChainPolicy(policy, chain, parameters, status);
+    }
+
+    BOOL WINAPI AcquireCatalog(HCATADMIN* admin, const GUID* subsystem, PCWSTR algorithm, PCCERT_STRONG_SIGN_PARA policy, DWORD flags)
+    {
+        if (!active)
+        {
+            return ::CryptCATAdminAcquireContext2(admin, subsystem, algorithm, policy, flags);
+        }
+        active->algorithms.emplace_back(algorithm);
+        if (active->catalogFailure)
+        {
+            SetLastError(ERROR_ACCESS_DENIED);
+            return FALSE;
+        }
+        *admin = active;
+        ++active->adminsOpened;
+        return TRUE;
+    }
+
+    BOOL WINAPI ReleaseCatalogAdmin(HCATADMIN admin, DWORD flags)
+    {
+        if (!active)
+        {
+            return ::CryptCATAdminReleaseContext(admin, flags);
+        }
+        Assert::IsTrue(admin == active);
+        ++active->adminsClosed;
+        return TRUE;
+    }
+
+    BOOL WINAPI CatalogHash(HCATADMIN admin, HANDLE file, DWORD* size, BYTE* hash, DWORD flags)
+    {
+        if (!active)
+        {
+            return ::CryptCATAdminCalcHashFromFileHandle2(admin, file, size, hash, flags);
+        }
+        Assert::IsTrue(admin == active);
+        BY_HANDLE_FILE_INFORMATION information{};
+        Assert::IsTrue(GetFileInformationByHandle(file, &information) != FALSE);
+        constexpr std::array<BYTE, 4> bytes{ 0x01, 0xAB, 0x00, 0xFF };
+        if (hash)
+        {
+            Assert::AreEqual(static_cast<DWORD>(bytes.size()), *size);
+            std::copy(bytes.begin(), bytes.end(), hash);
+        }
+        *size = static_cast<DWORD>(bytes.size());
+        return TRUE;
+    }
+
+    HCATINFO WINAPI EnumerateCatalog(HCATADMIN admin, BYTE* hash, DWORD size, DWORD flags, HCATINFO* previous)
+    {
+        if (!active)
+        {
+            return ::CryptCATAdminEnumCatalogFromHash(admin, hash, size, flags, previous);
+        }
+        Assert::IsTrue(admin == active);
+        Assert::AreEqual(static_cast<DWORD>(4), size);
+        if (previous)
+        {
+            Assert::IsTrue(*previous == &active->catalogIndex);
+            ++active->catalogsClosed;
+            ++active->catalogIndex;
+        }
+        else
+        {
+            active->catalogIndex = 0;
+        }
+        if (active->algorithms.back() != active->catalogAlgorithm || active->catalogIndex >= active->catalogs.size())
+        {
+            SetLastError(ERROR_NOT_FOUND);
+            return nullptr;
+        }
+        ++active->catalogsOpened;
+        return &active->catalogIndex;
+    }
+
+    BOOL WINAPI CatalogInformation(HCATINFO catalog, CATALOG_INFO* information, DWORD flags)
+    {
+        if (!active)
+        {
+            return ::CryptCATCatalogInfoFromContext(catalog, information, flags);
+        }
+        Assert::IsTrue(catalog == &active->catalogIndex);
+        wcscpy_s(information->wszCatalogFile, L"C:\\WorkspacesTest\\signature.cat");
+        return TRUE;
+    }
+
+    BOOL WINAPI ReleaseCatalog(HCATADMIN admin, HCATINFO catalog, DWORD flags)
+    {
+        if (!active)
+        {
+            return ::CryptCATAdminReleaseCatalogContext(admin, catalog, flags);
+        }
+        Assert::IsTrue(admin == active);
+        Assert::IsTrue(catalog == &active->catalogIndex);
+        ++active->catalogsClosed;
+        return TRUE;
+    }
+}
+
+// Link the production verifier from this test translation unit; inactive seams use real Windows APIs.
+#define GetFinalPathNameByHandleW ::WorkspacesLibUnitTests::TrustApi::FinalPath
+#define WinVerifyTrust ::WorkspacesLibUnitTests::TrustApi::VerifyTrust
+#define WTHelperProvDataFromStateData ::WorkspacesLibUnitTests::TrustApi::Provider
+#define WTHelperGetProvSignerFromChain ::WorkspacesLibUnitTests::TrustApi::Signer
+#define CertGetCertificateChain ::WorkspacesLibUnitTests::TrustApi::CertificateChain
+#define CertFreeCertificateChain ::WorkspacesLibUnitTests::TrustApi::FreeChain
+#define CertVerifyCertificateChainPolicy ::WorkspacesLibUnitTests::TrustApi::ChainPolicy
+#define CryptCATAdminAcquireContext2 ::WorkspacesLibUnitTests::TrustApi::AcquireCatalog
+#define CryptCATAdminReleaseContext ::WorkspacesLibUnitTests::TrustApi::ReleaseCatalogAdmin
+#define CryptCATAdminCalcHashFromFileHandle2 ::WorkspacesLibUnitTests::TrustApi::CatalogHash
+#define CryptCATAdminEnumCatalogFromHash ::WorkspacesLibUnitTests::TrustApi::EnumerateCatalog
+#define CryptCATCatalogInfoFromContext ::WorkspacesLibUnitTests::TrustApi::CatalogInformation
+#define CryptCATAdminReleaseCatalogContext ::WorkspacesLibUnitTests::TrustApi::ReleaseCatalog
+#include <WorkspacesLib/SignatureVerification.cpp>
+#undef GetFinalPathNameByHandleW
+#undef WinVerifyTrust
+#undef WTHelperProvDataFromStateData
+#undef WTHelperGetProvSignerFromChain
+#undef CertGetCertificateChain
+#undef CertFreeCertificateChain
+#undef CertVerifyCertificateChainPolicy
+#undef CryptCATAdminAcquireContext2
+#undef CryptCATAdminReleaseContext
+#undef CryptCATAdminCalcHashFromFileHandle2
+#undef CryptCATAdminEnumCatalogFromHash
+#undef CryptCATCatalogInfoFromContext
+#undef CryptCATAdminReleaseCatalogContext
 
 namespace WorkspacesLibUnitTests
 {
@@ -226,6 +608,226 @@ namespace WorkspacesLibUnitTests
             const auto executable = SignatureVerification::Verify(fixture.path);
             Assert::IsTrue(executable.result.status == Status::UnableToVerify);
             Assert::AreEqual(static_cast<LONG>(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)), executable.result.error);
+        }
+    };
+
+    TEST_CLASS (SignatureTrustTests)
+    {
+    public:
+        TEST_METHOD (TrustedEmbeddedSignatureChecksChainAndPublisher)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.IsVerified());
+            Assert::AreEqual(std::wstring(L"embedded"), target.result.source);
+            Assert::AreEqual(std::wstring(L"Workspaces signature unit test"), target.result.publisher);
+            Assert::AreEqual(1u, trust.chainCalls);
+            Assert::AreEqual(1u, trust.policyCalls);
+            Assert::IsTrue(trust.algorithms.empty());
+        }
+
+        TEST_METHOD (MissingProviderOrSignerCannotTurnTrustSuccessIntoApproval)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.missingProvider = true;
+            Assert::IsFalse(trust.Verify(file.path).result.IsVerified());
+            trust.missingProvider = false;
+            trust.missingSigner = true;
+            Assert::IsFalse(trust.Verify(file.path).result.IsVerified());
+            trust.missingSigner = false;
+            trust.signer.csCertChain = 0;
+            Assert::IsFalse(trust.Verify(file.path).result.IsVerified());
+        }
+
+        TEST_METHOD (MachineChainRejectsRootOutsideItsTrustStore)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust(false);
+            const auto target = trust.Verify(file.path);
+            Assert::IsFalse(target.result.IsVerified());
+            Assert::AreEqual(static_cast<LONG>(CERT_E_UNTRUSTEDROOT), target.result.error);
+            Assert::IsTrue(target.result.publisher.empty());
+        }
+
+        TEST_METHOD (MachineChainApiFailureIsInconclusive)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.chainFailure = true;
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.status == Status::UnableToVerify);
+            Assert::AreEqual(static_cast<LONG>(HRESULT_FROM_WIN32(ERROR_INVALID_DATA)), target.result.error);
+        }
+
+        TEST_METHOD (MachineChainRejectsHardTrustFailures)
+        {
+            TemporaryExecutable file;
+            for (const auto& [flags, error] : {
+                     std::pair<DWORD, LONG>{ CERT_TRUST_IS_REVOKED, CERT_E_REVOKED },
+                     { CERT_TRUST_IS_EXPLICIT_DISTRUST, TRUST_E_EXPLICIT_DISTRUST },
+                     { CERT_TRUST_IS_UNTRUSTED_ROOT, CERT_E_UNTRUSTEDROOT },
+                     { CERT_TRUST_IS_PARTIAL_CHAIN, CERT_E_CHAINING },
+                 })
+            {
+                TrustApi::Fixture trust;
+                trust.signerErrors = flags;
+                const auto target = trust.Verify(file.path);
+                Assert::IsFalse(target.result.IsVerified());
+                Assert::AreEqual(error, target.result.error);
+                Assert::AreEqual(0u, trust.policyCalls);
+            }
+        }
+
+        TEST_METHOD (UnavailableCachedRevocationStillRequiresWarning)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.signerErrors = CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CERT_TRUST_IS_OFFLINE_REVOCATION;
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.status == Status::UnableToVerify);
+            Assert::AreEqual(std::wstring(L"revocation-unavailable"), target.result.Reason());
+        }
+
+        TEST_METHOD (ExpiredCertificateIsRejectedByAuthenticodeChainPolicy)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust(true, -2);
+            const auto target = trust.Verify(file.path);
+            Assert::IsFalse(target.result.IsVerified());
+            Assert::AreEqual(static_cast<LONG>(CERT_E_EXPIRED), target.result.error);
+            Assert::AreEqual(1u, trust.policyCalls);
+        }
+
+        TEST_METHOD (AuthenticatedTimestampUsesHistoricalChainTime)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust(true, -2);
+            trust.signer.sftVerifyAsOf = TrustApi::Fixture::ShiftDays(trust.signer.sftVerifyAsOf, -2);
+            trust.timestamp.sftVerifyAsOf = trust.signer.sftVerifyAsOf;
+            trust.signer.csCounterSigners = 1;
+            trust.signer.pasCounterSigners = &trust.timestamp;
+            Assert::IsTrue(trust.Verify(file.path).result.IsVerified());
+            Assert::AreEqual(2u, trust.chainCalls);
+            Assert::AreEqual(2u, trust.policyCalls);
+        }
+
+        TEST_METHOD (RevokedTimestampRejectsAnOtherwiseTrustedSigner)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.signer.csCounterSigners = 1;
+            trust.signer.pasCounterSigners = &trust.timestamp;
+            trust.timestampErrors = CERT_TRUST_IS_REVOKED;
+            const auto target = trust.Verify(file.path);
+            Assert::IsFalse(target.result.IsVerified());
+            Assert::AreEqual(static_cast<LONG>(CERT_E_REVOKED), target.result.error);
+            Assert::AreEqual(2u, trust.chainCalls);
+        }
+
+        TEST_METHOD (BadDigestDoesNotReachSignerChainValidation)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { TRUST_E_BAD_DIGEST };
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.status == Status::InvalidSignature);
+            Assert::AreEqual(static_cast<LONG>(TRUST_E_BAD_DIGEST), target.result.error);
+            Assert::AreEqual(0u, trust.chainCalls);
+        }
+
+        TEST_METHOD (NonzeroSuccessCodeDoesNotReachSignerChainValidation)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { S_FALSE };
+            Assert::IsFalse(trust.Verify(file.path).result.IsVerified());
+            Assert::AreEqual(0u, trust.chainCalls);
+        }
+
+        TEST_METHOD (TrustedSecondarySignatureCanVerifyTheExecutable)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { TRUST_E_BAD_DIGEST, ERROR_SUCCESS };
+            Assert::IsTrue(trust.Verify(file.path).result.IsVerified());
+            Assert::AreEqual(2u, trust.verified);
+            Assert::AreEqual(1u, trust.chainCalls);
+            Assert::IsTrue(trust.algorithms.empty());
+        }
+
+        TEST_METHOD (InstalledSha256AndSha1CatalogMatchesAreVerified)
+        {
+            TemporaryExecutable file;
+            for (const auto algorithm : { L"SHA256", L"SHA1" })
+            {
+                TrustApi::Fixture trust;
+                trust.embedded = { TRUST_E_NOSIGNATURE };
+                trust.catalogs = { ERROR_SUCCESS };
+                trust.catalogAlgorithm = algorithm;
+                const auto target = trust.Verify(file.path);
+                Assert::IsTrue(target.result.IsVerified());
+                Assert::AreEqual(std::wstring(L"catalog"), target.result.source);
+                Assert::AreEqual(std::wstring(algorithm), trust.algorithms.back());
+                Assert::AreEqual(2u, trust.verified);
+                Assert::AreEqual(1u, trust.chainCalls);
+            }
+        }
+
+        TEST_METHOD (CatalogMemberDigestMismatchIsNotReportedAsUnsigned)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { TRUST_E_NOSIGNATURE };
+            trust.catalogs = { TRUST_E_BAD_DIGEST };
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.status == Status::InvalidSignature);
+            Assert::AreEqual(static_cast<LONG>(TRUST_E_BAD_DIGEST), target.result.error);
+            Assert::AreEqual(0u, trust.chainCalls);
+        }
+
+        TEST_METHOD (CatalogSearchContinuesAfterAnInvalidMatch)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { TRUST_E_NOSIGNATURE };
+            trust.catalogs = { TRUST_E_BAD_DIGEST, ERROR_SUCCESS };
+            Assert::IsTrue(trust.Verify(file.path).result.IsVerified());
+            Assert::AreEqual(3u, trust.verified);
+            Assert::AreEqual(2u, trust.catalogsOpened);
+        }
+
+        TEST_METHOD (CatalogSearchFailureCannotConfirmUnsignedStatus)
+        {
+            TemporaryExecutable file;
+            TrustApi::Fixture trust;
+            trust.embedded = { TRUST_E_NOSIGNATURE };
+            trust.catalogFailure = true;
+            const auto target = trust.Verify(file.path);
+            Assert::IsTrue(target.result.status == Status::UnableToVerify);
+            Assert::AreEqual(static_cast<LONG>(HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)), target.result.error);
+        }
+
+        TEST_METHOD (FinalPathNormalizationPreservesNonDosExtendedPaths)
+        {
+            TemporaryExecutable file;
+            const std::pair<const wchar_t*, const wchar_t*> paths[] = {
+                { L"\\\\?\\C:\\Apps\\test.exe", L"C:\\Apps\\test.exe" },
+                { L"\\\\?\\z:\\Apps\\test.exe", L"z:\\Apps\\test.exe" },
+                { L"\\\\?\\UNC\\server\\share\\test.exe", L"\\\\server\\share\\test.exe" },
+                { L"\\\\?\\Volume{12345678-1234-1234-1234-123456789ABC}\\test.exe", L"\\\\?\\Volume{12345678-1234-1234-1234-123456789ABC}\\test.exe" },
+                { L"\\\\?\\GLOBALROOT\\Device\\HarddiskVolume1\\test.exe", L"\\\\?\\GLOBALROOT\\Device\\HarddiskVolume1\\test.exe" },
+                { L"\\\\?\\1:\\test.exe", L"\\\\?\\1:\\test.exe" },
+            };
+            TrustApi::Fixture trust;
+            for (const auto& [reported, expected] : paths)
+            {
+                trust.finalPath = reported;
+                const auto target = trust.Verify(file.path);
+                Assert::IsTrue(target.result.IsVerified());
+                Assert::AreEqual(std::wstring(expected), target.path);
+            }
         }
     };
 
