@@ -25,6 +25,7 @@ namespace NonLocalizable
         const static wchar_t* CanvasID = L"canvas";
         const static wchar_t* GridID = L"grid";
         const static wchar_t* SensitivityRadiusID = L"sensitivity-radius";
+        const static wchar_t* DefaultZoneIndexSetID = L"default-zone-set";
 
         // canvas
         const static wchar_t* RefHeightID = L"ref-height";
