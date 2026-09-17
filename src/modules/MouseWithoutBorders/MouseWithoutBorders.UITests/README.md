@@ -8,9 +8,11 @@ evidence run `localvm-20260915-173353-3804112e` passed the receiver probe but st
 in guest Settings initialization. This is feasibility evidence, not clean-baseline,
 Win11 or full module sign-off. The Debug pilot now omits unused installer
 packaging. Later CI diagnostics booted the Win10 Sandbox but stopped in the
-harness's process-wide UIA startup-error query, before MWB pairing. Win11 stopped
-earlier in privileged provisioning; neither result establishes a Windows
-compatibility blocker.
+harness's process-wide UIA startup-error query, before MWB pairing. The corrected
+CI run passed native Sandbox readiness and produced a usable separate viewer
+video, then exposed an 80-second lease-publication gap before endpoint startup.
+Win11's captured provisioning error confirmed that its CI image has Windows
+Sandbox **Disabled**; image setup/reboot is required, not a test-side bypass.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI
@@ -139,9 +141,14 @@ The built executable is under
   used; no user/machine environment or execution-policy setting is changed.
 - Immutable, committed lease generations with latest-snapshot consumption:
   liveness does not require replaying hundreds of obsolete redirected JSON files.
-  A dedicated publisher thread keeps leases independent of test/UIA waits.
-  `lease-publisher.json` records its stage, sequences and per-endpoint write
-  timings for diagnosing stalls; the 45-second worker watchdog remains enabled.
+  An owned, hidden Windows PowerShell process keeps publication outside the
+  MTP/native-recording process: a dedicated managed thread still stalled in CI.
+  It retains the exact test-process handle, exits when that process exits, and
+  cannot outlive the existing 40-minute hard deadline. Correlated shutdown and
+  identity-checked recovery stop only that publisher.
+  `lease-publisher.json` records its stage, sequence, per-endpoint write timings,
+  maximum cycle gap and bounded stall history. The 45-second worker watchdog
+  remains enabled.
   Native .NET adapter enumeration provides bootstrap IPv4/prefix/interface/gateway
   data without cold-starting PowerShell's NetTCPIP/CIM cmdlets.
 - Read-only product-archive, worker, tools and request mappings; a separate writable guest
@@ -227,7 +234,7 @@ Original clipboard contents are never written to disk. A forced worker terminati
 can therefore prevent clipboard restoration; such a run cannot claim clean cleanup.
 
 `cleanup-journal.json` has `FormatVersion: 1`, `RunId`, `ControlRoot`, `ProductRoot`,
-`HostName`, `TestProcess`,
+`HostName`, `TestProcess`, `LeasePublisher`,
 `ProvisioningMarker`, `RuleName`, `TestUserSid`, `HostWorker`, `SandboxProcesses`,
 `ViewerHwnd`, `GuestAcknowledged`, `HostEndpointJournal`, `GuestEndpointJournal`,
 `Phase`, `Status`, `TimestampUtc`, `CleanupErrors`, and `PrivilegedCleanupRequired`.

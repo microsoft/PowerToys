@@ -152,6 +152,15 @@ try {
         throw 'Run recovery in the original interactive session only after the recorded MTP process exits.'
     }
 
+    if ($journal.PSObject.Properties['LeasePublisher'] -and $journal.LeasePublisher) {
+        $publisher = Convert-ProcessRecord $journal.LeasePublisher
+        Assert-ChildIdentity $publisher $testProcess
+        $expectedPowerShell = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        if ($publisher.Path -ine $expectedPowerShell) { throw 'Unexpected lease publisher executable.' }
+        Stop-RecordedProcess $publisher
+        if ($publisher.IsCurrent()) { throw 'The recorded lease publisher is still active.' }
+    }
+
     $worker = $null
     if ($journal.HostWorker) {
         $worker = Convert-ProcessRecord $journal.HostWorker

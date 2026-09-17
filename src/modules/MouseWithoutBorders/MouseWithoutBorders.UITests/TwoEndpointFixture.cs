@@ -48,9 +48,8 @@ internal sealed class TwoEndpointFixture : IDisposable
     private LegacySandbox? sandbox;
     private TestRecordings? recordings;
     private ProcessIdentity? hostWorker;
-    private readonly ManualResetEventSlim stopLease = new(false);
-    private Thread? lease;
-    private volatile Exception? leaseError;
+    private LeasePublisher? lease;
+    private ProcessIdentity? leaseProcess;
     private Session? settings;
     private long hostReceiverHwnd;
     private long guestReceiverHwnd;
@@ -157,19 +156,8 @@ internal sealed class TwoEndpointFixture : IDisposable
         {
             var publisher = lease;
             lease = null;
-            if (publisher is not null)
-            {
-                stopLease.Set();
-                if (!publisher.Join(TimeSpan.FromSeconds(10)))
-                {
-                    throw new TimeoutException("Endpoint lease publisher did not stop.");
-                }
-            }
+            publisher?.Dispose();
         });
-        if (leaseError is not null)
-        {
-            cleanupErrors.Add(leaseError);
-        }
 
         Attempt("Finalize and attach desktop and Sandbox videos", () => recordings?.Complete());
         status = cleanupErrors.Count == 0 ? "Cleaned" : "RecoveryRequired";
@@ -201,7 +189,6 @@ internal sealed class TwoEndpointFixture : IDisposable
         finally
         {
             recordings?.Dispose();
-            stopLease.Dispose();
         }
     }
 
@@ -257,13 +244,14 @@ internal sealed class TwoEndpointFixture : IDisposable
             Assert.AreEqual(provision["GuestArchiveSha256"]!.GetValue<string>(),
                 Convert.ToHexString(SHA256.HashData(archive)), true, "The staged guest product archive changed.");
         }
+        var hardDeadlineUtc = DateTime.UtcNow.AddMinutes(40);
         foreach (var endpoint in new[] { host, guest })
         {
             RunFiles.Write(Path.Combine(endpoint.InputRoot, "bootstrap.json"), new
             {
                 RunId = runId,
                 Role = endpoint == host ? "Host" : "Guest",
-                HardDeadlineUtc = DateTime.UtcNow.AddMinutes(40),
+                HardDeadlineUtc = hardDeadlineUtc,
                 Manifest = manifest,
                 GuestArchiveSha256 = provision["GuestArchiveSha256"]!.GetValue<string>(),
             });
@@ -273,58 +261,13 @@ internal sealed class TwoEndpointFixture : IDisposable
         RunFiles.Write(Path.Combine(runRoot, "payload-manifest.json"), manifest);
         RunFiles.Write(Path.Combine(runRoot, "host-desktop.json"), desktop);
         sandbox = new LegacySandbox(SaveJournal, recordings.CaptureSandboxWindow);
-        // UI Automation and nested-VM startup can occupy thread-pool workers for
-        // long periods. The liveness lease must not depend on that same pool.
-        lease = new Thread(() =>
-        {
-            long cycle = 0;
-            DateTime? lastCompletedUtc = null;
-            double hostWriteMilliseconds = 0;
-            double guestWriteMilliseconds = 0;
-            void SavePublisherState(string stage) => RunFiles.Write(Path.Combine(runRoot, "lease-publisher.json"), new
-            {
-                Stage = stage,
-                Cycle = cycle,
-                TimestampUtc = DateTime.UtcNow,
-                LastCompletedUtc = lastCompletedUtc,
-                ThreadId = Environment.CurrentManagedThreadId,
-                HostSequence = host.LeaseSequence,
-                GuestSequence = guest.LeaseSequence,
-                HostWriteMilliseconds = hostWriteMilliseconds,
-                GuestWriteMilliseconds = guestWriteMilliseconds,
-            });
-            while (!stopLease.IsSet)
-            {
-                try
-                {
-                    cycle++;
-                    SavePublisherState("PublishingHost");
-                    var started = Stopwatch.GetTimestamp();
-                    host.WriteLease();
-                    hostWriteMilliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-                    SavePublisherState("PublishingGuest");
-                    started = Stopwatch.GetTimestamp();
-                    guest.WriteLease();
-                    guestWriteMilliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-                    lastCompletedUtc = DateTime.UtcNow;
-                    SavePublisherState("Published");
-                }
-                catch (Exception error)
-                {
-                    leaseError = error;
-                    Console.WriteLine($"Endpoint lease publisher failed: {error}");
-                    return;
-                }
-
-                stopLease.Wait(TimeSpan.FromSeconds(2));
-            }
-        })
-        {
-            IsBackground = true,
-            Name = "MWB endpoint lease",
-        };
-        lease.Start();
+        // CI showed 80-second gaps even on a dedicated managed thread. Keep
+        // liveness outside the MTP/native-recording process, without relaxing its watchdog.
+        using var owner = Process.GetCurrentProcess();
+        lease = new LeasePublisher(payloadRoot, controlRoot, runRoot, runId, host, guest, hardDeadlineUtc, owner);
+        leaseProcess = ProcessIdentity.Capture(lease.ProcessId);
         SaveJournal();
+        lease.WaitForReady();
     }
 
     private object[] ValidatePayload()
@@ -775,10 +718,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         var started = DateTime.UtcNow;
         try
         {
-            if (leaseError is not null)
-            {
-                throw new IOException("Endpoint lease publication failed.", leaseError);
-            }
+            lease?.ThrowIfFailed();
 
             action();
             phases.Add(new { Name = name, Status = "PASS", StartedUtc = started, CompletedUtc = DateTime.UtcNow });
@@ -822,7 +762,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 FormatVersion = 1, RunId = runId, RunRoot = runRoot, ControlRoot = controlRoot, ProductRoot = productRoot,
                 HostName = hostName, TestProcess = testProcess,
                 ProvisioningMarker = markerPath, RuleName = provision["RuleName"]?.GetValue<string>(),
-                TestUserSid = userSid, HostWorker = hostWorker, SandboxProcesses = sandbox?.Processes,
+                TestUserSid = userSid, HostWorker = hostWorker, LeasePublisher = leaseProcess, SandboxProcesses = sandbox?.Processes,
                 ViewerHwnd = sandbox?.ViewerHwnd, GuestAcknowledged = sandbox?.GuestAcknowledged,
                 HostEndpointJournal = host is null ? null : Path.Combine(host.OutputRoot, "endpoint-journal.json"),
                 GuestEndpointJournal = guest is null ? null : Path.Combine(guest.OutputRoot, "endpoint-journal.json"),

@@ -26,7 +26,8 @@ function Assert-Throws {
     catch { Assert-Check ($_.ToString() -match $Pattern) $Pattern }
 }
 
-$scripts = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1')
+$scripts = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1') +
+    @(Get-ChildItem -LiteralPath "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload" -Filter '*.ps1')
 foreach ($file in $scripts) {
     $tokens = $null
     $parseErrors = $null

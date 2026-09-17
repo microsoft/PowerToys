@@ -153,6 +153,30 @@ through 397 cycles, its final endpoint writes took about 7 ms, desktop video
 finalized, and cleanup/recovery succeeded. This is still a failed full run, not
 a replacement for the earlier complete feasibility pass.
 
+The first explicitly authorized follow-up CI run passed native Sandbox readiness,
+and its separate viewer video contained real guest pixels rather than black
+frames. It then exposed the independent remaining failure: consecutive lease
+generations 41 and 42 were about 80 seconds apart, exceeding the unchanged
+45-second worker watchdog before endpoint startup. This proves a publication
+gap, but does not identify which native/runtime operation stalled the managed
+publisher.
+
+Publication now runs in its own hidden, non-elevated Windows PowerShell process,
+outside MTP and the native recorders. The exact parent handle and original
+40-minute deadline bound its lifetime; the workers' watchdog is not relaxed.
+Run-correlated shutdown, identity-checked recovery, maximum cycle timing and
+bounded stall history accompany the isolation change. Lifecycle regressions
+cover immutable generations, owner exit, hard expiry and wrong-run stop requests.
+The local follow-up `localvm-20260917-221917-1e192bd6` retained live leases through
+279 generations (maximum cycle gap 20.033s) and stopped the publisher cleanly.
+The full smoke still failed in the nested guest's receiver-window initialization,
+before readiness; desktop video and standard-user recovery completed. This is
+not full local sign-off, so the remaining CI attempt is diagnostic.
+
+Win11's newly captured underlying error is definitive: **Windows Sandbox is
+Disabled** on that CI image. Enabling it and rebooting belongs to image
+preparation, not to the standard-user test fixture.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under
