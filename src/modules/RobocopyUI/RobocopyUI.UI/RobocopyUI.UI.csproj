@@ -21,6 +21,13 @@
     <ProjectPriFileName>PowerToys.RobocopyUI.pri</ProjectPriFileName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Page Remove="Views\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="Views\App.xaml" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <ApplicationManifest>RobocopyUI.prod.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -35,13 +42,6 @@
       <Compile Include="$(PhiSilicaLafCredentialsFile)" Condition="!@(Compile-&gt;AnyHaveMetadataValue('Identity', '$(PhiSilicaLafCredentialsFile)'))" />
     </ItemGroup>
   </Target>
-  <ItemGroup>
-    <Page Remove="Views\AICommandDialog.xaml" />
-    <Page Remove="Views\App.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="Views\App.xaml" />
-  </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
     <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
@@ -117,47 +117,6 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="RobocopyUIXAML\AICommandDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="RobocopyUIXAML\OptionEntry.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="RobocopyUIXAML\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Themes\Generic.xaml" />
-    <Page Include="Controls\PromptBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\AnimatedContentControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="RobocopyUIXAML\ShellPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Controls\AICommandDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
     Explorer "Package and Publish" context menu entry to be enabled for this project even if 
