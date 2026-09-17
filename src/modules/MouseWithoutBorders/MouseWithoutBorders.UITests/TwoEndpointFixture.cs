@@ -277,17 +277,42 @@ internal sealed class TwoEndpointFixture : IDisposable
         // long periods. The liveness lease must not depend on that same pool.
         lease = new Thread(() =>
         {
+            long cycle = 0;
+            DateTime? lastCompletedUtc = null;
+            double hostWriteMilliseconds = 0;
+            double guestWriteMilliseconds = 0;
+            void SavePublisherState(string stage) => RunFiles.Write(Path.Combine(runRoot, "lease-publisher.json"), new
+            {
+                Stage = stage,
+                Cycle = cycle,
+                TimestampUtc = DateTime.UtcNow,
+                LastCompletedUtc = lastCompletedUtc,
+                ThreadId = Environment.CurrentManagedThreadId,
+                HostSequence = host.LeaseSequence,
+                GuestSequence = guest.LeaseSequence,
+                HostWriteMilliseconds = hostWriteMilliseconds,
+                GuestWriteMilliseconds = guestWriteMilliseconds,
+            });
             while (!stopLease.IsSet)
             {
                 try
                 {
+                    cycle++;
+                    SavePublisherState("PublishingHost");
+                    var started = Stopwatch.GetTimestamp();
                     host.WriteLease();
+                    hostWriteMilliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                    SavePublisherState("PublishingGuest");
+                    started = Stopwatch.GetTimestamp();
                     guest.WriteLease();
-                    RunFiles.Write(Path.Combine(runRoot, "lease-publisher.json"), new { TimestampUtc = DateTime.UtcNow });
+                    guestWriteMilliseconds = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                    lastCompletedUtc = DateTime.UtcNow;
+                    SavePublisherState("Published");
                 }
                 catch (Exception error)
                 {
                     leaseError = error;
+                    Console.WriteLine($"Endpoint lease publisher failed: {error}");
                     return;
                 }
 

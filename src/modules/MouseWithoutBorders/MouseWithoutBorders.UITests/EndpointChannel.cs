@@ -29,6 +29,8 @@ internal sealed class EndpointChannel
 
     public bool Ready => File.Exists(Path.Combine(OutputRoot, "ready.json.ready"));
 
+    public int LeaseSequence => Volatile.Read(ref leaseSequence);
+
     public void WriteLease()
     {
         var number = Interlocked.Increment(ref leaseSequence);
@@ -58,7 +60,10 @@ internal sealed class EndpointChannel
             () =>
             {
                 ThrowIfFailed();
-                discover?.Invoke();
+                if (!Ready)
+                {
+                    discover?.Invoke();
+                }
             });
         var ready = RunFiles.Read(Path.Combine(OutputRoot, "ready.json"));
         RequireCorrelation(ready);

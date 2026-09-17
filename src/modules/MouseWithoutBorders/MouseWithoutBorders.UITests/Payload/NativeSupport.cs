@@ -279,6 +279,9 @@ namespace Microsoft.MouseWithoutBorders.UITests
         private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
 
         [DllImport("user32.dll")]
+        private static extern bool EnumChildWindows(IntPtr parent, EnumWindowsProc callback, IntPtr lParam);
+
+        [DllImport("user32.dll")]
         private static extern bool IsWindowVisible(IntPtr window);
 
         [DllImport("user32.dll")]
@@ -375,6 +378,38 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 },
                 IntPtr.Zero);
             return windows.ToArray();
+        }
+
+        public static string[] DialogStaticText(IntPtr dialog, int processId)
+        {
+            if (WindowProcessId(dialog) != processId)
+            {
+                throw new InvalidOperationException("Dialog ownership changed before reading its error text.");
+            }
+
+            var text = new List<string>();
+            EnumChildWindows(
+                dialog,
+                delegate(IntPtr child, IntPtr unused)
+                {
+                    var className = new StringBuilder(64);
+                    if (WindowProcessId(child) == processId &&
+                        GetClassName(child, className, className.Capacity) > 0 &&
+                        className.ToString() == "Static" && IsWindowVisible(child))
+                    {
+                        // GetWindowText reads another process's cached caption without
+                        // sending WM_GETTEXT or invoking a UI Automation provider.
+                        var caption = new StringBuilder(2048);
+                        if (GetWindowText(child, caption, caption.Capacity) > 0)
+                        {
+                            text.Add(caption.ToString());
+                        }
+                    }
+
+                    return text.Count < 16;
+                },
+                IntPtr.Zero);
+            return text.ToArray();
         }
 
         public static void ConfirmSandboxClose(IntPtr viewer, int processId)

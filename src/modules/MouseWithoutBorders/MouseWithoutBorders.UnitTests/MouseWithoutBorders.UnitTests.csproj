@@ -34,6 +34,7 @@
     <ProjectReference Include="..\App\MouseWithoutBorders.csproj" />
     <Compile Include="..\MouseWithoutBorders.UITests\RunFiles.cs" Link="Experiment\RunFiles.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\EndpointChannel.cs" Link="Experiment\EndpointChannel.cs" />
+    <Compile Include="..\MouseWithoutBorders.UITests\SandboxStartupError.cs" Link="Experiment\SandboxStartupError.cs" />
   </ItemGroup>
 
 </Project>

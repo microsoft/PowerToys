@@ -3,11 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.PowerToys.UITest.Next;
-using UiButton = Microsoft.PowerToys.UITest.Next.Button;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
@@ -157,7 +154,6 @@ internal sealed class LegacySandbox
         if (viewer.Hwnd != IntPtr.Zero)
         {
             viewerHwnd = viewer.Hwnd.ToInt64();
-            captureViewer(viewerHwnd);
         }
 
         saveJournal();
@@ -165,13 +161,14 @@ internal sealed class LegacySandbox
         {
             foreach (var dialog in windows.Where(window => window.IsVisible && window.ClassName == "#32770"))
             {
-                var session = Session.FromProcess(dialog.ProcessId.ToString(CultureInfo.InvariantCulture), timeoutMS: 1000);
-                var errors = session.FindAll<TextBlock>(By.Name("Error"), timeoutMS: 1000)
-                    .Select(element => element.Name)
-                    .Where(text => Regex.IsMatch(text, @"0x[0-9A-Fa-f]{8}"));
-                foreach (var error in errors)
+                var process = owned.Single(record => record.Id == dialog.ProcessId);
+                var error = SandboxStartupError.Read(
+                    Path.GetFileName(process.Path),
+                    dialog.ClassName,
+                    () => NativeSupport.DialogStaticText(dialog.Hwnd, dialog.ProcessId));
+                if (error is not null)
                 {
-                    throw new InvalidOperationException("Windows Sandbox reported a startup failure: " + error);
+                    throw new InvalidOperationException(error);
                 }
             }
         }
@@ -187,6 +184,10 @@ internal sealed class LegacySandbox
 
         GuestAcknowledged = true;
         saveJournal();
+
+        // Encoding must not block the readiness polling path. Desktop capture
+        // already covers startup while this separate viewer capture initializes.
+        captureViewer(viewerHwnd);
     }
 
     public void Stop()
@@ -213,17 +214,9 @@ internal sealed class LegacySandbox
                 var timer = Stopwatch.StartNew();
                 while (timer.Elapsed < TimeSpan.FromSeconds(20) && owned.Any(item => item.IsCurrent()))
                 {
-                    var dialogs = WindowControl.EnumerateProcessWindows(owned.Where(item => item.IsCurrent()).Select(item => item.Id).ToArray())
-                        .Where(window => window.IsVisible && window.ClassName == "#32770");
-                    foreach (var dialog in dialogs)
+                    if (owner.Hwnd != IntPtr.Zero)
                     {
-                        var session = Session.FromProcess(dialog.ProcessId.ToString(CultureInfo.InvariantCulture), timeoutMS: 1000);
-                        var buttons = session.FindAll<UiButton>(By.Name("Yes"), timeoutMS: 300)
-                            .Where(button => button.Name is "Yes" or "&Yes").ToArray();
-                        if (buttons.Length == 1)
-                        {
-                            buttons[0].Invoke(msPostAction: 0);
-                        }
+                        NativeSupport.ConfirmSandboxClose(owner.Hwnd, owner.ProcessId);
                     }
 
                     Thread.Sleep(250);

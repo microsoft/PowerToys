@@ -133,6 +133,65 @@ function Read-MwbProvisioningMarker {
     $marker
 }
 
+function Write-MwbProvisioningDiagnostics {
+    param([string] $RunDirectory)
+
+    Assert-MwbProtectedDirectory $RunDirectory
+    $logRoot = Join-Path $RunDirectory 'provisioning-logs'
+    if (-not (Test-Path -LiteralPath $logRoot -PathType Container)) {
+        Write-Host 'MWB provisioning diagnostics are unavailable; the logging launcher may not have started.'
+        return
+    }
+    Assert-MwbProtectedDirectory $logRoot
+    foreach ($name in @('stderr.log', 'stdout.log')) {
+        $path = Join-Path $logRoot $name
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            Write-Host "MWB provisioning ${name}: not created; the logging launcher may not have started."
+            continue
+        }
+        Assert-MwbProtectedDirectory $path
+        $stream = $null
+        try {
+            $stream = [IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')
+            # Bound both I/O and task output even for a growing log or one enormous line.
+            $buffer = [byte[]]::new(16384)
+            $offset = [Math]::Max(0, $stream.Length - $buffer.Length)
+            $null = $stream.Seek($offset, 'Begin')
+            $count = $stream.Read($buffer, 0, $buffer.Length)
+            $text = [Text.Encoding]::UTF8.GetString($buffer, 0, $count)
+            if ($offset -gt 0) {
+                $newline = $text.IndexOf("`n")
+                if ($newline -lt 0) {
+                    Write-Host "MWB provisioning ${name}: oversized line omitted; inspect the protected run-local log."
+                    continue
+                }
+                $text = $text.Substring($newline + 1)
+            }
+            $text = [regex]::Replace($text, '\x1b\[[0-?]*[ -/]*[@-~]', '')
+            # Suppress the entire excerpt, not just the matching line: diagnostics can
+            # wrap credentials or command arguments onto subsequent lines.
+            if ($text -match '(?i)WindowsSandboxClient|password|token|credential|secret|authorization') {
+                Write-Host "MWB provisioning ${name}: sensitive diagnostic content omitted; inspect the protected run-local log."
+                continue
+            }
+            if ([string]::IsNullOrWhiteSpace($text)) {
+                Write-Host "MWB provisioning ${name}: empty."
+                continue
+            }
+            foreach ($line in @($text -split '\r\n|\n|\r' | Select-Object -Last 40)) {
+                # Untrusted text must not be interpreted as Azure logging commands.
+                Write-Host "MWB provisioning ${name}: $($line.Replace('##', '# #'))"
+            }
+        }
+        catch [IO.IOException], [UnauthorizedAccessException] {
+            Write-Host "MWB provisioning ${name}: cannot read the protected log ($($_.Exception.GetType().Name))."
+        }
+        finally {
+            if ($null -ne $stream) { $stream.Dispose() }
+        }
+    }
+}
+
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 try {
     if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(
@@ -150,7 +209,7 @@ $manifestPath = Join-Path $runRoot 'ci-provisioning.json'
 $stateRoot = 'C:\ProgramData\PowerToysMwbExperiment'
 $markerPath = Join-Path $stateRoot 'host-provisioning.json'
 $taskName = "PowerToys-MwbSandbox-Provision-$($RunId.ToString('N'))"
-$setupPath = Join-Path $runRoot 'Initialize-AutonomousHost.ps1'
+$setupPath = Join-Path $runRoot 'Invoke-MwbProvisioning.ps1'
 $cleanupPath = Join-Path $runRoot 'Remove-AutonomousHost.ps1'
 $powerShell = (Get-Process -Id $PID).Path
 
@@ -186,12 +245,19 @@ if ($Mode -eq 'Prepare') {
     $readAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
         $userSid, 'ReadAndExecute', 'ContainerInherit,ObjectInherit', 'None', 'Allow'))
     Set-Acl -LiteralPath $runRoot -AclObject $readAcl
+    # Raw provisioner output is not readable by the test user and is never attached
+    # to public test results. This child directory does not inherit the read grant.
+    New-MwbProtectedDirectory (Join-Path $runRoot 'provisioning-logs')
     $sourceRoot = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
     $guestArchive = Join-Path $runRoot 'guest-runtime\product.zip'
     & (Join-Path $sourceRoot 'New-MwbRuntimeArchive.ps1') -ProductRoot $payload.ProductRoot -ArchivePath $guestArchive | Out-Null
     $hashes = @{}
-    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1')) {
-        $source = Join-Path $sourceRoot $name
+    foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'Invoke-MwbProvisioning.ps1')) {
+        $source = if ($name -ceq 'Invoke-MwbProvisioning.ps1') {
+            Join-Path $PSScriptRoot $name
+        } else {
+            Join-Path $sourceRoot $name
+        }
         $destination = Join-Path $runRoot $name
         $hash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
         Copy-Item -LiteralPath $source -Destination $destination
@@ -200,7 +266,7 @@ if ($Mode -eq 'Prepare') {
         }
         $hashes[$name] = $hash
     }
-    $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -NetworkTimeoutSeconds 900 -GuestArchivePath "{4}"' -f
+    $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -GuestArchivePath "{4}"' -f
         $setupPath, $payload.ProductRoot, $interactiveUser, $RunId, $guestArchive
     @{
         RunId = $RunId.ToString()
@@ -239,15 +305,18 @@ if ($Mode -eq 'Prepare') {
                 Write-Host "Privileged setup $($marker.Status); dispatch may start Sandbox as $interactiveUser."
                 return
             }
+            Write-MwbProvisioningDiagnostics $runRoot
             throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($marker.Status)."
         }
         $task = Get-ScheduledTask -TaskName $taskName
         $info = Get-ScheduledTaskInfo -TaskName $taskName
         if ($task.State -ne 'Running' -and $info.LastRunTime.Year -ge 2000) {
+            Write-MwbProvisioningDiagnostics $runRoot
             throw "BLOCKED_INFRASTRUCTURE: provisioning exited before its initial marker (scheduler result $($info.LastTaskResult))."
         }
         Start-Sleep -Seconds 1
     } while ([DateTime]::UtcNow -lt $deadline)
+    Write-MwbProvisioningDiagnostics $runRoot
     throw 'BLOCKED_INFRASTRUCTURE: provisioning did not publish its initial marker within 90 seconds.'
 }
 
@@ -273,6 +342,7 @@ if ($Mode -eq 'Run') {
     }
     $marker = Read-MwbProvisioningMarker $payload.ProductRoot $manifest.TestUserSid
     if ($marker.Status -notin @('WaitingForSandbox', 'Ready')) {
+        Write-MwbProvisioningDiagnostics $runRoot
         throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($marker.Status)."
     }
     $env:POWERTOYS_INSTALL_DIR = $payload.ProductRoot
@@ -335,7 +405,7 @@ if ($Mode -eq 'Recover') {
 }
 
 # Never elevate a test journal or test-supplied request. This path consumes only the protected
-# provisioner's marker and copies of the two fixed source scripts.
+# provisioner's marker and copies of the fixed source scripts.
 $failures = [Collections.Generic.List[string]]::new()
 $task = $null
 try {

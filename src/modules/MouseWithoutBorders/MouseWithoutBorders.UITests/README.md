@@ -6,8 +6,11 @@ remote keyboard/mouse, clipboard both ways, negative controls and cleanup, witho
 operator actions. Repeat reliability is not established: the later persistent-
 evidence run `localvm-20260915-173353-3804112e` passed the receiver probe but stalled
 in guest Settings initialization. This is feasibility evidence, not clean-baseline,
-Win11 or full module sign-off. The first CI diagnostic was blocked in installer
-packaging before either OS test stage; the Debug pilot now omits that unused path.
+Win11 or full module sign-off. The Debug pilot now omits unused installer
+packaging. Later CI diagnostics booted the Win10 Sandbox but stopped in the
+harness's process-wide UIA startup-error query, before MWB pairing. Win11 stopped
+earlier in privileged provisioning; neither result establishes a Windows
+compatibility blocker.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI
@@ -124,7 +127,11 @@ The built executable is under
   `LogonCommand`, bounded run-correlated request/result files, leases and desktop
   readiness. Each bootstrap gets fifteen minutes starting at its endpoint launch,
   rather than consuming the guest's allowance during host preparation.
-  There is no dependency on modern `wsb.exe`.
+  There is no dependency on modern `wsb.exe`. Discovery and close confirmation
+  use native owned-window APIs, never the Sandbox client's UIA tree. Startup
+  errors require positive failure text from the launcher's native dialog.
+  Committed, run-correlated readiness takes priority over optional discovery;
+  worker failure still takes priority over readiness.
 - Process-local legacy `PSModulePath` normalization, both at host-worker creation
   and in the shared worker/recovery support script. A PS7 controller's module path
   must not hide Windows PowerShell's hashing, networking, or firewall modules.
@@ -132,6 +139,9 @@ The built executable is under
   used; no user/machine environment or execution-policy setting is changed.
 - Immutable, committed lease generations with latest-snapshot consumption:
   liveness does not require replaying hundreds of obsolete redirected JSON files.
+  A dedicated publisher thread keeps leases independent of test/UIA waits.
+  `lease-publisher.json` records its stage, sequences and per-endpoint write
+  timings for diagnosing stalls; the 45-second worker watchdog remains enabled.
   Native .NET adapter enumeration provides bootstrap IPv4/prefix/interface/gateway
   data without cold-starting PowerShell's NetTCPIP/CIM cmdlets.
 - Read-only product-archive, worker, tools and request mappings; a separate writable guest
@@ -183,7 +193,9 @@ The custom fixture also records continuous, silent H.264 video at 720p/15 fps:
   fixture preparation through cleanup, including Sandbox startup and pairing.
 - `recordings\sandbox-*\recording_*.mp4` captures the owned Sandbox viewer window
   separately, so the guest remains visible in its video while the host receiver
-  covers that window. A recreated viewer gets a new segment.
+  covers that window. This encoder starts only after correlated guest readiness
+  and native viewer ownership are acknowledged, outside the readiness poll;
+  the continuous desktop recording covers Sandbox startup.
 - Nonempty MP4s and `recordings\recordings.json` are attached to the test result
   on success and failure, under Azure DevOps **Tests > test result > Attachments**.
   Files live outside MSTest's disposable deployment tree.
@@ -196,7 +208,11 @@ errors explicitly; a missing MP4 is not silently treated as successful capture.
 An existing clip is retained even after a finalization warning, since it can
 still contain usable evidence; consult `Completed`, `Available` and `Error`.
 Failures in privileged CI preparation before MSTest starts cannot produce a
-fixture recording. The receiver-only PNGs remain control renders, not desktop
+fixture recording. The protected provisioning launcher captures initializer
+stdout/stderr even before its first marker, preserves the exit code, and prints
+bounded, filtered failure excerpts to the CI task log. Raw provisioning logs
+remain administrator/SYSTEM-only and outside test attachments.
+The receiver-only PNGs remain control renders, not desktop
 screenshots or substitutes for these videos.
 
 Control inputs live outside test results at

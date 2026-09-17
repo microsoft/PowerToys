@@ -7,7 +7,7 @@ was enabled for `PowerToysUiTest-Win10` (now 15 vCPUs, 24 GB static RAM). The ne
 `MouseWithoutBorders.UITests` project, legacy Sandbox fixture, privileged firewall
 setup, Limited-user recovery, lean/native dependency packaging, and default-off
 Debug CI wiring now exist. **The full unfiltered Win10 experimental suite has
-completed once (2/2); a repeat was not green, and CI has not reached the test stages.** This is
+completed once (2/2); a repeat was not green, and CI has not reached pairing.** This is
 not yet two restored-baseline passes or Win11/module sign-off.
 
 The first CI diagnostic and a retry of its original revision built the Debug
@@ -116,14 +116,52 @@ outcome. A focused recording probe verifies finalization after a simulated early
 failure and captures an occluded window separately from the visible desktop.
 Pre-MSTest provisioning failures still have no fixture video.
 
+### CI startup detector correction
+
+Later diagnostic runs passed the Debug build and booted the Win10 Sandbox.
+Continuous desktop video showed the guest receiver open, then close before
+MWB pairing. The controlling failure was the fixture's startup-error search:
+it queried the entire normal Sandbox client through UIA for a generic native
+dialog and timed out. Worker lease expiry and fixture cleanup then closed the
+receiver and requested Sandbox shutdown. The receiver alone was not evidence
+that MWB or Settings had started.
+
+Discovery and close confirmation now use native owned-window APIs only.
+Only positive startup-failure text in the launcher's native dialog is an error;
+the normal viewer is never queried through UIA. A committed readiness marker
+bypasses optional discovery, without bypassing RunId or worker-failure checks.
+Separate viewer encoding begins after readiness acknowledgement, while desktop
+recording remains continuous from preparation.
+
+The lease publisher already had its own thread, so the UIA timeout alone does
+not explain every observed heartbeat gap. Per-stage timing and sequence evidence
+now distinguishes host writes, guest writes and completed cycles. The 45-second
+watchdog and existing startup budgets are unchanged.
+
+The native dialog regression passed inside the standard-user Win10 VM, and
+37 focused C# regressions passed. Repeatable full runs and clean-baseline sign-off
+remain separate gates. Win11's earlier privileged-provisioner exit must be
+diagnosed from its captured output, not labeled a Sandbox compatibility failure.
+The CI launcher now retains pre-marker initializer stdout/stderr in protected
+run-local files and prints bounded, filtered excerpts on failure while preserving
+the original exit code.
+
+The corrected local smoke `localvm-20260917-201626-1d70b11a` no longer hit the
+UIA startup-error probe. Guest bootstrap entered late and exceeded the unchanged
+15-minute budget during runtime extraction. The lease publisher remained active
+through 397 cycles, its final endpoint writes took about 7 ms, desktop video
+finalized, and cleanup/recovery succeeded. This is still a failed full run, not
+a replacement for the earlier complete feasibility pass.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under
 `C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders\LocalVmResults`.
 Resume with the exact unattended command documented in the new test project's
 README. Use the SDK-complete runtime from the corrected archive builder, and
-continue with the intermittent Settings initialization stall, persistent success
-evidence and clean-baseline confirmation before CI. Do not
+continue with the startup-detector correction, intermittent Settings initialization
+stall, persistent success evidence and clean-baseline confirmation. Diagnostic CI
+runs beyond the normal local gate require explicit authorization. Do not
 count a placeholder HWND or a persisted mapping as a successful connection.
 
 ## Goal and starting point

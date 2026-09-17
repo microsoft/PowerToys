@@ -11,6 +11,55 @@ namespace MouseWithoutBorders.UnitTests;
 public sealed class ExperimentChannelTests
 {
     [TestMethod]
+    public void CommittedReadinessBypassesDiscovery()
+    {
+        WithChannel((channel, runId) =>
+        {
+            RunFiles.Write(Path.Combine(channel.OutputRoot, "ready.json"), new { RunId = runId });
+            var result = channel.WaitForReady(() => throw new InvalidOperationException("Discovery must not run after readiness."));
+            Assert.AreEqual(runId, result["RunId"]!.GetValue<string>());
+        });
+    }
+
+    [TestMethod]
+    public void UncommittedReadinessDoesNotBypassDiscovery()
+    {
+        WithChannel((channel, runId) =>
+        {
+            var path = Path.Combine(channel.OutputRoot, "ready.json");
+            File.WriteAllText(path, "{}");
+            var calls = 0;
+            channel.WaitForReady(() =>
+            {
+                calls++;
+                RunFiles.Write(path, new { RunId = runId });
+            });
+            Assert.AreEqual(1, calls);
+        });
+    }
+
+    [TestMethod]
+    public void ReadinessStillRequiresMatchingRunIdentity()
+    {
+        WithChannel((channel, _) =>
+        {
+            RunFiles.Write(Path.Combine(channel.OutputRoot, "ready.json"), new { RunId = "another-run" });
+            Assert.ThrowsExactly<InvalidDataException>(() => channel.WaitForReady());
+        });
+    }
+
+    [TestMethod]
+    public void FailedEndpointIsNotAcceptedEvenWithReadiness()
+    {
+        WithChannel((channel, runId) =>
+        {
+            RunFiles.Write(Path.Combine(channel.OutputRoot, "ready.json"), new { RunId = runId });
+            RunFiles.Write(Path.Combine(channel.OutputRoot, "failed.json"), new { RunId = runId, Error = "Lease expired." });
+            Assert.ThrowsExactly<InvalidOperationException>(() => channel.WaitForReady());
+        });
+    }
+
+    [TestMethod]
     public void SuccessfulEvidenceLivesBesideTheDeploymentTree()
     {
         var results = Path.Combine(Path.GetTempPath(), "mwb-results");
@@ -29,11 +78,13 @@ public sealed class ExperimentChannelTests
             var input = Path.Combine(root, "input");
             var channel = new EndpointChannel(runId, input, Path.Combine(root, "output"));
             channel.WriteLease();
+            Assert.AreEqual(1, channel.LeaseSequence);
             var first = Path.Combine(input, "leases", "00000001.json");
             Assert.IsTrue(File.Exists(first + ".ready"));
             var original = File.ReadAllBytes(first);
             using var held = new FileStream(first, FileMode.Open, FileAccess.Read, FileShare.Read);
             channel.WriteLease();
+            Assert.AreEqual(2, channel.LeaseSequence);
             var second = RunFiles.Read(Path.Combine(input, "leases", "00000002.json"));
 
             Assert.AreEqual(runId, second["RunId"]!.GetValue<string>());
@@ -41,6 +92,26 @@ public sealed class ExperimentChannelTests
             Assert.IsTrue(File.Exists(Path.Combine(input, "leases", "00000002.json.ready")));
             CollectionAssert.AreEqual(original, File.ReadAllBytes(first));
             Assert.IsFalse(File.Exists(Path.Combine(input, "lease.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    private static void WithChannel(Action<EndpointChannel, string> action)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "mwb-channel-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var runId = Guid.NewGuid().ToString();
+            var channel = new EndpointChannel(runId, Path.Combine(root, "input"), Path.Combine(root, "output"));
+            RunFiles.Write(Path.Combine(channel.InputRoot, "bootstrap.json"), new { RunId = runId });
+            channel.BeginBootstrap();
+            action(channel, runId);
         }
         finally
         {
