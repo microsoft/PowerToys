@@ -10,7 +10,7 @@ namespace RobocopyUI
 {
     public partial class App
     {
-        private ShellPage? _window;
+        private Views.ShellPage? _window;
 
         public static ConcurrentDictionary<string, OptionContent> Options { get; } = new ConcurrentDictionary<string, OptionContent>();
 
@@ -21,7 +21,7 @@ namespace RobocopyUI
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _window = new ShellPage();
+            _window = new Views.ShellPage();
             _window.Activate();
         }
     }
