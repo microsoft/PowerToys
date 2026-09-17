@@ -102,6 +102,8 @@ internal sealed class DesktopFixture : IDisposable
 
     internal Point Center => new(screen.Width / 2, screen.Height / 2);
 
+    internal Size ScreenSize => screen;
+
     private Forms.Form Window => form ?? throw new InvalidOperationException("The source window was not initialized.");
 
     internal void Show()

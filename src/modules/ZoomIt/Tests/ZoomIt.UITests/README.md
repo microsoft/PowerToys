@@ -30,12 +30,20 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 
 ## Execution
 
-Run only in a disposable, isolated, English-language test desktop, not on a working
-developer machine: this suite rewrites the real signed-in user's
+Run through Visual Studio Test Explorer or the test executable on an English-language
+interactive host, or through the local VM/CI workflow. A quiet, isolated test desktop or
+disposable VM is recommended. The suite takes foreground, minimizes windows, restarts
+Explorer and PowerToys, and temporarily rewrites the real signed-in user's
 `HKCU\Software\Sysinternals\ZoomIt` settings, shared with standalone Sysinternals ZoomIt.
-It requires winappcli, .NET 10, and
-a PowerToys runtime. The executable embeds a PerMonitorV2 manifest. Pipeline-like runs
-normalize the desktop to 1920x1080. Recording requires a working Windows Graphics Capture
+Save work before starting, do not interact with the desktop during a run, and do not run
+while using an unsaved ZoomIt drawing or recording. Settings are backed up and restored
+as described below.
+
+The suite requires winappcli, .NET 10, and a PowerToys runtime. The executable embeds a
+PerMonitorV2 manifest. Host runs retain their display resolution and DPI; only pipeline-like
+runs normalize the desktop to 1920x1080. Recording assertions account for the encoder's
+even-pixel padding, and timer placement accounts for padded text and font-relative ink
+bounds. Recording requires a working Windows Graphics Capture
 display; lack of captured frames is an explicit failure, not a skipped or passing recording.
 Suppress unrelated desktop notifications in the test environment before running: Shell
 toasts can cover pixel samples even when ZoomIt's window is topmost.
@@ -47,7 +55,7 @@ opening delay, beyond the previous five-second discovery timeout.
 dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:Platform=x64
 tools\build\build.cmd -Path src\modules\ZoomIt\Tests\ZoomIt.UITests -Platform x64 -Configuration Debug
 
-# Execute only on the test desktop, normally through ui-tests-local-vm.
+# Run on the prepared host desktop, or use ui-tests-local-vm for isolation.
 .\x64\Debug\tests\ZoomIt.UITests\net10.0-windows10.0.26100.0\ZoomIt.UITests.exe --report-trx
 ```
 
