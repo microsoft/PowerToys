@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,12 +38,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "crash_detected.flag");
 
         private readonly Func<CancellationToken, Task<PowerDisplayProfiles>> _loadProfilesAsync;
-        private readonly Func<int, int?, Task<bool>> _reorderProfileAsync;
-        private readonly Func<PowerDisplayProfile, Task> _addOrUpdateProfileAsync;
-        private readonly Func<int, Task<bool>> _removeProfileByIdAsync;
+        private readonly Func<int, int?, CancellationToken, Task<bool>> _reorderProfileAsync;
+        private readonly Func<PowerDisplayProfile, CancellationToken, Task> _addOrUpdateProfileAsync;
+        private readonly Func<int, CancellationToken, Task<bool>> _removeProfileByIdAsync;
         private readonly Action<string> _signalNamedEvent;
+        private readonly IDisposable _monitorRefreshRegistration;
+        private readonly CancellationTokenSource _lifetimeCancellation = new();
+        private readonly CancellationToken _lifetimeToken;
 
         private bool _isProfilesLoading;
+        private bool _disposed;
 
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
@@ -58,12 +63,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 settingsRepository,
                 powerDisplaySettingsRepository,
                 ipcMSGCallBackFunc,
-                NativeEventWaiter.WaitForEventLoop)
+                NativeEventWaiter.Register)
         {
         }
 
-        public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc, Action<string, Action> waitForEventLoop)
-            : this(settingsUtils, settingsRepository, powerDisplaySettingsRepository, ipcMSGCallBackFunc, waitForEventLoop, SignalNamedEvent)
+        public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, Action, IDisposable> registerEvent)
+            : this(settingsUtils, settingsRepository, powerDisplaySettingsRepository, ipcMSGCallBackFunc, registerEvent, SignalNamedEvent)
         {
         }
 
@@ -72,26 +77,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
-            Action<string, Action> waitForEventLoop,
+            Func<string, Action, IDisposable> registerEvent,
             Action<string> signalNamedEvent,
             Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
-            Func<int, int?, Task<bool>> reorderProfileAsync = null,
-            Func<PowerDisplayProfile, Task> addOrUpdateProfileAsync = null,
-            Func<int, Task<bool>> removeProfileByIdAsync = null)
+            Func<int, int?, CancellationToken, Task<bool>> reorderProfileAsync = null,
+            Func<PowerDisplayProfile, CancellationToken, Task> addOrUpdateProfileAsync = null,
+            Func<int, CancellationToken, Task<bool>> removeProfileByIdAsync = null)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
-            ArgumentNullException.ThrowIfNull(waitForEventLoop);
+            ArgumentNullException.ThrowIfNull(registerEvent);
             ArgumentNullException.ThrowIfNull(signalNamedEvent);
 
+            _lifetimeToken = _lifetimeCancellation.Token;
             _signalNamedEvent = signalNamedEvent;
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             _loadProfilesAsync = loadProfilesAsync ?? ProfileHelper.LoadProfilesAsync;
-            _reorderProfileAsync = reorderProfileAsync ?? ((id, beforeId) =>
-                ProfileHelper.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(id, beforeId)));
-            _addOrUpdateProfileAsync = addOrUpdateProfileAsync ?? (profile => ProfileHelper.AddOrUpdateProfileAsync(profile));
-            _removeProfileByIdAsync = removeProfileByIdAsync ?? (id => ProfileHelper.RemoveProfileByIdAsync(id));
+            _reorderProfileAsync = reorderProfileAsync ?? ((id, beforeId, token) =>
+                ProfileHelper.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(id, beforeId), token));
+            _addOrUpdateProfileAsync = addOrUpdateProfileAsync ?? ProfileHelper.AddOrUpdateProfileAsync;
+            _removeProfileByIdAsync = removeProfileByIdAsync ?? ProfileHelper.RemoveProfileByIdAsync;
 
             _settings = powerDisplaySettingsRepository.SettingsConfig;
 
@@ -115,27 +121,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load custom VCP mappings
             LoadCustomVcpMappings();
 
-            // Listen for monitor refresh events from PowerDisplay.exe
-            waitForEventLoop(
-                Constants.RefreshPowerDisplayMonitorsEvent(),
-                () =>
-                {
-                    Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
-                    ReloadMonitorsFromSettings();
-                });
-
             // Crash quarantine state. The flag file is the single source of truth; the page
             // re-checks it on construction (catches crashes that happened before Settings UI
             // launched) and on every navigation via OnPageLoaded (catches crashes while
             // Settings UI is already open). The AutoDisable event is left as a single-consumer
             // signal for the runner DLL — Settings UI does not race for it.
             RefreshCrashLockState();
+
+            try
+            {
+                _monitorRefreshRegistration = registerEvent(
+                    Constants.RefreshPowerDisplayMonitorsEvent(),
+                    () =>
+                    {
+                        if (!_disposed)
+                        {
+                            Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
+                            ReloadMonitorsFromSettings();
+                        }
+                    }) ?? throw new InvalidOperationException("Native event registration must return an owned registration.");
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         public override void OnPageLoaded()
         {
             base.OnPageLoaded();
             RefreshCrashLockState();
+
+            // Refresh the cached snapshot after events missed while the page was inactive.
+            ReloadMonitorsFromSettings();
         }
 
         private void RefreshCrashLockState()
@@ -199,10 +218,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule))
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule).WaitAsync(_lifetimeToken) && !_disposed)
                 {
                     CommitIsEnabled(true);
                 }
+            }
+            catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+            {
+                // The page no longer owns this confirmation.
             }
             catch (Exception ex)
             {
@@ -217,7 +240,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Either branch (commit, cancel, or exception) raises PropertyChanged so the
                 // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
                 // echoes silently, cancel/exception pulls the UI back to the original state.
-                OnPropertyChanged(nameof(IsEnabled));
+                if (!_disposed)
+                {
+                    OnPropertyChanged(nameof(IsEnabled));
+                }
             }
         }
 
@@ -317,12 +343,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility))
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility).WaitAsync(_lifetimeToken) && !_disposed)
                 {
                     _settings.Properties.MaxCompatibilityMode = true;
                     NotifySettingsChanged();
                     SignalRescanRequest();
                 }
+            }
+            catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+            {
+                // The page no longer owns this confirmation.
             }
             catch (Exception ex)
             {
@@ -337,7 +367,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Either branch (commit, cancel, or exception) raises PropertyChanged so the
                 // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
                 // echoes silently, cancel/exception pulls the UI back to the original state.
-                OnPropertyChanged(nameof(MaxCompatibilityMode));
+                if (!_disposed)
+                {
+                    OnPropertyChanged(nameof(MaxCompatibilityMode));
+                }
             }
         }
 
@@ -562,6 +595,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
         public override void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _monitorRefreshRegistration?.Dispose();
+            _lifetimeCancellation.Cancel();
+            _lifetimeCancellation.Dispose();
+            ConfirmDangerousFeatureAsync = _ => Task.FromResult(false);
+
             // Unsubscribe from monitor property changes
             UnsubscribeFromItemPropertyChanged(_monitors);
 
@@ -569,6 +613,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (_monitors != null)
             {
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
+            }
+
+            _profiles.CollectionChanged -= Profiles_CollectionChanged;
+            if (_customVcpMappings != null)
+            {
+                _customVcpMappings.CollectionChanged -= CustomVcpMappings_CollectionChanged;
             }
 
             base.Dispose();
@@ -847,7 +897,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool CanUseProfiles => IsEnabled && !IsProfilesLoading;
+        public bool CanUseProfiles => !_disposed && IsEnabled && !IsProfilesLoading;
 
         // Like Mouse Without Borders, do not enter WinUI's native drag/drop path while elevated.
         // https://github.com/microsoft/microsoft-ui-xaml/issues/7690
@@ -892,42 +942,59 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
         {
-            if (IsProfilesLoading)
+            if (_disposed || IsProfilesLoading)
             {
                 return;
             }
 
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lifetimeToken);
             IsProfilesLoading = true;
             _suppressProfileSelectionPersistence = true;
             IsProfileReorderError = false;
             try
             {
-                var loaded = await LoadProfilesCoreAsync(cancellationToken);
+                var loaded = await LoadProfilesCoreAsync(linkedCancellation.Token);
+                linkedCancellation.Token.ThrowIfCancellationRequested();
                 ReplaceProfiles(loaded);
+            }
+            catch (OperationCanceledException) when (linkedCancellation.IsCancellationRequested)
+            {
+                // Navigation or the caller canceled the load, not a profile read failure.
             }
             catch (Exception ex)
             {
-                Profiles.Clear();
-                IsProfileReorderError = true;
+                if (!_disposed && !linkedCancellation.IsCancellationRequested)
+                {
+                    Profiles.Clear();
+                    IsProfileReorderError = true;
+                }
+
                 Logger.LogError($"Failed to load profiles: {ex.Message}");
             }
             finally
             {
                 _suppressProfileSelectionPersistence = false;
-                IsProfilesLoading = false;
-                OnPropertyChanged(nameof(HasProfiles));
-                OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
+                if (!_disposed)
+                {
+                    IsProfilesLoading = false;
+                    OnPropertyChanged(nameof(HasProfiles));
+                    OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
+                }
             }
         }
 
-        private Task<PowerDisplayProfiles> LoadProfilesCoreAsync(
+        private async Task<PowerDisplayProfiles> LoadProfilesCoreAsync(
             CancellationToken cancellationToken)
         {
-            return _loadProfilesAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            var profiles = await _loadProfilesAsync(cancellationToken).WaitAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            return profiles;
         }
 
         private void ReplaceProfiles(PowerDisplayProfiles profilesData)
         {
+            _lifetimeToken.ThrowIfCancellationRequested();
             var profiles = profilesData.GetAssignedProfiles().ToList();
             var wasSuppressed = _suppressProfileSelectionPersistence;
             _suppressProfileSelectionPersistence = true;
@@ -1010,34 +1077,56 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // Move by stable ids in the latest stored list. Saving the UI's entire snapshot
                 // would overwrite concurrent profile edits or drop profiles added by another process.
-                if (await _reorderProfileAsync(profileId, beforeProfileId))
+                var reordered = await ObserveProfileWriteAsync(CompleteProfileWriteAsync(
+                    _reorderProfileAsync(profileId, beforeProfileId, _lifetimeToken),
+                    _signalNamedEvent));
+                _lifetimeToken.ThrowIfCancellationRequested();
+                if (reordered)
                 {
                     // Keep a fallback for a successful write followed by an unreadable file.
                     var saved = new PowerDisplayProfiles { Profiles = _savedProfiles.ToList() };
                     saved.MoveProfileBefore(profileId, beforeProfileId);
                     _savedProfiles = saved.Profiles;
-                    SignalSettingsUpdated();
                 }
 
-                ReplaceProfiles(await LoadProfilesCoreAsync(CancellationToken.None));
+                ReplaceProfiles(await LoadProfilesCoreAsync(_lifetimeToken));
+            }
+            catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+            {
+                // Do not reload or update a page that has been unloaded.
             }
             catch (Exception ex)
             {
-                IsProfileReorderError = true;
                 Logger.LogError($"Failed to reorder profiles: {ex.Message}");
+                if (_disposed)
+                {
+                    return;
+                }
+
+                IsProfileReorderError = true;
                 try
                 {
-                    ReplaceProfiles(await LoadProfilesCoreAsync(CancellationToken.None));
+                    ReplaceProfiles(await LoadProfilesCoreAsync(_lifetimeToken));
+                }
+                catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+                {
+                    // Disposal also cancels recovery reads.
                 }
                 catch (Exception reloadException)
                 {
                     Logger.LogError($"Failed to reload profiles after reordering: {reloadException.Message}");
-                    ReplaceProfiles(new PowerDisplayProfiles { Profiles = _savedProfiles });
+                    if (!_disposed)
+                    {
+                        ReplaceProfiles(new PowerDisplayProfiles { Profiles = _savedProfiles });
+                    }
                 }
             }
             finally
             {
-                IsProfilesLoading = false;
+                if (!_disposed)
+                {
+                    IsProfilesLoading = false;
+                }
             }
         }
 
@@ -1088,6 +1177,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task UpsertProfileAsync(PowerDisplayProfile profile, bool isNew)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (profile == null || !profile.IsValid())
             {
                 Logger.LogWarning("Invalid profile");
@@ -1103,26 +1197,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IsProfilesLoading = true;
             try
             {
-                await _addOrUpdateProfileAsync(profile);
-                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
+                await ObserveProfileWriteAsync(CompleteProfileWriteAsync(
+                    MarkProfileChangedAsync(_addOrUpdateProfileAsync(profile, _lifetimeToken)),
+                    _signalNamedEvent));
+                var profiles = await LoadProfilesCoreAsync(_lifetimeToken);
                 ReplaceProfiles(profiles);
                 IsProfileReorderError = false;
-                SignalSettingsUpdated();
+            }
+            catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+            {
+                // Do not refresh or signal from an inactive page.
             }
             catch (Exception ex)
             {
-                Profiles.Clear();
+                if (!_disposed)
+                {
+                    Profiles.Clear();
+                }
+
                 Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile: {ex.Message}");
             }
             finally
             {
-                IsProfilesLoading = false;
+                if (!_disposed)
+                {
+                    IsProfilesLoading = false;
+                }
             }
         }
 
         public async Task DeleteProfileAsync(int id)
         {
-            if (id < 1)
+            if (_disposed || id < 1)
             {
                 return;
             }
@@ -1136,40 +1242,110 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             IsProfilesLoading = true;
             try
             {
-                if (!await _removeProfileByIdAsync(id))
+                var removed = await ObserveProfileWriteAsync(CompleteProfileWriteAsync(
+                    _removeProfileByIdAsync(id, _lifetimeToken),
+                    _signalNamedEvent,
+                    SettingsUtils,
+                    SendConfigMSG,
+                    id));
+                _lifetimeToken.ThrowIfCancellationRequested();
+                if (!removed)
                 {
                     Logger.LogWarning($"Profile id {id} was not found");
                     return;
                 }
 
-                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
+                var profiles = await LoadProfilesCoreAsync(_lifetimeToken);
                 ReplaceProfiles(profiles);
                 IsProfileReorderError = false;
-                SignalSettingsUpdated();
-                await ClearDeletedProfileReferencesAsync(id);
+            }
+            catch (OperationCanceledException) when (_lifetimeToken.IsCancellationRequested)
+            {
+                // Do not refresh or signal from an inactive page.
             }
             catch (Exception ex)
             {
-                Profiles.Clear();
+                if (!_disposed)
+                {
+                    Profiles.Clear();
+                }
+
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
             }
             finally
             {
-                IsProfilesLoading = false;
+                if (!_disposed)
+                {
+                    IsProfilesLoading = false;
+                }
             }
         }
 
-        private async Task ClearDeletedProfileReferencesAsync(int deletedProfileId)
+        private async Task<bool> ObserveProfileWriteAsync(Task<(bool Changed, Exception Error)> completion)
+        {
+            var result = await completion.WaitAsync(_lifetimeToken);
+            _lifetimeToken.ThrowIfCancellationRequested();
+            if (result.Error != null)
+            {
+                ExceptionDispatchInfo.Throw(result.Error);
+            }
+
+            return result.Changed;
+        }
+
+        private static async Task<bool> MarkProfileChangedAsync(Task write)
+        {
+            await write;
+            return true;
+        }
+
+        // An already-started atomic write cannot be canceled by navigation. Complete
+        // its notification/reference cleanup without retaining the page or viewmodel.
+        // Return failures explicitly so detached work is observed and active pages
+        // can still run their existing error/recovery paths.
+        private static async Task<(bool Changed, Exception Error)> CompleteProfileWriteAsync(
+            Task<bool> write,
+            Action<string> signalNamedEvent,
+            SettingsUtils settingsUtils = null,
+            Func<string, int> sendConfig = null,
+            int? deletedProfileId = null)
+        {
+            try
+            {
+                var changed = await write;
+                if (changed)
+                {
+                    signalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
+                    if (deletedProfileId is int id)
+                    {
+                        await ClearDeletedProfileReferencesAsync(settingsUtils, sendConfig, id);
+                    }
+                }
+
+                return (changed, null);
+            }
+            catch (OperationCanceledException ex)
+            {
+                return (false, ex);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to complete profile write: {ex.Message}");
+                return (false, ex);
+            }
+        }
+
+        private static async Task ClearDeletedProfileReferencesAsync(SettingsUtils settingsUtils, Func<string, int> sendConfig, int deletedProfileId)
         {
             try
             {
                 var lightSwitch = await Task.Run(
-                    () => SettingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
+                    () => settingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
                         LightSwitchSettings.ModuleName));
                 LightSwitchProfileSettingsUpdater.ClearDeletedProfileAndSend(
                     lightSwitch,
                     deletedProfileId,
-                    SendConfigMSG);
+                    sendConfig);
             }
             catch (Exception ex)
             {
@@ -1196,10 +1372,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _customVcpMappings = new ObservableCollection<CustomVcpValueMapping>(mappings);
-            _customVcpMappings.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasCustomVcpMappings));
+            _customVcpMappings.CollectionChanged += CustomVcpMappings_CollectionChanged;
             OnPropertyChanged(nameof(CustomVcpMappings));
             OnPropertyChanged(nameof(HasCustomVcpMappings));
         }
+
+        private void CustomVcpMappings_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+            => OnPropertyChanged(nameof(HasCustomVcpMappings));
 
         /// <summary>
         /// Add a new custom VCP mapping.

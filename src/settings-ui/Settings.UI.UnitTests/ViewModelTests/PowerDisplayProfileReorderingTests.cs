@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,6 +108,98 @@ public class PowerDisplayProfileReorderingTests
         Assert.IsFalse(viewModel.IsProfilesLoading);
         Assert.IsTrue(viewModel.CanDragProfiles);
         AssertOrder(viewModel, ThirdId, FirstId, SecondId);
+    }
+
+    [TestMethod]
+    public async Task Dispose_DuringReorder_NotifiesCommittedWriteWithoutUpdatingOldViewModel()
+    {
+        var store = new ProfileSession { PendingWrite = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously) };
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        var save = viewModel.ReorderProfileAsync(ThirdId, FirstId);
+        var changes = 0;
+        viewModel.PropertyChanged += (_, _) => changes++;
+
+        viewModel.Dispose();
+        await save.WaitAsync(TimeSpan.FromSeconds(10));
+        store.PendingWrite.SetResult(true);
+        await store.NotificationSent.Task.WaitAsync(TimeSpan.FromSeconds(10));
+
+        AssertOrder(viewModel, FirstId, SecondId, ThirdId);
+        Assert.AreEqual(1, store.Notifications);
+        Assert.AreEqual(0, changes);
+        Assert.IsFalse(viewModel.CanDragProfiles);
+    }
+
+    [TestMethod]
+    [DataRow("create")]
+    [DataRow("update")]
+    [DataRow("delete")]
+    public async Task Dispose_DuringProfileWrite_CompletesBookkeepingWithoutUpdatingOldViewModel(string operation)
+    {
+        var store = new ProfileSession { PendingWrite = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously) };
+        store.LightSwitch.Properties.LightModeProfileId.Value = SecondId;
+        store.LightSwitch.Properties.DarkModeProfileId.Value = SecondId;
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        var write = operation switch
+        {
+            "create" => viewModel.CreateProfileAsync(CreateProfile(0, "New")),
+            "update" => viewModel.UpdateProfileAsync(CreateProfile(SecondId, "Edited")),
+            "delete" => viewModel.DeleteProfileAsync(SecondId),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+        var changes = 0;
+        viewModel.PropertyChanged += (_, _) => changes++;
+
+        viewModel.Dispose();
+        await write.WaitAsync(TimeSpan.FromSeconds(10));
+        store.PendingWrite.SetResult(true);
+        await store.NotificationSent.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        if (operation == "delete")
+        {
+            await store.ReferenceCleanupSent.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.AreEqual(0, store.LightSwitch.Properties.LightModeProfileId.Value);
+            Assert.AreEqual(0, store.LightSwitch.Properties.DarkModeProfileId.Value);
+        }
+
+        AssertOrder(viewModel, FirstId, SecondId, ThirdId);
+        Assert.AreEqual(1, store.Notifications);
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    [DataRow("create")]
+    [DataRow("update")]
+    [DataRow("delete")]
+    [DataRow("reorder")]
+    public async Task Dispose_BeforeScheduledWriteStarts_CancelsWithoutCommitting(string operation)
+    {
+        var store = new ProfileSession
+        {
+            PendingWrite = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously),
+            WriteHasNotStarted = true,
+        };
+        using var viewModel = CreateViewModel(store);
+        await viewModel.InitializeProfilesAsync();
+        var write = operation switch
+        {
+            "create" => viewModel.CreateProfileAsync(CreateProfile(0, "New")),
+            "update" => viewModel.UpdateProfileAsync(CreateProfile(SecondId, "Edited")),
+            "delete" => viewModel.DeleteProfileAsync(SecondId),
+            "reorder" => viewModel.ReorderProfileAsync(ThirdId, FirstId),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+
+        viewModel.Dispose();
+        await write.WaitAsync(TimeSpan.FromSeconds(10));
+        await store.ScheduledWriteCanceled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        store.PendingWrite.SetResult(true);
+
+        CollectionAssert.AreEqual(new[] { FirstId, SecondId, ThirdId }, store.Data.Profiles.Select(profile => profile.Id).ToArray());
+        Assert.AreEqual("Second", store.Data.GetById(SecondId).Name);
+        Assert.AreEqual(0, store.Notifications);
+        Assert.IsFalse(store.ReferenceCleanupSent.Task.IsCompleted);
     }
 
     [TestMethod]
@@ -343,7 +436,7 @@ public class PowerDisplayProfileReorderingTests
         var settingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<PowerDisplaySettings>();
         settingsUtils
             .Setup(utils => utils.GetSettingsOrDefault<LightSwitchSettings>(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(new LightSwitchSettings());
+            .Returns(store.LightSwitch);
         var generalSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
         var generalRepository = new BackCompatTestProperties.MockSettingsRepository<GeneralSettings>(generalSettingsUtils.Object);
         generalRepository.SettingsConfig.IsElevated = elevated;
@@ -353,12 +446,17 @@ public class PowerDisplayProfileReorderingTests
             settingsUtils.Object,
             generalRepository,
             new BackCompatTestProperties.MockSettingsRepository<PowerDisplaySettings>(settingsUtils.Object),
-            _ => 0,
-            (_, _) => { },
+            message =>
+            {
+                store.ReferenceCleanupSent.TrySetResult(message);
+                return 0;
+            },
+            (_, _) => Mock.Of<IDisposable>(),
             eventName =>
             {
                 Assert.AreEqual(Constants.SettingsUpdatedPowerDisplayEvent(), eventName);
                 store.Notifications++;
+                store.NotificationSent.TrySetResult();
             },
             store.LoadAsync,
             store.ReorderAsync,
@@ -382,11 +480,21 @@ public class PowerDisplayProfileReorderingTests
 
         public bool FailRead { get; set; }
 
+        public bool WriteHasNotStarted { get; set; }
+
         public int Writes { get; private set; }
 
         public int Notifications { get; set; }
 
         public TaskCompletionSource<bool> PendingWrite { get; set; }
+
+        public TaskCompletionSource NotificationSent { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<string> ReferenceCleanupSent { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource ScheduledWriteCanceled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public LightSwitchSettings LightSwitch { get; } = new();
 
         public Task<PowerDisplayProfiles> LoadAsync(CancellationToken cancellationToken)
         {
@@ -397,33 +505,36 @@ public class PowerDisplayProfileReorderingTests
                     ProfileSerializationContext.Default.PowerDisplayProfiles));
         }
 
-        public Task AddOrUpdateAsync(PowerDisplayProfile profile)
+        public async Task AddOrUpdateAsync(PowerDisplayProfile profile, CancellationToken cancellationToken)
         {
             Writes++;
+            await WaitForWriteAsync(cancellationToken);
+
             if (FailWrite)
             {
-                return Task.FromException(new IOException("Cannot write profiles"));
+                throw new IOException("Cannot write profiles");
             }
 
             Data.SetProfile(profile);
-            return Task.CompletedTask;
         }
 
-        public Task<bool> RemoveAsync(int id)
+        public async Task<bool> RemoveAsync(int id, CancellationToken cancellationToken)
         {
             Writes++;
-            return FailWrite
-                ? Task.FromException<bool>(new IOException("Cannot write profiles"))
-                : Task.FromResult(Data.RemoveProfile(id));
-        }
+            await WaitForWriteAsync(cancellationToken);
 
-        public async Task<bool> ReorderAsync(int id, int? beforeId)
-        {
-            Writes++;
-            if (PendingWrite != null)
+            if (FailWrite)
             {
-                await PendingWrite.Task;
+                throw new IOException("Cannot write profiles");
             }
+
+            return Data.RemoveProfile(id);
+        }
+
+        public async Task<bool> ReorderAsync(int id, int? beforeId, CancellationToken cancellationToken)
+        {
+            Writes++;
+            await WaitForWriteAsync(cancellationToken);
 
             if (FailWrite)
             {
@@ -431,6 +542,24 @@ public class PowerDisplayProfileReorderingTests
             }
 
             return Data.MoveProfileBefore(id, beforeId);
+        }
+
+        private async Task WaitForWriteAsync(CancellationToken cancellationToken)
+        {
+            if (PendingWrite == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await PendingWrite.Task.WaitAsync(WriteHasNotStarted ? cancellationToken : CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                ScheduledWriteCanceled.TrySetResult();
+                throw;
+            }
         }
     }
 }
