@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -12,6 +13,8 @@ namespace RobocopyUI.Controls
 {
     public sealed partial class OptionEntry : UserControl
     {
+        public event EventHandler<object, EventArgs>? OptionChanged;
+
         public string OptionName
         {
             get { return (string)GetValue(OptionNameProperty); }
@@ -111,9 +114,9 @@ namespace RobocopyUI.Controls
 
             set
             {
-                foreach (ComboBoxItem item in StorageUnitComboBox.Items)
+                foreach (object item in StorageUnitComboBox.Items)
                 {
-                    if ((string)item.Content == value)
+                    if ((string)((ComboBoxItem)item).Content == value)
                     {
                         StorageUnitComboBox.SelectedItem = item;
                         break;
@@ -136,29 +139,38 @@ namespace RobocopyUI.Controls
             }
         }
 
+        public string CommandLineContent
+        {
+            get { return (string)GetValue(CommandLineContentProperty); }
+            private set { SetValue(CommandLineContentProperty, value); }
+        }
+
         public static readonly DependencyProperty IsStorageOptionProperty =
-            DependencyProperty.Register("IsStorageOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(OptionEntry.IsStorageOption), typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty IsTextOptionProperty =
-            DependencyProperty.Register("IsTextOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(OptionEntry.IsTextOption), typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty IsRunHoursOptionProperty =
-            DependencyProperty.Register("IsRunHoursOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(OptionEntry.IsRunHoursOption), typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty MultiSelectOptionsProperty =
-            DependencyProperty.Register("MultiSelectOptions", typeof(List<OptionContent>), typeof(OptionEntry), new PropertyMetadata(null));
+            DependencyProperty.Register(nameof(OptionEntry.MultiSelectOptions), typeof(List<OptionContent>), typeof(OptionEntry), new PropertyMetadata(null));
 
         public static readonly DependencyProperty IsNumberOptionProperty =
-            DependencyProperty.Register("IsNumberOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(OptionEntry.IsNumberOption), typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty IsMultiSelectOptionProperty =
-            DependencyProperty.Register("IsMultiSelectOption", typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
+            DependencyProperty.Register(nameof(OptionEntry.IsMultiSelectOption), typeof(bool), typeof(OptionEntry), new PropertyMetadata(false));
 
         public static readonly DependencyProperty OptionDescriptionProperty =
-            DependencyProperty.Register("OptionDescription", typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register(nameof(OptionEntry.OptionDescription), typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
 
         public static readonly DependencyProperty OptionNameProperty =
-            DependencyProperty.Register("OptionName", typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
+            DependencyProperty.Register(nameof(OptionEntry.OptionName), typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty CommandLineContentProperty =
+            DependencyProperty.Register(nameof(OptionEntry.CommandLineContent), typeof(string), typeof(OptionEntry), new PropertyMetadata(string.Empty));
 
         public OptionEntry()
         {
@@ -172,39 +184,43 @@ namespace RobocopyUI.Controls
             }
         }
 
+        private void OptionCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            CommandLineContent = GetCommandLine();
+            OptionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         public string GetCommandLine()
         {
+            var value = string.Empty;
+
             if (OptionEnabledCheckBox.IsChecked == true)
             {
                 if (IsNumberOption)
                 {
-                    if (IsStorageOption)
-                    {
-                        return $"{OptionName}:{OptionNumberValue.Value}{((string)((ComboBoxItem)StorageUnitComboBox.SelectedItem).Content)[0]}";
-                    }
-
-                    return $"{OptionName}:{OptionNumberValue.Value}";
+                    value = IsStorageOption
+                        ? $"{OptionName}:{OptionNumberValue.Value}{((string)((ComboBoxItem)StorageUnitComboBox.SelectedItem).Content)[0]}"
+                        : $"{OptionName}:{OptionNumberValue.Value}";
                 }
-
-                if (IsTextOption)
+                else if (IsTextOption)
                 {
-                    return $"{OptionName}:{OptionTextValue.Text}";
+                    value = $"{OptionName}:{OptionTextValue.Text}";
                 }
-
-                if (IsMultiSelectOption)
+                else if (IsMultiSelectOption)
                 {
-                    return $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.Enabled).Select(o => o.OptionName))}";
+                    value = $"{OptionName}:{string.Join(string.Empty, MultiSelectOptions.Where(o => o.Enabled).Select(o => o.OptionName))}";
                 }
-
-                if (IsRunHoursOption)
+                else if (IsRunHoursOption)
                 {
-                    return $"{OptionName}:{(int)StartHourNumberBox.Value:D2}{(int)StartMinuteNumberBox.Value:D2}-{(int)EndHourNumberBox.Value:D2}{(int)EndMinuteNumberBox.Value:D2}";
+                    value = $"{OptionName}:{(int)StartHourNumberBox.Value:D2}{(int)StartMinuteNumberBox.Value:D2}-{(int)EndHourNumberBox.Value:D2}{(int)EndMinuteNumberBox.Value:D2}";
                 }
-
-                return $"{OptionName}";
+                else
+                {
+                    value = $"{OptionName}";
+                }
             }
 
-            return string.Empty;
+            return value;
         }
     }
 }

@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <Grid>
-        <CheckBox x:Name="OptionEnabledCheckBox">
+        <CheckBox x:Name="OptionEnabledCheckBox" Checked="OptionCheckedUnchecked" Unchecked="OptionCheckedUnchecked">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{x:Bind OptionName, Mode=OneWay}" FontFamily="Cascadia Mono" VerticalAlignment="Center" FontWeight="Bold"/>
                 <TextBlock Text="{x:Bind OptionDescription, Mode=OneWay}" VerticalAlignment="Center" />
@@ -33,7 +33,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:OptionContent">
-                                        <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}">
+                                        <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" Checked="OptionCheckedUnchecked" Unchecked="OptionCheckedUnchecked">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <TextBlock Text="{Binding OptionName}" FontFamily="Cascadia Mono" VerticalAlignment="Center" FontWeight="Bold"/>
                                                 <TextBlock Text="{Binding OptionDescription}" VerticalAlignment="Center" />
