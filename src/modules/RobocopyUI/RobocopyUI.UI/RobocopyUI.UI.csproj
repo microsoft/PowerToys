@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
@@ -6,7 +6,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>RobocopyUI</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>RobocopyUI.dev.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
@@ -20,8 +20,27 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.RobocopyUI.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ApplicationManifest>RobocopyUI.prod.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!-- Generate PhiSilicaLafCredentials from MSBuild properties (PhiSilicaLaf.props / CI overrides). -->
+  <Target Name="GeneratePhiSilicaLafCredentials" BeforeTargets="BeforeCompile;CoreCompile;XamlPreCompile">
+    <PropertyGroup>
+      <PhiSilicaLafCredentialsFile>$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs</PhiSilicaLafCredentialsFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PhiSilicaLafCredentialsFile)" Overwrite="true" Lines="// &lt;auto-generated/&gt;;namespace RobocopyUI.Services.AI%3B;;internal static class PhiSilicaLafCredentials;{;    internal const string Token = &quot;$(PhiSilicaLafToken)&quot;%3B;    internal const string Attestation = &quot;$(PhiSilicaLafAttestation)&quot;%3B;}" />
+    <ItemGroup>
+      <Compile Include="$(PhiSilicaLafCredentialsFile)" Condition="!@(Compile-&gt;AnyHaveMetadataValue('Identity', '$(PhiSilicaLafCredentialsFile)'))" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
+    <Page Remove="RobocopyUIXAML\AICommandDialog.xaml" />
     <Page Remove="RobocopyUIXAML\App.xaml" />
+    <Page Remove="RobocopyUIXAML\Controls\AnimatedContentControl.xaml" />
+    <Page Remove="RobocopyUIXAML\Controls\PromptBox.xaml" />
+    <Page Remove="RobocopyUIXAML\Themes\Generic.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="RobocopyUIXAML\App.xaml" />
@@ -44,6 +63,7 @@
     <None Remove="RobocopyUIXAML\HomePage.xaml" />
     <None Remove="RobocopyUIXAML\OptionEntry.xaml" />
     <None Remove="RobocopyUIXAML\ShellPage.xaml" />
+    <None Remove="RobocopyUIXAML\AICommandDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,9 +88,20 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.MistralAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -85,8 +116,23 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="RobocopyUIXAML\AICommandDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="RobocopyUIXAML\Controls\AnimatedContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="RobocopyUIXAML\Controls\PromptBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="RobocopyUIXAML\Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Update="RobocopyUIXAML\OptionEntry.xaml">
@@ -99,12 +145,43 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\RobocopyUI\Gradient.png" />
+    <!-- Share AI model provider icons from Settings.UI to avoid duplicating them. -->
+    <Content Include="..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Models\*.svg">
+      <Link>Assets\Settings\Icons\Models\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="RobocopyUIXAML\Controls\PromptBox.xaml" />
+    <None Remove="RobocopyUIXAML\Controls\AnimatedContentControl.xaml" />
+    <None Remove="RobocopyUIXAML\Themes\Generic.xaml" />
+    <Page Include="RobocopyUIXAML\Controls\PromptBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RobocopyUIXAML\Controls\AnimatedContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RobocopyUIXAML\Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="RobocopyUIXAML\ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controls\" />
+<Folder Include="Controls\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="RobocopyUIXAML\AICommandDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

@@ -591,10 +591,94 @@
   <data name="Status_Fail" xml:space="preserve">
     <value>Operation failed.</value>
   </data>
-  <data name="LoadButtonLabel.Text" xml:space="preserve">
-    <value>Load Job File</value>
+<data name="LoadButtonLabel.Text" xml:space="preserve">
+  <value>Load Job File</value>
+</data>
+<data name="CommandPreviewTextBox.Header" xml:space="preserve">
+  <value>Command Preview</value>
+</data>
+<data name="AIAssistButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Describe what you want to copy and let AI build the command</value>
   </data>
-  <data name="CommandPreviewTextBox.Header" xml:space="preserve">
-    <value>Command Preview</value>
+  <data name="AIAssistButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Generate command with AI</value>
+  </data>
+  <data name="AIDialog.Title" xml:space="preserve">
+    <value>Generate command with AI</value>
+  </data>
+  <data name="AIDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="AIDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AIPromptTextBox_Placeholder" xml:space="preserve">
+    <value>Describe what you want to do, for example: mirror my photos folder to the backup drive, retry twice, and skip temp files</value>
+    <comment>Placeholder shown in the AI prompt box before the user types anything</comment>
+  </data>
+  <data name="AIPromptLabel.Text" xml:space="preserve">
+    <value>What do you want to do?</value>
+  </data>
+  <data name="AIPromptTextBox_FollowUpPlaceholder" xml:space="preserve">
+    <value>Type your answer</value>
+  </data>
+  <data name="AIPromptTextBox_RefinePlaceholder" xml:space="preserve">
+    <value>Describe a change to redo the command, or select Apply to use it</value>
+  </data>
+  <data name="PromptBoxSendButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Generate</value>
+    <comment>Accessible name of the send button inside the AI prompt box</comment>
+  </data>
+  <data name="PromptBoxSendButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Generate command (Enter)</value>
+  </data>
+  <data name="PromptBoxCancelButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cancel generation</value>
+    <comment>Accessible name of the cancel button shown while the AI request is running</comment>
+  </data>
+  <data name="PromptBoxCancelButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cancel generation</value>
+  </data>
+  <data name="PromptBoxLoadingText.Text" xml:space="preserve">
+    <value>Generating command…</value>
+    <comment>Shown under the prompt box while waiting for the AI provider</comment>
+  </data>
+  <data name="AIProviderButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>AI provider selector</value>
+  </data>
+  <data name="AIProvidersFlyoutHeader.Text" xml:space="preserve">
+    <value>Configured models</value>
+  </data>
+  <data name="AIProvidersEmptyText.Text" xml:space="preserve">
+    <value>No models configured</value>
+  </data>
+  <data name="LocalModelBadge.Text" xml:space="preserve">
+    <value>Local</value>
+    <comment>Badge label displayed next to local AI model providers (e.g., Ollama, Foundry Local) to indicate the model runs locally</comment>
+  </data>
+  <data name="AIPreviewLabel.Text" xml:space="preserve">
+    <value>Command preview</value>
+  </data>
+  <data name="AIWarningsTitle" xml:space="preserve">
+    <value>Review before running</value>
+  </data>
+  <data name="AIErrorTitle" xml:space="preserve">
+    <value>Couldn't generate a command</value>
+  </data>
+  <data name="AIError_Generic" xml:space="preserve">
+    <value>Something went wrong while contacting the AI provider. Check your connection and try again.</value>
+  </data>
+  <data name="AIError_Timeout" xml:space="preserve">
+    <value>The AI provider took too long to respond. If you're using a local model, it may still be starting up. Please try again.</value>
+    <comment>Shown when a command generation request exceeds its time limit</comment>
+  </data>
+  <data name="AIError_NotConfigured" xml:space="preserve">
+    <value>No AI provider is configured. Set one up in PowerToys Settings.</value>
+  </data>
+  <data name="AINotConfiguredInfoBar.Title" xml:space="preserve">
+    <value>AI provider required</value>
+  </data>
+  <data name="AINotConfiguredInfoBar.Message" xml:space="preserve">
+    <value>Configure an AI provider in PowerToys Settings under Advanced Paste to use this feature.</value>
   </data>
 </root>

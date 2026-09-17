@@ -15,6 +15,8 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
 using RobocopyUI.Controls;
 using RobocopyUI.Helpers;
+using RobocopyUI.Models;
+using RobocopyUI.Services.AI;
 
 namespace RobocopyUI;
 
@@ -79,6 +81,110 @@ public sealed partial class HomePage : Page
 
         entry.OptionChanged -= UpdateCommandPreview;
         optionEntries.Remove(entry);
+    }
+
+    private async void AIAssistButton_Click(object sender, RoutedEventArgs e)
+    {
+        var catalog = GetOptionCatalog();
+
+        var dialog = new AICommandDialog(catalog, SourceTextBox.Text, DestinationTextBox.Text)
+        {
+            XamlRoot = XamlRoot,
+        };
+
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary && dialog.AcceptedPlan is RobocopyPlan plan)
+        {
+            ApplyPlan(plan);
+        }
+    }
+
+    /// <summary>
+    /// Builds the catalog of every known option, from the underlying data rather than the realized
+    /// controls, so the AI model sees switches even on tabs that haven't been visited yet.
+    /// </summary>
+    private static List<RobocopyOptionDescriptor> GetOptionCatalog()
+    {
+        var allOptions = OptionsDataHelper.GetMainOptionsLeft()
+            .Concat(OptionsDataHelper.GetMainOptionsRight())
+            .Concat(OptionsDataHelper.GetFilterOptions())
+            .Concat(OptionsDataHelper.GetLoggingOptions())
+            .Concat(OptionsDataHelper.GetAdvancedOptions());
+
+        return allOptions.Select(ToDescriptor).ToList();
+    }
+
+    private static RobocopyOptionDescriptor ToDescriptor(OptionContent option)
+    {
+        var kind = option.IsStorageOption ? RobocopyOptionKind.Storage
+            : option.IsNumberOption ? RobocopyOptionKind.Number
+            : option.IsTextOption ? RobocopyOptionKind.Text
+            : option.IsMultiSelectOption ? RobocopyOptionKind.MultiSelect
+            : option.IsRunHoursOption ? RobocopyOptionKind.RunHours
+            : RobocopyOptionKind.Flag;
+
+        return new RobocopyOptionDescriptor(
+            option.OptionName,
+            kind,
+            option.OptionDescription,
+            option.MultiSelectOptions?.Select(sub => new RobocopyOptionValue(sub.OptionName, sub.OptionDescription)).ToList() ?? []);
+    }
+
+    /// <summary>
+    /// Applies a generated plan to the UI so the user can review and tweak it before running.
+    /// </summary>
+    private void ApplyPlan(RobocopyPlan plan)
+    {
+        SourceTextBox.Text = plan.Source;
+        DestinationTextBox.Text = plan.Destination;
+
+        var planOptions = plan.Options.ToDictionary(option => option.Name, option => option.Value, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var entry in GetRealizedOptionEntries())
+        {
+            if (planOptions.TryGetValue(entry.OptionName, out var value) && IsValueCompatible(entry, value))
+            {
+                entry.ApplyValue(value);
+            }
+            else
+            {
+                entry.ClearSelection();
+            }
+        }
+
+        CommandPreviewTextBox.Text = GetFullCommandLine();
+    }
+
+    /// <summary>
+    /// A switch name can be bound to more than one control (for example /LFSM exists both as a
+    /// plain flag and as a storage option), so only apply the value to the matching variant.
+    /// </summary>
+    private static bool IsValueCompatible(OptionEntry entry, string value)
+    {
+        return entry.GetOptionKind() == RobocopyOptionKind.Flag
+            ? string.IsNullOrEmpty(value)
+            : !string.IsNullOrEmpty(value);
+    }
+
+    /// <summary>
+    /// Enumerates every option control that is currently realized across all tabs, so a plan can be
+    /// applied to (or cleared from) any of them regardless of which tab is on screen.
+    /// </summary>
+    private IEnumerable<OptionEntry> GetRealizedOptionEntries()
+    {
+        ListView[] optionLists = [OptionsListView, OptionsListViewRight, FilterOptionsListView, LoggingOptionsListView, AdvancedOptionsListView];
+
+        foreach (var listView in optionLists)
+        {
+            foreach (var item in listView.Items)
+            {
+                if (listView.ContainerFromItem(item) is ListViewItem { ContentTemplateRoot: OptionEntry entry })
+                {
+                    yield return entry;
+                }
+            }
+        }
     }
 
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
