@@ -66,6 +66,7 @@ namespace RobocopyUI
             IsPrimaryButtonEnabled = false;
 
             Prompt.PlaceholderText = ResourceLoaderInstance.ResourceLoader.GetString("AIPromptTextBox_Placeholder");
+            Prompt.SetInputLabel(PromptLabel);
 
             LoadProviders();
 
@@ -159,15 +160,17 @@ namespace RobocopyUI
             _cancelInFlightRequest?.Invoke();
         }
 
-        private void ApplyButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        /// <summary>
+        /// Handles every way the dialog can close - the buttons, Esc, and a programmatic hide - so an
+        /// in-flight request is always cancelled rather than left running against a dead dialog.
+        /// </summary>
+        private void OnClosing(ContentDialog sender, ContentDialogClosingEventArgs args)
         {
-            // AcceptedPlan is already set by the last successful generation; closing with the primary
-            // button is what signals the caller to apply it.
-        }
+            if (args.Result != ContentDialogResult.Primary)
+            {
+                AcceptedPlan = null;
+            }
 
-        private void CloseButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            AcceptedPlan = null;
             _isClosed = true;
             _cancelInFlightRequest?.Invoke();
         }
@@ -278,6 +281,13 @@ namespace RobocopyUI
             FollowUpText.Text = question;
             FollowUpText.Visibility = Visibility.Visible;
 
+            // The question takes the place of the static label rather than stacking above it.
+            PromptLabel.Visibility = Visibility.Collapsed;
+            Prompt.SetInputLabel(FollowUpText);
+
+            // The starter example is no longer useful once the model is asking a direct question.
+            PromptHintText.Visibility = Visibility.Collapsed;
+
             Prompt.Text = string.Empty;
             Prompt.PlaceholderText = ResourceLoaderInstance.ResourceLoader.GetString("AIPromptTextBox_FollowUpPlaceholder");
             Prompt.FocusInput();
@@ -289,6 +299,9 @@ namespace RobocopyUI
             IsPrimaryButtonEnabled = true;
 
             FollowUpText.Visibility = Visibility.Collapsed;
+            PromptLabel.Visibility = Visibility.Visible;
+            Prompt.SetInputLabel(PromptLabel);
+            PromptHintText.Visibility = Visibility.Collapsed;
             PreviewPanel.Visibility = Visibility.Visible;
 
             PreviewCommandTextBox.Text = plan.CommandLine;
@@ -327,6 +340,8 @@ namespace RobocopyUI
             ErrorInfoBar.Title = ResourceLoaderInstance.ResourceLoader.GetString("AIErrorTitle");
             ErrorInfoBar.Message = message;
             ErrorInfoBar.IsOpen = true;
+
+            Prompt.FocusInput();
         }
 
         /// <summary>
@@ -349,6 +364,10 @@ namespace RobocopyUI
         {
             _isBusy = busy;
             Prompt.IsBusy = busy;
+
+            // While a refinement is running the preview on screen is about to be replaced, so applying
+            // it would commit a plan the user has already asked to change.
+            IsPrimaryButtonEnabled = !busy && AcceptedPlan is not null;
         }
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
@@ -22,6 +23,21 @@ namespace RobocopyUI.Controls
     /// </remarks>
     public sealed partial class PromptBox : UserControl
     {
+        private const double DefaultLeftInset = 12;
+        private const double RightInset = 4;
+        private const double VerticalInset = 8;
+
+        /// <summary>
+        /// Inset of the model selector and the send button from their respective edges. Both controls
+        /// use it, which is what puts them on a shared baseline clear of the rounded corners.
+        /// </summary>
+        private const double EdgeInset = 8;
+
+        /// <summary>
+        /// Gap between the model selector and the first character of the prompt.
+        /// </summary>
+        private const double ModelSelectorGap = 6;
+
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text),
             typeof(string),
@@ -62,11 +78,12 @@ namespace RobocopyUI.Controls
             nameof(ModelSelector),
             typeof(object),
             typeof(PromptBox),
-            new PropertyMetadata(defaultValue: null));
+            new PropertyMetadata(defaultValue: null, (d, e) => ((PromptBox)d).UpdateInputGutter()));
 
         /// <summary>
         /// Gets or sets the content shown in the gutter at the left edge of the input, used for the
-        /// AI provider picker. It is hidden while a request is in flight.
+        /// AI provider picker. The input's left padding tracks its measured width, so hosts that do
+        /// not supply one (or that hide it) get no empty gutter.
         /// </summary>
         public object ModelSelector
         {
@@ -116,6 +133,7 @@ namespace RobocopyUI.Controls
         {
             InitializeComponent();
             UpdateVisualState();
+            UpdateInputGutter();
         }
 
         /// <summary>
@@ -128,10 +146,54 @@ namespace RobocopyUI.Controls
         /// </summary>
         public void FocusInput() => InputTxtBox.Focus(FocusState.Programmatic);
 
+        /// <summary>
+        /// Points assistive technology at the host's visible label for the prompt. The input lives
+        /// inside this control, so the host cannot reach it to set the association itself.
+        /// </summary>
+        /// <remarks>
+        /// The label text is mirrored into the automation name as well: a name set in XAML wins over
+        /// <c>LabeledBy</c>, so the relationship alone would leave the generic fallback name in place.
+        /// </remarks>
+        public void SetInputLabel(TextBlock label)
+        {
+            AutomationProperties.SetLabeledBy(InputTxtBox, label);
+            AutomationProperties.SetName(InputTxtBox, label.Text);
+        }
+
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             InputTxtBox.Focus(FocusState.Programmatic);
             UpdateSendButtonState();
+            UpdateInputGutter();
+        }
+
+        private void ModelSelectorPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.NewSize.Width != e.PreviousSize.Width)
+            {
+                UpdateInputGutter();
+            }
+        }
+
+        /// <summary>
+        /// Insets the text so it clears the model selector overlaid on the left edge. The selector is
+        /// measured rather than assumed, so a host that hides it does not leave a blank gutter.
+        /// </summary>
+        private void UpdateInputGutter()
+        {
+            if (InputTxtBox is null || ModelSelectorPresenter is null)
+            {
+                return;
+            }
+
+            var selectorWidth = ModelSelectorPresenter.ActualWidth;
+            var left = selectorWidth > 0 ? EdgeInset + selectorWidth + ModelSelectorGap : DefaultLeftInset;
+            var padding = new Thickness(left, VerticalInset, RightInset, VerticalInset);
+
+            if (!InputTxtBox.Padding.Equals(padding))
+            {
+                InputTxtBox.Padding = padding;
+            }
         }
 
         private void OnTextChanged() => UpdateSendButtonState();

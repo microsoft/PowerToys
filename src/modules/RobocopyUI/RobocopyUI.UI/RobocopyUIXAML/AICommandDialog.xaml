@@ -11,9 +11,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     x:Uid="AIDialog"
-    DefaultButton="Primary"
-    PrimaryButtonClick="ApplyButton_Click"
-    CloseButtonClick="CloseButton_Click">
+    Closing="OnClosing"
+    DefaultButton="Primary">
 
     <ContentDialog.Resources>
         <!-- The default max width (548) is narrower than the content, which clips the buttons. -->
@@ -21,55 +20,68 @@
         <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
     </ContentDialog.Resources>
 
-    <Grid MinWidth="520" MaxWidth="560" RowSpacing="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <!--  A StackPanel rather than a Grid: sections collapse and reappear as the conversation
+          progresses, and StackPanel spacing skips collapsed children instead of leaving a gap.  -->
+    <StackPanel
+        MinWidth="520"
+        MaxWidth="560"
+        Spacing="12">
 
         <InfoBar
             x:Name="NotConfiguredInfoBar"
             x:Uid="AINotConfiguredInfoBar"
-            Grid.Row="0"
             IsClosable="False"
             IsOpen="False"
             Severity="Informational" />
 
         <InfoBar
             x:Name="ErrorInfoBar"
-            Grid.Row="0"
             IsClosable="True"
             IsOpen="False"
             Severity="Error" />
 
-        <StackPanel Grid.Row="1" Spacing="8">
+        <StackPanel Spacing="8">
+            <TextBlock
+                x:Name="PromptLabel"
+                x:Uid="AIPromptLabel"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                TextWrapping="Wrap" />
+
+            <!--  Replaces the label above while the model is waiting on an answer: the question is
+                  the label for the input at that point.  -->
             <TextBlock
                 x:Name="FollowUpText"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 TextWrapping="Wrap"
                 Visibility="Collapsed" />
 
-            <TextBlock x:Uid="AIPromptLabel" Style="{ThemeResource BodyStrongTextBlockStyle}" />
-
             <controls:PromptBox
                 x:Name="Prompt"
                 PromptSubmitted="Prompt_PromptSubmitted"
                 RequestCancelled="Prompt_RequestCancelled">
+                <controls:PromptBox.Footer>
+                    <TextBlock
+                        x:Name="PromptHintText"
+                        x:Uid="AIPromptHint"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        TextWrapping="WrapWholeWords" />
+                </controls:PromptBox.Footer>
                 <controls:PromptBox.ModelSelector>
+                    <!--  A chip inside the field rather than a full-height segment: the input grows to
+                          several lines, and a segment would stretch into a tall rule beside the text.
+                          The height matches the send button so the two sit on one baseline.  -->
                     <DropDownButton
                         x:Name="AIProviderButton"
                         x:Uid="AIProviderButton"
-                        MinWidth="44"
-                        Margin="1,1,0,2"
-                        Padding="0,0,4,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Stretch"
+                        Height="32"
+                        MinWidth="40"
+                        Padding="0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
                         Background="Transparent"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="0,0,1,0"
-                        CornerRadius="16,0,0,16"
+                        BorderThickness="0"
+                        CornerRadius="16"
                         TabIndex="0">
                         <DropDownButton.Content>
                             <Image
@@ -85,7 +97,6 @@
                                     Margin="-4"
                                     RowSpacing="12">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
@@ -169,11 +180,12 @@
             </controls:PromptBox>
         </StackPanel>
 
-        <StackPanel x:Name="PreviewPanel" Grid.Row="2" Spacing="8" Visibility="Collapsed">
+        <StackPanel x:Name="PreviewPanel" Spacing="8" Visibility="Collapsed">
             <TextBlock x:Uid="AIPreviewLabel" Style="{ThemeResource BodyStrongTextBlockStyle}" />
             <TextBox
                 x:Name="PreviewCommandTextBox"
-                FontFamily="Cascadia Mono"
+                x:Uid="AIPreviewCommandTextBox"
+                FontFamily="Cascadia Mono, Consolas"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
             <TextBlock
@@ -186,5 +198,5 @@
                 IsOpen="False"
                 Severity="Warning" />
         </StackPanel>
-    </Grid>
+    </StackPanel>
 </ContentDialog>

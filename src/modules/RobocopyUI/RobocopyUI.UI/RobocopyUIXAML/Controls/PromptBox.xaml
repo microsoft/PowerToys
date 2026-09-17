@@ -6,26 +6,36 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:RobocopyUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="PromptBoxControl"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <!--  Matches the Advanced Paste prompt so the AI entry point looks the same across modules.  -->
-            <LinearGradientBrush x:Key="IntelligentUnderlineGradient" StartPoint="0,0.5" EndPoint="1,0.5">
-                <GradientStop Offset="0.0" Color="#FF0078D4" />
-                <GradientStop Offset="0.42" Color="#FF464FEB" />
-                <GradientStop Offset="0.87" Color="#FFD660FF" />
-                <GradientStop Offset="1.0" Color="#FFFEA874" />
-            </LinearGradientBrush>
-
-            <tkconverters:BoolToVisibilityConverter x:Key="PromptBoolToVisibilityConverter" />
-            <tkconverters:BoolToVisibilityConverter
-                x:Key="PromptBoolToInvertedVisibilityConverter"
-                FalseValue="Visible"
-                TrueValue="Collapsed" />
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  Matches the Advanced Paste prompt so the AI entry point looks the same across modules.  -->
+                <ResourceDictionary x:Key="Light">
+                    <LinearGradientBrush x:Key="PromptFocusUnderlineBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+                        <GradientStop Offset="0.0" Color="#FF0078D4" />
+                        <GradientStop Offset="0.42" Color="#FF464FEB" />
+                        <GradientStop Offset="0.87" Color="#FFD660FF" />
+                        <GradientStop Offset="1.0" Color="#FFFEA874" />
+                    </LinearGradientBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <LinearGradientBrush x:Key="PromptFocusUnderlineBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+                        <GradientStop Offset="0.0" Color="#FF0078D4" />
+                        <GradientStop Offset="0.42" Color="#FF464FEB" />
+                        <GradientStop Offset="0.87" Color="#FFD660FF" />
+                        <GradientStop Offset="1.0" Color="#FFFEA874" />
+                    </LinearGradientBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <!--  Contrast themes have to stay on the system palette, so the brand gradient is
+                          replaced by the system highlight colour.  -->
+                    <SolidColorBrush x:Key="PromptFocusUnderlineBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
 
             <!--  A trimmed copy of the Advanced Paste prompt TextBox template: rounded, no delete
                   button, and a gradient underline while focused.  -->
@@ -42,7 +52,9 @@
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
                 <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
-                <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
+                <!--  Padding is what insets the text past the overlaid model selector and send
+                      button, so the control keeps it in sync with the selector's measured width.  -->
+                <Setter Property="Padding" Value="12,8,4,8" />
                 <Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
                 <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
                 <Setter Property="CornerRadius" Value="16" />
@@ -56,9 +68,6 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
-                                    <!--  Gutter for the model selector overlaid by the control. Kept in
-                                          sync with the selector's width in AICommandDialog.  -->
-                                    <ColumnDefinition Width="44" />
                                     <ColumnDefinition Width="*" />
                                     <!--  Reserves room for the send/cancel button overlaid by the control.  -->
                                     <ColumnDefinition Width="40" />
@@ -67,7 +76,7 @@
                                 <ContentPresenter
                                     x:Name="HeaderContentPresenter"
                                     Grid.Row="0"
-                                    Grid.ColumnSpan="3"
+                                    Grid.ColumnSpan="2"
                                     Margin="{ThemeResource TextBoxTopHeaderMargin}"
                                     VerticalAlignment="Top"
                                     x:DeferLoadStrategy="Lazy"
@@ -81,7 +90,7 @@
                                 <Border
                                     x:Name="BorderElement"
                                     Grid.Row="1"
-                                    Grid.ColumnSpan="3"
+                                    Grid.ColumnSpan="2"
                                     MinWidth="{TemplateBinding MinWidth}"
                                     MinHeight="{TemplateBinding MinHeight}"
                                     Background="{TemplateBinding Background}"
@@ -90,15 +99,17 @@
                                     Control.IsTemplateFocusTarget="True"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
 
+                                <!--  Inset by the corner radius: a straight line any wider would run past
+                                      the curve and hang outside the control.  -->
                                 <Rectangle
                                     x:Name="FocusHighlighter"
                                     Grid.Row="1"
-                                    Grid.ColumnSpan="3"
+                                    Grid.ColumnSpan="2"
                                     Height="2"
-                                    Margin="12,0,12,0"
+                                    Margin="16,0,16,0"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Bottom"
-                                    Fill="{StaticResource IntelligentUnderlineGradient}"
+                                    Fill="{ThemeResource PromptFocusUnderlineBrush}"
                                     RadiusX="1"
                                     RadiusY="1"
                                     Visibility="Collapsed" />
@@ -106,7 +117,7 @@
                                 <ScrollViewer
                                     x:Name="ContentElement"
                                     Grid.Row="1"
-                                    Grid.Column="1"
+                                    Grid.Column="0"
                                     Margin="{TemplateBinding BorderThickness}"
                                     Padding="{TemplateBinding Padding}"
                                     VerticalAlignment="Center"
@@ -122,7 +133,7 @@
                                 <TextBlock
                                     x:Name="PlaceholderTextContentPresenter"
                                     Grid.Row="1"
-                                    Grid.Column="1"
+                                    Grid.Column="0"
                                     Margin="{TemplateBinding BorderThickness}"
                                     Padding="{TemplateBinding Padding}"
                                     VerticalAlignment="Center"
@@ -153,9 +164,9 @@
                                         </VisualState>
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushPointerOver}" />
-                                                </ObjectAnimationUsingKeyFrames>
+                                                <!--  Deliberately does not animate BorderBrush: the host signals an error by
+                                                      setting BorderBrush on the TextBox, and an animated value here would
+                                                      silently win over it for as long as the pointer is over the control.  -->
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundPointerOver}" />
                                                 </ObjectAnimationUsingKeyFrames>
@@ -187,7 +198,8 @@
     <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <!--  Reserved so swapping the footer for the loading caption never resizes the host.  -->
+            <RowDefinition Height="Auto" MinHeight="24" />
         </Grid.RowDefinitions>
 
         <local:AnimatedContentControl
@@ -197,28 +209,37 @@
             <Grid>
                 <TextBox
                     x:Name="InputTxtBox"
+                    x:Uid="PromptBoxInput"
+                    MaxHeight="120"
                     HorizontalAlignment="Stretch"
                     AcceptsReturn="True"
                     IsSpellCheckEnabled="True"
                     KeyDown="InputTxtBox_KeyDown"
-                    MaxHeight="120"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
                     Style="{StaticResource PromptTextBoxStyle}"
-                    TabIndex="0"
+                    TabIndex="1"
                     Text="{x:Bind Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap" />
 
-                <!--  Sits in the gutter reserved by the input's left padding, as in Advanced Paste.  -->
-                <ContentPresenter
+                <!--  Sits in the gutter the input reserves through its left padding. Bottom aligned on the
+                      same baseline as the send button, so the two stay level as the input grows, and
+                      inset by the same amount so they are centred at the single-line height.
+                      A ContentControl rather than a ContentPresenter so the loading state can disable it.  -->
+                <ContentControl
                     x:Name="ModelSelectorPresenter"
+                    Margin="8,0,0,8"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Stretch"
-                    Content="{x:Bind ModelSelector, Mode=OneWay}" />
+                    VerticalAlignment="Bottom"
+                    Content="{x:Bind ModelSelector, Mode=OneWay}"
+                    IsTabStop="False"
+                    SizeChanged="ModelSelectorPresenter_SizeChanged" />
 
+                <!--  Mirrors the model selector's inset so the two sit on one baseline, clear of the
+                      rounded corner, and centred while the input is a single line.  -->
                 <Grid
                     Width="32"
                     Height="32"
-                    Margin="0,0,6,0"
+                    Margin="0,0,8,8"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom">
                     <Button
@@ -232,7 +253,7 @@
                         Content="{ui:FontIcon Glyph=&#xE724;,
                                               FontSize=16}"
                         Style="{StaticResource SubtleButtonStyle}"
-                        TabIndex="1">
+                        TabIndex="2">
                         <animations:Implicit.ShowAnimations>
                             <animations:ScaleAnimation
                                 From="0.4"
@@ -273,10 +294,12 @@
             </Grid>
         </local:AnimatedContentControl>
 
+        <!--  Flush with the input's left edge, matching how a TextBox header and description line up
+              with the field they describe.  -->
         <ContentPresenter
             x:Name="FooterPresenter"
             Grid.Row="1"
-            Margin="12,6,12,0"
+            Margin="0,6,0,0"
             VerticalAlignment="Top"
             Content="{x:Bind Footer, Mode=OneWay}" />
 
@@ -284,7 +307,7 @@
             x:Name="LoadingText"
             x:Uid="PromptBoxLoadingText"
             Grid.Row="1"
-            Margin="12,6,12,0"
+            Margin="0,6,0,0"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Visibility="Collapsed">
@@ -307,7 +330,9 @@
                         <Setter Target="SendBtn.Visibility" Value="Collapsed" />
                         <Setter Target="CancelBtn.IsEnabled" Value="True" />
                         <Setter Target="CancelBtn.Visibility" Value="Visible" />
-                        <Setter Target="ModelSelectorPresenter.Visibility" Value="Collapsed" />
+                        <!--  Disabled rather than collapsed: collapsing it would drop the input's left
+                              gutter and shift the text mid-request.  -->
+                        <Setter Target="ModelSelectorPresenter.IsEnabled" Value="False" />
                         <Setter Target="FooterPresenter.Visibility" Value="Collapsed" />
                         <Setter Target="LoadingText.Visibility" Value="Visible" />
                     </VisualState.Setters>

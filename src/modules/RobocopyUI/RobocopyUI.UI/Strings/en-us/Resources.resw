@@ -613,8 +613,12 @@
     <value>Cancel</value>
   </data>
   <data name="AIPromptTextBox_Placeholder" xml:space="preserve">
-    <value>Describe what you want to do, for example: mirror my photos folder to the backup drive, retry twice, and skip temp files</value>
+    <value>Describe what you want to do</value>
     <comment>Placeholder shown in the AI prompt box before the user types anything</comment>
+  </data>
+  <data name="AIPromptHint.Text" xml:space="preserve">
+    <value>For example: mirror my photos folder to the backup drive and skip temp files</value>
+    <comment>Example prompt shown under the AI prompt box before the first request</comment>
   </data>
   <data name="AIPromptLabel.Text" xml:space="preserve">
     <value>What do you want to do?</value>
@@ -624,6 +628,10 @@
   </data>
   <data name="AIPromptTextBox_RefinePlaceholder" xml:space="preserve">
     <value>Describe a change to redo the command, or select Apply to use it</value>
+  </data>
+  <data name="PromptBoxInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>AI prompt</value>
+    <comment>Fallback accessible name of the AI prompt input, used when the host supplies no visible label</comment>
   </data>
   <data name="PromptBoxSendButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Generate</value>
@@ -658,6 +666,10 @@
   </data>
   <data name="AIPreviewLabel.Text" xml:space="preserve">
     <value>Command preview</value>
+  </data>
+  <data name="AIPreviewCommandTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Generated command</value>
+    <comment>Accessible name of the read-only box showing the robocopy command the AI generated</comment>
   </data>
   <data name="AIWarningsTitle" xml:space="preserve">
     <value>Review before running</value>
