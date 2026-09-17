@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -18,14 +17,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : NavigablePage, IRefreshablePage
+    public sealed partial class GeneralPage : NavigablePage, IRefreshablePage, IDisposable
     {
-        private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
+        private DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
+
+        private readonly PageViewModelLifetime<GeneralViewModel> _viewModelLifetime;
+        private Action<JsonObject> _bugReportStatusHandler;
 
         /// <summary>
-        /// Gets or sets view model.
+        /// Gets the view model.
         /// </summary>
-        public GeneralViewModel ViewModel { get; set; }
+        public GeneralViewModel ViewModel => _viewModelLifetime?.ViewModel;
 
         public UpdateViewModel SharedUpdateViewModel => ShellPage.ShellHandler.UpdateViewModel;
 
@@ -36,31 +38,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public GeneralPage()
         {
             InitializeComponent();
+            _viewModelLifetime = new PageViewModelLifetime<GeneralViewModel>(CreateViewModel);
+            InitializeViewModel();
+            Unloaded += GeneralPage_Unloaded;
+            Loaded += GeneralPage_Loaded;
+        }
 
+        private GeneralViewModel CreateViewModel()
+        {
             // Load string resources
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
             var settingsUtils = SettingsUtils.Default;
 
-            Action hideBackupAndRestoreMessageArea = () =>
-            {
-                this.DispatcherQueue.TryEnqueue(async () =>
-                {
-                    const int messageShowTimeIs = 10000;
-
-                    // in order to keep the message for about 5 seconds after the last call
-                    // and not need any lock/thread-synch, use an OK-To-Hide time, and wait just a little longer than that.
-                    OkToHideBackupAndRestoreMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeIs - 16);
-                    await System.Threading.Tasks.Task.Delay(messageShowTimeIs);
-                    if (DateTime.UtcNow > OkToHideBackupAndRestoreMessageTime)
-                    {
-                        ViewModel.HideBackupAndRestoreMessageArea();
-                    }
-                });
-            };
-
-            var doRefreshBackupRestoreStatus = new Action<int>(RefreshBackupRestoreStatus);
-
-            ViewModel = new GeneralViewModel(
+            return new GeneralViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 loader.GetString("GeneralSettings_RunningAsAdminText"),
                 loader.GetString("GeneralSettings_RunningAsUserText"),
@@ -70,28 +60,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendRestartAdminIPCMessage,
                 ShellPage.ShellHandler.UpdateViewModel.CheckForUpdates,
                 string.Empty,
-                hideBackupAndRestoreMessageArea,
-                doRefreshBackupRestoreStatus,
+                HideBackupAndRestoreMessageArea,
+                RefreshBackupRestoreStatus,
                 PickSingleFolderDialog,
                 loader);
+        }
 
+        private void InitializeViewModel()
+        {
             DataContext = ViewModel;
-
             ViewModel.InitializeReportBugLink();
-
-            // Register IPC handler for bug report status
-            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);            // Register cleanup on unload
-            this.Unloaded += GeneralPage_Unloaded;
-
+            RegisterBugReportHandler();
             CheckBugReportStatus();
-
-            doRefreshBackupRestoreStatus(100);
-
-            this.Loaded += GeneralPage_Loaded;
+            RefreshBackupRestoreStatus(100);
         }
 
         private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_viewModelLifetime.Load())
+            {
+                InitializeViewModel();
+                Bindings.Update();
+            }
+
             ViewModel.OnPageLoaded();
             if (SharedUpdateViewModel.CurrentUpdateUIState != UpdateViewModel.UpdateUIState.UpToDate)
             {
@@ -135,19 +126,64 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void RefreshBackupRestoreStatus(int delayMs = 0)
         {
-            Task.Run(() =>
+            var viewModel = ViewModel;
+            var cancellationToken = _viewModelLifetime.CancellationToken;
+            var dispatcher = DispatcherQueue;
+            _ = Task.Run(async () =>
             {
-                if (delayMs > 0)
+                try
                 {
-                    Thread.Sleep(delayMs);
+                    if (delayMs > 0)
+                    {
+                        await Task.Delay(delayMs, cancellationToken);
+                    }
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    SettingsBackupAndRestoreUtils.Instance.DryRunBackup();
+                    dispatcher.TryEnqueue(() =>
+                    {
+                        if (!cancellationToken.IsCancellationRequested)
+                        {
+                            viewModel.NotifyAllBackupAndRestoreProperties();
+                        }
+                    });
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // The page was unloaded while its initial/delayed refresh was pending.
+                }
+            });
+        }
+
+        private void HideBackupAndRestoreMessageArea()
+        {
+            var viewModel = ViewModel;
+            var cancellationToken = _viewModelLifetime.CancellationToken;
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
                 }
 
-                var settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
-                var results = settingsBackupAndRestoreUtils.DryRunBackup();
-                this.DispatcherQueue.TryEnqueue(() =>
+                const int messageShowTimeMs = 10000;
+                OkToHideBackupAndRestoreMessageTime = DateTime.UtcNow.AddMilliseconds(messageShowTimeMs - 16);
+                try
                 {
-                    ViewModel.NotifyAllBackupAndRestoreProperties();
-                });
+                    await Task.Delay(messageShowTimeMs, cancellationToken);
+                    if (!cancellationToken.IsCancellationRequested && DateTime.UtcNow > OkToHideBackupAndRestoreMessageTime)
+                    {
+                        viewModel.HideBackupAndRestoreMessageArea();
+                    }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // A message from the previous load must not update a replacement model.
+                }
             });
         }
 
@@ -203,23 +239,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ShellPage.SendDefaultIPCMessage(ipcMessage);
         }
 
-        private void HandleBugReportStatusResponse(JsonObject response)
+        private void RegisterBugReportHandler()
         {
-            if (response.ContainsKey("bug_report_running"))
+            var viewModel = ViewModel;
+            var cancellationToken = _viewModelLifetime.CancellationToken;
+            var dispatcher = DispatcherQueue;
+            _bugReportStatusHandler = response =>
             {
-                var isRunning = response.GetNamedBoolean("bug_report_running");
-
-                // Update UI on the UI thread
-                this.DispatcherQueue.TryEnqueue(() =>
+                if (!cancellationToken.IsCancellationRequested && response.ContainsKey("bug_report_running"))
                 {
-                    ViewModel.IsBugReportRunning = isRunning;
-                });
-            }
+                    var isRunning = response.GetNamedBoolean("bug_report_running");
+                    dispatcher.TryEnqueue(() =>
+                    {
+                        if (!cancellationToken.IsCancellationRequested)
+                        {
+                            viewModel.IsBugReportRunning = isRunning;
+                        }
+                    });
+                }
+            };
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(_bugReportStatusHandler);
         }
 
         private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
         {
             CleanupBugReportHandlers();
+            _viewModelLifetime.Unload();
+        }
+
+        public void Dispose()
+        {
+            Loaded -= GeneralPage_Loaded;
+            Unloaded -= GeneralPage_Unloaded;
+            CleanupBugReportHandlers();
+            _viewModelLifetime.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void CleanupBugReportHandlers()
@@ -227,8 +281,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Remove IPC handler
             if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
             {
-                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
+                ShellPage.ShellHandler.IPCResponseHandleList.Remove(_bugReportStatusHandler);
             }
+
+            _bugReportStatusHandler = null;
         }
 
         private void ShowSystemTrayIcon_Toggled(object sender, RoutedEventArgs e)

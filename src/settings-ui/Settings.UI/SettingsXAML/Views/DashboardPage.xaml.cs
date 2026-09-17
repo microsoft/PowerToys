@@ -18,12 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Dashboard Settings Page.
     /// </summary>
-    public sealed partial class DashboardPage : NavigablePage, IRefreshablePage
+    public sealed partial class DashboardPage : NavigablePage, IRefreshablePage, IDisposable
     {
         /// <summary>
-        /// Gets or sets view model.
+        /// Gets the view model.
         /// </summary>
-        public DashboardViewModel ViewModel { get; set; }
+        public DashboardViewModel ViewModel => _viewModelLifetime?.ViewModel;
+
+        private readonly PageViewModelLifetime<DashboardViewModel> _viewModelLifetime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardPage"/> class.
@@ -34,12 +36,38 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
             var settingsUtils = SettingsUtils.Default;
 
-            ViewModel = new DashboardViewModel(
-               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            _viewModelLifetime = new PageViewModelLifetime<DashboardViewModel>(() => new DashboardViewModel(
+               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage));
             DataContext = ViewModel;
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
-            Unloaded += (s, e) => ViewModel?.Dispose();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (_viewModelLifetime.Load())
+            {
+                DataContext = ViewModel;
+
+                // A reloaded Page must also retarget its compiled bindings.
+                Bindings.Update();
+            }
+
+            ViewModel.OnPageLoaded();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _viewModelLifetime.Unload();
+        }
+
+        public void Dispose()
+        {
+            Loaded -= OnLoaded;
+            Unloaded -= OnUnloaded;
+            _viewModelLifetime.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void RefreshEnabledState()
