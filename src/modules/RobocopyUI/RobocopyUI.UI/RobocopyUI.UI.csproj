@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
@@ -36,35 +36,22 @@
     </ItemGroup>
   </Target>
   <ItemGroup>
-    <Page Remove="RobocopyUIXAML\AICommandDialog.xaml" />
-    <Page Remove="RobocopyUIXAML\App.xaml" />
-    <Page Remove="RobocopyUIXAML\Controls\AnimatedContentControl.xaml" />
-    <Page Remove="RobocopyUIXAML\Controls\PromptBox.xaml" />
-    <Page Remove="RobocopyUIXAML\Themes\Generic.xaml" />
+    <Page Remove="Views\AICommandDialog.xaml" />
+    <Page Remove="Views\App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="RobocopyUIXAML\App.xaml" />
+    <ApplicationDefinition Include="Views\App.xaml" />
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
     <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
-
     <ItemGroup>
       <PRIFile Include="$(OutDir)**\PowerToys.RobocopyUI.pri" />
     </ItemGroup>
-
     <!-- Wildcard can match nothing (e.g. build-cache restore, incremental build); skip instead of failing with MSB3030. -->
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" Condition="'@(PRIFile)' != ''" />
-
     <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
   </Target>
-
-  <ItemGroup>
-    <None Remove="RobocopyUIXAML\HomePage.xaml" />
-    <None Remove="RobocopyUIXAML\OptionEntry.xaml" />
-    <None Remove="RobocopyUIXAML\ShellPage.xaml" />
-    <None Remove="RobocopyUIXAML\AICommandDialog.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <COMReference Include="UIAutomationClient">
@@ -120,17 +107,18 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\RobocopyUI\Gradient.png" />
+    <!-- Share AI model provider icons from Settings.UI to avoid duplicating them. -->
+    <Content Include="..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Models\*.svg">
+      <Link>Assets\Settings\Icons\Models\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="RobocopyUIXAML\AICommandDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="RobocopyUIXAML\Controls\AnimatedContentControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="RobocopyUIXAML\Controls\PromptBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="RobocopyUIXAML\Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
@@ -145,26 +133,16 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\RobocopyUI\Gradient.png" />
-    <!-- Share AI model provider icons from Settings.UI to avoid duplicating them. -->
-    <Content Include="..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Models\*.svg">
-      <Link>Assets\Settings\Icons\Models\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="RobocopyUIXAML\Controls\PromptBox.xaml" />
-    <None Remove="RobocopyUIXAML\Controls\AnimatedContentControl.xaml" />
-    <None Remove="RobocopyUIXAML\Themes\Generic.xaml" />
-    <Page Include="RobocopyUIXAML\Controls\PromptBox.xaml">
+    <None Remove="Themes\Generic.xaml" />
+    <Page Include="Controls\PromptBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="RobocopyUIXAML\Controls\AnimatedContentControl.xaml">
+    <Page Include="Controls\AnimatedContentControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="RobocopyUIXAML\Themes\Generic.xaml">
+    <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -175,10 +153,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-<Folder Include="Controls\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="RobocopyUIXAML\AICommandDialog.xaml">
+    <Page Include="Controls\AICommandDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
