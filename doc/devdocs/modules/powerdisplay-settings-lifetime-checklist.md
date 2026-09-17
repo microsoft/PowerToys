@@ -41,6 +41,12 @@ The original process-lifetime Settings termination listener remains unchanged.
 - [ ] Navigate away with a confirmation/profile/custom-mapping dialog pending.
       The dialog closes and cannot commit into a replacement viewmodel. Existing
       enable/deny confirmation behavior remains unchanged on an active page.
+- [ ] For each Add/Edit/Delete profile and Add/Edit/Delete custom-mapping dialog,
+      queue the caller's continuation after the dialog helper has returned an
+      accepted result. Unload the page before running that continuation, both
+      without reloading and after reloading the same page with a new viewmodel.
+      The old result must neither throw nor mutate either viewmodel, persist
+      settings, or send IPC. An unchanged, loaded generation must still commit.
 - [ ] After reload, verify profile drag reordering, More-menu moves, and
       Alt+Shift+arrow moves. A successful move restores focus to its More button;
       newer keyboard/pointer input or navigation cancels that focus restoration.

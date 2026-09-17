@@ -455,20 +455,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.Monitors == null || ViewModel.Monitors.Count == 0)
+            var viewModel = ViewModel;
+            if (viewModel.Monitors == null || viewModel.Monitors.Count == 0)
             {
                 return;
             }
 
             var defaultName = GenerateDefaultProfileName();
-            var dialog = new ProfileEditorDialog(ViewModel.Monitors, defaultName);
+            var dialog = new ProfileEditorDialog(viewModel.Monitors, defaultName);
             dialog.XamlRoot = this.XamlRoot;
 
             var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultProfile != null)
             {
-                await ViewModel.CreateProfileAsync(dialog.ResultProfile);
+                await viewModel.CreateProfileAsync(dialog.ResultProfile);
             }
         }
 
@@ -477,7 +478,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
-                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name, profile.Id);
+                var viewModel = ViewModel;
+                var dialog = new ProfileEditorDialog(viewModel.Monitors, profile.Name, profile.Id);
                 dialog.XamlRoot = this.XamlRoot;
 
                 // Pre-fill with existing profile settings
@@ -485,9 +487,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var result = await ShowOwnedDialogAsync(dialog);
 
-                if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+                if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    await ViewModel.UpdateProfileAsync(dialog.ResultProfile);
+                    await viewModel.UpdateProfileAsync(dialog.ResultProfile);
                 }
             }
         }
@@ -497,6 +499,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
+                var viewModel = ViewModel;
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 var dialog = new ContentDialog
                 {
@@ -510,9 +513,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var result = await ShowOwnedDialogAsync(dialog);
 
-                if (result == ContentDialogResult.Primary)
+                if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary)
                 {
-                    await ViewModel.DeleteProfileAsync(profile.Id);
+                    await viewModel.DeleteProfileAsync(profile.Id);
                 }
             }
         }
@@ -547,14 +550,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         // Custom VCP Mapping event handlers
         private async void AddCustomMapping_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            var viewModel = ViewModel;
+            var dialog = new CustomVcpMappingEditorDialog(viewModel.Monitors);
             dialog.XamlRoot = this.XamlRoot;
 
             var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultMapping != null)
             {
-                ViewModel.AddCustomVcpMapping(dialog.ResultMapping);
+                viewModel.AddCustomVcpMapping(dialog.ResultMapping);
             }
         }
 
@@ -565,15 +569,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            var viewModel = ViewModel;
+            var dialog = new CustomVcpMappingEditorDialog(viewModel.Monitors);
             dialog.XamlRoot = this.XamlRoot;
             dialog.PreFillMapping(mapping);
 
             var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultMapping != null)
             {
-                ViewModel.UpdateCustomVcpMapping(mapping, dialog.ResultMapping);
+                viewModel.UpdateCustomVcpMapping(mapping, dialog.ResultMapping);
             }
         }
 
@@ -584,6 +589,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            var viewModel = ViewModel;
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var dialog = new ContentDialog
             {
@@ -597,9 +603,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary)
             {
-                ViewModel.DeleteCustomVcpMapping(mapping);
+                viewModel.DeleteCustomVcpMapping(mapping);
             }
         }
 
