@@ -12,6 +12,8 @@
     <Page.Resources>
         <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
             <controls:OptionEntry
+                Loaded="OptionEntry_Loaded"
+                Unloaded="OptionEntry_Unloaded"
                 OptionName="{x:Bind OptionName}"
                 OptionDescription="{x:Bind OptionDescription}"
                 IsNumberOption="{x:Bind IsNumberOption}"
@@ -29,146 +31,150 @@
         <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
     </Page.Resources>
 
-    <ScrollViewer>
-        <StackPanel Margin="12">
-            <TextBlock Margin="4" x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}" />
-            <StackPanel Margin="12">
-                <Grid Margin="0,12,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <TextBox Margin="0,0,4,0" x:Name="SourceTextBox" Grid.Column="0" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
-                    <Button Margin="0,0,4,0" x:Uid="SourceBrowseButton" x:Name="SourceBrowseButton" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
-                        <FontIcon Glyph="&#xE8B7;" />
-                    </Button>
-                    <Button Margin="4,0,4,0" x:Uid="SwapButton" x:Name="SwapButton" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
-                        <FontIcon Glyph="&#xE8AB;" />
-                    </Button>
-                    <TextBox Margin="4,0,4,0" x:Name="DestinationTextBox" Grid.Column="3" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
-                    <Button Margin="0,0,0,0" x:Uid="DestinationBrowseButton" Grid.Column="4" Grid.Row="1" x:Name="DestinationBrowseButton" Click="DestinationBrowseButton_Click">
-                        <FontIcon Glyph="&#xE8B7;" />
-                    </Button>
-                </Grid>
-                <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
-                    <SelectorBar.Resources>
-                        <x:Double x:Key="SelectorBarItemPillWidth">15</x:Double>
-                    </SelectorBar.Resources>
-                    <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE762;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                    <SelectorBarItem x:Uid="FiltersSelectorBarLabel" Tag="Filters">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE71C;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                    <SelectorBarItem x:Uid="LoggingSelectorBarLabel" Tag="Logging">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE9F9;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                    <SelectorBarItem x:Uid="AdvancedSelectorBarLabel" Tag="Advanced">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE713;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                    <SelectorBarItem x:Uid="CommandPreviewSelectorBarLabel" Tag="CommandPreview">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE756;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                    <SelectorBarItem x:Uid="OutputSelectorBarLabel" Tag="Output" x:Name="OutputSelectorBarItem" IsEnabled="False">
-                        <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE768;" />
-                        </SelectorBarItem.Icon>
-                    </SelectorBarItem>
-                </SelectorBar>
-                <Grid x:Name="OptionsContent" Margin="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                        </ListView.GroupStyle>
-                    </ListView>
-                    <ListView x:Name="OptionsListViewRight" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                        </ListView.GroupStyle>
-                    </ListView>
-                </Grid>
-                <Grid x:Name="FiltersContent" Margin="12">
-                    <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                        </ListView.GroupStyle>
-                    </ListView>
-                </Grid>
-                <Grid x:Name="LoggingContent" Margin="12">
-                    <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                        </ListView.GroupStyle>
-                    </ListView>
-                </Grid>
-                <Grid x:Name="AdvancedContent" Margin="12">
-                    <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                        </ListView.GroupStyle>
-                    </ListView>
-                </Grid>
-                <Grid x:Name="CommandPreviewContent" Margin="12" Visibility="Collapsed">
-                    <TextBox x:Name="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
-                </Grid>
-                <StackPanel x:Name="OutputContent" Margin="12" Visibility="Collapsed">
-                    <StackPanel Orientation="Horizontal" Margin="4">
-                        <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                        <TextBlock>&#160;</TextBlock>
-                        <TextBlock x:Name="OutputStatusText" Style="{StaticResource BodyTextBlockStyle}" />
-                        <TextBlock>&#160;</TextBlock>
-                        <TextBlock>(</TextBlock>
-                        <TextBlock x:Uid="StatusCodeLabel" />
-                        <TextBlock>&#160;</TextBlock>
-                        <TextBlock x:Name="StatusCodeText" Style="{StaticResource BodyTextBlockStyle}" />
-                        <TextBlock>)</TextBlock>
+    <StackPanel x:Name="TopPanelStack"  Margin="12">
+        <TextBlock Margin="4" x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}" />
+        <StackPanel Margin="0,12,0,12">
+            <Grid Margin="12,0,12,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBox Margin="0,0,4,0" x:Name="SourceTextBox" Grid.Column="0" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
+                <Button Margin="0,0,4,0" x:Uid="SourceBrowseButton" x:Name="SourceBrowseButton" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
+                    <FontIcon Glyph="&#xE8B7;" />
+                </Button>
+                <Button Margin="4,0,4,0" x:Uid="SwapButton" x:Name="SwapButton" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
+                    <FontIcon Glyph="&#xE8AB;" />
+                </Button>
+                <TextBox Margin="4,0,4,0" x:Name="DestinationTextBox" Grid.Column="3" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
+                <Button Margin="0,0,0,0" x:Uid="DestinationBrowseButton" Grid.Column="4" Grid.Row="1" x:Name="DestinationBrowseButton" Click="DestinationBrowseButton_Click">
+                    <FontIcon Glyph="&#xE8B7;" />
+                </Button>
+            </Grid>
+
+            <Grid x:Name="CommandPreviewContent" Margin="12" ColumnSpacing="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
+
+                <Button Click="LoadButton_Click" x:Name="LoadButton" Grid.Column="1" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE8E5;" />
+                        <TextBlock Margin="4,0,0,0" x:Uid="LoadButtonLabel" />
                     </StackPanel>
-                    <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
+                </Button>
+
+                <Button Click="SaveButton_Click" x:Name="SaveButton" Grid.Column="2" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE78C;" />
+                        <TextBlock Margin="4,0,0,0" x:Uid="SaveButtonLabel"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" Grid.Column="3" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE768;" />
+                        <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
+                <SelectorBar.Resources>
+                    <x:Double x:Key="SelectorBarItemPillWidth">15</x:Double>
+                </SelectorBar.Resources>
+                <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE762;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="FiltersSelectorBarLabel" Tag="Filters">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE71C;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="LoggingSelectorBarLabel" Tag="Logging">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE9F9;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="AdvancedSelectorBarLabel" Tag="Advanced">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+                <SelectorBarItem x:Uid="OutputSelectorBarLabel" Tag="Output" x:Name="OutputSelectorBarItem" IsEnabled="False">
+                    <SelectorBarItem.Icon>
+                        <FontIcon Glyph="&#xE768;" />
+                    </SelectorBarItem.Icon>
+                </SelectorBarItem>
+            </SelectorBar>
+
+            <Grid x:Name="OptionsContent" Margin="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                    <ListView.GroupStyle>
+                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                    </ListView.GroupStyle>
+                </ListView>
+                <ListView x:Name="OptionsListViewRight"  ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
+                    <ListView.GroupStyle>
+                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                    </ListView.GroupStyle>
+                </ListView>
+            </Grid>
+            <Grid x:Name="FiltersContent" Margin="12">
+                <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                    <ListView.GroupStyle>
+                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                    </ListView.GroupStyle>
+                </ListView>
+            </Grid>
+            <Grid x:Name="LoggingContent" Margin="12">
+                <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                    <ListView.GroupStyle>
+                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                    </ListView.GroupStyle>
+                </ListView>
+            </Grid>
+            <Grid x:Name="AdvancedContent" Margin="12">
+                <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                    <ListView.GroupStyle>
+                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                    </ListView.GroupStyle>
+                </ListView>
+            </Grid>
+            <StackPanel x:Name="OutputContent" Margin="12" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Margin="4">
+                    <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock>&#160;</TextBlock>
+                    <TextBlock x:Name="OutputStatusText" Style="{StaticResource BodyTextBlockStyle}" />
+                    <TextBlock>&#160;</TextBlock>
+                    <TextBlock>(</TextBlock>
+                    <TextBlock x:Uid="StatusCodeLabel" />
+                    <TextBlock>&#160;</TextBlock>
+                    <TextBlock x:Name="StatusCodeText" Style="{StaticResource BodyTextBlockStyle}" />
+                    <TextBlock>)</TextBlock>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-                    <Button Margin="0,12,0,12" Click="LoadButton_Click" x:Name="LoadButton">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE8E5;" />
-                            <TextBlock Margin="4,0,0,0" x:Uid="LoadButtonLabel" />
-                        </StackPanel>
-                    </Button>
-                    <Button Margin="0,12,0,12" Click="SaveButton_Click" x:Name="SaveButton">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE78C;" />
-                            <TextBlock Margin="4,0,0,0" x:Uid="SaveButtonLabel" />
-                        </StackPanel>
-                    </Button>
-                    <Button Margin="0,12,0,12" Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE768;" />
-                            <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
             </StackPanel>
         </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
 </Page>

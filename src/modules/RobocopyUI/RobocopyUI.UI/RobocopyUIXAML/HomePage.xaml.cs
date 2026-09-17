@@ -13,12 +13,15 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
+using RobocopyUI.Controls;
 using RobocopyUI.Helpers;
 
 namespace RobocopyUI;
 
 public sealed partial class HomePage : Page
 {
+    private readonly List<OptionEntry> _optionEntries = [];
+
     public HomePage()
     {
         InitializeComponent();
@@ -35,6 +38,49 @@ public sealed partial class HomePage : Page
         base.OnNavigatedTo(e);
     }
 
+    private void UpdateCommandPreview(object sender, EventArgs e)
+    {
+        CommandPreviewTextBox.Text = GetFullCommandLine();
+    }
+
+    private string GetFullCommandLine()
+    {
+        StringBuilder additionalArgs = new();
+
+        foreach (var entry in _optionEntries)
+        {
+            if (!string.IsNullOrEmpty(entry.CommandLineContent))
+            {
+                additionalArgs.Append(' ');
+                additionalArgs.Append(entry.CommandLineContent);
+            }
+        }
+
+        return $"robocopy.exe {SourceTextBox.Text.Trim('"')} {DestinationTextBox.Text.Trim('"')} {additionalArgs}";
+    }
+
+    private void OptionEntry_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not OptionEntry entry || _optionEntries.Contains(entry))
+        {
+            return;
+        }
+
+        _optionEntries.Add(entry);
+        entry.OptionChanged += UpdateCommandPreview;
+    }
+
+    private void OptionEntry_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not OptionEntry entry)
+        {
+            return;
+        }
+
+        entry.OptionChanged -= UpdateCommandPreview;
+        _optionEntries.Remove(entry);
+    }
+
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
     {
         switch (sender.SelectedItem.Tag)
@@ -44,7 +90,6 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                CommandPreviewContent.Visibility = Visibility.Collapsed;
                 OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Filters":
@@ -52,7 +97,6 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Visible;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                CommandPreviewContent.Visibility = Visibility.Collapsed;
                 OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Logging":
@@ -60,7 +104,6 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Visible;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                CommandPreviewContent.Visibility = Visibility.Collapsed;
                 OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Advanced":
@@ -68,17 +111,7 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Visible;
-                CommandPreviewContent.Visibility = Visibility.Collapsed;
                 OutputContent.Visibility = Visibility.Collapsed;
-                break;
-            case "CommandPreview":
-                OptionsContent.Visibility = Visibility.Collapsed;
-                FiltersContent.Visibility = Visibility.Collapsed;
-                LoggingContent.Visibility = Visibility.Collapsed;
-                AdvancedContent.Visibility = Visibility.Collapsed;
-                CommandPreviewContent.Visibility = Visibility.Visible;
-                OutputContent.Visibility = Visibility.Collapsed;
-                CommandPreviewTextBox.Text = GetCommandLine();
                 break;
             case "Output":
                 OptionsContent.Visibility = Visibility.Collapsed;
@@ -91,134 +124,9 @@ public sealed partial class HomePage : Page
         }
     }
 
-    private string GetCommandLine()
+    private void SourceTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        StringBuilder additionalArgs = new();
-
-        // Aggregate from left column
-        foreach (var option in OptionsListView.Items)
-        {
-            if (OptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
-            {
-                additionalArgs.Append(entry.GetCommandLine());
-                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
-                {
-                    additionalArgs.Append(' ');
-                }
-            }
-        }
-
-        // Aggregate from right column
-        foreach (var option in OptionsListViewRight.Items)
-        {
-            if (OptionsListViewRight.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
-            {
-                additionalArgs.Append(entry.GetCommandLine());
-                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
-                {
-                    additionalArgs.Append(' ');
-                }
-            }
-        }
-
-        foreach (var option in FilterOptionsListView.Items)
-        {
-            if (FilterOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
-            {
-                additionalArgs.Append(entry.GetCommandLine());
-                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
-                {
-                    additionalArgs.Append(' ');
-                }
-            }
-        }
-
-        foreach (var option in LoggingOptionsListView.Items)
-        {
-            if (LoggingOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
-            {
-                additionalArgs.Append(entry.GetCommandLine());
-                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
-                {
-                    additionalArgs.Append(' ');
-                }
-            }
-        }
-
-        foreach (var option in AdvancedOptionsListView.Items)
-        {
-            if (AdvancedOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry })
-            {
-                additionalArgs.Append(entry.GetCommandLine());
-                if (!string.IsNullOrEmpty(entry.GetCommandLine()))
-                {
-                    additionalArgs.Append(' ');
-                }
-            }
-        }
-
-        return $"robocopy.exe {SourceTextBox.Text.Trim('"')} {DestinationTextBox.Text.Trim('"')} {additionalArgs}";
-    }
-
-    private void RunButton_Click(object sender, RoutedEventArgs e)
-    {
-        RunRobocopy(GetCommandLine().Replace("robocopy.exe", string.Empty).Trim());
-    }
-
-    private void RunRobocopy(string arguments)
-    {
-        OutputTextBox.Text = string.Empty;
-        OutputSelectorBarItem.IsEnabled = true;
-        OutputSelectorBarItem.IsSelected = true;
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "robocopy.exe",
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
-
-        var process = new Process
-        {
-            StartInfo = startInfo,
-            EnableRaisingEvents = true,
-        };
-
-        process.OutputDataReceived += (s, args) =>
-        {
-            if (args.Data != null)
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
-
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
-            }
-        };
-        process.ErrorDataReceived += (s, args) =>
-        {
-            if (args.Data != null)
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
-
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
-            }
-        };
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
+        RunButton.IsEnabled = !string.IsNullOrWhiteSpace(SourceTextBox.Text) && !string.IsNullOrWhiteSpace(DestinationTextBox.Text);
     }
 
     private async void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -233,12 +141,7 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        RunRobocopy(GetCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
-    }
-
-    private void SourceTextBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        RunButton.IsEnabled = !string.IsNullOrWhiteSpace(SourceTextBox.Text) && !string.IsNullOrWhiteSpace(DestinationTextBox.Text);
+        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
     }
 
     private void SwapButton_Click(object sender, RoutedEventArgs e)
@@ -413,5 +316,66 @@ public sealed partial class HomePage : Page
         {
             DestinationTextBox.Text = commands.First(e => e.Command == "DD").Argument;
         }
+    }
+
+    private void RunButton_Click(object sender, RoutedEventArgs e)
+    {
+        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim());
+    }
+
+    private void RunRobocopy(string arguments)
+    {
+        OutputTextBox.Text = string.Empty;
+        OutputSelectorBarItem.IsEnabled = true;
+        OutputSelectorBarItem.IsSelected = true;
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "robocopy.exe",
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        var process = new Process
+        {
+            StartInfo = startInfo,
+            EnableRaisingEvents = true,
+        };
+
+        process.OutputDataReceived += (s, args) =>
+        {
+            if (args.Data != null)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (string.IsNullOrEmpty(args.Data))
+                    {
+                        return;
+                    }
+
+                    OutputTextBox.Text += args.Data + Environment.NewLine;
+                });
+            }
+        };
+        process.ErrorDataReceived += (s, args) =>
+        {
+            if (args.Data != null)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (string.IsNullOrEmpty(args.Data))
+                    {
+                        return;
+                    }
+
+                    OutputTextBox.Text += args.Data + Environment.NewLine;
+                });
+            }
+        };
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
     }
 }

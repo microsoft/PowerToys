@@ -594,4 +594,7 @@
   <data name="LoadButtonLabel.Text" xml:space="preserve">
     <value>Load Job File</value>
   </data>
+  <data name="CommandPreviewTextBox.Header" xml:space="preserve">
+    <value>Command Preview</value>
+  </data>
 </root>
