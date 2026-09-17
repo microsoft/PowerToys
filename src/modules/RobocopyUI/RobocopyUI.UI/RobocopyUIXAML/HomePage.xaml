@@ -31,10 +31,18 @@
         <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
     </Page.Resources>
 
-    <StackPanel x:Name="TopPanelStack"  Margin="12">
-        <TextBlock Margin="4" x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}" />
-        <StackPanel Margin="0,12,0,12">
-            <Grid Margin="12,0,12,0">
+    <Grid x:Name="RootGrid" Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}"  Margin="12,0" Grid.Row="0"/>
+
+        <StackPanel x:Name="TopPanelStack" Margin="0,12,0,0" Grid.Row="1">
+            <Grid x:Name="InputOutputPanel" Margin="12,0,12,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
@@ -48,40 +56,37 @@
                 </Grid.RowDefinitions>
                 <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBox Margin="0,0,4,0" x:Name="SourceTextBox" Grid.Column="0" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
-                <Button Margin="0,0,4,0" x:Uid="SourceBrowseButton" x:Name="SourceBrowseButton" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
+                <TextBox x:Name="SourceTextBox" Margin="0,0,4,0" Grid.Column="0" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
+                <Button x:Name="SourceBrowseButton" x:Uid="SourceBrowseButton" Margin="0,0,4,0" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
                     <FontIcon Glyph="&#xE8B7;" />
                 </Button>
-                <Button Margin="4,0,4,0" x:Uid="SwapButton" x:Name="SwapButton" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
+                <Button x:Name="SwapButton" x:Uid="SwapButton" Margin="4,0,4,0" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
                     <FontIcon Glyph="&#xE8AB;" />
                 </Button>
-                <TextBox Margin="4,0,4,0" x:Name="DestinationTextBox" Grid.Column="3" Grid.Row="1" TextChanged="SourceTextBox_TextChanged" />
-                <Button Margin="0,0,0,0" x:Uid="DestinationBrowseButton" Grid.Column="4" Grid.Row="1" x:Name="DestinationBrowseButton" Click="DestinationBrowseButton_Click">
+                <TextBox x:Name="DestinationTextBox" Margin="4,0,4,0" Grid.Column="3" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
+                <Button x:Name="DestinationBrowseButton" x:Uid="DestinationBrowseButton" Margin="0,0,0,0" Grid.Column="4" Grid.Row="1" Click="DestinationBrowseButton_Click">
                     <FontIcon Glyph="&#xE8B7;" />
                 </Button>
             </Grid>
-
-            <Grid x:Name="CommandPreviewContent" Margin="12" ColumnSpacing="5">
+            <Grid x:Name="CommandPreviewPanel" Margin="12" ColumnSpacing="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
-
                 <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" IsEnabled="False" TextWrapping="Wrap" />
-
                 <Button VerticalAlignment="Bottom" Grid.Column="1">
                     <Button.Content>
                         <FontIcon Glyph="&#xE712;" />
                     </Button.Content>
                     <Button.Flyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem x:Uid="LoadButtonLabel">
+                            <MenuFlyoutItem x:Uid="LoadButtonLabel" Click="LoadOptionsButton_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xEDE2;"/>
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem x:Uid="SaveButtonLabel">
+                            <MenuFlyoutItem x:Uid="SaveButtonLabel"  Click="SaveOptionsButton_Click">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xEDE1;"/>
                                 </MenuFlyoutItem.Icon>
@@ -89,7 +94,6 @@
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
-                
                 <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE768;" />
@@ -97,39 +101,41 @@
                     </StackPanel>
                 </Button>
             </Grid>
+        </StackPanel>
 
-            <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
-                <SelectorBar.Resources>
-                    <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
-                </SelectorBar.Resources>
-                <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
-                    <SelectorBarItem.Icon>
-                        <FontIcon Glyph="&#xE762;" />
-                    </SelectorBarItem.Icon>
-                </SelectorBarItem>
-                <SelectorBarItem x:Uid="FiltersSelectorBarLabel" Tag="Filters">
-                    <SelectorBarItem.Icon>
-                        <FontIcon Glyph="&#xE71C;" />
-                    </SelectorBarItem.Icon>
-                </SelectorBarItem>
-                <SelectorBarItem x:Uid="LoggingSelectorBarLabel" Tag="Logging">
-                    <SelectorBarItem.Icon>
-                        <FontIcon Glyph="&#xE9F9;" />
-                    </SelectorBarItem.Icon>
-                </SelectorBarItem>
-                <SelectorBarItem x:Uid="AdvancedSelectorBarLabel" Tag="Advanced">
-                    <SelectorBarItem.Icon>
-                        <FontIcon Glyph="&#xE713;" />
-                    </SelectorBarItem.Icon>
-                </SelectorBarItem>
-                <SelectorBarItem x:Uid="OutputSelectorBarLabel" Tag="Output" x:Name="OutputSelectorBarItem" IsEnabled="False">
-                    <SelectorBarItem.Icon>
-                        <FontIcon Glyph="&#xE768;" />
-                    </SelectorBarItem.Icon>
-                </SelectorBarItem>
-            </SelectorBar>
+        <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="2">
+            <SelectorBar.Resources>
+                <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
+            </SelectorBar.Resources>
+            <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
+                <SelectorBarItem.Icon>
+                    <FontIcon Glyph="&#xE762;" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem x:Uid="FiltersSelectorBarLabel" Tag="Filters">
+                <SelectorBarItem.Icon>
+                    <FontIcon Glyph="&#xE71C;" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem x:Uid="LoggingSelectorBarLabel" Tag="Logging">
+                <SelectorBarItem.Icon>
+                    <FontIcon Glyph="&#xE9F9;" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem x:Uid="AdvancedSelectorBarLabel" Tag="Advanced">
+                <SelectorBarItem.Icon>
+                    <FontIcon Glyph="&#xE713;" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem x:Name="OutputSelectorBarItem" x:Uid="OutputSelectorBarLabel" Tag="Output" IsEnabled="False">
+                <SelectorBarItem.Icon>
+                    <FontIcon Glyph="&#xE768;" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+        </SelectorBar>
 
-            <Grid x:Name="OptionsContent" Margin="12">
+        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="3">
+            <Grid x:Name="OptionsContent" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -145,28 +151,28 @@
                     </ListView.GroupStyle>
                 </ListView>
             </Grid>
-            <Grid x:Name="FiltersContent" Margin="12">
+            <Grid x:Name="FiltersContent" Visibility="Collapsed">
                 <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
                     <ListView.GroupStyle>
                         <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
                     </ListView.GroupStyle>
                 </ListView>
             </Grid>
-            <Grid x:Name="LoggingContent" Margin="12">
+            <Grid x:Name="LoggingContent" Visibility="Collapsed">
                 <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
                     <ListView.GroupStyle>
                         <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
                     </ListView.GroupStyle>
                 </ListView>
             </Grid>
-            <Grid x:Name="AdvancedContent" Margin="12">
+            <Grid x:Name="AdvancedContent" Visibility="Collapsed">
                 <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
                     <ListView.GroupStyle>
                         <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
                     </ListView.GroupStyle>
                 </ListView>
             </Grid>
-            <StackPanel x:Name="OutputContent" Margin="12" Visibility="Collapsed">
+            <StackPanel x:Name="OutputContent" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock>&#160;</TextBlock>
@@ -180,6 +186,6 @@
                 </StackPanel>
                 <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
             </StackPanel>
-        </StackPanel>
-    </StackPanel>
+        </Grid>
+    </Grid>
 </Page>

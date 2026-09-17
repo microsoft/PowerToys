@@ -20,7 +20,7 @@ namespace RobocopyUI;
 
 public sealed partial class HomePage : Page
 {
-    private readonly List<OptionEntry> _optionEntries = [];
+    private readonly List<OptionEntry> optionEntries = [];
 
     public HomePage()
     {
@@ -47,12 +47,12 @@ public sealed partial class HomePage : Page
     {
         StringBuilder additionalArgs = new();
 
-        foreach (var entry in _optionEntries)
+        foreach (var entry in optionEntries)
         {
             if (!string.IsNullOrEmpty(entry.CommandLineContent))
             {
-                additionalArgs.Append(' ');
                 additionalArgs.Append(entry.CommandLineContent);
+                additionalArgs.Append(' ');
             }
         }
 
@@ -61,12 +61,12 @@ public sealed partial class HomePage : Page
 
     private void OptionEntry_Loaded(object sender, RoutedEventArgs e)
     {
-        if (sender is not OptionEntry entry || _optionEntries.Contains(entry))
+        if (sender is not OptionEntry entry || optionEntries.Contains(entry))
         {
             return;
         }
 
-        _optionEntries.Add(entry);
+        optionEntries.Add(entry);
         entry.OptionChanged += UpdateCommandPreview;
     }
 
@@ -78,7 +78,7 @@ public sealed partial class HomePage : Page
         }
 
         entry.OptionChanged -= UpdateCommandPreview;
-        _optionEntries.Remove(entry);
+        optionEntries.Remove(entry);
     }
 
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -118,34 +118,20 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                CommandPreviewContent.Visibility = Visibility.Collapsed;
                 OutputContent.Visibility = Visibility.Visible;
                 break;
         }
     }
 
-    private void SourceTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void SourceDestTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        UpdateCommandPreview(this, EventArgs.Empty);
         RunButton.IsEnabled = !string.IsNullOrWhiteSpace(SourceTextBox.Text) && !string.IsNullOrWhiteSpace(DestinationTextBox.Text);
-    }
-
-    private async void SaveButton_Click(object sender, RoutedEventArgs e)
-    {
-        FileSavePicker fileSavePicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
-        fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-        fileSavePicker.FileTypeChoices.Add("Robocopy options file", [".rcj"]);
-        var result = await fileSavePicker.PickSaveFileAsync();
-
-        if (result is null)
-        {
-            return;
-        }
-
-        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
     }
 
     private void SwapButton_Click(object sender, RoutedEventArgs e)
     {
+        UpdateCommandPreview(this, EventArgs.Empty);
         (SourceTextBox.Text, DestinationTextBox.Text) = (DestinationTextBox.Text, SourceTextBox.Text);
     }
 
@@ -185,7 +171,22 @@ public sealed partial class HomePage : Page
         DestinationTextBox.Text = result.Path;
     }
 
-    private async void LoadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void SaveOptionsButton_Click(object sender, RoutedEventArgs e)
+    {
+        FileSavePicker fileSavePicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
+        fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        fileSavePicker.FileTypeChoices.Add("Robocopy options file", [".rcj"]);
+        var result = await fileSavePicker.PickSaveFileAsync();
+
+        if (result is null)
+        {
+            return;
+        }
+
+        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+    }
+
+    private async void LoadOptionsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         FileOpenPicker fileOpenPicker = new(((Button)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
         fileOpenPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
