@@ -14,8 +14,8 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 [DoNotParallelize]
 public sealed partial class ZoomItTests : UITestBase
 {
+    private static readonly string[] OwnedProcessNames = ["PowerToys", "PowerToys.Settings", ZoomItUi.ProcessName];
     private static bool shellPrepared;
-    private ZoomItState? state;
     private DesktopFixture? desktop;
     private ZoomItUi ui = null!;
     private string clipboardText = string.Empty;
@@ -25,25 +25,71 @@ public sealed partial class ZoomItTests : UITestBase
     {
     }
 
-    protected override IReadOnlyList<string> StaleProcessNames => ["PowerToys", "PowerToys.Settings", ZoomItUi.ProcessName];
+    protected override IReadOnlyList<string> StaleProcessNames => OwnedProcessNames;
 
     protected override void PrepareTestState()
     {
+        ZoomItState.RestorePending();
         if (!shellPrepared)
         {
             Assert.IsTrue(ExplorerControl.RestartShell(timeoutMS: 60_000, log: TestContext.WriteLine), "Could not establish a fresh notification area before launching ZoomIt.");
             shellPrepared = true;
         }
 
-        state = new ZoomItState();
         clipboardText = ClipboardHelper.GetText();
+        var backup = CaptureEvidencePath("zoomit-registry-original.json");
+        ZoomItState.CaptureForTest(backup);
+        TestContext.WriteLine($"Original ZoomIt registry values are preserved in {backup}.");
     }
 
     [TestInitialize]
-    public void NavigateToZoomIt()
+    public async Task NavigateToZoomIt()
     {
-        ui = new ZoomItUi(Session, TestContext);
-        ui.Navigate();
+        try
+        {
+            ui = new ZoomItUi(TestContext);
+            ui.Navigate();
+        }
+        catch
+        {
+            await CaptureFailureArtifactsAsync();
+            try
+            {
+                StopOwnedProcesses();
+            }
+            finally
+            {
+                try
+                {
+                    ZoomItState.RestorePending();
+                }
+                finally
+                {
+                    Dispose();
+                }
+            }
+
+            throw;
+        }
+    }
+
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void RestoreRegistryAfterInitializationFailure()
+    {
+        try
+        {
+            StopOwnedProcesses();
+        }
+        finally
+        {
+            ZoomItState.RestorePending();
+        }
+    }
+
+    private static void StopOwnedProcesses()
+    {
+        var failed = OwnedProcessNames.Where(name => !WindowControl.TryKillProcessTreeByNameAndWait(name)).ToArray();
+        Assert.IsEmpty(failed, $"Could not stop processes before restoring ZoomIt state: {string.Join(", ", failed)}.");
     }
 
     [TestCleanup]
@@ -64,23 +110,25 @@ public sealed partial class ZoomItTests : UITestBase
         }
         finally
         {
-            foreach (var process in StaleProcessNames)
-            {
-                Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(process), $"Could not stop {process} before restoring ZoomIt state.");
-            }
-
             try
             {
+                StopOwnedProcesses();
                 desktop?.Dispose();
                 CleanupCaptureAndTray();
                 CleanupBreakAndDemo();
             }
             finally
             {
-                state?.Dispose();
-                Assert.IsTrue(
-                    clipboardText.Length == 0 ? ClipboardHelper.Clear() : ClipboardHelper.SetText(clipboardText),
-                    "Could not restore clipboard text.");
+                try
+                {
+                    ZoomItState.RestorePending();
+                }
+                finally
+                {
+                    Assert.IsTrue(
+                        clipboardText.Length == 0 ? ClipboardHelper.Clear() : ClipboardHelper.SetText(clipboardText),
+                        "Could not restore clipboard text.");
+                }
             }
         }
     }

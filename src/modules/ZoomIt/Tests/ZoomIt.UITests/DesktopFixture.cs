@@ -18,8 +18,9 @@ internal sealed class DesktopFixture : IDisposable
 
     private readonly Thread thread;
     private readonly TaskCompletionSource<Forms.Form> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly Forms.Form form;
     private readonly Size screen = Forms.SystemInformation.PrimaryMonitorSize;
+    private Forms.Form? form;
+    private int disposeRequested;
     private Color markerColor = MarkerColor;
     private Forms.Timer? animation;
     private bool pulse;
@@ -27,41 +28,66 @@ internal sealed class DesktopFixture : IDisposable
     private Forms.TextBox? editor;
     private Forms.Timer? fontDialogDelay;
 
-    internal DesktopFixture()
+    internal DesktopFixture(Func<Forms.Form>? createWindow = null, TimeSpan? initializationTimeout = null)
     {
         thread = new Thread(() =>
         {
-            using var window = new Forms.Form
+            try
             {
-                Text = "ZoomIt UI test source",
-                FormBorderStyle = Forms.FormBorderStyle.None,
-                StartPosition = Forms.FormStartPosition.Manual,
-                Bounds = new Rectangle(Point.Empty, screen),
-                BackColor = BackgroundColor,
-                AutoScaleMode = Forms.AutoScaleMode.None,
-            };
-            window.Paint += (_, e) =>
-            {
-                using var brush = new SolidBrush(markerColor);
-                e.Graphics.FillRectangle(brush, (screen.Width - MarkerSize) / 2, (screen.Height - MarkerSize) / 2, MarkerSize, MarkerSize);
-                if (animation is not null)
+                using var window = (createWindow ?? (() => new Forms.Form()))();
+                window.Text = "ZoomIt UI test source";
+                window.FormBorderStyle = Forms.FormBorderStyle.None;
+                window.StartPosition = Forms.FormStartPosition.Manual;
+                window.Bounds = new Rectangle(Point.Empty, screen);
+                window.BackColor = BackgroundColor;
+                window.AutoScaleMode = Forms.AutoScaleMode.None;
+                window.Paint += (_, e) =>
                 {
-                    using var pulseBrush = new SolidBrush(pulse ? Color.Cyan : Color.Magenta);
-                    e.Graphics.FillRectangle(pulseBrush, 10, 10, 64, 64);
-                    Interlocked.Increment(ref animationFrames);
+                    using var brush = new SolidBrush(markerColor);
+                    e.Graphics.FillRectangle(brush, (screen.Width - MarkerSize) / 2, (screen.Height - MarkerSize) / 2, MarkerSize, MarkerSize);
+                    if (animation is not null)
+                    {
+                        using var pulseBrush = new SolidBrush(pulse ? Color.Cyan : Color.Magenta);
+                        e.Graphics.FillRectangle(pulseBrush, 10, 10, 64, 64);
+                        Interlocked.Increment(ref animationFrames);
+                    }
+                };
+                window.FormClosed += (_, _) =>
+                {
+                    animation?.Dispose();
+                    fontDialogDelay?.Dispose();
+                };
+                window.Shown += (_, _) =>
+                {
+                    ready.TrySetResult(window);
+                    if (Volatile.Read(ref disposeRequested) != 0)
+                    {
+                        window.Close();
+                    }
+                };
+
+                // A timed-out constructor can request disposal before the HWND exists.
+                if (Volatile.Read(ref disposeRequested) == 0)
+                {
+                    Forms.Application.Run(window);
                 }
-            };
-            window.Shown += (_, _) => ready.SetResult(window);
-            Forms.Application.Run(window);
+            }
+            catch (Exception exception)
+            {
+                if (!ready.TrySetException(exception))
+                {
+                    throw;
+                }
+            }
         })
         {
             IsBackground = true,
         };
         thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        form = ready.Task.WaitAsync(TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
         try
         {
+            thread.Start();
+            form = ready.Task.WaitAsync(initializationTimeout ?? TimeSpan.FromSeconds(15)).GetAwaiter().GetResult();
             Show();
             Assert.IsTrue(
                 WaitHelper.WaitForStable(ReadMarkerWidth, width => Math.Abs(width - MarkerSize) <= 2, 5_000, 2).Succeeded,
@@ -76,14 +102,17 @@ internal sealed class DesktopFixture : IDisposable
 
     internal Point Center => new(screen.Width / 2, screen.Height / 2);
 
+    private Forms.Form Window => form ?? throw new InvalidOperationException("The source window was not initialized.");
+
     internal void Show()
     {
-        form.Invoke(() =>
+        var window = Window;
+        window.Invoke(() =>
         {
-            form.Show();
-            form.Activate();
+            window.Show();
+            window.Activate();
         });
-        var focused = WindowControl.WaitForForeground(form.Handle, 2_000);
+        var focused = WindowControl.WaitForForeground(window.Handle, 2_000);
         Point[] activationPoints = [Center, new(80, 80), new(screen.Width - 80, 80)];
         foreach (var point in activationPoints)
         {
@@ -92,10 +121,10 @@ internal sealed class DesktopFixture : IDisposable
                 break;
             }
 
-            if (WindowControl.IsPointOwnedByWindow(form.Handle, point.X, point.Y))
+            if (WindowControl.IsPointOwnedByWindow(window.Handle, point.X, point.Y))
             {
                 MouseHelper.LeftClickAt(point.X, point.Y);
-                focused = WindowControl.WaitForForeground(form.Handle, 10_000);
+                focused = WindowControl.WaitForForeground(window.Handle, 10_000);
             }
         }
 
@@ -107,22 +136,22 @@ internal sealed class DesktopFixture : IDisposable
 
     internal void ChangeMarker(Color color)
     {
-        form.Invoke(() =>
+        Window.Invoke(() =>
         {
             markerColor = color;
-            form.Refresh();
+            Window.Refresh();
         });
     }
 
     internal void StartAnimation()
     {
-        form.Invoke(() =>
+        Window.Invoke(() =>
         {
             animation = new Forms.Timer { Interval = 100 };
             animation.Tick += (_, _) =>
             {
                 pulse = !pulse;
-                form.Invalidate(new Rectangle(10, 10, 64, 64));
+                Window.Invalidate(new Rectangle(10, 10, 64, 64));
             };
             animation.Start();
         });
@@ -133,24 +162,24 @@ internal sealed class DesktopFixture : IDisposable
 
     internal void ShowEditor()
     {
-        form.Invoke(() =>
+        Window.Invoke(() =>
         {
             editor = new Forms.TextBox { Multiline = true, AcceptsTab = true, Dock = Forms.DockStyle.Fill };
-            form.Controls.Add(editor);
+            Window.Controls.Add(editor);
         });
         FocusEditor();
     }
 
     internal void ShowFontDialogAfterDelay(int delayMS)
     {
-        form.Invoke(() =>
+        Window.Invoke(() =>
         {
             fontDialogDelay = new Forms.Timer { Interval = delayMS };
             fontDialogDelay.Tick += (_, _) =>
             {
                 fontDialogDelay.Stop();
                 using var dialog = new Forms.FontDialog();
-                dialog.ShowDialog(form);
+                dialog.ShowDialog(Window);
             };
             fontDialogDelay.Start();
         });
@@ -159,18 +188,18 @@ internal sealed class DesktopFixture : IDisposable
     internal void FocusEditor()
     {
         Show();
-        form.Invoke(() => (editor ?? throw new InvalidOperationException("The editor fixture was not initialized.")).Focus());
+        Window.Invoke(() => (editor ?? throw new InvalidOperationException("The editor fixture was not initialized.")).Focus());
     }
 
-    internal void ClearEditor() => form.Invoke(() =>
+    internal void ClearEditor() => Window.Invoke(() =>
     {
         (editor ?? throw new InvalidOperationException("The editor fixture was not initialized.")).Clear();
     });
 
-    internal string ReadEditorText() => form.Invoke(() =>
+    internal string ReadEditorText() => Window.Invoke(() =>
         (editor ?? throw new InvalidOperationException("The editor fixture was not initialized.")).Text);
 
-    internal Bitmap? ReadClipboardImage() => (Bitmap?)form.Invoke(() =>
+    internal Bitmap? ReadClipboardImage() => (Bitmap?)Window.Invoke(() =>
     {
         using var image = Forms.Clipboard.GetImage();
         return image is null ? null : new Bitmap(image);
@@ -188,10 +217,11 @@ internal sealed class DesktopFixture : IDisposable
     internal int ReadMarkerWidth()
     {
         using var bitmap = Capture();
+        using var pixels = new BitmapPixels(bitmap, new Rectangle(0, Center.Y - 10, bitmap.Width, 1));
         var width = 0;
         for (var x = 0; x < bitmap.Width; x++)
         {
-            if (IsColor(bitmap.GetPixel(x, Center.Y - 10), MarkerColor))
+            if (IsColor(pixels.GetColor(x, 0), MarkerColor))
             {
                 width++;
             }
@@ -207,7 +237,14 @@ internal sealed class DesktopFixture : IDisposable
 
     internal static Rectangle ColorBounds(Bitmap bitmap, Func<Color, bool> predicate, Rectangle? region = null)
     {
+        ArgumentNullException.ThrowIfNull(predicate);
         var area = Rectangle.Intersect(region ?? new Rectangle(Point.Empty, bitmap.Size), new Rectangle(Point.Empty, bitmap.Size));
+        if (area.Width <= 0 || area.Height <= 0)
+        {
+            return Rectangle.Empty;
+        }
+
+        using var pixels = new BitmapPixels(bitmap, area);
         var left = bitmap.Width;
         var top = bitmap.Height;
         var right = -1;
@@ -216,7 +253,7 @@ internal sealed class DesktopFixture : IDisposable
         {
             for (var x = area.Left; x < area.Right; x += 2)
             {
-                if (predicate(bitmap.GetPixel(x, y)))
+                if (predicate(pixels.GetColor(x - area.Left, y - area.Top)))
                 {
                     left = Math.Min(left, x);
                     top = Math.Min(top, y);
@@ -231,12 +268,22 @@ internal sealed class DesktopFixture : IDisposable
 
     public void Dispose()
     {
-        form.Invoke(() =>
+        if (Interlocked.Exchange(ref disposeRequested, 1) != 0)
         {
-            animation?.Dispose();
-            fontDialogDelay?.Dispose();
-            form.Close();
-        });
-        Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(10)), "The test source's UI thread did not exit.");
+            return;
+        }
+
+        var window = form ?? (ready.Task.IsCompletedSuccessfully ? ready.Task.Result : null);
+        try
+        {
+            if (window is not null && !window.IsDisposed)
+            {
+                Assert.IsTrue(WindowControl.TryCloseWindow(window.Handle.ToInt64()), "The test source window did not close.");
+            }
+        }
+        finally
+        {
+            Assert.IsTrue(!thread.IsAlive || thread.Join(TimeSpan.FromSeconds(10)), "The test source's UI thread did not exit.");
+        }
     }
 }

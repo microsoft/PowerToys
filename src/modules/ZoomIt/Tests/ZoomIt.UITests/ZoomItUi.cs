@@ -10,17 +10,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
-internal sealed class ZoomItUi(Session session, TestContext context)
+internal sealed class ZoomItUi(TestContext context)
 {
     internal const string ProcessName = "PowerToys.ZoomIt";
     internal const string OverlayClass = "ZoomitClass";
     internal const string LiveZoomClass = "MagnifierClass";
 
+    private readonly Session session = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
+
     internal void Step(string message) => context.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
 
     internal void Navigate()
     {
-        session = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
         Step("Navigating to ZoomIt Settings");
         if (!session.Has(By.AccessibilityId("ZoomItNavItem"), 500))
         {
@@ -46,6 +47,7 @@ internal sealed class ZoomItUi(Session session, TestContext context)
 
         // Element.Find currently searches the whole session. Resolve the card's actual subtree
         // because every shortcut contains an EditButton and most controls have no individual ID.
+        // Exclude the SettingsExpander's own Button-like header from its content controls.
         var card = session.Find<Element>(By.AccessibilityId(cardId), 15_000);
         var tree = WinappCli.InvokeJson("ui", "inspect", card.Selector, session.TargetFlag, session.TargetValue, "--json", "-d", "12");
         var matches = Nodes(tree).Where(node =>
@@ -63,16 +65,20 @@ internal sealed class ZoomItUi(Session session, TestContext context)
         var text = Control<Button>(cardId, "Button", "EditButton").HelpText;
         Step($"Reading {cardId}: {text}");
         Assert.IsFalse(string.IsNullOrWhiteSpace(text), $"No shortcut was exposed for {cardId}.");
-        return text.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(part => part.ToUpperInvariant() switch
+        return ParseShortcut(cardId, text);
+    }
+
+    internal static Key[] ParseShortcut(string cardId, string text) =>
+        text.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(part => part.ToUpperInvariant() switch
         {
             "CTRL" or "CONTROL" => Key.Ctrl,
             "SHIFT" => Key.Shift,
             "ALT" => Key.Alt,
             "WIN" or "WINDOWS" => Key.LWin,
             _ when part.Length == 1 && char.IsAsciiDigit(part[0]) => Enum.Parse<Key>($"Num{part}"),
-            _ => Enum.Parse<Key>(part, ignoreCase: true),
+            _ when Enum.TryParse<Key>(part, ignoreCase: true, out var key) && Enum.IsDefined(key) => key,
+            _ => throw new AssertFailedException($"Unsupported shortcut token '{part}' in {cardId} ('{text}')."),
         }).ToArray();
-    }
 
     internal void SetToggle(string cardId, bool value, string? registryName = null)
     {

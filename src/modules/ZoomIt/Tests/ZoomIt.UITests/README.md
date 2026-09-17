@@ -30,7 +30,10 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 
 ## Execution
 
-Run in an isolated, English-language interactive desktop with winappcli, .NET 10, and
+Run only in a disposable, isolated, English-language test desktop, not on a working
+developer machine: this suite rewrites the real signed-in user's
+`HKCU\Software\Sysinternals\ZoomIt` settings, shared with standalone Sysinternals ZoomIt.
+It requires winappcli, .NET 10, and
 a PowerToys runtime. The executable embeds a PerMonitorV2 manifest. Pipeline-like runs
 normalize the desktop to 1920x1080. Recording requires a working Windows Graphics Capture
 display; lack of captured frames is an explicit failure, not a skipped or passing recording.
@@ -48,7 +51,14 @@ tools\build\build.cmd -Path src\modules\ZoomIt\Tests\ZoomIt.UITests -Platform x6
 .\x64\Debug\tests\ZoomIt.UITests\net10.0-windows10.0.26100.0\ZoomIt.UITests.exe --report-trx
 ```
 
-The suite snapshots ZoomIt's registry values and uses deterministic initial settings.
+The suite writes a pre-mutation `zoomit-registry-original.json` backup under
+`ZoomItEvidence` beside MSTest's deployment directory, then uses deterministic initial
+settings. The backup records whether the key existed and each original value's name,
+registry type, and data (binary data is base64). Preserve it for recovery if the test
+process is terminated before cleanup; stop PowerToys/ZoomIt before restoring those values.
+Pending snapshots are restored before a later test can capture test defaults, with a
+class-cleanup safety net for initialization failures. Previously absent keys are removed
+on restoration; existing empty keys are preserved.
 Settings changes under test use the actual UI and interop/IPC path, without restarting
 the runner to apply them. A once-per-class Shell restart clears stale notifications from
 earlier interrupted runs. Teardown hides the tray icon before stopping ZoomIt, restores
@@ -57,6 +67,14 @@ The Notepad fixture temporarily disables and then restores its spelling options:
 recipient-side rewriting and spell-check processing must not be confused with the literal
 text emitted by Demo Type. It also verifies the caret is after the existing prefix before
 activation; the exact output assertion still requires that prefix to remain in place.
+A calibrated, read-only input observer independently checks the Notepad probe fix:
+all scripted Unicode key pairs must arrive, without extra virtual Space/Backspace events.
+This distinguishes the old and fixed behavior even when both produce identical final text.
+
+Fixture regressions cover abandoned registry initialization, recovery backups, original
+key existence, source-window startup failure, and shortcut diagnostics. Buffered pixel
+reads are compared with the former `GetPixel` oracle, including cropped and negative-stride
+bitmaps; full-screen scan timings are recorded without imposing a machine-speed threshold.
 
 Successful screenshots, clipboard images, recordings, decoded frames, and microphone
 inventories are stored beside MSTest's deployment directory so they survive successful-run

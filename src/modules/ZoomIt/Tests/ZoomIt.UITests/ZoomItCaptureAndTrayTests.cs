@@ -96,6 +96,7 @@ public sealed partial class ZoomItTests
     [DataRow(true)]
     public async Task HotkeyAndTrayRecordingSaveDecodableMp4(bool activateFromTray)
     {
+        // Normalize format/scaling here; GIF -> MP4 forces settings delivery from either starting format.
         ui.Select("ZoomItRecordFormat", "GIF", "RecordingFormat", 0);
         ui.Select("ZoomItRecordFormat", "MP4", "RecordingFormat", 1);
         ui.SetSlider("ZoomItRecordScaling", 1, "RecordScalingMP4", 100);
@@ -180,15 +181,18 @@ public sealed partial class ZoomItTests
         using var bitmap = desktop.ReadClipboardImage();
         Assert.IsNotNull(bitmap, "The clipboard bitmap disappeared before validation.");
         var marker = new Rectangle(120, 80, DesktopFixture.MarkerSize, DesktopFixture.MarkerSize);
-        var mismatches = 0;
-        for (var y = 0; y < bitmap.Height; y++)
+        using var pixels = new BitmapPixels(bitmap);
+        (Point Position, Color Expected, Color Actual)? mismatch = null;
+        for (var y = 0; y < bitmap.Height && mismatch is null; y++)
         {
             for (var x = 0; x < bitmap.Width; x++)
             {
                 var expected = marker.Contains(x, y) ? DesktopFixture.MarkerColor : DesktopFixture.BackgroundColor;
-                if (!DesktopFixture.IsColor(bitmap.GetPixel(x, y), expected))
+                var actual = pixels.GetColor(x, y);
+                if (!DesktopFixture.IsColor(actual, expected))
                 {
-                    mismatches++;
+                    mismatch = (new Point(x, y), expected, actual);
+                    break;
                 }
             }
         }
@@ -196,7 +200,7 @@ public sealed partial class ZoomItTests
         var path = CaptureEvidencePath("snip-clipboard.png");
         bitmap.Save(path, ImageFormat.Png);
         TestContext.AddResultFile(path);
-        Assert.AreEqual(0, mismatches, "The copied snip must contain the selected fixture pixels, not a blank, scaled, or wrong-region image.");
+        Assert.IsNull(mismatch, $"The copied snip must contain the selected fixture pixels. First mismatch: {mismatch}.");
         Assert.IsTrue(
             WaitHelper.WaitForStable(
                 () => ZoomItUi.IsVisible(CaptureRectangleClass) || ZoomItUi.IsVisible(ZoomItUi.OverlayClass),
@@ -215,37 +219,49 @@ public sealed partial class ZoomItTests
         var expected = devices.Select(device => device.Name).Prepend("Default").Order(StringComparer.Ordinal).ToArray();
         var combo = ui.Control<ComboBox>("ZoomItRecordMicrophone", "ComboBox");
         combo.ScrollIntoView();
-        combo = ui.Control<ComboBox>("ZoomItRecordMicrophone", "ComboBox");
-        combo.Invoke(msPostAction: 0);
-        var settings = Session.FromProcess("PowerToys.Settings");
-        var listed = WaitHelper.WaitForStable(
-            () => ZoomItUi.Nodes(settings.Inspect(depth: 24, hideOffscreen: true))
-                .Where(node => ZoomItUi.Property(node, "type") == "ListItem" && ZoomItUi.Property(node, "className").EndsWith("ComboBoxItem", StringComparison.Ordinal))
-                .DistinctBy(node => ZoomItUi.Property(node, "selector"))
-                .Select(node => ZoomItUi.Property(node, "name"))
-                .Order(StringComparer.Ordinal)
-                .ToArray(),
-            actual => actual is not null && actual.SequenceEqual(expected, StringComparer.Ordinal),
-            20_000,
-            2,
-            pollIntervalMS: 250);
-        var path = CaptureEvidencePath("microphone-inventory.json");
-        File.WriteAllText(path, JsonSerializer.Serialize(new
-        {
-            Expected = expected,
-            Actual = listed.LastObservation,
-            Devices = devices.Select(device => new { device.Id, device.Name }),
-        }));
-        TestContext.AddResultFile(path);
-        SaveDesktop("microphone-dropdown");
-        CollectionAssert.AreEqual(expected, listed.LastObservation ?? [], "The actual dropdown must list Default plus every Windows AudioCapture device, including duplicate display names.");
-        Assert.IsTrue(listed.Succeeded, "The microphone list did not remain stable.");
-        if (devices.Count == 0)
-        {
-            TestContext.WriteLine("Checklist 19: Windows reports no microphones; verified the opened dropdown contains only Default. Physical microphone capture is not claimed.");
-        }
 
-        KeyboardHelper.SendKeys(Key.Esc);
+        // Scrolling can replace the realized control; resolve its current selector.
+        combo = ui.Control<ComboBox>("ZoomItRecordMicrophone", "ComboBox");
+        try
+        {
+            combo.Invoke(msPostAction: 0);
+            var settings = Session.FromProcess("PowerToys.Settings");
+            var listed = WaitHelper.WaitForStable(
+                () => ZoomItUi.Nodes(settings.Inspect(depth: 24, hideOffscreen: true))
+                    .Where(node => ZoomItUi.Property(node, "type") == "ListItem" && ZoomItUi.Property(node, "className").EndsWith("ComboBoxItem", StringComparison.Ordinal))
+                    .DistinctBy(node => ZoomItUi.Property(node, "selector"))
+                    .Select(node => ZoomItUi.Property(node, "name"))
+                    .Order(StringComparer.Ordinal)
+                    .ToArray(),
+                actual => actual is not null && actual.SequenceEqual(expected, StringComparer.Ordinal),
+                20_000,
+                2,
+                pollIntervalMS: 250);
+            var path = CaptureEvidencePath("microphone-inventory.json");
+            File.WriteAllText(path, JsonSerializer.Serialize(new
+            {
+                Expected = expected,
+                Actual = listed.LastObservation,
+                Devices = devices.Select(device => new { device.Id, device.Name }),
+            }));
+            TestContext.AddResultFile(path);
+            SaveDesktop("microphone-dropdown");
+            CollectionAssert.AreEqual(expected, listed.LastObservation ?? [], "The actual dropdown must list Default plus every Windows AudioCapture device, including duplicate display names.");
+            Assert.IsTrue(listed.Succeeded, "The microphone list did not remain stable.");
+            if (devices.Count == 0)
+            {
+                TestContext.WriteLine("Checklist 19: Windows reports no microphones; verified the opened dropdown contains only Default. Physical microphone capture is not claimed.");
+            }
+        }
+        catch
+        {
+            await CaptureFailureArtifactsAsync();
+            throw;
+        }
+        finally
+        {
+            KeyboardHelper.SendKeys(Key.Esc);
+        }
     }
 
     private Element? WaitForTrayIcon(bool expected)
@@ -408,8 +424,8 @@ public sealed partial class ZoomItTests
         var clip = await MediaClip.CreateFromFileAsync(file).AsTask().WaitAsync(TimeSpan.FromSeconds(45));
         var encoding = clip.GetVideoEncodingProperties();
         var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
-        Assert.AreEqual((uint)screen.Width, encoding.Width, "Full-screen recording has the wrong encoded width at 100% scaling.");
-        Assert.AreEqual((uint)screen.Height, encoding.Height, "Full-screen recording has the wrong encoded height at 100% scaling.");
+        Assert.AreEqual((uint)screen.Width, encoding.Width, "Full-screen recording has the wrong physical-pixel width at 100% recording scale.");
+        Assert.AreEqual((uint)screen.Height, encoding.Height, "Full-screen recording has the wrong physical-pixel height at 100% recording scale.");
         Assert.IsTrue(encoding.FrameRate.Numerator > 0 && encoding.FrameRate.Denominator > 0, "The saved video has no valid frame rate.");
         Assert.IsTrue(clip.OriginalDuration >= TimeSpan.FromSeconds(1), $"The saved recording is too short: {clip.OriginalDuration}.");
         var composition = new MediaComposition();
