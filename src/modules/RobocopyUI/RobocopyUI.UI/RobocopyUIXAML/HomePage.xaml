@@ -66,26 +66,31 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
 
-                <Button Click="LoadButton_Click" x:Name="LoadButton" Grid.Column="1" VerticalAlignment="Bottom">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE8E5;" />
-                        <TextBlock Margin="4,0,0,0" x:Uid="LoadButtonLabel" />
-                    </StackPanel>
-                </Button>
-
-                <Button Click="SaveButton_Click" x:Name="SaveButton" Grid.Column="2" VerticalAlignment="Bottom">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE78C;" />
-                        <TextBlock Margin="4,0,0,0" x:Uid="SaveButtonLabel"/>
-                    </StackPanel>
+                <Button VerticalAlignment="Bottom" Grid.Column="1">
+                    <Button.Content>
+                        <FontIcon Glyph="&#xE74E;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Uid="LoadButtonLabel">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE8B5;"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem x:Uid="SaveButtonLabel">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xEDE1;"/>
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
                 </Button>
                 
-                <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" Grid.Column="3" VerticalAlignment="Bottom">
+                <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE768;" />
                         <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
