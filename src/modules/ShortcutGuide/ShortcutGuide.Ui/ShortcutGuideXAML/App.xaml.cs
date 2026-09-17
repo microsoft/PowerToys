@@ -336,9 +336,11 @@ namespace ShortcutGuide
 
                         var openStopwatch = Stopwatch.StartNew();
 
-                        // Prepare and lay out the navigation items and shortcut data
-                        // while the overlay is hidden.
+                        // Show the overlay (which also force-activates the window) while
+                        // the main pane is still Collapsed, then prepare and lay out the
+                        // navigation items and shortcut data before revealing it.
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+                        OverlayWindow.ShowOverlay();
                         await OverlayWindow.MainPaneControl.Open();
                         if ((ShortcutGuideActivationSource)Volatile.Read(ref _activeSource) != activationSource ||
                             (ShortcutGuideOverlaySurface)Volatile.Read(ref _activeSurface) != ShortcutGuideOverlaySurface.FullGuide)
@@ -350,7 +352,6 @@ namespace ShortcutGuide
 
                         OverlayWindow.UpdateTaskbarPaneLayout();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
-                        OverlayWindow.ShowOverlay();
                         OverlayWindow.MainPaneControl.FocusSearch();
 
                         openStopwatch.Stop();
