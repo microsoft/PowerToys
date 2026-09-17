@@ -105,6 +105,17 @@ settings/clipboard and removed its scoped rule.
 
 The two restored-baseline passes, Win11 coverage and CI remain unfulfilled.
 
+### Video diagnostics
+
+The custom fixture now composes the shared screen recorder rather than relying
+on `UITestBase` to start it. It retains continuous host-desktop video and separate
+Sandbox-viewer segments, including the disposable pairing flow, with no redaction
+gaps. Finalization precedes viewer destruction, desktop capture continues through
+cleanup, and MP4s plus explicit recording status are attached to TRX on either
+outcome. A focused recording probe verifies finalization after a simulated early
+failure and captures an occluded window separately from the visible desktop.
+Pre-MSTest provisioning failures still have no fixture video.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under

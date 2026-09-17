@@ -15,14 +15,16 @@ internal sealed class LegacySandbox
 {
     private readonly List<ProcessIdentity> owned = [];
     private readonly Action saveJournal;
+    private readonly Action<long> captureViewer;
     private readonly int sessionId = Process.GetCurrentProcess().SessionId;
     private readonly string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
     private long viewerHwnd;
     private bool stopping;
 
-    public LegacySandbox(Action saveJournal)
+    public LegacySandbox(Action saveJournal, Action<long> captureViewer)
     {
         this.saveJournal = saveJournal;
+        this.captureViewer = captureViewer;
     }
 
     public IReadOnlyList<ProcessIdentity> Processes => owned;
@@ -155,6 +157,7 @@ internal sealed class LegacySandbox
         if (viewer.Hwnd != IntPtr.Zero)
         {
             viewerHwnd = viewer.Hwnd.ToInt64();
+            captureViewer(viewerHwnd);
         }
 
         saveJournal();

@@ -46,6 +46,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     private EndpointChannel? host;
     private EndpointChannel? guest;
     private LegacySandbox? sandbox;
+    private TestRecordings? recordings;
     private ProcessIdentity? hostWorker;
     private readonly ManualResetEventSlim stopLease = new(false);
     private Thread? lease;
@@ -127,6 +128,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 guest.Request("Finish", new JsonObject { ["BothPeersStopped"] = true });
             }
         });
+        Attempt("Finalize Sandbox video before closing its window", () => recordings?.StopSandbox());
         Attempt("Close owned legacy Sandbox viewer", () =>
         {
             sandbox?.Stop();
@@ -169,6 +171,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             cleanupErrors.Add(leaseError);
         }
 
+        Attempt("Finalize and attach desktop and Sandbox videos", () => recordings?.Complete());
         status = cleanupErrors.Count == 0 ? "Cleaned" : "RecoveryRequired";
         Attempt("Persist cleanup journal", SaveJournal);
         if (runRoot.Length > 0)
@@ -191,8 +194,15 @@ internal sealed class TwoEndpointFixture : IDisposable
 
     public void Dispose()
     {
-        Cleanup();
-        stopLease.Dispose();
+        try
+        {
+            Cleanup();
+        }
+        finally
+        {
+            recordings?.Dispose();
+            stopLease.Dispose();
+        }
     }
 
     private void Prepare()
@@ -234,6 +244,8 @@ internal sealed class TwoEndpointFixture : IDisposable
         controlRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToysUiTestControl", runId);
         Assert.IsFalse(Directory.Exists(controlRoot), "A control directory already exists for this RunId; provision a new run.");
         Directory.CreateDirectory(runRoot);
+        recordings = new TestRecordings(context, Path.Combine(runRoot, "recordings"));
+        recordings.StartDesktop();
         host = new EndpointChannel(runId, Path.Combine(controlRoot, "host-input"), Path.Combine(runRoot, "host"));
         guest = new EndpointChannel(runId, Path.Combine(controlRoot, "guest-input"), Path.Combine(runRoot, "guest"));
         hostName = MachineName(Dns.GetHostName());
@@ -260,7 +272,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 
         RunFiles.Write(Path.Combine(runRoot, "payload-manifest.json"), manifest);
         RunFiles.Write(Path.Combine(runRoot, "host-desktop.json"), desktop);
-        sandbox = new LegacySandbox(SaveJournal);
+        sandbox = new LegacySandbox(SaveJournal, recordings.CaptureSandboxWindow);
         // UI Automation and nested-VM startup can occupy thread-pool workers for
         // long periods. The liveness lease must not depend on that same pool.
         lease = new Thread(() =>

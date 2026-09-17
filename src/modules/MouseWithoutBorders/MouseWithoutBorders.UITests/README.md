@@ -176,6 +176,29 @@ The built executable is under
 
 TRX attachments include phase outcomes, topology, peer mappings, transport, receiver observations,
 screenshots, and journals. Screenshots/logs are captured before endpoint teardown.
+
+The custom fixture also records continuous, silent H.264 video at 720p/15 fps:
+
+- `recordings\desktop\recording_*.mp4` covers the test machine's desktop from
+  fixture preparation through cleanup, including Sandbox startup and pairing.
+- `recordings\sandbox-*\recording_*.mp4` captures the owned Sandbox viewer window
+  separately, so the guest remains visible in its video while the host receiver
+  covers that window. A recreated viewer gets a new segment.
+- Nonempty MP4s and `recordings\recordings.json` are attached to the test result
+  on success and failure, under Azure DevOps **Tests > test result > Attachments**.
+  Files live outside MSTest's disposable deployment tree.
+
+There are no pairing pauses or key-hiding gaps. These disposable-VM recordings
+can contain the experiment's temporary pairing keys and should remain internal
+test diagnostics. JSON/log redaction and private profile-backup handling are
+unchanged. The recording manifest reports unavailable encoders or capture/finalize
+errors explicitly; a missing MP4 is not silently treated as successful capture.
+An existing clip is retained even after a finalization warning, since it can
+still contain usable evidence; consult `Completed`, `Available` and `Error`.
+Failures in privileged CI preparation before MSTest starts cannot produce a
+fixture recording. The receiver-only PNGs remain control renders, not desktop
+screenshots or substitutes for these videos.
+
 Control inputs live outside test results at
 `%LOCALAPPDATA%\Microsoft\PowerToysUiTestControl\<RunId>`, so a forcibly terminated
 test cannot publish its pending Connect request as an artifact. Generated Connect
