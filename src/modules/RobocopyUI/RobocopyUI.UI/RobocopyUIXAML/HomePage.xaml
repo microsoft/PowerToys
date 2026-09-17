@@ -68,17 +68,17 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" TextWrapping="Wrap" />
+                <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" IsEnabled="False" TextWrapping="Wrap" />
 
                 <Button VerticalAlignment="Bottom" Grid.Column="1">
                     <Button.Content>
-                        <FontIcon Glyph="&#xE74E;" />
+                        <FontIcon Glyph="&#xE712;" />
                     </Button.Content>
                     <Button.Flyout>
                         <MenuFlyout>
                             <MenuFlyoutItem x:Uid="LoadButtonLabel">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE8B5;"/>
+                                    <FontIcon Glyph="&#xEDE2;"/>
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                             <MenuFlyoutItem x:Uid="SaveButtonLabel">
@@ -93,14 +93,14 @@
                 <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE768;" />
-                        <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel" Foreground="White" />
+                        <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel"  />
                     </StackPanel>
                 </Button>
             </Grid>
 
             <SelectorBar SelectionChanged="SelectorBar_SelectionChanged">
                 <SelectorBar.Resources>
-                    <x:Double x:Key="SelectorBarItemPillWidth">15</x:Double>
+                    <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
                 </SelectorBar.Resources>
                 <SelectorBarItem x:Uid="OptionsSelectorBarLabel" Tag="Options" IsSelected="True">
                     <SelectorBarItem.Icon>
