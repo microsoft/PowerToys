@@ -32,6 +32,8 @@
                         <controls:IconBox
                             x:Name="Image"
                             AutomationProperties.AccessibilityView="Raw"
+                            DiagnosticScope="Content"
+                            RequestSite="Image"
                             SourceKey="{x:Bind ViewModel.Image, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequestedOriginal}" />
                     </Viewbox>
