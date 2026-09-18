@@ -69,6 +69,8 @@ public static class OptionsDataHelper
                 OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYOption/OptionDescription"),
                 GroupName = copyOptionsGroupName,
             },
+            new OptionContent { OptionName = "/SEC", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SECOption/OptionDescription"), GroupName = copyOptionsGroupName },
+            new OptionContent { OptionName = "/COPYALL", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("COPYALLOption/OptionDescription"), GroupName = copyOptionsGroupName },
             new OptionContent { OptionName = "/NOCOPY", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("NOCOPYOption/OptionDescription"), GroupName = copyOptionsGroupName },
             new OptionContent { OptionName = "/SECFIX", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("SECFIXOption/OptionDescription"), GroupName = copyOptionsGroupName },
             new OptionContent { OptionName = "/TIMFIX", OptionDescription = ResourceLoaderInstance.ResourceLoader.GetString("TIMFIXOption/OptionDescription"), GroupName = copyOptionsGroupName },

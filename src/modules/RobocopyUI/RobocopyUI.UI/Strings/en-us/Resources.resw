@@ -696,4 +696,113 @@
   <data name="ShellPageWindow.Title" xml:space="preserve">
     <value>Robocopy UI</value>
   </data>
+  <data name="COPYALLOption.OptionDescription" xml:space="preserve">
+    <value>Copy all file info (data, attributes, timestamps, security, owner, auditing).</value>
+  </data>
+  <data name="SECOption.OptionDescription" xml:space="preserve">
+    <value>Copy files with NTFS security (ACLs).</value>
+  </data>
+  <data name="SimpleModeSegmentedItem.Content" xml:space="preserve">
+    <value>Simple</value>
+  </data>
+  <data name="AdvancedModeSegmentedItem.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="SimpleJobRadioButtons.Header" xml:space="preserve">
+    <value>What do you want to do?</value>
+  </data>
+  <data name="SimpleJobCopyFolders.Content" xml:space="preserve">
+    <value>Copy files and folders</value>
+  </data>
+  <data name="SimpleJobSkipEmpty.Content" xml:space="preserve">
+    <value>Copy folders, skip empty ones</value>
+  </data>
+  <data name="SimpleJobThisFolder.Content" xml:space="preserve">
+    <value>Copy this folder only (no subfolders)</value>
+  </data>
+  <data name="SimpleJobMirror.Content" xml:space="preserve">
+    <value>Make destination match source (mirror)</value>
+  </data>
+  <data name="SimpleJobMoveEverything.Content" xml:space="preserve">
+    <value>Move everything (delete from source)</value>
+  </data>
+  <data name="SimpleJobMoveFiles.Content" xml:space="preserve">
+    <value>Move files only (delete files from source)</value>
+  </data>
+  <data name="SimpleWarningInfoBar.Title" xml:space="preserve">
+    <value>Review before running</value>
+  </data>
+  <data name="SimpleWarning.Mirror" xml:space="preserve">
+    <value>/MIR mirrors the source: files that exist only in the destination will be deleted.</value>
+  </data>
+  <data name="SimpleWarning.Purge" xml:space="preserve">
+    <value>/PURGE deletes destination files and folders that no longer exist in the source.</value>
+  </data>
+  <data name="SimpleWarning.MoveEverything" xml:space="preserve">
+    <value>/MOVE deletes the files and folders from the source after they are copied.</value>
+  </data>
+  <data name="SimpleWarning.MoveFiles" xml:space="preserve">
+    <value>/MOV deletes the files from the source after they are copied.</value>
+  </data>
+  <data name="SimpleLogFileType" xml:space="preserve">
+    <value>Log file</value>
+  </data>
+  <data name="SimpleAdditionalOptionsText.Text" xml:space="preserve">
+    <value>Additional options from Advanced are still applied.</value>
+  </data>
+  <data name="SimpleKeepPermissionsToggle.Header" xml:space="preserve">
+    <value>Keep NTFS permissions</value>
+  </data>
+  <data name="SimpleKeepAllPropertiesToggle.Header" xml:space="preserve">
+    <value>Keep all file properties (owner, auditing, and security)</value>
+  </data>
+  <data name="SimpleSkipNewerToggle.Header" xml:space="preserve">
+    <value>Skip files that are newer at the destination</value>
+  </data>
+  <data name="SimpleExcludeFilesTextBox.Header" xml:space="preserve">
+    <value>Exclude file types</value>
+  </data>
+  <data name="SimpleExcludeFilesTextBox.PlaceholderText" xml:space="preserve">
+    <value>*.tmp *.log</value>
+  </data>
+  <data name="SimpleExcludeFoldersTextBox.Header" xml:space="preserve">
+    <value>Exclude folders</value>
+  </data>
+  <data name="SimpleExcludeFoldersTextBox.PlaceholderText" xml:space="preserve">
+    <value>Temp AppData</value>
+  </data>
+  <data name="SimpleCopyFasterToggle.Header" xml:space="preserve">
+    <value>Copy faster (multiple threads)</value>
+  </data>
+  <data name="SimpleThreadCountNumberBox.Header" xml:space="preserve">
+    <value>Threads</value>
+  </data>
+  <data name="SimpleRetryToggle.Header" xml:space="preserve">
+    <value>Retry failed files</value>
+  </data>
+  <data name="SimpleRetryCountNumberBox.Header" xml:space="preserve">
+    <value>Retries</value>
+  </data>
+  <data name="SimpleRetryWaitNumberBox.Header" xml:space="preserve">
+    <value>Seconds between retries</value>
+  </data>
+  <data name="SimplePreviewToggle.Header" xml:space="preserve">
+    <value>Preview only (don't copy)</value>
+  </data>
+  <data name="SimpleLogToggle.Header" xml:space="preserve">
+    <value>Write a log file</value>
+  </data>
+  <data name="SimpleLogPathTextBox.Header" xml:space="preserve">
+    <value>Log file path</value>
+  </data>
+  <data name="SimpleLogPathTextBox.PlaceholderText" xml:space="preserve">
+    <value>C:\Logs\copy.log</value>
+  </data>
+  <data name="SimpleLogBrowseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Browse for log file</value>
+  </data>
+  <data name="CustomizeInAdvancedButton.Content" xml:space="preserve">
+    <value>Customize in Advanced</value>
+  </data>
 </root>
+
