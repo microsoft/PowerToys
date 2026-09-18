@@ -78,10 +78,11 @@ public interface IExtensionWrapper
     IExtension? GetExtensionObject();
 
     /// <summary>
-    /// Gets the cached extension instance without checking whether it is running.
+    /// Tries to allow the extension process to set the foreground window.
     /// </summary>
-    /// <returns>The cached instance, which may be disconnected, or null if none is cached.</returns>
-    IExtension? GetCachedExtensionObject();
+    /// <param name="checkLiveness">Whether to check liveness before attempting the grant.</param>
+    /// <returns>Whether the foreground grant succeeded.</returns>
+    bool TryAllowSetForeground(bool checkLiveness);
 
     /// <summary>
     /// Tells the wrapper that the extension implements the given provider
