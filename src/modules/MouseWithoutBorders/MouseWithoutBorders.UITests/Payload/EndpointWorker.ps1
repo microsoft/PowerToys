@@ -47,7 +47,7 @@ $script:bootstrapWatch = [Diagnostics.Stopwatch]::StartNew()
 try {
     Write-BootstrapStage 'LoadingReceiverTypes'
     Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-    Add-Type -Path @("$PSScriptRoot\NativeSupport.cs", "$PSScriptRoot\Receiver.cs") `
+    Add-Type -Path @("$PSScriptRoot\NativeSupport.cs", "$PSScriptRoot\Receiver.cs", "$PSScriptRoot\TcpSocketTable.cs") `
         -ReferencedAssemblies System.Windows.Forms, System.Drawing
     $script:owned = [Collections.Generic.List[Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]]::new()
     Write-BootstrapStage 'ReceiverTypesLoaded'

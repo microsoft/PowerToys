@@ -36,6 +36,7 @@
     <Compile Include="..\MouseWithoutBorders.UITests\EndpointChannel.cs" Link="Experiment\EndpointChannel.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxStartupError.cs" Link="Experiment\SandboxStartupError.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\LeasePublisher.cs" Link="Experiment\LeasePublisher.cs" />
+    <Compile Include="..\MouseWithoutBorders.UITests\Payload\TcpSocketTable.cs" Link="Experiment\TcpSocketTable.cs" />
     <None Include="..\MouseWithoutBorders.UITests\Payload\Publish-Leases.ps1" Link="ExperimentPayload\Publish-Leases.ps1" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\MouseWithoutBorders.UITests\Payload\EndpointSupport.ps1" Link="ExperimentPayload\EndpointSupport.ps1" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

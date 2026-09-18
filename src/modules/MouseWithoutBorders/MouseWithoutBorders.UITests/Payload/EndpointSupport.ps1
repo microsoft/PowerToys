@@ -657,16 +657,22 @@ function Set-GuestClipboardSharing {
 }
 
 function Get-Transport {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    Write-RunJson "$OutputRoot\transport-probe.json" @{ Stage = 'OwnedProcesses'; TimestampUtc = [DateTime]::UtcNow.ToString('o') }
     Update-OwnedProcesses
     $mwb = @($script:owned | Where-Object { [IO.Path]::GetFileName($_.Path) -eq 'PowerToys.MouseWithoutBorders.exe' -and $_.IsCurrent() })
     if ($mwb.Count -ne 1) { throw 'Transport probe requires one owned MWB process.' }
-    $sockets = @(Get-NetTCPConnection -ErrorAction Stop | Where-Object {
-        $_.OwningProcess -eq $mwb[0].Id -and
+    Write-RunJson "$OutputRoot\transport-probe.json" @{
+        Stage = 'TcpTable'; TimestampUtc = [DateTime]::UtcNow.ToString('o'); ElapsedMilliseconds = $watch.ElapsedMilliseconds
+    }
+    $sockets = @([Microsoft.MouseWithoutBorders.UITests.TcpSocketTable]::Read($mwb[0].Id) | Where-Object {
         ($_.LocalPort -in 15100,15101 -or $_.RemotePort -in 15100,15101)
-    } | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess,
-        @{ Name = 'State'; Expression = { $_.State.ToString() } })
+    })
     $connections = @($sockets | Where-Object { $_.State -eq 'Established' })
     $settings = Read-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json"
+    Write-RunJson "$OutputRoot\transport-probe.json" @{
+        Stage = 'Completed'; TimestampUtc = [DateTime]::UtcNow.ToString('o'); ElapsedMilliseconds = $watch.ElapsedMilliseconds
+    }
     @{
         Connections = $connections; Sockets = $sockets; MwbProcessId = $mwb[0].Id
         MachineMatrix = @($settings.properties.MachineMatrixString)

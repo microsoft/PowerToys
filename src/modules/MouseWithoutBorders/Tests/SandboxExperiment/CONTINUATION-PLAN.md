@@ -186,6 +186,28 @@ Both authorized attempts are consumed. The isolated publisher still needs a
 newly authorized CI run; the second attempt supplied no Sandbox video or
 end-to-end verdict.
 
+### Unit regression and transport follow-up
+
+A renewed diagnostic run passed the main build with the corrected unit test.
+The regression now checks the exact committed generation on both endpoints,
+not a fixed scheduling delay or the mutable publisher diagnostic snapshot.
+Keep the lifecycle coverage: parent exit, hard deadline and run correlation
+remain safety requirements even during the experimental pilot.
+
+The same CI run passed bootstrap, both endpoint startups and New key/Connect.
+The isolated publisher stopped cleanly after 251 generations; its maximum cycle
+gap was 19.733 seconds, below the unchanged watchdog. The next controlling
+failure was `Transport #3` exceeding its 40-second command budget. Its delayed
+response eventually contained a socket snapshot, so this was not a unit failure
+or a missing response implementation.
+
+Transport observation now reads native IPv4/IPv6 owner-PID tables instead of
+cold-loading NetTCPIP/CIM. Loopback regressions verify listening/established
+states, addresses, port byte order and exclusion of unowned sockets. Stage/timing
+evidence remains available without increasing the command or pairing deadlines.
+Full local execution is currently blocked by the saved VM control credential
+being rejected; no credential reset or alternate control channel is attempted.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under

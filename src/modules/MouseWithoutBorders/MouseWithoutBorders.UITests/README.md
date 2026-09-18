@@ -13,10 +13,12 @@ CI run passed native Sandbox readiness and produced a usable separate viewer
 video, then exposed an 80-second lease-publication gap before endpoint startup.
 Win11's captured provisioning error confirmed that its CI image has Windows
 Sandbox **Disabled**; image setup/reboot is required, not a test-side bypass.
-The process-isolated lease replacement has not yet reached CI UI execution:
-the second authorized run stopped at a new regression's fixed-delay assumption,
-now replaced by a bounded committed-generation wait. The two-run budget is
-exhausted; no end-to-end CI pass is claimed.
+The fixed unit regression now passes in the CI main build. A subsequent run with
+process-isolated leases passed bootstrap, endpoint startup and New key/Connect,
+with no expired leases. It stopped at the first transport-probe command deadline;
+the socket result arrived later. Transport snapshots now use the native
+PID-filtered IPv4/IPv6 tables instead of cold NetTCPIP/CIM loading. No end-to-end
+CI pass is claimed.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI
@@ -164,6 +166,11 @@ The built executable is under
   `POWERTOYS_MWB_ALLOW_NONCONSOLE=1`.
 - Settings **New key** and guest **Connect** UI actions, displayed peer identity,
   and established connections owned by each MWB PID.
+- Native `GetExtendedTcpTable` snapshots preserve process ownership, local/remote
+  addresses, ports and states for both IPv4 and IPv6. Transport evidence does not
+  require PowerShell's NetTCPIP/CIM provider to initialize. The command and
+  connection-readiness deadlines are unchanged; `transport-probe.json` identifies
+  the current probe stage and elapsed time.
 - A single explicit peer name-to-IP mapping on each endpoint, checked after
   seeding and immediately before Connect. `peer-mapping-*.json` records the
   persisted expected/actual mapping without exporting security keys. The
