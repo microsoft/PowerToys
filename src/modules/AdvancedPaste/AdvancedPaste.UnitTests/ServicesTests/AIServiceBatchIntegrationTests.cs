@@ -159,10 +159,19 @@ public sealed class AIServiceBatchIntegrationTests
     private static IntegrationTestServices CreateServices()
     {
         IntegrationTestUserSettings userSettings = new();
-        EnhancedVaultCredentialsProvider credentialsProvider = new(userSettings);
+        var credentialsProvider = new Microsoft.PowerToys.AI.Credentials.VaultAICredentialsProvider(() =>
+        {
+            var provider = userSettings.PasteAIConfiguration?.ActiveProvider;
+            if (provider is null)
+            {
+                return (Microsoft.PowerToys.Settings.UI.Library.AIServiceType.OpenAI, string.Empty);
+            }
+
+            return (provider.ServiceTypeKind, provider.Id ?? string.Empty);
+        });
         PromptModerationService promptModerationService = new(credentialsProvider);
-        PasteAIProviderFactory providerFactory = new();
-        ICustomActionTransformService customActionTransformService = new CustomActionTransformService(promptModerationService, providerFactory, credentialsProvider, userSettings);
+        Microsoft.PowerToys.AI.AIChatProviderFactory chatProviderFactory = new();
+        ICustomActionTransformService customActionTransformService = new CustomActionTransformService(promptModerationService, chatProviderFactory, credentialsProvider, userSettings);
         IKernelService kernelService = new AdvancedAIKernelService(credentialsProvider, new NoOpKernelQueryCacheService(), promptModerationService, userSettings, customActionTransformService);
 
         return new IntegrationTestServices(customActionTransformService, kernelService);

@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AdvancedPaste\AdvancedPaste.csproj" />
+    <ProjectReference Include="..\..\..\common\PowerToys.AI\PowerToys.AI.csproj" />
   </ItemGroup>
 
 </Project>

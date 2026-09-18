@@ -36,10 +36,19 @@ public sealed class KernelServiceIntegrationTests : IDisposable
     public void TestInitialize()
     {
         IntegrationTestUserSettings userSettings = new();
-        EnhancedVaultCredentialsProvider credentialsProvider = new(userSettings);
+        var credentialsProvider = new Microsoft.PowerToys.AI.Credentials.VaultAICredentialsProvider(() =>
+        {
+            var provider = userSettings.PasteAIConfiguration?.ActiveProvider;
+            if (provider is null)
+            {
+                return (Microsoft.PowerToys.Settings.UI.Library.AIServiceType.OpenAI, string.Empty);
+            }
+
+            return (provider.ServiceTypeKind, provider.Id ?? string.Empty);
+        });
         PromptModerationService promptModerationService = new(credentialsProvider);
-        PasteAIProviderFactory providerFactory = new();
-        CustomActionTransformService customActionTransformService = new(promptModerationService, providerFactory, credentialsProvider, userSettings);
+        Microsoft.PowerToys.AI.AIChatProviderFactory chatProviderFactory = new();
+        CustomActionTransformService customActionTransformService = new(promptModerationService, chatProviderFactory, credentialsProvider, userSettings);
 
         _kernelService = new AdvancedAIKernelService(credentialsProvider, new NoOpKernelQueryCacheService(), promptModerationService, userSettings, customActionTransformService);
         _eventListener = new();

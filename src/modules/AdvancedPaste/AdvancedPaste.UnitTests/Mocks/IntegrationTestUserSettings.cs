@@ -18,13 +18,13 @@ namespace AdvancedPaste.UnitTests.Mocks;
 /// </summary>
 internal sealed class IntegrationTestUserSettings : IUserSettings
 {
-    private readonly PasteAIConfiguration _configuration;
+    private readonly AIConfiguration _configuration;
     private readonly IReadOnlyList<AdvancedPasteCustomAction> _customActions;
     private readonly IReadOnlyList<PasteFormats> _additionalActions;
 
     public IntegrationTestUserSettings()
     {
-        var provider = new PasteAIProviderDefinition
+        var provider = new AIProviderDefinition
         {
             Id = "integration-openai",
             EnableAdvancedAI = true,
@@ -33,10 +33,10 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
             ModerationEnabled = true,
         };
 
-        _configuration = new PasteAIConfiguration
+        _configuration = new AIConfiguration
         {
             ActiveProviderId = provider.Id,
-            Providers = new ObservableCollection<PasteAIProviderDefinition> { provider },
+            Providers = new ObservableCollection<AIProviderDefinition> { provider },
         };
 
         _customActions = Array.Empty<AdvancedPasteCustomAction>();
@@ -73,7 +73,7 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public string FixSpellingAndGrammarCoachingProviderId => string.Empty;
 
-    public PasteAIConfiguration PasteAIConfiguration => _configuration;
+    public AIConfiguration PasteAIConfiguration => _configuration;
 
     public event EventHandler Changed;
 

@@ -16,7 +16,7 @@ public sealed class AdvancedAIProviderResolverTests
     public void TryResolveAdvancedProvider_WithPhiSilicaOverrideAndAdvancedActiveProvider_ReturnsFalse()
     {
         var advancedProvider = CreateAdvancedProvider("advanced", AIServiceType.OpenAI);
-        var phiSilicaProvider = new PasteAIProviderDefinition { Id = "phi", ServiceTypeKind = AIServiceType.PhiSilica };
+        var phiSilicaProvider = new AIProviderDefinition { Id = "phi", ServiceTypeKind = AIServiceType.PhiSilica };
         var configuration = CreateConfiguration(advancedProvider, advancedProvider, phiSilicaProvider);
 
         var result = AdvancedAIProviderResolver.TryResolveAdvancedProvider(configuration, phiSilicaProvider.Id, out var provider);
@@ -38,7 +38,7 @@ public sealed class AdvancedAIProviderResolverTests
         Assert.AreSame(overrideProvider, provider);
     }
 
-    private static PasteAIProviderDefinition CreateAdvancedProvider(string id, AIServiceType serviceType) =>
+    private static AIProviderDefinition CreateAdvancedProvider(string id, AIServiceType serviceType) =>
         new()
         {
             Id = id,
@@ -46,10 +46,10 @@ public sealed class AdvancedAIProviderResolverTests
             EnableAdvancedAI = true,
         };
 
-    private static PasteAIConfiguration CreateConfiguration(PasteAIProviderDefinition activeProvider, params PasteAIProviderDefinition[] providers) =>
+    private static AIConfiguration CreateConfiguration(AIProviderDefinition activeProvider, params AIProviderDefinition[] providers) =>
         new()
         {
             ActiveProviderId = activeProvider.Id,
-            Providers = new ObservableCollection<PasteAIProviderDefinition>(providers),
+            Providers = new ObservableCollection<AIProviderDefinition>(providers),
         };
 }
