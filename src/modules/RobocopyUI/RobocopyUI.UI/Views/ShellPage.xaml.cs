@@ -4,7 +4,7 @@
 
 using Microsoft.UI.Xaml;
 
-namespace RobocopyUI.Views
+namespace RobocopyUI
 {
     public sealed partial class ShellPage : Window
     {

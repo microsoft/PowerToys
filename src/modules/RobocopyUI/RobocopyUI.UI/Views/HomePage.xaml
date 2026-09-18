@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="RobocopyUI.Views.HomePage"
+<Page x:Class="RobocopyUI.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:RobocopyUI"

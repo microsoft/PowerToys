@@ -18,7 +18,7 @@ using RobocopyUI.Helpers;
 using RobocopyUI.Models;
 using RobocopyUI.Services.AI;
 
-namespace RobocopyUI.Views;
+namespace RobocopyUI;
 
 public sealed partial class HomePage : Page
 {
