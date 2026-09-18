@@ -227,6 +227,7 @@ jobs:
         'CropAndLock.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
+        'LightSwitch.UITests.Next',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
