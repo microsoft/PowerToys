@@ -302,14 +302,21 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        [TestMethod]
-        public void CustomRootTrustChainAcceptsIntermediateFromExtraStore()
+        [DataTestMethod]
+        [DataRow(1)]
+        [DataRow(7)]
+        public void CustomRootTrustChainAcceptsIntermediateFromExtraStore(int validityDays)
         {
             using var rootKey = RSA.Create(2048);
-            using var root = CreateRootCertificate(rootKey);
+            using var root = CreateRootCertificate(rootKey, validityDays);
             using var intermediateKey = RSA.Create(2048);
             using var intermediate = CreateIntermediateCertificate(root, intermediateKey);
             using var leaf = CreateCodeSigningLeafCertificate(intermediate);
+
+            Assert.AreEqual(root.NotBefore, intermediate.NotBefore);
+            Assert.AreEqual(root.NotAfter, intermediate.NotAfter);
+            Assert.AreEqual(intermediate.NotBefore, leaf.NotBefore);
+            Assert.AreEqual(intermediate.NotAfter, leaf.NotAfter);
 
             using var chainWithoutIntermediate = CreateCodeSigningChain(root);
             Assert.IsFalse(chainWithoutIntermediate.Build(leaf));
@@ -486,7 +493,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return chain;
         }
 
-        private static X509Certificate2 CreateRootCertificate(RSA rootKey)
+        private static X509Certificate2 CreateRootCertificate(RSA rootKey, int validityDays)
         {
             var request = new CertificateRequest(
                 "CN=MWB IPC Test Root",
@@ -496,7 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 1, true));
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
-            return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7));
+            return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(validityDays));
         }
 
         private static X509Certificate2 CreateIntermediateCertificate(X509Certificate2 root, RSA intermediateKey)
@@ -510,7 +517,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
-            using var intermediate = request.Create(root, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7), RandomNumberGenerator.GetBytes(16));
+            // Use the issuer's encoded interval, not a later clock sample that can exceed its expiry.
+            using var intermediate = request.Create(root, root.NotBefore.ToUniversalTime(), root.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
             return intermediate.CopyWithPrivateKey(intermediateKey);
         }
 
@@ -532,7 +540,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             };
             request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhancedKeyUsage, true));
 
-            return request.Create(intermediate, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7), RandomNumberGenerator.GetBytes(16));
+            return request.Create(intermediate, intermediate.NotBefore.ToUniversalTime(), intermediate.NotAfter.ToUniversalTime(), RandomNumberGenerator.GetBytes(16));
         }
 
         private static X509Certificate2 CreateSubjectCertificate(string subject, RSA key)

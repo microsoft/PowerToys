@@ -19,6 +19,13 @@ with no expired leases. It stopped at the first transport-probe command deadline
 the socket result arrived later. Transport snapshots now use the native
 PID-filtered IPv4/IPv6 tables instead of cold NetTCPIP/CIM loading. No end-to-end
 CI pass is claimed.
+The next Win10 run completed those snapshots in about 1.5 seconds but observed
+only listening sockets on both peers throughout the connection-readiness budget.
+Mappings and submitted keys matched; the actual connection failure remains open.
+The final diagnostic run stopped before UI execution on a certificate-fixture
+expiry race, now corrected by inheriting each issuer's encoded validity interval.
+That correction and the sanitized-log attachment fix still need a subsequent
+CI UI run; no additional run was queued beyond the authorized budget.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI

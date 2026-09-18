@@ -220,6 +220,35 @@ to be within 45 seconds and rejects a stopped publisher, uncommitted generation,
 wrong RunId or still-expired replacement. Nine added file-fixture checks cover
 these cases in both Windows PowerShell 5.1 and PowerShell 7.
 
+### End of the five-run diagnostic cycle
+
+The fourth run passed the build, recovered a stale lease observation, and
+completed native transport snapshots in about 1.5 seconds. It reached the real
+90-second connection assertion: both MWB processes listened on the expected
+ports, but neither had an established peer connection. Name/address mappings
+were correct, the guest routing slots included both names, and video showed
+matching submitted keys. Do not relabel this as a unit-test failure or weaken
+the transport assertion.
+
+The fixture had collected sanitized endpoint logs without attaching the `logs`
+subfolder to TRX. Evidence enumeration now includes only that explicit folder
+alongside top-level JSON/PNG, with Host/Guest-prefixed filenames. Requests and
+private recovery data remain excluded.
+
+The fifth run stopped in the main build on the Settings MWB IPC certificate
+fixture: an intermediate's separately sampled expiry exceeded its issuer's
+encoded expiry by one second. Both intermediate and leaf fixtures now inherit
+their issuer's validity bounds. A one-day root reproduces the old failure
+deterministically; one-day and seven-day roots pass with the correction.
+Production IPC verification and certificate trust policy are unchanged.
+
+All five authorized runs are terminal; no sixth run was queued. The original
+lease unit regression is cleared in CI, but the final certificate-fixture fix
+has only local coverage. The last run produced no UI evidence, so the newly
+attached sanitized logs still await a subsequent UI execution. Remaining gates:
+diagnose the actual Win10 peer connection, restore the local VM control
+credential, and enable/reboot Sandbox in the Win11 CI image.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under
