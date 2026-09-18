@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\RobocopyUI.UnitTests\</OutputPath>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RobocopyUI.UnitTests</RootNamespace>
+    <AssemblyName>RobocopyUI.UnitTests</AssemblyName>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\RobocopyUI.UI\Helpers\SimpleCopyTask.cs" Link="Shared\SimpleCopyTask.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Models\RobocopyJob.cs" Link="Shared\RobocopyJob.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Models\SimpleCopyOptions.cs" Link="Shared\SimpleCopyOptions.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Models\SimpleCopySnapshot.cs" Link="Shared\SimpleCopySnapshot.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Models\SimpleCopyTaskKind.cs" Link="Shared\SimpleCopyTaskKind.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Services\AI\RobocopyCommand.cs" Link="Shared\RobocopyCommand.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Services\AI\RobocopyPlanOption.cs" Link="Shared\RobocopyPlanOption.cs" />
+  </ItemGroup>
+</Project>

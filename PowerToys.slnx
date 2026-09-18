@@ -1193,7 +1193,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/RobocopyUI/RobocopyUI.UnitTests/RobocopyUI.UnitTests.csproj">
+    <Project Path="src/modules/RobocopyUI/Tests/RobocopyUI.UnitTests/RobocopyUI.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
