@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -21,6 +21,7 @@ using AdvancedPaste.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.AI.Credentials;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
@@ -142,23 +143,23 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+        public ObservableCollection<AIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<AIProviderDefinition>();
 
-        public IEnumerable<PasteAIProviderDefinition> AllowedAIProviders
+        public IEnumerable<AIProviderDefinition> AllowedAIProviders
         {
             get
             {
                 var providers = AIProviders;
                 if (providers is null || providers.Count == 0)
                 {
-                    return Enumerable.Empty<PasteAIProviderDefinition>();
+                    return Enumerable.Empty<AIProviderDefinition>();
                 }
 
                 return providers.Where(IsProviderAllowedByGPO);
             }
         }
 
-        public PasteAIProviderDefinition ActiveAIProvider
+        public AIProviderDefinition ActiveAIProvider
         {
             get
             {
@@ -914,7 +915,7 @@ namespace AdvancedPaste.ViewModels
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
         }
 
-        private bool IsProviderAllowedByGPO(PasteAIProviderDefinition provider)
+        private bool IsProviderAllowedByGPO(AIProviderDefinition provider)
         {
             if (provider is null)
             {
@@ -952,7 +953,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         [RelayCommand]
-        private async Task SetActiveProviderAsync(PasteAIProviderDefinition provider)
+        private async Task SetActiveProviderAsync(AIProviderDefinition provider)
         {
             if (provider is null || string.IsNullOrEmpty(provider.Id))
             {

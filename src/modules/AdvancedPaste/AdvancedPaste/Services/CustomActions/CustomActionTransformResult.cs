@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using AdvancedPaste.Models;
+using Microsoft.PowerToys.AI;
 
 namespace AdvancedPaste.Services.CustomActions
 {

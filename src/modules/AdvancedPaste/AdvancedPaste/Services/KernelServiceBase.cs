@@ -14,6 +14,7 @@ using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
 using AdvancedPaste.Telemetry;
 using ManagedCommon;
+using Microsoft.PowerToys.AI;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;

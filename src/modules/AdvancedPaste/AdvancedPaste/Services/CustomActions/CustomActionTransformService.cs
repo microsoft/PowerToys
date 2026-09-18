@@ -13,47 +13,64 @@ using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
 using AdvancedPaste.Telemetry;
 using ManagedCommon;
+using Microsoft.PowerToys.AI;
+using Microsoft.PowerToys.AI.Configuration;
+using Microsoft.PowerToys.AI.Credentials;
+using Microsoft.PowerToys.AI.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using AIServiceUsage = Microsoft.PowerToys.AI.AIServiceUsage;
 
 namespace AdvancedPaste.Services.CustomActions
 {
     public sealed class CustomActionTransformService : ICustomActionTransformService
     {
+        private const string ModuleName = "AdvancedPaste";
+
         private const string DefaultSystemPrompt = """
             You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it.
             Do not output anything else besides the reformatted clipboard content.
             """;
 
         private readonly IPromptModerationService promptModerationService;
-        private readonly IPasteAIProviderFactory providerFactory;
+        private readonly IAIChatProviderFactory chatProviderFactory;
         private readonly IAICredentialsProvider credentialsProvider;
         private readonly IUserSettings userSettings;
 
-        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings)
+        public CustomActionTransformService(
+            IPromptModerationService promptModerationService,
+            IAIChatProviderFactory chatProviderFactory,
+            IAICredentialsProvider credentialsProvider,
+            IUserSettings userSettings)
         {
             this.promptModerationService = promptModerationService;
-            this.providerFactory = providerFactory;
+            this.chatProviderFactory = chatProviderFactory;
             this.credentialsProvider = credentialsProvider;
             this.userSettings = userSettings;
         }
 
         public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null, string providerIdOverride = null)
         {
-            var pasteConfig = userSettings?.PasteAIConfiguration;
-            var providerConfig = BuildProviderConfig(pasteConfig, providerIdOverride);
+            var aiConfiguration = userSettings?.PasteAIConfiguration;
+            var (providerConfig, providerId) = BuildProviderConfig(aiConfiguration, providerIdOverride);
 
             if (systemPromptOverride != null)
             {
                 providerConfig.SystemPrompt = systemPromptOverride;
             }
 
-            return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
+            return await TransformAsync(prompt, inputText, imageBytes, providerConfig, providerId, cancellationToken, progress);
         }
 
-        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<CustomActionTransformResult> TransformAsync(
+            string prompt,
+            string inputText,
+            byte[] imageBytes,
+            AIProviderConfig providerConfig,
+            string providerId,
+            CancellationToken cancellationToken,
+            IProgress<double> progress)
         {
             ArgumentNullException.ThrowIfNull(providerConfig);
 
@@ -68,9 +85,10 @@ namespace AdvancedPaste.Services.CustomActions
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
-            var systemPrompt = providerConfig.SystemPrompt ?? DefaultSystemPrompt;
+            var systemPrompt = string.IsNullOrWhiteSpace(providerConfig.SystemPrompt) ? DefaultSystemPrompt : providerConfig.SystemPrompt;
+            providerConfig.SystemPrompt = systemPrompt;
 
-            var fullPrompt = (systemPrompt ?? string.Empty) + "\n\n" + (inputText ?? string.Empty);
+            var fullPrompt = systemPrompt + "\n\n" + (inputText ?? string.Empty);
 
             if (ShouldModerate(providerConfig))
             {
@@ -79,32 +97,52 @@ namespace AdvancedPaste.Services.CustomActions
 
             try
             {
-                var provider = providerFactory.CreateProvider(providerConfig);
-
-                var request = new PasteAIRequest
-                {
-                    Prompt = prompt,
-                    InputText = inputText,
-                    ImageBytes = imageBytes,
-                    ImageMimeType = imageBytes != null ? "image/png" : null,
-                    SystemPrompt = systemPrompt,
-                };
-
                 var operationStart = DateTime.UtcNow;
+                string content;
+                AIServiceUsage usage;
 
-                var providerContent = await provider.ProcessPasteAsync(
-                    request,
-                    cancellationToken,
-                    progress);
+                if (imageBytes != null)
+                {
+                    (content, usage) = await SemanticKernelImageChatHelper.CompleteAsync(
+                        providerConfig,
+                        systemPrompt,
+                        prompt,
+                        inputText,
+                        imageBytes,
+                        "image/png",
+                        cancellationToken);
+                }
+                else
+                {
+                    var chatProvider = chatProviderFactory.CreateProvider(providerConfig);
+                    var userTurn = AIChatTurn.User(BuildUserPrompt(prompt, inputText));
+                    content = await chatProvider.CompleteAsync(systemPrompt, [userTurn], cancellationToken);
+                    usage = AIServiceUsage.None;
+                }
+
+                progress?.Report(1.0);
 
                 var durationMs = (int)Math.Round((DateTime.UtcNow - operationStart).TotalMilliseconds);
+                content ??= string.Empty;
 
-                var usage = request.Usage;
-                var content = providerContent ?? string.Empty;
+                var isLocal = AIProviderConfigMapper.IsLocalProvider(providerConfig.ProviderType);
+                PowerToysTelemetry.Log.WriteEvent(new AIEndpointUsageEvent(
+                    ModuleName,
+                    providerConfig.ProviderType,
+                    providerConfig.Model ?? string.Empty,
+                    providerId,
+                    isLocal,
+                    isAdvanced: false,
+                    durationMs,
+                    usage.PromptTokens,
+                    usage.CompletionTokens));
 
-                // Log endpoint usage (custom action pipeline is not the advanced SK flow)
-                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType, providerConfig.Model ?? string.Empty, isAdvanced: false, durationMs: durationMs);
-                PowerToysTelemetry.Log.WriteEvent(endpointEvent);
+                // Keep paste-local event for existing dashboards during transition.
+                PowerToysTelemetry.Log.WriteEvent(new AdvancedPasteEndpointUsageEvent(
+                    providerConfig.ProviderType,
+                    providerConfig.Model ?? string.Empty,
+                    isAdvanced: false,
+                    durationMs: durationMs));
 
                 Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}, DurationMs={durationMs}");
 
@@ -115,7 +153,19 @@ namespace AdvancedPaste.Services.CustomActions
                 Logger.LogError($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} failed", ex);
                 var statusCode = ExtractStatusCode(ex);
                 var modelName = providerConfig.Model ?? string.Empty;
-                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+                var errorDescription = ex is PasteActionModeratedException
+                    ? PasteActionModeratedException.ErrorDescription
+                    : ex.Message;
+
+                PowerToysTelemetry.Log.WriteEvent(new AICompletionErrorEvent(
+                    ModuleName,
+                    providerConfig.ProviderType,
+                    modelName,
+                    statusCode,
+                    errorDescription,
+                    providerId));
+
+                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, errorDescription);
                 PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
                 if (ex is PasteActionException or OperationCanceledException)
@@ -133,6 +183,17 @@ namespace AdvancedPaste.Services.CustomActions
             }
         }
 
+        private static string BuildUserPrompt(string prompt, string inputText) =>
+            $"""
+            User instructions:
+            {prompt}
+
+            Clipboard Content:
+            {inputText}
+
+            Output:
+            """;
+
         private static int ExtractStatusCode(Exception exception)
         {
             if (exception is HttpOperationException httpOperationException)
@@ -148,72 +209,23 @@ namespace AdvancedPaste.Services.CustomActions
             return -1;
         }
 
-        private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
+        private (AIProviderConfig Config, string ProviderId) BuildProviderConfig(AIConfiguration config, string providerIdOverride = null)
         {
-            return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
-        }
-
-        private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config, string providerIdOverride = null)
-        {
-            config ??= new PasteAIConfiguration();
-            PasteAIProviderDefinition provider;
-
-            if (!string.IsNullOrWhiteSpace(providerIdOverride))
-            {
-                provider = config.Providers?.FirstOrDefault(p => string.Equals(p.Id, providerIdOverride, StringComparison.OrdinalIgnoreCase))
-                           ?? config.ActiveProvider
+            config ??= new AIConfiguration();
+            var provider = AIProviderConfigMapper.ResolveProvider(config, providerIdOverride)
                            ?? config.Providers?.FirstOrDefault()
-                           ?? new PasteAIProviderDefinition();
-            }
-            else
+                           ?? new AIProviderDefinition();
+
+            var providerConfig = AIProviderConfigMapper.FromDefinition(provider, credentialsProvider);
+            if (string.IsNullOrWhiteSpace(providerConfig.SystemPrompt))
             {
-                provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
-            }
-
-            var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
-            var systemPrompt = string.IsNullOrWhiteSpace(provider.SystemPrompt) ? DefaultSystemPrompt : provider.SystemPrompt;
-            var apiKey = AcquireApiKey(serviceType, provider.Id);
-            var modelName = provider.ModelName;
-
-            var providerConfig = new PasteAIConfig
-            {
-                ProviderType = serviceType,
-                ApiKey = apiKey,
-                Model = modelName,
-                Endpoint = provider.EndpointUrl,
-                DeploymentName = provider.DeploymentName,
-                LocalModelPath = provider.ModelPath,
-                ModelPath = provider.ModelPath,
-                SystemPrompt = systemPrompt,
-                ModerationEnabled = provider.ModerationEnabled,
-            };
-
-            return providerConfig;
-        }
-
-        private string AcquireApiKey(AIServiceType serviceType, string providerId)
-        {
-            if (!RequiresApiKey(serviceType))
-            {
-                return string.Empty;
+                providerConfig.SystemPrompt = DefaultSystemPrompt;
             }
 
-            return credentialsProvider.GetKey(serviceType, providerId ?? string.Empty);
+            return (providerConfig, provider.Id ?? string.Empty);
         }
 
-        private static bool RequiresApiKey(AIServiceType serviceType)
-        {
-            return serviceType switch
-            {
-                AIServiceType.Onnx => false,
-                AIServiceType.Ollama => false,
-                AIServiceType.FoundryLocal => false,
-                AIServiceType.PhiSilica => false,
-                _ => true,
-            };
-        }
-
-        private static bool ShouldModerate(PasteAIConfig providerConfig)
+        private static bool ShouldModerate(AIProviderConfig providerConfig)
         {
             if (providerConfig is null || !providerConfig.ModerationEnabled)
             {

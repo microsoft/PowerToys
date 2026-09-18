@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
-using AdvancedPaste.Services;
 using ManagedCommon;
+using Microsoft.PowerToys.AI.Credentials;
 using OpenAI.Moderations;
 
 namespace AdvancedPaste.Services.OpenAI;

@@ -10,7 +10,7 @@ namespace AdvancedPaste.Services;
 
 internal static class AdvancedAIProviderResolver
 {
-    public static bool TryResolveAdvancedProvider(PasteAIConfiguration configuration, string providerIdOverride, out PasteAIProviderDefinition provider)
+    public static bool TryResolveAdvancedProvider(AIConfiguration configuration, string providerIdOverride, out AIProviderDefinition provider)
     {
         provider = null;
 
@@ -50,7 +50,7 @@ internal static class AdvancedAIProviderResolver
         return provider is not null;
     }
 
-    private static bool IsAdvancedProvider(PasteAIProviderDefinition provider)
+    private static bool IsAdvancedProvider(AIProviderDefinition provider)
     {
         if (provider is null || !provider.EnableAdvancedAI)
         {

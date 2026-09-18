@@ -4,13 +4,15 @@
 
 using System;
 using AdvancedPaste.Helpers;
-using AdvancedPaste.Models;
 using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
+using Microsoft.PowerToys.AI;
+using Microsoft.PowerToys.AI.Credentials;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using AIServiceUsage = Microsoft.PowerToys.AI.AIServiceUsage;
 
 namespace AdvancedPaste.Services;
 
@@ -85,7 +87,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return runtimeConfig.ModerationEnabled && (runtimeConfig.ServiceType == AIServiceType.OpenAI || runtimeConfig.ServiceType == AIServiceType.AzureOpenAI);
     }
 
-    private static string GetModelName(PasteAIProviderDefinition config)
+    private static string GetModelName(AIProviderDefinition config)
     {
         if (!string.IsNullOrWhiteSpace(config?.ModelName))
         {
