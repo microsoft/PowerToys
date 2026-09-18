@@ -39,7 +39,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleLargeTextBlockStyle}"  Margin="12,0" Grid.Row="0"/>
+        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleTextBlockStyle}"  Margin="12,0" Grid.Row="0"/>
 
         <StackPanel x:Name="TopPanelStack" Margin="0,12,0,0" Grid.Row="1">
             <Grid x:Name="InputOutputPanel" Margin="12,0,12,0">

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.UI.Xaml;
+using RobocopyUI.Helpers;
 
 namespace RobocopyUI
 {
@@ -11,6 +12,8 @@ namespace RobocopyUI
         public ShellPage()
         {
             InitializeComponent();
+
+            this.Title = ResourceLoaderInstance.ResourceLoader.GetString("ShellPageWindow/Title");
 
             ContentFrame.Navigate(typeof(HomePage));
         }
