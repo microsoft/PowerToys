@@ -154,7 +154,10 @@ The built executable is under
   identity-checked recovery stop only that publisher.
   `lease-publisher.json` records its stage, sequence, per-endpoint write timings,
   maximum cycle gap and bounded stall history. The 45-second worker watchdog
-  remains enabled.
+  remains enabled. Before declaring an aged observation expired, a worker
+  re-reads the newest committed generation once: the reader itself may have
+  paused while publication continued. The publication timestamp must still be
+  within 45 seconds; no lease is re-dated and no grace period is added.
   Native .NET adapter enumeration provides bootstrap IPv4/prefix/interface/gateway
   data without cold-starting PowerShell's NetTCPIP/CIM cmdlets.
 - Read-only product-archive, worker, tools and request mappings; a separate writable guest

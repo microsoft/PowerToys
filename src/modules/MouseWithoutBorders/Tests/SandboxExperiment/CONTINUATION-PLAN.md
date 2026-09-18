@@ -208,6 +208,18 @@ evidence remains available without increasing the command or pairing deadlines.
 Full local execution is currently blocked by the saved VM control credential
 being rejected; no credential reset or alternate control channel is attempted.
 
+The next diagnostic build was stopped by an unrelated launcher rename-event
+unit test. Retrying the unchanged revision passed the build, then distinguished
+another liveness failure: the publisher's maximum gap was only 13.690 seconds,
+but the host worker rejected a selected lease 55.8 seconds old. Publication
+continued while the reader's observation aged.
+
+Before rejecting an expired observation, the worker now re-reads the latest
+committed generation once. It still requires the original publication timestamp
+to be within 45 seconds and rejects a stopped publisher, uncommitted generation,
+wrong RunId or still-expired replacement. Nine added file-fixture checks cover
+these cases in both Windows PowerShell 5.1 and PowerShell 7.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under

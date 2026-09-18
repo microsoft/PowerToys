@@ -177,6 +177,22 @@ function Read-LatestEndpointLease {
     $candidate
 }
 
+function Confirm-EndpointLease {
+    param([string]$Directory, [string]$RunId, $Lease)
+    if (-not $Lease) { throw 'No initial host lease was published.' }
+    if ($Lease.RunId -ne $RunId) { throw 'Lease generation correlation mismatch.' }
+    if (([DateTime]::UtcNow - ([DateTime]$Lease.TimestampUtc).ToUniversalTime()).TotalSeconds -gt 45) {
+        # A paused reader can resume with an obsolete selection while publication
+        # continued. Re-observe once before declaring the host dead; never re-date a lease.
+        $latest = Read-LatestEndpointLease $Directory $RunId ([int]$Lease.Sequence)
+        if ($latest) { $Lease = $latest }
+    }
+    if (([DateTime]::UtcNow - ([DateTime]$Lease.TimestampUtc).ToUniversalTime()).TotalSeconds -gt 45) {
+        throw "Host lease expired; observed $($Lease.TimestampUtc), now $([DateTime]::UtcNow.ToString('o')); stopping only this endpoint."
+    }
+    $Lease
+}
+
 function Get-EndpointNetwork {
     $addresses = @()
     $gateways = @()

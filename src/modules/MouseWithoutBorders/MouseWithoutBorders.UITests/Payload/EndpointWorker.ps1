@@ -121,12 +121,16 @@ try {
                 Write-BootstrapStage 'LeaseBacklogConsumed' @{ LeaseSequence = $script:leaseNumber }
                 $bootstrapLeaseMeasured = $true
             }
-            if (-not $script:lastLease) { throw 'No initial host lease was published.' }
-            $lease = $script:lastLease
-            if ($lease.RunId -ne $script:config.RunId -or
-                ([DateTime]::UtcNow - ([DateTime]$lease.TimestampUtc).ToUniversalTime()).TotalSeconds -gt 45) {
-                throw "Host lease expired; observed $($lease.TimestampUtc), now $([DateTime]::UtcNow.ToString('o')); stopping only this endpoint."
+            $lease = Confirm-EndpointLease "$InputRoot\leases" $script:config.RunId $script:lastLease
+            if ($lease.Sequence -ne $script:leaseNumber) {
+                Write-RunJson "$OutputRoot\lease-refresh.json" @{
+                    PreviousSequence = $script:leaseNumber; PreviousTimestampUtc = $script:lastLease.TimestampUtc
+                    Sequence = $lease.Sequence; LeaseTimestampUtc = $lease.TimestampUtc
+                    TimestampUtc = [DateTime]::UtcNow.ToString('o')
+                }
             }
+            $script:lastLease = $lease
+            $script:leaseNumber = $lease.Sequence
             if (-not (Test-Path -LiteralPath "$OutputRoot\ready.json")) {
                 $script:receiver.FocusInput()
                 $script:status = 'Ready'

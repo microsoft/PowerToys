@@ -120,6 +120,28 @@ try {
         Assert-Throws { Read-LatestEndpointLease $leaseRoot $script:config.RunId 400 } 'Lease generation correlation mismatch'
         Write-RunJson "$leaseRoot\00000401.json" @{ RunId = $script:config.RunId; Sequence = 400 }
         Assert-Throws { Read-LatestEndpointLease $leaseRoot $script:config.RunId 400 } 'Lease generation correlation mismatch'
+        $refreshRoot = "$fixture\lease-refresh"
+        $null = New-Item -ItemType Directory -Path $refreshRoot
+        $expired = @{ RunId = $script:config.RunId; Sequence = 1; TimestampUtc = [DateTime]::UtcNow.AddMinutes(-2).ToString('o') }
+        Write-RunJson "$refreshRoot\00000001.json" $expired
+        Assert-Throws { Confirm-EndpointLease $refreshRoot $script:config.RunId $null } 'No initial host lease'
+        Assert-Throws { Confirm-EndpointLease $refreshRoot 'another-run' $expired } 'Lease generation correlation mismatch'
+        Assert-Throws { Confirm-EndpointLease $refreshRoot $script:config.RunId $expired } 'Host lease expired'
+        $fresh = @{ RunId = $script:config.RunId; Sequence = 2; TimestampUtc = [DateTime]::UtcNow.ToString('o') }
+        [IO.File]::WriteAllText("$refreshRoot\00000002.json", ($fresh | ConvertTo-Json))
+        Assert-Throws { Confirm-EndpointLease $refreshRoot $script:config.RunId $expired } 'Host lease expired'
+        Write-RunJson "$refreshRoot\00000002.json" $fresh
+        $confirmed = Confirm-EndpointLease $refreshRoot $script:config.RunId $expired
+        Assert-Check ($confirmed.Sequence -eq 2) 'an aged observation is refreshed to the latest committed lease'
+        Assert-Check (([DateTime]$confirmed.TimestampUtc).ToUniversalTime().Ticks -eq
+            ([DateTime]$fresh.TimestampUtc).ToUniversalTime().Ticks) 'refresh preserves publication time rather than extending the watchdog'
+        Assert-Check ((Confirm-EndpointLease "$fixture\not-enumerated" $script:config.RunId $fresh).Sequence -eq 2) 'fresh observations do not need a second enumeration'
+        $fresh.TimestampUtc = $expired.TimestampUtc
+        Write-RunJson "$refreshRoot\00000002.json" $fresh
+        Assert-Throws { Confirm-EndpointLease $refreshRoot $script:config.RunId $expired } 'Host lease expired'
+        $fresh.RunId = 'another-run'
+        Write-RunJson "$refreshRoot\00000002.json" $fresh
+        Assert-Throws { Confirm-EndpointLease $refreshRoot $script:config.RunId $expired } 'Lease generation correlation mismatch'
         $network = Get-EndpointNetwork
         $loopback = @($network.Addresses | Where-Object IPAddress -eq '127.0.0.1')
         Assert-Check ($loopback.Count -eq 1 -and $loopback[0].PrefixLength -eq 8 -and
