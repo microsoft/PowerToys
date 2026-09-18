@@ -179,8 +179,8 @@
             </Grid>
         </Grid>
 
-        <Expander x:Name="CommandOutputExpander" Header="Execution Output" IsEnabled="False" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
-            <StackPanel x:Name="OutputContent" Visibility="Collapsed">
+        <Expander x:Name="CommandOutputExpander" IsEnabled="False" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
+            <Expander.Header>
                 <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock>&#160;</TextBlock>
@@ -189,11 +189,11 @@
                     <TextBlock>(</TextBlock>
                     <TextBlock x:Uid="StatusCodeLabel" />
                     <TextBlock>&#160;</TextBlock>
-                    <TextBlock x:Name="StatusCodeText" Style="{StaticResource BodyTextBlockStyle}" />
+                    <TextBlock x:Name="StatusCodeText" Style="{StaticResource BodyTextBlockStyle}">-</TextBlock>
                     <TextBlock>)</TextBlock>
                 </StackPanel>
-                <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
-            </StackPanel>
+            </Expander.Header>
+            <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
         </Expander>
     </Grid>
 </Page>

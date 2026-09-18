@@ -27,6 +27,7 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_NotRunning");
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -196,35 +197,30 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Filters":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Visible;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Logging":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Visible;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Advanced":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Visible;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Output":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Visible;
                 break;
         }
     }
@@ -434,10 +430,9 @@ public sealed partial class HomePage : Page
     {
         OutputTextBox.Text = string.Empty;
 
-        // OutputSelectorBarItem.IsEnabled = true; OutputSelectorBarItem.IsSelected = true;
         CommandOutputExpander.IsEnabled = true;
-        CommandOutputExpander.IsExpanded = true;
-        CommandOutputExpander.Header = "Running...";
+        StatusCodeText.Text = "-";
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_Running");
 
         var startInfo = new ProcessStartInfo
         {
@@ -488,5 +483,14 @@ public sealed partial class HomePage : Page
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+
+        process.Exited += (s, args) =>
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
+                OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail"));
+            });
+        };
     }
 }

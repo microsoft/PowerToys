@@ -591,6 +591,9 @@
   <data name="Status_Fail" xml:space="preserve">
     <value>Operation failed.</value>
   </data>
+  <data name="Status_4" xml:space="preserve">
+    <value>Operation failed.</value>
+  </data>
   <data name="LoadButtonLabel.Text" xml:space="preserve">
     <value>Load Job File</value>
   </data>
@@ -695,5 +698,8 @@
   </data>
   <data name="ShellPageWindow.Title" xml:space="preserve">
     <value>Robocopy UI</value>
+  </data>
+  <data name="Status_NotRunning" xml:space="preserve">
+    <value>Not running</value>
   </data>
 </root>
