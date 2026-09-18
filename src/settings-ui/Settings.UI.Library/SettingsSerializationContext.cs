@@ -158,10 +158,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
 
-    // AdvancedPaste AI Provider Types (for AOT compatibility)
+    // Shared AI Provider Types (for AOT compatibility)
+    [JsonSerializable(typeof(AIConfiguration))]
+    [JsonSerializable(typeof(AIProviderDefinition))]
+    [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<AIProviderDefinition>))]
+    [JsonSerializable(typeof(AIProvidersSettings))]
+    [JsonSerializable(typeof(AIProvidersProperties))]
+#pragma warning disable CS0618 // Type or member is obsolete — retained for settings JSON compat
     [JsonSerializable(typeof(PasteAIConfiguration))]
     [JsonSerializable(typeof(PasteAIProviderDefinition))]
     [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
+#pragma warning restore CS0618
 
     // IPC Send Message Wrapper Classes (Snd*)
     [JsonSerializable(typeof(SndAutoHideCursorSettings))]
