@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace RobocopyUI.Services.AI
@@ -103,6 +104,73 @@ namespace RobocopyUI.Services.AI
         {
             var trimmed = (path ?? string.Empty).Trim().Trim('"');
             return trimmed.Contains(' ', StringComparison.Ordinal) ? $"\"{trimmed}\"" : trimmed;
+        }
+
+        /// <summary>
+        /// Drops switches that are contradictory or already implied by another switch.
+        /// </summary>
+        /// <remarks>
+        /// The more specific switch wins: /S over /E, and /MIR over the /E and /PURGE it expands to.
+        /// /COPYALL implies /COPY and /SEC. /X only reports extra files, so it is dropped next to a
+        /// switch that already acts on them.
+        /// </remarks>
+        public static void Prune(List<RobocopyPlanOption> options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            bool Has(string name) => options.Any(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
+            void Drop(string name) => options.RemoveAll(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
+
+            if (Has("/MIR"))
+            {
+                Drop("/E");
+                Drop("/S");
+                Drop("/PURGE");
+            }
+            else if (Has("/S"))
+            {
+                Drop("/E");
+            }
+
+            if (Has("/COPYALL"))
+            {
+                Drop("/COPY");
+                Drop("/SEC");
+            }
+
+            if (Has("/XX") || Has("/MIR") || Has("/PURGE"))
+            {
+                Drop("/X");
+            }
+        }
+
+        /// <summary>
+        /// Returns deterministic warnings for switches that delete or move data.
+        /// </summary>
+        public static IReadOnlyList<string> GetDestructiveWarnings(IEnumerable<RobocopyPlanOption> options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            var warnings = new List<string>();
+
+            foreach (var option in options)
+            {
+                var text = option.Name.ToUpperInvariant() switch
+                {
+                    "/MIR" => "/MIR mirrors the source: files that exist only in the destination will be deleted.",
+                    "/PURGE" => "/PURGE deletes destination files and folders that no longer exist in the source.",
+                    "/MOVE" => "/MOVE deletes the files and folders from the source after they are copied.",
+                    "/MOV" => "/MOV deletes the files from the source after they are copied.",
+                    _ => null,
+                };
+
+                if (text is not null && !warnings.Contains(text, StringComparer.Ordinal))
+                {
+                    warnings.Add(text);
+                }
+            }
+
+            return warnings;
         }
 
         /// <summary>

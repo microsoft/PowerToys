@@ -769,47 +769,9 @@ namespace RobocopyUI.Services.AI
                 options.Add(new RobocopyPlanOption(name, value));
             }
 
-            PruneRedundantOptions(options);
+            RobocopyCommand.Prune(options);
 
             return true;
-        }
-
-        /// <summary>
-        /// Drops switches that are contradictory or already implied by another switch in the plan.
-        /// </summary>
-        /// <remarks>
-        /// Small models routinely emit both halves of a mutually exclusive pair - most often /E
-        /// alongside /S, which silently reinstates the empty folders the user asked to skip. Rejecting
-        /// the plan would cost another full generation, so the redundant switch is removed instead.
-        /// The more specific switch wins: /S over /E, and /MIR over the /E and /PURGE it expands to.
-        /// </remarks>
-        private static void PruneRedundantOptions(List<RobocopyPlanOption> options)
-        {
-            bool Has(string name) => options.Any(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
-            void Drop(string name) => options.RemoveAll(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
-
-            if (Has("/MIR"))
-            {
-                Drop("/E");
-                Drop("/S");
-                Drop("/PURGE");
-            }
-            else if (Has("/S"))
-            {
-                Drop("/E");
-            }
-
-            if (Has("/COPYALL"))
-            {
-                Drop("/COPY");
-                Drop("/SEC");
-            }
-
-            // /X only reports extra files; it is noise next to a switch that acts on them.
-            if (Has("/XX") || Has("/MIR") || Has("/PURGE"))
-            {
-                Drop("/X");
-            }
         }
 
         private static RobocopyOptionDescriptor? SelectDescriptor(List<RobocopyOptionDescriptor> candidates, string value)
@@ -1023,22 +985,7 @@ namespace RobocopyUI.Services.AI
         {
             var warnings = new List<string>();
 
-            foreach (var option in options)
-            {
-                var text = option.Name.ToUpperInvariant() switch
-                {
-                    "/MIR" => "/MIR mirrors the source: files that exist only in the destination will be deleted.",
-                    "/PURGE" => "/PURGE deletes destination files and folders that no longer exist in the source.",
-                    "/MOVE" => "/MOVE deletes the files and folders from the source after they are copied.",
-                    "/MOV" => "/MOV deletes the files from the source after they are copied.",
-                    _ => null,
-                };
-
-                if (text is not null && !warnings.Contains(text))
-                {
-                    warnings.Add(text);
-                }
-            }
+            warnings.AddRange(RobocopyCommand.GetDestructiveWarnings(options));
 
             foreach (var warning in modelWarnings)
             {
