@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -559,7 +559,7 @@ opera.exe</value>
   <data name="Shell_Welcome.Content" xml:space="preserve">
     <value>Getting started</value>
     <comment>Navigation view item name for Getting started</comment>
-  </data>	
+  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
@@ -1246,7 +1246,7 @@ opera.exe</value>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
   </data>
-	<data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
+  <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
     <value>Back up &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
@@ -4413,26 +4413,52 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Registry Preview</value>
     <comment>Registry Preview is the name of the utility</comment>
   </data>
+  <data name="RobocopyUI_Enable_RobocopyUI.Header" xml:space="preserve">
+    <value>Robocopy UI</value>
+    <comment>Registry Preview is the name of the utility</comment>
+  </data>
   <data name="Oobe_RegistryPreview_HowToUse.Text" xml:space="preserve">
     <value>In File Explorer, right-click a .REG file and select **Preview** from the context menu.</value>
+  </data>
+  <data name="Oobe_RobocopyUI_HowToUse.Text" xml:space="preserve">
+    <value>Open the Robocopy UI through the quick access panel, the dashboard or the settings page.</value>
   </data>
   <data name="Oobe_RegistryPreview_TipsAndTricks.Text" xml:space="preserve">
     <value>You can preview or edit Registry files in File Explorer or by opening the app from the PowerToys launcher.</value>
   </data>
+  <data name="Oobe_RobocopyUI_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can ask the built-in AI to generate a command.</value>
+  </data>
   <data name="Oobe_RegistryPreview.Description" xml:space="preserve">
     <value>Registry Preview is a quick little utility to visualize and edit complex Windows Registry files.</value>
+    <comment>{Locked="Windows"}</comment>
+  </data>
+  <data name="Oobe_RobocopyUI.Description" xml:space="preserve">
+    <value>Robocopy UI provides a user interface for the Robocopy CLI tool, which provides tools for syncing and copying huge amounts of files between directories.</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="Oobe_RegistryPreview.Title" xml:space="preserve">
     <value>Registry Preview</value>
     <comment>Do not localize this string</comment>
   </data>
+  <data name="Oobe_RobocopyUI.Title" xml:space="preserve">
+    <value>Robocopy UI</value>
+    <comment>Do not localize this string</comment>
+  </data>
   <data name="LearnMore_RegistryPreview.Text" xml:space="preserve">
     <value>Learn more about Registry Preview</value>
     <comment>Registry Preview is a product name, do not loc</comment>
   </data>
+  <data name="LearnMore_RobocopyUI.Text" xml:space="preserve">
+    <value>Learn more about Robocopy UI</value>
+    <comment>Registry Preview is a product name, do not loc</comment>
+  </data>
   <data name="Launch_RegistryPreview.Content" xml:space="preserve">
     <value>Open Registry Preview</value>
+    <comment>"Registry Preview" is the name of the utility</comment>
+  </data>
+  <data name="Launch_RobocopyUI.Content" xml:space="preserve">
+    <value>Open Robocopy UI</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
@@ -4579,8 +4605,17 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="RobocopyUI_Launch_GroupSettings.Header" xml:space="preserve">
+    <value>Open</value>
+  </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Registry Preview</value>
+  </data>
+  <data name="RobocopyUI_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Robocopy UI</value>
+  </data>
+  <data name="RobocopyUI_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Launch the Robocopy UI utility</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
     <value>Make Registry Preview the default app for .reg files</value>
@@ -5565,7 +5600,7 @@ The break timer font matches the text font.</value>
   <data name="UpdateAvailableInfoBar.Title" xml:space="preserve">
     <value>Update available</value>
   </data>
-	<data name="GeneralVersion.Text" xml:space="preserve">
+  <data name="GeneralVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="LearnWhatsNew.Text" xml:space="preserve">
@@ -6702,5 +6737,23 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
+  </data>
+  <data name="RobocopyUI.ModuleDescription" xml:space="preserve">
+    <value>A user interface for the robocopy CLI, which helps you copying huge batch of files.</value>
+  </data>
+  <data name="RobocopyUI.ModuleTitle" xml:space="preserve">
+    <value>Robocopy UI</value>
+  </data>
+  <data name="Shell_RobocopyUI.Content" xml:space="preserve">
+    <value>Robocopy UI</value>
+  </data>
+  <data name="RobocopyUI_AI_GroupSettings.Header" xml:space="preserve">
+    <value>AI Settings</value>
+  </data>
+  <data name="RobocopyUI_AI_InfoBar.Message" xml:space="preserve">
+    <value>To use AI in Robocopy please configure a provider in the Advanced Paste settings page.</value>
+  </data>
+  <data name="RobocopyUI_AI_HyperlinkButton.Content" xml:space="preserve">
+    <value>Open Advanced Paste settings</value>
   </data>
 </root>

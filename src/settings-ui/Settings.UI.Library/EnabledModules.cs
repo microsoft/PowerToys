@@ -612,6 +612,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool robocopyUI;
+
+        [JsonPropertyName("RobocopyUI")]
+        public bool RobocopyUI
+        {
+            get => robocopyUI;
+            set
+            {
+                if (robocopyUI != value)
+                {
+                    LogTelemetryEvent(value);
+                    robocopyUI = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

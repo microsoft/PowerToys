@@ -108,6 +108,27 @@ public:
         }
     }
 
+
+
+    // Pop open the app, if the OOBE page asks it to
+    virtual void call_custom_action(const wchar_t* action) override
+    {
+        try
+        {
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            if (action_object.get_name() == L"Launch")
+            {
+                StartProcess();
+            }
+        }
+        catch (std::exception&)
+        {
+            Logger::error(L"Failed to parse action. {}", action);
+        }
+    }
+
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy

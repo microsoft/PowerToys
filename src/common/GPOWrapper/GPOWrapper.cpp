@@ -316,4 +316,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideBuiltInNewContextMenuValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredRobocopyUIEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRobocopyUIEnabledValue());
+    }
 }

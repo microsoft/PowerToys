@@ -117,6 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
                     case "GrabAndMove": NavigationFrame.Navigate(typeof(OobeGrabAndMove)); break;
                     case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
+                    case "RobocopyUI": NavigationFrame.Navigate(typeof(OobeRobocopyUI)); break;
                 }
             }
         }

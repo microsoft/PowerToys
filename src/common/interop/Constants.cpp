@@ -322,4 +322,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
     }
+    hstring Constants::RobocopyUILaunchEvent()
+    {
+        return CommonSharedConstants::ROBOCOPY_UI_LAUNCH_EVENT;
+    }
 }
