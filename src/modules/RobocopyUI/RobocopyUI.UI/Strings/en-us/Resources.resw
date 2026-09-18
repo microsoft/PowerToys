@@ -693,4 +693,7 @@
   <data name="AINotConfiguredInfoBar.Message" xml:space="preserve">
     <value>Configure an AI provider in PowerToys Settings under Advanced Paste to use this feature.</value>
   </data>
+  <data name="ShellPageWindow.Title" xml:space="preserve">
+    <value>Robocopy UI</value>
+  </data>
 </root>
