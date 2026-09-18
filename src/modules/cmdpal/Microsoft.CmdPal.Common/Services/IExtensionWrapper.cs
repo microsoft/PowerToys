@@ -78,6 +78,12 @@ public interface IExtensionWrapper
     IExtension? GetExtensionObject();
 
     /// <summary>
+    /// Gets the cached extension instance without checking whether it is running.
+    /// </summary>
+    /// <returns>The cached instance, which may be disconnected, or null if none is cached.</returns>
+    IExtension? GetCachedExtensionObject();
+
+    /// <summary>
     /// Tells the wrapper that the extension implements the given provider
     /// </summary>
     /// <param name="providerType">The type of provider to be added</param>

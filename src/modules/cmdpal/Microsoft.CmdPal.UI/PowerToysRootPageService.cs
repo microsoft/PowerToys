@@ -94,11 +94,14 @@ internal sealed class PowerToysRootPageService : IRootPageService
         if (extension is not null || _activeExtension is not null)
         {
             // Input to another process can revoke foreground rights, so renew them for each command.
+            var extensionChanged = extension != _activeExtension;
             _activeExtension = extension;
 
             try
             {
-                var extensionWinRtObject = extension?.GetExtensionObject();
+                var extensionWinRtObject = extensionChanged
+                    ? extension?.GetExtensionObject()
+                    : extension?.GetCachedExtensionObject();
                 if (extensionWinRtObject is not null)
                 {
                     unsafe

@@ -172,6 +172,14 @@ public class ExtensionWrapper : IExtensionWrapper
         }
     }
 
+    public IExtension? GetCachedExtensionObject()
+    {
+        lock (_lock)
+        {
+            return _extensionObject;
+        }
+    }
+
     public async Task<T?> GetProviderAsync<T>()
         where T : class
     {
