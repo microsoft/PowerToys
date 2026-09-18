@@ -167,8 +167,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             // Profile backups are recovery data, not test attachments. Do not export them.
             foreach (var directory in new[] { runRoot, host?.OutputRoot, guest?.OutputRoot }.Where(path => path is not null))
             {
-                foreach (var file in Directory.EnumerateFiles(directory!, "*", SearchOption.TopDirectoryOnly)
-                    .Where(path => Path.GetExtension(path) is ".json" or ".png"))
+                foreach (var file in RunFiles.EvidenceFiles(directory!))
                 {
                     Attempt("Attach " + Path.GetFileName(file), () => context.AddResultFile(file));
                 }

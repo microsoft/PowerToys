@@ -207,6 +207,9 @@ The built executable is under
 
 TRX attachments include phase outcomes, topology, peer mappings, transport, receiver observations,
 screenshots, and journals. Screenshots/logs are captured before endpoint teardown.
+The workers' `logs` subfolders contain only run-scoped, filtered/redacted excerpts;
+these files are attached explicitly, without recursively publishing control
+requests or private recovery data.
 
 The custom fixture also records continuous, silent H.264 video at 720p/15 fps:
 

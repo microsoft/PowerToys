@@ -12,6 +12,26 @@ internal static class RunFiles
 {
     internal static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
+    public static IEnumerable<string> EvidenceFiles(string directory)
+    {
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+            .Where(path => Path.GetExtension(path) is ".json" or ".png"))
+        {
+            yield return file;
+        }
+
+        // Endpoint workers write only this run's filtered/redacted log excerpts here.
+        // Do not recurse into recordings, requests, or private recovery directories.
+        var logs = Path.Combine(directory, "logs");
+        if (Directory.Exists(logs))
+        {
+            foreach (var file in Directory.EnumerateFiles(logs, "*", SearchOption.TopDirectoryOnly))
+            {
+                yield return file;
+            }
+        }
+    }
+
     public static string PersistentResultsRoot(string? testRunDirectory)
     {
         if (string.IsNullOrWhiteSpace(testRunDirectory))

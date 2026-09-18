@@ -779,7 +779,7 @@ function Save-EndpointEvidence {
                 if ($key) { $content = $content.Replace($key, '[REDACTED]') }
             }
             $prefix = $relativeLogRoot.Split('\')[0]
-            $name = $prefix + '_' + $file.FullName.Substring($logRoot.Length + 1).Replace('\', '_')
+            $name = $script:config.Role + '_' + $prefix + '_' + $file.FullName.Substring($logRoot.Length + 1).Replace('\', '_')
             [IO.File]::WriteAllText((Join-Path "$OutputRoot\logs" $name), $content, [Text.UTF8Encoding]::new($false))
             $capturedLogs++
         }

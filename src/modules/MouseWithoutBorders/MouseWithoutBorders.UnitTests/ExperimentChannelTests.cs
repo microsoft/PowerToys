@@ -69,6 +69,37 @@ public sealed class ExperimentChannelTests
     }
 
     [TestMethod]
+    public void EvidenceIncludesSanitizedLogsWithoutRecursingIntoOtherFolders()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "mwb-evidence-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root, "logs"));
+            Directory.CreateDirectory(Path.Combine(root, "requests"));
+            Directory.CreateDirectory(Path.Combine(root, "recovery"));
+            var phase = Path.Combine(root, "phases.json");
+            var screenshot = Path.Combine(root, "desktop.png");
+            var log = Path.Combine(root, "logs", "MouseWithoutBorders_filtered.txt");
+            foreach (var path in new[]
+            {
+                phase, screenshot, log, Path.Combine(root, "ignored.bin"),
+                Path.Combine(root, "requests", "pending.json"), Path.Combine(root, "recovery", "settings.json"),
+            })
+            {
+                File.WriteAllText(path, "fixture");
+            }
+
+            CollectionAssert.AreEquivalent(new[] { phase, screenshot, log }, RunFiles.EvidenceFiles(root).ToArray());
+            Directory.Delete(Path.Combine(root, "logs"), recursive: true);
+            CollectionAssert.AreEquivalent(new[] { phase, screenshot }, RunFiles.EvidenceFiles(root).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void LeasePublicationUsesImmutableCorrelatedGenerations()
     {
         var root = Path.Combine(Path.GetTempPath(), "mwb-channel-" + Guid.NewGuid().ToString("N"));
