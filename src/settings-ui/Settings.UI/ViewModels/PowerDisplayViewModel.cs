@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly IDisposable _monitorRefreshRegistration;
         private readonly CancellationTokenSource _lifetimeCancellation = new();
         private readonly CancellationToken _lifetimeToken;
+        private readonly string _crashDetectedFlagPath;
 
         private bool _isProfilesLoading;
         private bool _disposed;
@@ -82,7 +83,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
             Func<int, int?, CancellationToken, Task<bool>> reorderProfileAsync = null,
             Func<PowerDisplayProfile, CancellationToken, Task> addOrUpdateProfileAsync = null,
-            Func<int, CancellationToken, Task<bool>> removeProfileByIdAsync = null)
+            Func<int, CancellationToken, Task<bool>> removeProfileByIdAsync = null,
+            string crashDetectedFlagPath = null)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -90,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(signalNamedEvent);
 
             _lifetimeToken = _lifetimeCancellation.Token;
+            _crashDetectedFlagPath = crashDetectedFlagPath ?? CrashDetectedFlagPath;
             _signalNamedEvent = signalNamedEvent;
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -159,7 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RefreshCrashLockState()
         {
-            if (File.Exists(CrashDetectedFlagPath) && !IsCrashLockActive)
+            if (File.Exists(_crashDetectedFlagPath) && !IsCrashLockActive)
             {
                 Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
                 IsCrashLockActive = true;
@@ -281,9 +284,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void DismissCrashWarning()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
-                var path = CrashDetectedFlagPath;
+                var path = _crashDetectedFlagPath;
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -730,6 +738,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var actionMessage = new PowerDisplayActionMessage
             {
                 Action = new PowerDisplayActionMessage.ActionData

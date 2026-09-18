@@ -27,6 +27,69 @@ namespace ViewModelTests;
 public class PowerDisplay
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RetainedLaunchCommand_OnlyExecutesWhileViewModelIsActive(bool disposed)
+    {
+        using var viewModel = CreateViewModel(out _, out var settingsUtils, out var ipcMessages);
+        var command = viewModel.LaunchEventHandler;
+        if (disposed)
+        {
+            viewModel.Dispose();
+        }
+
+        command.Execute(null);
+
+        Assert.AreEqual(disposed ? 0 : 1, ipcMessages.Count);
+        if (!disposed)
+        {
+            var message = JsonSerializer.Deserialize(ipcMessages.Single(), SettingsSerializationContext.Default.PowerDisplayActionMessage);
+            Assert.AreEqual("Launch", message.Action.PowerDisplay.ActionName);
+            Assert.AreEqual(string.Empty, message.Action.PowerDisplay.Value);
+        }
+
+        settingsUtils.Verify(
+            utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RetainedDismissCommand_OnlyDeletesFixtureFlagWhileViewModelIsActive(bool disposed)
+    {
+        var flagPath = Path.GetTempFileName();
+        try
+        {
+            using var viewModel = CreateViewModel(out _, out _, out var ipcMessages, crashDetectedFlagPath: flagPath);
+            Assert.IsTrue(viewModel.IsCrashLockActive);
+            var command = viewModel.DismissCrashWarningCommand;
+            var changedProperties = new List<string>();
+            viewModel.PropertyChanged += (_, args) => changedProperties.Add(args.PropertyName);
+            if (disposed)
+            {
+                viewModel.Dispose();
+            }
+
+            command.Execute(null);
+
+            Assert.AreEqual(disposed, File.Exists(flagPath));
+            Assert.AreEqual(disposed, viewModel.IsCrashLockActive);
+            Assert.AreEqual(disposed ? 0 : 1, changedProperties.Count);
+            if (!disposed)
+            {
+                Assert.AreEqual(nameof(PowerDisplayViewModel.IsCrashLockActive), changedProperties.Single());
+            }
+
+            Assert.AreEqual(0, ipcMessages.Count);
+        }
+        finally
+        {
+            File.Delete(flagPath);
+        }
+    }
+
+    [TestMethod]
     public void MouseWheelMode_DefaultsToDisabled()
     {
         using var viewModel = CreateViewModel(out _);
@@ -492,7 +555,8 @@ public class PowerDisplay
         List<string> namedEvents = null,
         List<string> operationOrder = null,
         Func<string, Action, IDisposable> registerEvent = null,
-        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null)
+        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
+        string crashDetectedFlagPath = null)
     {
         var powerDisplaySettingsUtils =
             ISettingsUtilsMocks.GetStubSettingsUtils<PowerDisplaySettings>();
@@ -537,7 +601,8 @@ public class PowerDisplay
                 events.Add(eventName);
                 operations.Add("signal");
             },
-            loadProfilesAsync);
+            loadProfilesAsync,
+            crashDetectedFlagPath: crashDetectedFlagPath);
     }
 
     private sealed class TestRegistration : IDisposable
