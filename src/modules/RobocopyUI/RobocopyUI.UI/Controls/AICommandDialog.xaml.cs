@@ -12,12 +12,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using RobocopyUI.Controls;
 using RobocopyUI.Converters;
 using RobocopyUI.Helpers;
 using RobocopyUI.Services.AI;
 
-namespace RobocopyUI
+namespace RobocopyUI.Controls
 {
     /// <summary>
     /// Dialog that turns a natural-language description into a validated robocopy command.

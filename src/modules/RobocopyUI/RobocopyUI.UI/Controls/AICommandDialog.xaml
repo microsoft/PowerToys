@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ContentDialog
-    x:Class="RobocopyUI.AICommandDialog"
+    x:Class="RobocopyUI.Controls.AICommandDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:RobocopyUI"
+    xmlns:local="using:RobocopyUI.Controls"
     xmlns:controls="using:RobocopyUI.Controls"
     xmlns:converters="using:RobocopyUI.Converters"
     xmlns:settings="using:Microsoft.PowerToys.Settings.UI.Library"
