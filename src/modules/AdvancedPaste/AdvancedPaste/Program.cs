@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 
 using ManagedCommon;
+using Microsoft.PowerToys.AI;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 

@@ -43,7 +43,7 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarCoachingProviderId { get; }
 
-        public PasteAIConfiguration PasteAIConfiguration { get; }
+        public AIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
 using ManagedCommon;
+using Microsoft.PowerToys.AI.Credentials;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Windows.Security.Credentials;
@@ -21,7 +22,8 @@ namespace AdvancedPaste.Settings
     {
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;
-        private readonly IFileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher _advancedPasteWatcher;
+        private readonly IFileSystemWatcher _aiProvidersWatcher;
         private readonly Lock _loadingSettingsLock = new();
         private readonly List<PasteFormats> _additionalActions;
         private readonly List<AdvancedPasteCustomAction> _customActions;
@@ -64,7 +66,7 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarCoachingProviderId { get; private set; } = string.Empty;
 
-        public PasteAIConfiguration PasteAIConfiguration { get; private set; }
+        public AIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)
         {
@@ -75,14 +77,15 @@ namespace AdvancedPaste.Settings
             ShowAIPaste = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
-            PasteAIConfiguration = new PasteAIConfiguration();
+            PasteAIConfiguration = new AIConfiguration();
             _additionalActions = [];
             _customActions = [];
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
+            _advancedPasteWatcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
+            _aiProvidersWatcher = Helper.GetFileWatcher(AIProvidersSettings.ModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
         }
 
         private void OnSettingsFileChanged()
@@ -122,6 +125,16 @@ namespace AdvancedPaste.Settings
                         {
                             bool migratedLegacyEnablement = TryMigrateLegacyAIEnablement(settings);
 
+                            if (migratedLegacyEnablement)
+                            {
+                                settings.Save(_settingsUtils);
+                            }
+
+                            // Promote Advanced Paste paste-ai-configuration into the global AIProviders store when needed.
+                            AIProvidersMigrationHelper.EnsureMigrated(_settingsUtils);
+
+                            var globalAIConfiguration = LoadGlobalAIConfiguration();
+
                             void UpdateSettings()
                             {
                                 var properties = settings.Properties;
@@ -131,7 +144,7 @@ namespace AdvancedPaste.Settings
                                 ShowAIPaste = properties.ShowAIPaste;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
-                                PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
+                                PasteAIConfiguration = globalAIConfiguration ?? new AIConfiguration();
 
                                 var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
                                 FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
@@ -168,11 +181,6 @@ namespace AdvancedPaste.Settings
                             Task.Factory
                                 .StartNew(UpdateSettings, CancellationToken.None, TaskCreationOptions.None, _taskScheduler)
                                 .Wait();
-
-                            if (migratedLegacyEnablement)
-                            {
-                                settings.Save(_settingsUtils);
-                            }
                         }
 
                         retry = false;
@@ -188,6 +196,20 @@ namespace AdvancedPaste.Settings
                         Thread.Sleep(500);
                     }
                 }
+            }
+        }
+
+        private AIConfiguration LoadGlobalAIConfiguration()
+        {
+            try
+            {
+                var globalSettings = _settingsUtils.GetSettingsOrDefault<AIProvidersSettings>(AIProvidersSettings.ModuleName);
+                return globalSettings?.Properties?.AIConfiguration ?? new AIConfiguration();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to load global AIProviders settings", ex);
+                return new AIConfiguration();
             }
         }
 
@@ -212,14 +234,14 @@ namespace AdvancedPaste.Settings
 
             if (configuration is null)
             {
-                configuration = new PasteAIConfiguration();
+                configuration = new AIConfiguration();
                 properties.PasteAIConfiguration = configuration;
             }
 
             bool configurationUpdated = false;
 
             var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
-            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            AIProviderDefinition openAIProvider = ensureResult.Provider;
             configurationUpdated |= ensureResult.Updated;
 
             if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
@@ -287,14 +309,7 @@ namespace AdvancedPaste.Settings
                     return;
                 }
 
-                string resource = "https://platform.openai.com/api-keys";
-                string username = $"PowerToys_AdvancedPaste_PasteAI_openai_{NormalizeProviderIdentifier(providerId)}";
-
-                PasswordVault vault = new();
-                TryRemoveCredential(vault, resource, username);
-
-                PasswordCredential credential = new(resource, username, password);
-                vault.Add(credential);
+                AICredentialVault.SaveKey(AIServiceType.OpenAI, providerId ?? string.Empty, password);
             }
             catch (Exception ex)
             {
@@ -315,17 +330,6 @@ namespace AdvancedPaste.Settings
             }
         }
 
-        private static string NormalizeProviderIdentifier(string providerId)
-        {
-            if (string.IsNullOrWhiteSpace(providerId))
-            {
-                return "default";
-            }
-
-            var filtered = new string(providerId.Where(char.IsLetterOrDigit).ToArray());
-            return string.IsNullOrWhiteSpace(filtered) ? "default" : filtered.ToLowerInvariant();
-        }
-
         public async Task SetActiveAIProviderAsync(string providerId)
         {
             if (string.IsNullOrWhiteSpace(providerId))
@@ -337,8 +341,10 @@ namespace AdvancedPaste.Settings
             {
                 lock (_loadingSettingsLock)
                 {
-                    var settings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteModuleName);
-                    var configuration = settings?.Properties?.PasteAIConfiguration;
+                    AIProvidersMigrationHelper.EnsureMigrated(_settingsUtils);
+
+                    var settings = _settingsUtils.GetSettingsOrDefault<AIProvidersSettings>(AIProvidersSettings.ModuleName);
+                    var configuration = settings?.Properties?.AIConfiguration;
                     var providers = configuration?.Providers;
 
                     if (configuration == null || providers == null || providers.Count == 0)
@@ -418,7 +424,8 @@ namespace AdvancedPaste.Settings
                 if (disposing)
                 {
                     _cancellationTokenSource?.Dispose();
-                    _watcher?.Dispose();
+                    _advancedPasteWatcher?.Dispose();
+                    _aiProvidersWatcher?.Dispose();
                 }
 
                 _disposedValue = true;

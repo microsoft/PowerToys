@@ -19,6 +19,9 @@ using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.AI;
+using Microsoft.PowerToys.AI.Credentials;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -77,10 +80,23 @@ namespace AdvancedPaste
             {
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<IAICredentialsProvider, EnhancedVaultCredentialsProvider>();
+                services.AddSingleton<IAICredentialsProvider>(sp =>
+                {
+                    var userSettings = sp.GetRequiredService<IUserSettings>();
+                    return new VaultAICredentialsProvider(() =>
+                    {
+                        var provider = userSettings.PasteAIConfiguration?.ActiveProvider;
+                        if (provider is null)
+                        {
+                            return (AIServiceType.OpenAI, string.Empty);
+                        }
+
+                        return (provider.ServiceTypeKind, provider.Id ?? string.Empty);
+                    });
+                });
                 services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
                 services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
-                services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
+                services.AddSingleton<IAIChatProviderFactory, AIChatProviderFactory>();
                 services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
                 services.AddSingleton<IKernelService, AdvancedAIKernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
