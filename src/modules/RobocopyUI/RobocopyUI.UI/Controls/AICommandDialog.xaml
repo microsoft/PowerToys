@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="RobocopyUI.Controls.AICommandDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RobocopyUI.Controls"
+    xmlns:controls="using:RobocopyUI.Controls"
+    xmlns:converters="using:RobocopyUI.Converters"
+    xmlns:settings="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:Uid="AIDialog"
+    Closing="OnClosing"
+    DefaultButton="Primary">
+
+    <ContentDialog.Resources>
+        <!-- The default max width (548) is narrower than the content, which clips the buttons. -->
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+        <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+    </ContentDialog.Resources>
+
+    <!--  A StackPanel rather than a Grid: sections collapse and reappear as the conversation
+          progresses, and StackPanel spacing skips collapsed children instead of leaving a gap.  -->
+    <StackPanel
+        MinWidth="520"
+        MaxWidth="560"
+        Spacing="12">
+
+        <InfoBar
+            x:Name="NotConfiguredInfoBar"
+            x:Uid="AINotConfiguredInfoBar"
+            IsClosable="False"
+            IsOpen="False"
+            Severity="Informational" />
+
+        <InfoBar
+            x:Name="ErrorInfoBar"
+            IsClosable="True"
+            IsOpen="False"
+            Severity="Error" />
+
+        <StackPanel Spacing="8">
+            <TextBlock
+                x:Name="PromptLabel"
+                x:Uid="AIPromptLabel"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                TextWrapping="Wrap" />
+
+            <!--  Replaces the label above while the model is waiting on an answer: the question is
+                  the label for the input at that point.  -->
+            <TextBlock
+                x:Name="FollowUpText"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+
+            <controls:PromptBox
+                x:Name="Prompt"
+                PromptSubmitted="Prompt_PromptSubmitted"
+                RequestCancelled="Prompt_RequestCancelled">
+                <controls:PromptBox.Footer>
+                    <TextBlock
+                        x:Name="PromptHintText"
+                        x:Uid="AIPromptHint"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        TextWrapping="WrapWholeWords" />
+                </controls:PromptBox.Footer>
+                <controls:PromptBox.ModelSelector>
+                    <!--  A chip inside the field rather than a full-height segment: the input grows to
+                          several lines, and a segment would stretch into a tall rule beside the text.
+                          The height matches the send button so the two sit on one baseline.  -->
+                    <DropDownButton
+                        x:Name="AIProviderButton"
+                        x:Uid="AIProviderButton"
+                        Height="32"
+                        MinWidth="40"
+                        Padding="0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="16"
+                        TabIndex="0">
+                        <DropDownButton.Content>
+                            <Image
+                                x:Name="AIProviderIcon"
+                                Width="16"
+                                Height="16"
+                                AutomationProperties.AccessibilityView="Raw" />
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <Flyout Placement="Bottom" ShouldConstrainToRootBounds="False">
+                                <Grid
+                                    Width="386"
+                                    Margin="-4"
+                                    RowSpacing="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        x:Uid="AIProvidersFlyoutHeader"
+                                        Grid.Row="0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                                    <ListView
+                                        x:Name="AIProviderListView"
+                                        Grid.Row="1"
+                                        MaxHeight="320"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        SelectionChanged="AIProviderListView_SelectionChanged"
+                                        SelectionMode="Single">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Vertical" Spacing="2" />
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="settings:PasteAIProviderDefinition">
+                                                <Grid Padding="0,8,0,8" ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Image
+                                                        Width="20"
+                                                        Height="20"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        Source="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                        <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind ServiceType, Mode=OneWay}" />
+                                                    </StackPanel>
+                                                    <Border
+                                                        Grid.Column="2"
+                                                        Padding="2,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="{StaticResource ControlCornerRadius}"
+                                                        Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
+                                                        <TextBlock
+                                                            x:Uid="LocalModelBadge"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            FontSize="10"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+
+                                    <TextBlock
+                                        x:Name="AIProvidersEmptyText"
+                                        x:Uid="AIProvidersEmptyText"
+                                        Grid.Row="1"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        TextWrapping="WrapWholeWords"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                            </Flyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </controls:PromptBox.ModelSelector>
+            </controls:PromptBox>
+        </StackPanel>
+
+        <StackPanel x:Name="PreviewPanel" Spacing="8" Visibility="Collapsed">
+            <TextBlock x:Uid="AIPreviewLabel" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+            <TextBox
+                x:Name="PreviewCommandTextBox"
+                x:Uid="AIPreviewCommandTextBox"
+                FontFamily="Cascadia Mono, Consolas"
+                IsReadOnly="True"
+                TextWrapping="Wrap" />
+            <TextBlock
+                x:Name="PreviewExplanationText"
+                Style="{ThemeResource BodyTextBlockStyle}"
+                TextWrapping="Wrap" />
+            <InfoBar
+                x:Name="WarningInfoBar"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Warning" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

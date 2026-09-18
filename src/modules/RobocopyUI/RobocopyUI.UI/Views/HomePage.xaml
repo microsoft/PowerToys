@@ -49,6 +49,7 @@
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -66,6 +67,9 @@
                 <TextBox x:Name="DestinationTextBox" Margin="4,0,4,0" Grid.Column="3" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
                 <Button x:Name="DestinationBrowseButton" x:Uid="DestinationBrowseButton" Margin="0,0,0,0" Grid.Column="4" Grid.Row="1" Click="DestinationBrowseButton_Click">
                     <FontIcon Glyph="&#xE8B7;" />
+                </Button>
+                <Button x:Name="AIAssistButton" x:Uid="AIAssistButton" Margin="8,0,0,0" Grid.Column="5" Grid.Row="1" Click="AIAssistButton_Click">
+                    <FontIcon Glyph="&#xE945;" />
                 </Button>
             </Grid>
             <Grid x:Name="CommandPreviewPanel" Margin="12" ColumnSpacing="5">

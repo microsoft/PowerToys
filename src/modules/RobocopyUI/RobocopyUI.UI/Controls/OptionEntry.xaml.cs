@@ -4,10 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using RobocopyUI.Models;
+using RobocopyUI.Services.AI;
 
 namespace RobocopyUI.Controls
 {
@@ -221,6 +223,143 @@ namespace RobocopyUI.Controls
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Gets the kind of value this option accepts.
+        /// </summary>
+        public RobocopyOptionKind GetOptionKind()
+        {
+            if (IsStorageOption)
+            {
+                return RobocopyOptionKind.Storage;
+            }
+
+            if (IsNumberOption)
+            {
+                return RobocopyOptionKind.Number;
+            }
+
+            if (IsTextOption)
+            {
+                return RobocopyOptionKind.Text;
+            }
+
+            if (IsMultiSelectOption)
+            {
+                return RobocopyOptionKind.MultiSelect;
+            }
+
+            if (IsRunHoursOption)
+            {
+                return RobocopyOptionKind.RunHours;
+            }
+
+            return RobocopyOptionKind.Flag;
+        }
+
+        /// <summary>
+        /// Builds the descriptor used to tell the AI model what this option accepts.
+        /// </summary>
+        public RobocopyOptionDescriptor GetDescriptor()
+        {
+            return new RobocopyOptionDescriptor(
+                OptionName,
+                GetOptionKind(),
+                OptionDescription,
+                MultiSelectOptions?.Select(option => new RobocopyOptionValue(option.OptionName, option.OptionDescription)).ToList() ?? []);
+        }
+
+        /// <summary>
+        /// Enables this option and applies the supplied value to the matching input control.
+        /// </summary>
+        /// <param name="value">The value after the colon, or an empty string for a plain flag.</param>
+        public void ApplyValue(string value)
+        {
+            switch (GetOptionKind())
+            {
+                case RobocopyOptionKind.Storage:
+                    if (value.Length >= 2 && double.TryParse(value[..^1], NumberStyles.None, CultureInfo.InvariantCulture, out var storageAmount))
+                    {
+                        NumberValue = storageAmount;
+                        SelectStorageUnit(value[^1]);
+                    }
+
+                    break;
+
+                case RobocopyOptionKind.Number:
+                    if (double.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number))
+                    {
+                        NumberValue = number;
+                    }
+
+                    break;
+
+                case RobocopyOptionKind.Text:
+                    TextValue = value;
+                    break;
+
+                case RobocopyOptionKind.MultiSelect:
+                    SelectedItems = value;
+                    break;
+
+                case RobocopyOptionKind.RunHours:
+                    ApplyRunHours(value);
+                    break;
+            }
+
+            IsSelected = true;
+        }
+
+        /// <summary>
+        /// Turns this option off without clearing the value the user previously entered.
+        /// </summary>
+        public void ClearSelection()
+        {
+            IsSelected = false;
+        }
+
+        private void SelectStorageUnit(char unit)
+        {
+            var normalized = char.ToUpperInvariant(unit);
+
+            foreach (var item in StorageUnitComboBox.Items.OfType<ComboBoxItem>())
+            {
+                if (item.Content is string content && content.Length > 0 && char.ToUpperInvariant(content[0]) == normalized)
+                {
+                    StorageUnitComboBox.SelectedItem = item;
+                    return;
+                }
+            }
+        }
+
+        private void ApplyRunHours(string value)
+        {
+            var parts = value.Split('-');
+            if (parts.Length != 2 || parts[0].Length != 4 || parts[1].Length != 4)
+            {
+                return;
+            }
+
+            if (TryParseTime(parts[0], out var startHour, out var startMinute)
+                && TryParseTime(parts[1], out var endHour, out var endMinute))
+            {
+                StartHour = startHour;
+                StartMinute = startMinute;
+                EndHour = endHour;
+                EndMinute = endMinute;
+            }
+        }
+
+        private static bool TryParseTime(string text, out int hour, out int minute)
+        {
+            hour = 0;
+            minute = 0;
+
+            return int.TryParse(text[..2], NumberStyles.None, CultureInfo.InvariantCulture, out hour)
+                   && int.TryParse(text[2..], NumberStyles.None, CultureInfo.InvariantCulture, out minute)
+                   && hour <= 23
+                   && minute <= 59;
         }
     }
 }
