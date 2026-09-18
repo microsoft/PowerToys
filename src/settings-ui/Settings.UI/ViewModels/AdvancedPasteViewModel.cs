@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,16 +10,18 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Text.Json;
 
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.AI.Credentials;
+using Microsoft.PowerToys.AI.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
@@ -31,8 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
         private bool _disposed;
-        private PasteAIProviderDefinition _pasteAIProviderDraft;
-        private PasteAIProviderDefinition _editingPasteAIProvider;
+        private AIConfiguration _aiConfiguration;
 
         protected override string ModuleName => AdvancedPasteSettings.ModuleName;
 
@@ -71,42 +72,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AdvancedPasteSettings> advancedPasteSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {
-            // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
-
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
-
-            // To obtain the settings configurations of Advanced Paste.
             ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-
-            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig ?? throw new ArgumentException("SettingsConfig cannot be null", nameof(advancedPasteSettingsRepository));
+            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig
+                ?? throw new ArgumentException("SettingsConfig cannot be null", nameof(advancedPasteSettingsRepository));
 
             if (_advancedPasteSettings.Properties is null)
             {
                 throw new ArgumentException("AdvancedPasteSettings.Properties cannot be null", nameof(advancedPasteSettingsRepository));
             }
 
-            // Ensure AdditionalActions and CustomActions are initialized to prevent null reference exceptions
-            // This handles legacy settings files that may be missing these properties
             _advancedPasteSettings.Properties.AdditionalActions ??= new AdvancedPasteAdditionalActions();
             _advancedPasteSettings.Properties.CustomActions ??= new AdvancedPasteCustomActions();
 
-            AttachConfigurationHandlers();
-
-            // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value ?? new ObservableCollection<AdvancedPasteCustomAction>();
 
             SetupSettingsFileWatcher();
-
-            InitializePasteAIProviderState();
-
+            LoadGlobalAIConfiguration();
             InitializeEnabledValue();
             MigrateLegacyAIEnablement();
 
@@ -140,8 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     hotkeySettings.Add(additionalAction.Shortcut);
 
-                    // Mirror the runner's hotkey order: the coaching shortcut is registered as a
-                    // separate hotkey immediately after Fix Spelling and Grammar when it's active.
                     if (ReferenceEquals(additionalAction, _additionalActions.FixSpellingAndGrammar)
                         && additionalAction.CoachingEnabled
                         && additionalAction.CoachingShortcut is { Code: not 0 })
@@ -151,7 +138,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            // Custom actions do not have localization header, just use the action name.
             foreach (var customAction in _customActions)
             {
                 hotkeySettings.Add(customAction.Shortcut);
@@ -168,7 +154,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAdvancedPasteEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
-                // Get the enabled state from GPO.
                 _enabledStateIsGPOConfigured = true;
                 _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
@@ -182,9 +167,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (_onlineAIModelsDisallowedByGPO)
             {
-                // disable AI if it was enabled
                 DisableAI();
             }
+        }
+
+        private void LoadGlobalAIConfiguration()
+        {
+            bool migrated = AIProvidersMigrationHelper.EnsureMigrated(_settingsUtils);
+            if (migrated)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new AISettingsMigrationEvent(
+                    AIProvidersSettings.ModuleName,
+                    "AdvancedPasteToGlobal",
+                    succeeded: true));
+            }
+
+            AIProvidersSettings globalSettings;
+            try
+            {
+                globalSettings = _settingsUtils.GetSettingsOrDefault<AIProvidersSettings>(AIProvidersSettings.ModuleName);
+            }
+            catch
+            {
+                globalSettings = new AIProvidersSettings();
+            }
+
+            globalSettings.Properties ??= new AIProvidersProperties();
+            globalSettings.Properties.AIConfiguration ??= new AIConfiguration();
+            globalSettings.Properties.AIConfiguration.Providers ??= new ObservableCollection<AIProviderDefinition>();
+
+            _aiConfiguration = globalSettings.Properties.AIConfiguration;
+            SyncProviderActiveFlags(_aiConfiguration);
+
+            // Keep legacy Advanced Paste paste-ai-configuration in sync for module runtime until it reads global settings.
+            _advancedPasteSettings.Properties.PasteAIConfiguration = _aiConfiguration;
+        }
+
+        public void ReloadGlobalAIConfiguration()
+        {
+            LoadGlobalAIConfiguration();
+            OnPropertyChanged(nameof(AIConfiguration));
+            OnPropertyChanged(nameof(ActiveProviderDisplayName));
         }
 
         private void MigrateLegacyAIEnablement()
@@ -220,17 +243,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            var configuration = properties.PasteAIConfiguration;
-            if (configuration is null)
-            {
-                configuration = new PasteAIConfiguration();
-                properties.PasteAIConfiguration = configuration;
-            }
-
+            var configuration = AIConfiguration;
             bool configurationUpdated = false;
 
             var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
-            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            AIProviderDefinition openAIProvider = ensureResult.Provider;
             configurationUpdated |= ensureResult.Updated;
 
             if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
@@ -241,8 +258,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (legacyCredential is not null && openAIProvider is not null)
             {
-                SavePasteAIApiKey(openAIProvider.Id, openAIProvider.ServiceType, legacyCredential.Password);
+                AICredentialVault.SaveKey(AIServiceType.OpenAI, openAIProvider.Id, legacyCredential.Password);
                 RemoveLegacyOpenAICredential();
+                configurationUpdated = true;
             }
 
             const bool shouldEnableAI = true;
@@ -257,11 +275,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (shouldPersist)
             {
+                if (configurationUpdated)
+                {
+                    PersistGlobalAIConfiguration();
+                }
+
                 SaveAndNotifySettings();
 
                 if (configurationUpdated)
                 {
-                    OnPropertyChanged(nameof(PasteAIConfiguration));
+                    OnPropertyChanged(nameof(AIConfiguration));
+                    OnPropertyChanged(nameof(ActiveProviderDisplayName));
                 }
 
                 if (enabledChanged)
@@ -271,6 +295,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void PersistGlobalAIConfiguration()
+        {
+            var globalSettings = new AIProvidersSettings
+            {
+                Properties = new AIProvidersProperties
+                {
+                    AIConfiguration = AIConfiguration,
+                },
+            };
+            globalSettings.Save(_settingsUtils);
+        }
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -278,7 +314,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_enabledStateIsGPOConfigured)
                 {
-                    // If it's GPO configured, shouldn't be able to change this state.
                     return;
                 }
 
@@ -289,7 +324,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
                     OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
 
-                    // Set the status of AdvancedPaste in the general settings
                     GeneralSettingsConfig.Enabled.AdvancedPaste = value;
                     var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
@@ -302,16 +336,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
-        public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
-
-        /// <summary>
-        /// Gets available AI providers filtered by GPO policies.
-        /// Only returns providers that are not explicitly disabled by GPO.
-        /// </summary>
-        public IEnumerable<AIServiceTypeMetadata> AvailableProvidersFilteredByGPO =>
-            AvailableProviders.Where(metadata => IsServiceTypeAllowedByGPO(metadata.ServiceType));
-
         public bool IsAIEnabled => _advancedPasteSettings.Properties.IsAIEnabled && !IsOnlineAIModelsDisallowedByGPO;
+
+        public AIConfiguration AIConfiguration => _aiConfiguration ??= new AIConfiguration();
+
+        public string ActiveProviderDisplayName
+        {
+            get
+            {
+                var active = AIConfiguration?.ActiveProvider;
+                if (active is null)
+                {
+                    return string.Empty;
+                }
+
+                return string.IsNullOrWhiteSpace(active.DisplayName) ? active.ServiceType : active.DisplayName;
+            }
+        }
 
         private PasswordCredential TryGetLegacyOpenAICredential()
         {
@@ -333,27 +374,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 PasswordVault vault = new();
-                TryRemoveCredential(vault, "https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                PasswordCredential existingCred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                vault.Remove(existingCred);
             }
             catch (Exception)
             {
             }
         }
 
-        public bool IsEnabledGpoConfigured
-        {
-            get => _enabledStateIsGPOConfigured;
-        }
+        public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
 
-        public bool IsOnlineAIModelsDisallowedByGPO
-        {
-            get => _onlineAIModelsDisallowedByGPO || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
-        }
+        public bool IsOnlineAIModelsDisallowedByGPO =>
+            _onlineAIModelsDisallowedByGPO || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
 
-        public bool ShowOnlineAIModelsGpoConfiguredInfoBar
-        {
-            get => _onlineAIModelsDisallowedByGPO && _isEnabled;
-        }
+        public bool ShowOnlineAIModelsGpoConfiguredInfoBar => _onlineAIModelsDisallowedByGPO && _isEnabled;
 
         private bool IsClipboardHistoryEnabled()
         {
@@ -379,10 +413,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     return (int)allowClipboardHistory == 0;
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             }
             catch (Exception)
             {
@@ -414,15 +446,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ClipboardHistoryDisabledByGPO
-        {
-            get => IsClipboardHistoryDisabledByGPO();
-        }
+        public bool ClipboardHistoryDisabledByGPO => IsClipboardHistoryDisabledByGPO();
 
-        public bool ShowClipboardHistoryIsGpoConfiguredInfoBar
-        {
-            get => IsClipboardHistoryDisabledByGPO() && _isEnabled;
-        }
+        public bool ShowClipboardHistoryIsGpoConfiguredInfoBar => IsClipboardHistoryDisabledByGPO() && _isEnabled;
 
         public HotkeySettings AdvancedPasteUIShortcut
         {
@@ -483,62 +509,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
-
-        public PasteAIConfiguration PasteAIConfiguration
-        {
-            get
-            {
-                // Ensure PasteAIConfiguration is never null for XAML binding
-                _advancedPasteSettings.Properties.PasteAIConfiguration ??= new PasteAIConfiguration();
-                return _advancedPasteSettings.Properties.PasteAIConfiguration;
-            }
-
-            set
-            {
-                if (!ReferenceEquals(value, _advancedPasteSettings.Properties.PasteAIConfiguration))
-                {
-                    UnsubscribeFromPasteAIConfiguration(_advancedPasteSettings.Properties.PasteAIConfiguration);
-
-                    var newValue = value ?? new PasteAIConfiguration();
-                    _advancedPasteSettings.Properties.PasteAIConfiguration = newValue;
-                    SyncProviderActiveFlags(newValue);
-                    SubscribeToPasteAIConfiguration(newValue);
-
-                    OnPropertyChanged(nameof(PasteAIConfiguration));
-                    SaveAndNotifySettings();
-                }
-            }
-        }
-
-        public PasteAIProviderDefinition PasteAIProviderDraft
-        {
-            get => _pasteAIProviderDraft;
-            private set
-            {
-                if (!ReferenceEquals(_pasteAIProviderDraft, value))
-                {
-                    _pasteAIProviderDraft = value;
-                    OnPropertyChanged(nameof(PasteAIProviderDraft));
-                    OnPropertyChanged(nameof(ShowPasteAIProviderGpoConfiguredInfoBar));
-                }
-            }
-        }
-
-        public bool ShowPasteAIProviderGpoConfiguredInfoBar
-        {
-            get
-            {
-                if (_pasteAIProviderDraft is null)
-                {
-                    return false;
-                }
-
-                var serviceType = _pasteAIProviderDraft.ServiceType.ToAIServiceType();
-                return !IsServiceTypeAllowedByGPO(serviceType);
-            }
-        }
-
-        public bool IsEditingPasteAIProvider => _editingPasteAIProvider is not null;
 
         public bool ShowCustomPreview
         {
@@ -619,7 +589,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                                   .Select(additionalAction => additionalAction.Shortcut)
                                                   .ToList();
 
-                // The coaching shortcut is a separately-registered hotkey; include it when active.
                 var fixSpelling = _additionalActions.FixSpellingAndGrammar;
                 if (fixSpelling.CoachingEnabled && fixSpelling.CoachingShortcut is { Code: not 0 })
                 {
@@ -632,7 +601,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
-            // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
                 string.Format(
                     CultureInfo.InvariantCulture,
@@ -651,200 +619,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsAIEnabled));
         }
 
-        public void BeginAddPasteAIProvider(string serviceType)
-        {
-            var normalizedServiceType = NormalizeServiceType(serviceType, out var persistedServiceType);
-
-            var metadata = AIServiceTypeRegistry.GetMetadata(normalizedServiceType);
-            var provider = new PasteAIProviderDefinition
-            {
-                ServiceType = persistedServiceType,
-                ModelName = PasteAIProviderDefaults.GetDefaultModelName(normalizedServiceType),
-                EndpointUrl = string.Empty,
-                ApiVersion = string.Empty,
-                DeploymentName = string.Empty,
-                ModelPath = string.Empty,
-                SystemPrompt = string.Empty,
-                ModerationEnabled = normalizedServiceType == AIServiceType.OpenAI,
-                IsLocalModel = metadata.IsLocalModel,
-            };
-
-            if (normalizedServiceType is AIServiceType.FoundryLocal or AIServiceType.Onnx or AIServiceType.ML)
-            {
-                provider.ModelName = string.Empty;
-            }
-
-            _editingPasteAIProvider = null;
-            PasteAIProviderDraft = provider;
-        }
-
-        private static AIServiceType NormalizeServiceType(string serviceType, out string persistedServiceType)
-        {
-            if (string.IsNullOrWhiteSpace(serviceType))
-            {
-                persistedServiceType = AIServiceType.OpenAI.ToConfigurationString();
-                return AIServiceType.OpenAI;
-            }
-
-            var trimmed = serviceType.Trim();
-            var serviceTypeKind = trimmed.ToAIServiceType();
-
-            if (serviceTypeKind == AIServiceType.Unknown)
-            {
-                persistedServiceType = AIServiceType.OpenAI.ToConfigurationString();
-                return AIServiceType.OpenAI;
-            }
-
-            persistedServiceType = trimmed;
-            return serviceTypeKind;
-        }
-
-        public bool IsServiceTypeAllowedByGPO(AIServiceType serviceType)
-        {
-            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-
-            // Check if this is an online service
-            if (metadata.IsOnlineService)
-            {
-                // For online services, first check the global online AI models GPO
-                if (_onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled)
-                {
-                    // If global online AI is disabled, all online services are blocked
-                    return false;
-                }
-
-                // If global online AI is enabled or not configured, check individual endpoint GPO
-                var individualGpoRule = serviceType switch
-                {
-                    AIServiceType.OpenAI => GPOWrapper.GetAllowedAdvancedPasteOpenAIValue(),
-                    AIServiceType.AzureOpenAI => GPOWrapper.GetAllowedAdvancedPasteAzureOpenAIValue(),
-                    AIServiceType.AzureAIInference => GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue(),
-                    AIServiceType.Mistral => GPOWrapper.GetAllowedAdvancedPasteMistralValue(),
-                    AIServiceType.Google => GPOWrapper.GetAllowedAdvancedPasteGoogleValue(),
-                    _ => GpoRuleConfigured.Unavailable,
-                };
-
-                // If individual GPO is explicitly disabled, block it
-                return individualGpoRule != GpoRuleConfigured.Disabled;
-            }
-            else
-            {
-                // For local models, only check their individual GPO (not affected by online AI GPO)
-                var localGpoRule = serviceType switch
-                {
-                    AIServiceType.Ollama => GPOWrapper.GetAllowedAdvancedPasteOllamaValue(),
-                    AIServiceType.FoundryLocal => GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue(),
-                    _ => GpoRuleConfigured.Unavailable,
-                };
-
-                // If local model GPO is explicitly disabled, block it
-                return localGpoRule != GpoRuleConfigured.Disabled;
-            }
-        }
-
-        public void BeginEditPasteAIProvider(PasteAIProviderDefinition provider)
-        {
-            ArgumentNullException.ThrowIfNull(provider);
-
-            _editingPasteAIProvider = provider;
-            var draft = provider.Clone();
-            var storedEndpoint = GetPasteAIEndpoint(draft.Id, draft.ServiceType);
-            if (!string.IsNullOrWhiteSpace(storedEndpoint))
-            {
-                draft.EndpointUrl = storedEndpoint;
-            }
-
-            PasteAIProviderDraft = draft;
-        }
-
-        public void CancelPasteAIProviderDraft()
-        {
-            PasteAIProviderDraft = null;
-            _editingPasteAIProvider = null;
-        }
-
-        public void CommitPasteAIProviderDraft(string apiKey, string endpoint)
-        {
-            if (PasteAIProviderDraft is null)
-            {
-                return;
-            }
-
-            var config = PasteAIConfiguration ?? new PasteAIConfiguration();
-            if (_advancedPasteSettings.Properties.PasteAIConfiguration is null)
-            {
-                PasteAIConfiguration = config;
-            }
-
-            var draft = PasteAIProviderDraft;
-            draft.EndpointUrl = endpoint?.Trim() ?? string.Empty;
-
-            SavePasteAIApiKey(draft.Id, draft.ServiceType, apiKey);
-
-            if (_editingPasteAIProvider is null)
-            {
-                config.Providers.Add(draft);
-                config.ActiveProviderId ??= draft.Id;
-            }
-            else
-            {
-                UpdateProviderFromDraft(_editingPasteAIProvider, draft);
-                _editingPasteAIProvider = null;
-            }
-
-            PasteAIProviderDraft = null;
-            SaveAndNotifySettings();
-            OnPropertyChanged(nameof(PasteAIConfiguration));
-        }
-
-        public void RemovePasteAIProvider(PasteAIProviderDefinition provider)
-        {
-            if (provider is null)
-            {
-                return;
-            }
-
-            var config = PasteAIConfiguration;
-            if (config?.Providers is null)
-            {
-                return;
-            }
-
-            if (config.Providers.Remove(provider))
-            {
-                RemovePasteAICredentials(provider.Id, provider.ServiceType);
-                SaveAndNotifySettings();
-                OnPropertyChanged(nameof(PasteAIConfiguration));
-            }
-        }
-
-        public void SetAsDefaultProvider(PasteAIProviderDefinition provider)
-        {
-            if (provider is null || string.IsNullOrEmpty(provider.Id))
-            {
-                return;
-            }
-
-            var config = PasteAIConfiguration;
-            if (config is null)
-            {
-                return;
-            }
-
-            config.ActiveProviderId = provider.Id;
-            SyncProviderActiveFlags(config);
-            SaveAndNotifySettings();
-            OnPropertyChanged(nameof(PasteAIConfiguration));
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    UnsubscribeFromPasteAIConfiguration(_advancedPasteSettings?.Properties.PasteAIConfiguration);
-
                     foreach (var action in _additionalActions.GetAllActions())
                     {
                         action.PropertyChanged -= OnAdditionalActionPropertyChanged;
@@ -927,168 +707,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal void SavePasteAIApiKey(string providerId, string serviceType, string apiKey)
-        {
-            try
-            {
-                apiKey = apiKey?.Trim() ?? string.Empty;
-                serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-                providerId ??= string.Empty;
-
-                string credentialResource = GetAICredentialResource(serviceType);
-                string credentialUserName = GetPasteAICredentialUserName(providerId, serviceType);
-                string endpointCredentialUserName = GetPasteAIEndpointCredentialUserName(providerId, serviceType);
-                PasswordVault vault = new();
-                TryRemoveCredential(vault, credentialResource, credentialUserName);
-                TryRemoveCredential(vault, credentialResource, endpointCredentialUserName);
-
-                bool storeApiKey = RequiresCredentialStorage(serviceType) && !string.IsNullOrWhiteSpace(apiKey);
-                if (storeApiKey)
-                {
-                    PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
-                    vault.Add(cred);
-                }
-
-                OnPropertyChanged(nameof(IsAIEnabled));
-                NotifySettingsChanged();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        internal string GetPasteAIApiKey(string providerId, string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            providerId ??= string.Empty;
-            return RetrieveCredentialValue(
-                GetAICredentialResource(serviceType),
-                GetPasteAICredentialUserName(providerId, serviceType));
-        }
-
-        internal string GetPasteAIEndpoint(string providerId, string serviceType)
-        {
-            providerId ??= string.Empty;
-            var providers = PasteAIConfiguration?.Providers;
-            if (providers is null)
-            {
-                return string.Empty;
-            }
-
-            var provider = providers.FirstOrDefault(p => string.Equals(p.Id ?? string.Empty, providerId, StringComparison.OrdinalIgnoreCase));
-            if (provider is null && !string.IsNullOrWhiteSpace(serviceType))
-            {
-                provider = providers.FirstOrDefault(p => string.Equals(p.ServiceType, serviceType, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return provider?.EndpointUrl?.Trim() ?? string.Empty;
-        }
-
-        private string GetAICredentialResource(string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            return serviceType.ToLowerInvariant() switch
-            {
-                "openai" => "https://platform.openai.com/api-keys",
-                "azureopenai" => "https://azure.microsoft.com/products/ai-services/openai-service",
-                "azureaiinference" => "https://azure.microsoft.com/products/ai-services/ai-inference",
-                "mistral" => "https://console.mistral.ai/account/api-keys",
-                "google" => "https://ai.google.dev/",
-                "ollama" => "https://ollama.com/",
-                _ => "https://platform.openai.com/api-keys",
-            };
-        }
-
-        private string GetPasteAICredentialUserName(string providerId, string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            providerId ??= string.Empty;
-
-            string service = serviceType.ToLowerInvariant();
-            string normalizedId = NormalizeProviderIdentifier(providerId);
-
-            return $"PowerToys_AdvancedPaste_PasteAI_{service}_{normalizedId}";
-        }
-
-        private string GetPasteAIEndpointCredentialUserName(string providerId, string serviceType)
-        {
-            return GetPasteAICredentialUserName(providerId, serviceType) + "_Endpoint";
-        }
-
-        private static void UpdateProviderFromDraft(PasteAIProviderDefinition target, PasteAIProviderDefinition source)
-        {
-            if (target is null || source is null)
-            {
-                return;
-            }
-
-            target.ServiceType = source.ServiceType;
-            target.ModelName = source.ModelName;
-            target.EndpointUrl = source.EndpointUrl;
-            target.ApiVersion = source.ApiVersion;
-            target.DeploymentName = source.DeploymentName;
-            target.ModelPath = source.ModelPath;
-            target.SystemPrompt = source.SystemPrompt;
-            target.ModerationEnabled = source.ModerationEnabled;
-            target.EnableAdvancedAI = source.EnableAdvancedAI;
-            target.IsLocalModel = source.IsLocalModel;
-        }
-
-        private void RemovePasteAICredentials(string providerId, string serviceType)
-        {
-            try
-            {
-                serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-                providerId ??= string.Empty;
-
-                string credentialResource = GetAICredentialResource(serviceType);
-                PasswordVault vault = new();
-                TryRemoveCredential(vault, credentialResource, GetPasteAICredentialUserName(providerId, serviceType));
-                TryRemoveCredential(vault, credentialResource, GetPasteAIEndpointCredentialUserName(providerId, serviceType));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private static string NormalizeProviderIdentifier(string providerId)
-        {
-            if (string.IsNullOrWhiteSpace(providerId))
-            {
-                return "default";
-            }
-
-            var filtered = new string(providerId.Where(char.IsLetterOrDigit).ToArray());
-            return string.IsNullOrWhiteSpace(filtered) ? "default" : filtered.ToLowerInvariant();
-        }
-
-        private static bool RequiresCredentialStorage(string serviceType)
-        {
-            var serviceTypeKind = serviceType.ToAIServiceType();
-
-            return serviceTypeKind switch
-            {
-                AIServiceType.Onnx => false,
-                AIServiceType.Ollama => false,
-                AIServiceType.FoundryLocal => false,
-                AIServiceType.ML => false,
-                _ => true,
-            };
-        }
-
-        private static void TryRemoveCredential(PasswordVault vault, string credentialResource, string credentialUserName)
-        {
-            try
-            {
-                PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
-                vault.Remove(existingCred);
-            }
-            catch (Exception)
-            {
-                // Credential doesn't exist, which is fine
-            }
-        }
-
         internal AdvancedPasteCustomAction GetNewCustomAction(string namePrefix)
         {
             ArgumentException.ThrowIfNullOrEmpty(namePrefix);
@@ -1131,6 +749,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
+            // Persist global AI configuration mirror for Advanced Paste consumers.
+            _advancedPasteSettings.Properties.PasteAIConfiguration = AIConfiguration;
             _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
             NotifySettingsChanged();
         }
@@ -1203,11 +823,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsConflictingCopyShortcut));
             UpdateCustomActionsCanMoveUpDown();
             SaveCustomActions();
-        }
-
-        private void AttachConfigurationHandlers()
-        {
-            SubscribeToPasteAIConfiguration(_advancedPasteSettings.Properties.PasteAIConfiguration);
         }
 
         private void SetupSettingsFileWatcher()
@@ -1316,215 +931,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(AutoCopySelectionForCustomActionHotkey));
             }
 
-            var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();
-            if (ShouldReplacePasteAIConfiguration(target.PasteAIConfiguration, incomingConfig))
-            {
-                PasteAIConfiguration = incomingConfig;
-            }
+            ReloadGlobalAIConfiguration();
         }
 
-        private static bool ShouldReplacePasteAIConfiguration(PasteAIConfiguration current, PasteAIConfiguration incoming)
-        {
-            if (incoming is null)
-            {
-                return false;
-            }
-
-            if (current is null)
-            {
-                return true;
-            }
-
-            if (!string.Equals(current.ActiveProviderId ?? string.Empty, incoming.ActiveProviderId ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            var currentProviders = current.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
-            var incomingProviders = incoming.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
-
-            if (currentProviders.Count != incomingProviders.Count)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < currentProviders.Count; i++)
-            {
-                var existing = currentProviders[i];
-                var updated = incomingProviders[i];
-
-                if (!string.Equals(existing?.Id ?? string.Empty, updated?.Id ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.ServiceType ?? string.Empty, updated?.ServiceType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.ModelName ?? string.Empty, updated?.ModelName ?? string.Empty, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.EndpointUrl ?? string.Empty, updated?.EndpointUrl ?? string.Empty, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.DeploymentName ?? string.Empty, updated?.DeploymentName ?? string.Empty, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.ApiVersion ?? string.Empty, updated?.ApiVersion ?? string.Empty, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                if (!string.Equals(existing?.SystemPrompt ?? string.Empty, updated?.SystemPrompt ?? string.Empty, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                if (existing?.ModerationEnabled != updated?.ModerationEnabled || existing?.EnableAdvancedAI != updated?.EnableAdvancedAI)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private void SubscribeToPasteAIConfiguration(PasteAIConfiguration configuration)
-        {
-            if (configuration is not null)
-            {
-                configuration.PropertyChanged += OnPasteAIConfigurationPropertyChanged;
-                SubscribeToPasteAIProviders(configuration);
-            }
-        }
-
-        private void UnsubscribeFromPasteAIConfiguration(PasteAIConfiguration configuration)
-        {
-            if (configuration is not null)
-            {
-                configuration.PropertyChanged -= OnPasteAIConfigurationPropertyChanged;
-                UnsubscribeFromPasteAIProviders(configuration);
-            }
-        }
-
-        private void SubscribeToPasteAIProviders(PasteAIConfiguration configuration)
-        {
-            if (configuration?.Providers is null)
-            {
-                return;
-            }
-
-            configuration.Providers.CollectionChanged -= OnPasteAIProvidersCollectionChanged;
-            configuration.Providers.CollectionChanged += OnPasteAIProvidersCollectionChanged;
-
-            foreach (var provider in configuration.Providers)
-            {
-                provider.PropertyChanged -= OnPasteAIProviderPropertyChanged;
-                provider.PropertyChanged += OnPasteAIProviderPropertyChanged;
-            }
-        }
-
-        private void UnsubscribeFromPasteAIProviders(PasteAIConfiguration configuration)
-        {
-            if (configuration?.Providers is null)
-            {
-                return;
-            }
-
-            configuration.Providers.CollectionChanged -= OnPasteAIProvidersCollectionChanged;
-
-            foreach (var provider in configuration.Providers)
-            {
-                provider.PropertyChanged -= OnPasteAIProviderPropertyChanged;
-            }
-        }
-
-        private void OnPasteAIProvidersCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e?.NewItems is not null)
-            {
-                foreach (PasteAIProviderDefinition provider in e.NewItems)
-                {
-                    provider.PropertyChanged += OnPasteAIProviderPropertyChanged;
-                }
-            }
-
-            if (e?.OldItems is not null)
-            {
-                foreach (PasteAIProviderDefinition provider in e.OldItems)
-                {
-                    provider.PropertyChanged -= OnPasteAIProviderPropertyChanged;
-                }
-            }
-
-            var pasteConfig = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
-
-            OnPropertyChanged(nameof(PasteAIConfiguration));
-            SaveAndNotifySettings();
-        }
-
-        private void OnPasteAIProviderPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is PasteAIProviderDefinition provider)
-            {
-                // IsActive is a UI-only (JsonIgnore) flag; don't save when it changes.
-                if (string.Equals(e.PropertyName, nameof(PasteAIProviderDefinition.IsActive), StringComparison.Ordinal))
-                {
-                    return;
-                }
-
-                // When service type changes we may need to update credentials entry names.
-                if (string.Equals(e.PropertyName, nameof(PasteAIProviderDefinition.ServiceType), StringComparison.Ordinal))
-                {
-                    SaveAndNotifySettings();
-                    return;
-                }
-
-                SaveAndNotifySettings();
-            }
-        }
-
-        private void OnPasteAIConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.Providers), StringComparison.Ordinal))
-            {
-                SubscribeToPasteAIProviders(PasteAIConfiguration);
-                SyncProviderActiveFlags(PasteAIConfiguration);
-                SaveAndNotifySettings();
-                return;
-            }
-
-            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal))
-            {
-                SyncProviderActiveFlags(PasteAIConfiguration);
-                SaveAndNotifySettings();
-            }
-        }
-
-        private void InitializePasteAIProviderState()
-        {
-            var pasteConfig = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
-            if (pasteConfig is null)
-            {
-                _advancedPasteSettings.Properties.PasteAIConfiguration = new PasteAIConfiguration();
-                pasteConfig = _advancedPasteSettings.Properties.PasteAIConfiguration;
-            }
-
-            pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
-
-            SyncProviderActiveFlags(pasteConfig);
-            SubscribeToPasteAIProviders(pasteConfig);
-        }
-
-        private static void SyncProviderActiveFlags(PasteAIConfiguration config)
+        private static void SyncProviderActiveFlags(AIConfiguration config)
         {
             if (config?.Providers is null)
             {
@@ -1533,7 +943,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var activeId = config.ActiveProviderId;
 
-            // If no explicit active ID, default to the first provider
             if (string.IsNullOrEmpty(activeId) && config.Providers.Count > 0)
             {
                 activeId = config.Providers[0].Id;
@@ -1542,27 +951,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var provider in config.Providers)
             {
-                provider.IsActive = !string.IsNullOrEmpty(activeId) && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)
-        {
-            if (string.IsNullOrWhiteSpace(credentialResource) || string.IsNullOrWhiteSpace(credentialUserName))
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                PasswordVault vault = new();
-                PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
-                existingCred?.RetrievePassword();
-                return existingCred?.Password?.Trim() ?? string.Empty;
-            }
-            catch (Exception)
-            {
-                return string.Empty;
+                provider.IsActive = !string.IsNullOrEmpty(activeId)
+                    && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
             }
         }
 
