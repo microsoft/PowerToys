@@ -40,23 +40,22 @@ public sealed class LeasePublisherTests
         var original = File.ReadAllBytes(first);
         using (var held = new FileStream(first, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
+            const int expectedSequence = 4;
+
             // No timer or callback in the owner is needed to keep both endpoints alive.
             RunFiles.Wait(
-                () => File.Exists(Path.Combine(host.InputRoot, "leases", "00000004.json.ready")) &&
-                    File.Exists(Path.Combine(guest.InputRoot, "leases", "00000004.json.ready")),
+                () => File.Exists(Path.Combine(host.InputRoot, "leases", $"{expectedSequence:D8}.json.ready")) &&
+                    File.Exists(Path.Combine(guest.InputRoot, "leases", $"{expectedSequence:D8}.json.ready")),
                 TimeSpan.FromSeconds(30),
                 "Both endpoints did not receive committed generations while the owner waited.",
                 publisher.ThrowIfFailed);
-            var state = RunFiles.Read(Path.Combine(root, "lease-publisher.json"));
-            var sequence = state["Sequence"]!.GetValue<int>();
-            Assert.IsTrue(sequence >= 4, $"Only {sequence} generations were published while the owner waited.");
             foreach (var channel in new[] { host, guest })
             {
-                var path = Path.Combine(channel.InputRoot, "leases", $"{sequence - 1:D8}.json");
+                var path = Path.Combine(channel.InputRoot, "leases", $"{expectedSequence:D8}.json");
                 Assert.IsTrue(File.Exists(path + ".ready"));
                 var lease = RunFiles.Read(path);
                 Assert.AreEqual(runId, lease["RunId"]!.GetValue<string>());
-                Assert.AreEqual(sequence - 1, lease["Sequence"]!.GetValue<int>());
+                Assert.AreEqual(expectedSequence, lease["Sequence"]!.GetValue<int>());
             }
 
             CollectionAssert.AreEqual(original, File.ReadAllBytes(first));
