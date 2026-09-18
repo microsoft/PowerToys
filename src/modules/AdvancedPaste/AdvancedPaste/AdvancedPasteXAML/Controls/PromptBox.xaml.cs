@@ -166,7 +166,7 @@ namespace AdvancedPaste.Controls
 
             var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
 
-            if (AIProviderListView.SelectedItem is not PasteAIProviderDefinition provider)
+            if (AIProviderListView.SelectedItem is not AIProviderDefinition provider)
             {
                 return;
             }

@@ -1,0 +1,129 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Common.UI.Controls.PromptBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="PromptBoxControl"
+    mc:Ignorable="d">
+
+    <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" MinHeight="24" />
+        </Grid.RowDefinitions>
+
+        <Border
+            x:Name="Loader"
+            MinHeight="48"
+            CornerRadius="16"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1">
+            <Grid>
+                <TextBox
+                    x:Name="InputTxtBox"
+                    MaxHeight="120"
+                    Margin="0"
+                    HorizontalAlignment="Stretch"
+                    AcceptsReturn="True"
+                    IsSpellCheckEnabled="True"
+                    KeyDown="InputTxtBox_KeyDown"
+                    PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
+                    CornerRadius="16"
+                    TabIndex="1"
+                    Text="{x:Bind Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextWrapping="Wrap" />
+
+                <ContentControl
+                    x:Name="ModelSelectorPresenter"
+                    Margin="8,0,0,8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Content="{x:Bind ModelSelector, Mode=OneWay}"
+                    IsTabStop="False"
+                    SizeChanged="ModelSelectorPresenter_SizeChanged" />
+
+                <Grid
+                    Width="32"
+                    Height="32"
+                    Margin="0,0,8,8"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+                    <Button
+                        x:Name="SendBtn"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Click="SendBtn_Click"
+                        Content="{ui:FontIcon Glyph=&#xE724;, FontSize=16}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        TabIndex="2" />
+
+                    <Button
+                        x:Name="CancelBtn"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Click="CancelBtn_Click"
+                        Content="{ui:FontIcon Glyph=&#xE711;, FontSize=16}"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        IsEnabled="False"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="Collapsed" />
+                </Grid>
+
+                <ProgressRing
+                    x:Name="BusyRing"
+                    Width="24"
+                    Height="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsActive="False"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Border>
+
+        <ContentPresenter
+            x:Name="FooterPresenter"
+            Grid.Row="1"
+            Margin="0,6,0,0"
+            VerticalAlignment="Top"
+            Content="{x:Bind Footer, Mode=OneWay}" />
+
+        <TextBlock
+            x:Name="LoadingText"
+            Grid.Row="1"
+            Margin="0,6,0,0"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Style="{StaticResource CaptionTextBlockStyle}"
+            Text="Generating…"
+            Visibility="Collapsed" />
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="DefaultState" />
+                <VisualState x:Name="LoadingState">
+                    <VisualState.Setters>
+                        <Setter Target="InputTxtBox.IsEnabled" Value="False" />
+                        <Setter Target="SendBtn.IsEnabled" Value="False" />
+                        <Setter Target="SendBtn.Visibility" Value="Collapsed" />
+                        <Setter Target="CancelBtn.IsEnabled" Value="True" />
+                        <Setter Target="CancelBtn.Visibility" Value="Visible" />
+                        <Setter Target="ModelSelectorPresenter.IsEnabled" Value="False" />
+                        <Setter Target="FooterPresenter.Visibility" Value="Collapsed" />
+                        <Setter Target="LoadingText.Visibility" Value="Visible" />
+                        <Setter Target="BusyRing.IsActive" Value="True" />
+                        <Setter Target="BusyRing.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="ErrorState">
+                    <VisualState.Setters>
+                        <Setter Target="InputTxtBox.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>
