@@ -25,7 +25,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
-| [GoogleTranslate](https://github.com/nzcodes/GoogleTranslate) | [nzcodes](https://github.com/nzcodes) | Google Translate translations |
+
 | [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search your browser history |
 | [GitHub Emoji](https://github.com/hlaueriksson/GEmojiSharp) | [hlaueriksson](https://github.com/hlaueriksson) | Search GitHub Emoji |
 | [PowerTranslator](https://github.com/N0I0C0K/PowerTranslator) | [N0I0C0K](https://github.com/N0I0C0K) | Text translator based on Youdao |
@@ -59,6 +59,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
 | [DevDocs](https://github.com/jan-jaros/PowerToys-Run-DevDocs) | [jan-jaros](https://github.com/jan-jaros) | Search programming documentation from DevDocs.io |
 | [PoetSearch](https://github.com/Greyaircraft/PowerToysRun-PoetSearch) | [Greyaircraft](https://github.com/Greyaircraft) | Search 78,581 classical Chinese poems (全唐诗 + 全宋词) |
+| [GoogleTranslate](https://github.com/nzcodes/GoogleTranslate) | [nzcodes](https://github.com/nzcodes) | Google Translate translations |
 
 ## Extending software plugins
 
