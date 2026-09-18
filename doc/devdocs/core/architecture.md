@@ -76,3 +76,7 @@ The common lib, as the name suggests, contains code shared by multiple PowerToys
 ### [`Settings`](settings/readme.md)
 
 Settings v2 is our current settings implementation. Please head over to the dev docs that describe the current settings system.
+
+### [`Shared AI`](shared-ai.md)
+
+Cross-module AI providers, global AI settings, PromptBox, credentials, and telemetry scaffolds live under `src/common/PowerToys.AI/` and related Settings types. See the [shared AI guide](shared-ai.md).

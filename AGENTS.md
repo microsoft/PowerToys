@@ -16,7 +16,7 @@ PowerToys is a set of utilities for power users to tune and streamline their Win
 | Runner | `src/runner/` | Main executable, tray icon, module loader, hotkey management |
 | Settings UI | `src/settings-ui/` | WinUI/WPF configuration app communicating via named pipes |
 | Modules | `src/modules/` | Individual PowerToys utilities (each in its own subfolder) |
-| Common Libraries | `src/common/` | Shared code: logging, IPC, settings, DPI, telemetry, utilities |
+| Common Libraries | `src/common/` | Shared code: logging, IPC, settings, DPI, telemetry, utilities, AI (`PowerToys.AI`) |
 | Build Tools | `tools/build/` | Build scripts and automation |
 | Documentation | `doc/devdocs/` | Developer documentation |
 | Installer | `installer/` | WiX-based installer projects |
