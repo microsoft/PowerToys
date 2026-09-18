@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -85,7 +86,7 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Requests linked to session loads: 1");
         StringAssert.Contains(report.Text, "    Completed: 1");
         StringAssert.Contains(report.Text, "Loads completed with no live requester: 0");
-        StringAssert.Contains(report.Text, "CommandItemViewModel.InitializeProperties reading AppListItem.Icon");
+        StringAssert.Contains(report.Text, "Installed Apps icon extraction enters this pipeline as SpecializedAppIcon work");
         StringAssert.Contains(report.Text, "Created: 1");
         StringAssert.Contains(report.Text, "Reused: 1");
         StringAssert.Contains(report.Text, "Update wall time: count=2");
@@ -215,6 +216,32 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
         StringAssert.Contains(report.Text, "New-load result kinds");
         StringAssert.Contains(report.Text, "Empty: 1");
+    }
+
+    [TestMethod]
+    public void AppIconProtocolUsesSpecializedInputKind()
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(
+            request,
+            AppIconProtocol.Create("C:\\Windows\\System32\\shell32.dll,1"),
+            hasStream: false,
+            width: 20,
+            height: 20,
+            scale: 1.0);
+
+        Assert.IsNotNull(load);
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.SetResult(null);
+        load.Complete();
+        request.Complete(IconRequestStatus.Empty);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, "  SpecializedAppIcon: 1");
+        Assert.IsFalse(report.Text.Contains("shell32", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]
