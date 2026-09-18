@@ -149,7 +149,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return false;
             }
 
-            var set = new HashSet<object>(currentValue);
             for (int index = 0; index < currentValue.Count; index++)
             {
                 if (!Equals(currentValue[index], newValue[index]))
@@ -159,5 +158,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             return true;
+        }
     }
 }
