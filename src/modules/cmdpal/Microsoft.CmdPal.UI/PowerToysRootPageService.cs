@@ -91,16 +91,15 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public void SetActiveExtension(IExtensionWrapper? extension)
     {
-        if (extension != _activeExtension)
+        if (extension is not null || _activeExtension is not null)
         {
-            // There's not really a CoDisallowSetForegroundWindow, so we don't
-            // need to handle that
+            // Input to another process can revoke foreground rights, so renew them for each command.
             _activeExtension = extension;
 
-            var extensionWinRtObject = _activeExtension?.GetExtensionObject();
-            if (extensionWinRtObject is not null)
+            try
             {
-                try
+                var extensionWinRtObject = extension?.GetExtensionObject();
+                if (extensionWinRtObject is not null)
                 {
                     unsafe
                     {
@@ -113,10 +112,10 @@ internal sealed class PowerToysRootPageService : IRootPageService
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    ManagedCommon.Logger.LogError(ex.ToString());
-                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to give extension foreground rights", ex);
             }
         }
     }
