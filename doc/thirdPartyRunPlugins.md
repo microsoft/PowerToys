@@ -25,6 +25,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 
 | Plugin | Author | Description |
 | ------ | ------ | ----------- |
+| [GoogleTranslate](https://github.com/nzcodes/GoogleTranslate) | [nzcodes](https://github.com/nzcodes) | Google Translate translations |
 | [BrowserSearch](https://github.com/TBM13/BrowserSearch) | [TBM13](https://github.com/TBM13) | Search your browser history |
 | [GitHub Emoji](https://github.com/hlaueriksson/GEmojiSharp) | [hlaueriksson](https://github.com/hlaueriksson) | Search GitHub Emoji |
 | [PowerTranslator](https://github.com/N0I0C0K/PowerTranslator) | [N0I0C0K](https://github.com/N0I0C0K) | Text translator based on Youdao |
