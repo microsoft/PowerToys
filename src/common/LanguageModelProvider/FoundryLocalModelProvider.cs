@@ -26,7 +26,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     {
         Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
 
-        // InitializeAsync().GetAwaiter().GetResult();
+        InitializeAsync().GetAwaiter().GetResult();
         if (string.IsNullOrWhiteSpace(modelId))
         {
             Logger.LogError("[FoundryLocal] Model ID is empty after extraction");

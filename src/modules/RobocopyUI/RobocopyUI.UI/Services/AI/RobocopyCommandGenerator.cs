@@ -80,7 +80,7 @@ namespace RobocopyUI.Services.AI
                     // double an already slow request. Only pay for it when the plan can destroy data.
                     if (NeedsReview(plan!))
                     {
-                        var refined = await TryRefinePlanAsync(conversation, raw, plan!, cancellationToken).ConfigureAwait(false);
+                        var refined = await TryRefinePlanAsync(conversation, raw, plan!, requestText, currentSource, currentDestination, cancellationToken).ConfigureAwait(false);
                         return refined ?? plan!;
                     }
 
@@ -123,6 +123,24 @@ namespace RobocopyUI.Services.AI
 
         private static readonly HashSet<string> DestructiveSwitches =
             new(StringComparer.OrdinalIgnoreCase) { "/MIR", "/PURGE", "/MOVE", "/MOV" };
+
+        private static bool IntroducesAdditionalDestructiveSwitches(RobocopyPlan originalPlan, RobocopyPlan refinedPlan)
+        {
+            if (originalPlan.NeedsFollowUp || refinedPlan.NeedsFollowUp)
+            {
+                return false;
+            }
+
+            var originalDestructive = originalPlan.Options
+                .Select(option => option.Name)
+                .Where(name => DestructiveSwitches.Contains(name))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return refinedPlan.Options
+                .Select(option => option.Name)
+                .Where(name => DestructiveSwitches.Contains(name))
+                .Any(name => !originalDestructive.Contains(name));
+        }
 
         /// <summary>
         /// Rejects a plan whose paths the user never supplied.
@@ -191,7 +209,7 @@ namespace RobocopyUI.Services.AI
         /// structurally valid JSON blob that is still too broad or too destructive for the request. If the
         /// review pass determines the plan is off, the model is asked to produce a corrected JSON object.
         /// </summary>
-        private async Task<RobocopyPlan?> TryRefinePlanAsync(IReadOnlyList<AIChatTurn> conversation, string raw, RobocopyPlan plan, CancellationToken cancellationToken)
+        private async Task<RobocopyPlan?> TryRefinePlanAsync(IReadOnlyList<AIChatTurn> conversation, string raw, RobocopyPlan plan, string requestText, string currentSource, string currentDestination, CancellationToken cancellationToken)
         {
             var reviewPrompt = "You are reviewing a robocopy JSON command plan. Compare it to the user's request. If the plan matches the request, return the exact same JSON object unchanged. If it does not match or is more destructive than requested, correct it and return a new JSON object with the same schema. Keep source and destination faithful to the request, keep the command minimal, and use only switches from the list. Return only a single JSON object.";
             var reviewConversation = conversation.ToList();
@@ -204,7 +222,9 @@ namespace RobocopyUI.Services.AI
                 return plan;
             }
 
-            if (TryParse(reviewed, out var refinedPlan, out _))
+            if (TryParse(reviewed, out var refinedPlan, out _)
+                && !HasHallucinatedPath(refinedPlan!, requestText, currentSource, currentDestination, out _)
+                && !IntroducesAdditionalDestructiveSwitches(plan, refinedPlan!))
             {
                 return refinedPlan;
             }
