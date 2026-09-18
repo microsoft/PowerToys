@@ -4,8 +4,6 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:local="using:RobocopyUI.Controls">
 
-    <Style BasedOn="{StaticResource DefaultAnimatedContentControlStyle}" TargetType="local:AnimatedContentControl" />
-
     <Style x:Key="DefaultAnimatedContentControlStyle" TargetType="local:AnimatedContentControl">
         <Style.Setters>
             <Setter Property="Background" Value="Transparent" />
@@ -56,4 +54,6 @@
             </Setter>
         </Style.Setters>
     </Style>
+
+    <Style BasedOn="{StaticResource DefaultAnimatedContentControlStyle}" TargetType="local:AnimatedContentControl" />
 </ResourceDictionary>
