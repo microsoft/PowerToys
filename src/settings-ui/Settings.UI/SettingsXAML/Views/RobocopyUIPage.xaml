@@ -32,7 +32,7 @@
                         IsClickEnabled="True" />
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="RobocopyUI_AI_GroupSettings" IsEnabled="{x:Bind ViewModel.IsRobocopyUIEnabled, Mode=OneWay}">
-                    <InfoBar x:Uid="RobocopyUI_AI_InfoBar" IsOpen="True">
+                    <InfoBar x:Uid="RobocopyUI_AI_InfoBar" IsOpen="True" IsClosable="False">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="RobocopyUI_AI_HyperlinkButton" Click="HyperlinkButton_Click" />
                         </InfoBar.ActionButton>
