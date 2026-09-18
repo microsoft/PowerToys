@@ -122,12 +122,21 @@
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
-                <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
+                <SplitButton Style="{StaticResource AccentSplitButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
+                    <SplitButton.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Uid="RunExternalButton" Click="RunExternalButton_Click">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE756;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </SplitButton.Flyout>
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE768;" />
                         <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel"  />
                     </StackPanel>
-                </Button>
+                </SplitButton>
             </Grid>
         </StackPanel>
 

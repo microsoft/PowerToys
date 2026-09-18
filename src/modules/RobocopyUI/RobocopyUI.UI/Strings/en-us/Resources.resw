@@ -804,5 +804,7 @@
   <data name="CustomizeInAdvancedButton.Content" xml:space="preserve">
     <value>Customize in Advanced</value>
   </data>
+  <data name="RunExternalButton.Text" xml:space="preserve">
+    <value>Run command in the command line</value>
+  </data>
 </root>
-

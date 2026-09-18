@@ -622,7 +622,7 @@ public sealed partial class HomePage : Page
         UpdateCommandPreview();
     }
 
-    private void RunButton_Click(object sender, RoutedEventArgs e)
+    private void RunButton_Click(SplitButton sender, SplitButtonClickEventArgs e)
     {
         RunRobocopy(job.RenderArguments());
     }
@@ -686,5 +686,35 @@ public sealed partial class HomePage : Page
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+    }
+
+    private void RunExternalButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "robocopy.exe",
+                Arguments = job.RenderArguments(),
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Normal,
+            };
+
+            var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                // Fallback to launching via cmd if direct start fails
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c " + "robocopy.exe " + job.RenderArguments(),
+                    UseShellExecute = true,
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to start robocopy: {ex}");
+        }
     }
 }
