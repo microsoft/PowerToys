@@ -75,6 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerLauncher => generalSettingsConfig.Enabled.PowerLauncher,
                 ModuleType.PowerAccent => generalSettingsConfig.Enabled.PowerAccent,
                 ModuleType.RegistryPreview => generalSettingsConfig.Enabled.RegistryPreview,
+                ModuleType.RobocopyUI => generalSettingsConfig.Enabled.RobocopyUI,
                 ModuleType.MeasureTool => generalSettingsConfig.Enabled.MeasureTool,
                 ModuleType.ShortcutGuide => generalSettingsConfig.Enabled.ShortcutGuide,
                 ModuleType.PowerOCR => generalSettingsConfig.Enabled.PowerOcr,
@@ -123,6 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
                 case ModuleType.PowerDisplay: generalSettingsConfig.Enabled.PowerDisplay = isEnabled; break;
                 case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
+                case ModuleType.RobocopyUI: generalSettingsConfig.Enabled.RobocopyUI = isEnabled; break;
                 case ModuleType.GrabAndMove: generalSettingsConfig.Enabled.GrabAndMove = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
                 case ModuleType.GeneralSettings: generalSettingsConfig.EnableQuickAccess = isEnabled; break;
@@ -165,6 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerAccent => PowerAccentSettings.ModuleName,
                 ModuleType.PowerDisplay => PowerDisplaySettings.ModuleName,
                 ModuleType.RegistryPreview => RegistryPreviewSettings.ModuleName,
+                ModuleType.RobocopyUI => RobocopyUISettings.ModuleName,
                 ModuleType.MeasureTool => MeasureToolSettings.ModuleName,
                 ModuleType.ShortcutGuide => ShortcutGuideSettings.ModuleName,
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,

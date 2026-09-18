@@ -354,6 +354,9 @@
                     AutomationProperties.AutomationId="FileManagementNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileManagement.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="PowerPreviewNavigationItem"
@@ -392,6 +395,16 @@
                             helpers:NavHelper.NavigateTo="views:PowerRenamePage"
                             AutomationProperties.AutomationId="PowerRenameNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
+                        <NavigationViewItem
+                            x:Name="RobocopyUINavigationItem"
+                            x:Uid="Shell_RobocopyUI"
+                            helpers:NavHelper.NavigateTo="views:RobocopyUIPage"
+                            AutomationProperties.AutomationId="RobocopyUINavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RobocopyUI.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
