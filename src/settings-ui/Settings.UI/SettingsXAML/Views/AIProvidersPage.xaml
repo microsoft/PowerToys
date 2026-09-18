@@ -1,0 +1,355 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AIProvidersPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    x:Name="RootPage"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <local:NavigablePage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="MenuFlyoutItemHeaderStyle" TargetType="MenuFlyoutItem">
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="IsEnabled" Value="False" />
+                <Setter Property="IsHitTestVisible" Value="False" />
+            </Style>
+            <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+        </ResourceDictionary>
+    </local:NavigablePage.Resources>
+    <Grid>
+        <controls:SettingsPageControl x:Uid="AIProviders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/AdvancedPaste.png">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel
+                    ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                    Orientation="Vertical"
+                    Spacing="2">
+                    <InfoBar
+                        x:Uid="GPO_AdvancedPasteAi_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowOnlineAIModelsGpoConfiguredInfoBar, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+
+                    <controls:SettingsGroup x:Uid="AIProviders_ProvidersSettingsGroup">
+                        <tkcontrols:SettingsExpander
+                            Name="AIProvidersListExpander"
+                            x:Uid="AIProviders_ProvidersExpander"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                            IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsExpanded="True"
+                            ItemsSource="{x:Bind ViewModel.AIConfiguration.Providers, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.ItemsHeader>
+                                <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ModelProviders" Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                    <Button x:Uid="AdvancedPaste_AddModelButton" Style="{StaticResource AccentButtonStyle}">
+                                        <Button.Flyout>
+                                            <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
+                                        </Button.Flyout>
+                                    </Button>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.ItemsHeader>
+                            <tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="models:AIProviderDefinition">
+                                    <tkcontrols:SettingsCard
+                                        Description="{x:Bind ServiceType, Mode=OneWay}"
+                                        Header="{x:Bind ModelName, Mode=OneWay}"
+                                        HeaderIcon="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border
+                                                Padding="6,2"
+                                                VerticalAlignment="Center"
+                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="4"
+                                                Visibility="{x:Bind IsActive, Mode=OneWay}">
+                                                <TextBlock
+                                                    x:Uid="AdvancedPaste_DefaultBadge"
+                                                    FontSize="12"
+                                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                            </Border>
+                                            <Button
+                                                x:Uid="AdvancedPaste_ProviderOptions"
+                                                Padding="8"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Tag="{x:Bind}">
+                                                <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_SetAsDefault"
+                                                            Click="SetAsDefaultProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE735;}"
+                                                            Tag="{x:Bind}" />
+                                                        <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_Edit"
+                                                            Click="EditProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                            Tag="{x:Bind}" />
+                                                        <MenuFlyoutSeparator />
+                                                        <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_Remove"
+                                                            Click="RemoveProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                            Tag="{x:Bind}" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>
+                        </tkcontrols:SettingsExpander>
+                    </controls:SettingsGroup>
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl>
+
+        <ContentDialog
+            x:Name="ProviderConfigurationDialog"
+            x:Uid="AdvancedPaste_EndpointDialog"
+            Closed="ProviderConfigurationDialog_Closed"
+            PrimaryButtonClick="ProviderConfigurationDialog_PrimaryButtonClick"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+            <ContentDialog.Resources>
+                <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
+                <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
+                <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="NavigationViewContentBackground" />
+            </ContentDialog.Resources>
+            <ScrollViewer
+                MaxHeight="550"
+                Margin="-16,0,-24,-24"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel
+                    MinWidth="640"
+                    Padding="16,0,16,16"
+                    Spacing="16">
+                    <InfoBar
+                        x:Name="ProviderGpoInfoBar"
+                        x:Uid="GPO_SettingIsManaged"
+                        Margin="0,12,0,0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowProviderGpoConfiguredInfoBar, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowProviderGpoConfiguredInfoBar, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+                    <StackPanel
+                        Margin="0,12,0,0"
+                        Orientation="Vertical"
+                        Spacing="8"
+                        Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind GetServiceLegalDescription(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="{x:Bind GetServiceTermsLabel(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}"
+                                FontSize="12"
+                                NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}" />
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="{x:Bind GetServicePrivacyLabel(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}"
+                                FontSize="12"
+                                NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.ProviderDraft?.ServiceType), Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <StackPanel
+                        Margin="0,8,0,48"
+                        Orientation="Vertical"
+                        Spacing="16">
+                        <TextBox
+                            x:Name="ModelNameTextBox"
+                            x:Uid="AdvancedPaste_ModelName"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            PlaceholderText="gpt-4o"
+                            Text="{x:Bind ViewModel.ProviderDraft.ModelName, Mode=TwoWay}" />
+                        <TextBox
+                            x:Name="EndpointUrlTextBox"
+                            x:Uid="AdvancedPaste_EndpointURL"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            PlaceholderText="https://your-resource.openai.azure.com/"
+                            Text="{x:Bind ViewModel.ProviderDraft.EndpointUrl, Mode=TwoWay}" />
+                        <PasswordBox
+                            x:Name="ApiKeyPasswordBox"
+                            x:Uid="AdvancedPaste_APIKey"
+                            MinWidth="200" />
+                        <TextBox
+                            x:Name="ApiVersionTextBox"
+                            x:Uid="AdvancedPaste_APIVersion"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            PlaceholderText="2024-10-01"
+                            Text="{x:Bind ViewModel.ProviderDraft.ApiVersion, Mode=TwoWay}"
+                            Visibility="Collapsed" />
+                        <TextBox
+                            x:Name="DeploymentNameTextBox"
+                            x:Uid="AdvancedPaste_DeploymentName"
+                            MinWidth="200"
+                            PlaceholderText="gpt-4o"
+                            Text="{x:Bind ViewModel.ProviderDraft.DeploymentName, Mode=TwoWay}" />
+                        <TextBox
+                            x:Name="SystemPromptTextBox"
+                            x:Uid="AdvancedPaste_SystemPrompt"
+                            MinWidth="200"
+                            MinHeight="76"
+                            HorizontalAlignment="Stretch"
+                            AcceptsReturn="True"
+                            Text="{x:Bind ViewModel.ProviderDraft.SystemPrompt, Mode=TwoWay}"
+                            TextWrapping="Wrap" />
+                        <Grid
+                            x:Name="FoundryLocalPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
+                        </Grid>
+                        <Grid
+                            x:Name="PhiSilicaPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <StackPanel
+                                x:Name="PhiSilicaLoadingPanel"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="12">
+                                <ProgressRing
+                                    Width="36"
+                                    Height="36"
+                                    HorizontalAlignment="Center" />
+                                <TextBlock
+                                    x:Name="PhiSilicaLoadingText"
+                                    x:Uid="AdvancedPaste_PhiSilicaLoadingStatus"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="PhiSilicaAvailablePanel"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <FontIcon
+                                    HorizontalAlignment="Center"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    FontSize="24"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Glyph="&#xE73E;" />
+                                <TextBlock
+                                    x:Name="PhiSilicaAvailableText"
+                                    HorizontalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="PhiSilicaNotAvailablePanel"
+                                Margin="48,0,48,48"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableTitle"
+                                    HorizontalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableDescription"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableDetails"
+                                    HorizontalAlignment="Center"
+                                    FontFamily="Consolas"
+                                    FontSize="11"
+                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                    IsTextSelectionEnabled="True"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
+                                <Button
+                                    x:Name="PhiSilicaPrepareButton"
+                                    x:Uid="AdvancedPaste_PhiSilicaPrepareButton"
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Center"
+                                    Click="PhiSilicaPrepareButton_Click"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Visibility="Collapsed" />
+                                <HyperlinkButton
+                                    x:Uid="AdvancedPaste_PhiSilicaCopilotLearnMore"
+                                    HorizontalAlignment="Center"
+                                    NavigateUri="https://learn.microsoft.com/windows/ai/npu-devices/" />
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel
+                            x:Name="ModelPathPanel"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <TextBox
+                                x:Name="ModelPathTextBox"
+                                x:Uid="AdvancedPaste_ModelPath"
+                                MinWidth="200"
+                                HorizontalAlignment="Stretch"
+                                PlaceholderText="C:\Models\phi-3.onnx"
+                                Text="{x:Bind ViewModel.ProviderDraft.ModelPath, Mode=TwoWay}" />
+                            <Button
+                                VerticalAlignment="Bottom"
+                                Click="BrowseModelPath_Click"
+                                Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            x:Name="ModerationToggle"
+                            x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
+                            IsOn="{x:Bind ViewModel.ProviderDraft.ModerationEnabled, Mode=TwoWay}"
+                            Visibility="Collapsed" />
+                        <ToggleSwitch
+                            x:Name="EnableAdvancedAICheckBox"
+                            IsOn="{x:Bind ViewModel.ProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
+                            Toggled="EnableAdvancedAICheckBox_Toggled"
+                            Visibility="Collapsed">
+                            <ToggleSwitch.Header>
+                                <TextBlock>
+                                    <Run x:Uid="AdvancedPaste_EnableAdvancedAI" /> <LineBreak />
+                                    <Run x:Uid="AdvancedPaste_EnableAdvancedAIDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </TextBlock>
+                            </ToggleSwitch.Header>
+                        </ToggleSwitch>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</local:NavigablePage>
