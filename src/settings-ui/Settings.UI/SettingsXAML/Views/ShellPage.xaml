@@ -190,6 +190,12 @@
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
+                            x:Name="AIProvidersNavigationItem"
+                            x:Uid="Shell_AIProviders"
+                            helpers:NavHelper.NavigateTo="views:AIProvidersPage"
+                            AutomationProperties.AutomationId="AIProvidersNavItem"
+                            Icon="{ui:FontIcon Glyph=&#xE9D9;}" />
+                        <NavigationViewItem
                             x:Name="AdvancedPasteNavigationItem"
                             x:Uid="Shell_AdvancedPaste"
                             helpers:NavHelper.NavigateTo="views:AdvancedPastePage"

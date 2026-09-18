@@ -423,6 +423,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
+                case "AIProviders": return typeof(AIProvidersPage);
                 case "AdvancedPaste": return typeof(AdvancedPastePage);
                 case "AltWindowCycle": return typeof(AltWindowCyclePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);

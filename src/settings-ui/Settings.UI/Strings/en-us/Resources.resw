@@ -4246,6 +4246,31 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Advanced Paste</value>
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
+  <data name="Shell_AIProviders.Content" xml:space="preserve">
+    <value>AI Providers</value>
+    <comment>Navigation view item name for the shared AI Providers settings page</comment>
+  </data>
+  <data name="AIProviders.ModuleTitle" xml:space="preserve">
+    <value>AI Providers</value>
+  </data>
+  <data name="AIProviders.ModuleDescription" xml:space="preserve">
+    <value>Configure language model providers used by PowerToys modules such as Advanced Paste.</value>
+  </data>
+  <data name="AIProviders_ProvidersSettingsGroup.Header" xml:space="preserve">
+    <value>Providers</value>
+  </data>
+  <data name="AIProviders_ProvidersExpander.Header" xml:space="preserve">
+    <value>Model providers</value>
+  </data>
+  <data name="AIProviders_ProvidersExpander.Description" xml:space="preserve">
+    <value>Add, edit, and choose the default AI provider for PowerToys</value>
+  </data>
+  <data name="AdvancedPaste_ManageAIProviders.Header" xml:space="preserve">
+    <value>Manage AI providers</value>
+  </data>
+  <data name="AdvancedPaste_ManageAIProviders.Description" xml:space="preserve">
+    <value>Open the shared AI Providers page to add or edit model endpoints</value>
+  </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
     <value>Formats clipboard content into plain text, Markdown, JSON, and more. Advanced formatting can use an online or local language model endpoint.</value>
   </data>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -45,9 +45,13 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(WorkspacesSettings))]
 [JsonSerializable(typeof(GrabAndMoveSettings))]
 [JsonSerializable(typeof(ZoomItSettings))]
+#pragma warning disable CS0618 // Type or member is obsolete - retained for settings migration deserialization
 [JsonSerializable(typeof(PasteAIConfiguration))]
-[JsonSerializable(typeof(PasteAIProviderDefinition))]
-[JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
+#pragma warning restore CS0618
+[JsonSerializable(typeof(AIConfiguration))]
+[JsonSerializable(typeof(AIProviderDefinition))]
+[JsonSerializable(typeof(AIProvidersSettings))]
+[JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<AIProviderDefinition>))]
 public sealed partial class SourceGenerationContextContext : JsonSerializerContext
 {
 }
