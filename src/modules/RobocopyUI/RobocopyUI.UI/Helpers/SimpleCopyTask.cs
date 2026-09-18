@@ -44,6 +44,11 @@ public static class SimpleCopyTask
     {
         ArgumentNullException.ThrowIfNull(options);
 
+        if (options.WriteLog && string.IsNullOrWhiteSpace(options.LogPath))
+        {
+            throw new ArgumentException("A log path is required when logging is enabled.", nameof(options));
+        }
+
         var expanded = new List<RobocopyPlanOption>();
 
         switch (kind)
@@ -59,9 +64,11 @@ public static class SimpleCopyTask
                 break;
             case SimpleCopyTaskKind.MoveEverything:
                 expanded.Add(new RobocopyPlanOption("/MOVE", string.Empty));
+                expanded.Add(new RobocopyPlanOption("/E", string.Empty));
                 break;
             case SimpleCopyTaskKind.MoveFilesOnly:
                 expanded.Add(new RobocopyPlanOption("/MOV", string.Empty));
+                expanded.Add(new RobocopyPlanOption("/S", string.Empty));
                 break;
             case SimpleCopyTaskKind.CopyThisFolderOnly:
                 break;
@@ -91,8 +98,8 @@ public static class SimpleCopyTask
 
         if (options.RetryFailedFiles)
         {
-            expanded.Add(new RobocopyPlanOption("/R", FormatCount(options.RetryCount, DefaultRetryCount)));
-            expanded.Add(new RobocopyPlanOption("/W", FormatCount(options.RetryWaitSeconds, DefaultRetryWaitSeconds)));
+            expanded.Add(new RobocopyPlanOption("/R", FormatCount(options.RetryCount, DefaultRetryCount, allowZero: true)));
+            expanded.Add(new RobocopyPlanOption("/W", FormatCount(options.RetryWaitSeconds, DefaultRetryWaitSeconds, allowZero: true)));
         }
 
         if (options.PreviewOnly)
@@ -121,7 +128,6 @@ public static class SimpleCopyTask
             .ToList();
 
         merged.AddRange(Expand(kind, options));
-        RobocopyCommand.Prune(merged);
         return merged;
     }
 
@@ -168,8 +174,8 @@ public static class SimpleCopyTask
             CopyFaster = Has("/MT"),
             ThreadCount = ParseCount(Value("/MT"), DefaultThreadCount),
             RetryFailedFiles = Has("/R") || Has("/W"),
-            RetryCount = ParseCount(Value("/R"), DefaultRetryCount),
-            RetryWaitSeconds = ParseCount(Value("/W"), DefaultRetryWaitSeconds),
+            RetryCount = ParseCount(Value("/R"), DefaultRetryCount, allowZero: true),
+            RetryWaitSeconds = ParseCount(Value("/W"), DefaultRetryWaitSeconds, allowZero: true),
             PreviewOnly = Has("/L"),
             WriteLog = Has("/LOG"),
             LogPath = Value("/LOG"),
@@ -188,15 +194,16 @@ public static class SimpleCopyTask
         }
     }
 
-    private static string FormatCount(int value, int fallback)
+    private static string FormatCount(int value, int fallback, bool allowZero = false)
     {
-        var count = value > 0 ? value : fallback;
+        var count = value > 0 || (allowZero && value == 0) ? value : fallback;
         return count.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static int ParseCount(string value, int fallback)
+    private static int ParseCount(string value, int fallback, bool allowZero = false)
     {
-        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            && (parsed > 0 || (allowZero && parsed == 0))
             ? parsed
             : fallback;
     }

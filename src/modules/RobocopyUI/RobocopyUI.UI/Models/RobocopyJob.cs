@@ -16,7 +16,14 @@ namespace RobocopyUI.Models;
 /// </summary>
 public sealed class RobocopyJob
 {
+    private static readonly HashSet<string> TaskSwitchNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "/E", "/S", "/MIR", "/MOVE", "/MOV",
+    };
+
     private readonly List<RobocopyPlanOption> _options = [];
+    private string _source = string.Empty;
+    private string _destination = string.Empty;
 
     /// <summary>
     /// Raised after source, destination, or options change.
@@ -26,12 +33,38 @@ public sealed class RobocopyJob
     /// <summary>
     /// Gets or sets the source directory.
     /// </summary>
-    public string Source { get; set; } = string.Empty;
+    public string Source
+    {
+        get => _source;
+        set
+        {
+            if (_source == value)
+            {
+                return;
+            }
+
+            _source = value;
+            OnChanged();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the destination directory.
     /// </summary>
-    public string Destination { get; set; } = string.Empty;
+    public string Destination
+    {
+        get => _destination;
+        set
+        {
+            if (_destination == value)
+            {
+                return;
+            }
+
+            _destination = value;
+            OnChanged();
+        }
+    }
 
     /// <summary>
     /// Gets the selected switches after pruning.
@@ -67,6 +100,11 @@ public sealed class RobocopyJob
     public void SetOption(string name, string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        if (TaskSwitchNames.Contains(name))
+        {
+            _options.RemoveAll(option => TaskSwitchNames.Contains(option.Name) && !string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
 
         RemoveByName(name);
         _options.Add(new RobocopyPlanOption(name, value ?? string.Empty));
@@ -104,7 +142,10 @@ public sealed class RobocopyJob
     /// </summary>
     public void ApplySimple(SimpleCopyTaskKind kind, SimpleCopyOptions options)
     {
-        ReplaceOptions(SimpleCopyTask.Merge(_options, kind, options));
+        var merged = SimpleCopyTask.Merge(_options, kind, options);
+        _options.Clear();
+        _options.AddRange(merged);
+        OnChanged();
     }
 
     /// <summary>

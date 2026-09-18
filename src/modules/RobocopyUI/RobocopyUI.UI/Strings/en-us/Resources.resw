@@ -693,9 +693,6 @@
   <data name="AINotConfiguredInfoBar.Message" xml:space="preserve">
     <value>Configure an AI provider in PowerToys Settings under Advanced Paste to use this feature.</value>
   </data>
-  <data name="AINotConfiguredInfoBar.Message" xml:space="preserve">
-    <value>Configure an AI provider in PowerToys Settings under Advanced Paste to use this feature.</value>
-  </data>
   <data name="ShellPageWindow.Title" xml:space="preserve">
     <value>Robocopy UI</value>
   </data>
@@ -734,6 +731,21 @@
   </data>
   <data name="SimpleWarningInfoBar.Title" xml:space="preserve">
     <value>Review before running</value>
+  </data>
+  <data name="SimpleWarning.Mirror" xml:space="preserve">
+    <value>/MIR mirrors the source: files that exist only in the destination will be deleted.</value>
+  </data>
+  <data name="SimpleWarning.Purge" xml:space="preserve">
+    <value>/PURGE deletes destination files and folders that no longer exist in the source.</value>
+  </data>
+  <data name="SimpleWarning.MoveEverything" xml:space="preserve">
+    <value>/MOVE deletes the files and folders from the source after they are copied.</value>
+  </data>
+  <data name="SimpleWarning.MoveFiles" xml:space="preserve">
+    <value>/MOV deletes the files from the source after they are copied.</value>
+  </data>
+  <data name="SimpleLogFileType" xml:space="preserve">
+    <value>Log file</value>
   </data>
   <data name="SimpleAdditionalOptionsText.Text" xml:space="preserve">
     <value>Additional options from Advanced are still applied.</value>

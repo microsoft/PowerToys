@@ -7,6 +7,7 @@
     <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\RobocopyUI.UnitTests\</OutputPath>

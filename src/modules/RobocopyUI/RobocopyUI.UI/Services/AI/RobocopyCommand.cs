@@ -75,8 +75,13 @@ namespace RobocopyUI.Services.AI
                 return name;
             }
 
-            return SpaceSeparatedSwitches.Contains(name)
-                ? $"{name} {option.Value.Trim()}"
+            if (SpaceSeparatedSwitches.Contains(name))
+            {
+                return $"{name} {option.Value.Trim()}";
+            }
+
+            return name.Equals("/LOG", StringComparison.OrdinalIgnoreCase)
+                ? $"{name}:{Quote(option.Value)}"
                 : $"{name}:{option.Value}";
         }
 
@@ -147,7 +152,7 @@ namespace RobocopyUI.Services.AI
         /// <summary>
         /// Returns deterministic warnings for switches that delete or move data.
         /// </summary>
-        public static IReadOnlyList<string> GetDestructiveWarnings(IEnumerable<RobocopyPlanOption> options)
+        public static IReadOnlyList<string> GetDestructiveWarnings(IEnumerable<RobocopyPlanOption> options, Func<string, string>? localize = null)
         {
             ArgumentNullException.ThrowIfNull(options);
 
@@ -155,16 +160,27 @@ namespace RobocopyUI.Services.AI
 
             foreach (var option in options)
             {
-                var text = option.Name.ToUpperInvariant() switch
+                var warning = option.Name.ToUpperInvariant() switch
                 {
-                    "/MIR" => "/MIR mirrors the source: files that exist only in the destination will be deleted.",
-                    "/PURGE" => "/PURGE deletes destination files and folders that no longer exist in the source.",
-                    "/MOVE" => "/MOVE deletes the files and folders from the source after they are copied.",
-                    "/MOV" => "/MOV deletes the files from the source after they are copied.",
-                    _ => null,
+                    "/MIR" => ("SimpleWarning/Mirror", "/MIR mirrors the source: files that exist only in the destination will be deleted."),
+                    "/PURGE" => ("SimpleWarning/Purge", "/PURGE deletes destination files and folders that no longer exist in the source."),
+                    "/MOVE" => ("SimpleWarning/MoveEverything", "/MOVE deletes the files and folders from the source after they are copied."),
+                    "/MOV" => ("SimpleWarning/MoveFiles", "/MOV deletes the files from the source after they are copied."),
+                    _ => (string.Empty, string.Empty),
                 };
 
-                if (text is not null && !warnings.Contains(text, StringComparer.Ordinal))
+                if (warning.Item1.Length == 0)
+                {
+                    continue;
+                }
+
+                var text = localize?.Invoke(warning.Item1);
+                if (string.IsNullOrEmpty(text))
+                {
+                    text = warning.Item2;
+                }
+
+                if (!warnings.Contains(text, StringComparer.Ordinal))
                 {
                     warnings.Add(text);
                 }

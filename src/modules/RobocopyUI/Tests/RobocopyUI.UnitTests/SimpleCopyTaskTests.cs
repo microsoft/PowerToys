@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,6 +46,41 @@ public class SimpleCopyTaskTests
         var options = SimpleCopyTask.Expand(SimpleCopyTaskKind.Mirror, new SimpleCopyOptions());
 
         Assert.AreEqual("/MIR", SingleName(options));
+    }
+
+    [TestMethod]
+    public void Expand_MoveEverything_IncludesSubdirectories()
+    {
+        var options = SimpleCopyTask.Expand(SimpleCopyTaskKind.MoveEverything, new SimpleCopyOptions());
+
+        Assert.IsTrue(HasNames(options, "/MOVE", "/E"));
+    }
+
+    [TestMethod]
+    public void Expand_MoveFilesOnly_IncludesSubdirectories()
+    {
+        var options = SimpleCopyTask.Expand(SimpleCopyTaskKind.MoveFilesOnly, new SimpleCopyOptions());
+
+        Assert.IsTrue(HasNames(options, "/MOV", "/S"));
+    }
+
+    [TestMethod]
+    public void Expand_RetryOptions_PreserveZeroValues()
+    {
+        var options = SimpleCopyTask.Expand(
+            SimpleCopyTaskKind.CopyThisFolderOnly,
+            new SimpleCopyOptions { RetryFailedFiles = true, RetryCount = 0, RetryWaitSeconds = 0 });
+
+        Assert.AreEqual("0", Value(options, "/R"));
+        Assert.AreEqual("0", Value(options, "/W"));
+    }
+
+    [TestMethod]
+    public void Expand_LogWithoutPath_Throws()
+    {
+        Assert.ThrowsException<ArgumentException>(() => SimpleCopyTask.Expand(
+            SimpleCopyTaskKind.CopyThisFolderOnly,
+            new SimpleCopyOptions { WriteLog = true }));
     }
 
     [TestMethod]
@@ -96,13 +132,14 @@ public class SimpleCopyTaskTests
         var existing = new List<RobocopyPlanOption>
         {
             new("/E", string.Empty),
+            new("/PURGE", string.Empty),
             new("/Z", string.Empty),
             new("/B", string.Empty),
         };
 
         var merged = SimpleCopyTask.Merge(existing, SimpleCopyTaskKind.Mirror, new SimpleCopyOptions());
 
-        Assert.IsTrue(HasNames(merged, "/MIR", "/Z", "/B"));
+        Assert.IsTrue(HasNames(merged, "/MIR", "/PURGE", "/Z", "/B"));
         Assert.IsFalse(merged.Any(option => option.Name == "/E"));
     }
 
@@ -202,6 +239,27 @@ public class SimpleCopyTaskTests
     }
 
     [TestMethod]
+    public void Render_QuotesLogPathWithSpaces()
+    {
+        var command = RobocopyCommand.RenderOption(new RobocopyPlanOption("/LOG", @"C:\My Logs\copy.log"));
+
+        Assert.AreEqual(@"/LOG:""C:\My Logs\copy.log""", command);
+    }
+
+    [TestMethod]
+    public void TryParse_ReadsQuotedLogPath()
+    {
+        var parsed = RobocopyCommand.TryParse(
+            @"robocopy.exe C:\Src C:\Dst /LOG:""C:\My Logs\copy.log""",
+            out _,
+            out _,
+            out var options);
+
+        Assert.IsTrue(parsed);
+        Assert.AreEqual(@"C:\My Logs\copy.log", Value(options, "/LOG"));
+    }
+
+    [TestMethod]
     public void GetDestructiveWarnings_IncludesMirrorWarning()
     {
         var warnings = RobocopyCommand.GetDestructiveWarnings([new RobocopyPlanOption("/MIR", string.Empty)]);
@@ -219,6 +277,29 @@ public class SimpleCopyTaskTests
 
         Assert.AreEqual("/MIR", SingleName([.. job.Options]));
         Assert.AreEqual(@"robocopy.exe C:\A D:\B /MIR", job.RenderCommandLine());
+    }
+
+    [TestMethod]
+    public void Job_SetOptionTaskSwitch_ReplacesExistingTaskSwitch()
+    {
+        var job = new RobocopyJob();
+        job.SetOption("/S", string.Empty);
+        job.SetOption("/E", string.Empty);
+
+        Assert.IsTrue(HasNames(job.Options, "/E"));
+    }
+
+    [TestMethod]
+    public void Job_Changed_RaisesForPathChanges()
+    {
+        var job = new RobocopyJob();
+        var changes = 0;
+        job.Changed += (_, _) => changes++;
+
+        job.Source = @"C:\A";
+        job.Destination = @"D:\B";
+
+        Assert.AreEqual(2, changes);
     }
 
     [TestMethod]

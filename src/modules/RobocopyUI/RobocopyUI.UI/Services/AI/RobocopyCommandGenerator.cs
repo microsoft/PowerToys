@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using RobocopyUI.Helpers;
 
 namespace RobocopyUI.Services.AI
 {
@@ -985,7 +986,9 @@ namespace RobocopyUI.Services.AI
         {
             var warnings = new List<string>();
 
-            warnings.AddRange(RobocopyCommand.GetDestructiveWarnings(options));
+            warnings.AddRange(RobocopyCommand.GetDestructiveWarnings(
+                options,
+                key => ResourceLoaderInstance.ResourceLoader.GetString(key)));
 
             foreach (var warning in modelWarnings)
             {

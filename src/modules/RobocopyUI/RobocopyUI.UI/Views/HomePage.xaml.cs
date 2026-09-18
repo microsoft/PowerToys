@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -340,9 +341,21 @@ public sealed partial class HomePage : Page
         ApplySimpleFromUiIfInteractive();
     }
 
-    private void SimpleLogToggle_Toggled(object sender, RoutedEventArgs e)
+    private async void SimpleLogToggle_Toggled(object sender, RoutedEventArgs e)
     {
         SimpleLogPanel.Visibility = SimpleLogToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
+        if (SimpleLogToggle.IsOn && string.IsNullOrWhiteSpace(SimpleLogPathTextBox.Text))
+        {
+            await PickLogFileAsync();
+            if (string.IsNullOrWhiteSpace(SimpleLogPathTextBox.Text))
+            {
+                syncing = true;
+                SimpleLogToggle.IsOn = false;
+                syncing = false;
+                SimpleLogPanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
         ApplySimpleFromUiIfInteractive();
     }
 
@@ -436,9 +449,9 @@ public sealed partial class HomePage : Page
             SimpleRetryWaitNumberBox.Value = snapshot.Options.RetryWaitSeconds;
             SimpleRetryPanel.Visibility = snapshot.Options.RetryFailedFiles ? Visibility.Visible : Visibility.Collapsed;
             SimplePreviewToggle.IsOn = snapshot.Options.PreviewOnly;
-            SimpleLogToggle.IsOn = snapshot.Options.WriteLog;
+            SimpleLogToggle.IsOn = snapshot.Options.WriteLog && !string.IsNullOrWhiteSpace(snapshot.Options.LogPath);
             SimpleLogPathTextBox.Text = snapshot.Options.LogPath;
-            SimpleLogPanel.Visibility = snapshot.Options.WriteLog ? Visibility.Visible : Visibility.Collapsed;
+            SimpleLogPanel.Visibility = SimpleLogToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
             SimpleAdditionalOptionsText.Visibility = snapshot.HasAdditionalOptions ? Visibility.Visible : Visibility.Collapsed;
             UpdateSimpleWarnings();
         }
@@ -459,7 +472,9 @@ public sealed partial class HomePage : Page
 
     private void UpdateSimpleWarnings()
     {
-        var warnings = RobocopyCommand.GetDestructiveWarnings(job.Options);
+        var warnings = RobocopyCommand.GetDestructiveWarnings(
+            job.Options,
+            key => ResourceLoaderInstance.ResourceLoader.GetString(key));
         SimpleWarningInfoBar.IsOpen = warnings.Count > 0;
         SimpleWarningInfoBar.Message = warnings.Count > 0 ? string.Join(' ', warnings) : string.Empty;
     }
@@ -525,16 +540,19 @@ public sealed partial class HomePage : Page
 
     private async void SimpleLogBrowseButton_Click(object sender, RoutedEventArgs e)
     {
+        await PickLogFileAsync();
+    }
+
+    private async Task PickLogFileAsync()
+    {
         FileSavePicker fileSavePicker = new(SimpleLogBrowseButton.XamlRoot.ContentIslandEnvironment.AppWindowId);
         fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
-        fileSavePicker.FileTypeChoices.Add("Log file", [".log", ".txt"]);
+        fileSavePicker.FileTypeChoices.Add(ResourceLoaderInstance.ResourceLoader.GetString("SimpleLogFileType"), [".log", ".txt"]);
         var result = await fileSavePicker.PickSaveFileAsync();
-        if (result is null)
+        if (result is not null)
         {
-            return;
+            SimpleLogPathTextBox.Text = result.Path;
         }
-
-        SimpleLogPathTextBox.Text = result.Path;
     }
 
     private async void SaveOptionsButton_Click(object sender, RoutedEventArgs e)
