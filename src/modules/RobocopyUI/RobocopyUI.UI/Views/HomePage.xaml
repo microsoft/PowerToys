@@ -179,7 +179,7 @@
             </Grid>
         </Grid>
 
-        <Expander x:Name="CommandOutputExpander" Header="Execution Output" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
+        <Expander x:Name="CommandOutputExpander" Header="Execution Output" IsEnabled="False" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
             <StackPanel x:Name="OutputContent" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
