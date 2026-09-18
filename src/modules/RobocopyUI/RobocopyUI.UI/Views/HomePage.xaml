@@ -36,78 +36,79 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleTextBlockStyle}"  Margin="12,0" Grid.Row="0"/>
+        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleTextBlockStyle}" Margin="12,0" Grid.Row="0"/>
 
-        <StackPanel x:Name="TopPanelStack" Margin="0,12,0,0" Grid.Row="1">
-            <Grid x:Name="InputOutputPanel" Margin="12,0,12,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                <TextBox x:Name="SourceTextBox" Margin="0,0,4,0" Grid.Column="0" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
-                <Button x:Name="SourceBrowseButton" x:Uid="SourceBrowseButton" Margin="0,0,4,0" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
-                    <FontIcon Glyph="&#xE8B7;" />
-                </Button>
-                <Button x:Name="SwapButton" x:Uid="SwapButton" Margin="4,0,4,0" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
-                    <FontIcon Glyph="&#xE8AB;" />
-                </Button>
-                <TextBox x:Name="DestinationTextBox" Margin="4,0,4,0" Grid.Column="3" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
-                <Button x:Name="DestinationBrowseButton" x:Uid="DestinationBrowseButton" Margin="0,0,0,0" Grid.Column="4" Grid.Row="1" Click="DestinationBrowseButton_Click">
-                    <FontIcon Glyph="&#xE8B7;" />
-                </Button>
-                <Button x:Name="AIAssistButton" x:Uid="AIAssistButton" Margin="8,0,0,0" Grid.Column="5" Grid.Row="1" Click="AIAssistButton_Click">
-                    <FontIcon Glyph="&#xE945;" />
-                </Button>
-            </Grid>
-            <Grid x:Name="CommandPreviewPanel" Margin="12" ColumnSpacing="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" IsEnabled="False" TextWrapping="Wrap" />
-                <Button VerticalAlignment="Bottom" Grid.Column="1">
-                    <Button.Content>
-                        <FontIcon Glyph="&#xE712;" />
-                    </Button.Content>
-                    <Button.Flyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem x:Uid="LoadButtonLabel" Click="LoadOptionsButton_Click">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xEDE2;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                            <MenuFlyoutItem x:Uid="SaveButtonLabel"  Click="SaveOptionsButton_Click">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xEDE1;"/>
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
-                <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE768;" />
-                        <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel"  />
-                    </StackPanel>
-                </Button>
-            </Grid>
-        </StackPanel>
+        <Grid x:Name="InputOutputPanel" Margin="12,12,12,0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock x:Uid="SourceLabel" Grid.Column="0" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <TextBlock x:Uid="DestinationLabel" Grid.Column="3" Grid.Row="0" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <TextBox x:Name="SourceTextBox" Margin="0,0,4,0" Grid.Column="0" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
+            <Button x:Name="SourceBrowseButton" x:Uid="SourceBrowseButton" Margin="0,0,4,0" Grid.Column="1" Grid.Row="1" Click="SourceBrowseButton_Click">
+                <FontIcon Glyph="&#xE8B7;" />
+            </Button>
+            <Button x:Name="SwapButton" x:Uid="SwapButton" Margin="4,0,4,0" Grid.Column="2" Grid.Row="1" Click="SwapButton_Click">
+                <FontIcon Glyph="&#xE8AB;" />
+            </Button>
+            <TextBox x:Name="DestinationTextBox" Margin="4,0,4,0" Grid.Column="3" Grid.Row="1" TextChanged="SourceDestTextBox_TextChanged" />
+            <Button x:Name="DestinationBrowseButton" x:Uid="DestinationBrowseButton" Margin="0,0,0,0" Grid.Column="4" Grid.Row="1" Click="DestinationBrowseButton_Click">
+                <FontIcon Glyph="&#xE8B7;" />
+            </Button>
+            <Button x:Name="AIAssistButton" x:Uid="AIAssistButton" Margin="8,0,0,0" Grid.Column="5" Grid.Row="1" Click="AIAssistButton_Click">
+                <FontIcon Glyph="&#xE945;" />
+            </Button>
+        </Grid>
 
-        <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="2">
+        <Grid x:Name="CommandPreviewPanel" Margin="12" ColumnSpacing="5" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="CommandPreviewTextBox" x:Uid="CommandPreviewTextBox" Width="Auto" Height="Auto" IsReadOnly="True" IsEnabled="False" TextWrapping="Wrap" />
+            <Button VerticalAlignment="Bottom" Grid.Column="1">
+                <Button.Content>
+                    <FontIcon Glyph="&#xE712;" />
+                </Button.Content>
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem x:Uid="LoadButtonLabel" Click="LoadOptionsButton_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xEDE2;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="SaveButtonLabel"  Click="SaveOptionsButton_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xEDE1;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+            <Button Style="{StaticResource AccentButtonStyle}" Click="RunButton_Click" x:Name="RunButton" IsEnabled="False" VerticalAlignment="Bottom" Grid.Column="2">
+                <StackPanel Orientation="Horizontal">
+                    <FontIcon Glyph="&#xE768;" />
+                    <TextBlock Margin="4,0,0,0" x:Uid="RunButtonLabel"  />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="3">
             <SelectorBar.Resources>
                 <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
             </SelectorBar.Resources>
@@ -131,14 +132,14 @@
                     <FontIcon Glyph="&#xE713;" />
                 </SelectorBarItem.Icon>
             </SelectorBarItem>
-            <SelectorBarItem x:Name="OutputSelectorBarItem" x:Uid="OutputSelectorBarLabel" Tag="Output" IsEnabled="False">
+            <!--<SelectorBarItem x:Name="OutputSelectorBarItem" x:Uid="OutputSelectorBarLabel" Tag="Output" IsEnabled="False">
                 <SelectorBarItem.Icon>
                     <FontIcon Glyph="&#xE768;" />
                 </SelectorBarItem.Icon>
-            </SelectorBarItem>
+            </SelectorBarItem>-->
         </SelectorBar>
 
-        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="3">
+        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="4">
             <Grid x:Name="OptionsContent" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -176,6 +177,9 @@
                     </ListView.GroupStyle>
                 </ListView>
             </Grid>
+        </Grid>
+
+        <Expander x:Name="CommandOutputExpander" Header="Execution Output" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
             <StackPanel x:Name="OutputContent" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal" Margin="4">
                     <TextBlock x:Uid="OutputStatusLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
@@ -190,6 +194,6 @@
                 </StackPanel>
                 <TextBox x:Name="OutputTextBox" Width="Auto" MinHeight="200" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" FontFamily="Cascadia Mono" />
             </StackPanel>
-        </Grid>
+        </Expander>
     </Grid>
 </Page>

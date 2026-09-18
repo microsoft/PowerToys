@@ -433,8 +433,11 @@ public sealed partial class HomePage : Page
     private void RunRobocopy(string arguments)
     {
         OutputTextBox.Text = string.Empty;
-        OutputSelectorBarItem.IsEnabled = true;
-        OutputSelectorBarItem.IsSelected = true;
+        // OutputSelectorBarItem.IsEnabled = true; OutputSelectorBarItem.IsSelected = true;
+        CommandOutputExpander.IsExpanded = true;
+        CommandOutputExpander.Header = "Running...";
+
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "robocopy.exe",
