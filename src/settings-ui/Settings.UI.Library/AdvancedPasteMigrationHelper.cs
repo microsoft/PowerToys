@@ -18,14 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         /// <param name="configuration">The configuration instance.</param>
         /// <returns>The ensured provider and a flag indicating whether changes were made.</returns>
-        public static (PasteAIProviderDefinition Provider, bool Updated) EnsureOpenAIProvider(PasteAIConfiguration configuration)
+        public static (AIProviderDefinition Provider, bool Updated) EnsureOpenAIProvider(AIConfiguration configuration)
         {
             if (configuration is null)
             {
                 return (null, false);
             }
 
-            configuration.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
+            configuration.Providers ??= new ObservableCollection<AIProviderDefinition>();
 
             const string serviceTypeKey = "OpenAI";
             var existingProvider = configuration.Providers.FirstOrDefault(provider => string.Equals(provider.ServiceType, serviceTypeKey, StringComparison.OrdinalIgnoreCase));
@@ -46,14 +46,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Creates a provider with default values for the requested service type.
         /// </summary>
-        private static PasteAIProviderDefinition CreateProvider(string serviceTypeKey)
+        private static AIProviderDefinition CreateProvider(string serviceTypeKey)
         {
             var serviceType = serviceTypeKey.ToAIServiceType();
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            var provider = new PasteAIProviderDefinition
+            var provider = new AIProviderDefinition
             {
                 ServiceType = serviceTypeKey,
-                ModelName = PasteAIProviderDefaults.GetDefaultModelName(serviceType),
+                ModelName = AIProviderDefaults.GetDefaultModelName(serviceType),
                 EndpointUrl = string.Empty,
                 ApiVersion = string.Empty,
                 DeploymentName = string.Empty,
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return provider;
         }
 
-        private static bool EnsureActiveProviderIsValid(PasteAIConfiguration configuration, PasteAIProviderDefinition preferredProvider = null)
+        private static bool EnsureActiveProviderIsValid(AIConfiguration configuration, AIProviderDefinition preferredProvider = null)
         {
             if (configuration?.Providers is null || configuration.Providers.Count == 0)
             {

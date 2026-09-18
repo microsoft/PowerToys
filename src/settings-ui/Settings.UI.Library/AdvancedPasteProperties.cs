@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]
-        public PasteAIConfiguration PasteAIConfiguration { get; set; }
+        public AIConfiguration PasteAIConfiguration { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);
