@@ -4,6 +4,17 @@ Dashboard and General own their view models for one loaded page lifetime. Unload
 disposes the model; reloading the same page creates a replacement, updates
 `DataContext`, and refreshes compiled bindings. This is not page caching.
 
+General additionally stops compiled binding tracking on unload and terminal
+disposal. On reload it creates the replacement during `Loading`, before the
+generated binding handler runs, so binding initialization never revisits the
+disposed model.
+
+Generated binding trackers weakly reference their binding object but strongly
+cache every observed source. General's shared update model and shortcut can
+therefore retain its disposed page model through a tracker until `StopTracking`
+releases all listeners and caches. View-model disposal alone does not remove
+these compiler-generated subscriptions.
+
 The shared Quick Access model owns its General and Keyboard Manager repository
 subscriptions and its exact enabled-module callback. The callback API remains a
 single replaceable callback, not a multicast event. Teardown must not clear or
@@ -18,6 +29,7 @@ test classes in one filtered invocation:
 
 - `QuickAccessLifetimeTests`
 - `GeneralLifetimeTests`
+- `GeneralCompiledBindingsLifetimeTests`
 - `PageViewModelBaseLifetimeTests`
 - `DashboardShortcutProjectionTests` (the stable shortcut projection baseline)
 - `General` (existing General settings behavior)
@@ -26,6 +38,10 @@ Coverage includes exact subscriber removal, old/current snapshot ownership,
 queued and in-flight notification suppression, reentrant disposal, collectability
 with repositories kept alive, page-load cancellation, model replacement, unchanged
 shortcut conflict metadata, and no-op collection stability.
+Compiled-binding coverage uses GeneralPage's actual generated tracker, keeps the
+shared update model and shortcut alive without publishing cleanup-triggering
+events, and checks both model and tracker collectability. This does not substitute
+for the real page lifecycle checks below.
 
 ## UI integration checklist
 
@@ -40,6 +56,12 @@ These checks require the actual XAML/window integration, beyond the unit fixture
 - Unload and reload the **same** General page instance. Shortcut and enable toggles,
   update state, and backup status bind to the replacement. Bug-report notifications
   are registered once for the new load and still update its status.
+- Keep one shared update model and General settings repository alive while creating
+  and unloading multiple **distinct** General pages. After each unload, the shared
+  update and shortcut publishers have no listeners targeting that page's generated
+  tracker, and its tracker caches are empty. In a separate forced-GC diagnostic,
+  discard page references and check old models and trackers are collectible without
+  raising another publisher event. Keep this diagnostic out of ordinary memory runs.
 - Navigate away with a delayed backup-status refresh, message-hide delay, or
   bug-report response queued; reload before it executes. Old work cannot update the
   replacement model or persist stale settings. A backup dry run already in progress

@@ -37,6 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralPage()
         {
+            // Recreate the model before the generated Loading handler initializes x:Bind.
+            Loading += GeneralPage_Loading;
             InitializeComponent();
             _viewModelLifetime = new PageViewModelLifetime<GeneralViewModel>(CreateViewModel);
             InitializeViewModel();
@@ -75,14 +77,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             RefreshBackupRestoreStatus(100);
         }
 
-        private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
+        private void GeneralPage_Loading(FrameworkElement sender, object args)
         {
             if (_viewModelLifetime.Load())
             {
                 InitializeViewModel();
                 Bindings.Update();
             }
+        }
 
+        private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
+        {
             ViewModel.OnPageLoaded();
             if (SharedUpdateViewModel.CurrentUpdateUIState != UpdateViewModel.UpdateUIState.UpToDate)
             {
@@ -263,12 +268,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            Bindings.StopTracking();
             CleanupBugReportHandlers();
             _viewModelLifetime.Unload();
         }
 
         public void Dispose()
         {
+            Bindings.StopTracking();
+            Loading -= GeneralPage_Loading;
             Loaded -= GeneralPage_Loaded;
             Unloaded -= GeneralPage_Unloaded;
             CleanupBugReportHandlers();
