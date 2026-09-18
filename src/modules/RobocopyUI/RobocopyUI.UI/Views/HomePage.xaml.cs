@@ -5,10 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -23,10 +21,20 @@ namespace RobocopyUI;
 public sealed partial class HomePage : Page
 {
     private readonly List<OptionEntry> optionEntries = [];
+    private readonly RobocopyJob job = new();
+    private bool syncing = true;
+    private bool isSimpleMode = true;
 
     public HomePage()
     {
         InitializeComponent();
+
+        syncing = true;
+        isSimpleMode = SimpleModeSettings.GetIsSimpleMode();
+        ModeSegmented.SelectedIndex = isSimpleMode ? 0 : 1;
+        syncing = false;
+        ApplyModeVisibility();
+        UpdateCommandPreview();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -37,28 +45,23 @@ public sealed partial class HomePage : Page
         LoggingOptionsListView.ItemsSource = OptionsDataHelper.GetLoggingOptionsAsGroupedView();
         AdvancedOptionsListView.ItemsSource = OptionsDataHelper.GetAdvancedOptionsAsGroupedView();
 
+        if (isSimpleMode && job.Options.Count == 0)
+        {
+            ApplySimpleFromUi();
+        }
+        else
+        {
+            RefreshSimpleFromJob();
+        }
+
+        UpdateCommandPreview();
         base.OnNavigatedTo(e);
     }
 
-    private void UpdateCommandPreview(object sender, EventArgs e)
+    private void UpdateCommandPreview()
     {
-        CommandPreviewTextBox.Text = GetFullCommandLine();
-    }
-
-    private string GetFullCommandLine()
-    {
-        StringBuilder additionalArgs = new();
-
-        foreach (var entry in optionEntries)
-        {
-            if (!string.IsNullOrEmpty(entry.CommandLineContent))
-            {
-                additionalArgs.Append(entry.CommandLineContent);
-                additionalArgs.Append(' ');
-            }
-        }
-
-        return $"robocopy.exe {SourceTextBox.Text.Trim('"')} {DestinationTextBox.Text.Trim('"')} {additionalArgs}";
+        CommandPreviewTextBox.Text = job.RenderCommandLine();
+        UpdateSimpleWarnings();
     }
 
     private void OptionEntry_Loaded(object sender, RoutedEventArgs e)
@@ -69,7 +72,8 @@ public sealed partial class HomePage : Page
         }
 
         optionEntries.Add(entry);
-        entry.OptionChanged += UpdateCommandPreview;
+        entry.OptionChanged += OptionEntry_OptionChanged;
+        ApplyJobValueToEntry(entry);
     }
 
     private void OptionEntry_Unloaded(object sender, RoutedEventArgs e)
@@ -79,8 +83,29 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        entry.OptionChanged -= UpdateCommandPreview;
+        entry.OptionChanged -= OptionEntry_OptionChanged;
         optionEntries.Remove(entry);
+    }
+
+    private void OptionEntry_OptionChanged(object sender, EventArgs e)
+    {
+        if (syncing || sender is not OptionEntry entry)
+        {
+            return;
+        }
+
+        if (entry.TryGetPlanOption(out var option))
+        {
+            job.SetOption(option.Name, option.Value);
+        }
+        else if (!string.IsNullOrWhiteSpace(entry.OptionName))
+        {
+            job.RemoveOption(entry.OptionName);
+        }
+
+        RefreshEntriesFromJob();
+        RefreshSimpleFromJob();
+        UpdateCommandPreview();
     }
 
     private async void AIAssistButton_Click(object sender, RoutedEventArgs e)
@@ -136,24 +161,24 @@ public sealed partial class HomePage : Page
     /// </summary>
     private void ApplyPlan(RobocopyPlan plan)
     {
-        SourceTextBox.Text = plan.Source;
-        DestinationTextBox.Text = plan.Destination;
-
-        var planOptions = plan.Options.ToDictionary(option => option.Name, option => option.Value, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var entry in GetRealizedOptionEntries())
+        syncing = true;
+        try
         {
-            if (planOptions.TryGetValue(entry.OptionName, out var value) && IsValueCompatible(entry, value))
-            {
-                entry.ApplyValue(value);
-            }
-            else
-            {
-                entry.ClearSelection();
-            }
+            SourceTextBox.Text = plan.Source;
+            DestinationTextBox.Text = plan.Destination;
+            job.Source = plan.Source;
+            job.Destination = plan.Destination;
+            job.ReplaceOptions(plan.Options);
+        }
+        finally
+        {
+            syncing = false;
         }
 
-        CommandPreviewTextBox.Text = GetFullCommandLine();
+        RefreshEntriesFromJob();
+        RefreshSimpleFromJob();
+        UpdateCommandPreview();
+        RunButton.IsEnabled = !string.IsNullOrWhiteSpace(job.Source) && !string.IsNullOrWhiteSpace(job.Destination);
     }
 
     /// <summary>
@@ -173,18 +198,87 @@ public sealed partial class HomePage : Page
     /// </summary>
     private IEnumerable<OptionEntry> GetRealizedOptionEntries()
     {
-        ListView[] optionLists = [OptionsListView, OptionsListViewRight, FilterOptionsListView, LoggingOptionsListView, AdvancedOptionsListView];
+        return optionEntries;
+    }
 
-        foreach (var listView in optionLists)
+    private void ApplyJobValueToEntry(OptionEntry entry)
+    {
+        if (!job.HasOption(entry.OptionName))
         {
-            foreach (var item in listView.Items)
+            entry.ClearSelection();
+            return;
+        }
+
+        var value = job.GetValue(entry.OptionName);
+        if (IsValueCompatible(entry, value))
+        {
+            entry.ApplyValue(value);
+        }
+        else
+        {
+            entry.ClearSelection();
+        }
+    }
+
+    private void RefreshEntriesFromJob()
+    {
+        syncing = true;
+        try
+        {
+            foreach (var entry in GetRealizedOptionEntries())
             {
-                if (listView.ContainerFromItem(item) is ListViewItem { ContentTemplateRoot: OptionEntry entry })
-                {
-                    yield return entry;
-                }
+                ApplyJobValueToEntry(entry);
             }
         }
+        finally
+        {
+            syncing = false;
+        }
+    }
+
+    private void ModeSegmented_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (syncing)
+        {
+            return;
+        }
+
+        isSimpleMode = ModeSegmented.SelectedIndex == 0;
+        SimpleModeSettings.SetIsSimpleMode(isSimpleMode);
+
+        if (isSimpleMode)
+        {
+            RefreshSimpleFromJob();
+        }
+        else
+        {
+            RefreshEntriesFromJob();
+        }
+
+        ApplyModeVisibility();
+    }
+
+    private void CustomizeInAdvancedButton_Click(object sender, RoutedEventArgs e)
+    {
+        syncing = true;
+        ModeSegmented.SelectedIndex = 1;
+        syncing = false;
+        isSimpleMode = false;
+        SimpleModeSettings.SetIsSimpleMode(false);
+        RefreshEntriesFromJob();
+        ApplyModeVisibility();
+    }
+
+    private void ApplyModeVisibility()
+    {
+        SimpleContent.Visibility = isSimpleMode ? Visibility.Visible : Visibility.Collapsed;
+        AdvancedSelectorBar.Visibility = isSimpleMode ? Visibility.Collapsed : Visibility.Visible;
+
+        var outputSelected = !isSimpleMode && AdvancedSelectorBar.SelectedItem?.Tag as string == "Output";
+        SelectorPanels.Visibility = !isSimpleMode && !outputSelected ? Visibility.Visible : Visibility.Collapsed;
+        OutputContent.Visibility = (isSimpleMode && OutputSelectorBarItem.IsEnabled) || outputSelected
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -196,48 +290,200 @@ public sealed partial class HomePage : Page
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Filters":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Visible;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Logging":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Visible;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Advanced":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Visible;
-                OutputContent.Visibility = Visibility.Collapsed;
                 break;
             case "Output":
                 OptionsContent.Visibility = Visibility.Collapsed;
                 FiltersContent.Visibility = Visibility.Collapsed;
                 LoggingContent.Visibility = Visibility.Collapsed;
                 AdvancedContent.Visibility = Visibility.Collapsed;
-                OutputContent.Visibility = Visibility.Visible;
                 break;
         }
+
+        ApplyModeVisibility();
+    }
+
+    private void SimpleJobRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplySimpleFromUiIfInteractive();
+
+    private void SimpleOptions_Changed(object sender, RoutedEventArgs e) => ApplySimpleFromUiIfInteractive();
+
+    private void SimpleOptions_TextChanged(object sender, TextChangedEventArgs e) => ApplySimpleFromUiIfInteractive();
+
+    private void SimpleNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args) => ApplySimpleFromUiIfInteractive();
+
+    private void SimpleCopyFasterToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        SimpleThreadCountNumberBox.Visibility = SimpleCopyFasterToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
+        ApplySimpleFromUiIfInteractive();
+    }
+
+    private void SimpleRetryToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        SimpleRetryPanel.Visibility = SimpleRetryToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
+        ApplySimpleFromUiIfInteractive();
+    }
+
+    private void SimpleLogToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        SimpleLogPanel.Visibility = SimpleLogToggle.IsOn ? Visibility.Visible : Visibility.Collapsed;
+        ApplySimpleFromUiIfInteractive();
+    }
+
+    private void ApplySimpleFromUiIfInteractive()
+    {
+        if (syncing)
+        {
+            return;
+        }
+
+        ApplySimpleFromUi();
+        RefreshEntriesFromJob();
+        UpdateCommandPreview();
+    }
+
+    private void ApplySimpleFromUi()
+    {
+        var suppressNotifications = syncing;
+        job.ApplySimple(GetSelectedJobKind(), ReadSimpleOptions());
+        syncing = true;
+        try
+        {
+            if (SimpleKeepAllPropertiesToggle.IsOn)
+            {
+                SimpleKeepPermissionsToggle.IsOn = false;
+                SimpleKeepPermissionsToggle.IsEnabled = false;
+            }
+            else
+            {
+                SimpleKeepPermissionsToggle.IsEnabled = true;
+            }
+        }
+        finally
+        {
+            syncing = suppressNotifications;
+        }
+
+        UpdateSimpleWarnings();
+    }
+
+    private SimpleCopyTaskKind GetSelectedJobKind()
+    {
+        if (SimpleJobRadioButtons.SelectedItem is RadioButton { Tag: string tag }
+            && Enum.TryParse(tag, out SimpleCopyTaskKind kind))
+        {
+            return kind;
+        }
+
+        return SimpleCopyTaskKind.CopyFilesAndFolders;
+    }
+
+    private SimpleCopyOptions ReadSimpleOptions()
+    {
+        return new SimpleCopyOptions
+        {
+            KeepPermissions = SimpleKeepPermissionsToggle.IsOn,
+            KeepAllProperties = SimpleKeepAllPropertiesToggle.IsOn,
+            SkipNewerAtDestination = SimpleSkipNewerToggle.IsOn,
+            ExcludeFileTypes = SimpleExcludeFilesTextBox.Text,
+            ExcludeFolders = SimpleExcludeFoldersTextBox.Text,
+            CopyFaster = SimpleCopyFasterToggle.IsOn,
+            ThreadCount = ToCount(SimpleThreadCountNumberBox.Value, SimpleCopyTask.DefaultThreadCount),
+            RetryFailedFiles = SimpleRetryToggle.IsOn,
+            RetryCount = ToCount(SimpleRetryCountNumberBox.Value, SimpleCopyTask.DefaultRetryCount),
+            RetryWaitSeconds = ToCount(SimpleRetryWaitNumberBox.Value, SimpleCopyTask.DefaultRetryWaitSeconds),
+            PreviewOnly = SimplePreviewToggle.IsOn,
+            WriteLog = SimpleLogToggle.IsOn,
+            LogPath = SimpleLogPathTextBox.Text,
+        };
+    }
+
+    private void RefreshSimpleFromJob()
+    {
+        syncing = true;
+        try
+        {
+            var snapshot = job.InferSimple();
+            SelectJobRadio(snapshot.Kind);
+
+            SimpleKeepAllPropertiesToggle.IsOn = snapshot.Options.KeepAllProperties;
+            SimpleKeepPermissionsToggle.IsOn = snapshot.Options.KeepPermissions;
+            SimpleKeepPermissionsToggle.IsEnabled = !snapshot.Options.KeepAllProperties;
+            SimpleSkipNewerToggle.IsOn = snapshot.Options.SkipNewerAtDestination;
+            SimpleExcludeFilesTextBox.Text = snapshot.Options.ExcludeFileTypes;
+            SimpleExcludeFoldersTextBox.Text = snapshot.Options.ExcludeFolders;
+            SimpleCopyFasterToggle.IsOn = snapshot.Options.CopyFaster;
+            SimpleThreadCountNumberBox.Value = snapshot.Options.ThreadCount;
+            SimpleThreadCountNumberBox.Visibility = snapshot.Options.CopyFaster ? Visibility.Visible : Visibility.Collapsed;
+            SimpleRetryToggle.IsOn = snapshot.Options.RetryFailedFiles;
+            SimpleRetryCountNumberBox.Value = snapshot.Options.RetryCount;
+            SimpleRetryWaitNumberBox.Value = snapshot.Options.RetryWaitSeconds;
+            SimpleRetryPanel.Visibility = snapshot.Options.RetryFailedFiles ? Visibility.Visible : Visibility.Collapsed;
+            SimplePreviewToggle.IsOn = snapshot.Options.PreviewOnly;
+            SimpleLogToggle.IsOn = snapshot.Options.WriteLog;
+            SimpleLogPathTextBox.Text = snapshot.Options.LogPath;
+            SimpleLogPanel.Visibility = snapshot.Options.WriteLog ? Visibility.Visible : Visibility.Collapsed;
+            SimpleAdditionalOptionsText.Visibility = snapshot.HasAdditionalOptions ? Visibility.Visible : Visibility.Collapsed;
+            UpdateSimpleWarnings();
+        }
+        finally
+        {
+            syncing = false;
+        }
+    }
+
+    private void SelectJobRadio(SimpleCopyTaskKind kind)
+    {
+        var tag = kind.ToString();
+        foreach (var item in SimpleJobRadioButtons.Items.OfType<RadioButton>())
+        {
+            item.IsChecked = string.Equals(item.Tag as string, tag, StringComparison.Ordinal);
+        }
+    }
+
+    private void UpdateSimpleWarnings()
+    {
+        var warnings = RobocopyCommand.GetDestructiveWarnings(job.Options);
+        SimpleWarningInfoBar.IsOpen = warnings.Count > 0;
+        SimpleWarningInfoBar.Message = warnings.Count > 0 ? string.Join(' ', warnings) : string.Empty;
+    }
+
+    private static int ToCount(double value, int fallback)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < 0)
+        {
+            return fallback;
+        }
+
+        return (int)value;
     }
 
     private void SourceDestTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        UpdateCommandPreview(this, EventArgs.Empty);
+        job.Source = SourceTextBox.Text;
+        job.Destination = DestinationTextBox.Text;
+        UpdateCommandPreview();
         RunButton.IsEnabled = !string.IsNullOrWhiteSpace(SourceTextBox.Text) && !string.IsNullOrWhiteSpace(DestinationTextBox.Text);
     }
 
     private void SwapButton_Click(object sender, RoutedEventArgs e)
     {
-        UpdateCommandPreview(this, EventArgs.Empty);
         (SourceTextBox.Text, DestinationTextBox.Text) = (DestinationTextBox.Text, SourceTextBox.Text);
     }
 
@@ -277,6 +523,20 @@ public sealed partial class HomePage : Page
         DestinationTextBox.Text = result.Path;
     }
 
+    private async void SimpleLogBrowseButton_Click(object sender, RoutedEventArgs e)
+    {
+        FileSavePicker fileSavePicker = new(SimpleLogBrowseButton.XamlRoot.ContentIslandEnvironment.AppWindowId);
+        fileSavePicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+        fileSavePicker.FileTypeChoices.Add("Log file", [".log", ".txt"]);
+        var result = await fileSavePicker.PickSaveFileAsync();
+        if (result is null)
+        {
+            return;
+        }
+
+        SimpleLogPathTextBox.Text = result.Path;
+    }
+
     private async void SaveOptionsButton_Click(object sender, RoutedEventArgs e)
     {
         FileSavePicker fileSavePicker = new(((MenuFlyoutItem)sender).XamlRoot.ContentIslandEnvironment.AppWindowId);
@@ -289,7 +549,7 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+        RunRobocopy(job.RenderArguments() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
     }
 
     private async void LoadOptionsButton_Click(object sender, RoutedEventArgs e)
@@ -312,97 +572,12 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        void SetOptionContent(Controls.OptionEntry optionEntry, RCJParser.RCJCommand command)
-        {
-            optionEntry.IsSelected = true;
-            if (command.Argument is null)
-            {
-                return;
-            }
+        var options = commands
+            .Where(command => command.Command is not ("NOSD" or "NODD" or "SD" or "DD" or "SAVE" or "QUIT"))
+            .Select(command => new RobocopyPlanOption("/" + command.Command, command.Argument ?? string.Empty))
+            .ToList();
 
-            if (optionEntry.IsStorageOption)
-            {
-                string numberPart = new string(command.Argument.TakeWhile(char.IsDigit).ToArray());
-                string unitPart = command.Argument.Substring(numberPart.Length);
-                optionEntry.StorageUnit = unitPart;
-                if (int.TryParse(numberPart, out int number))
-                {
-                    optionEntry.NumberValue = number;
-                }
-            }
-
-            if (optionEntry.IsNumberOption)
-            {
-                if (int.TryParse(command.Argument, out int number))
-                {
-                    optionEntry.NumberValue = number;
-                }
-            }
-
-            if (optionEntry.IsTextOption)
-            {
-                optionEntry.TextValue = command.Argument;
-            }
-
-            if (optionEntry.IsRunHoursOption)
-            {
-                var parts = command.Argument.Split('-');
-                if (parts.Length == 2 && parts.All(p => p.Length == 4 && int.TryParse(p, out _)))
-                {
-                    optionEntry.StartHour = int.Parse(parts[0][0..2], NumberStyles.None, CultureInfo.InvariantCulture);
-                    optionEntry.EndHour = int.Parse(parts[1][0..2], NumberStyles.None, CultureInfo.InvariantCulture);
-                    optionEntry.StartMinute = int.Parse(parts[0][2..4], NumberStyles.None, CultureInfo.InvariantCulture);
-                    optionEntry.EndMinute = int.Parse(parts[1][2..4], NumberStyles.None, CultureInfo.InvariantCulture);
-                }
-            }
-
-            if (optionEntry.IsMultiSelectOption)
-            {
-                optionEntry.SelectedItems = command.Argument;
-            }
-        }
-
-        // Aggregate from left column
-        foreach (var option in OptionsListView.Items)
-        {
-            if (OptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
-            {
-                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
-            }
-        }
-
-        // Aggregate from right column
-        foreach (var option in OptionsListViewRight.Items)
-        {
-            if (OptionsListViewRight.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
-            {
-                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
-            }
-        }
-
-        foreach (var option in FilterOptionsListView.Items)
-        {
-            if (FilterOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
-            {
-                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
-            }
-        }
-
-        foreach (var option in LoggingOptionsListView.Items)
-        {
-            if (LoggingOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
-            {
-                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
-            }
-        }
-
-        foreach (var option in AdvancedOptionsListView.Items)
-        {
-            if (AdvancedOptionsListView.ContainerFromItem(option) is ListViewItem { ContentTemplateRoot: Controls.OptionEntry entry } && commands.Any(e => "/" + e.Command == entry.OptionName))
-            {
-                SetOptionContent(entry, commands.First(e => "/" + e.Command == entry.OptionName));
-            }
-        }
+        job.ReplaceOptions(options);
 
         if (commands.Any(e => e.Command == "NOSD") && string.IsNullOrWhiteSpace(SourceTextBox.Text))
         {
@@ -423,18 +598,27 @@ public sealed partial class HomePage : Page
         {
             DestinationTextBox.Text = commands.First(e => e.Command == "DD").Argument;
         }
+
+        RefreshEntriesFromJob();
+        RefreshSimpleFromJob();
+        UpdateCommandPreview();
     }
 
     private void RunButton_Click(object sender, RoutedEventArgs e)
     {
-        RunRobocopy(GetFullCommandLine().Replace("robocopy.exe", string.Empty).Trim());
+        RunRobocopy(job.RenderArguments());
     }
 
     private void RunRobocopy(string arguments)
     {
         OutputTextBox.Text = string.Empty;
         OutputSelectorBarItem.IsEnabled = true;
-        OutputSelectorBarItem.IsSelected = true;
+        if (!isSimpleMode)
+        {
+            OutputSelectorBarItem.IsSelected = true;
+        }
+
+        ApplyModeVisibility();
         var startInfo = new ProcessStartInfo
         {
             FileName = "robocopy.exe",
