@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -19,20 +18,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
-        private bool _disposed;
+        private readonly GlobalHotkeyConflictManager _conflictManager;
+        private volatile bool _disposed;
 
         protected abstract string ModuleName { get; }
 
         protected PageViewModelBase()
         {
-            if (GlobalHotkeyConflictManager.Instance != null)
+            _conflictManager = GlobalHotkeyConflictManager.Instance;
+            if (_conflictManager != null)
             {
-                GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
+                _conflictManager.ConflictsUpdated += OnConflictsUpdated;
             }
         }
 
         public virtual void OnPageLoaded()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             Debug.WriteLine($"=== PAGE LOADED: {ModuleName} ===");
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
@@ -49,11 +55,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </remarks>
         protected virtual void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-            var allHotkeySettings = GetAllHotkeySettings();
+            if (_disposed)
+            {
+                return;
+            }
 
             void UpdateConflictProperties()
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                UpdateHotkeyConflictStatus(e.Conflicts);
+                var allHotkeySettings = GetAllHotkeySettings();
                 if (allHotkeySettings != null)
                 {
                     foreach (KeyValuePair<string, HotkeySettings[]> kvp in allHotkeySettings)
@@ -63,26 +78,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         for (int i = 0; i < hotkeySettingsList.Length; i++)
                         {
+                            if (_disposed)
+                            {
+                                return;
+                            }
+
                             var key = $"{module.ToLowerInvariant()}_{i}";
                             hotkeySettingsList[i].HasConflict = GetHotkeyConflictStatus(key);
+                            if (_disposed)
+                            {
+                                return;
+                            }
+
                             hotkeySettingsList[i].ConflictDescription = GetHotkeyConflictTooltip(key);
                         }
                     }
                 }
             }
 
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
+            EnqueueConflictUpdate(UpdateConflictProperties);
+        }
+
+        protected virtual void EnqueueConflictUpdate(Action update)
+        {
+            // No worker-thread fallback: the window may already be closing.
+            App.GetSettingsWindow()?.DispatcherQueue.TryEnqueue(() => update());
         }
 
         public virtual Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -236,15 +256,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (!_disposed)
             {
+                _disposed = true;
                 if (disposing)
                 {
-                    if (GlobalHotkeyConflictManager.Instance != null)
+                    if (_conflictManager != null)
                     {
-                        GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
+                        _conflictManager.ConflictsUpdated -= OnConflictsUpdated;
                     }
                 }
-
-                _disposed = true;
             }
         }
     }

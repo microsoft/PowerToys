@@ -25,5 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PowerToys.Interop.vcxproj" />
+    <Compile Include="..\..\ManagedCommon\HotkeySettingsControlHook.cs" Link="HotkeySettingsControlHook.cs" />
   </ItemGroup>
 </Project>
