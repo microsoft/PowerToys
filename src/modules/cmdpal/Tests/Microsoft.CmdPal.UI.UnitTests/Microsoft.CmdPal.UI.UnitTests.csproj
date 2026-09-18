@@ -44,6 +44,9 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\InitialsPathFactory.cs" Link="Helpers\Icons\InitialsPathFactory.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\InitialsTextRenderer.cs" Link="Helpers\Icons\InitialsTextRenderer.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SemanticIconColor.cs" Link="Helpers\Icons\SemanticIconColor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgFileTextReader.cs" Link="Helpers\Icons\SvgFileTextReader.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgIconProtocol.cs" Link="Helpers\Icons\SvgIconProtocol.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgIconProtocolProcessor.cs" Link="Helpers\Icons\SvgIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\SvgPathDataReceiver.cs" Link="Helpers\Icons\SvgPathDataReceiver.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconCachePartition.cs" Link="Helpers\Icons\IconCachePartition.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadDemand.cs" Link="Helpers\Icons\IconLoadDemand.cs" />

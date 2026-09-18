@@ -235,6 +235,56 @@ public partial class CachedIconSourceProviderTests
 
     [TestMethod]
     [Timeout(5_000)]
+    public async Task ThemedSvgProtocolUsesDistinctCacheEntriesAcrossThemes()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel
+        {
+            Icon = "|ThemedSvg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"{{ThemeColor}}\"/></svg>",
+        };
+
+        var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
+        loader.CompleteNext(null);
+        await light;
+        Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+
+        var dark = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark);
+        Assert.AreNotSame(light, dark);
+        loader.CompleteNext(null);
+        await dark;
+        Assert.IsTrue(
+            SpinWait.SpinUntil(
+                () => GetInFlightCount(provider) == 0 && GetCacheCount(provider, "_otherCache") == 2,
+                TimeSpan.FromSeconds(2)));
+
+        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light));
+        Assert.AreSame(dark, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark));
+        Assert.AreEqual(2, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task PlainSvgProtocolSharesCacheEntryAcrossThemes()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = CreateProvider(loader);
+        var icon = new IconDataViewModel
+        {
+            Icon = "|Svg|<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"#0067C0\"/></svg>",
+        };
+
+        var light = provider.GetIconSource(icon, 1.0, theme: ElementTheme.Light);
+        loader.CompleteNext(null);
+        await light;
+        Assert.IsTrue(SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)));
+
+        Assert.AreSame(light, provider.GetIconSource(icon, 1.0, theme: ElementTheme.Dark));
+        Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
     public async Task FailedLoadIsRemovedAndCanBeRetried()
     {
         var loader = new ControllableIconLoader();
