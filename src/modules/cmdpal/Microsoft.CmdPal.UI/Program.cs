@@ -24,6 +24,8 @@ internal sealed class Program
     private static DispatcherQueueSynchronizationContext? uiContext;
     private static App? app;
 
+    internal static bool IsWidgetProviderActivation { get; private set; }
+
     // LOAD BEARING
     //
     // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator.
@@ -32,6 +34,8 @@ internal sealed class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        IsWidgetProviderActivation = args.Any(arg => string.Equals(arg, "-WidgetProvider", StringComparison.OrdinalIgnoreCase));
+
         if (Helpers.GpoValueChecker.GetConfiguredCmdPalEnabledValue() == Helpers.GpoRuleConfiguredValue.Disabled)
         {
             // There's a GPO rule configured disabling CmdPal. Exit as soon as possible.
@@ -66,6 +70,7 @@ internal sealed class Program
         }
 
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
+        Logger.LogDebug($"Widget provider activation: {IsWidgetProviderActivation}; arguments: {string.Join(", ", args)}");
 
         // Log application startup information
         try
@@ -88,7 +93,11 @@ internal sealed class Program
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = DecideRedirection();
+
+        // A packaged COM activation is waiting for this exact process to
+        // register its class factory. Redirecting it to another AppInstance
+        // leaves CoCreateInstance blocked indefinitely.
+        var isRedirect = IsWidgetProviderActivation ? RegisterWidgetProviderInstance() : DecideRedirection();
         if (!isRedirect)
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
@@ -121,6 +130,19 @@ internal sealed class Program
         }
 
         return isRedirect;
+    }
+
+    private static bool RegisterWidgetProviderInstance()
+    {
+        var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
+        if (keyInstance.IsCurrent)
+        {
+            keyInstance.Activated += OnActivated;
+        }
+
+        // COM is waiting for this exact process to register the class factory,
+        // so never redirect a widget-provider activation.
+        return false;
     }
 
     private static void RedirectActivationTo(AppActivationArguments args, AppInstance keyInstance)
@@ -173,6 +195,10 @@ internal sealed class Program
             // The sending instance remains blocked until this returns; afterward it may quit,
             // causing the activation arguments to be lost.
             mainWindow.HandleLaunchNonUI(args);
+        }
+        else if (app is not null && uiContext is not null)
+        {
+            uiContext.Send(_ => app.EnsureMainWindow(args), null);
         }
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using CoreWidgetProvider.Helpers;
 using Microsoft.CmdPal.Common;
@@ -78,6 +79,34 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         lock (_stateLock)
         {
             return _bands;
+        }
+    }
+
+    public override IWidgetContent[] GetWidgets()
+    {
+        lock (_stateLock)
+        {
+            if (_softDisabled)
+            {
+                return [];
+            }
+
+            return GetWidgetMetrics()
+                .Select(metric => PerformanceWidgetContent.CreateDefinition(metric, _settingsManager))
+                .ToArray();
+        }
+    }
+
+    public override IWidgetContent? GetWidget(string id, string instanceId)
+    {
+        lock (_stateLock)
+        {
+            if (_softDisabled)
+            {
+                return null;
+            }
+
+            return PerformanceWidgetContent.TryCreate(id, instanceId, _settingsManager);
         }
     }
 
@@ -193,6 +222,22 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             PerformanceMetricKind.Battery => Icons.BatteryIcon,
             _ => Icons.PerformanceMonitorIcon,
         };
+    }
+
+    private static IEnumerable<PerformanceMetricKind> GetWidgetMetrics()
+    {
+        yield return PerformanceMetricKind.Cpu;
+        yield return PerformanceMetricKind.Memory;
+        yield return PerformanceMetricKind.Disk;
+        yield return PerformanceMetricKind.Network;
+        yield return PerformanceMetricKind.Gpu;
+
+        var batteryStats = new BatteryStats();
+        batteryStats.GetData();
+        if (batteryStats.HasBattery)
+        {
+            yield return PerformanceMetricKind.Battery;
+        }
     }
 
     private void SetEnabledState()

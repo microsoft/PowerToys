@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="304" viewBox="0 0 300 304">
+  <rect width="300" height="304" rx="18" fill="#202020"/>
+  <rect x="16" y="16" width="268" height="272" rx="14" fill="#2b2b2b" stroke="#6b69d6" stroke-width="2"/>
+  <circle cx="44" cy="47" r="15" fill="#5b5fc7"/>
+  <path d="M37 47h14M44 40v14" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <text x="68" y="43" fill="white" font-family="Segoe UI, sans-serif" font-size="16" font-weight="600">Command Palette</text>
+  <text x="68" y="62" fill="#c8c8c8" font-family="Segoe UI, sans-serif" font-size="12">Extension widgets</text>
+  <rect x="32" y="91" width="236" height="72" rx="9" fill="#383838"/>
+  <text x="48" y="118" fill="white" font-family="Segoe UI, sans-serif" font-size="15" font-weight="600">Sample counter</text>
+  <text x="48" y="143" fill="#d8d8d8" font-family="Segoe UI, sans-serif" font-size="14">Count: 0</text>
+  <rect x="32" y="179" width="236" height="72" rx="9" fill="#383838"/>
+  <text x="48" y="206" fill="white" font-family="Segoe UI, sans-serif" font-size="15" font-weight="600">Performance monitor</text>
+  <text x="48" y="231" fill="#d8d8d8" font-family="Segoe UI, sans-serif" font-size="14">CPU usage: 24%</text>
+  <text x="150" y="274" fill="#a9a9a9" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11">Widgets provided through CmdPal</text>
+</svg>

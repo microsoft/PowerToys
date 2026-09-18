@@ -10,7 +10,8 @@ public abstract partial class CommandProvider :
     ICommandProvider,
     ICommandProvider2,
     ICommandProvider3,
-    ICommandProvider4
+    ICommandProvider4,
+    ICommandProvider5
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -27,6 +28,10 @@ public abstract partial class CommandProvider :
     public virtual ICommand? GetCommand(string id) => null;
 
     public virtual ICommandItem? GetCommandItem(string id) => null;
+
+    public virtual IWidgetContent[]? GetWidgets() => null;
+
+    public virtual IWidgetContent? GetWidget(string id, string instanceId) => null;
 
     public virtual ICommandSettings? Settings { get; protected set; }
 

@@ -26,11 +26,15 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private readonly ICommandProviderCache? _commandProviderCache;
 
+    private ICommandProvider5? _widgetProvider;
+
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
 
     public TopLevelViewModel[] DockBandItems { get; private set; } = [];
+
+    public WidgetDefinition[] WidgetDefinitions { get; private set; } = [];
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -259,6 +263,101 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             DisplayName = Extension?.PackageDisplayName ?? Extension?.PackageFamilyName ?? ProviderId;
         }
+    }
+
+    private void InitializeWidgets(IWidgetContent[] widgets)
+    {
+        var definitions = new List<WidgetDefinition>();
+        var seenIds = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var widget in widgets)
+        {
+            try
+            {
+                if (widget is null || string.IsNullOrWhiteSpace(widget.Id))
+                {
+                    Logger.LogWarning($"Ignoring a widget with no ID from {ProviderId}");
+                    continue;
+                }
+
+                if (!seenIds.Add(widget.Id))
+                {
+                    Logger.LogWarning($"Ignoring duplicate widget ID {widget.Id} from {ProviderId}");
+                    continue;
+                }
+
+                var sizes = widget.SupportedSizes ?? [];
+                definitions.Add(new WidgetDefinition(
+                    Extension?.ExtensionUniqueId ?? string.Empty,
+                    Id,
+                    widget.Id,
+                    widget.Title ?? string.Empty,
+                    widget.Description ?? string.Empty,
+                    Extension?.PackageDisplayName ?? DisplayName,
+                    GetIconText(widget.Icon),
+                    widget.Icon,
+                    sizes,
+                    widget.AllowMultiple));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to read a widget definition from {ProviderId}", ex);
+            }
+        }
+
+        WidgetDefinitions = definitions.ToArray();
+    }
+
+    public void LoadWidgets(IServiceProvider serviceProvider)
+    {
+        var providerSettings = GetProviderSettings(serviceProvider.GetRequiredService<ISettingsService>().Settings);
+        if (!providerSettings.IsEnabled)
+        {
+            WidgetDefinitions = [];
+            return;
+        }
+
+        var model = _commandProvider.Unsafe;
+        if (model is not ICommandProvider5 supportsWidgets)
+        {
+            _widgetProvider = null;
+            WidgetDefinitions = [];
+            return;
+        }
+
+        _widgetProvider = supportsWidgets;
+        var widgets = supportsWidgets.GetWidgets() ?? [];
+        Logger.LogDebug($"Found {widgets.Length} widgets on {DisplayName} ({ProviderId})");
+        InitializeWidgets(widgets);
+    }
+
+    private static string GetIconText(IIconInfo? icon)
+    {
+        try
+        {
+            var value = icon?.Light?.Icon ?? string.Empty;
+            return value.Length <= 2 && !value.Contains(':') && !value.Contains('\\') ? value : string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    public IWidgetContent? GetWidget(string widgetId, string instanceId)
+    {
+        if (_widgetProvider is null || string.IsNullOrWhiteSpace(widgetId) || string.IsNullOrWhiteSpace(instanceId))
+        {
+            return null;
+        }
+
+        var widget = _widgetProvider.GetWidget(widgetId, instanceId);
+        if (widget is null || !string.Equals(widget.Id, widgetId, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return widget;
     }
 
     private void InitializeCommands(

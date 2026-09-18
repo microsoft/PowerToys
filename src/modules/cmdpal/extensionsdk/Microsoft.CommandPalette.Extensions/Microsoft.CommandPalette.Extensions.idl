@@ -373,6 +373,29 @@ namespace Microsoft.CommandPalette.Extensions
         Int32 MaxWidth { get; };
         Int32 MaxHeight { get; };
     }
+
+    enum WidgetSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IWidgetContent requires INotifyPropChanged
+    {
+        String Id { get; };
+        String Title { get; };
+        String Description { get; };
+        IIconInfo Icon { get; };
+        WidgetSize[] SupportedSizes { get; };
+        Boolean AllowMultiple { get; };
+        IFormContent Content { get; };
+
+        void Activate();
+        void Deactivate();
+        void Delete();
+    };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
@@ -441,6 +464,13 @@ namespace Microsoft.CommandPalette.Extensions
     interface ICommandProvider4 requires ICommandProvider3
     {
         ICommandItem GetCommandItem(String id);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider5 requires ICommandProvider4
+    {
+        IWidgetContent[] GetWidgets();
+        IWidgetContent GetWidget(String id, String instanceId);
     };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

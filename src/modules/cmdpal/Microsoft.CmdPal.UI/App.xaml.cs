@@ -35,11 +35,17 @@ using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Widgets;
+using Microsoft.CmdPal.UI.Widgets;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.Widgets.Providers;
+using Shmuelie.WinRTServer;
+using Shmuelie.WinRTServer.CsWinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -51,6 +57,9 @@ namespace Microsoft.CmdPal.UI;
 public partial class App : Application, IDisposable
 {
     private readonly GlobalErrorHandler _globalErrorHandler = new();
+    private readonly ComServer _widgetComServer;
+    private readonly CmdPalWidgetProvider _widgetProvider;
+    private Window? _headlessLifetimeWindow;
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -87,6 +96,12 @@ public partial class App : Application, IDisposable
 
         ContentFormControl.RegisterCustomElements();
 
+        _widgetProvider = Services.GetRequiredService<CmdPalWidgetProvider>();
+        _widgetComServer = new ComServer();
+        _widgetComServer.RegisterClass<CmdPalWidgetProvider, IWidgetProvider>(() => _widgetProvider);
+        _widgetComServer.Start();
+        Logger.LogDebug("Registered the Command Palette widget provider COM class factory");
+
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
 
@@ -113,9 +128,27 @@ public partial class App : Application, IDisposable
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        AppWindow = new MainWindow();
+        if (Program.IsWidgetProviderActivation)
+        {
+            // A WinUI application with no windows exits after OnLaunched. Keep
+            // one hidden window alive so the COM class factory remains
+            // available without displaying CmdPal.
+            _headlessLifetimeWindow = new Window();
+            _headlessLifetimeWindow.Activate();
+            _headlessLifetimeWindow.AppWindow.Hide();
+            Logger.LogDebug("Started in headless widget provider mode");
+            return;
+        }
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        EnsureMainWindow(activatedEventArgs);
+    }
+
+    internal void EnsureMainWindow(AppActivationArguments activatedEventArgs)
+    {
+        _headlessLifetimeWindow?.Close();
+        _headlessLifetimeWindow = null;
+        AppWindow ??= new MainWindow();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
@@ -249,6 +282,11 @@ public partial class App : Application, IDisposable
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
+        services.AddSingleton<WidgetCatalogService>();
+        services.AddSingleton<IWidgetCatalog>(serviceProvider => serviceProvider.GetRequiredService<WidgetCatalogService>());
+        services.AddSingleton<IWidgetPlatform, WindowsWidgetPlatform>();
+        services.AddSingleton<WidgetCoordinator>();
+        services.AddSingleton<CmdPalWidgetProvider>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
 
@@ -301,6 +339,9 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
+        _widgetProvider.Dispose();
+        _widgetComServer.Stop();
+        _widgetComServer.UnsafeDispose();
         (Services as IDisposable)?.Dispose();
         _globalErrorHandler.Dispose();
         EtwTrace.Dispose();

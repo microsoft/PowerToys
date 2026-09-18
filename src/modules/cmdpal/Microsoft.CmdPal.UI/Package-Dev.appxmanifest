@@ -16,12 +16,12 @@
   xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:virtualization="http://schemas.microsoft.com/appx/manifest/virtualization/windows10"
-  IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
+  IgnorableNamespaces="uap mp com rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
     Name="Microsoft.CommandPalette.Dev"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
-    Version="0.0.1.0" />
+    Version="0.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="69b8faa1-5ada-484f-999d-4998c7ff2082" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -56,6 +56,42 @@
       </uap:VisualElements>
 
       <Extensions>
+
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="Microsoft.CmdPal.UI.exe" Arguments="-WidgetProvider" DisplayName="Command Palette Dev widget provider">
+              <com:Class Id="918F58B7-7E1A-4E1A-A53E-6B0D760D83A3" DisplayName="Command Palette Dev widget provider" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.windows.widgets" DisplayName="Command Palette Dev" Id="CmdPalWidgets" PublicFolder="Public">
+            <uap3:Properties>
+              <WidgetProvider>
+                <ProviderIcons>
+                  <Icon Path="Assets\StoreLogo.png" />
+                </ProviderIcons>
+                <Activation>
+                  <CreateInstance ClassId="918F58B7-7E1A-4E1A-A53E-6B0D760D83A3" />
+                </Activation>
+                <Definitions>
+                  <Definition Id="CmdPalExtensionWidget" DisplayName="Command Palette Dev" Description="Widgets provided by Command Palette extensions" AllowMultiple="true" IsCustomizable="true">
+                    <Capabilities>
+                      <Capability><Size Name="small" /></Capability>
+                      <Capability><Size Name="medium" /></Capability>
+                      <Capability><Size Name="large" /></Capability>
+                    </Capabilities>
+                    <ThemeResources>
+                      <Icons><Icon Path="Assets\StoreLogo.png" /></Icons>
+                      <Screenshots><Screenshot Path="Assets\WidgetScreenshot.svg" DisplayAltText="Command Palette extension widgets" /></Screenshots>
+                    </ThemeResources>
+                  </Definition>
+                </Definitions>
+              </WidgetProvider>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
 
         <uap3:Extension Category="windows.appExtensionHost">
           <uap3:AppExtensionHost>

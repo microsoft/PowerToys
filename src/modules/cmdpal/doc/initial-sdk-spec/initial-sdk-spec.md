@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-02-05
+last updated: 2026-09-02
 issue id: n/a
 ---
 
@@ -85,6 +85,10 @@ functionality.
     - [Nov 2025 status](#nov-2025-status)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Widgets Board](#addenda-v-widgets-board)
+    - [Widget definitions and pinned instances](#widget-definitions-and-pinned-instances)
+    - [Rendering and actions](#rendering-and-actions)
+    - [Windows registration constraint](#windows-registration-constraint)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2355,6 +2359,207 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+
+## Addenda V: Widgets Board
+
+The Windows Widgets Board is another surface where extensions may provide
+long-lived, glanceable content. As with [dock bands](#addenda-iv-dock-bands),
+CmdPal will own the integration with the Windows surface. Extensions will only
+provide SDK objects; they will not need to implement or register a Windows
+widget provider themselves.
+
+Widget content is powered by the same Adaptive Card forms already used by
+content pages. A widget is therefore an `IFormContent` with the additional
+identity, display metadata, and lifecycle information that CmdPal needs to
+host it outside the palette.
+
+```csharp
+enum WidgetSize
+{
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+};
+
+interface IWidgetContent requires INotifyPropChanged
+{
+        String Id { get; };
+        String Title { get; };
+        String Description { get; };
+        IIconInfo Icon { get; };
+        WidgetSize[] SupportedSizes { get; };
+        Boolean AllowMultiple { get; };
+        IFormContent Content { get; };
+
+        void Activate();
+        void Deactivate();
+        void Delete();
+};
+
+interface ICommandProvider5 requires ICommandProvider4
+{
+        IWidgetContent[] GetWidgets();
+    IWidgetContent GetWidget(String id, String instanceId);
+};
+```
+
+`IWidgetContent` exposes its form through `Content` rather than extending
+`IFormContent`. This avoids adding another branch to the form-content interface
+hierarchy and makes lazy creation explicit: a lightweight object returned by
+`GetWidgets` may provide metadata without constructing its form, while the
+instance returned by `GetWidget` creates `Content` when the host reads it.
+`ICommandProvider5` remains the next interface in the existing command provider
+chain. Widgets are another surface of a command provider, not a new
+`ProviderType`.
+
+The Toolkit will provide a `WidgetContent` base class with a `FormContent`
+property, plus default implementations of the new provider methods on
+`CommandProvider`. Extensions using the Toolkit will only need to override the
+methods and properties relevant to their widget.
+
+An extension may raise its command provider's `ItemsChanged` event when the
+result of `GetWidgets` changes. CmdPal will re-enumerate all of that provider's
+widgets, just as it does for top-level commands and dock bands. An individual
+`IWidgetContent` uses its inherited `PropChanged` event for changes to its
+content or display metadata. The form returned by `Content` uses its own
+`PropChanged` event for template and data updates.
+
+### Widget definitions and pinned instances
+
+`GetWidgets` returns the logical widgets that the extension makes available.
+The returned values act as definitions and provide the metadata CmdPal uses in
+its widget selection UI.
+
+Each definition must have an `Id` that is:
+
+* non-empty and non-localized;
+* unique within the command provider; and
+* stable across extension updates.
+
+CmdPal identifies a logical widget by the combination of the extension ID,
+provider ID, and widget ID. Definitions with missing or duplicate IDs will be
+ignored. Changing an ID creates a new logical widget and may leave existing
+pinned instances unable to reconnect.
+
+Windows gives every pinned widget an opaque instance ID. CmdPal calls
+`GetWidget` to materialize the `IWidgetContent` that will serve that particular
+instance. The arguments are:
+
+* `id`: the stable ID from the corresponding value returned by `GetWidgets`;
+* `instanceId`: the opaque Windows widget instance ID.
+
+Any per-instance configuration or application state is the extension's
+responsibility. The extension can use `instanceId` as the key for its own
+persistence and restore that state when `GetWidget` is called. CmdPal will not
+store or return opaque extension state.
+
+`GetWidget` should return the same serving object when called repeatedly for
+the same instance ID during one extension lifetime. It may return `null` when
+the definition no longer exists or the instance cannot be initialized. CmdPal will
+display an unavailable state rather than repeatedly failing the widget.
+
+`AllowMultiple` tells CmdPal whether more than one pinned instance may be bound
+to the logical widget. If it is `false`, CmdPal will prevent selecting that
+definition while another instance is already bound to it. Windows itself may
+still create additional unbound CmdPal widget instances, as described in
+[Windows registration constraint](#windows-registration-constraint).
+
+`SupportedSizes` may contain `Small`, `Medium`, and `Large`. An empty array means
+all three sizes. The generic CmdPal widget registration must advertise the
+union of sizes, so this property is advisory to the host. If Windows requests a
+size the extension does not support, CmdPal will show an explanatory fallback
+card instead of invoking the extension with an unsupported size.
+
+CmdPal maps the Windows widget lifecycle to the serving object:
+
+* `Activate` means the Widgets Board currently wants fresh content. Extensions
+    should start or resume expensive polling here.
+* `Deactivate` means the Board is no longer actively requesting updates.
+    Extensions should pause work that is not otherwise needed.
+* `Delete` means this pinned instance was removed. Extensions should release
+    instance-specific resources and state.
+
+The Toolkit implementations of these methods will be no-ops. CmdPal may call
+them more than once, and extensions should make them idempotent.
+
+### Rendering and actions
+
+For a bound widget, CmdPal reads `IWidgetContent.Content` and maps that form's
+properties to the Windows widget update payload:
+
+* `TemplateJson` is the Adaptive Card template;
+* `DataJson` is the data used to expand that template.
+
+`StateJson` remains part of the inherited `IFormContent` contract, but the
+widget host does not use it as an extension persistence mechanism. CmdPal only
+persists its own binding information: the extension, provider, and widget IDs
+needed to reconnect a Windows widget instance. It may copy that binding into
+Windows widget custom state for host recovery.
+
+Widget templates must use the Adaptive Card schema and elements supported by
+the Windows Widgets Board. CmdPal-specific custom elements are not available on
+that surface. Templates should use `$host.widgetSize` when they need different
+layouts for small, medium, and large widgets.
+
+Widget actions should use `Action.Execute`. When Windows reports an action,
+CmdPal calls `SubmitForm` on the serving `IWidgetContent`:
+
+* `inputs` contains the JSON data supplied by the Widgets Board, including
+    submitted input values; and
+* `data` contains host context, including the action's `verb` and a
+    `surface` value of `windowsWidgets`.
+
+After `SubmitForm` returns, CmdPal reads the form properties again and sends any
+changes to the Board. Later `PropChanged` events can also update the widget.
+Updates will be coalesced and rate-limited so a noisy extension cannot flood
+the widget service.
+
+`CommandResult.KeepOpen` is the only result with defined behavior for the first
+version: the widget remains in place and receives any updated form properties.
+Other command results have no direct equivalent on the Widgets Board and will
+be ignored. A future revision may allow a user-initiated action to open a
+specific CmdPal page.
+
+### Windows registration constraint
+
+Windows widget definitions are declared statically in the provider package
+manifest. Their picker names, descriptions, icons, screenshots, supported
+sizes, and multiplicity cannot be added or changed at runtime. Consequently,
+CmdPal cannot create one new top-level Widgets picker entry for every widget
+discovered from dynamically installed extensions.
+
+CmdPal will instead register one generic, customizable widget definition in
+its own package. It will support multiple pinned instances and all three widget
+sizes. The user flow will be:
+
+1. Add the Command Palette widget from the Windows widget picker.
+2. Choose one of the available extension widgets from a CmdPal-owned
+     customization card.
+3. CmdPal persists that binding and replaces the selector with the extension's
+     form content.
+
+The Board does not scroll widget content. The customization card uses a compact
+`Input.ChoiceSet` dropdown with labels in the form "Extension: Widget" and one
+"Use widget" button. The current widget is preselected when available; an
+unbound instance shows a placeholder and requires a selection. The submit action
+collects the dropdown's `widget` input rather than hard-coding a widget ID in
+action data. Choosing an option does not change the saved binding until the user
+confirms. The chooser does not render extension icons, descriptions, or paging
+controls, so the card stays short at every supported size.
+
+The generic picker entry necessarily uses CmdPal's name, icon, description,
+and screenshot. After binding, CmdPal will show the extension's title and icon
+in the widget content or runtime header where the Windows host supports it.
+Per-extension `AllowMultiple` and `SupportedSizes` values are enforced by
+CmdPal, but cannot alter the static Windows picker entry or its resize menu.
+
+This does not prevent CmdPal from declaring separate static definitions for a
+small set of built-in widgets in the future. Third-party widgets discovered at
+runtime will continue to use the generic definition.
+
+The detailed engineering work is tracked in the
+[Widgets Board implementation plan](./widget-provider-implementation-plan.md).
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)

@@ -10,6 +10,8 @@ namespace SamplePagesExtension;
 
 public partial class SamplePagesCommandsProvider : CommandProvider
 {
+    private readonly SampleWidgetContent _widgetDefinition = new(string.Empty);
+
     public SamplePagesCommandsProvider()
     {
         DisplayName = "Sample Pages Commands";
@@ -39,4 +41,9 @@ public partial class SamplePagesCommandsProvider : CommandProvider
 
         return bands.ToArray();
     }
+
+    public override IWidgetContent[] GetWidgets() => [_widgetDefinition];
+
+    public override IWidgetContent GetWidget(string id, string instanceId) =>
+        id == SampleWidgetContent.WidgetId ? new SampleWidgetContent(instanceId) : null;
 }
