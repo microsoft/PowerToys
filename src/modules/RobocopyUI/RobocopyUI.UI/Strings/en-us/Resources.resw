@@ -127,7 +127,7 @@
     <value>Destination</value>
   </data>
   <data name="HomePageTitle.Text" xml:space="preserve">
-    <value>Robocopy User Interface</value>
+    <value>Robocopy UI</value>
   </data>
   <data name="OptionsSelectorBarLabel.Text" xml:space="preserve">
     <value>Options</value>
@@ -591,13 +591,13 @@
   <data name="Status_Fail" xml:space="preserve">
     <value>Operation failed.</value>
   </data>
-<data name="LoadButtonLabel.Text" xml:space="preserve">
-  <value>Load Job File</value>
-</data>
-<data name="CommandPreviewTextBox.Header" xml:space="preserve">
-  <value>Command Preview</value>
-</data>
-<data name="AIAssistButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="LoadButtonLabel.Text" xml:space="preserve">
+    <value>Load Job File</value>
+  </data>
+  <data name="CommandPreviewTextBox.Header" xml:space="preserve">
+    <value>Command Preview</value>
+  </data>
+  <data name="AIAssistButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Describe what you want to copy and let AI build the command</value>
   </data>
   <data name="AIAssistButton.AutomationProperties.Name" xml:space="preserve">
