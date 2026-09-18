@@ -85,6 +85,11 @@ jobs:
         -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
     displayName: Remove stale UI-test signing certificates
 
+  - pwsh: |
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      Restore-LightSwitchLocation -StatePath "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
+    displayName: Restore interrupted Light Switch location setup
+
   - ${{ if eq(parameters.useLatestWebView2, true) }}:
     - powershell: |
         $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
@@ -382,6 +387,8 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
       $nonElevatedSuites = @('CropAndLock.UITests', 'Workspaces.UITests.Next')
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
       foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
         $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
@@ -391,6 +398,9 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'LightSwitch.UITests.Next') {
+            Enable-LightSwitchLocation -StatePath $locationStatePath
+          }
           if ($nonElevatedSuites -contains $base) {
             if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
               throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
@@ -409,8 +419,14 @@ jobs:
             $failed++
           }
         } finally {
-          Pop-Location
-          Write-Host "##[endgroup]"
+          try {
+            if ($base -eq 'LightSwitch.UITests.Next') {
+              Restore-LightSwitchLocation -StatePath $locationStatePath
+            }
+          } finally {
+            Pop-Location
+            Write-Host "##[endgroup]"
+          }
         }
       }
 
@@ -435,6 +451,12 @@ jobs:
       testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
       mergeTestResults: true
       failTaskOnFailedTests: ${{ parameters.autoSelectUiTests }}
+
+  - pwsh: |
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      Restore-LightSwitchLocation -StatePath "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
+    displayName: Restore Light Switch location prerequisites
+    condition: always()
 
   # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
   # self-hosted agent between jobs. Best-effort and always runs.

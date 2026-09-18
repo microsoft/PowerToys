@@ -231,6 +231,28 @@ internal sealed class TestHelper
     {
         Step("Opening the location dialog");
         ui.Find<Button>(By.AccessibilityId("SetLocationButton_LightSwitch")).Invoke(msPostAction: 0);
+        var ready = WaitHelper.WaitForStable(
+            () => (
+                Consent: WindowsFinder.ListByApp("PickerHost").FirstOrDefault(candidate =>
+                    candidate.ClassName == "Shell_SystemDialog" &&
+                    candidate.Title == "Let Windows and apps access your location?"),
+                DialogOpen: ui.Has(By.AccessibilityId("LatitudeBox_LightSwitch"), 0)),
+            state => state.Consent is not null || state.DialogOpen,
+            timeoutMS: 30_000,
+            pollIntervalMS: 250);
+        Assert.IsTrue(ready.Succeeded, $"Neither the location dialog nor Windows location consent appeared. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+
+        if (ready.LastObservation.Consent is { } prompt)
+        {
+            Step("Granting the Windows location consent requested by PowerToys Settings");
+            var consent = WindowsFinder.WaitForWindowByApp("PickerHost", candidate => candidate.Hwnd == prompt.Hwnd, timeoutMS: 5_000);
+            Assert.IsNotNull(consent, "The identified Windows location consent window disappeared before it could be accepted.");
+            var accept = consent.FindAll<Button>(By.Name("Yes"), 5_000).Where(button => button.Name == "Yes").ToArray();
+            Assert.HasCount(1, accept, "Expected exactly one Yes button in the Windows location consent window.");
+            accept[0].Invoke(msPostAction: 0);
+            Assert.IsTrue(accept[0].WaitForGone(15_000), "Windows location consent did not close after accepting it.");
+        }
+
         ui.Find(By.AccessibilityId("LatitudeBox_LightSwitch"), 20_000);
         ui.Find(By.AccessibilityId("LongitudeBox_LightSwitch"));
     }
