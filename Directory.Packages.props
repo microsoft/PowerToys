@@ -58,7 +58,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="Microsoft.AI.Foundry.Local" Version="0.3.0" />
+    <PackageVersion Include="Microsoft.AI.Foundry.Local" Version="2.0.1" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.71.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.71.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.71.0-beta" />
