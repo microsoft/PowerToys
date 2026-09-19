@@ -500,5 +500,18 @@ namespace Microsoft.CommandPalette.Extensions
         IContent[] GetContent();
     }
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITab requires INotifyPropChanged {
+        String Title { get; };
+        IIconInfo Icon { get; };
+        String Badge { get; };
+        IPage Page { get; };
+    }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITabbedPage requires IPage, INotifyItemsChanged {
+        ITab[] GetTabs();
+    }
+
 
 }

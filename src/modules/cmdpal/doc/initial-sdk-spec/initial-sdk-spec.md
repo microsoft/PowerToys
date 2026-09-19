@@ -90,6 +90,7 @@ functionality.
     - [Plain text content](#plain-text-content)
   - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
   - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
+  - [Addenda VIII: Tabbed pages](#addenda-viii-tabbed-pages)
   - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
@@ -2464,6 +2465,28 @@ raise a `INotifyPropChanged` event on the `IDetails2` object for the property
 name "Content". The host will accept that as a notification that the content has
 changed. 
 
+## Addenda VIII: Tabbed pages
+
+Tabbed pages were added in an attempt to provide another way to group related
+content that lives in a state that contains both `ContentPage` and `ListPage`
+data.
+
+Tabbed pages consist of an array of `ITab` associated with an `IPage` and
+include a `Title`, `Icon`, and `Badge` that are displayed on the tab itself.
+
+```csharp
+interface ITab requires INotifyPropChanged {
+    String Title { get; };
+    IIconInfo Icon { get; };
+    String Badge { get; };
+    IPage Page { get; };
+}
+
+interface ITabbedPage requires IPage, INotifyItemsChanged {
+    ITab[] GetTabs();
+}
+```
+
 ## Addenda IX: Dock label layout hints
 
 To keep changing performance values from moving neighbouring Dock items, use
@@ -2630,6 +2653,19 @@ classDiagram
     class IGalleryGridLayout {
         Boolean ShowTitle
         Boolean ShowSubtitle
+    }
+
+    ITab --|> ITabbedPage
+    class ITab {
+        String Title
+        IIconInfo Icon
+        String Badge
+        IPage Page  
+    }
+
+    ITabbedPage --|> IPage
+    class ITabbedPage {
+        ITab[] GetTabs()
     }
 
     IListPage --|> IPage
