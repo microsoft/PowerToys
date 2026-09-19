@@ -274,7 +274,9 @@ write timing in stall evidence. A failing guest publication cannot stop host
 generations, as covered by a subprocess regression. Bootstrap detects publisher
 exit, cleanup stops both, and recovery supports both the new two-publisher
 journal and older one-publisher journals. Watchdog and hard deadlines are
-unchanged. The acknowledged RPC revision still needs to reach pairing in CI.
+unchanged. Guest bootstrap now precedes host-worker launch, so the host is not
+idling under its liveness watchdog during the expensive nested-VM creation.
+The acknowledged RPC revision still needs to reach pairing in CI.
 
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.

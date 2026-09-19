@@ -328,6 +328,21 @@ internal sealed class TwoEndpointFixture : IDisposable
     private void StartWorkers()
     {
         var winapp = Environment.GetEnvironmentVariable("WINAPP_CLI_PATH")!;
+
+        // Finish the expensive nested-VM boot before starting the host worker's
+        // liveness watchdog. Both workers still enforce the same lease deadline.
+        guest!.BeginBootstrap();
+        sandbox!.Start(Path.Combine(runRoot, "run.wsb"), guestArchive, payloadRoot, Path.GetDirectoryName(winapp)!, guest);
+        var guestReady = guest.WaitForReady(() =>
+        {
+            CheckLeasePublishers();
+            sandbox.Discover();
+        });
+        guestReceiverHwnd = guestReady["ReceiverHwnd"]!.GetValue<long>();
+        guestName = MachineName(guestReady["ComputerName"]!.GetValue<string>());
+        Assert.AreNotEqual(hostName, guestName, "Peer identities must be distinct.");
+        sandbox.AcknowledgeGuest();
+
         var start = new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe"))
         {
             UseShellExecute = false,
@@ -364,17 +379,6 @@ internal sealed class TwoEndpointFixture : IDisposable
             Assert.IsTrue(hostWorker.IsCurrent(), "Host worker exited during bootstrap; inspect its failed.json.");
         });
         hostReceiverHwnd = hostReady["ReceiverHwnd"]!.GetValue<long>();
-        guest!.BeginBootstrap();
-        sandbox!.Start(Path.Combine(runRoot, "run.wsb"), guestArchive, payloadRoot, Path.GetDirectoryName(winapp)!, guest!);
-        var guestReady = guest!.WaitForReady(() =>
-        {
-            CheckLeasePublishers();
-            sandbox.Discover();
-        });
-        guestReceiverHwnd = guestReady["ReceiverHwnd"]!.GetValue<long>();
-        guestName = MachineName(guestReady["ComputerName"]!.GetValue<string>());
-        Assert.AreNotEqual(hostName, guestName, "Peer identities must be distinct.");
-        sandbox.AcknowledgeGuest();
         var initialProvision = provision;
         RunFiles.Wait(
             () =>

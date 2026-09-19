@@ -147,6 +147,8 @@ The built executable is under
   `LogonCommand`, bounded run-correlated request/result files, leases and desktop
   readiness. Each bootstrap gets fifteen minutes starting at its endpoint launch,
   rather than consuming the guest's allowance during host preparation.
+  The guest is bootstrapped first; the host worker starts after guest readiness,
+  avoiding an idle host watchdog during the expensive nested-VM creation.
   There is no dependency on modern `wsb.exe`. Discovery and close confirmation
   use native owned-window APIs, never the Sandbox client's UIA tree. Startup
   errors require positive failure text from the launcher's native dialog.
