@@ -1,36 +1,25 @@
 # Autonomous MWB nested-Sandbox Debug pilot
 
-**Status: the full unfiltered Win10 experimental suite has passed (2/2).**
-Run `localvm-20260915-170002-e841cb1a` completed the smoke in 25m59s, including
-remote keyboard/mouse, clipboard both ways, negative controls and cleanup, without
-operator actions. Repeat reliability is not established: the later persistent-
-evidence run `localvm-20260915-173353-3804112e` passed the receiver probe but stalled
-in guest Settings initialization. This is feasibility evidence, not clean-baseline,
-Win11 or full module sign-off. The Debug pilot now omits unused installer
-packaging. Later CI diagnostics booted the Win10 Sandbox but stopped in the
-harness's process-wide UIA startup-error query, before MWB pairing. The corrected
-CI run passed native Sandbox readiness and produced a usable separate viewer
-video, then exposed an 80-second lease-publication gap before endpoint startup.
-Win11's captured provisioning error confirmed that its CI image has Windows
-Sandbox **Disabled**; image setup/reboot is required, not a test-side bypass.
-The fixed unit regression now passes in the CI main build. A subsequent run with
-process-isolated leases passed bootstrap, endpoint startup and New key/Connect,
-with no expired leases. It stopped at the first transport-probe command deadline;
-the socket result arrived later. Transport snapshots now use the native
-PID-filtered IPv4/IPv6 tables instead of cold NetTCPIP/CIM loading. No end-to-end
-CI pass is claimed.
-The next Win10 run completed those snapshots in about 1.5 seconds but observed
-only listening sockets on both peers throughout the connection-readiness budget.
-Mappings and submitted keys matched; the actual connection failure remains open.
-The final diagnostic run stopped before UI execution on a certificate-fixture
-expiry race, now corrected by inheriting each issuer's encoded validity interval.
-That correction and the sanitized-log attachment fix still need a subsequent
-CI UI run; no additional run was queued beyond the authorized budget.
-The renewed Win10-focused cycle exported Settings RPC connection-loss evidence.
-New key, Connect and Reconnect now await remote completion before their
-per-request channel is disposed; the RPC names, arguments and identity checks
-are unchanged. This addresses a reproduced acknowledgement/lifetime defect,
-not a test-side pairing fallback.
+**Status: the autonomous Win10 Debug Sandbox smoke has passed on two consecutive
+fresh CI agents with the same code revision.**
+Both runs completed real New key/Connect, bidirectional owned TCP transport,
+local-input isolation, remote keyboard/mouse, clipboard-off isolation, clipboard
+transfer in both directions, and owned cleanup without operator actions.
+This is the selected ordered smoke scenario, not full module, Release, service,
+secure-desktop, physical-machine, or Win11 sign-off.
+
+The stability fixes retain real Settings actions and the existing safety gates:
+state-changing Settings RPCs await acknowledgement before their channel closes;
+host and guest leases have independent owned publishers; and guest bootstrap
+finishes before the host worker starts. Discovery and transport observation use
+native APIs rather than blocking Sandbox UIA or cold NetTCPIP/CIM queries.
+Watchdogs, scoped firewall rules and peer verification remain intact.
+
+Desktop and separate Sandbox-viewer recordings, phase evidence, transport
+snapshots and sanitized endpoint logs survive successful runs. The desktop MP4s
+finalized; the viewer MP4s are usable but retain an explicit finalization-timeout
+warning in their manifests. Win11 Sandbox enablement remains an image prerequisite
+and was outside the Win10-focused stabilization scope.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI

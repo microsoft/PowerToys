@@ -6,9 +6,10 @@ Continuation was attempted on the existing cloud host after nested virtualizatio
 was enabled for `PowerToysUiTest-Win10` (now 15 vCPUs, 24 GB static RAM). The new
 `MouseWithoutBorders.UITests` project, legacy Sandbox fixture, privileged firewall
 setup, Limited-user recovery, lean/native dependency packaging, and default-off
-Debug CI wiring now exist. **The full unfiltered Win10 experimental suite has
-completed once (2/2); a repeat was not green, and CI has not reached pairing.** This is
-not yet two restored-baseline passes or Win11/module sign-off.
+Debug CI wiring now exist. **The selected Win10 autonomous smoke now passes on
+two consecutive fresh CI agents with the same code revision.** The earlier
+local full-suite pass (2/2) and the failures below are investigation history.
+This is not two restored local-baseline passes or Win11/full-module sign-off.
 
 The first CI diagnostic and a retry of its original revision built the Debug
 product successfully, then entered the unused VNext installer path. Its
@@ -103,7 +104,8 @@ initialization stall, not the previously identified missing-class/MUI crash, and
 it must be investigated before claiming repeatable CI readiness. The run restored
 settings/clipboard and removed its scoped rule.
 
-The two restored-baseline passes, Win11 coverage and CI remain unfulfilled.
+At that checkpoint, the restored-baseline passes, Win11 coverage and CI were
+still unfulfilled.
 
 ### Video diagnostics
 
@@ -182,8 +184,8 @@ UI stage. The new publisher regression assumed four generations would exist
 after a fixed five-second sleep; the concurrent build had only reached three.
 It now waits for the same committed fourth generation on both endpoints to a
 bounded deadline, rather than asserting incidental scheduler throughput.
-Both authorized attempts are consumed. The isolated publisher still needs a
-newly authorized CI run; the second attempt supplied no Sandbox video or
+Both attempts in that authorization were consumed. The isolated publisher then
+needed a newly authorized CI run; the second attempt supplied no Sandbox video or
 end-to-end verdict.
 
 ### Unit regression and transport follow-up
@@ -276,16 +278,28 @@ exit, cleanup stops both, and recovery supports both the new two-publisher
 journal and older one-publisher journals. Watchdog and hard deadlines are
 unchanged. Guest bootstrap now precedes host-worker launch, so the host is not
 idling under its liveness watchdog during the expensive nested-VM creation.
-The acknowledged RPC revision still needs to reach pairing in CI.
+The combined acknowledged-RPC, independent-publisher and guest-first revision
+then passed the complete ordered smoke on two consecutive fresh Win10 CI agents.
+Every phase passed, both endpoint publishers stopped, cleanup journals reported
+no errors, and the separate standard-user recovery and scoped firewall cleanup
+completed. The recordings show local text remaining on the host while remote
+text reaches the Sandbox receiver. Clipboard-off isolation and sharing in both
+directions also passed.
+
+Success evidence, including sanitized Host/Guest logs, remained attached to both
+results. Desktop recordings finalized; separate viewer clips were retained and
+decoded successfully despite their explicit finalization-timeout warnings.
+The focused cycle stopped after four of its five authorized runs, without
+changing or diagnosing the known-disabled Win11 Sandbox image.
 
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under
 `C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders\LocalVmResults`.
-Resume with the exact unattended command documented in the new test project's
-README. Use the SDK-complete runtime from the corrected archive builder, and
-continue with the startup-detector correction, intermittent Settings initialization
-stall, persistent success evidence and clean-baseline confirmation. Diagnostic CI
+For additional local coverage, restore the saved control credential and resume
+with the unattended command documented in the test project's README. Use the
+SDK-complete runtime from the corrected archive builder for clean-baseline
+confirmation; the fresh-agent CI passes do not replace that local matrix. Diagnostic CI
 runs beyond the normal local gate require explicit authorization. Do not
 count a placeholder HWND or a persisted mapping as a successful connection.
 
