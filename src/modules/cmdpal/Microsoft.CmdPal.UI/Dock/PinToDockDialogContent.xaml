@@ -112,6 +112,8 @@
                             Width="16"
                             Height="16"
                             VerticalAlignment="Center"
+                            DiagnosticScope="PinPreview"
+                            RequestSite="Dock"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
 
                         <!--  Text  -->
