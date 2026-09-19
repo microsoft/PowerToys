@@ -747,20 +747,7 @@ public sealed partial class HomePage : Page
                 WindowStyle = ProcessWindowStyle.Normal,
             };
 
-            var process = Process.Start(startInfo);
-            if (process == null)
-            {
-                // Fallback to launching via cmd if direct start fails
-                var fallbackStartInfo = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    UseShellExecute = true,
-                };
-                fallbackStartInfo.ArgumentList.Add("/s");
-                fallbackStartInfo.ArgumentList.Add("/c");
-                fallbackStartInfo.ArgumentList.Add(RobocopyExecutionHelper.EscapeCommandForCmd("robocopy.exe " + job.RenderArguments()));
-                Process.Start(fallbackStartInfo);
-            }
+            Process.Start(startInfo);
         }
         catch (Exception ex)
         {

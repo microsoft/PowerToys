@@ -24,12 +24,4 @@ public class RobocopyExecutionHelperTests
     {
         Assert.AreEqual(expectedKey, RobocopyExecutionHelper.GetStatusResourceKey(exitCode));
     }
-
-    [TestMethod]
-    public void EscapeCommandForCmd_EscapesCmdMetacharacters()
-    {
-        var escaped = RobocopyExecutionHelper.EscapeCommandForCmd(@"robocopy.exe ""C:\A&B"" ""D:\100% Done"" /LOG:""C:\Logs!(1)\copy.log""");
-
-        Assert.AreEqual(@"robocopy.exe ""C:\A^&B"" ""D:\100^% Done"" /LOG:""C:\Logs^!^(1^)\copy.log""", escaped);
-    }
 }

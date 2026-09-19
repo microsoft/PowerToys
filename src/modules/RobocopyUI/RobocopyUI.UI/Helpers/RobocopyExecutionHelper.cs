@@ -20,18 +20,4 @@ internal static class RobocopyExecutionHelper
 
         return "Status_" + (exitCode & 7);
     }
-
-    internal static string EscapeCommandForCmd(string command)
-    {
-        return command
-            .Replace("^", "^^", System.StringComparison.Ordinal)
-            .Replace("&", "^&", System.StringComparison.Ordinal)
-            .Replace("|", "^|", System.StringComparison.Ordinal)
-            .Replace("<", "^<", System.StringComparison.Ordinal)
-            .Replace(">", "^>", System.StringComparison.Ordinal)
-            .Replace("(", "^(", System.StringComparison.Ordinal)
-            .Replace(")", "^)", System.StringComparison.Ordinal)
-            .Replace("%", "^%", System.StringComparison.Ordinal)
-            .Replace("!", "^!", System.StringComparison.Ordinal);
-    }
 }
