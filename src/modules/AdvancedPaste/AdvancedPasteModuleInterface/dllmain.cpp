@@ -426,7 +426,8 @@ private:
                             L"image-to-text",
                             L"fix-spelling-and-grammar",
                             L"paste-as-file",
-                            L"transcode"
+                            L"transcode",
+                            L"text-case"
                         };
 
                         // Process actions in the predefined order

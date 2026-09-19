@@ -30,5 +30,11 @@
   <ItemGroup>
     <ProjectReference Include="..\AdvancedPaste\AdvancedPaste.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\UnicodeData\SentenceBreakProperty.txt">
+      <Link>UnicodeData\SentenceBreakProperty.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
