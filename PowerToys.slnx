@@ -1254,7 +1254,6 @@
     <File Path="src/modules/Workspaces/workspaces-common/WindowUtils.h" />
   </Folder>
   <Folder Name="/modules/ZoomIt/">
-    <Project Path="src/modules/ZoomIt/unittests/ZoomItAnimation.UnitTests.vcxproj" Id="67b0a49b-34da-4c99-9d1d-b247a6b9fb3e" />
     <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b">
       <BuildDependency Project="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" />
     </Project>
