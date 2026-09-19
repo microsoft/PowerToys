@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace PowerOCR.Settings;
 
-public sealed class SettingItem<T> : INotifyPropertyChanged
+public sealed partial class SettingItem<T> : INotifyPropertyChanged
 {
     private T _value;
 

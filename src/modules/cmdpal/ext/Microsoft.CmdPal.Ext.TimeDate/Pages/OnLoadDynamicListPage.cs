@@ -86,7 +86,17 @@ internal abstract partial class OnLoadDynamicListPage : Page, IDynamicListPage
 
     protected void SetSearchNoUpdate(string newSearchText) => _searchText = newSearchText;
 
-    protected void RaiseItemsChanged(int totalItems = -1) => InternalItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+    protected void RaiseItemsChanged(int totalItems = -1)
+    {
+        try
+        {
+            // TODO #181 - This is the same thing that BaseObservable has to deal with.
+            InternalItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
+        }
+        catch
+        {
+        }
+    }
 
     protected abstract void Loaded();
 

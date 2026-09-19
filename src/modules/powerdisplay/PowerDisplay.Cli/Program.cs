@@ -116,14 +116,16 @@ public static class Program
             return await root.InvokeAsync(VersionArgs);
         }
 
-        var quiet = parseResult.GetValueForOption(CliOptions.Quiet);
-        ICliOutput output = new TextCliOutput(quiet);
+        // Select the renderer before handling parse errors so `--json` callers receive the same
+        // machine-readable error envelope as IPC and validation failures. Help/version returned
+        // above and remain owned by System.CommandLine's human-readable renderers.
+        ICliOutput output = CreateOutput(parseResult, Console.Out, Console.Error);
 
         if (parseResult.Errors.Count > 0)
         {
             // System.CommandLine can report several parse errors for one bad invocation; collapse
             // them into a single envelope so consumers always receive exactly one parseable
-            // object (text output) instead of N concatenated ones.
+            // JSON object (or one text error) instead of N concatenated errors.
             output.WriteError(BuildParseErrorResult(
                 CommandLabelFor(parseResult),
                 parseResult.Errors.Select(e => e.Message)));
@@ -504,6 +506,14 @@ public static class Program
         var combined = string.Join("; ", messages.Where(m => !string.IsNullOrWhiteSpace(m)));
         return ArgumentError(command, combined.Length == 0 ? Resources.Error_InvalidArguments : combined);
     }
+
+    // Centralizes renderer selection so parse-error behavior can be tested without redirecting the
+    // process-global Console writers. JSON mode intentionally ignores --quiet because it never emits
+    // warnings; text mode preserves the existing quiet behavior.
+    internal static ICliOutput CreateOutput(ParseResult parseResult, TextWriter stdout, TextWriter stderr)
+        => parseResult.GetValueForOption(CliOptions.Json)
+            ? new JsonCliOutput(stdout, stderr)
+            : new TextCliOutput(stdout, stderr, parseResult.GetValueForOption(CliOptions.Quiet));
 
     // Single ARGUMENT_ERROR envelope shape, shared by the syntactic-validation sites in
     // DispatchAsync and by BuildParseErrorResult. Setting/Hint default to null (omitted from JSON).

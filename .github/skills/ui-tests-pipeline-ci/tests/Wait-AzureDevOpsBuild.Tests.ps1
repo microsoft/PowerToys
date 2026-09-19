@@ -11,6 +11,7 @@ Describe 'ConvertTo-AzDevOpsBuildSnapshot' {
         $script:sourceVersion = '0123456789abcdef0123456789abcdef01234567'
     }
 
+
     It 'projects a not-started build without optional result or time properties' {
         $build = [pscustomobject]@{
             id = 101
@@ -73,5 +74,22 @@ Describe 'ConvertTo-AzDevOpsBuildSnapshot' {
         $snapshot.Result | Should Be 'succeeded'
         $snapshot.StartTime | Should Be '2026-08-29T18:01:00Z'
         $snapshot.FinishTime | Should Be '2026-08-29T18:03:00Z'
+    }
+
+    It 'rejects a malformed build response without an id' {
+        $build = [pscustomobject]@{
+            message = 'transient non-build response'
+        }
+
+        $threw = $false
+        try {
+            ConvertTo-AzDevOpsBuildSnapshot -Build $build -RequestedId 104 -ExpectedBranch $script:branch -ExpectedSourceVersion $script:sourceVersion
+        }
+        catch {
+            $threw = $true
+            $_.Exception.Message | Should Match 'malformed build response'
+        }
+
+        $threw | Should Be $true
     }
 }

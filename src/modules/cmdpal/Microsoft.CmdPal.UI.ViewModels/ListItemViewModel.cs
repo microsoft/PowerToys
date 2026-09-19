@@ -442,6 +442,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     protected override void UnsafeCleanup()
     {
+        CleanupInitializationState();
+
         try
         {
             _lifetime.Close(CleanupItem);

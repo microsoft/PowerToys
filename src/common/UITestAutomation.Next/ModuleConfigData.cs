@@ -19,8 +19,9 @@ namespace Microsoft.PowerToys.UITest.Next;
 ///   <item><description><see cref="Runner"/> — launches <c>PowerToys.exe</c> directly (the tray/runner host).</description></item>
 ///   <item><description><b>Editor scopes</b> (<see cref="FancyZonesEditor"/>, <see cref="Hosts"/>,
 ///   <see cref="Workspaces"/>, <see cref="PowerRename"/>, <see cref="CommandPalette"/>,
-///   <see cref="ScreenRuler"/>) — launch their own exe standalone. These are designed to run as
-///   self-contained editor windows, so binding directly to the editor's window is correct.</description></item>
+///   <see cref="ScreenRuler"/>, <see cref="RegistryPreview"/>) — launch their own exe standalone.
+///   These are designed to run as self-contained editor windows, so binding directly to the
+///   editor's window is correct.</description></item>
 ///   <item><description><see cref="ColorPicker"/>, <see cref="LightSwitch"/> — overlay/background
 ///   modules that are <i>not</i> meant to be launched standalone by a test; drive them through the
 ///   <see cref="PowerToysSettings"/> scope (toggle + activation hotkey) instead. The entries exist
@@ -38,6 +39,7 @@ public enum PowerToysModule
     CommandPalette,
     ScreenRuler,
     LightSwitch,
+    RegistryPreview,
 }
 
 /// <summary>
@@ -68,6 +70,7 @@ internal static class ModulePaths
             [PowerToysModule.CommandPalette] = new("Microsoft.CmdPal.UI.exe", "WinUI3Apps\\CmdPal", "Microsoft.CmdPal.UI", "PowerToys Command Palette"),
             [PowerToysModule.ScreenRuler] = new("PowerToys.MeasureToolUI.exe", "WinUI3Apps", "PowerToys.MeasureToolUI", "PowerToys.ScreenRuler"),
             [PowerToysModule.LightSwitch] = new("PowerToys.LightSwitch.exe", "LightSwitchService", "PowerToys.LightSwitch", "PowerToys.LightSwitch"),
+            [PowerToysModule.RegistryPreview] = new("PowerToys.RegistryPreview.exe", "WinUI3Apps", "PowerToys.RegistryPreview", "RegistryPreview"),
         };
 
     private static readonly Lazy<string> InstalledRoot = new(ResolveInstalledRoot);
