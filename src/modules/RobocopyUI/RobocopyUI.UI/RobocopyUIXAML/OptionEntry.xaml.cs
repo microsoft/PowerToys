@@ -17,6 +17,8 @@ namespace RobocopyUI.Controls
     {
         public event EventHandler<object, EventArgs>? OptionChanged;
 
+        private bool _suppressNotifications;
+
         public string OptionName
         {
             get { return (string)GetValue(OptionNameProperty); }
@@ -176,18 +178,32 @@ namespace RobocopyUI.Controls
 
         public OptionEntry()
         {
+            _suppressNotifications = true;
             MultiSelectOptions ??= [];
             InitializeComponent();
 
-            if (App.Options.TryGetValue(OptionName, out var optionContent))
-            {
-                OptionEnabledCheckBox.IsChecked = optionContent.Enabled;
-                OptionNumberValue.Value = optionContent.IntValue;
-            }
+            OptionNumberValue.ValueChanged += (_, _) => NotifyOptionChanged();
+            OptionTextValue.TextChanged += (_, _) => NotifyOptionChanged();
+            StorageUnitComboBox.SelectionChanged += (_, _) => NotifyOptionChanged();
+            StartHourNumberBox.ValueChanged += (_, _) => NotifyOptionChanged();
+            StartMinuteNumberBox.ValueChanged += (_, _) => NotifyOptionChanged();
+            EndHourNumberBox.ValueChanged += (_, _) => NotifyOptionChanged();
+            EndMinuteNumberBox.ValueChanged += (_, _) => NotifyOptionChanged();
+            _suppressNotifications = false;
         }
 
         private void OptionCheckedUnchecked(object sender, RoutedEventArgs e)
         {
+            NotifyOptionChanged();
+        }
+
+        private void NotifyOptionChanged()
+        {
+            if (_suppressNotifications)
+            {
+                return;
+            }
+
             CommandLineContent = GetCommandLine();
             OptionChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -201,8 +217,8 @@ namespace RobocopyUI.Controls
                 if (IsNumberOption)
                 {
                     value = IsStorageOption
-                        ? $"{OptionName}:{OptionNumberValue.Value}{((string)((ComboBoxItem)StorageUnitComboBox.SelectedItem).Content)[0]}"
-                        : $"{OptionName}:{OptionNumberValue.Value}";
+                        ? $"{OptionName}:{FormatNumberValue()}{GetStorageUnitPrefix()}"
+                        : $"{OptionName}:{FormatNumberValue()}";
                 }
                 else if (IsTextOption)
                 {
@@ -271,44 +287,69 @@ namespace RobocopyUI.Controls
         }
 
         /// <summary>
+        /// Builds the selected switch as a plan option, or returns false when the checkbox is off.
+        /// </summary>
+        public bool TryGetPlanOption(out RobocopyPlanOption option)
+        {
+            option = new RobocopyPlanOption(string.Empty, string.Empty);
+
+            if (OptionEnabledCheckBox.IsChecked != true || string.IsNullOrWhiteSpace(OptionName))
+            {
+                return false;
+            }
+
+            option = new RobocopyPlanOption(OptionName, GetOptionValue());
+            return true;
+        }
+
+        /// <summary>
         /// Enables this option and applies the supplied value to the matching input control.
         /// </summary>
         /// <param name="value">The value after the colon, or an empty string for a plain flag.</param>
         public void ApplyValue(string value)
         {
-            switch (GetOptionKind())
+            _suppressNotifications = true;
+            try
             {
-                case RobocopyOptionKind.Storage:
-                    if (value.Length >= 2 && double.TryParse(value[..^1], NumberStyles.None, CultureInfo.InvariantCulture, out var storageAmount))
-                    {
-                        NumberValue = storageAmount;
-                        SelectStorageUnit(value[^1]);
-                    }
+                switch (GetOptionKind())
+                {
+                    case RobocopyOptionKind.Storage:
+                        if (value.Length >= 2 && double.TryParse(value[..^1], NumberStyles.None, CultureInfo.InvariantCulture, out var storageAmount))
+                        {
+                            NumberValue = storageAmount;
+                            SelectStorageUnit(value[^1]);
+                        }
 
-                    break;
+                        break;
 
-                case RobocopyOptionKind.Number:
-                    if (double.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number))
-                    {
-                        NumberValue = number;
-                    }
+                    case RobocopyOptionKind.Number:
+                        if (double.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number))
+                        {
+                            NumberValue = number;
+                        }
 
-                    break;
+                        break;
 
-                case RobocopyOptionKind.Text:
-                    TextValue = value;
-                    break;
+                    case RobocopyOptionKind.Text:
+                        TextValue = value;
+                        break;
 
-                case RobocopyOptionKind.MultiSelect:
-                    SelectedItems = value;
-                    break;
+                    case RobocopyOptionKind.MultiSelect:
+                        SelectedItems = value;
+                        break;
 
-                case RobocopyOptionKind.RunHours:
-                    ApplyRunHours(value);
-                    break;
+                    case RobocopyOptionKind.RunHours:
+                        ApplyRunHours(value);
+                        break;
+                }
+
+                IsSelected = true;
+                CommandLineContent = GetCommandLine();
             }
-
-            IsSelected = true;
+            finally
+            {
+                _suppressNotifications = false;
+            }
         }
 
         /// <summary>
@@ -316,7 +357,16 @@ namespace RobocopyUI.Controls
         /// </summary>
         public void ClearSelection()
         {
-            IsSelected = false;
+            _suppressNotifications = true;
+            try
+            {
+                IsSelected = false;
+                CommandLineContent = string.Empty;
+            }
+            finally
+            {
+                _suppressNotifications = false;
+            }
         }
 
         private void SelectStorageUnit(char unit)
@@ -349,6 +399,54 @@ namespace RobocopyUI.Controls
                 EndHour = endHour;
                 EndMinute = endMinute;
             }
+        }
+
+        private string GetOptionValue()
+        {
+            if (IsNumberOption)
+            {
+                return IsStorageOption ? $"{FormatNumberValue()}{GetStorageUnitPrefix()}" : FormatNumberValue();
+            }
+
+            if (IsTextOption)
+            {
+                return OptionTextValue.Text;
+            }
+
+            if (IsMultiSelectOption)
+            {
+                return string.Join(string.Empty, MultiSelectOptions.Where(o => o.Enabled).Select(o => o.OptionName));
+            }
+
+            if (IsRunHoursOption)
+            {
+                return $"{(int)StartHourNumberBox.Value:D2}{(int)StartMinuteNumberBox.Value:D2}-{(int)EndHourNumberBox.Value:D2}{(int)EndMinuteNumberBox.Value:D2}";
+            }
+
+            return string.Empty;
+        }
+
+        private string FormatNumberValue()
+        {
+            var value = OptionNumberValue.Value;
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                return "0";
+            }
+
+            return value == Math.Truncate(value)
+                ? ((long)value).ToString(CultureInfo.InvariantCulture)
+                : value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private string GetStorageUnitPrefix()
+        {
+            if (StorageUnitComboBox.SelectedItem is ComboBoxItem { Content: string content } && content.Length > 0)
+            {
+                return content[0].ToString();
+            }
+
+            return "K";
         }
 
         private static bool TryParseTime(string text, out int hour, out int minute)

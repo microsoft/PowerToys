@@ -7,28 +7,35 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:RobocopyUI.Controls"
     xmlns:models="using:RobocopyUI.Models"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
-            <controls:OptionEntry
-                Loaded="OptionEntry_Loaded"
-                Unloaded="OptionEntry_Unloaded"
-                OptionName="{x:Bind OptionName}"
-                OptionDescription="{x:Bind OptionDescription}"
-                IsNumberOption="{x:Bind IsNumberOption}"
-                IsMultiSelectOption="{x:Bind IsMultiSelectOption}"
-                MultiSelectOptions="{x:Bind MultiSelectOptions}"
-                IsRunHoursOption="{x:Bind IsRunHoursOption}"
-                IsStorageOption="{x:Bind IsStorageOption}"
-                IsTextOption="{x:Bind IsTextOption}" />
-        </DataTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <DataTemplate x:Key="OptionGroupStyleHeaderTemplate">
-            <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
-        </DataTemplate>
+            <DataTemplate x:Key="OptionDataTemplate" x:DataType="models:OptionContent">
+                <controls:OptionEntry
+                    Loaded="OptionEntry_Loaded"
+                    Unloaded="OptionEntry_Unloaded"
+                    OptionName="{x:Bind OptionName}"
+                    OptionDescription="{x:Bind OptionDescription}"
+                    IsNumberOption="{x:Bind IsNumberOption}"
+                    IsMultiSelectOption="{x:Bind IsMultiSelectOption}"
+                    MultiSelectOptions="{x:Bind MultiSelectOptions}"
+                    IsRunHoursOption="{x:Bind IsRunHoursOption}"
+                    IsStorageOption="{x:Bind IsStorageOption}"
+                    IsTextOption="{x:Bind IsTextOption}" />
+            </DataTemplate>
 
-        <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+            <DataTemplate x:Key="OptionGroupStyleHeaderTemplate">
+                <TextBlock Text="{Binding Key}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,12,0,4" />
+            </DataTemplate>
+
+            <GroupStyle x:Key="OptionsGroupStyle" HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid x:Name="RootGrid" Margin="12">
@@ -41,7 +48,23 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleTextBlockStyle}" Margin="12,0" Grid.Row="0"/>
+        <Grid Grid.Row="0" Margin="12,0">
+            <TextBlock x:Uid="HomePageTitle" Style="{ThemeResource TitleTextBlockStyle}" VerticalAlignment="Center" />
+            <tkcontrols:Segmented
+                x:Name="ModeSegmented"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                SelectionChanged="ModeSegmented_SelectionChanged">
+                <tkcontrols:SegmentedItem
+                    x:Name="SimpleModeSegmentedItem"
+                    x:Uid="SimpleModeSegmentedItem"
+                    AutomationProperties.AutomationId="SimpleModeSegmentedItem" />
+                <tkcontrols:SegmentedItem
+                    x:Name="AdvancedModeSegmentedItem"
+                    x:Uid="AdvancedModeSegmentedItem"
+                    AutomationProperties.AutomationId="AdvancedModeSegmentedItem" />
+            </tkcontrols:Segmented>
+        </Grid>
 
         <Grid x:Name="InputOutputPanel" Margin="12,12,12,0" Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -108,7 +131,7 @@
             </Button>
         </Grid>
 
-        <SelectorBar SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="3">
+        <SelectorBar x:Name="AdvancedSelectorBar" SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="2" Visibility="Collapsed">
             <SelectorBar.Resources>
                 <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
             </SelectorBar.Resources>
@@ -139,7 +162,165 @@
             </SelectorBarItem>-->
         </SelectorBar>
 
-        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="4">
+        <ScrollViewer x:Name="SimpleContent" Grid.Row="3" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="12,0" Spacing="12">
+                <RadioButtons
+                    x:Name="SimpleJobRadioButtons"
+                    x:Uid="SimpleJobRadioButtons"
+                    AutomationProperties.AutomationId="SimpleJobRadioButtons"
+                    MaxColumns="1"
+                    SelectionChanged="SimpleJobRadioButtons_SelectionChanged">
+                    <RadioButton
+                        x:Uid="SimpleJobCopyFolders"
+                        AutomationProperties.AutomationId="SimpleJobCopyFolders"
+                        IsChecked="True"
+                        Tag="CopyFilesAndFolders" />
+                    <RadioButton
+                        x:Uid="SimpleJobSkipEmpty"
+                        AutomationProperties.AutomationId="SimpleJobSkipEmpty"
+                        Tag="CopySkipEmptyFolders" />
+                    <RadioButton
+                        x:Uid="SimpleJobThisFolder"
+                        AutomationProperties.AutomationId="SimpleJobThisFolder"
+                        Tag="CopyThisFolderOnly" />
+                    <RadioButton
+                        x:Uid="SimpleJobMirror"
+                        AutomationProperties.AutomationId="SimpleJobMirror"
+                        Tag="Mirror" />
+                    <RadioButton
+                        x:Uid="SimpleJobMoveEverything"
+                        AutomationProperties.AutomationId="SimpleJobMoveEverything"
+                        Tag="MoveEverything" />
+                    <RadioButton
+                        x:Uid="SimpleJobMoveFiles"
+                        AutomationProperties.AutomationId="SimpleJobMoveFiles"
+                        Tag="MoveFilesOnly" />
+                </RadioButtons>
+
+                <InfoBar
+                    x:Name="SimpleWarningInfoBar"
+                    x:Uid="SimpleWarningInfoBar"
+                    IsClosable="False"
+                    IsOpen="False"
+                    Severity="Warning" />
+
+                <TextBlock
+                    x:Name="SimpleAdditionalOptionsText"
+                    x:Uid="SimpleAdditionalOptionsText"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
+
+                <ToggleSwitch
+                    x:Name="SimpleKeepPermissionsToggle"
+                    x:Uid="SimpleKeepPermissionsToggle"
+                    AutomationProperties.AutomationId="SimpleKeepPermissionsToggle"
+                    Toggled="SimpleOptions_Changed" />
+                <ToggleSwitch
+                    x:Name="SimpleKeepAllPropertiesToggle"
+                    x:Uid="SimpleKeepAllPropertiesToggle"
+                    AutomationProperties.AutomationId="SimpleKeepAllPropertiesToggle"
+                    Toggled="SimpleOptions_Changed" />
+                <ToggleSwitch
+                    x:Name="SimpleSkipNewerToggle"
+                    x:Uid="SimpleSkipNewerToggle"
+                    AutomationProperties.AutomationId="SimpleSkipNewerToggle"
+                    Toggled="SimpleOptions_Changed" />
+
+                <TextBox
+                    x:Name="SimpleExcludeFilesTextBox"
+                    x:Uid="SimpleExcludeFilesTextBox"
+                    AutomationProperties.AutomationId="SimpleExcludeFilesTextBox"
+                    TextChanged="SimpleOptions_TextChanged" />
+                <TextBox
+                    x:Name="SimpleExcludeFoldersTextBox"
+                    x:Uid="SimpleExcludeFoldersTextBox"
+                    AutomationProperties.AutomationId="SimpleExcludeFoldersTextBox"
+                    TextChanged="SimpleOptions_TextChanged" />
+
+                <ToggleSwitch
+                    x:Name="SimpleCopyFasterToggle"
+                    x:Uid="SimpleCopyFasterToggle"
+                    AutomationProperties.AutomationId="SimpleCopyFasterToggle"
+                    Toggled="SimpleCopyFasterToggle_Toggled" />
+                <NumberBox
+                    x:Name="SimpleThreadCountNumberBox"
+                    x:Uid="SimpleThreadCountNumberBox"
+                    AutomationProperties.AutomationId="SimpleThreadCountNumberBox"
+                    Minimum="1"
+                    Maximum="128"
+                    SpinButtonPlacementMode="Compact"
+                    Value="8"
+                    Visibility="Collapsed"
+                    ValueChanged="SimpleNumberBox_ValueChanged" />
+
+                <ToggleSwitch
+                    x:Name="SimpleRetryToggle"
+                    x:Uid="SimpleRetryToggle"
+                    AutomationProperties.AutomationId="SimpleRetryToggle"
+                    Toggled="SimpleRetryToggle_Toggled" />
+                <StackPanel x:Name="SimpleRetryPanel" Orientation="Horizontal" Spacing="8" Visibility="Collapsed">
+                    <NumberBox
+                        x:Name="SimpleRetryCountNumberBox"
+                        x:Uid="SimpleRetryCountNumberBox"
+                        AutomationProperties.AutomationId="SimpleRetryCountNumberBox"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Compact"
+                        Value="3"
+                        Width="160"
+                        ValueChanged="SimpleNumberBox_ValueChanged" />
+                    <NumberBox
+                        x:Name="SimpleRetryWaitNumberBox"
+                        x:Uid="SimpleRetryWaitNumberBox"
+                        AutomationProperties.AutomationId="SimpleRetryWaitNumberBox"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Compact"
+                        Value="5"
+                        Width="160"
+                        ValueChanged="SimpleNumberBox_ValueChanged" />
+                </StackPanel>
+
+                <ToggleSwitch
+                    x:Name="SimplePreviewToggle"
+                    x:Uid="SimplePreviewToggle"
+                    AutomationProperties.AutomationId="SimplePreviewToggle"
+                    Toggled="SimpleOptions_Changed" />
+
+                <ToggleSwitch
+                    x:Name="SimpleLogToggle"
+                    x:Uid="SimpleLogToggle"
+                    AutomationProperties.AutomationId="SimpleLogToggle"
+                    Toggled="SimpleLogToggle_Toggled" />
+                <Grid x:Name="SimpleLogPanel" ColumnSpacing="8" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        x:Name="SimpleLogPathTextBox"
+                        x:Uid="SimpleLogPathTextBox"
+                        AutomationProperties.AutomationId="SimpleLogPathTextBox"
+                        TextChanged="SimpleOptions_TextChanged" />
+                    <Button
+                        x:Name="SimpleLogBrowseButton"
+                        x:Uid="SimpleLogBrowseButton"
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="SimpleLogBrowseButton"
+                        Click="SimpleLogBrowseButton_Click">
+                        <FontIcon Glyph="&#xE8B7;" />
+                    </Button>
+                </Grid>
+
+                <HyperlinkButton
+                    x:Name="CustomizeInAdvancedButton"
+                    x:Uid="CustomizeInAdvancedButton"
+                    AutomationProperties.AutomationId="CustomizeInAdvancedButton"
+                    Click="CustomizeInAdvancedButton_Click" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="3" Visibility="Collapsed">
             <Grid x:Name="OptionsContent" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />

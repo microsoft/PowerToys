@@ -22,7 +22,7 @@ public:
     RobocopyUIModule()
     {
         app_name = GET_RESOURCE_STRING(IDS_ROBOCOPY_UI);
-        app_key = L"Robocopy UI";
+        app_key = L"RobocopyUI";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::robocopyUiLoggerName);
 
         std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
@@ -66,7 +66,6 @@ public:
         if (!_enabled)
         {
             _enabled = true;
-            StartProcess();
         }
         else
         {
@@ -98,13 +97,22 @@ public:
         delete this;
     }
 
-
-    virtual void send_settings_telemetry() override
+    // Pop open the app, if the OOBE page asks it to
+    virtual void call_custom_action(const wchar_t* action) override
     {
-        Logger::trace("Send settings telemetry");
-        if (!StartProcess(L"telemetry"))
+        try
         {
-            Logger::error("Failed to create a process to send settings telemetry");
+            PowerToysSettings::CustomActionObject action_object =
+                PowerToysSettings::CustomActionObject::from_json_string(action);
+
+            if (action_object.get_name() == L"Launch")
+            {
+                StartProcess();
+            }
+        }
+        catch (std::exception&)
+        {
+            Logger::error(L"Failed to parse action. {}", action);
         }
     }
 

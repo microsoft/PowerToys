@@ -511,6 +511,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
+                ModuleType.RobocopyUI => GetModuleItemsRobocopyUI(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -688,6 +689,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseCrosshairs_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsRobocopyUI()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("RobocopyUI_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("RobocopyUI_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/RobocopyUI.png", ButtonClickHandler = RobocopyUILaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -874,6 +884,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void RobocopyUILaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var actionName = "Launch";
+            SendConfigMSG("{\"action\":{\"RobocopyUI\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private void PowerDisplayLaunchClicked(object sender, RoutedEventArgs e)

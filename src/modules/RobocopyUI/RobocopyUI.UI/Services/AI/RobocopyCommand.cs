@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace RobocopyUI.Services.AI
@@ -74,8 +75,13 @@ namespace RobocopyUI.Services.AI
                 return name;
             }
 
-            return SpaceSeparatedSwitches.Contains(name)
-                ? $"{name} {option.Value.Trim()}"
+            if (SpaceSeparatedSwitches.Contains(name))
+            {
+                return $"{name} {option.Value.Trim()}";
+            }
+
+            return name.Equals("/LOG", StringComparison.OrdinalIgnoreCase)
+                ? $"{name}:{Quote(option.Value)}"
                 : $"{name}:{option.Value}";
         }
 
@@ -103,6 +109,84 @@ namespace RobocopyUI.Services.AI
         {
             var trimmed = (path ?? string.Empty).Trim().Trim('"');
             return trimmed.Contains(' ', StringComparison.Ordinal) ? $"\"{trimmed}\"" : trimmed;
+        }
+
+        /// <summary>
+        /// Drops switches that are contradictory or already implied by another switch.
+        /// </summary>
+        /// <remarks>
+        /// The more specific switch wins: /S over /E, and /MIR over the /E and /PURGE it expands to.
+        /// /COPYALL implies /COPY and /SEC. /X only reports extra files, so it is dropped next to a
+        /// switch that already acts on them.
+        /// </remarks>
+        public static void Prune(List<RobocopyPlanOption> options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            bool Has(string name) => options.Any(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
+            void Drop(string name) => options.RemoveAll(option => string.Equals(option.Name, name, StringComparison.OrdinalIgnoreCase));
+
+            if (Has("/MIR"))
+            {
+                Drop("/E");
+                Drop("/S");
+                Drop("/PURGE");
+            }
+            else if (Has("/S"))
+            {
+                Drop("/E");
+            }
+
+            if (Has("/COPYALL"))
+            {
+                Drop("/COPY");
+                Drop("/SEC");
+            }
+
+            if (Has("/XX") || Has("/MIR") || Has("/PURGE"))
+            {
+                Drop("/X");
+            }
+        }
+
+        /// <summary>
+        /// Returns deterministic warnings for switches that delete or move data.
+        /// </summary>
+        public static IReadOnlyList<string> GetDestructiveWarnings(IEnumerable<RobocopyPlanOption> options, Func<string, string>? localize = null)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            var warnings = new List<string>();
+
+            foreach (var option in options)
+            {
+                var warning = option.Name.ToUpperInvariant() switch
+                {
+                    "/MIR" => ("SimpleWarning/Mirror", "/MIR mirrors the source: files that exist only in the destination will be deleted."),
+                    "/PURGE" => ("SimpleWarning/Purge", "/PURGE deletes destination files and folders that no longer exist in the source."),
+                    "/MOVE" => ("SimpleWarning/MoveEverything", "/MOVE deletes the files and folders from the source after they are copied."),
+                    "/MOV" => ("SimpleWarning/MoveFiles", "/MOV deletes the files from the source after they are copied."),
+                    _ => (string.Empty, string.Empty),
+                };
+
+                if (warning.Item1.Length == 0)
+                {
+                    continue;
+                }
+
+                var text = localize?.Invoke(warning.Item1);
+                if (string.IsNullOrEmpty(text))
+                {
+                    text = warning.Item2;
+                }
+
+                if (!warnings.Contains(text, StringComparer.Ordinal))
+                {
+                    warnings.Add(text);
+                }
+            }
+
+            return warnings;
         }
 
         /// <summary>

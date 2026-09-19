@@ -82,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
+            AddFlyoutMenuItem(ModuleType.RobocopyUI);
             AddFlyoutMenuItem(ModuleType.MeasureTool);
             AddFlyoutMenuItem(ModuleType.ShortcutGuide);
             AddFlyoutMenuItem(ModuleType.Workspaces);

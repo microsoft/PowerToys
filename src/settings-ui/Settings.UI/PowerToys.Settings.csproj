@@ -35,6 +35,7 @@
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
+		<None Remove="SettingsXAML\Views\RobocopyUIPage.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -185,6 +186,9 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="SettingsXAML\Views\RobocopyUIPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
