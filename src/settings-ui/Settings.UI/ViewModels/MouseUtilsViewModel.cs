@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.Utilities;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -41,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            _isHapticsAvailable = GetHapticsAvailability();
 
             InitializeEnabledValues();
 
@@ -77,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _findMyMouseShakingMinimumDistance = FindMyMouseSettingsConfig.Properties.ShakingMinimumDistance.Value;
             _findMyMouseShakingIntervalMs = FindMyMouseSettingsConfig.Properties.ShakingIntervalMs.Value;
             _findMyMouseShakingFactor = FindMyMouseSettingsConfig.Properties.ShakingFactor.Value;
+            _findMyMouseHapticsEnabled = FindMyMouseSettingsConfig.Properties.HapticsEnabled.Value;
 
             ArgumentNullException.ThrowIfNull(mouseHighlighterSettingsRepository);
 
@@ -261,6 +264,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsFindMyMouseEnabledGpoConfigured
         {
             get => _findMyMouseEnabledStateIsGPOConfigured;
+        }
+
+        public bool IsHapticsAvailable => _isHapticsAvailable;
+
+        public bool FindMyMouseHapticsEnabled
+        {
+            get => _findMyMouseHapticsEnabled;
+            set
+            {
+                if (_findMyMouseHapticsEnabled != value)
+                {
+                    _findMyMouseHapticsEnabled = value;
+                    FindMyMouseSettingsConfig.Properties.HapticsEnabled.Value = value;
+                    NotifyFindMyMousePropertyChanged();
+                }
+            }
         }
 
         public int FindMyMouseActivationMethod
@@ -519,6 +538,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SndModuleSettings<SndFindMyMouseSettings> ipcMessage = new SndModuleSettings<SndFindMyMouseSettings>(outsettings);
             SendConfigMSG(ipcMessage.ToJsonString());
             SettingsUtils.SaveSettings(FindMyMouseSettingsConfig.ToJsonString(), FindMyMouseSettings.ModuleName);
+        }
+
+        private static bool GetHapticsAvailability()
+        {
+            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 19);
         }
 
         public bool IsMouseHighlighterEnabled
@@ -1438,6 +1462,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
+        private readonly bool _isHapticsAvailable;
+
         private GpoRuleConfigured _autoHideCursorEnabledGpoRuleConfiguration;
         private bool _autoHideCursorEnabledStateIsGPOConfigured;
         private bool _isAutoHideCursorEnabled;
@@ -1460,6 +1486,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _findMyMouseShakingMinimumDistance;
         private int _findMyMouseShakingIntervalMs;
         private int _findMyMouseShakingFactor;
+        private bool _findMyMouseHapticsEnabled;
 
         private GpoRuleConfigured _highlighterEnabledGpoRuleConfiguration;
         private bool _highlighterEnabledStateIsGPOConfigured;

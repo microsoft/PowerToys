@@ -2993,6 +2993,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Find My Mouse</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
+  <data name="MouseUtils_FindMyMouse_Haptics.Content" xml:space="preserve">
+    <value>Use haptic feedback</value>
+  </data>
   <data name="MouseUtils_FindMyMouse_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
