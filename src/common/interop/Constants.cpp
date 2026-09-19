@@ -67,6 +67,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE;
     }
+    hstring Constants::AdvancedPasteSingleLineMessage()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_SINGLE_LINE_MESSAGE;
+    }
     hstring Constants::AdvancedPasteAdditionalActionMessage()
     {
         return CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE;

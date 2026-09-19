@@ -48,6 +48,7 @@ namespace ShortcutGuide.Helpers
                 AdvancedPasteProperties advancedPasteProperties = SettingsRepository<AdvancedPasteSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
                 content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdvancedPasteUIShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("AdvancedPasteUI_Shortcut/Header")));
                 content.Append(HotkeySettingsToYaml(advancedPasteProperties.PasteAsPlainTextShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("PasteAsPlainText_Shortcut/Header")));
+                content.Append(HotkeySettingsToYaml(advancedPasteProperties.PasteAsSingleLineShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("PasteAsSingleLine_Shortcut/Header")));
                 content.Append(HotkeySettingsToYaml(advancedPasteProperties.PasteAsMarkdownShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("PasteAsMarkdown_Shortcut/Header")));
                 content.Append(HotkeySettingsToYaml(advancedPasteProperties.PasteAsJsonShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("PasteAsJson_Shortcut/Header")));
                 if (advancedPasteProperties.AdditionalActions.ImageToText.IsShown)
