@@ -688,7 +688,11 @@ public sealed partial class HomePage : Page
             DispatcherQueue.TryEnqueue(() =>
             {
                 StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-                OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail"));
+                var statusKey = "Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail");
+                var statusText = ResourceLoaderInstance.ResourceLoader.GetString(statusKey);
+                OutputStatusText.Text = string.IsNullOrWhiteSpace(statusText)
+                    ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
+                    : statusText;
             });
         };
     }
@@ -712,7 +716,7 @@ public sealed partial class HomePage : Page
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = "/c " + "robocopy.exe " + job.RenderArguments(),
+                    Arguments = "/k " + "robocopy.exe " + job.RenderArguments(),
                     UseShellExecute = true,
                 });
             }
