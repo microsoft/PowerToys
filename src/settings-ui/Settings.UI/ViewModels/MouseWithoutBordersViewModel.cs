@@ -267,13 +267,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 #pragma warning restore CS0649
             }
 
+            // Shutdown can terminate the process before it replies.
             void Shutdown();
 
-            void Reconnect();
+            // Await server completion before disposing the per-request RPC channel.
+            Task Reconnect();
 
-            void GenerateNewKey();
+            Task GenerateNewKey();
 
-            void ConnectToMachine(string machineName, string securityKey);
+            Task ConnectToMachine(string machineName, string securityKey);
 
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
@@ -394,8 +396,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Reconnect();
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.Endpoint?.Reconnect();
                     if (task != null)
                     {
                         await task;
@@ -410,8 +411,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.GenerateNewKey();
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.Endpoint?.GenerateNewKey();
                     if (task != null)
                     {
                         await task;
@@ -426,8 +426,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
                     if (task != null)
                     {
                         await task;

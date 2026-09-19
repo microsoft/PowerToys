@@ -26,6 +26,11 @@ The final diagnostic run stopped before UI execution on a certificate-fixture
 expiry race, now corrected by inheriting each issuer's encoded validity interval.
 That correction and the sanitized-log attachment fix still need a subsequent
 CI UI run; no additional run was queued beyond the authorized budget.
+The renewed Win10-focused cycle exported Settings RPC connection-loss evidence.
+New key, Connect and Reconnect now await remote completion before their
+per-request channel is disposed; the RPC names, arguments and identity checks
+are unchanged. This addresses a reproduced acknowledgement/lifetime defect,
+not a test-side pairing fallback.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI

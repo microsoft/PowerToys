@@ -249,6 +249,23 @@ attached sanitized logs still await a subsequent UI execution. Remaining gates:
 diagnose the actual Win10 peer connection, restore the local VM control
 credential, and enable/reboot Sandbox in the Win11 CI image.
 
+### Win10-focused continuation
+
+The first run of the renewed Win10-focused cycle passed the corrected
+certificate fixtures and exported the previously missing sanitized logs.
+This time New key did not persist, and Settings logged lost SettingsSync
+JSON-RPC connections. The client contract declared state-changing methods as
+`void`, which StreamJsonRpc sends as notifications, then immediately disposed
+the per-request proxy after a stream flush.
+
+New key, Connect and Reconnect now return tasks on both private contracts, and
+Settings awaits the remote operation before disposing its channel. RPC method
+names, positional arguments, pipe identity checks and trust policy are unchanged.
+The actual Settings proxy is exercised against a gated server: all three cases
+failed before the correction and now remain incomplete until the server releases
+its acknowledgement. Existing peer-identity and serialization regressions pass.
+Shutdown remains a notification because it can terminate the responding process.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under

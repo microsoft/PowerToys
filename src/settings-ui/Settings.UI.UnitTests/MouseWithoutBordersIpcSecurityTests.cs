@@ -18,6 +18,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using StreamJsonRpc;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests
 {
@@ -389,6 +390,38 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             Assert.AreEqual("""{"Name":"PC","Status":9}""", JsonConvert.SerializeObject(state));
         }
 
+        [DataTestMethod]
+        [DataRow("GenerateNewKey")]
+        [DataRow("ConnectToMachine")]
+        [DataRow("Reconnect")]
+        public async Task StateChangingSettingsRequestsWaitForServerCompletion(string methodName)
+        {
+            var pair = await CreateConnectedPairAsync();
+            await using var server = pair.Server;
+            await using var client = pair.Client;
+            var target = new DelayedSettingsCommandTarget();
+            using var serverRpc = JsonRpc.Attach(server, target);
+            var helperType = typeof(MouseWithoutBordersViewModel).GetNestedType("SyncHelper", BindingFlags.NonPublic);
+            var contract = typeof(MouseWithoutBordersViewModel).GetNestedType("ISettingsSyncHelper", BindingFlags.NonPublic);
+            using var helper = (IDisposable)Activator.CreateInstance(helperType!, new object[] { client })!;
+            var endpoint = helperType!.GetProperty("Endpoint")!.GetValue(helper);
+            try
+            {
+                var arguments = methodName == "ConnectToMachine" ? new object[] { "fixture-peer", "fixture-value" } : Array.Empty<object>();
+                var invocation = contract!.GetMethod(methodName)!.Invoke(endpoint, arguments);
+                Assert.IsInstanceOfType<Task>(invocation, "State-changing requests need an acknowledgement before their channel is disposed.");
+                var operation = (Task)invocation!;
+                await target.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                Assert.IsFalse(operation.IsCompleted, "Sending the request is not completion of the remote operation.");
+                target.Release.SetResult();
+                await operation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                target.Release.TrySetResult();
+            }
+        }
+
         private static async Task<(NamedPipeServerStream Server, NamedPipeClientStream Client)> CreateConnectedPairAsync(string pipeName = null)
         {
             pipeName ??= UniquePipeName();
@@ -553,6 +586,25 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
             request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
             return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(7));
+        }
+
+        private sealed class DelayedSettingsCommandTarget
+        {
+            public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public Task GenerateNewKey() => WaitForRelease();
+
+            public Task ConnectToMachine(string machineName, string securityKey) => WaitForRelease();
+
+            public Task Reconnect() => WaitForRelease();
+
+            private Task WaitForRelease()
+            {
+                Entered.TrySetResult();
+                return Release.Task;
+            }
         }
     }
 }
