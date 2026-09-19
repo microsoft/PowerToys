@@ -58,6 +58,7 @@
   <ClInclude Include="MetadataPatternExtractor.h" />
   <ClInclude Include="MetadataFormatHelper.h" />
   <ClInclude Include="MetadataResultCache.h" />
+  <ClInclude Include="NumericRenameMapping.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enumerating.cpp" />
@@ -79,6 +80,7 @@
   <ClCompile Include="MetadataPatternExtractor.cpp" />
   <ClCompile Include="MetadataFormatHelper.cpp" />
   <ClCompile Include="MetadataResultCache.cpp" />
+  <ClCompile Include="NumericRenameMapping.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
