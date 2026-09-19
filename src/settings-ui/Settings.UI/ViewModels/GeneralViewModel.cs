@@ -24,6 +24,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.PowerToys.SettingsBackupRestore.Security;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Win32;
 using Windows.System.Profile;
@@ -81,6 +82,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
 
         private Func<Task<string>> PickSingleFolderDialog { get; }
+
+        public Func<RestorePreviewViewModel, Task<bool>> ConfirmRestoreAsync { get; set; }
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
@@ -1080,7 +1083,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>
         /// Method <c>RestoreConfigsClick</c> starts the restore.
         /// </summary>
-        private void RestoreConfigsClick()
+        private async void RestoreConfigsClick()
         {
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
@@ -1089,7 +1092,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SelectSettingBackupDir();
             }
 
-            var results = SettingsUtils.RestoreSettings();
+            RestorePreviewViewModel preview;
+            try
+            {
+                var settingsUtils = SettingsUtils.Default;
+                var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
+                preview = settingsBackupAndRestoreUtils.GetRestorePreview(appBasePath, settingsBackupAndRestoreDir);
+                if (ConfirmRestoreAsync != null && !await ConfirmRestoreAsync(preview))
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Could not build settings restore preview.", ex);
+                _settingsBackupRestoreMessageVisible = true;
+                _backupRestoreMessageSeverity = "Error";
+                _settingsBackupMessage = GetResourceString("General_SettingsBackupAndRestore_BackupError");
+                NotifyAllBackupAndRestoreProperties();
+                HideBackupAndRestoreMessageAreaAction();
+                return;
+            }
+
+            var results = SettingsUtils.RestoreSettings(preview.ArchiveFileName, preview.ArchiveSha256);
             _backupRestoreMessageSeverity = results.Severity;
 
             if (!results.Success)
