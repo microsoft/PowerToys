@@ -111,7 +111,20 @@ internal sealed partial class BookmarkPlaceholderPage : ParametersPage, IDisposa
         // what kind of command this is (e.g. a path that needs different launch).
         var classification = _resolver.ClassifyOrUnknown(target);
         var success = CommandLauncher.Launch(classification);
+        if (success)
+        {
+            ResetPlaceholderValues();
+        }
+
         return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
+    }
+
+    internal void ResetPlaceholderValues()
+    {
+        foreach (var run in _placeholderRuns.Values)
+        {
+            run.ClearValue();
+        }
     }
 
     private string BuildEvaluatedBookmark()
