@@ -648,39 +648,21 @@ public sealed partial class HomePage : Page
             StartInfo = startInfo,
             EnableRaisingEvents = true,
         };
+        var completionLock = new object();
+        var processExited = false;
+        var outputCompleted = false;
+        var errorCompleted = false;
 
-        process.OutputDataReceived += (s, args) =>
+        void TryUpdateCompletedStatus()
         {
-            if (args.Data != null)
+            lock (completionLock)
             {
-                DispatcherQueue.TryEnqueue(() =>
+                if (!processExited || !outputCompleted || !errorCompleted)
                 {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
-
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
+                    return;
+                }
             }
-        };
-        process.ErrorDataReceived += (s, args) =>
-        {
-            if (args.Data != null)
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
 
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
-            }
-        };
-        process.Exited += (s, args) =>
-        {
             DispatcherQueue.TryEnqueue(() =>
             {
                 StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
@@ -690,6 +672,62 @@ public sealed partial class HomePage : Page
                     ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
                     : statusText;
             });
+        }
+
+        process.OutputDataReceived += (s, args) =>
+        {
+            if (args.Data == null)
+            {
+                lock (completionLock)
+                {
+                    outputCompleted = true;
+                }
+
+                TryUpdateCompletedStatus();
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
+            });
+        };
+        process.ErrorDataReceived += (s, args) =>
+        {
+            if (args.Data == null)
+            {
+                lock (completionLock)
+                {
+                    errorCompleted = true;
+                }
+
+                TryUpdateCompletedStatus();
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
+            });
+        };
+        process.Exited += (s, args) =>
+        {
+            lock (completionLock)
+            {
+                processExited = true;
+            }
+
+            TryUpdateCompletedStatus();
         };
 
         process.Start();
@@ -719,7 +757,7 @@ public sealed partial class HomePage : Page
                     UseShellExecute = true,
                 };
                 fallbackStartInfo.ArgumentList.Add("/s");
-                fallbackStartInfo.ArgumentList.Add("/k");
+                fallbackStartInfo.ArgumentList.Add("/c");
                 fallbackStartInfo.ArgumentList.Add(RobocopyExecutionHelper.EscapeCommandForCmd("robocopy.exe " + job.RenderArguments()));
                 Process.Start(fallbackStartInfo);
             }
