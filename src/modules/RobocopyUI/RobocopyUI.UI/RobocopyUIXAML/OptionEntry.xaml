@@ -45,12 +45,14 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-                <StackPanel Orientation="Horizontal" Visibility="{x:Bind IsRunHoursOption, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="StartHourNumberBox" />
-                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="StartMinuteNumberBox" />
-                    <TextBlock>-</TextBlock>
-                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="EndHourNumberBox" />
-                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="EndMinuteNumberBox" />
+                <StackPanel Orientation="Horizontal" Visibility="{x:Bind IsRunHoursOption, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" Spacing="1">
+                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="StartHourNumberBox" CornerRadius="0" />
+                    <TextBlock Text=":" VerticalAlignment="Bottom" Margin="0,0,0,8" />
+                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="StartMinuteNumberBox" CornerRadius="0" Margin="0,0,2,0"/>
+                    <TextBlock Text="_" Margin="2,0,4,0"/>
+                    <NumberBox Width="40" PlaceholderText="hh" Minimum="0" Maximum="23" x:Name="EndHourNumberBox" CornerRadius="0" />
+                    <TextBlock Text=":" VerticalAlignment="Bottom" Margin="0,0,0,8"/>
+                    <NumberBox Width="40" PlaceholderText="mm" Minimum="0" Maximum="59" x:Name="EndMinuteNumberBox" CornerRadius="0" />
                 </StackPanel>
             </StackPanel>
         </CheckBox>

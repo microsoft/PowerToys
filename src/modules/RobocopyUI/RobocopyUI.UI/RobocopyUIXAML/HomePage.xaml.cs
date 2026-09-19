@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,6 +37,7 @@ public sealed partial class HomePage : Page
         syncing = false;
         ApplyModeVisibility();
         UpdateCommandPreview();
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_NotRunning");
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -275,11 +277,7 @@ public sealed partial class HomePage : Page
         SimpleContent.Visibility = isSimpleMode ? Visibility.Visible : Visibility.Collapsed;
         AdvancedSelectorBar.Visibility = isSimpleMode ? Visibility.Collapsed : Visibility.Visible;
 
-        var outputSelected = !isSimpleMode && AdvancedSelectorBar.SelectedItem?.Tag as string == "Output";
-        SelectorPanels.Visibility = !isSimpleMode && !outputSelected ? Visibility.Visible : Visibility.Collapsed;
-        OutputContent.Visibility = (isSimpleMode && OutputSelectorBarItem.IsEnabled) || outputSelected
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        SelectorPanels.Visibility = !isSimpleMode ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -630,11 +628,9 @@ public sealed partial class HomePage : Page
     private void RunRobocopy(string arguments)
     {
         OutputTextBox.Text = string.Empty;
-        OutputSelectorBarItem.IsEnabled = true;
-        if (!isSimpleMode)
-        {
-            OutputSelectorBarItem.IsSelected = true;
-        }
+        StatusCodeText.Text = "-";
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_Running");
+        CommandOutputExpander.IsEnabled = true;
 
         ApplyModeVisibility();
         var startInfo = new ProcessStartInfo
@@ -686,6 +682,15 @@ public sealed partial class HomePage : Page
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+
+        process.Exited += (s, args) =>
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
+                OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail"));
+            });
+        };
     }
 
     private void RunExternalButton_Click(object sender, RoutedEventArgs e)
