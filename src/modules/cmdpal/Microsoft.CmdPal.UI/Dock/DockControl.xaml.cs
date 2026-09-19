@@ -554,7 +554,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
-        if (item.HasMoreCommands)
+        if (item.CanOpenContextMenu)
         {
             ContextControl.ViewModel.SelectedItem = item;
             ContextControl.ShowFilterBox = false;
