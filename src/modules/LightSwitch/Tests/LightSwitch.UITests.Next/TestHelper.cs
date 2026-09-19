@@ -121,6 +121,14 @@ internal sealed class TestHelper
             timeoutMS: 20_000,
             pollIntervalMS: 250);
         Assert.IsTrue(received.Succeeded, $"The Runner did not acknowledge the single shortcut. Foreground: {WindowControl.GetForegroundWindowInfo()}. New LightSwitch logs:\n{received.LastObservation}");
+
+        // Theme setters synchronously broadcast to desktop windows, so hotkey receipt is not completion.
+        var completed = WaitHelper.WaitForStable(
+            () => logs.ReadNew(),
+            text => text!.Contains("[Light Switch] Manual override event set", StringComparison.Ordinal),
+            timeoutMS: 120_000,
+            pollIntervalMS: 250);
+        Assert.IsTrue(completed.Succeeded, $"The Runner did not finish applying the single theme-toggle chord. New LightSwitch logs:\n{completed.LastObservation}");
     }
 
     public void WaitForTheme(ThemeState expected)
@@ -232,11 +240,20 @@ internal sealed class TestHelper
         Step("Opening the location dialog");
         ui.Find<Button>(By.AccessibilityId("SetLocationButton_LightSwitch")).Invoke(msPostAction: 0);
         var ready = WaitHelper.WaitForStable(
-            () => (
-                Consent: WindowsFinder.ListByApp("PickerHost").FirstOrDefault(candidate =>
-                    candidate.ClassName == "Shell_SystemDialog" &&
-                    candidate.Title == "Let Windows and apps access your location?"),
-                DialogOpen: ui.Has(By.AccessibilityId("LatitudeBox_LightSwitch"), 0)),
+            () =>
+            {
+                // PickerHost's UWP dialog can own foreground without appearing in EnumWindows.
+                var foreground = WindowControl.GetForegroundWindowInfo();
+                WindowControl.ForegroundWindowInfo? consent = null;
+                if (foreground.ProcessName.Equals("PickerHost", StringComparison.OrdinalIgnoreCase) &&
+                    foreground.ClassName == "Shell_SystemDialog" &&
+                    foreground.Title == "Let Windows and apps access your location?")
+                {
+                    consent = foreground;
+                }
+
+                return (Consent: consent, DialogOpen: ui.Has(By.AccessibilityId("LatitudeBox_LightSwitch"), 0));
+            },
             state => state.Consent is not null || state.DialogOpen,
             timeoutMS: 30_000,
             pollIntervalMS: 250);
@@ -245,12 +262,13 @@ internal sealed class TestHelper
         if (ready.LastObservation.Consent is { } prompt)
         {
             Step("Granting the Windows location consent requested by PowerToys Settings");
-            var consent = WindowsFinder.WaitForWindowByApp("PickerHost", candidate => candidate.Hwnd == prompt.Hwnd, timeoutMS: 5_000);
-            Assert.IsNotNull(consent, "The identified Windows location consent window disappeared before it could be accepted.");
-            var accept = consent.FindAll<Button>(By.Name("Yes"), 5_000).Where(button => button.Name == "Yes").ToArray();
+            string handle = prompt.Hwnd.ToInt64().ToString(CultureInfo.InvariantCulture);
+            WinappCli.InvokeAssertSuccess("ui", "wait-for", "Yes", "-w", handle, "-t", "5000");
+            var tree = WinappCli.InvokeJson("ui", "inspect", "-w", handle, "--json", "-d", "8");
+            var accept = new List<string>();
+            CollectSelectors(tree, "Button", accept, name: "Yes");
             Assert.HasCount(1, accept, "Expected exactly one Yes button in the Windows location consent window.");
-            accept[0].Invoke(msPostAction: 0);
-            Assert.IsTrue(accept[0].WaitForGone(15_000), "Windows location consent did not close after accepting it.");
+            WinappCli.InvokeAssertSuccess("ui", "invoke", accept[0], "-w", handle);
         }
 
         ui.Find(By.AccessibilityId("LatitudeBox_LightSwitch"), 20_000);
@@ -378,11 +396,12 @@ internal sealed class TestHelper
         return ui.Find<T>(By.Slug(selectors[0]));
     }
 
-    private static void CollectSelectors(JsonElement node, string type, List<string> selectors)
+    private static void CollectSelectors(JsonElement node, string type, List<string> selectors, string? name = null)
     {
         if (node.ValueKind == JsonValueKind.Object)
         {
             if (node.TryGetProperty("type", out var controlType) && controlType.GetString() == type &&
+                (name is null || (node.TryGetProperty("name", out var controlName) && controlName.GetString() == name)) &&
                 node.TryGetProperty("selector", out var selector))
             {
                 selectors.Add(selector.GetString()!);
@@ -390,14 +409,14 @@ internal sealed class TestHelper
 
             foreach (var property in node.EnumerateObject())
             {
-                CollectSelectors(property.Value, type, selectors);
+                CollectSelectors(property.Value, type, selectors, name);
             }
         }
         else if (node.ValueKind == JsonValueKind.Array)
         {
             foreach (var child in node.EnumerateArray())
             {
-                CollectSelectors(child, type, selectors);
+                CollectSelectors(child, type, selectors, name);
             }
         }
     }
