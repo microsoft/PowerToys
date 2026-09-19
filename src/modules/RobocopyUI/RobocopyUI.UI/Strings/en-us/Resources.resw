@@ -808,7 +808,7 @@
     <value>Customize in Advanced</value>
   </data>
   <data name="RunExternalButton.Text" xml:space="preserve">
-    <value>Run command in the command line</value>
+    <value>Run command in a separate command window</value>
   </data>
   <data name="Status_NotRunning" xml:space="preserve">
     <value>Not running</value>

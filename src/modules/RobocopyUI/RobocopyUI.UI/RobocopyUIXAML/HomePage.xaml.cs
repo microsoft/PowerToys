@@ -688,7 +688,7 @@ public sealed partial class HomePage : Page
             DispatcherQueue.TryEnqueue(() =>
             {
                 StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-                var statusKey = "Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail");
+                var statusKey = "Status_" + process.ExitCode;
                 var statusText = ResourceLoaderInstance.ResourceLoader.GetString(statusKey);
                 OutputStatusText.Text = string.IsNullOrWhiteSpace(statusText)
                     ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
@@ -713,12 +713,15 @@ public sealed partial class HomePage : Page
             if (process == null)
             {
                 // Fallback to launching via cmd if direct start fails
-                Process.Start(new ProcessStartInfo
+                var fallbackStartInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = "/k " + "robocopy.exe " + job.RenderArguments(),
                     UseShellExecute = true,
-                });
+                };
+                fallbackStartInfo.ArgumentList.Add("/s");
+                fallbackStartInfo.ArgumentList.Add("/k");
+                fallbackStartInfo.ArgumentList.Add("robocopy.exe " + job.RenderArguments());
+                Process.Start(fallbackStartInfo);
             }
         }
         catch (Exception ex)
