@@ -11,8 +11,16 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-
-    <Grid>
-        <Frame x:Name="ContentFrame"/>
+    <Grid x:Name="MainGrid" Loaded="Grid_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar x:Name="titleBar" IsTabStop="False">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/RobocopyUI/RobocopyUI.ico" />
+            </TitleBar.IconSource>
+        </TitleBar>
+        <Frame x:Name="ContentFrame" Grid.Row="1" />
     </Grid>
 </Window>
