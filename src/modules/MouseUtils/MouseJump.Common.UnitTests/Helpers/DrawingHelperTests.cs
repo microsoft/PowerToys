@@ -152,8 +152,7 @@ public static class DrawingHelperTests
             var formLayout = LayoutHelper.GetFormLayout(
                 previewStyle: data.PreviewStyle,
                 displayInfo: data.DisplayInfo,
-                activatedScreen: data.ActivatedScreen,
-                activatedLocation: data.ActivatedLocation);
+                maximumSize: data.ActivatedScreen.DisplayArea.Size);
 
             var imageCopyServices = formLayout.CanvasLayout.DeviceLayouts
                 .Select(
@@ -234,6 +233,109 @@ public static class DrawingHelperTests
                         $"images differ at pixel ({x}, {y}) - expected: {expectedPixel}, actual: {actualPixel}");
                 }
             }
+        }
+    }
+
+    [TestClass]
+    public sealed class RenderPreviewAsyncTests
+    {
+        /// <summary>
+        /// Verifies that GetFormLayout's maximumSize parameter is respected when the
+        /// resulting layout is larger than the activatedScreen.DisplayArea. This is a
+        /// regression test for https://github.com/microsoft/PowerToys/issues/50436 where
+        /// the SettingsUI preview image was incorrectly scaled down to fit into the first
+        /// logical screen rather than scaled to fit into the SettingsUI settings card
+        /// (which is larger than the first logical screen), resulting in a preview
+        /// image that was too small and didn't fill the settings card.
+        /// </summary>
+        [TestMethod]
+        public async Task RenderPreviewAsync_GivenSettingsUiStyleInputs_RespectsMaximumSize()
+        {
+            // the same fake two-screen desktop as MouseUtilsViewModel_MouseJump.cs's
+            // MouseJumpPreviewImage getter (a small secondary screen, a larger primary one)
+            var screenA = new ScreenInfo(
+                handle: 0,
+                primary: false,
+                displayArea: new RectangleInfo(635, 172, 272, 168),
+                workingArea: new RectangleInfo(635, 172, 272, 168));
+            var screenB = new ScreenInfo(
+                handle: 0,
+                primary: true,
+                displayArea: new RectangleInfo(0, 0, 635, 339),
+                workingArea: new RectangleInfo(0, 0, 635, 339));
+            var displayInfo = new DisplayInfo(
+                devices: new DeviceInfo[]
+                {
+                    new(
+                        hostname: "FakeDisplay1",
+                        localhost: true,
+                        screens: new List<ScreenInfo> { screenA, screenB }),
+                });
+
+            var desktopSize = LayoutHelper.GetCombinedScreenBounds(
+                    displayInfo.Devices[0].Screens
+                        .Select(screen => screen.DisplayArea)
+                        .ToList())
+                .Size;
+
+            // hard-coded to match what MouseJumpPreviewImage's own settingsCardContentHeight
+            // math currently computes for this same fake desktop (907 wide x 283 tall) -
+            // deliberately much taller/wider than screenA's own 272x168 display area, so this
+            // test can tell "respects maximumSize" apart from "coincidentally small enough to
+            // fit inside screenA anyway".
+            var maximumSize = new SizeInfo(desktopSize.Width, 283);
+
+            var activatedScreen = displayInfo.Devices[0].Screens[0];
+            var previewStyle = StyleHelper.BezelledPreviewStyle.WithCanvasSize(desktopSize);
+
+            var formLayout = LayoutHelper.GetFormLayout(
+                previewStyle: previewStyle,
+                displayInfo: displayInfo,
+                maximumSize: maximumSize);
+
+            using var desktopImage = RenderPreviewAsyncTests.CreateSyntheticDesktopImage(desktopSize, displayInfo.Devices[0]);
+            var imageCopyServices = formLayout.CanvasLayout.DeviceLayouts
+                .Select(deviceLayout => (IImageRegionCopyService)new StaticImageRegionCopyService(desktopImage))
+                .ToList();
+
+            using var actual = await DrawingHelper.RenderPreviewAsync(formLayout.CanvasLayout, activatedScreen, imageCopyServices);
+
+            // the whole point of maximumSize is to bound the rendered image - it must
+            // never come out bigger than that in either dimension...
+            Assert.IsTrue(
+                actual.Width <= (int)maximumSize.Width,
+                $"actual width {actual.Width} exceeds maximumSize.Width {maximumSize.Width}");
+            Assert.IsTrue(
+                actual.Height <= (int)maximumSize.Height,
+                $"actual height {actual.Height} exceeds maximumSize.Height {maximumSize.Height}");
+
+            // ...and the resulting image must be larger than activatedScreen's own tiny
+            // display area (272x168) - this is the actual regression check: before the fix,
+            // GetFormLayout clamped against activatedScreen.DisplayArea.Size instead of
+            // maximumSize, so the preview came out far too small.
+            Assert.IsTrue(
+                actual.Width > (int)activatedScreen.DisplayArea.Width,
+                $"actual width {actual.Width} is no bigger than activatedScreen's own display area width {activatedScreen.DisplayArea.Width} - looks like maximumSize isn't being respected");
+            Assert.IsTrue(
+                actual.Height > (int)activatedScreen.DisplayArea.Height,
+                $"actual height {actual.Height} is no bigger than activatedScreen's own display area height {activatedScreen.DisplayArea.Height} - looks like maximumSize isn't being respected");
+        }
+
+        private static Bitmap CreateSyntheticDesktopImage(SizeInfo desktopSize, DeviceInfo deviceInfo)
+        {
+            var screenColors = new[] { Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Magenta };
+
+            var bitmap = new Bitmap((int)desktopSize.Width, (int)desktopSize.Height, PixelFormat.Format32bppArgb);
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.Clear(Color.Black);
+            for (var screenIndex = 0; screenIndex < deviceInfo.Screens.Count; screenIndex++)
+            {
+                var color = screenColors[screenIndex % screenColors.Length];
+                using var brush = new SolidBrush(color);
+                graphics.FillRectangle(brush, deviceInfo.Screens[screenIndex].DisplayArea.ToRectangle());
+            }
+
+            return bitmap;
         }
     }
 }
