@@ -679,10 +679,6 @@ public sealed partial class HomePage : Page
                 });
             }
         };
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
         process.Exited += (s, args) =>
         {
             DispatcherQueue.TryEnqueue(() =>
@@ -695,6 +691,10 @@ public sealed partial class HomePage : Page
                     : statusText;
             });
         };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
     }
 
     private void RunExternalButton_Click(object sender, RoutedEventArgs e)
