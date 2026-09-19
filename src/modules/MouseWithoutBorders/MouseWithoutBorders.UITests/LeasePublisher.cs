@@ -19,25 +19,30 @@ internal sealed class LeasePublisher : IDisposable
         string controlRoot,
         string outputRoot,
         string runId,
-        EndpointChannel host,
-        EndpointChannel guest,
+        EndpointChannel endpoint,
+        string role,
         DateTime hardDeadlineUtc,
         Process owner)
     {
+        if (role is not ("Host" or "Guest"))
+        {
+            throw new ArgumentOutOfRangeException(nameof(role));
+        }
+
         this.runId = runId;
-        stopPath = Path.Combine(controlRoot, "lease-stop.json");
-        outputPath = Path.Combine(outputRoot, "lease-publisher.json");
-        var configurationPath = Path.Combine(controlRoot, "lease-publisher.json");
+        stopPath = Path.Combine(controlRoot, $"lease-stop-{role}.json");
+        outputPath = Path.Combine(outputRoot, $"{role}-lease-publisher.json");
+        var configurationPath = Path.Combine(controlRoot, $"lease-publisher-{role}.json");
         RunFiles.Write(configurationPath, new
         {
             RunId = runId,
+            Role = role,
             ParentId = owner.Id,
             ParentStartTimeUtc = owner.StartTime.ToUniversalTime(),
             ParentSessionId = owner.SessionId,
             HardDeadlineUtc = hardDeadlineUtc,
-            HostInputRoot = host.InputRoot,
-            GuestInputRoot = guest.InputRoot,
-            InitialSequence = Math.Max(host.LeaseSequence, guest.LeaseSequence),
+            InputRoot = endpoint.InputRoot,
+            InitialSequence = endpoint.LeaseSequence,
             StopPath = stopPath,
             OutputPath = outputPath,
         });

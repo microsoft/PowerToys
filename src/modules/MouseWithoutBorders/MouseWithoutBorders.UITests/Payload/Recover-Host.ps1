@@ -152,8 +152,16 @@ try {
         throw 'Run recovery in the original interactive session only after the recorded MTP process exits.'
     }
 
-    if ($journal.PSObject.Properties['LeasePublisher'] -and $journal.LeasePublisher) {
-        $publisher = Convert-ProcessRecord $journal.LeasePublisher
+    $publishers = @()
+    if ($journal.PSObject.Properties['LeasePublishers']) {
+        $publishers = @($journal.LeasePublishers)
+    }
+    elseif ($journal.PSObject.Properties['LeasePublisher'] -and $journal.LeasePublisher) {
+        $publishers = @($journal.LeasePublisher)
+    }
+    if ($publishers.Count -gt 2) { throw 'Unexpected lease publisher count.' }
+    foreach ($record in $publishers) {
+        $publisher = Convert-ProcessRecord $record
         Assert-ChildIdentity $publisher $testProcess
         $expectedPowerShell = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
         if ($publisher.Path -ine $expectedPowerShell) { throw 'Unexpected lease publisher executable.' }

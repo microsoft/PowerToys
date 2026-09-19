@@ -159,13 +159,15 @@ The built executable is under
   used; no user/machine environment or execution-policy setting is changed.
 - Immutable, committed lease generations with latest-snapshot consumption:
   liveness does not require replaying hundreds of obsolete redirected JSON files.
-  An owned, hidden Windows PowerShell process keeps publication outside the
+  Two owned, hidden Windows PowerShell processes keep publication outside the
   MTP/native-recording process: a dedicated managed thread still stalled in CI.
-  It retains the exact test-process handle, exits when that process exits, and
-  cannot outlive the existing 40-minute hard deadline. Correlated shutdown and
-  identity-checked recovery stop only that publisher.
-  `lease-publisher.json` records its stage, sequence, per-endpoint write timings,
-  maximum cycle gap and bounded stall history. The 45-second worker watchdog
+  Each publishes only one endpoint instead of serializing host and mapped
+  guest-file writes. Each retains the exact test-process handle, exits when that
+  process exits, and cannot outlive the existing 40-minute hard deadline.
+  Correlated shutdown and identity-checked recovery stop only these publishers.
+  `Host-lease-publisher.json` and `Guest-lease-publisher.json` record stage,
+  sequence, write timing, maximum cycle gap and bounded stall history, including
+  the previous write duration. The 45-second worker watchdog
   remains enabled. Before declaring an aged observation expired, a worker
   re-reads the newest committed generation once: the reader itself may have
   paused while publication continued. The publication timestamp must still be
@@ -263,7 +265,7 @@ Original clipboard contents are never written to disk. A forced worker terminati
 can therefore prevent clipboard restoration; such a run cannot claim clean cleanup.
 
 `cleanup-journal.json` has `FormatVersion: 1`, `RunId`, `ControlRoot`, `ProductRoot`,
-`HostName`, `TestProcess`, `LeasePublisher`,
+`HostName`, `TestProcess`, `LeasePublishers`,
 `ProvisioningMarker`, `RuleName`, `TestUserSid`, `HostWorker`, `SandboxProcesses`,
 `ViewerHwnd`, `GuestAcknowledged`, `HostEndpointJournal`, `GuestEndpointJournal`,
 `Phase`, `Status`, `TimestampUtc`, `CleanupErrors`, and `PrivilegedCleanupRequired`.

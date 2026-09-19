@@ -15,9 +15,9 @@ $lastCycle = 0L
 $maxCycleMilliseconds = 0L
 $stalls = @()
 $state = [ordered]@{
-    RunId = $config.RunId; ProcessId = $PID; Stage = 'Starting'; Sequence = $sequence
+    RunId = $config.RunId; Role = $config.Role; ProcessId = $PID; Stage = 'Starting'; Sequence = $sequence
     TimestampUtc = [DateTime]::UtcNow.ToString('o'); MaxCycleMilliseconds = 0
-    HostWriteMilliseconds = 0; GuestWriteMilliseconds = 0; Stalls = @()
+    WriteMilliseconds = 0; LastPublishedUtc = $null; Stalls = @()
 }
 
 try {
@@ -45,25 +45,24 @@ try {
         if ($gap -gt 10000) {
             $stalls = @($stalls | Select-Object -Last 15) + @{
                 Sequence = $sequence; GapMilliseconds = $gap; TimestampUtc = [DateTime]::UtcNow.ToString('o')
+                PreviousWriteMilliseconds = $state.WriteMilliseconds; PreviousPublishedUtc = $state.LastPublishedUtc
             }
         }
         $sequence++
         $state.Sequence = $sequence
         $state.MaxCycleMilliseconds = $maxCycleMilliseconds
         $state.Stalls = $stalls
-        foreach ($role in @('Host', 'Guest')) {
-            $state.Stage = "Publishing$role"
-            $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
-            Write-RunJson $config.OutputPath $state
-            $started = $watch.ElapsedMilliseconds
-            $inputRoot = if ($role -eq 'Host') { $config.HostInputRoot } else { $config.GuestInputRoot }
-            Write-RunJson (Join-Path "$inputRoot\leases" ('{0:D8}.json' -f $sequence)) @{
-                RunId = $config.RunId; Sequence = $sequence; TimestampUtc = [DateTime]::UtcNow.ToString('o')
-            }
-            $state["${role}WriteMilliseconds"] = $watch.ElapsedMilliseconds - $started
+        $state.Stage = 'Publishing'
+        $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        Write-RunJson $config.OutputPath $state
+        $started = $watch.ElapsedMilliseconds
+        Write-RunJson (Join-Path "$($config.InputRoot)\leases" ('{0:D8}.json' -f $sequence)) @{
+            RunId = $config.RunId; Sequence = $sequence; TimestampUtc = [DateTime]::UtcNow.ToString('o')
         }
+        $state.WriteMilliseconds = $watch.ElapsedMilliseconds - $started
         $state.Stage = 'Published'
         $state.TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        $state.LastPublishedUtc = $state.TimestampUtc
         Write-RunJson $config.OutputPath $state
         if ($parent.WaitForExit(2000)) { break }
     }

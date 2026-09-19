@@ -266,6 +266,16 @@ failed before the correction and now remain incomplete until the server releases
 its acknowledgement. Existing peer-identity and serialization regressions pass.
 Shutdown remains a notification because it can terminate the responding process.
 
+The next CI run passed the build but stopped before product startup on a real
+62.203-second lease-publication gap. The external writer still serialized host
+and mapped guest writes. Publication is now isolated per endpoint, with two
+independently owned processes, role-specific control/status files and per-role
+write timing in stall evidence. A failing guest publication cannot stop host
+generations, as covered by a subprocess regression. Bootstrap detects publisher
+exit, cleanup stops both, and recovery supports both the new two-publisher
+journal and older one-publisher journals. Watchdog and hard deadlines are
+unchanged. The acknowledged RPC revision still needs to reach pairing in CI.
+
 On this host, the dedicated cold checkpoint is `mwb-nested-clean-20260912`.
 Do not restore the older `provisioned-baseline`, which predates the nested setup.
 Runtime evidence is under

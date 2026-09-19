@@ -26,6 +26,8 @@ internal sealed class TwoEndpointFixture : IDisposable
     private readonly ProcessIdentity testProcess = ProcessIdentity.Capture(Environment.ProcessId);
     private readonly List<object> phases = [];
     private readonly List<Exception> cleanupErrors = [];
+    private readonly List<LeasePublisher> leases = [];
+    private readonly List<ProcessIdentity> leaseProcesses = [];
     private readonly string markerPath = Environment.GetEnvironmentVariable("POWERTOYS_MWB_PROVISIONING")
         ?? @"C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json";
 
@@ -48,8 +50,6 @@ internal sealed class TwoEndpointFixture : IDisposable
     private LegacySandbox? sandbox;
     private TestRecordings? recordings;
     private ProcessIdentity? hostWorker;
-    private LeasePublisher? lease;
-    private ProcessIdentity? leaseProcess;
     private Session? settings;
     private long hostReceiverHwnd;
     private long guestReceiverHwnd;
@@ -152,12 +152,12 @@ internal sealed class TwoEndpointFixture : IDisposable
                 RunFiles.Wait(() => !hostWorker.IsCurrent(), TimeSpan.FromSeconds(15), "Host worker did not exit after cleanup.");
             }
         });
-        Attempt("Stop the endpoint lease publisher", () =>
+        foreach (var publisher in leases)
         {
-            var publisher = lease;
-            lease = null;
-            publisher?.Dispose();
-        });
+            Attempt("Stop an endpoint lease publisher", publisher.Dispose);
+        }
+
+        leases.Clear();
 
         Attempt("Finalize and attach desktop and Sandbox videos", () => recordings?.Complete());
         status = cleanupErrors.Count == 0 ? "Cleaned" : "RecoveryRequired";
@@ -260,13 +260,21 @@ internal sealed class TwoEndpointFixture : IDisposable
         RunFiles.Write(Path.Combine(runRoot, "payload-manifest.json"), manifest);
         RunFiles.Write(Path.Combine(runRoot, "host-desktop.json"), desktop);
         sandbox = new LegacySandbox(SaveJournal, recordings.CaptureSandboxWindow);
-        // CI showed 80-second gaps even on a dedicated managed thread. Keep
-        // liveness outside the MTP/native-recording process, without relaxing its watchdog.
+        // Keep liveness outside MTP/native recording, and isolate mapped guest writes
+        // from host publication so one stalled path cannot starve both endpoints.
         using var owner = Process.GetCurrentProcess();
-        lease = new LeasePublisher(payloadRoot, controlRoot, runRoot, runId, host, guest, hardDeadlineUtc, owner);
-        leaseProcess = ProcessIdentity.Capture(lease.ProcessId);
-        SaveJournal();
-        lease.WaitForReady();
+        foreach (var (role, endpoint) in new[] { ("Host", host), ("Guest", guest) })
+        {
+            var publisher = new LeasePublisher(payloadRoot, controlRoot, runRoot, runId, endpoint, role, hardDeadlineUtc, owner);
+            leases.Add(publisher);
+            leaseProcesses.Add(ProcessIdentity.Capture(publisher.ProcessId));
+            SaveJournal();
+        }
+
+        foreach (var publisher in leases)
+        {
+            publisher.WaitForReady();
+        }
     }
 
     private object[] ValidatePayload()
@@ -352,12 +360,17 @@ internal sealed class TwoEndpointFixture : IDisposable
         SaveJournal();
         var hostReady = host.WaitForReady(() =>
         {
+            CheckLeasePublishers();
             Assert.IsTrue(hostWorker.IsCurrent(), "Host worker exited during bootstrap; inspect its failed.json.");
         });
         hostReceiverHwnd = hostReady["ReceiverHwnd"]!.GetValue<long>();
         guest!.BeginBootstrap();
         sandbox!.Start(Path.Combine(runRoot, "run.wsb"), guestArchive, payloadRoot, Path.GetDirectoryName(winapp)!, guest!);
-        var guestReady = guest!.WaitForReady(sandbox.Discover);
+        var guestReady = guest!.WaitForReady(() =>
+        {
+            CheckLeasePublishers();
+            sandbox.Discover();
+        });
         guestReceiverHwnd = guestReady["ReceiverHwnd"]!.GetValue<long>();
         guestName = MachineName(guestReady["ComputerName"]!.GetValue<string>());
         Assert.AreNotEqual(hostName, guestName, "Peer identities must be distinct.");
@@ -717,7 +730,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         var started = DateTime.UtcNow;
         try
         {
-            lease?.ThrowIfFailed();
+            CheckLeasePublishers();
 
             action();
             phases.Add(new { Name = name, Status = "PASS", StartedUtc = started, CompletedUtc = DateTime.UtcNow });
@@ -747,6 +760,14 @@ internal sealed class TwoEndpointFixture : IDisposable
         }
     }
 
+    private void CheckLeasePublishers()
+    {
+        foreach (var publisher in leases)
+        {
+            publisher.ThrowIfFailed();
+        }
+    }
+
     private void SaveJournal()
     {
         if (runRoot.Length == 0 || !Directory.Exists(runRoot))
@@ -761,7 +782,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 FormatVersion = 1, RunId = runId, RunRoot = runRoot, ControlRoot = controlRoot, ProductRoot = productRoot,
                 HostName = hostName, TestProcess = testProcess,
                 ProvisioningMarker = markerPath, RuleName = provision["RuleName"]?.GetValue<string>(),
-                TestUserSid = userSid, HostWorker = hostWorker, LeasePublisher = leaseProcess, SandboxProcesses = sandbox?.Processes,
+                TestUserSid = userSid, HostWorker = hostWorker, LeasePublishers = leaseProcesses, SandboxProcesses = sandbox?.Processes,
                 ViewerHwnd = sandbox?.ViewerHwnd, GuestAcknowledged = sandbox?.GuestAcknowledged,
                 HostEndpointJournal = host is null ? null : Path.Combine(host.OutputRoot, "endpoint-journal.json"),
                 GuestEndpointJournal = guest is null ? null : Path.Combine(guest.OutputRoot, "endpoint-journal.json"),

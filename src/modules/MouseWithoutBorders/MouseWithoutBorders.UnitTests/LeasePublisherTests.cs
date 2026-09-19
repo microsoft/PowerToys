@@ -34,8 +34,11 @@ public sealed class LeasePublisherTests
     public void PublisherContinuesWhileOwnerWaitsAndPreservesCommittedGenerations()
     {
         using var owner = Process.GetCurrentProcess();
-        using var publisher = CreatePublisher(owner, DateTime.UtcNow.AddMinutes(1));
+        var deadline = DateTime.UtcNow.AddMinutes(2);
+        using var publisher = CreatePublisher(owner, deadline);
+        using var guestPublisher = CreatePublisher(owner, deadline, forGuest: true);
         publisher.WaitForReady();
+        guestPublisher.WaitForReady();
         var first = Path.Combine(host.InputRoot, "leases", "00000002.json");
         var original = File.ReadAllBytes(first);
         using (var held = new FileStream(first, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -48,7 +51,11 @@ public sealed class LeasePublisherTests
                     File.Exists(Path.Combine(guest.InputRoot, "leases", $"{expectedSequence:D8}.json.ready")),
                 TimeSpan.FromSeconds(30),
                 "Both endpoints did not receive committed generations while the owner waited.",
-                publisher.ThrowIfFailed);
+                () =>
+                {
+                    publisher.ThrowIfFailed();
+                    guestPublisher.ThrowIfFailed();
+                });
             foreach (var channel in new[] { host, guest })
             {
                 var path = Path.Combine(channel.InputRoot, "leases", $"{expectedSequence:D8}.json");
@@ -62,7 +69,35 @@ public sealed class LeasePublisherTests
         }
 
         publisher.Stop();
-        Assert.AreEqual("Stopped", RunFiles.Read(Path.Combine(root, "lease-publisher.json"))["Stage"]!.GetValue<string>());
+        guestPublisher.ThrowIfFailed();
+        guestPublisher.Stop();
+        Assert.AreEqual("Stopped", RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"))["Stage"]!.GetValue<string>());
+        Assert.AreEqual("Stopped", RunFiles.Read(Path.Combine(root, "Guest-lease-publisher.json"))["Stage"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void FailingGuestPublicationDoesNotStarveHostLeases()
+    {
+        using var owner = Process.GetCurrentProcess();
+        var deadline = DateTime.UtcNow.AddMinutes(2);
+        using var hostPublisher = CreatePublisher(owner, deadline);
+        hostPublisher.WaitForReady();
+        Directory.Delete(Path.Combine(guest.InputRoot, "leases"), recursive: true);
+        var guestPublisher = CreatePublisher(owner, deadline, forGuest: true);
+        try
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(guestPublisher.WaitForReady);
+            var next = RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"))["Sequence"]!.GetValue<int>() + 2;
+            RunFiles.Wait(
+                () => File.Exists(Path.Combine(host.InputRoot, "leases", $"{next:D8}.json.ready")),
+                TimeSpan.FromSeconds(30),
+                "A guest publication failure stopped host liveness.",
+                hostPublisher.ThrowIfFailed);
+        }
+        finally
+        {
+            Assert.ThrowsExactly<AggregateException>(guestPublisher.Dispose);
+        }
     }
 
     [TestMethod]
@@ -82,7 +117,7 @@ public sealed class LeasePublisherTests
             owner.Kill();
             Assert.IsTrue(owner.WaitForExit(5000));
             RunFiles.Wait(
-                () => RunFiles.Read(Path.Combine(root, "lease-publisher.json"))["Stage"]!.GetValue<string>() == "ParentExited",
+                () => RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"))["Stage"]!.GetValue<string>() == "ParentExited",
                 TimeSpan.FromSeconds(10),
                 "Publisher did not stop when its owner exited.");
             publisher.Stop();
@@ -105,7 +140,7 @@ public sealed class LeasePublisherTests
         try
         {
             Assert.ThrowsExactly<InvalidOperationException>(publisher.WaitForReady);
-            var state = RunFiles.Read(Path.Combine(root, "lease-publisher.json"));
+            var state = RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"));
             Assert.AreEqual("Failed", state["Stage"]!.GetValue<string>());
             StringAssert.Contains(state["Error"]!.GetValue<string>(), "hard deadline");
         }
@@ -123,9 +158,9 @@ public sealed class LeasePublisherTests
         try
         {
             publisher.WaitForReady();
-            RunFiles.Write(Path.Combine(root, "lease-stop.json"), new { RunId = "another-run" });
+            RunFiles.Write(Path.Combine(root, "lease-stop-Host.json"), new { RunId = "another-run" });
             RunFiles.Wait(
-                () => RunFiles.Read(Path.Combine(root, "lease-publisher.json"))["Stage"]!.GetValue<string>() == "Failed",
+                () => RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"))["Stage"]!.GetValue<string>() == "Failed",
                 TimeSpan.FromSeconds(10),
                 "Publisher accepted another run's stop request.");
         }
@@ -135,6 +170,13 @@ public sealed class LeasePublisherTests
         }
     }
 
-    private LeasePublisher CreatePublisher(Process owner, DateTime deadline) => new(
-        Path.Combine(AppContext.BaseDirectory, "ExperimentPayload"), root, root, runId, host, guest, deadline, owner);
+    private LeasePublisher CreatePublisher(Process owner, DateTime deadline, bool forGuest = false) => new(
+        Path.Combine(AppContext.BaseDirectory, "ExperimentPayload"),
+        root,
+        root,
+        runId,
+        forGuest ? guest : host,
+        forGuest ? "Guest" : "Host",
+        deadline,
+        owner);
 }
