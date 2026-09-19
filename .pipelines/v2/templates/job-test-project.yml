@@ -395,11 +395,18 @@ jobs:
         $dir = $rc.DirectoryName
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
+        $suiteFailed = $false
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
           if ($base -eq 'LightSwitch.UITests.Next') {
-            Enable-LightSwitchLocation -StatePath $locationStatePath
+            try {
+              Enable-LightSwitchLocation -StatePath $locationStatePath
+            } catch {
+              Write-Host "##vso[task.logissue type=error]Location setup failed for ${base}: $($_.Exception.Message)"
+              $suiteFailed = $true
+              continue
+            }
           }
           if ($nonElevatedSuites -contains $base) {
             if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
@@ -416,14 +423,22 @@ jobs:
           }
           if ($LASTEXITCODE -ne 0) {
             Write-Warning "UI tests reported failures for $base (exit $LASTEXITCODE)"
-            $failed++
+            $suiteFailed = $true
           }
         } finally {
           try {
             if ($base -eq 'LightSwitch.UITests.Next') {
-              Restore-LightSwitchLocation -StatePath $locationStatePath
+              try {
+                Restore-LightSwitchLocation -StatePath $locationStatePath
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Location cleanup failed for ${base}: $($_.Exception.Message)"
+                $suiteFailed = $true
+              }
             }
           } finally {
+            if ($suiteFailed) {
+              $failed++
+            }
             Pop-Location
             Write-Host "##[endgroup]"
           }

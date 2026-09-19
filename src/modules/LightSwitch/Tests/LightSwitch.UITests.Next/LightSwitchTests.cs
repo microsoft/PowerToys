@@ -28,6 +28,7 @@ public sealed class LightSwitchTests : UITestBase
     public static void CaptureOriginalState(TestContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        TestHelper.AssertLanguagePrerequisites();
         TestHelper.StopProcesses();
         originalState = new TestState();
     }
@@ -35,8 +36,19 @@ public sealed class LightSwitchTests : UITestBase
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void RestoreOriginalState()
     {
-        TestHelper.StopProcesses();
-        originalState?.Restore();
+        if (originalState is null)
+        {
+            return;
+        }
+
+        try
+        {
+            TestHelper.StopProcesses();
+        }
+        finally
+        {
+            originalState.Restore();
+        }
     }
 
     protected override void PrepareTestState()
@@ -69,8 +81,14 @@ public sealed class LightSwitchTests : UITestBase
         }
         finally
         {
-            TestHelper.StopProcesses();
-            originalState?.Restore();
+            try
+            {
+                TestHelper.StopProcesses();
+            }
+            finally
+            {
+                originalState?.Restore();
+            }
         }
     }
 
@@ -78,6 +96,7 @@ public sealed class LightSwitchTests : UITestBase
     [TestCategory("Shortcut")]
     public void TestLightSwitchShortcut()
     {
+        // Exercise real Settings IPC and service exit/start, not only startup from seeded settings.
         page.SetEnabled(false);
         page.SetEnabled(true);
         page.SelectMode("Off", "OffCBItem_LightSwitch", "Off");
@@ -146,12 +165,12 @@ public sealed class LightSwitchTests : UITestBase
     {
         page.SelectMode("SunsetToSunrise", "SunCBItem_LightSwitch", "Sunset to sunrise");
         page.OpenLocation();
-        page.SetNumber("LatitudeBox_LightSwitch", 1);
+        page.SetNumber("LatitudeBox_LightSwitch", 2);
         page.SetNumber("LongitudeBox_LightSwitch", TestState.LocalLongitude - 1);
         var times = page.WaitForSunTimes();
         page.SaveLocation();
 
-        page.WaitForSetting("latitude", "1");
+        page.WaitForSetting("latitude", "2");
         page.WaitForSetting("longitude", (TestState.LocalLongitude - 1).ToString(CultureInfo.InvariantCulture));
         page.AssertSavedSunTimes(times);
         page.WaitForScheduledTheme();

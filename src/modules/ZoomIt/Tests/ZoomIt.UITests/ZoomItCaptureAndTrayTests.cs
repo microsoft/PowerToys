@@ -433,7 +433,7 @@ public sealed partial class ZoomItTests
         foreach (var fraction in new[] { 0.25, 0.75 })
         {
             var position = TimeSpan.FromTicks((long)(clip.OriginalDuration.Ticks * fraction));
-            using var frame = await ZoomItCaptureHelpers.DecodeVideoFrameAsync(composition, position, encodedSize);
+            using var frame = await ZoomItCaptureHelpers.DecodeVideoFrameAsync(composition, position);
             Assert.AreEqual(encodedSize, frame.Size, "Decoded frames must retain the native encoded dimensions without rescaling.");
             var framePath = CaptureEvidencePath($"recording-frame-{fraction.ToString("F2", CultureInfo.InvariantCulture)}.png");
             frame.Save(framePath, ImageFormat.Png);

@@ -25,6 +25,33 @@ internal sealed class TestHelper
         ui = window;
     }
 
+    public static void AssertLanguagePrerequisites()
+    {
+        string? settingsLanguage = null;
+        string path = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "language.json");
+        if (File.Exists(path))
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var settings = JsonDocument.Parse(stream);
+            if (settings.RootElement.TryGetProperty("language", out var language))
+            {
+                settingsLanguage = language.GetString();
+            }
+        }
+
+        AssertLanguagePrerequisites(CultureInfo.CurrentUICulture, CultureInfo.CurrentCulture, settingsLanguage);
+    }
+
+    internal static void AssertLanguagePrerequisites(CultureInfo uiCulture, CultureInfo formatCulture, string? settingsLanguage)
+    {
+        Assert.AreEqual("en", uiCulture.TwoLetterISOLanguageName, $"Light Switch UI tests require an English Windows display language; current UI culture is '{uiCulture.Name}'.");
+        Assert.AreEqual("en", formatCulture.TwoLetterISOLanguageName, $"Light Switch UI tests require English regional formats shared by Settings and the test process; current format culture is '{formatCulture.Name}'.");
+        Assert.IsTrue(
+            string.IsNullOrEmpty(settingsLanguage) || settingsLanguage.Equals("en", StringComparison.OrdinalIgnoreCase) ||
+                settingsLanguage.StartsWith("en-", StringComparison.OrdinalIgnoreCase),
+            $"Set the PowerToys Settings language to English or the system default before running Light Switch UI tests; language.json selects '{settingsLanguage}'.");
+    }
+
     public void Navigate()
     {
         Step("Navigating to Light Switch settings");
@@ -122,7 +149,9 @@ internal sealed class TestHelper
             pollIntervalMS: 250);
         Assert.IsTrue(received.Succeeded, $"The Runner did not acknowledge the single shortcut. Foreground: {WindowControl.GetForegroundWindowInfo()}. New LightSwitch logs:\n{received.LastObservation}");
 
-        // Theme setters synchronously broadcast to desktop windows, so hotkey receipt is not completion.
+        // ThemeHelper.cpp sends several synchronous HWND_BROADCAST messages, each allowing 5s per
+        // recipient window. The 120s completion budget covers those serial waits on busy desktops;
+        // hotkey acknowledgement is separate, and this wait never resends the toggle chord.
         var completed = WaitHelper.WaitForStable(
             () => logs.ReadNew(),
             text => text!.Contains("[Light Switch] Manual override event set", StringComparison.Ordinal),
@@ -298,8 +327,8 @@ internal sealed class TestHelper
         Assert.IsTrue(ready.Succeeded, $"The location dialog must show nonblank sunrise and sunset. Error: {ReadLocationError()}");
         string sunrise = ui.Find(By.AccessibilityId("SunriseText_LightSwitch")).GetValue();
         string sunset = ui.Find(By.AccessibilityId("SunsetText_LightSwitch")).GetValue();
-        Assert.IsTrue(DateTime.TryParse(sunrise, CultureInfo.CurrentCulture, DateTimeStyles.NoCurrentDateDefault, out var light), $"Invalid sunrise display '{sunrise}'.");
-        Assert.IsTrue(DateTime.TryParse(sunset, CultureInfo.CurrentCulture, DateTimeStyles.NoCurrentDateDefault, out var dark), $"Invalid sunset display '{sunset}'.");
+        Assert.IsTrue(DateTime.TryParse(sunrise, CultureInfo.CurrentCulture, DateTimeStyles.NoCurrentDateDefault, out var light), $"Cannot parse sunrise '{sunrise}' with '{CultureInfo.CurrentCulture.Name}'; Settings and the test process must use the same English regional formats.");
+        Assert.IsTrue(DateTime.TryParse(sunset, CultureInfo.CurrentCulture, DateTimeStyles.NoCurrentDateDefault, out var dark), $"Cannot parse sunset '{sunset}' with '{CultureInfo.CurrentCulture.Name}'; Settings and the test process must use the same English regional formats.");
         return new SunTimes((light.Hour * 60) + light.Minute, (dark.Hour * 60) + dark.Minute);
     }
 
@@ -340,12 +369,21 @@ internal sealed class TestHelper
         return document.RootElement.GetProperty("properties").GetProperty(name).GetProperty("value").Deserialize<T>()!;
     }
 
-    public static void StopProcesses()
+    public static void StopProcesses() =>
+        StopProcesses(process => WindowControl.TryKillProcessTreeByNameAndWait(process, 15_000));
+
+    internal static void StopProcesses(Func<string, bool> stopProcess)
     {
+        var failed = new List<string>();
         foreach (string process in new[] { "PowerToys", "PowerToys.Settings", ServiceProcess })
         {
-            Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(process, 15_000), $"Could not stop test-owned {process} before restoring settings/themes.");
+            if (!stopProcess(process))
+            {
+                failed.Add(process);
+            }
         }
+
+        Assert.HasCount(0, failed, $"Could not stop test-owned processes before restoring settings/themes: {string.Join(", ", failed)}.");
     }
 
     public void SaveFailureState()

@@ -33,6 +33,22 @@ public sealed class ZoomItGeometryTests
     }
 
     [TestMethod]
+    [DataRow(75, 0, true)]
+    [DataRow(76, 0, false)]
+    [DataRow(-75, 0, true)]
+    [DataRow(-76, 0, false)]
+    [DataRow(0, 75, true)]
+    [DataRow(0, 76, false)]
+    [DataRow(0, -75, true)]
+    [DataRow(0, -76, false)]
+    public void TimerCenterCheckEnforcesFontRelativeBoundary(int offsetX, int offsetY, bool expected)
+    {
+        var display = new Size(2544, 1370);
+        var ink = new Rectangle(1097 + offsetX, 610 + offsetY, 350, 150);
+        Assert.AreEqual(expected, ZoomItGeometry.IsTimerCentered(ink, display));
+    }
+
+    [TestMethod]
     public void TimerCenterCheckRejectsShiftedAndCornerPositions()
     {
         var display = new Size(2544, 1369);

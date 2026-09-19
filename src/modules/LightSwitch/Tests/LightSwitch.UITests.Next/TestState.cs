@@ -32,7 +32,8 @@ internal sealed class TestState
 
     public static string SettingsPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "LightSwitch", "settings.json");
 
-    // Equatorial coordinates in the local time zone avoid polar days and midnight solar boundaries.
+    // An approximate local meridian is sufficient: +/-165 keeps the fixture away from midnight
+    // even in UTC+14, and assertions use the calculated times rather than assumed 06:00/18:00.
     public static int LocalLongitude => Math.Clamp((int)TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours * 15, -165, 165);
 
     public static void SeedSettings()
@@ -75,37 +76,77 @@ internal sealed class TestState
 
     public void Restore()
     {
-        if (settings is null)
+        try
         {
-            if (File.Exists(SettingsPath))
+            if (settings is null)
             {
-                File.Delete(SettingsPath);
-            }
-        }
-        else
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-            File.WriteAllBytes(SettingsPath, settings);
-        }
-
-        using var key = Registry.CurrentUser.CreateSubKey(PersonalizePath);
-        foreach (var (name, original) in themeValues)
-        {
-            if (original.Value is null)
-            {
-                key.DeleteValue(name, throwOnMissingValue: false);
+                if (File.Exists(SettingsPath))
+                {
+                    File.Delete(SettingsPath);
+                }
             }
             else
             {
-                key.SetValue(name, original.Value, original.Kind);
+                Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
+                File.WriteAllBytes(SettingsPath, settings);
             }
+        }
+        finally
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(PersonalizePath);
+            RestoreThemeValues(
+                themeValues,
+                (name, value, kind) =>
+                {
+                    if (value is null)
+                    {
+                        key.DeleteValue(name, throwOnMissingValue: false);
+                    }
+                    else
+                    {
+                        key.SetValue(name, value, kind);
+                    }
+                },
+                name => key.GetValue(name),
+                () =>
+                {
+                    // LightSwitch resets ColorPrevalence as well as both theme flags.
+                    SendMessageTimeout(new IntPtr(0xffff), 0x001A, UIntPtr.Zero, "ImmersiveColorSet", 0x0002, 1_000, out _);
+                });
+        }
+    }
 
-            Assert.AreEqual(original.Value, key.GetValue(name), $"Could not restore the user's {name}.");
+    internal static void RestoreThemeValues(
+        IReadOnlyDictionary<string, (object? Value, RegistryValueKind Kind)> originals,
+        Action<string, object?, RegistryValueKind> write,
+        Func<string, object?> read,
+        Action broadcast)
+    {
+        var failures = new List<string>();
+        try
+        {
+            foreach (var (name, original) in originals)
+            {
+                try
+                {
+                    write(name, original.Value, original.Kind);
+                    if (!Equals(original.Value, read(name)))
+                    {
+                        failures.Add($"{name} did not match its original value.");
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+                {
+                    failures.Add($"{name}: {ex.Message}");
+                }
+            }
+        }
+        finally
+        {
+            broadcast();
         }
 
-        // LightSwitch resets ColorPrevalence as well as both theme flags. Restore all three and
-        // notify existing windows instead of loading the product DLL into the test process.
-        SendMessageTimeout(new IntPtr(0xffff), 0x001A, UIntPtr.Zero, "ImmersiveColorSet", 0x0002, 1_000, out _);
+        Assert.HasCount(0, failures, $"Could not completely restore the user's theme: {string.Join("; ", failures)}");
     }
 
     private static JsonObject Value<T>(T value) => new() { ["value"] = JsonValue.Create(value) };

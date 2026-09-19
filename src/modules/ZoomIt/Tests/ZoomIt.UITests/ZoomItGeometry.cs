@@ -12,6 +12,8 @@ internal static class ZoomItGeometry
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(displaySize.Width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(displaySize.Height);
+
+        // ZoomIt/VideoRecordingSession.cpp applies EnsureEven to both capture and output sizes.
         return new Size(
             checked(displaySize.Width + (displaySize.Width & 1)),
             checked(displaySize.Height + (displaySize.Height & 1)));
@@ -24,8 +26,8 @@ internal static class ZoomItGeometry
             return false;
         }
 
-        // ZoomIt centers "% 2d:%02d", including a leading blank for single-digit minutes.
-        // Ink bounds omit that blank and the font bearings; their offset scales with glyph size.
+        // Zoomit.cpp centers the DrawText(DT_CALCRECT) box for "% 2d:%02d".
+        // Ink bounds omit its leading blank and font metrics; the font scales with screen height.
         var allowance = inkBounds.Height / 2.0;
         var centerX = inkBounds.Left + (inkBounds.Width / 2.0);
         var centerY = inkBounds.Top + (inkBounds.Height / 2.0);

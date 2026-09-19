@@ -51,6 +51,24 @@ Native dialogs are clicked once, then polled separately for window appearance an
 HWND-scoped control readiness. A delayed Font dialog regression covers an eight-second
 opening delay, beyond the previous five-second discovery timeout.
 
+The even-pixel expectation comes from
+[`VideoRecordingSession.cpp`](../../ZoomIt/VideoRecordingSession.cpp):
+`EnsureEven` returns an odd dimension plus one, and the recording constructor applies it
+to capture dimensions and output dimensions before setting the video encoding profile.
+At the tested 100% full-screen recording scale, this pads rather than crops an odd display
+dimension. It is a product rule, not an assumption about a particular encoder or OS build.
+Frame decoding leaves both
+[`GetThumbnailAsync`](https://learn.microsoft.com/uwp/api/windows.media.editing.mediacomposition.getthumbnailasync)
+dimensions at their documented zero defaults instead of requesting the expected size.
+`ZoomItCaptureHelpersTests` checks native frame dimensions using small synthetic MP4s;
+these helper regressions do not launch ZoomIt or provide additional UI coverage.
+
+The timer in [`Zoomit.cpp`](../../ZoomIt/Zoomit.cpp) uses `lfHeight = height / 5`
+and centers the complete `DrawText(DT_CALCRECT)` layout for `"% 2d:%02d"`, not its visible
+ink. Leading whitespace and font metrics therefore affect the measured ink center.
+The geometry regression tests pin the font-relative allowance, including its boundary;
+they do not replace live timer-placement validation.
+
 ```powershell
 dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:Platform=x64
 tools\build\build.cmd -Path src\modules\ZoomIt\Tests\ZoomIt.UITests -Platform x64 -Configuration Debug

@@ -205,10 +205,12 @@ Describe 'Light Switch location prerequisites without host mutation' {
 Describe 'Light Switch pipeline prerequisite gating' {
     BeforeEach {
         Mock Enable-LightSwitchLocation {}
+        Mock Restore-LightSwitchLocation {}
         $yaml = Get-Content -LiteralPath $pipelinePath -Raw
         $locationStatePath = Join-Path $TestDrive 'unused.json'
     }
 
+    # These fragments intentionally follow the YAML indentation; update the extraction with the template.
     It 'enables only the exact runner <Module>' -TestCases @(
         @{ Module = 'LightSwitch.UITests.Next'; Count = 1 }
         @{ Module = 'lightswitch.uitests.next'; Count = 1 }
@@ -230,8 +232,54 @@ Describe 'Light Switch pipeline prerequisite gating' {
         $line = ($yaml -split "`n" | Where-Object { $_ -match '^\s+\$nonElevatedSuites =' }).Trim()
         $suites = & ([scriptblock]::Create($line + '; $nonElevatedSuites'))
         ($suites -contains 'LightSwitch.UITests.Next') | Should Be $false
-        $yaml | Should Match "(?s)finally \{\s+try \{\s+if \(\`$base -eq 'LightSwitch.UITests.Next'\) \{\s+Restore-LightSwitchLocation"
+        $yaml | Should Match "(?s)finally \{\s+try \{\s+if \(\`$base -eq 'LightSwitch.UITests.Next'\) \{\s+try \{\s+Restore-LightSwitchLocation"
         $yaml | Should Match 'displayName: Restore interrupted Light Switch location setup'
         $yaml | Should Match '(?s)displayName: Restore Light Switch location prerequisites\s+condition: always\(\)'
+    }
+
+    It 'continues later suites and counts a <Failure> failure once' -TestCases @(
+        @{ Failure = 'setup'; ExpectedRunners = 'Z.Other.UITests' }
+        @{ Failure = 'cleanup'; ExpectedRunners = 'LightSwitch.UITests.Next,Z.Other.UITests' }
+        @{ Failure = 'setup-and-cleanup'; ExpectedRunners = 'Z.Other.UITests' }
+        @{ Failure = 'runner'; ExpectedRunners = 'LightSwitch.UITests.Next,Z.Other.UITests' }
+    ) {
+        param($Failure, $ExpectedRunners)
+
+        $entries = @('LightSwitch.UITests.Next', 'Z.Other.UITests') | ForEach-Object {
+            $directory = New-Item -ItemType Directory -Path (Join-Path $TestDrive $_) -Force
+            New-Item -ItemType File -Path (Join-Path $directory.FullName "$_.dll") -Force | Out-Null
+            [pscustomobject]@{
+                Name = "$_.runtimeconfig.json"
+                FullName = Join-Path $directory.FullName "$_.runtimeconfig.json"
+                DirectoryName = $directory.FullName
+            }
+        }
+        $script:executedRunners = @()
+        $script:runnerFails = $Failure -eq 'runner'
+        function dotnet {
+            $runner = [IO.Path]::GetFileNameWithoutExtension($args[0])
+            $script:executedRunners += $runner
+            $global:LASTEXITCODE = if ($script:runnerFails -and $runner -eq 'LightSwitch.UITests.Next') { 1 } else { 0 }
+        }
+        if ($Failure -in @('setup', 'setup-and-cleanup')) {
+            Mock Enable-LightSwitchLocation { throw 'Setup failure.' }
+        }
+        if ($Failure -in @('cleanup', 'setup-and-cleanup')) {
+            Mock Restore-LightSwitchLocation { throw 'Cleanup failure.' }
+        }
+        Mock Write-Host {}
+        $nonElevatedSuites = @()
+        $resultsDir = $TestDrive
+        $start = $yaml.IndexOf('      $failed = 0')
+        $end = $yaml.IndexOf('      if ($failed -gt 0)', $start)
+        $start | Should BeGreaterThan 0
+        . ([scriptblock]::Create($yaml.Substring($start, $end - $start)))
+
+        $failed | Should Be 1
+        ($script:executedRunners -join ',') | Should Be $ExpectedRunners
+        Assert-MockCalled Restore-LightSwitchLocation -Times 1 -Exactly -Scope It
+        if ($Failure -ne 'runner') {
+            Assert-MockCalled Write-Host -Scope It -ParameterFilter { $Object -like '##vso[[]task.logissue type=error]*' }
+        }
     }
 }

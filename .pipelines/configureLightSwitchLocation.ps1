@@ -43,7 +43,7 @@ function Read-LightSwitchLocationValue {
 function Write-LightSwitchLocationValue {
     param([hashtable] $Target, [psobject] $Snapshot)
     if ($Snapshot.ValueExisted) {
-        # Never recreate an existing key: ConsentStore also holds OS-owned LastSetTime metadata.
+        # Create only missing keys; never delete and recreate ConsentStore's OS-owned metadata.
         if (-not (Test-Path -LiteralPath $Target.Path)) {
             New-Item -Path $Target.Path -ErrorAction Stop | Out-Null
         }
