@@ -73,6 +73,9 @@ public partial class App : Application, IDisposable
     /// </summary>
     public App()
     {
+        // Must run before XAML/resources load so PRI strings follow PowerToys Settings language.
+        AppLanguageHelper.ApplyFromPowerToysSettings();
+
         var appInfoService = new ApplicationInfoService();
 
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER

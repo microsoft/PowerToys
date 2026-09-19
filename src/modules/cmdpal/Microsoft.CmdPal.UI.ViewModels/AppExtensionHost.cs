@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -21,7 +22,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public ulong HostingHwnd => _hostingHwnd;
 
-    public string LanguageOverride => string.Empty;
+    public string LanguageOverride => AppLanguageHelper.LanguageOverride;
 
     public ObservableCollection<StatusMessageViewModel> StatusMessages { get; } = [];
 
