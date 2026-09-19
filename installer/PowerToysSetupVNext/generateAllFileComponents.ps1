@@ -310,6 +310,10 @@ Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PS
 Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
 Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs
 
+#RobocopyUI
+Generate-FileList -fileDepsJson "" -fileListName RobocopyUIAssetsFiles -wxsFilePath $PSScriptRoot\RobocopyUI.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RobocopyUI\"
+Generate-FileComponents -fileListName "RobocopyUIAssetsFiles" -wxsFilePath $PSScriptRoot\RobocopyUI.wxs
+
 #Run
 Generate-FileList -fileDepsJson "" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\PowerLauncher"
 Generate-FileComponents -fileListName "launcherImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
