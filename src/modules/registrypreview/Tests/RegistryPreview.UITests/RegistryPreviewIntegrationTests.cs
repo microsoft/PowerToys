@@ -29,7 +29,7 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         KeyboardHelper.SendKeys(Key.Esc);
         CloseRegistryPreviewWindows();
-        CloseExplorerFileWindows();
+        ExplorerControl.CloseFileWindows();
 
         var restorationFailures = new List<Exception>();
         if (defaultAppEnabledToRestore.HasValue && settingsToRestore is not null)

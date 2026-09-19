@@ -323,6 +323,7 @@ public partial class ShellViewModel : ObservableObject,
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
                     var commandId = command?.Id ?? "unknown";
                     var commandName = command?.Name ?? "unknown";
+                    WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
@@ -390,6 +391,8 @@ public partial class ShellViewModel : ObservableObject,
             }
             else
             {
+                // Count only accepted invocations, before Invoke can hide the palette and end the session.
+                WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
                     SafeHandleInvokeCommandSynchronous(message, invokable, host);
@@ -410,20 +413,30 @@ public partial class ShellViewModel : ObservableObject,
 
         try
         {
-            // Call out to extension process.
-            // * May fail!
-            // * May never return!
-            var result = invokable.Invoke(message.Context);
+            ICommandResult? result;
+            try
+            {
+                // Call out to extension process.
+                // * May fail!
+                // * May never return!
+                result = invokable.Invoke(message.Context);
+                success = true;
+            }
+            finally
+            {
+                // Report the invocation outcome before processing its result.
+                stopwatch.Stop();
+                WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
+                    new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
+            }
 
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
 
-            success = true;
             _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
-            success = false;
             _handleInvokeTask = null;
 
             // Telemetry: Track errors for session metrics
@@ -432,13 +445,6 @@ public partial class ShellViewModel : ObservableObject,
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
-        }
-        finally
-        {
-            // Telemetry: Send extension invocation metrics (always sent, even on failure)
-            stopwatch.Stop();
-            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
-                new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 
