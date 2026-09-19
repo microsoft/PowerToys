@@ -10,6 +10,7 @@
 #include "ThemeHelper.h"
 #include <thread>
 #include <atomic>
+#include <climits>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -104,7 +105,7 @@ private:
     HANDLE m_process{ nullptr };
     HANDLE m_force_light_event_handle;
     HANDLE m_force_dark_event_handle;
-    HANDLE m_manual_override_event_handle;
+    HANDLE m_toggle_request_semaphore{ nullptr };
     HANDLE m_toggle_event_handle{ nullptr };
     std::thread m_toggle_thread;
     std::atomic<bool> m_toggle_thread_running{ false };
@@ -125,7 +126,7 @@ public:
 
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
-        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_toggle_request_semaphore = CreateSemaphoreW(nullptr, 0, LONG_MAX, LIGHT_SWITCH_TOGGLE_REQUEST_SEMAPHORE);
         m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
         init_settings();
@@ -184,8 +185,7 @@ public:
             { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" },
-              { L"FollowNightLight", L"Follow Windows Night Light state" }
-            });
+              { L"FollowNightLight", L"Follow Windows Night Light state" } });
 
         // Integer spinners
         settings.add_int_spinner(
@@ -407,6 +407,16 @@ public:
         Logger::info(L"Enabling Light Switch module...");
         Trace::Enable(true);
 
+        if (!m_toggle_request_semaphore)
+        {
+            m_toggle_request_semaphore = CreateSemaphoreW(nullptr, 0, LONG_MAX, LIGHT_SWITCH_TOGGLE_REQUEST_SEMAPHORE);
+            if (!m_toggle_request_semaphore)
+            {
+                Logger::error(L"[Light Switch] Could not create toggle request semaphore (error: {}).", GetLastError());
+                return;
+            }
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
         std::wstring exe_name = L"LightSwitchService\\PowerToys.LightSwitchService.exe";
@@ -465,6 +475,7 @@ public:
     {
         Logger::info("Light Switch disabling");
         m_enabled = false;
+        StopToggleListener();
 
         if (m_process)
         {
@@ -477,15 +488,16 @@ public:
                 TerminateProcess(m_process, 0);
             }
 
-            CloseHandle(m_manual_override_event_handle);
-            m_manual_override_event_handle = nullptr;
-
             CloseHandle(m_process);
             m_process = nullptr;
         }
-        
+
+        if (m_toggle_request_semaphore)
+        {
+            CloseHandle(m_toggle_request_semaphore);
+            m_toggle_request_semaphore = nullptr;
+        }
         Trace::Enable(false);
-        StopToggleListener();
     }
 
     // Returns if the powertoys is enabled
@@ -563,33 +575,15 @@ public:
     {
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
-
 };
 
 void LightSwitchInterface::ToggleTheme()
 {
-    if (g_settings.m_changeSystem)
+    // The service applies the theme and updates its scheduler state as one operation.
+    // A semaphore retains every hotkey request while an earlier theme change is running.
+    if (!m_toggle_request_semaphore || !ReleaseSemaphore(m_toggle_request_semaphore, 1, nullptr))
     {
-        SetSystemTheme(!GetCurrentSystemTheme());
-    }
-    if (g_settings.m_changeApps)
-    {
-        SetAppsTheme(!GetCurrentAppsTheme());
-    }
-
-    if (!m_manual_override_event_handle)
-    {
-        m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-        if (!m_manual_override_event_handle)
-        {
-            m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-        }
-    }
-
-    if (m_manual_override_event_handle)
-    {
-        SetEvent(m_manual_override_event_handle);
-        Logger::debug(L"[Light Switch] Manual override event set");
+        Logger::warn(L"[Light Switch] Could not queue a toggle request (error: {}).", m_toggle_request_semaphore ? GetLastError() : ERROR_INVALID_HANDLE);
     }
 }
 

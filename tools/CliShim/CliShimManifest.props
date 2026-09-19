@@ -16,6 +16,9 @@
     <CliShim Include="PowerToys.PowerDisplay.CLI">
       <RelativeTarget>../WinUI3Apps/PowerToys.PowerDisplay.Cli.exe</RelativeTarget>
     </CliShim>
+    <CliShim Include="PowerToys.LightSwitch.CLI">
+      <RelativeTarget>../PowerToys.LightSwitch.Cli.exe</RelativeTarget>
+    </CliShim>
   </ItemGroup>
 
   <!--
