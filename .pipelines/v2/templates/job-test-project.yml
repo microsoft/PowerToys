@@ -233,7 +233,8 @@ jobs:
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
-        'Workspaces.UITests.Next'
+        'Workspaces.UITests.Next',
+        'ZoomIt.UITests'
       ) + $newPlusModules
 
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
