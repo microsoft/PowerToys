@@ -327,16 +327,18 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
 
         save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "The app-specific mapping did not expose Save.");
-        Step("Attempting to save without an application name");
-        save!.Invoke(msPostAction: 300);
-        Assert.IsNotNull(FindExact<Button>(editorProcess, "Save", timeoutMS: 2_000), "An app-specific mapping saved without an application name.");
+        Assert.IsFalse(save!.IsEnabled, "Save was enabled for an app-specific mapping without an application name.");
 
         var appName = editorProcess.Find<TextBox>(By.AccessibilityId("AppNameTextBox"), timeoutMS: 5_000);
         var currentProcess = Path.GetFileNameWithoutExtension(Environment.ProcessPath)!;
         appName.SetText(currentProcess);
-        appName.Focus();
+
+        save = FindExact<Button>(editorProcess, "Save", timeoutMS: 5_000);
+        Assert.IsNotNull(save, "The app-specific mapping did not expose Save after entering an application name.");
+        Assert.IsTrue(save!.IsEnabled, "Save did not enable after entering a valid application name.");
 
         Step("Saving the valid app-specific mapping with Enter");
+        appName.Focus();
         KeyboardHelper.SendKey(Key.Enter);
         Assert.IsTrue(
             editor.WaitFor(

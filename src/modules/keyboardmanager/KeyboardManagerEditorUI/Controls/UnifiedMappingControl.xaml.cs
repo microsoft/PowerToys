@@ -547,6 +547,8 @@ namespace KeyboardManagerEditorUI.Controls
             AppNameTextBox.Visibility = AppSpecificCheckBox.IsChecked == true
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            RaiseValidationStateChanged();
         }
 
         private void UpdateAppSpecificCheckBoxState()
@@ -580,6 +582,11 @@ namespace KeyboardManagerEditorUI.Controls
         {
             CleanupKeyboardHook();
             UncheckAllToggleButtons();
+        }
+
+        private void AppNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RaiseValidationStateChanged();
         }
 
         private void TextContentBox_GotFocus(object sender, RoutedEventArgs e)
