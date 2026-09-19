@@ -652,15 +652,18 @@ public sealed partial class HomePage : Page
         var processExited = false;
         var outputCompleted = false;
         var errorCompleted = false;
+        var completionReported = false;
 
         void TryUpdateCompletedStatus()
         {
             lock (completionLock)
             {
-                if (!processExited || !outputCompleted || !errorCompleted)
+                if (!processExited || !outputCompleted || !errorCompleted || completionReported)
                 {
                     return;
                 }
+
+                completionReported = true;
             }
 
             DispatcherQueue.TryEnqueue(() =>
