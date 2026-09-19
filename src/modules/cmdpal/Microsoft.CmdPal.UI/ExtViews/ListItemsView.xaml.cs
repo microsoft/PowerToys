@@ -35,9 +35,7 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigateLeftCommand>,
     IRecipient<NavigateRightCommand>,
     IRecipient<NavigatePageDownCommand>,
-    IRecipient<NavigatePageUpCommand>,
-    IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<NavigatePageUpCommand>
 {
     private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
 
@@ -124,8 +122,6 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigateRightCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -142,8 +138,6 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigateRightCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -600,30 +594,6 @@ public sealed partial class ListItemsView : UserControl,
         {
             // In list view, right arrow doesn't navigate
             // This maintains consistency with the SearchBar behavior
-        }
-    }
-
-    public void Receive(ActivateSelectedListItemMessage message)
-    {
-        if (ViewModel?.ShowEmptyContent ?? false)
-        {
-            ViewModel?.InvokeItemCommand.Execute(null);
-        }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
-        {
-            ViewModel?.InvokeItemCommand.Execute(item);
-        }
-    }
-
-    public void Receive(ActivateSecondaryCommandMessage message)
-    {
-        if (ViewModel?.ShowEmptyContent ?? false)
-        {
-            ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
-        }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
-        {
-            ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
         }
     }
 
