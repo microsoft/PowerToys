@@ -79,7 +79,7 @@ public sealed class RobocopyJob
     /// <summary>
     /// Renders just the arguments passed to <c>robocopy.exe</c>.
     /// </summary>
-    public string RenderArguments() => RobocopyCommand.RenderArguments(Source, Destination, _options);
+    public string RenderArguments(bool renderForRCJFile = false) => RobocopyCommand.RenderArguments(Source, Destination, _options, renderForRCJFile);
 
     /// <summary>
     /// Replaces every selected switch.

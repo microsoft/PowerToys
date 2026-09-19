@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -567,7 +568,14 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        RunRobocopy(job.RenderArguments() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+        if (SettingsUtils.Default.GetSettings<RobocopyUISettings>().Properties.UseLegacySaveMode.Value)
+        {
+            RunRobocopy(job.RenderArguments() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+        }
+        else
+        {
+            await File.WriteAllTextAsync(result.Path, job.RenderArguments(true) + Environment.NewLine);
+        }
     }
 
     private async void LoadOptionsButton_Click(object sender, RoutedEventArgs e)

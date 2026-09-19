@@ -25,15 +25,15 @@ namespace RobocopyUI.Services.AI
         /// Renders a full command line, including the executable name.
         /// </summary>
         public static string Render(string source, string destination, IReadOnlyList<RobocopyPlanOption> options)
-            => $"{Executable} {RenderArguments(source, destination, options)}";
+            => $"{Executable} {RenderArguments(source, destination, options, false)}";
 
         /// <summary>
         /// Renders just the arguments, without the executable name, for passing to <c>robocopy.exe</c>.
         /// </summary>
-        public static string RenderArguments(string source, string destination, IReadOnlyList<RobocopyPlanOption> options)
+        public static string RenderArguments(string source, string destination, IReadOnlyList<RobocopyPlanOption> options, bool renderForRCJFile)
         {
             var builder = new StringBuilder();
-            builder.Append(Quote(source)).Append(' ').Append(Quote(destination));
+            builder.Append((renderForRCJFile ? "/SD:" : string.Empty) + Quote(source)).Append(renderForRCJFile ? Environment.NewLine : " ").Append((renderForRCJFile ? "/DD:" : string.Empty) + Quote(destination));
 
             if (options is not null)
             {
@@ -42,7 +42,7 @@ namespace RobocopyUI.Services.AI
                     var rendered = RenderOption(option);
                     if (rendered.Length > 0)
                     {
-                        builder.Append(' ').Append(rendered);
+                        builder.Append(renderForRCJFile ? Environment.NewLine : " ").Append(rendered);
                     }
                 }
             }

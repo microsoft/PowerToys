@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -76,6 +77,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool UseLegacySaveMode
+        {
+            get => _settings.Properties.UseLegacySaveMode.Value;
+            set
+            {
+                if (_settings.Properties.UseLegacySaveMode.Value != value)
+                {
+                    _settings.Properties.UseLegacySaveMode.Value = value;
+                    NotifySettingsChanged();
+                    OnPropertyChanged(nameof(UseLegacySaveMode));
+                }
+            }
         }
 
         public void Launch()
