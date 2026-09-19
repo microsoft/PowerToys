@@ -16,9 +16,9 @@
 (?:|$^ 92.31% - excluded 12/13)/editor/[^/]+$
 /images/launcher/[^/]+$
 /TestFiles/
+[^/]\.bgcode$
 [^/]\.cur$
 [^/]\.gcode$
-[^/]\.bgcode$
 [^/]\.rgs$
 \.a$
 \.ai$
@@ -95,23 +95,27 @@
 ^\.github/actions/spell-check/
 ^\.github/workflows/spelling\d*\.yml$
 ^\.gitmodules$
+^\Q.github/workflows/issue-triage.lock.yml\E$
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Qdoc/devdocs/localization.md\E$
+^\Qsrc/modules/keyboardmanager/KeyboardManagerEditorUI/Pages/MainPage.xaml.cs\E$
 ^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
+^\Qsrc/modules/peek/Peek.UITests.Next/TestAssets/4.qoi\E$
+^deps/spdlog-msvc-fix/
 ^doc/devdocs/akaLinks\.md$
 ^NOTICE\.md$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
-^src/common/UnitTests-CommonUtils/
 ^src/common/ManagedCommon/ColorFormatHelper\.cs$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
-^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherComparisonTests.cs$
-^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
+^src/common/UnitTests-CommonUtils/
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/Text/.*\.cs$
+^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherComparisonTests.cs$
+^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
 ^src/modules/MouseUtils/MouseJumpUI/UI/MainForm\.resx$
@@ -132,6 +136,8 @@
 ^src/modules/powerrename/PowerRenameUITest/testItems/folder1/testCase2\.txt$
 ^src/modules/powerrename/PowerRenameUITest/testItems/folder2/SpecialCase\.txt$
 ^src/modules/powerrename/PowerRenameUITest/testItems/testCase1\.txt$
+^src/modules/powerrename/unittests/testdata/avif_test\.avif$
+^src/modules/powerrename/unittests/testdata/heif_test\.heic$
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
@@ -144,6 +150,3 @@
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
-^src/modules/powerrename/unittests/testdata/avif_test\.avif$
-^src/modules/powerrename/unittests/testdata/heif_test\.heic$
-^deps/spdlog-msvc-fix/
