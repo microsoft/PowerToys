@@ -102,6 +102,92 @@ public sealed class ShortcutSearchMatcherTests
         Assert.IsFalse(ShortcutSearchMatcher.Matches(shortcut, "screenshot"));
     }
 
+    [TestMethod]
+    public void Matches_NullDescription_MatchesByName()
+    {
+        var shortcut = CreateShortcut(name: "Snap window", description: null);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "snap"));
+    }
+
+    [TestMethod]
+    public void Matches_NullDescription_QueryNotInName_ReturnsFalse()
+    {
+        var shortcut = CreateShortcut(name: "Snap window", description: null);
+
+        Assert.IsFalse(ShortcutSearchMatcher.Matches(shortcut, "screenshot"));
+    }
+
+    [TestMethod]
+    public void Matches_EmptyShortcutArray_MatchesByName()
+    {
+        var shortcut = CreateShortcut(name: "Open settings", shortcutDescriptions: []);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "settings"));
+    }
+
+    [TestMethod]
+    public void Matches_MultipleShortcuts_MatchesIfAnyShortcutMatches()
+    {
+        var shortcut = CreateShortcut(
+            shortcutDescriptions:
+            [
+                new ShortcutDescription(false, false, false, false, ["A"]),
+                new ShortcutDescription(false, false, false, true, ["B"]),
+            ]);
+
+        // "windows B" matches only the second shortcut
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "windows B"));
+    }
+
+    [TestMethod]
+    [DataRow("Back", "<Backspace>")]
+    [DataRow("Backspace", "<Backspace>")]
+    [DataRow("Enter", "<Enter>")]
+    [DataRow(">", "<GreaterThan>")]
+    public void Matches_SpecialKeyLabel_ReturnsTrue(string query, string key)
+    {
+        var shortcut = CreateShortcut(
+            shortcutDescriptions: [new ShortcutDescription(false, false, false, false, [key])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, query));
+    }
+
+    [TestMethod]
+    [DataRow("Up Down Arrow", "<ArrowUD>")]
+    [DataRow("Left Right Arrow", "<ArrowLR>")]
+    [DataRow("Left Right Up Down Arrow", "<Arrow>")]
+    public void Matches_CompositeArrowKeyLabel_ReturnsTrue(string query, string key)
+    {
+        var shortcut = CreateShortcut(
+            shortcutDescriptions: [new ShortcutDescription(false, false, false, false, [key])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, query));
+    }
+
+    [TestMethod]
+    public void Matches_GenericAngleBracketKey_StripsAngleBrackets()
+    {
+        // A key like "<Space>" that is not specially handled falls back to stripping the brackets.
+        var shortcut = CreateShortcut(
+            shortcutDescriptions: [new ShortcutDescription(false, false, false, false, ["<Space>"])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "Space"));
+    }
+
+    [TestMethod]
+    [DataRow("40")]
+    [DataRow("37")]
+    [DataRow("39")]
+    public void Matches_NumericArrowVkCode_ReturnsTrue(string key)
+    {
+        // Numeric VK codes for arrow keys are rendered as e.g. "Down Down Arrow" by GetKeySearchLabel.
+        var shortcut = CreateShortcut(
+            shortcutDescriptions: [new ShortcutDescription(false, false, false, false, [key])]);
+
+        Assert.IsTrue(ShortcutSearchMatcher.Matches(shortcut, "Arrow"));
+    }
+
     private static ShortcutEntry CreateShortcut(
         string name = "Toggle desktop",
         string? description = "Manage desktops",
