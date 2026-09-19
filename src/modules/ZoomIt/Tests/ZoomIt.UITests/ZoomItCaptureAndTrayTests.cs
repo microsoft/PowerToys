@@ -423,9 +423,9 @@ public sealed partial class ZoomItTests
         var file = await StorageFile.GetFileFromPathAsync(path).AsTask().WaitAsync(TimeSpan.FromSeconds(30));
         var clip = await MediaClip.CreateFromFileAsync(file).AsTask().WaitAsync(TimeSpan.FromSeconds(45));
         var encoding = clip.GetVideoEncodingProperties();
-        var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
-        Assert.AreEqual((uint)screen.Width, encoding.Width, "Full-screen recording has the wrong physical-pixel width at 100% recording scale.");
-        Assert.AreEqual((uint)screen.Height, encoding.Height, "Full-screen recording has the wrong physical-pixel height at 100% recording scale.");
+        var encodedSize = ZoomItGeometry.FullScreenRecordingSize(desktop.ScreenSize);
+        Assert.AreEqual((uint)encodedSize.Width, encoding.Width, $"Full-screen recording has the wrong even-aligned width for display {desktop.ScreenSize} at 100% recording scale.");
+        Assert.AreEqual((uint)encodedSize.Height, encoding.Height, $"Full-screen recording has the wrong even-aligned height for display {desktop.ScreenSize} at 100% recording scale.");
         Assert.IsTrue(encoding.FrameRate.Numerator > 0 && encoding.FrameRate.Denominator > 0, "The saved video has no valid frame rate.");
         Assert.IsTrue(clip.OriginalDuration >= TimeSpan.FromSeconds(1), $"The saved recording is too short: {clip.OriginalDuration}.");
         var composition = new MediaComposition();
@@ -433,7 +433,8 @@ public sealed partial class ZoomItTests
         foreach (var fraction in new[] { 0.25, 0.75 })
         {
             var position = TimeSpan.FromTicks((long)(clip.OriginalDuration.Ticks * fraction));
-            using var frame = await ZoomItCaptureHelpers.DecodeVideoFrameAsync(composition, position, screen);
+            using var frame = await ZoomItCaptureHelpers.DecodeVideoFrameAsync(composition, position);
+            Assert.AreEqual(encodedSize, frame.Size, "Decoded frames must retain the native encoded dimensions without rescaling.");
             var framePath = CaptureEvidencePath($"recording-frame-{fraction.ToString("F2", CultureInfo.InvariantCulture)}.png");
             frame.Save(framePath, ImageFormat.Png);
             TestContext.AddResultFile(framePath);
