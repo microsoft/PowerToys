@@ -70,9 +70,8 @@ namespace WorkspacesCsharpLibrary.Models
                         if (IsPackagedApp)
                         {
                             Uri uri = GetAppLogoByPackageFamilyName();
-                            var bitmap = new Bitmap(uri.LocalPath);
-                            var iconHandle = bitmap.GetHicon();
-                            _icon = Icon.FromHandle(iconHandle);
+                            using var bitmap = new Bitmap(uri.LocalPath);
+                            _icon = CreateIconFromBitmap(bitmap);
                         }
                         else if (IsEdge || IsChrome)
                         {
@@ -89,8 +88,10 @@ namespace WorkspacesCsharpLibrary.Models
                                     bitmap = (Bitmap)Image.FromFile(iconFilename);
                                 }
 
-                                var iconHandle = bitmap.GetHicon();
-                                _icon = Icon.FromHandle(iconHandle);
+                                using (bitmap)
+                                {
+                                    _icon = CreateIconFromBitmap(bitmap);
+                                }
                             }
                         }
 
@@ -110,6 +111,28 @@ namespace WorkspacesCsharpLibrary.Models
             }
         }
 
+        /// <summary>
+        /// Creates an <see cref="Icon"/> whose data is independent of <paramref name="bitmap"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Bitmap.GetHicon"/> returns an icon handle the caller is responsible for
+        /// releasing, and <see cref="Icon.FromHandle(IntPtr)"/> does not take ownership of it.
+        /// Cloning the icon and then destroying the handle keeps the returned icon usable for the
+        /// lifetime of this object without leaking one GDI icon object per application.
+        /// </remarks>
+        private static Icon CreateIconFromBitmap(Bitmap bitmap)
+        {
+            IntPtr iconHandle = bitmap.GetHicon();
+            try
+            {
+                return (Icon)Icon.FromHandle(iconHandle).Clone();
+            }
+            finally
+            {
+                _ = NativeMethods.DestroyIcon(iconHandle);
+            }
+        }
+
         private BitmapImage _iconBitmapImage;
 
         public BitmapImage IconBitmapImage
@@ -120,7 +143,7 @@ namespace WorkspacesCsharpLibrary.Models
                 {
                     try
                     {
-                        Bitmap previewBitmap = new Bitmap(32, 32);
+                        using Bitmap previewBitmap = new Bitmap(32, 32);
                         using (Graphics graphics = Graphics.FromImage(previewBitmap))
                         {
                             graphics.SmoothingMode = SmoothingMode.AntiAlias;
