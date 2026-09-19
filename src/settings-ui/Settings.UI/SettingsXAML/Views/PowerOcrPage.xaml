@@ -23,7 +23,11 @@
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
-                    Severity="Informational" />
+                    Severity="Informational">
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton x:Uid="TextExtractor_UseSnippingToolWarning_Link" NavigateUri="https://support.microsoft.com/windows/apps/use-snipping-tool-to-capture-screenshots" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="TextExtractorEnableToggleControlHeaderText"
