@@ -37,10 +37,14 @@
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="LaunchingStateEnum.h" />
+    <ClInclude Include="LaunchDecision.h" />
     <ClInclude Include="LaunchingStatus.h" />
+    <ClInclude Include="LauncherUiMessage.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PendingLaunchApproval.h" />
     <ClInclude Include="PwaHelper.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="SignatureVerification.h" />
     <ClInclude Include="SteamHelper.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="utils.h" />
@@ -59,6 +63,7 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PwaHelper.cpp" />
+    <ClCompile Include="SignatureVerification.cpp" />
     <ClCompile Include="SteamGameHelper.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
