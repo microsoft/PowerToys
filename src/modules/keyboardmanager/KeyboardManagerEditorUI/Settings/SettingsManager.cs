@@ -37,6 +37,19 @@ namespace KeyboardManagerEditorUI.Settings
         /// </summary>
         internal static bool IsNativeServiceAvailable => _mappingService is not null;
 
+        /// <summary>
+        /// Gets the profile the engine is currently applying, or <see langword="null"/> when the native
+        /// service is unavailable (preview mode), which keeps the settings operations profile-agnostic.
+        /// </summary>
+        /// <remarks>
+        /// Read live rather than taken from <see cref="KeyboardMappingService.ConfigurationName"/>: that
+        /// property is captured in the service constructor, so it goes stale as soon as the profile is
+        /// switched while the editor is open (by the picker, the cycle hotkey, or device auto-switch).
+        /// Both come from the same place — "activeConfiguration" in the Keyboard Manager settings.json.
+        /// </remarks>
+        private static string? CurrentProfileName =>
+            _mappingService is null ? null : ProfileManager.GetActiveProfile();
+
         public static EditorSettings EditorSettings { get; set; }
 
         static SettingsManager()
@@ -177,6 +190,97 @@ namespace KeyboardManagerEditorUI.Settings
         {
             int errorCode = exception.HResult & 0xFFFF;
             return errorCode is 32 or 33;
+        }
+
+        /// <summary>
+        /// Brings the editor settings in line with whatever profile is now active — call after
+        /// <see cref="ProfileManager.SetActiveProfile"/>, or after the engine switched profiles on its
+        /// own (device auto-switch, cycle hotkey). Reconciling against a freshly loaded configuration
+        /// tags that profile's mappings and leaves the other profiles' entries inactive, so
+        /// <see cref="IsMappingInActiveProfile"/> filters them out of the list without the settings
+        /// having to be split per profile. No-op when the native service is unavailable (preview mode).
+        /// </summary>
+        public static void ReloadForActiveProfile()
+        {
+            if (_mappingService is null)
+            {
+                return;
+            }
+
+            CorrelateServiceAndEditorMappings();
+        }
+
+        /// <summary>
+        /// Drops <paramref name="profileName"/> from every mapping's profile membership, so deleting a
+        /// profile leaves no dangling references behind. A mapping that belonged to this profile and to
+        /// no other is deleted with it; one that is still named by another profile is kept and stays in
+        /// that profile. Mappings carrying no profile at all are left alone — an untagged mapping
+        /// predates profiles and is treated as belonging everywhere, so a deletion must not adopt it.
+        /// </summary>
+        public static void RemoveProfileMembership(string profileName)
+        {
+            if (string.IsNullOrWhiteSpace(profileName))
+            {
+                return;
+            }
+
+            try
+            {
+                EditorSettings updatedSettings = CloneSettings();
+                bool changed = false;
+                var orphanedIds = new List<string>();
+
+                foreach (KeyValuePair<string, ShortcutSettings> entry in updatedSettings.ShortcutSettingsDictionary)
+                {
+                    if (!RemoveProfile(entry.Value, profileName))
+                    {
+                        continue;
+                    }
+
+                    changed = true;
+                    if (GetProfiles(entry.Value).Count == 0)
+                    {
+                        orphanedIds.Add(entry.Key);
+                    }
+                }
+
+                foreach (string id in orphanedIds)
+                {
+                    ShortcutOperationType operationType = updatedSettings.ShortcutSettingsDictionary[id].Shortcut.OperationType;
+                    updatedSettings.ShortcutSettingsDictionary.Remove(id);
+                    if (updatedSettings.ShortcutsByOperationType.TryGetValue(operationType, out List<string>? operationIds))
+                    {
+                        operationIds.Remove(id);
+                    }
+                }
+
+                foreach (string profile in updatedSettings.ProfileDictionary.Keys
+                    .Where(profile => profile.Equals(profileName, StringComparison.OrdinalIgnoreCase))
+                    .ToList())
+                {
+                    changed |= updatedSettings.ProfileDictionary.Remove(profile);
+                }
+
+                if (!changed)
+                {
+                    return;
+                }
+
+                updatedSettings.ProfileDictionary = BuildProfileIndex(updatedSettings);
+                if (string.Equals(updatedSettings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    updatedSettings.ActiveProfile = string.Empty;
+                }
+
+                if (WriteSettings(updatedSettings))
+                {
+                    EditorSettings = updatedSettings;
+                }
+            }
+            catch (Exception exception)
+            {
+                ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): {exception.Message}");
+            }
         }
 
         private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service)
@@ -386,7 +490,7 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 EditorSettings updatedSettings = CloneSettings();
 
-                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, _mappingService?.ConfigurationName))
+                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, CurrentProfileName))
                 {
                     return false;
                 }
@@ -476,7 +580,7 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
-                if (!TryApplyShortcutKeyMappingRemoval(updatedSettings, guid, _mappingService?.ConfigurationName) ||
+                if (!TryApplyShortcutKeyMappingRemoval(updatedSettings, guid, CurrentProfileName) ||
                     !WriteSettings(updatedSettings))
                 {
                     return false;
@@ -536,7 +640,7 @@ namespace KeyboardManagerEditorUI.Settings
                         updatedSettings,
                         guid,
                         isActive,
-                        _mappingService?.ConfigurationName) ||
+                        CurrentProfileName) ||
                     !WriteSettings(updatedSettings))
                 {
                     return false;
@@ -581,7 +685,7 @@ namespace KeyboardManagerEditorUI.Settings
 
         internal static bool IsMappingInActiveProfile(ShortcutSettings shortcutSettings)
         {
-            string? profileName = _mappingService?.ConfigurationName;
+            string? profileName = CurrentProfileName;
             if (string.IsNullOrWhiteSpace(profileName))
             {
                 profileName = EditorSettings.ActiveProfile;
