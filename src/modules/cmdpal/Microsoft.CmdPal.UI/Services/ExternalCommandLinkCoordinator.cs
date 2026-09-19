@@ -171,7 +171,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         }
 
         // Re-resolve so authorization is checked against the current command and provider.
-        await using var refreshedResolution = await ResolveCommandAsync(executeCommand);
+        using var refreshedResolution = await ResolveCommandAsync(executeCommand);
         if (_isDisposed || !_settingsService.Settings.EnableExternalCommandLinks)
         {
             return;
@@ -214,7 +214,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         var resolutionTask = ResolveCommandAsync(executeCommand, resolutionCancellation.Token);
         if (await Task.WhenAny(resolutionTask, Task.Delay(LoadingDelay, _lifetimeToken)) == resolutionTask)
         {
-            await using var resolution = await resolutionTask;
+            using var resolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(route, executeCommand, resolution, windowWasSummoned: false);
         }
 
@@ -234,7 +234,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         if (resolutionTask.IsCompleted)
         {
             await dialogSession.DisposeAsync();
-            await using var completedResolution = await resolutionTask;
+            using var completedResolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(route, executeCommand, completedResolution, windowWasSummoned: true);
         }
 
@@ -247,7 +247,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
                 return null;
             }
 
-            await using var resolution = await resolutionTask;
+            using var resolution = await resolutionTask;
             return await AuthorizeResolvedCommandAsync(
                 route,
                 executeCommand,
@@ -352,7 +352,7 @@ internal sealed partial class ExternalCommandLinkCoordinator : IDisposable
         Task<CommandResolution?> resolutionTask)
     {
         cancellation.Cancel();
-        await using var resolution = await resolutionTask;
+        using var resolution = await resolutionTask;
     }
 
     private static bool CanExecute(CommandViewModel command, ListPageLaunchOptions? options)

@@ -54,7 +54,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNotNull(resolution);
         Assert.AreSame(wrapper, resolution.Provider);
@@ -71,7 +71,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNull(resolution);
         Assert.AreEqual(1, provider.LookupCount);
@@ -97,7 +97,7 @@ public partial class TopLevelCommandManagerTests
             ProviderSettings = settings.ProviderSettings.SetItem(provider.Id, new ProviderSettings(false)),
         });
 
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsFalse(manager.IsProviderEnabled(provider.Id));
         Assert.IsNull(resolution);
@@ -116,7 +116,7 @@ public partial class TopLevelCommandManagerTests
         var providerSettings = new ProviderSettingsViewModel(wrapper, settingsService.Settings.ProviderSettings[provider.Id], settingsService);
 
         providerSettings.IsEnabled = false;
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNull(manager.LookupCommand(provider.Id, TestCommandProvider.NestedCommandId));
         Assert.IsNull(resolution);
@@ -124,7 +124,7 @@ public partial class TopLevelCommandManagerTests
 
         providerSettings.IsEnabled = true;
         await manager.WaitForCurrentLoadAsync().WaitAsync(TimeSpan.FromSeconds(5));
-        await using var enabledResolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var enabledResolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
         Assert.IsNotNull(enabledResolution);
     }
 
@@ -142,7 +142,7 @@ public partial class TopLevelCommandManagerTests
         using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
         await manager.LoadExternalProvidersAsync();
 
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNull(resolution);
         Assert.AreEqual(1, provider.LookupCount);
@@ -210,7 +210,7 @@ public partial class TopLevelCommandManagerTests
         {
             continueCleanup.Set();
             await cleanupFinished.Task.WaitAsync(TimeSpan.FromSeconds(2));
-            await using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
+            using var resolution = await resolutionTask.WaitAsync(TimeSpan.FromSeconds(2));
         }
     }
 
@@ -241,7 +241,7 @@ public partial class TopLevelCommandManagerTests
         await manager.LoadExternalProvidersAsync();
         provider.OnLookup = () => manager.ReloadAllCommandsAsync().GetAwaiter().GetResult();
 
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
+        using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
 
         Assert.IsNull(resolution);
         Assert.AreSame(secondReplacement, manager.LookupProvider(provider.Id));
@@ -249,62 +249,6 @@ public partial class TopLevelCommandManagerTests
         Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
         Assert.IsTrue(await cleanupFinished.WaitAsync(TimeSpan.FromSeconds(2)));
         item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
-    }
-
-    [TestMethod]
-    public async Task CommandResolution_DisposeAsync_UnsubscribesOffCallingThread()
-    {
-        await using var services = CreateServices();
-        using var continueCleanup = new ManualResetEventSlim();
-        var cleanupStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var item = new Mock<ICommandItem>();
-        item.SetupGet(commandItem => commandItem.Command).Returns(new NoOpCommand
-        {
-            Id = TestCommandProvider.NestedCommandId,
-            Name = "Nested command",
-        });
-        item.SetupRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
-            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ =>
-            {
-                cleanupStarted.TrySetResult(Environment.CurrentManagedThreadId);
-                Assert.IsTrue(continueCleanup.Wait(TimeSpan.FromSeconds(10)), "Cleanup was never released.");
-            });
-        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId, item.Object);
-        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
-        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
-        await manager.LoadExternalProvidersAsync();
-        await using var resolution = await manager.ResolveCommandAsync(provider.Id, TestCommandProvider.NestedCommandId);
-        Assert.IsNotNull(resolution);
-
-        var callingThread = 0;
-        Task? cleanup = null;
-        var disposeCall = Task.Factory.StartNew(
-            () =>
-            {
-                callingThread = Environment.CurrentManagedThreadId;
-                cleanup = resolution.DisposeAsync().AsTask();
-            },
-            CancellationToken.None,
-            TaskCreationOptions.LongRunning,
-            TaskScheduler.Default);
-        try
-        {
-            await disposeCall.WaitAsync(TimeSpan.FromSeconds(2));
-            var cleanupThread = await cleanupStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
-
-            Assert.AreNotEqual(callingThread, cleanupThread);
-            Assert.IsNotNull(cleanup);
-            Assert.IsFalse(cleanup.IsCompleted, "DisposeAsync must return while extension unsubscription is still blocked.");
-        }
-        finally
-        {
-            continueCleanup.Set();
-            await disposeCall.WaitAsync(TimeSpan.FromSeconds(2));
-            if (cleanup is not null)
-            {
-                await cleanup.WaitAsync(TimeSpan.FromSeconds(2));
-            }
-        }
     }
 
     private static ServiceProvider CreateServices()

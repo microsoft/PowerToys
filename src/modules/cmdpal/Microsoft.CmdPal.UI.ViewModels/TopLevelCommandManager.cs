@@ -791,7 +791,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 {
                     if (command is not null)
                     {
-                        _ = Task.Run(command.Cleanup, CancellationToken.None);
+                        _ = CleanupThreadPool.Queue(command.Cleanup, $"Stale command '{commandId}' from provider '{providerId}'");
                     }
 
                     if (!isProviderEnabled)
@@ -808,11 +808,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 // Release a result that arrives after the caller stops waiting.
                 _ = resolveCommandFromProviderTask.ContinueWith(
-                    static task =>
+                    task =>
                     {
                         if (task.Status == TaskStatus.RanToCompletion)
                         {
-                            task.Result?.Cleanup();
+                            if (task.Result is { } lateCommand)
+                            {
+                                _ = CleanupThreadPool.Queue(lateCommand.Cleanup, $"Late command '{commandId}' from provider '{providerId}'");
+                            }
                         }
                         else if (task.IsFaulted)
                         {
