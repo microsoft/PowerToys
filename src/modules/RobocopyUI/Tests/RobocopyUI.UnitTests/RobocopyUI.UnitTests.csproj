@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\RobocopyUI.UI\Helpers\SimpleCopyTask.cs" Link="Shared\SimpleCopyTask.cs" />
+    <Compile Include="..\..\RobocopyUI.UI\Helpers\RobocopyExecutionHelper.cs" Link="Shared\RobocopyExecutionHelper.cs" />
     <Compile Include="..\..\RobocopyUI.UI\Models\RobocopyJob.cs" Link="Shared\RobocopyJob.cs" />
     <Compile Include="..\..\RobocopyUI.UI\Models\SimpleCopyOptions.cs" Link="Shared\SimpleCopyOptions.cs" />
     <Compile Include="..\..\RobocopyUI.UI\Models\SimpleCopySnapshot.cs" Link="Shared\SimpleCopySnapshot.cs" />

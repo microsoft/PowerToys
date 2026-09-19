@@ -620,7 +620,7 @@ public sealed partial class HomePage : Page
         UpdateCommandPreview();
     }
 
-    private void RunButton_Click(object sender, RoutedEventArgs e)
+    private void RunButton_Click(SplitButton sender, SplitButtonClickEventArgs e)
     {
         RunRobocopy(job.RenderArguments());
     }
@@ -648,48 +648,113 @@ public sealed partial class HomePage : Page
             StartInfo = startInfo,
             EnableRaisingEvents = true,
         };
+        var completionLock = new object();
+        var processExited = false;
+        var outputCompleted = false;
+        var errorCompleted = false;
+        var completionReported = false;
 
-        process.OutputDataReceived += (s, args) =>
+        void TryUpdateCompletedStatus()
         {
-            if (args.Data != null)
+            lock (completionLock)
             {
-                DispatcherQueue.TryEnqueue(() =>
+                if (!processExited || !outputCompleted || !errorCompleted || completionReported)
                 {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
+                completionReported = true;
             }
-        };
-        process.ErrorDataReceived += (s, args) =>
-        {
-            if (args.Data != null)
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
 
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
-            }
-        };
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        process.Exited += (s, args) =>
-        {
             DispatcherQueue.TryEnqueue(() =>
             {
                 StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-                OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_" + (process.ExitCode <= 8 ? process.ExitCode : "Fail"));
+                var statusKey = RobocopyExecutionHelper.GetStatusResourceKey(process.ExitCode);
+                var statusText = ResourceLoaderInstance.ResourceLoader.GetString(statusKey);
+                OutputStatusText.Text = string.IsNullOrWhiteSpace(statusText)
+                    ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
+                    : statusText;
+            });
+        }
+
+        process.OutputDataReceived += (s, args) =>
+        {
+            if (args.Data == null)
+            {
+                lock (completionLock)
+                {
+                    outputCompleted = true;
+                }
+
+                TryUpdateCompletedStatus();
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
             });
         };
+        process.ErrorDataReceived += (s, args) =>
+        {
+            if (args.Data == null)
+            {
+                lock (completionLock)
+                {
+                    errorCompleted = true;
+                }
+
+                TryUpdateCompletedStatus();
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
+            });
+        };
+        process.Exited += (s, args) =>
+        {
+            lock (completionLock)
+            {
+                processExited = true;
+            }
+
+            TryUpdateCompletedStatus();
+        };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+    }
+
+    private void RunExternalButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "robocopy.exe",
+                Arguments = job.RenderArguments(),
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Normal,
+            };
+
+            Process.Start(startInfo);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to start robocopy: {ex}");
+        }
     }
 }
