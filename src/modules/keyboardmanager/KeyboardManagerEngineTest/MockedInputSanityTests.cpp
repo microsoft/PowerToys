@@ -53,5 +53,87 @@ namespace RemappingLogicTests
             // A key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
+
+        TEST_METHOD (MockedInput_ShouldReportAndDeliverExactInjectedPrefix)
+        {
+            mockedInputHandler.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>&) {
+                return static_cast<size_t>(1);
+            });
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'B' } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::AreEqual(
+                static_cast<int>(KeyboardManagerInput::SendVirtualInputStatus::Partial),
+                static_cast<int>(result.status));
+            Assert::AreEqual(static_cast<UINT>(1), result.injectedEventCount);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('B'));
+        }
+
+        TEST_METHOD (MockedInput_ShouldTranslateScanCodeInputForHook)
+        {
+            KBDLLHOOKSTRUCT observed{};
+            mockedInputHandler.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam)
+                {
+                    observed = *event->lParam;
+                }
+                return 0;
+            });
+            const std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wScan = 0x1E, .dwFlags = KEYEVENTF_SCANCODE } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::IsTrue(result.IsComplete());
+            Assert::AreEqual(static_cast<DWORD>('A'), observed.vkCode);
+            Assert::AreEqual(static_cast<DWORD>(0x1E), observed.scanCode);
+            Assert::IsFalse((observed.flags & LLKHF_EXTENDED) != 0);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
+        }
+
+        TEST_METHOD (MockedInput_ShouldExposeUnicodeInputAsPacketToHook)
+        {
+            KBDLLHOOKSTRUCT observed{};
+            mockedInputHandler.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                if (event && event->lParam)
+                {
+                    observed = *event->lParam;
+                }
+                return 0;
+            });
+            const std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wScan = static_cast<WORD>(L'x'), .dwFlags = KEYEVENTF_UNICODE } },
+            };
+
+            const auto result = mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::IsTrue(result.IsComplete());
+            Assert::AreEqual(static_cast<DWORD>(VK_PACKET), observed.vkCode);
+            Assert::AreEqual(static_cast<DWORD>(L'x'), observed.scanCode);
+            Assert::AreEqual(std::wstring(L"x"), mockedInputHandler.GetInjectedUnicodeText());
+        }
+
+        TEST_METHOD (MockedInput_ShouldReportNoneWhenNoEventsAreInjected)
+        {
+            mockedInputHandler.SetSendVirtualInputInjectedCount([](const std::vector<INPUT>&) {
+                return static_cast<size_t>(0);
+            });
+
+            const auto result = mockedInputHandler.SendVirtualInput({
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            });
+
+            Assert::AreEqual(
+                static_cast<int>(KeyboardManagerInput::SendVirtualInputStatus::None),
+                static_cast<int>(result.status));
+            Assert::AreEqual(static_cast<UINT>(0), result.injectedEventCount);
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('A'));
+        }
     };
 }

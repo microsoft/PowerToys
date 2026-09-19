@@ -76,6 +76,40 @@ namespace Helpers
         // See EncodeKeyNumpadOrigin.
         return 1ull << 31;
     }
+
+    std::optional<size_t> GetPhysicalKeyEventIndex(const LowlevelKeyboardEvent* data) noexcept
+    {
+        if (!data || !data->lParam)
+        {
+            return std::nullopt;
+        }
+
+        const DWORD key = ClearKeyNumpadOrigin(data->lParam->vkCode);
+        if (key > 0xFF)
+        {
+            return std::nullopt;
+        }
+
+        constexpr size_t keyCount = 256;
+        DWORD scanCode = data->lParam->scanCode & 0xFF;
+        if (scanCode == 0)
+        {
+            scanCode = MapVirtualKeyW(key, MAPVK_VK_TO_VSC) & 0xFF;
+        }
+        if (scanCode != 0)
+        {
+            bool extended = (data->lParam->flags & LLKHF_EXTENDED) != 0;
+            if (data->lParam->scanCode == 0 && IsNumpadOriginated(data->lParam->vkCode))
+            {
+                extended = key == VK_RETURN || key == VK_DIVIDE;
+            }
+            return static_cast<size_t>(scanCode) + (extended ? keyCount : 0);
+        }
+
+        return static_cast<size_t>(key) +
+               (IsNumpadOriginated(data->lParam->vkCode) ? keyCount : 0);
+    }
+
     // Function to check if the key is a modifier key
     bool IsModifierKey(DWORD key)
     {
@@ -193,6 +227,29 @@ namespace Helpers
         // MapVirtualKey returns 0 if the key code does not correspond to a physical key (such as unassigned/reserved keys). More details at https://github.com/microsoft/PowerToys/pull/7143#issue-498877747
         keyEvent.ki.wScan = static_cast<WORD>(MapVirtualKey(keyCode, MAPVK_VK_TO_VSC));
         keyEventArray.push_back(keyEvent);
+    }
+
+    void SetTextInputUnit(std::vector<INPUT>& inputArray, const wchar_t value, const ULONG_PTR extraInfo)
+    {
+        if (value == L'\r' || value == L'\n')
+        {
+            SetKeyEvent(inputArray, INPUT_KEYBOARD, VK_SHIFT, 0, extraInfo);
+            SetKeyEvent(inputArray, INPUT_KEYBOARD, VK_RETURN, 0, extraInfo);
+            SetKeyEvent(inputArray, INPUT_KEYBOARD, VK_RETURN, KEYEVENTF_KEYUP, extraInfo);
+            SetKeyEvent(inputArray, INPUT_KEYBOARD, VK_SHIFT, KEYEVENTF_KEYUP, extraInfo);
+            return;
+        }
+
+        INPUT down{};
+        down.type = INPUT_KEYBOARD;
+        down.ki.dwFlags = KEYEVENTF_UNICODE;
+        down.ki.dwExtraInfo = extraInfo;
+        down.ki.wScan = value;
+        inputArray.push_back(down);
+
+        INPUT up = down;
+        up.ki.dwFlags |= KEYEVENTF_KEYUP;
+        inputArray.push_back(up);
     }
 
     // Function to set the dummy key events used for remapping shortcuts, required to ensure releasing a modifier doesn't trigger another action (For example, Win->Start Menu or Alt->Menu bar)
@@ -316,6 +373,8 @@ namespace Helpers
     // when large batches of KEYEVENTF_UNICODE events are sent at once.
     void SendTextInput(const std::wstring& text, KeyboardManagerInput::InputInterface& ii)
     {
+        std::vector<INPUT> inputUnit;
+        inputUnit.reserve(4);
         for (size_t i = 0; i < text.size(); ++i)
         {
             wchar_t c = text[i];
@@ -326,56 +385,9 @@ namespace Helpers
                 ++i;
             }
 
-            if (c == L'\r' || c == L'\n')
-            {
-                // Send Shift+Enter instead of bare Enter so that chat apps
-                // (Teams, Slack, Discord, etc.) insert a new line rather than
-                // submitting the message. In plain text editors both behave
-                // the same.
-                INPUT returnInputs[4]{};
-
-                // Shift down
-                returnInputs[0].type = INPUT_KEYBOARD;
-                returnInputs[0].ki.wVk = VK_SHIFT;
-                returnInputs[0].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
-                returnInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-                // Return down
-                returnInputs[1].type = INPUT_KEYBOARD;
-                returnInputs[1].ki.wVk = VK_RETURN;
-                returnInputs[1].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
-                returnInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-                // Return up
-                returnInputs[2].type = INPUT_KEYBOARD;
-                returnInputs[2].ki.wVk = VK_RETURN;
-                returnInputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-                returnInputs[2].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
-                returnInputs[2].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-                // Shift up
-                returnInputs[3].type = INPUT_KEYBOARD;
-                returnInputs[3].ki.wVk = VK_SHIFT;
-                returnInputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-                returnInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
-                returnInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-                ii.SendVirtualInput(std::vector<INPUT>(returnInputs, returnInputs + ARRAYSIZE(returnInputs)));
-                continue;
-            }
-
-            INPUT charInputs[2]{};
-            charInputs[0].type = INPUT_KEYBOARD;
-            charInputs[0].ki.dwFlags = KEYEVENTF_UNICODE;
-            charInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-            charInputs[0].ki.wScan = c;
-
-            charInputs[1].type = INPUT_KEYBOARD;
-            charInputs[1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
-            charInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-            charInputs[1].ki.wScan = c;
-
-            ii.SendVirtualInput(std::vector<INPUT>(charInputs, charInputs + ARRAYSIZE(charInputs)));
+            inputUnit.clear();
+            SetTextInputUnit(inputUnit, c, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            ii.SendVirtualInput(inputUnit);
         }
     }
 
