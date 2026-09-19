@@ -605,4 +605,7 @@
   <data name="winget_operations_recent_activity" xml:space="preserve">
     <value>Recent WinGet activity</value>
   </data>
+  <data name="Language_Default" xml:space="preserve">
+    <value>Windows display language</value>
+  </data>
 </root>

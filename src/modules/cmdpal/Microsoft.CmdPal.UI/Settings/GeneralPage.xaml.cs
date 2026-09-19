@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Globalization;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -11,7 +12,9 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.ApplicationModel.Core;
 using Windows.Win32.UI.Shell;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -37,7 +40,8 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
-        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService);
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService);
 
         _notificationStateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _notificationStateTimer.Tick += NotificationStateTimer_Tick;
@@ -72,11 +76,41 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         }
     }
 
+    private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RestartAppAsync();
+    }
+
+    private async Task RestartAppAsync()
+    {
+        viewModel!.LanguageRestartFailed = false;
+        try
+        {
+            var reason = await ((MainWindow)App.Current.AppWindow!).RestartAsync();
+            if (reason == AppRestartFailureReason.RestartPending)
+            {
+                return;
+            }
+
+            Logger.LogWarning($"Failed to restart Command Palette: {reason}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to restart Command Palette", ex);
+        }
+
+        viewModel.LanguageRestartFailed = true;
+    }
+
+    private static string LanguageRestartMessage(bool failed) => failed ? RS_.GetString("Settings_GeneralPage_LanguageRestartFailed") : string.Empty;
+
+    private static InfoBarSeverity LanguageRestartSeverity(bool failed) => failed ? InfoBarSeverity.Error : InfoBarSeverity.Warning;
+
     public string ApplicationVersion
     {
         get
         {
-            var versionNo = ResourceLoaderInstance.GetString("Settings_GeneralPage_VersionNo");
+            var versionNo = RS_.GetString("Settings_GeneralPage_VersionNo");
             var version = _appInfoService.AppVersion;
             return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
