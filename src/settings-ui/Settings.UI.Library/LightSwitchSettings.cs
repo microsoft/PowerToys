@@ -66,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
                     DarkModeProfileId = new IntProperty(Properties.DarkModeProfileId.Value),
                     LightModeProfileId = new IntProperty(Properties.LightModeProfileId.Value),
+                    BrightnessThreshold = new IntProperty(Properties.BrightnessThreshold.Value),
                 },
             };
         }

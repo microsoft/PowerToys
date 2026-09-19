@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <logger.h>
+#include <algorithm>
 #include <LightSwitchService/trace.h>
 
 using namespace std;
@@ -252,6 +253,20 @@ void LightSwitchSettings::LoadSettings()
         if (themeTargetChanged)
         {
             Trace::LightSwitch::ThemeTargetChanged(m_settings.changeApps, m_settings.changeSystem);
+        }
+
+        // BrightnessThreshold
+        if (const auto jsonVal = values.get_int_value(L"brightnessThreshold"))
+        {
+            int val = *jsonVal;
+            if (val < 0) val = 0;
+            if (val > 100) val = 100;
+
+            if (m_settings.brightnessThreshold != val)
+            {
+                m_settings.brightnessThreshold = val;
+                NotifyObservers(SettingId::BrightnessThreshold);
+            }
         }
     }
     catch (...)
