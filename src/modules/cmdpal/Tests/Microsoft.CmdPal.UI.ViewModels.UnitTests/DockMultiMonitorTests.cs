@@ -752,7 +752,7 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
-    public void Reconcile_DisconnectThenReconnect_PreservesCustomizations()
+    public void Reconcile_DisconnectThenReconnectWithNewGdiName_PreservesCustomizations()
     {
         // Step 1: Both monitors connected with customized secondary
         var customBands = ImmutableList.Create(new DockBandSettings { ProviderId = "custom", CommandId = "cmd1" });
@@ -778,14 +778,18 @@ public class DockMultiMonitorTests
 
         Assert.AreEqual(2, afterDisconnect.Count, "Disconnected monitor config should be retained");
 
-        // Step 3: Reconnect secondary monitor
-        var bothMonitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+        // Step 3: Reconnect the same secondary monitor under a new GDI name.
+        var reconnectedSecondary = SecondaryMonitor with { DeviceId = @"\\.\DISPLAY3" };
+        var bothMonitors = new List<MonitorInfo> { PrimaryMonitor, reconnectedSecondary };
         var afterReconnect = MonitorConfigReconciler.Reconcile(afterDisconnect, bothMonitors, now);
+
+        Assert.AreEqual(2, afterReconnect.Count, "A new GDI name should not create another monitor config");
 
         // Verify customizations survived the round-trip
         var secondaryConfig = afterReconnect.Find(c =>
             string.Equals(c.MonitorDeviceId, SecondaryMonitor.StableId, StringComparison.OrdinalIgnoreCase));
         Assert.IsNotNull(secondaryConfig, "Secondary config should be found after reconnection");
+        Assert.IsTrue(secondaryConfig.Enabled, "The Dock should remain enabled after the GDI name changes");
         Assert.IsTrue(secondaryConfig.IsCustomized, "Customization flag should survive");
         Assert.AreEqual(DockSide.Left, secondaryConfig.Side, "Side override should survive");
         Assert.AreEqual(1, secondaryConfig.StartBands?.Count ?? 0, "Custom start bands should survive");
