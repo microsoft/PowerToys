@@ -131,7 +131,7 @@
             </Button>
         </Grid>
 
-        <SelectorBar x:Name="AdvancedSelectorBar" SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="2" Visibility="Collapsed">
+        <SelectorBar x:Name="AdvancedSelectorBar" SelectionChanged="SelectorBar_SelectionChanged" Grid.Row="3" Visibility="Collapsed">
             <SelectorBar.Resources>
                 <x:Double x:Key="SelectorBarItemPillWidth">18</x:Double>
             </SelectorBar.Resources>
@@ -155,14 +155,9 @@
                     <FontIcon Glyph="&#xE713;" />
                 </SelectorBarItem.Icon>
             </SelectorBarItem>
-            <!--<SelectorBarItem x:Name="OutputSelectorBarItem" x:Uid="OutputSelectorBarLabel" Tag="Output" IsEnabled="False">
-                <SelectorBarItem.Icon>
-                    <FontIcon Glyph="&#xE768;" />
-                </SelectorBarItem.Icon>
-            </SelectorBarItem>-->
         </SelectorBar>
 
-        <ScrollViewer x:Name="SimpleContent" Grid.Row="3" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="SimpleContent" Grid.Row="4" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="12,0" Spacing="12">
                 <RadioButtons
                     x:Name="SimpleJobRadioButtons"
@@ -320,45 +315,47 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Grid x:Name="SelectorPanels" Margin="0,12,0,0" Grid.Row="3" Visibility="Collapsed">
-            <Grid x:Name="OptionsContent" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                    </ListView.GroupStyle>
-                </ListView>
-                <ListView x:Name="OptionsListViewRight"  ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                    </ListView.GroupStyle>
-                </ListView>
+        <ScrollViewer x:Name="SelectorPanels" Grid.Row="4">
+            <Grid Margin="0,12,0,0">
+                <Grid x:Name="OptionsContent" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ListView x:Name="OptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                    <ListView x:Name="OptionsListViewRight"  ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="1" >
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                </Grid>
+                <Grid x:Name="FiltersContent" Visibility="Collapsed">
+                    <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                </Grid>
+                <Grid x:Name="LoggingContent" Visibility="Collapsed">
+                    <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                </Grid>
+                <Grid x:Name="AdvancedContent" Visibility="Collapsed">
+                    <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
+                        <ListView.GroupStyle>
+                            <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
+                        </ListView.GroupStyle>
+                    </ListView>
+                </Grid>
             </Grid>
-            <Grid x:Name="FiltersContent" Visibility="Collapsed">
-                <ListView x:Name="FilterOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                    </ListView.GroupStyle>
-                </ListView>
-            </Grid>
-            <Grid x:Name="LoggingContent" Visibility="Collapsed">
-                <ListView x:Name="LoggingOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                    </ListView.GroupStyle>
-                </ListView>
-            </Grid>
-            <Grid x:Name="AdvancedContent" Visibility="Collapsed">
-                <ListView x:Name="AdvancedOptionsListView" ItemTemplate="{StaticResource OptionDataTemplate}" SelectionMode="None" IsItemClickEnabled="False">
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource OptionGroupStyleHeaderTemplate}"/>
-                    </ListView.GroupStyle>
-                </ListView>
-            </Grid>
-        </Grid>
+        </ScrollViewer>
 
         <Expander x:Name="CommandOutputExpander" IsEnabled="False" Margin="12" Grid.Row="5" HorizontalAlignment="Stretch">
             <Expander.Header>
