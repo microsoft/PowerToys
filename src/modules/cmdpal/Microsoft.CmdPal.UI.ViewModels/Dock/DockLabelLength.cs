@@ -6,10 +6,8 @@ using System.Globalization;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public readonly record struct DockLabelLength(double Value, bool InCharacters)
+public readonly record struct DockLabelLength(double Value, bool InCharacters, string? Sample = null)
 {
-    private const double SquirrelHairsPerCharacter = 100;
-
     internal static DockLabelLength? Parse(object? value)
     {
         if (value is double dips && IsValid(dips))
@@ -22,27 +20,24 @@ public readonly record struct DockLabelLength(double Value, bool InCharacters)
             return null;
         }
 
-        var inSquirrelHairs = text.EndsWith("sqh", StringComparison.Ordinal);
-        if (!inSquirrelHairs && !text.EndsWith("ch", StringComparison.Ordinal))
+        if (text.StartsWith("text:", StringComparison.Ordinal))
+        {
+            return new(0, InCharacters: false, Sample: text[5..]);
+        }
+
+        if (!text.EndsWith("ch", StringComparison.Ordinal) ||
+            !double.TryParse(text.AsSpan(0, text.Length - 2), NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out var characters))
         {
             return null;
         }
 
-        var suffixLength = inSquirrelHairs ? 3 : 2;
-        if (!double.TryParse(text.AsSpan(0, text.Length - suffixLength), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var amount))
-        {
-            return null;
-        }
-
-        // Normalize squirrel hair widths to ch so both units follow the same font measurement and text scaling.
-        var characters = inSquirrelHairs ? amount / SquirrelHairsPerCharacter : amount;
         return IsValid(characters) ? new(characters, InCharacters: true) : null;
     }
 
-    internal double? Resolve(double characterWidth)
+    internal double? Resolve(double characterWidth, double? sampleWidth = null)
     {
-        var width = InCharacters ? Value * characterWidth : Value;
-        return IsValid(width) ? width : null;
+        var width = Sample is not null ? sampleWidth : InCharacters ? Value * characterWidth : Value;
+        return width.HasValue && IsValid(width.Value) ? width : null;
     }
 
     // XAML layout uses single-precision sizes internally, even though its public properties are doubles.

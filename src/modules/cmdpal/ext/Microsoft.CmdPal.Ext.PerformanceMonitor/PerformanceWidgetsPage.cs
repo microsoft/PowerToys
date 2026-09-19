@@ -224,7 +224,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _cpuItem,
-                    PerformanceMonitorDockItemPresentation.CpuLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_memoryItem is not null)
@@ -232,7 +232,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _memoryItem,
-                    PerformanceMonitorDockItemPresentation.MemoryLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_networkItem is not null)
@@ -240,7 +240,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _networkItem,
-                    PerformanceMonitorDockItemPresentation.NetworkUsageLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_diskItem is not null)
@@ -249,7 +249,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _diskItem.Icon = Icons.HardDriveIcon;
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _diskItem,
-                    PerformanceMonitorDockItemPresentation.DiskActiveTimeLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
 
             if (_gpuItem is not null)
@@ -257,7 +257,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _gpuItem,
-                    PerformanceMonitorDockItemPresentation.GpuLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth,
+                    PerformanceMonitorDockItemPresentation.GpuSubtitleWidth);
             }
 
             if (_batteryItem is not null)
@@ -265,7 +266,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
                 PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
                     _batteryItem,
-                    PerformanceMonitorDockItemPresentation.BatteryLabelWidth);
+                    PerformanceMonitorDockItemPresentation.PercentageTitleWidth);
             }
         }
     }

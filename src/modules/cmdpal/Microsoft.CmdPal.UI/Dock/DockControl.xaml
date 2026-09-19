@@ -40,6 +40,8 @@
                                 KeyDown="BandItem_KeyDown"
                                 LabelWidthConstraints="{x:Bind LabelWidthConstraints, Mode=OneWay}"
                                 RightTapped="BandItem_RightTapped"
+                                ShowSubtitle="{x:Bind ShowSubtitle, Mode=OneWay}"
+                                ShowTitle="{x:Bind ShowTitle, Mode=OneWay}"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"
                                 Tapped="BandItem_Tapped"
