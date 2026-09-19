@@ -75,94 +75,7 @@ public partial class ListHelpers
     public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents)
         where T : class
     {
-        // Materialize once to avoid re-enumeration
-        var newList = newContents as IList<T> ?? newContents.ToList();
-        var numberOfNew = newList.Count;
-
-        // Detect if we can use Move() for better ObservableCollection performance
-        var observableCollection = original as ObservableCollection<T>;
-
-        // Short circuit - new contents should just be empty
-        if (numberOfNew == 0)
-        {
-            if (observableCollection is not null)
-            {
-                // Clear() is observable collection causes a reset notification, which causes
-                // the ListView to discard all containers and recreate them, which is expensive and
-                // causes ListView to flash.
-                while (observableCollection.Count > 0)
-                {
-                    observableCollection.RemoveAt(observableCollection.Count - 1);
-                }
-            }
-            else
-            {
-                original.Clear();
-            }
-
-            return;
-        }
-
-        // Simple forward-scan merge. No HashSet needed because we don't track
-        // removed items — the icon-bug guard is unnecessary, and items removed
-        // mid-merge that appear later in newList will simply be re-inserted.
-        var i = 0;
-        for (var newIndex = 0; newIndex < numberOfNew; newIndex++)
-        {
-            var newItem = newList[newIndex];
-
-            if (i >= original.Count)
-            {
-                break;
-            }
-
-            // Search for this item in the remaining portion of original
-            var foundIndex = -1;
-            for (var j = i; j < original.Count; j++)
-            {
-                if (original[j]?.Equals(newItem) ?? false)
-                {
-                    foundIndex = j;
-                    break;
-                }
-            }
-
-            if (foundIndex >= 0)
-            {
-                // Remove all items between i and foundIndex
-                for (var k = foundIndex - 1; k >= i; k--)
-                {
-                    original.RemoveAt(k);
-                    foundIndex--;
-                }
-
-                // If the found item isn't at position i yet, move it there
-                if (foundIndex > i)
-                {
-                    MoveItem(original, observableCollection, foundIndex, i);
-                }
-            }
-            else
-            {
-                // Not found - insert new item at position i
-                original.Insert(i, newItem);
-            }
-
-            i++;
-        }
-
-        // Remove any extra trailing items from the destination
-        while (original.Count > numberOfNew)
-        {
-            original.RemoveAt(original.Count - 1);
-        }
-
-        // Add any extra trailing items from the source
-        while (i < numberOfNew)
-        {
-            original.Add(newList[i]);
-            i++;
-        }
+        InPlaceUpdateListCore(original, newContents, null);
     }
 
     /// <summary>
@@ -183,25 +96,58 @@ public partial class ListHelpers
         where T : class
     {
         removedItems = [];
+        InPlaceUpdateListCore(original, newContents, removedItems);
+    }
 
+    private static void InPlaceUpdateListCore<T>(IList<T> original, IEnumerable<T> newContents, List<T>? removedItems)
+        where T : class
+    {
         // Materialize once to avoid re-enumeration
         var newList = newContents as IList<T> ?? newContents.ToList();
         var numberOfNew = newList.Count;
+        var observableCollection = original as ObservableCollection<T>;
 
-        // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
         {
-            while (original.Count > 0)
+            if (observableCollection is null && removedItems is null)
             {
-                removedItems.Add(original[^1]);
-                original.RemoveAt(original.Count - 1);
+                original.Clear();
+            }
+            else
+            {
+                while (original.Count > 0)
+                {
+                    removedItems?.Add(original[^1]);
+                    original.RemoveAt(original.Count - 1);
+                }
             }
 
             return;
         }
 
-        // Detect if we can use Move() for better ObservableCollection performance
-        var observableCollection = original as ObservableCollection<T>;
+        // Unchanged lists and prefix-only updates don't need a membership set.
+        var sharedLength = Math.Min(original.Count, numberOfNew);
+        var matchingPrefix = 0;
+        while (matchingPrefix < sharedLength && (original[matchingPrefix]?.Equals(newList[matchingPrefix]) ?? false))
+        {
+            matchingPrefix++;
+        }
+
+        if (matchingPrefix == sharedLength)
+        {
+            while (original.Count > numberOfNew)
+            {
+                removedItems?.Add(original[^1]);
+                original.RemoveAt(original.Count - 1);
+            }
+
+            for (var i = sharedLength; i < numberOfNew; i++)
+            {
+                original.Add(newList[i]);
+            }
+
+            return;
+        }
 
         // Build a set of new items for O(1) existence checks.
         var newSet = new HashSet<T>(numberOfNew);
@@ -228,13 +174,13 @@ public partial class ListHelpers
             var minLen = Math.Min(original.Count, numberOfNew);
             for (var i = 0; i < minLen; i++)
             {
-                removedItems.Add(original[i]);
-                original[i] = newList[i]; // Replace — single notification, container reused
+                removedItems?.Add(original[i]);
+                original[i] = newList[i];
             }
 
             while (original.Count > numberOfNew)
             {
-                removedItems.Add(original[^1]);
+                removedItems?.Add(original[^1]);
                 original.RemoveAt(original.Count - 1);
             }
 
