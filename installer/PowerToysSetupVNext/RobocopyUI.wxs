@@ -3,7 +3,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define RobocopyUIAssetsFiles=?>
-  <?define RobocopyUIAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\RegistryPreview?>
+  <?define RobocopyUIAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\RobocopyUI?>
 
   <Fragment>
     <!-- Registry Preview -->
@@ -16,7 +16,7 @@
     </DirectoryRef>
 
     <ComponentGroup Id="RobocopyUIComponentGroup">
-      <Component Id="RobocopyUIPreviewFolder" Guid="D3DBC395-FAC5-44B1-BE44-3FE2B6E0F391" Directory="RobocopyUIAssetsInstallFolder">
+      <Component Id="RobocopyUIPreviewFolder" Guid="80A490F1-442E-4B57-8F32-C520E147B868" Directory="RobocopyUIAssetsInstallFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveRobocopyUIFolder" Value="" KeyPath="yes" />
         </RegistryKey>
