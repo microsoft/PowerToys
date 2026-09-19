@@ -27,16 +27,34 @@ public partial class DetailsCommandsViewModel(
             return;
         }
 
-        Commands = model
-            .Commands?
-            .Select(c =>
+        List<CommandViewModel> commands = [];
+        try
+        {
+            foreach (var command in model.Commands ?? [])
             {
-                var vm = new CommandViewModel(c, PageContext);
+                var vm = new CommandViewModel(command, PageContext);
+                commands.Add(vm);
                 vm.InitializeProperties();
-                return vm;
-            })
-            .ToList() ?? [];
+            }
+        }
+        catch
+        {
+            commands.ForEach(vm => vm.SafeCleanup());
+            throw;
+        }
+
+        var previous = Commands;
+        Commands = commands;
+        previous.ForEach(vm => vm.SafeCleanup());
         UpdateProperty(nameof(HasCommands));
         UpdateProperty(nameof(Commands));
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        var previous = Commands;
+        Commands = [];
+        previous.ForEach(vm => vm.SafeCleanup());
+        base.UnsafeCleanup();
     }
 }
