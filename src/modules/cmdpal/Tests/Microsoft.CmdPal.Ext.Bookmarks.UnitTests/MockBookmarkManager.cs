@@ -28,6 +28,8 @@ internal sealed class MockBookmarkManager : IBookmarksManager
 
     public BookmarkData Update(Guid id, string name, string bookmark) => throw new NotImplementedException();
 
+    public void RaiseBookmarkUpdated(BookmarkData original, BookmarkData updated) => BookmarkUpdated?.Invoke(original, updated);
+
     public MockBookmarkManager(params IEnumerable<BookmarkData> bookmarks)
     {
         _bookmarks = [.. bookmarks];
