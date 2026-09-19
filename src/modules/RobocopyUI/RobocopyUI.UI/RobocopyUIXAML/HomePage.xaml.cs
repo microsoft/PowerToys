@@ -688,7 +688,7 @@ public sealed partial class HomePage : Page
             DispatcherQueue.TryEnqueue(() =>
             {
                 StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
-                var statusKey = "Status_" + process.ExitCode;
+                var statusKey = RobocopyExecutionHelper.GetStatusResourceKey(process.ExitCode);
                 var statusText = ResourceLoaderInstance.ResourceLoader.GetString(statusKey);
                 OutputStatusText.Text = string.IsNullOrWhiteSpace(statusText)
                     ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
@@ -720,7 +720,7 @@ public sealed partial class HomePage : Page
                 };
                 fallbackStartInfo.ArgumentList.Add("/s");
                 fallbackStartInfo.ArgumentList.Add("/k");
-                fallbackStartInfo.ArgumentList.Add("robocopy.exe " + job.RenderArguments());
+                fallbackStartInfo.ArgumentList.Add(RobocopyExecutionHelper.EscapeCommandForCmd("robocopy.exe " + job.RenderArguments()));
                 Process.Start(fallbackStartInfo);
             }
         }
