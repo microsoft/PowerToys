@@ -5,9 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -36,6 +38,7 @@ public sealed partial class HomePage : Page
         syncing = false;
         ApplyModeVisibility();
         UpdateCommandPreview();
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_NotRunning");
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -275,11 +278,7 @@ public sealed partial class HomePage : Page
         SimpleContent.Visibility = isSimpleMode ? Visibility.Visible : Visibility.Collapsed;
         AdvancedSelectorBar.Visibility = isSimpleMode ? Visibility.Collapsed : Visibility.Visible;
 
-        var outputSelected = !isSimpleMode && AdvancedSelectorBar.SelectedItem?.Tag as string == "Output";
-        SelectorPanels.Visibility = !isSimpleMode && !outputSelected ? Visibility.Visible : Visibility.Collapsed;
-        OutputContent.Visibility = (isSimpleMode && OutputSelectorBarItem.IsEnabled) || outputSelected
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        SelectorPanels.Visibility = !isSimpleMode ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void SelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -567,7 +566,14 @@ public sealed partial class HomePage : Page
             return;
         }
 
-        RunRobocopy(job.RenderArguments() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+        if (SettingsUtils.Default.GetSettings<RobocopyUISettings>().Properties.UseLegacySaveMode.Value)
+        {
+            RunRobocopy(job.RenderArguments() + " /SAVE:" + result.Path[..^4] + " /QUIT" + (string.IsNullOrEmpty(SourceTextBox.Text) ? " /NOSD" : string.Empty) + (string.IsNullOrEmpty(DestinationTextBox.Text) ? " /NODD" : string.Empty));
+        }
+        else
+        {
+            await File.WriteAllTextAsync(result.Path, job.RenderArguments(true) + Environment.NewLine);
+        }
     }
 
     private async void LoadOptionsButton_Click(object sender, RoutedEventArgs e)
@@ -622,7 +628,7 @@ public sealed partial class HomePage : Page
         UpdateCommandPreview();
     }
 
-    private void RunButton_Click(object sender, RoutedEventArgs e)
+    private void RunButton_Click(SplitButton sender, SplitButtonClickEventArgs e)
     {
         RunRobocopy(job.RenderArguments());
     }
@@ -630,11 +636,9 @@ public sealed partial class HomePage : Page
     private void RunRobocopy(string arguments)
     {
         OutputTextBox.Text = string.Empty;
-        OutputSelectorBarItem.IsEnabled = true;
-        if (!isSimpleMode)
-        {
-            OutputSelectorBarItem.IsSelected = true;
-        }
+        StatusCodeText.Text = "-";
+        OutputStatusText.Text = ResourceLoaderInstance.ResourceLoader.GetString("Status_Running");
+        CommandOutputExpander.IsEnabled = true;
 
         ApplyModeVisibility();
         var startInfo = new ProcessStartInfo
@@ -652,39 +656,113 @@ public sealed partial class HomePage : Page
             StartInfo = startInfo,
             EnableRaisingEvents = true,
         };
+        var completionLock = new object();
+        var processExited = false;
+        var outputCompleted = false;
+        var errorCompleted = false;
+        var completionReported = false;
+
+        void TryUpdateCompletedStatus()
+        {
+            lock (completionLock)
+            {
+                if (!processExited || !outputCompleted || !errorCompleted || completionReported)
+                {
+                    return;
+                }
+
+                completionReported = true;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                StatusCodeText.Text = process.ExitCode.ToString(CultureInfo.InvariantCulture);
+                var statusKey = RobocopyExecutionHelper.GetStatusResourceKey(process.ExitCode);
+                var statusText = ResourceLoaderInstance.ResourceLoader.GetString(statusKey);
+                OutputStatusText.Text = string.IsNullOrWhiteSpace(statusText)
+                    ? ResourceLoaderInstance.ResourceLoader.GetString("Status_Fail")
+                    : statusText;
+            });
+        }
 
         process.OutputDataReceived += (s, args) =>
         {
-            if (args.Data != null)
+            if (args.Data == null)
             {
-                DispatcherQueue.TryEnqueue(() =>
+                lock (completionLock)
                 {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
+                    outputCompleted = true;
+                }
 
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
+                TryUpdateCompletedStatus();
+                return;
             }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
+            });
         };
         process.ErrorDataReceived += (s, args) =>
         {
-            if (args.Data != null)
+            if (args.Data == null)
             {
-                DispatcherQueue.TryEnqueue(() =>
+                lock (completionLock)
                 {
-                    if (string.IsNullOrEmpty(args.Data))
-                    {
-                        return;
-                    }
+                    errorCompleted = true;
+                }
 
-                    OutputTextBox.Text += args.Data + Environment.NewLine;
-                });
+                TryUpdateCompletedStatus();
+                return;
             }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (string.IsNullOrEmpty(args.Data))
+                {
+                    return;
+                }
+
+                OutputTextBox.Text += args.Data + Environment.NewLine;
+            });
         };
+        process.Exited += (s, args) =>
+        {
+            lock (completionLock)
+            {
+                processExited = true;
+            }
+
+            TryUpdateCompletedStatus();
+        };
+
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+    }
+
+    private void RunExternalButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "robocopy.exe",
+                Arguments = job.RenderArguments(),
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Normal,
+            };
+
+            Process.Start(startInfo);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to start robocopy: {ex}");
+        }
     }
 }

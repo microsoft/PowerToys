@@ -38,7 +38,14 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
                 </controls:SettingsGroup>
-
+                <controls:SettingsGroup x:Uid="RobocopyUI_Behaviour_GroupSettings" IsEnabled="{x:Bind ViewModel.IsRobocopyUIEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="RobocopyUI_UseLegacySaveMode"
+                        x:Uid="RobocopyUI_UseLegacySaveMode"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7B8;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseLegacySaveMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

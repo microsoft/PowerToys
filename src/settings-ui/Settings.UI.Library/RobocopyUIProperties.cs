@@ -5,10 +5,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class RobocopyUIProperties
     {
+        [JsonPropertyName("use_legacy_save_mode")]
+        public BoolProperty UseLegacySaveMode { get; set; }
+
+        public RobocopyUIProperties()
+        {
+            UseLegacySaveMode = new BoolProperty(false);
+        }
     }
 }
