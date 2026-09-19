@@ -246,7 +246,7 @@
 
             "WinUI3Apps\\PowerToys.RobocopyUI.dll",
             "WinUI3Apps\\PowerToys.RobocopyUI.exe",
-            "WinUI3Apps\\RobocopyUIModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.RobocopyUIModuleInterface.dll",
 
             "WinUI3Apps\\PowerToys.ShortcutGuide.exe",
             "WinUI3Apps\\PowerToys.ShortcutGuide.dll",
