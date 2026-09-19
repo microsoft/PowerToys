@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
@@ -66,6 +67,8 @@ internal sealed class Program
         }
 
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
+
+        AppLanguageHelper.ApplyFromPowerToysSettings();
 
         // Log application startup information
         try
