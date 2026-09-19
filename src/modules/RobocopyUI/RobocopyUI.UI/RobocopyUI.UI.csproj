@@ -22,10 +22,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Remove="Views\App.xaml" />
+    <Page Remove="RobocopyUIXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="Views\App.xaml" />
+    <ApplicationDefinition Include="RobocopyUIXAML\App.xaml" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
