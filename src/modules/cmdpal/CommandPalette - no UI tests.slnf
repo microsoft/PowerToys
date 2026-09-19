@@ -56,7 +56,9 @@
       "src\\modules\\cmdpal\\ext\\ProcessMonitorExtension\\ProcessMonitorExtension.csproj",
       "src\\modules\\cmdpal\\ext\\SamplePagesExtension\\SamplePagesExtension.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions.Toolkit\\Microsoft.CommandPalette.Extensions.Toolkit.csproj",
-      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj"
+      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Cli\\PowerDisplay.Cli.csproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Contracts\\PowerDisplay.Contracts.csproj"
     ]
   }
 }
