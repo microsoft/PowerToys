@@ -53,10 +53,11 @@ For detailed information, see [PowerToys.DSC.exe command reference][01].
 
 ### 2. Microsoft Desired State Configuration (DSC)
 
-Use PowerToys DSC resources in standard DSC configuration documents:
+Use PowerToys DSC resources in standard DSC configuration documents. Save the
+following configuration as `powertoys-config.dsc.config.yaml`:
 
 ```yaml
-# powertoys-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Awake
@@ -70,12 +71,19 @@ resources:
         version: 0.0.1
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file powertoys-config.dsc.config.yaml
+```
+
 ### 3. WinGet Configuration
 
-Integrate PowerToys configuration with WinGet package installation:
+Integrate PowerToys configuration with WinGet package installation. Save the
+following configuration as `powertoys.dsc.config.winget`:
 
 ```yaml
-# winget-powertoys.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -98,17 +106,25 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure powertoys.dsc.config.winget
+```
+
 ## Available resources
 
 PowerToys DSC provides the following resources:
 
-| Resource   | Description                                                        |
-| ---------- | ------------------------------------------------------------------ |
-| `settings` | Manages configuration for PowerToys utility modules.               |
-| `profile`  | Manages the Keyboard Manager remapping profile (keys, shortcuts).  |
+| Resource   | Description                                                                     |
+| ---------- | ------------------------------------------------------------------------------- |
+| `settings` | Manages configuration for PowerToys utility modules.                            |
+| `profile`  | Manages the Keyboard Manager remapping profile (keys, shortcuts).               |
+| `layouts`  | Manages the FancyZones layouts (custom layouts, templates, hotkeys, defaults).  |
 
-For detailed information, see the [Settings Resource Reference][03] and the
-[Keyboard Manager Profile Resource Reference][33].
+For detailed information, see the [Settings Resource Reference][03], the
+[Keyboard Manager Profile Resource Reference][33] and the
+[FancyZones Layouts Resource Reference][34].
 
 ## Available modules
 
@@ -244,3 +260,4 @@ For complete examples, see:
 [31]: https://learn.microsoft.com/powershell/dsc/overview
 [32]: https://learn.microsoft.com/windows/package-manager/configuration/
 [33]: ./profile-resource.md
+[34]: ./layouts-resource.md

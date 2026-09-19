@@ -108,12 +108,10 @@ PowerToys.DSC.exe set --resource 'settings' --module MeasureTool `
 
 This example customizes the crosshair color and measurement behavior.
 
-```bash
-dsc config set --file measuretool-appearance.dsc.yaml
-```
+Save the following configuration as `measuretool-appearance.dsc.config.yaml`:
 
 ```yaml
-# measuretool-appearance.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Measure Tool appearance
@@ -128,17 +126,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file measuretool-appearance.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Measure Tool with edge
 detection.
 
-```bash
-winget configure winget-measuretool.yaml
-```
+Save the following configuration as `measuretool.dsc.config.winget`:
 
 ```yaml
-# winget-measuretool.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -162,16 +164,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure measuretool.dsc.config.winget
+```
+
 ### Example 4 - High contrast configuration
 
 This example configures for high visibility measurements.
 
-```bash
-dsc config set --file measuretool-highcontrast.dsc.yaml
-```
+Save the following configuration as `measuretool-highcontrast.dsc.config.yaml`:
 
 ```yaml
-# measuretool-highcontrast.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: High contrast Measure Tool
@@ -183,6 +189,12 @@ resources:
           DrawFeetOnCross: true
         name: MeasureTool
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file measuretool-highcontrast.dsc.config.yaml
 ```
 
 ### Example 5 - Continuous capture mode

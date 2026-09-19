@@ -83,6 +83,7 @@ PowerToys.DSC.exe get --resource 'settings' --module <ModuleName>
 **DSC configuration:**
 
 ```yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Get Awake settings
@@ -93,6 +94,7 @@ resources:
 **WinGet configuration:**
 
 ```yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -140,6 +142,7 @@ PowerToys.DSC.exe set --resource 'settings' --module Awake --input $input
 **DSC configuration:**
 
 ```yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Awake
@@ -156,6 +159,7 @@ resources:
 **WinGet configuration:**
 
 ```yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -206,6 +210,7 @@ configuration matches (`true`) or differs (`false`).
 **DSC configuration:**
 
 ```yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Test Awake configuration
@@ -289,8 +294,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FancyZones `
 This example configures multiple PowerToys utilities in a single DSC
 configuration.
 
+Save the following configuration as `powertoys-multi.dsc.config.yaml`:
+
 ```yaml
-# powertoys-multi.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Enable PowerToys utilities
@@ -331,8 +338,10 @@ resources:
 
 This example installs PowerToys and applies configuration using WinGet.
 
+Save the following configuration as `powertoys-setup.dsc.config.winget`:
+
 ```yaml
-# winget-powertoys-setup.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -389,7 +398,7 @@ resources:
 Apply the configuration:
 
 ```powershell
-winget configure winget-powertoys-setup.yaml
+winget configure powertoys-setup.dsc.config.winget
 ```
 
 ### Example 4 - Test configuration drift

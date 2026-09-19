@@ -111,12 +111,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ShortcutGuide `
 
 This example customizes the overlay appearance.
 
-```bash
-dsc config set --file shortcutguide-appearance.dsc.yaml
-```
+Save the following configuration as `shortcutguide-appearance.dsc.config.yaml`:
 
 ```yaml
-# shortcutguide-appearance.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Shortcut Guide appearance
@@ -130,16 +128,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file shortcutguide-appearance.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Shortcut Guide.
 
-```bash
-winget configure winget-shortcutguide.yaml
-```
+Save the following configuration as `shortcutguide.dsc.config.winget`:
 
 ```yaml
-# winget-shortcutguide.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -163,16 +165,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure shortcutguide.dsc.config.winget
+```
+
 ### Example 4 - Quick activation
 
 This example configures taskbar indicators with a short hold duration.
 
-```bash
-dsc config set --file shortcutguide-quick.dsc.yaml
-```
+Save the following configuration as `shortcutguide-quick.dsc.config.yaml`:
 
 ```yaml
-# shortcutguide-quick.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Quick activation
@@ -184,6 +190,12 @@ resources:
           PressTime: 400
         name: ShortcutGuide
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file shortcutguide-quick.dsc.config.yaml
 ```
 
 ### Example 5 - High opacity for visibility
@@ -209,12 +221,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ShortcutGuide --input $conf
 
 This example excludes Shortcut Guide from specific applications.
 
-```bash
-dsc config set --file shortcutguide-exclusions.dsc.yaml
-```
+Save the following configuration as `shortcutguide-exclusions.dsc.config.yaml`:
 
 ```yaml
-# shortcutguide-exclusions.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Exclude apps
@@ -227,6 +237,12 @@ resources:
             FullScreenApp.exe
         name: ShortcutGuide
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file shortcutguide-exclusions.dsc.config.yaml
 ```
 
 ## Use cases
