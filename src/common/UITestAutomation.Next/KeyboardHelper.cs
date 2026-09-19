@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using FormsSendKeys = System.Windows.Forms.SendKeys;
 
@@ -87,7 +88,7 @@ public enum Key : byte
 }
 
 /// <summary>
-/// Global keyboard input. Uses the same hybrid strategy as the legacy harness because pure
+/// Global keyboard input. <see cref="SendKeys"/> uses the same hybrid strategy as the legacy harness because pure
 /// <c>keybd_event</c> injection doesn't reliably trigger <c>RegisterHotKey</c>-registered global
 /// hotkeys for the PowerToys runner: hold LWIN down via <c>keybd_event</c>, then send the
 /// remaining chord via <see cref="System.Windows.Forms.SendKeys.SendWait"/> which uses
@@ -103,8 +104,47 @@ public static class KeyboardHelper
     [DllImport("user32.dll")]
     private static extern short GetAsyncKeyState(int vKey);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint count, Input[] inputs, int size);
+
     private const uint KEYEVENTF_KEYUP = 0x2;
     private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
+
+    /// <summary>
+    /// Press all keys in order, then release them in reverse order, in a single <c>SendInput</c> batch.
+    /// </summary>
+    public static void SendChord(params Key[] keys)
+    {
+        var inputs = CreateChordInputPlan(keys);
+
+        // Queue the complete chord atomically. Releasing a SendKeys modifier after the module
+        // starts its own Ctrl+V can otherwise turn the product's paste into a literal 'v'.
+        var sent = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (sent != inputs.Length)
+        {
+            var error = Marshal.GetLastWin32Error();
+            foreach (var key in keys.Reverse())
+            {
+                ReleaseKey(key);
+            }
+
+            throw new Win32Exception(error, $"Only {sent} of {inputs.Length} keyboard events were injected.");
+        }
+    }
+
+    internal static Input[] CreateChordInputPlan(params Key[] keys)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        ArgumentOutOfRangeException.ThrowIfZero(keys.Length);
+        var inputs = new Input[keys.Length * 2];
+        for (var index = 0; index < keys.Length; index++)
+        {
+            inputs[index] = CreateInput(keys[index], keyUp: false);
+            inputs[keys.Length + index] = CreateInput(keys[keys.Length - index - 1], keyUp: true);
+        }
+
+        return inputs;
+    }
 
     /// <summary>
     /// Send a chord of keys. LWIN and side-specific Ctrl keys are held via <c>keybd_event</c> while
@@ -234,8 +274,63 @@ public static class KeyboardHelper
     }
 
     private static bool IsExtended(Key key) => key is
-        Key.RCtrl or
+        Key.LWin or Key.RCtrl or
         Key.Left or Key.Up or Key.Right or Key.Down or
         Key.Home or Key.End or Key.PageUp or Key.PageDown or
         Key.Insert or Key.Delete;
+
+    private static Input CreateInput(Key key, bool keyUp)
+    {
+        return new Input
+        {
+            Type = 1,
+            Data = new InputData
+            {
+                Keyboard = new KeyboardInput
+                {
+                    VirtualKey = (ushort)key,
+                    Flags = (keyUp ? KEYEVENTF_KEYUP : 0u) | (IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u),
+                },
+            },
+        };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Input
+    {
+        internal uint Type;
+        internal InputData Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct InputData
+    {
+        [FieldOffset(0)]
+        internal KeyboardInput Keyboard;
+
+        // MOUSEINPUT is the largest union member and determines the native INPUT size.
+        [FieldOffset(0)]
+        internal MouseInput Mouse;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct KeyboardInput
+    {
+        internal ushort VirtualKey;
+        internal ushort ScanCode;
+        internal uint Flags;
+        internal uint Time;
+        internal UIntPtr ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MouseInput
+    {
+        internal int X;
+        internal int Y;
+        internal uint MouseData;
+        internal uint Flags;
+        internal uint Time;
+        internal UIntPtr ExtraInfo;
+    }
 }

@@ -746,6 +746,7 @@ HORZRES
 HORZSIZE
 Hostbackdropbrush
 hostfxr
+hostpolicy
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -1041,7 +1042,6 @@ manifestdependency
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
-MARKDOWNPREVIEWHANDLERCPP
 maximizebox
 MAXSHORTCUTSIZE
 maxversiontested

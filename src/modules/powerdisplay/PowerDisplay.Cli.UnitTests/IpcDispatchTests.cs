@@ -4,12 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Ipc;
+using PowerDisplay.Cli.Output;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.UnitTests;
@@ -94,6 +96,40 @@ public class IpcDispatchTests
         // An error envelope (isError=true) routes through the error renderer (stderr) only and must
         // never leak to the success path (stdout).
         Assert.AreEqual(0, output.StdoutLines.Count, "error envelope must not render via the success path");
+    }
+
+    [TestMethod]
+    public async Task ApplyProfile_MessageIdOnlyError_JsonOutputWritesLocalizedStderrAndExits7()
+    {
+        var errorResponse = new CliErrorResult
+        {
+            Command = CliCommandNames.ApplyProfile,
+            Error = new CliError
+            {
+                Code = CliErrorCodes.ArgumentError,
+                MessageId = CliMessageIds.ProfileNotFound,
+                Value = "42",
+            },
+        };
+        var responseJson = SerializeError(errorResponse);
+        var stdout = new StringWriter();
+        var stderr = new StringWriter();
+        var output = new JsonCliOutput(stdout, stderr);
+        var dispatcher = new IpcDispatcher(
+            (_, _, _) => Task.FromResult<string?>(responseJson),
+            output,
+            AnyTimeout);
+
+        var exit = await dispatcher.SendApplyProfileAsync(
+            CliRequestBuilder.BuildApplyProfile(42),
+            CancellationToken.None);
+
+        Assert.AreEqual(CliExitCodes.ArgumentError, exit);
+        Assert.AreEqual(string.Empty, stdout.ToString());
+        var rendered = JsonSerializer.Deserialize(stderr.ToString(), ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(rendered);
+        Assert.AreEqual("no profile with id 42", rendered.Error.Message);
+        Assert.AreEqual("run 'PowerToys.PowerDisplay.Cli.exe profiles' to see available profiles", rendered.Error.Hint);
     }
 
     // ── apply-profile always exits 0 (best-effort) ───────────────────────────

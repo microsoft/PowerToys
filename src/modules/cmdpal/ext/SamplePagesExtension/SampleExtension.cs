@@ -36,6 +36,7 @@ public sealed partial class SampleExtension : IExtension, IDisposable
 
     public void Dispose()
     {
+        _provider.Dispose();
         this._extensionDisposedEvent.Set();
     }
 }
