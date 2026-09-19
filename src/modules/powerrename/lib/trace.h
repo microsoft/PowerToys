@@ -6,6 +6,7 @@ class Trace : public telemetry::TraceBase {
 public:
   static void Invoked() noexcept;
   static void InvokedRet(_In_ HRESULT hr) noexcept;
+  static void ServicingWindowInitialization(_In_ HRESULT hr) noexcept;
   static void EnablePowerRename(_In_ bool enabled) noexcept;
   static void UIShownRet(_In_ HRESULT hr) noexcept;
   static void RenameOperation(
