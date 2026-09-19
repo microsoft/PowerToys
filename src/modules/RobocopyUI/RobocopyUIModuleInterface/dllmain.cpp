@@ -5,6 +5,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/EventWaiter.h>
 #include <common/interop/shared_constants.h>
 
 #include "../interface/powertoy_module_interface.h"
@@ -28,6 +29,11 @@ public:
         std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
         oldLogPath.append("ShortcutGuideLogs");
         LoggerHelpers::delete_old_log_folder(oldLogPath);
+
+        triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::ROBOCOPY_UI_LAUNCH_EVENT);
+        triggerEventWaiter.start(CommonSharedConstants::ROBOCOPY_UI_LAUNCH_EVENT, [this](DWORD) {
+            StartProcess();
+        });
     }
 
     virtual const wchar_t* get_name() override
@@ -122,6 +128,8 @@ private:
     std::wstring app_key;
     bool _enabled = false;
     winrt::handle m_process;
+    HANDLE triggerEvent;
+    EventWaiter triggerEventWaiter;
 
     bool StartProcess(std::wstring args = L"")
     {
