@@ -7,9 +7,9 @@ using System.Collections.ObjectModel;
 using MouseJump.Models.Drawing;
 using MouseJump.Models.Styles;
 
-namespace MouseJump.Models.ViewModel;
+namespace MouseJump.Models.Layout;
 
-public sealed class CanvasViewModel
+public sealed class CanvasLayout
 {
     public sealed class Builder
     {
@@ -35,15 +35,15 @@ public sealed class CanvasViewModel
             set;
         }
 
-        public List<DeviceViewModel.Builder>? DeviceLayouts
+        public List<DeviceLayout.Builder>? DeviceLayouts
         {
             get;
             set;
         }
 
-        public CanvasViewModel Build()
+        public CanvasLayout Build()
         {
-            return new CanvasViewModel(
+            return new CanvasLayout(
                 canvasBounds: this.CanvasBounds ?? throw new InvalidOperationException($"{nameof(this.CanvasBounds)} must be initialized before calling {nameof(this.Build)}."),
                 canvasStyle: this.CanvasStyle ?? throw new InvalidOperationException($"{nameof(this.CanvasStyle)} must be initialized before calling {nameof(this.Build)}."),
                 deviceLayouts: (this.DeviceLayouts ?? throw new InvalidOperationException($"{nameof(this.DeviceLayouts)} must be initialized before calling {nameof(this.Build)}."))
@@ -51,10 +51,10 @@ public sealed class CanvasViewModel
         }
     }
 
-    public CanvasViewModel(
+    public CanvasLayout(
         BoxBounds canvasBounds,
         BoxStyle canvasStyle,
-        IEnumerable<DeviceViewModel> deviceLayouts)
+        IEnumerable<DeviceLayout> deviceLayouts)
     {
         this.CanvasBounds = canvasBounds ?? throw new ArgumentNullException(nameof(canvasBounds));
         this.CanvasStyle = canvasStyle ?? throw new ArgumentNullException(nameof(canvasStyle));
@@ -77,7 +77,7 @@ public sealed class CanvasViewModel
         get;
     }
 
-    public ReadOnlyCollection<DeviceViewModel> DeviceLayouts
+    public ReadOnlyCollection<DeviceLayout> DeviceLayouts
     {
         get;
     }
