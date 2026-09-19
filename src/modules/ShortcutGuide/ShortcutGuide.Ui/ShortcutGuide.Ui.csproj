@@ -108,6 +108,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\ShortcutGuide.IndexYmlGenerator\ShortcutGuide.IndexYmlGenerator.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
@@ -140,6 +141,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ShortcutGuideXAML\Helpers\" />
     <Folder Include="ShortcutGuideXAML\Styles\" />
   </ItemGroup>
   <!-- 
