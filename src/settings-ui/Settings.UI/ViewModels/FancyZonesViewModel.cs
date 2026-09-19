@@ -4,7 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using FancyZonesEditorCommon.Data;
+using FancyZonesEditorCommon.Utils;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -12,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -114,6 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _zoneNumberColor = !string.IsNullOrEmpty(numberColor) ? numberColor : ConfigDefaults.DefaultFancyzonesNumberColor;
 
             InitializeEnabledValue();
+            LoadDefaultZoneLayouts();
 
             _windows11 = OSVersionHelper.IsWindows11();
 
@@ -136,6 +141,163 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
+            }
+        }
+
+        public ObservableCollection<FancyZonesDefaultZoneListItem> DefaultZoneLayouts { get; } = new ObservableCollection<FancyZonesDefaultZoneListItem>();
+
+        private static string GetTemplateDisplayName(string templateType)
+        {
+            ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            string key = "FancyZones_DefaultZone_Template_" + templateType switch
+            {
+                "blank" => "Blank",
+                "focus" => "Focus",
+                "columns" => "Columns",
+                "rows" => "Rows",
+                "grid" => "Grid",
+                "priority-grid" => "PriorityGrid",
+                _ => templateType,
+            };
+
+            return resourceLoader.GetString(key);
+        }
+
+        // Loads one row per built-in template and per custom layout. Read fresh whenever the
+        // FancyZones settings page is opened, same as the Editor reads its own layout list fresh
+        // whenever it is launched, rather than watching the files while the page stays open.
+        private void LoadDefaultZoneLayouts()
+        {
+            DefaultZoneLayouts.Clear();
+
+            try
+            {
+                var layoutTemplates = new LayoutTemplates();
+                if (System.IO.File.Exists(FancyZonesPaths.LayoutTemplates))
+                {
+                    var templates = layoutTemplates.Read(FancyZonesPaths.LayoutTemplates).LayoutTemplates;
+                    if (templates != null)
+                    {
+                        foreach (var template in templates)
+                        {
+                            if (string.Equals(template.Type, "custom", StringComparison.Ordinal))
+                            {
+                                // "custom" here is a layout-type placeholder, not an actual layout; the
+                                // real custom layouts are listed separately, below.
+                                continue;
+                            }
+
+                            DefaultZoneLayouts.Add(new FancyZonesDefaultZoneListItem(
+                                template.Type,
+                                isCustomLayout: false,
+                                GetTemplateDisplayName(template.Type),
+                                template.ZoneCount,
+                                template.DefaultZoneSet,
+                                OnDefaultZoneLayoutChanged));
+                        }
+                    }
+                }
+
+                var customLayouts = new CustomLayouts();
+                if (System.IO.File.Exists(FancyZonesPaths.CustomLayouts))
+                {
+                    var layouts = customLayouts.Read(FancyZonesPaths.CustomLayouts).CustomLayouts;
+                    if (layouts != null)
+                    {
+                        foreach (var layout in layouts)
+                        {
+                            int zoneCount = GetCustomLayoutZoneCount(customLayouts, layout);
+                            DefaultZoneLayouts.Add(new FancyZonesDefaultZoneListItem(
+                                layout.Uuid,
+                                isCustomLayout: true,
+                                layout.Name,
+                                zoneCount,
+                                layout.DefaultZoneSet,
+                                OnDefaultZoneLayoutChanged));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to load FancyZones layouts for the default zone list", ex);
+            }
+        }
+
+        private static int GetCustomLayoutZoneCount(CustomLayouts customLayouts, CustomLayouts.CustomLayoutWrapper layout)
+        {
+            try
+            {
+                if (string.Equals(layout.Type, "grid", StringComparison.Ordinal))
+                {
+                    var grid = customLayouts.GridFromJsonElement(layout.Info.GetRawText());
+                    return grid.Rows * grid.Columns;
+                }
+                else
+                {
+                    var canvas = customLayouts.CanvasFromJsonElement(layout.Info.GetRawText());
+                    return canvas.Zones?.Count ?? 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to resolve zone count for custom layout {layout.Uuid}", ex);
+                return 0;
+            }
+        }
+
+        // Persists the edited row back into layout-templates.json or custom-layouts.json.
+        // Editing settings elsewhere on this page does not go through the IPC pipe used for
+        // FancyZonesSettings; these files are written directly, same as the Editor does.
+        private void OnDefaultZoneLayoutChanged(FancyZonesDefaultZoneListItem item)
+        {
+            if (item.HasError)
+            {
+                // Never persist an invalid value.
+                return;
+            }
+
+            try
+            {
+                var ioUtils = new IOUtils();
+                if (item.IsCustomLayout)
+                {
+                    var customLayouts = new CustomLayouts();
+                    var wrapper = customLayouts.Read(FancyZonesPaths.CustomLayouts);
+                    for (int i = 0; i < wrapper.CustomLayouts.Count; i++)
+                    {
+                        if (string.Equals(wrapper.CustomLayouts[i].Uuid, item.LayoutId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var entry = wrapper.CustomLayouts[i];
+                            entry.DefaultZoneSet = item.ZoneIndexSet;
+                            wrapper.CustomLayouts[i] = entry;
+                            break;
+                        }
+                    }
+
+                    ioUtils.WriteFile(FancyZonesPaths.CustomLayouts, customLayouts.Serialize(wrapper));
+                }
+                else
+                {
+                    var layoutTemplates = new LayoutTemplates();
+                    var wrapper = layoutTemplates.Read(FancyZonesPaths.LayoutTemplates);
+                    for (int i = 0; i < wrapper.LayoutTemplates.Count; i++)
+                    {
+                        if (string.Equals(wrapper.LayoutTemplates[i].Type, item.LayoutId, StringComparison.Ordinal))
+                        {
+                            var entry = wrapper.LayoutTemplates[i];
+                            entry.DefaultZoneSet = item.ZoneIndexSet;
+                            wrapper.LayoutTemplates[i] = entry;
+                            break;
+                        }
+                    }
+
+                    ioUtils.WriteFile(FancyZonesPaths.LayoutTemplates, layoutTemplates.Serialize(wrapper));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to save the default zone for layout {item.LayoutId}", ex);
             }
         }
 

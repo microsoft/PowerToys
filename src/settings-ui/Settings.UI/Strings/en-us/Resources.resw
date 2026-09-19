@@ -2085,6 +2085,42 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
     <value>Layout-specific shortcuts can be configured in the editor</value>
   </data>
+  <data name="FancyZones_DefaultZone.Header" xml:space="preserve">
+    <value>Default zone for windows with no zone history</value>
+  </data>
+  <data name="FancyZones_DefaultZone.Description" xml:space="preserve">
+    <value>Per layout, choose a zone or zone range a newly created window falls into when it has never been snapped before. This only applies when there is no last-known zone to go back to.</value>
+  </data>
+  <data name="FancyZones_DefaultZone_ValueTextBox.PlaceholderText" xml:space="preserve">
+    <value>Example: 1 or 1-2</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_Blank" xml:space="preserve">
+    <value>Blank</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_Focus" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_Columns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_Rows" xml:space="preserve">
+    <value>Rows</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_Grid" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Template_PriorityGrid" xml:space="preserve">
+    <value>Priority Grid</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Error_NotANumber" xml:space="preserve">
+    <value>Enter a zone number, or a range like 1-2.</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Error_ReversedRange" xml:space="preserve">
+    <value>The second zone number must be greater than or equal to the first.</value>
+  </data>
+  <data name="FancyZones_DefaultZone_Error_OutOfRange" xml:space="preserve">
+    <value>This layout only has {0} zones.</value>
+  </data>
   <data name="Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>

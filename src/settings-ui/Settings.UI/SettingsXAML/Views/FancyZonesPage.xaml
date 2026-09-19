@@ -9,6 +9,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
@@ -294,6 +295,56 @@
                                 ContentAlignment="Left"
                                 IsEnabled="{x:Bind ViewModel.QuickSwitchEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="FancyZones_FlashZonesOnQuickSwitch" IsChecked="{x:Bind ViewModel.FlashZonesOnQuickSwitch, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <!--  Collapsed by default: this is an opt-in fallback for windows that have no zone history at all, not something most users need to see up front.  -->
+                    <tkcontrols:SettingsExpander
+                        Name="FancyZonesDefaultZone"
+                        x:Uid="FancyZones_DefaultZone"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B0;}"
+                        IsExpanded="False">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="FancyZonesDefaultZonePlaceholder" Visibility="Collapsed" />
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <ItemsRepeater Name="FancyZonesDefaultZoneList" ItemsSource="{x:Bind ViewModel.DefaultZoneLayouts, Mode=OneWay}">
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Orientation="Vertical" Spacing="4" />
+                                    </ItemsRepeater.Layout>
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodels:FancyZonesDefaultZoneListItem">
+                                            <StackPanel Margin="0,8" Spacing="4">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="160" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        Grid.Column="0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind DisplayName}" />
+                                                    <ToggleSwitch
+                                                        Grid.Column="1"
+                                                        AutomationProperties.Name="{x:Bind DisplayName}"
+                                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                                    <TextBox
+                                                        Grid.Column="2"
+                                                        AutomationProperties.Name="{x:Bind DisplayName}"
+                                                        x:Uid="FancyZones_DefaultZone_ValueTextBox"
+                                                        IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                                                        Text="{x:Bind Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                </Grid>
+                                                <InfoBar
+                                                    Title="{x:Bind ErrorMessage, Mode=OneWay}"
+                                                    IsClosable="False"
+                                                    IsOpen="{x:Bind HasError, Mode=OneWay}"
+                                                    Severity="Error" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

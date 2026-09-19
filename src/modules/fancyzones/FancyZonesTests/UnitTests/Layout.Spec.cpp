@@ -94,6 +94,41 @@ namespace FancyZonesUnitTests
             Assert::AreEqual((size_t)0, zones.size());
         }
 
+        TEST_METHOD (ValidatedDefaultZoneIndexSetNotConfigured)
+        {
+            LayoutData data = m_data;
+            data.spacing = 0;
+            auto layout = std::make_unique<Layout>(data);
+            layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
+
+            Assert::IsFalse(layout->ValidatedDefaultZoneIndexSet().has_value());
+        }
+
+        TEST_METHOD (ValidatedDefaultZoneIndexSetValid)
+        {
+            LayoutData data = m_data;
+            data.spacing = 0;
+            data.defaultZoneIndexSet = ZoneIndexSet{ 0, 1 };
+            auto layout = std::make_unique<Layout>(data);
+            layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
+
+            auto actual = layout->ValidatedDefaultZoneIndexSet();
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(actual.value() == (ZoneIndexSet{ 0, 1 }));
+        }
+
+        TEST_METHOD (ValidatedDefaultZoneIndexSetOutOfRange)
+        {
+            // m_data.zoneCount is 4, so valid indices for this layout are 0..3.
+            LayoutData data = m_data;
+            data.spacing = 0;
+            data.defaultZoneIndexSet = ZoneIndexSet{ 10 };
+            auto layout = std::make_unique<Layout>(data);
+            layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor());
+
+            Assert::IsFalse(layout->ValidatedDefaultZoneIndexSet().has_value());
+        }
+
         TEST_METHOD (ZoneFromPointEmpty)
         {
             auto actual = m_layout->ZonesFromPoint(POINT{ 0, 0 });
