@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
@@ -19,37 +20,46 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 internal sealed partial class ClipboardListItem : ListItem
 {
+    private static readonly TextFileSystemMetadataProvider FileSystemMetadataProvider = new();
+
     private static readonly IClipboardMetadataProvider[] MetadataProviders =
     [
         new ImageMetadataProvider(),
-        new TextFileSystemMetadataProvider(),
+        FileSystemMetadataProvider,
         new WebLinkMetadataProvider(),
         new TextMetadataProvider(),
     ];
 
-    private readonly SettingsManager _settingsManager;
+    private readonly IClipboardHistorySettings _settingsManager;
     private readonly ClipboardItem _item;
 
     private readonly CommandContextItem _deleteContextMenuItem;
     private readonly CommandContextItem? _pasteCommand;
     private readonly CommandContextItem? _copyCommand;
-    private readonly Lazy<Details> _lazyDetails;
+    private readonly bool _hasFileSystemMetadata;
+    private Lazy<Details> _lazyDetails;
+    private PrimaryAction? _primaryAction;
 
     public override IDetails? Details
     {
-        get => _lazyDetails.Value;
+        get => Volatile.Read(ref _lazyDetails).Value;
         set
         {
         }
     }
 
-    public ClipboardListItem(ClipboardItem item, SettingsManager settingsManager)
+    public ClipboardListItem(ClipboardItem item, IClipboardHistorySettings settingsManager)
+        : this(item, settingsManager, item.Item.Content)
+    {
+    }
+
+    internal ClipboardListItem(ClipboardItem item, IClipboardHistorySettings settingsManager, DataPackageView dataPackageView)
     {
         _item = item;
         _settingsManager = settingsManager;
-        _settingsManager.Settings.SettingsChanged += SettingsOnSettingsChanged;
 
         _lazyDetails = new(() => CreateDetails());
+        _hasFileSystemMetadata = FileSystemMetadataProvider.CanHandle(item);
 
         var deleteConfirmationCommand = new ConfirmableCommand
         {
@@ -64,7 +74,7 @@ internal sealed partial class ClipboardListItem : ListItem
             RequestedShortcut = KeyChords.DeleteEntry,
         };
 
-        DataPackageView = _item.Item.Content;
+        DataPackageView = dataPackageView;
 
         if (item.IsImage)
         {
@@ -95,20 +105,37 @@ internal sealed partial class ClipboardListItem : ListItem
         RefreshCommands();
     }
 
-    private void SettingsOnSettingsChanged(object sender, Settings args)
+    internal void RefreshFileSystemMetadata()
     {
-        RefreshCommands();
+        if (!_hasFileSystemMetadata)
+        {
+            return;
+        }
+
+        // The clipboard text is unchanged, but its file may have changed since the last fetch.
+        var previousDetails = Interlocked.Exchange(ref _lazyDetails, new(CreateDetails));
+        RefreshCommands(force: true);
+        if (previousDetails.IsValueCreated)
+        {
+            OnPropertyChanged(nameof(Details));
+        }
     }
 
-    private void RefreshCommands()
+    internal void RefreshCommands(bool force = false)
     {
+        var primaryAction = _settingsManager.PrimaryAction;
+        if (!force && _primaryAction == primaryAction)
+        {
+            return;
+        }
+
         if (_item is { IsText: false, IsImage: false })
         {
             MoreCommands = [_deleteContextMenuItem];
             Icon = _settingsManager.PrimaryAction == PrimaryAction.Paste ? Icons.Clipboard : Icons.Copy;
         }
 
-        switch (_settingsManager.PrimaryAction)
+        switch (primaryAction)
         {
             case PrimaryAction.Paste:
                 Command = _pasteCommand?.Command;
@@ -149,6 +176,8 @@ internal sealed partial class ClipboardListItem : ListItem
 
                 break;
         }
+
+        _primaryAction = primaryAction;
     }
 
     private IContextItem[] BuildMoreCommands(CommandContextItem? firstCommand)

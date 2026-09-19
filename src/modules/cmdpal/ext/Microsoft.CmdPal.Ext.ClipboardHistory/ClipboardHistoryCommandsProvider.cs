@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -13,11 +14,12 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
 {
     private readonly ListItem _clipboardHistoryListItem;
     private readonly SettingsManager _settingsManager = new();
+    private readonly ClipboardHistoryListPage _page;
 
     public ClipboardHistoryCommandsProvider()
     {
-        var page = new ClipboardHistoryListPage(_settingsManager);
-        _clipboardHistoryListItem = new ListItem(page)
+        _page = new ClipboardHistoryListPage(_settingsManager);
+        _clipboardHistoryListItem = new ListItem(_page)
         {
             Title = Properties.Resources.list_item_title,
             Icon = Icons.ClipboardListIcon,
@@ -35,5 +37,12 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
     public override IListItem[] TopLevelCommands()
     {
         return [_clipboardHistoryListItem];
+    }
+
+    public override void Dispose()
+    {
+        _page.Dispose();
+        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }
