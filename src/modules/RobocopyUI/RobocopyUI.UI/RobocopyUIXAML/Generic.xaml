@@ -3,5 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///Controls/AnimatedContentControl.xaml" />
+        <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

@@ -1,19 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ContentDialog
-    x:Class="RobocopyUI.Controls.AICommandDialog"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:RobocopyUI.Controls"
-    xmlns:controls="using:RobocopyUI.Controls"
-    xmlns:converters="using:RobocopyUI.Converters"
-    xmlns:settings="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    x:Uid="AIDialog"
-    Closing="OnClosing"
-    DefaultButton="Primary">
-
+<ContentDialog x:Class="RobocopyUI.Controls.AICommandDialog"
+               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:local="using:RobocopyUI.Controls"
+               xmlns:controls="using:RobocopyUI.Controls"
+               xmlns:converters="using:RobocopyUI.Converters"
+               xmlns:settings="using:Microsoft.PowerToys.Settings.UI.Library"
+               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+               mc:Ignorable="d"
+               x:Uid="AIDialog"
+               Closing="OnClosing"
+               DefaultButton="Primary">
     <ContentDialog.Resources>
         <!-- The default max width (548) is narrower than the content, which clips the buttons. -->
         <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
