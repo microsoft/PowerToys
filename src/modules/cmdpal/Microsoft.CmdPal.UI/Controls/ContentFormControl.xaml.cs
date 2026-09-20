@@ -118,13 +118,14 @@ public sealed partial class ContentFormControl : UserControl
         {
             return;
         }
+    foreach (var pair in renderedCard.UserInputs.AsMap())
+    {
+        var input = pair.Value; // Get the AdaptiveInputValue object
+        var currentValue = input.CurrentValue;
 
-        foreach (var input in renderedCard.UserInputs)
+        switch (input.InputElement)
         {
-            var currentValue = input.CurrentValue;
-
-            switch (input.InputElement)
-            {
+        
                 case AdaptiveTextInput textInput:
                     textInput.Value = currentValue;
                     break;
