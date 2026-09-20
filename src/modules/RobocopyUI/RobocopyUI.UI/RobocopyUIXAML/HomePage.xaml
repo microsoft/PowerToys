@@ -300,7 +300,8 @@
                         x:Uid="SimpleLogBrowseButton"
                         Grid.Column="1"
                         AutomationProperties.AutomationId="SimpleLogBrowseButton"
-                        Click="SimpleLogBrowseButton_Click">
+                        Click="SimpleLogBrowseButton_Click"
+                        VerticalAlignment="Bottom">
                         <FontIcon Glyph="&#xE8B7;" />
                     </Button>
                 </Grid>
