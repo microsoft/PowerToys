@@ -16,7 +16,7 @@ namespace RobocopyUI
         public ShellPage()
         {
             InitializeComponent();
-            this.Activated += ShellPage_Activated;
+            Activated += ShellPage_Activated;
             ContentFrame.Navigate(typeof(HomePage));
         }
 
@@ -30,12 +30,9 @@ namespace RobocopyUI
             SetTitleBar(titleBar);
 
             AppWindow.SetIcon("Assets\\RobocopyUI\\RobocopyUI.ico");
-            var title = ResourceLoaderInstance.ResourceLoader.GetString("ShellPageWindow/Title");
-            this.Title = title;
-            titleBar.Title = title;
-            AppWindow.Title = title;
+            Title = titleBar.Title = AppWindow.Title = ResourceLoaderInstance.ResourceLoader.GetString("ShellPageWindow/Title");
 
-            this.Activated -= ShellPage_Activated;
+            Activated -= ShellPage_Activated;
         }
     }
 }
