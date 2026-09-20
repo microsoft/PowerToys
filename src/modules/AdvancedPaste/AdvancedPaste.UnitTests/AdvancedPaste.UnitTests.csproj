@@ -24,6 +24,9 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
   </ItemGroup>
 
