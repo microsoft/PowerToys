@@ -54,6 +54,10 @@ Before that single click, transient UIA errors invalidate the cached Browse/font
 and re-resolve it from its settings card within the existing readiness timeout.
 `ZoomItDialogReadinessTests` covers replacement during preparation/polling, consecutive
 sample resets, missing controls, non-transient failures, and bounded stale-control timeouts.
+Notepad startup and Settings navigation are also gated on a stable, test-owned window and
+an interactive editor. A replaced startup HWND is rebound, and an existing owned document
+is required before acknowledging a restored-session missing-path message. Fixture files
+are retained with a diagnostic if closing their Notepad tab cannot be confirmed.
 
 The even-pixel expectation comes from
 [`VideoRecordingSession.cpp`](../../ZoomIt/VideoRecordingSession.cpp):
