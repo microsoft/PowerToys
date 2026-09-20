@@ -21,8 +21,7 @@ internal static class WindowSearchScorer
     /// ("word budget") match in any order. Every word must match something for the word-by-word
     /// score to apply; otherwise the whole-query score stands. The result is never lower than
     /// the whole-query score, so anything that matched before still matches. Words are separated
-    /// by any Unicode whitespace, and the query is whitespace-normalized before being scored as
-    /// a whole.
+    /// by any Unicode whitespace, and the query is scored both as typed and whitespace-normalized.
     /// </remarks>
     /// <param name="query">The user's search text.</param>
     /// <param name="title">The window title.</param>
@@ -43,10 +42,16 @@ internal static class WindowSearchScorer
         // drop the query back to single-word behavior.
         var words = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
-        // Score the normalized query, so whitespace that does not appear in the title verbatim
-        // (a non-breaking space, a run of spaces, surrounding padding) cannot by itself defeat
-        // a whole-query match.
-        var wholeQueryScore = ScoreBothFields(string.Join(' ', words), title, processName);
+        // Score the query as typed, then again whitespace-normalized, and keep the better of the
+        // two. Normalizing lets a padded query match a title that is not padded; scoring the
+        // original as well keeps a query whose spacing matches the title verbatim -- a title that
+        // itself contains a run of spaces or a tab -- from being scored lower than before.
+        var wholeQueryScore = ScoreBothFields(query, title, processName);
+        var normalizedQuery = string.Join(' ', words);
+        if (!string.Equals(normalizedQuery, query, StringComparison.Ordinal))
+        {
+            wholeQueryScore = Math.Max(wholeQueryScore, ScoreBothFields(normalizedQuery, title, processName));
+        }
 
         if (words.Length < 2)
         {

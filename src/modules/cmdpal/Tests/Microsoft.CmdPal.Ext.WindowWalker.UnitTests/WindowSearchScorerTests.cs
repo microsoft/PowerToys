@@ -100,19 +100,21 @@ public class WindowSearchScorerTests
         Assert.AreEqual(LegacyScore(query, WordTitle, WordProcess), score);
     }
 
-    [TestMethod]
-    public void Score_IsNeverLowerThanLegacyScore()
+    [DataTestMethod]
+    [DataRow("budget review", "Quarterly budget review - Word", DisplayName = "Single spaces in both")]
+    [DataRow("budget   review", "Quarterly budget   review - Word", DisplayName = "Repeated spaces in both")]
+    [DataRow("budget\treview", "Quarterly budget\treview - Word", DisplayName = "Tab in both")]
+    [DataRow("budget   review", "Quarterly budget review - Word", DisplayName = "Padded query, unpadded title")]
+    [DataRow("budget review", "Quarterly budget   review - Word", DisplayName = "Unpadded query, padded title")]
+    public void Score_IsNeverLowerThanLegacyScore(string query, string title)
     {
-        // A multi-word query that the whole-query path already matched, because the title
-        // contains it literally.
-        const string title = "Quarterly budget review - Word";
-        const string query = "budget review";
-
+        // Queries whose whitespace matches the title verbatim were already matched by the
+        // whole-query path, so normalizing the query must not cost them their score.
         var score = WindowSearchScorer.Score(query, title, WordProcess);
 
         Assert.IsTrue(
             score >= LegacyScore(query, title, WordProcess),
-            "Multi-word support must never score lower than the previous whole-query behavior.");
+            $"'{query}' scored {score}, below the previous whole-query score of {LegacyScore(query, title, WordProcess)}.");
     }
 
     [DataTestMethod]
