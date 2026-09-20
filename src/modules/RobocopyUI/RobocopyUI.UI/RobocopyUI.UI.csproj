@@ -77,6 +77,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
