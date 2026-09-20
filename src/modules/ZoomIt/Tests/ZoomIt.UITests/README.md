@@ -50,6 +50,10 @@ toasts can cover pixel samples even when ZoomIt's window is topmost.
 Native dialogs are clicked once, then polled separately for window appearance and
 HWND-scoped control readiness. A delayed Font dialog regression covers an eight-second
 opening delay, beyond the previous five-second discovery timeout.
+Before that single click, transient UIA errors invalidate the cached Browse/font button
+and re-resolve it from its settings card within the existing readiness timeout.
+`ZoomItDialogReadinessTests` covers replacement during preparation/polling, consecutive
+sample resets, missing controls, non-transient failures, and bounded stale-control timeouts.
 
 The even-pixel expectation comes from
 [`VideoRecordingSession.cpp`](../../ZoomIt/VideoRecordingSession.cpp):
