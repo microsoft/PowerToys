@@ -107,7 +107,7 @@ namespace Microsoft.Workspaces.UITests
                             continue;
                         }
 
-                        var path = process.MainModule?.FileName;
+                        var path = NativeMethods.ProcessImagePath(process);
                         if (string.Equals(path, ExecutablePath, StringComparison.OrdinalIgnoreCase) ||
                             (package is not null && string.Equals(path, PackagedExecutablePath, StringComparison.OrdinalIgnoreCase)))
                         {

@@ -13,6 +13,14 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToVisibilityConverter
+            x:Key="InvertedBoolToVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -118,12 +126,104 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <!--  'For Developers' section  -->
+                    <!--  'External links' section  -->
 
-                    <TextBlock x:Uid="Settings_GeneralPage_ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
-                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowExternalReload" IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    <TextBlock x:Uid="ExternalLinksSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_ExternalCommandLinks"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE71B;}"
+                        ItemsSource="{x:Bind ExternalCommandPermissions, Mode=OneWay}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_EnableExternalCommandLinks" IsOn="{x:Bind viewModel.EnableExternalCommandLinks, Mode=TwoWay}" />
+                        <controls:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="local:ExternalCommandPermissionViewModel">
+                                <controls:SettingsCard Description="{x:Bind ProviderName, Mode=OneTime}" Header="{x:Bind CommandName, Mode=OneTime}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <Button
+                                            x:Uid="Settings_GeneralPage_ExternalCommandPermission_DetailsButton"
+                                            Padding="8"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Visibility="{x:Bind HasCommandDetails, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <FontIcon
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="16"
+                                                Glyph="&#xE946;" />
+                                            <Button.Flyout>
+                                                <Flyout Placement="BottomEdgeAlignedRight">
+                                                    <StackPanel
+                                                        MinWidth="240"
+                                                        MaxWidth="400"
+                                                        Spacing="12">
+                                                        <TextBlock x:Uid="Settings_GeneralPage_ExternalCommandPermission_DetailsFlyout_Title" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock
+                                                                x:Uid="Settings_GeneralPage_ExternalCommandPermission_ProviderIdLabel"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                                            <TextBlock
+                                                                FontFamily="Consolas"
+                                                                IsTextSelectionEnabled="True"
+                                                                Text="{x:Bind ProviderId, Mode=OneTime}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock
+                                                                x:Uid="Settings_GeneralPage_ExternalCommandPermission_CommandIdLabel"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}" />
+                                                            <TextBlock
+                                                                FontFamily="Consolas"
+                                                                IsTextSelectionEnabled="True"
+                                                                Text="{x:Bind CommandId, Mode=OneTime}"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                        <Button
+                                            x:Uid="Settings_GeneralPage_ExternalCommandPermission_RevokeButton"
+                                            VerticalAlignment="Center"
+                                            Click="RevokeExternalCommandPermission_Click"
+                                            DataContext="{x:Bind}" />
+                                    </StackPanel>
+                                </controls:SettingsCard>
+                            </DataTemplate>
+                        </controls:SettingsExpander.ItemTemplate>
+                        <controls:SettingsExpander.ItemsHeader>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_Warning"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_Empty"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Visibility="{x:Bind HasExternalCommandPermissions, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.ItemsHeader>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <controls:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Left"
+                                Style="{StaticResource DefaultSettingsExpanderItemStyle}"
+                                Visibility="{x:Bind HasExternalCommandPermissions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Button
+                                        x:Uid="Settings_GeneralPage_ExternalCommandPermissions_ClearButton"
+                                        HorizontalAlignment="Right"
+                                        Click="ClearExternalCommandPermissions_Click" />
+                                </Grid>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.ItemsFooter>
+                    </controls:SettingsExpander>
 
                     <!--  'About' section  -->
 
