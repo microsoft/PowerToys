@@ -24,6 +24,11 @@ internal sealed partial class AllIssueSamplesIndexPage : ListPage
                 Title = "Grid virtualization and recycling",
                 Subtitle = "10,000 gallery items with repeated and empty sections. Check rapid scrolling, arrow rollover and page navigation, filtering, load more, context menus, and Back/reopen.",
             },
+            new ListItem(new SampleCompactPinToDockPage())
+            {
+                Title = "Compact Pin to Dock dialog",
+                Subtitle = "Repro steps: Enable compact mode and the dock, open this page, then press Ctrl+K and choose Pin to Dock. The entire dialog should be visible.",
+            },
             new ListItem(new SamplePageForIssue42827_FilterDropDownStaysVisibleAfterSwitchingFromListToContentPage())
             {
                 Title = "Issue 42827 - Filter Drop Down Stays Visible After Switching From List To Content Page",
