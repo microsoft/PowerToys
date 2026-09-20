@@ -379,6 +379,25 @@ Obtain media first, for example:
     & $newVmScript @arguments
 }
 
+# Refresh existing guests even when Windows servicing is skipped. The helper changes only the
+# configured administrator's per-account expiry flag; it cannot repair an already rejected logon.
+$guestVm = Get-VM -Name $vmName -ErrorAction SilentlyContinue
+if ($null -ne $guestVm -and $PSCmdlet.ShouldProcess($vmName, 'Prevent guest administrator password expiry')) {
+    if ($guestVm.State -ne 'Running') {
+        Start-VM -Name $vmName
+    }
+    $credential = Import-Clixml $CredentialPath
+    $session = New-LocalVmSession -Context ([pscustomobject]@{ VmName = $vmName }) -Credential $credential
+    try {
+        $adminPolicyScript = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\oem\Set-UiTestAdminPasswordPolicy.ps1'))
+        Invoke-Command -Session $session -FilePath $adminPolicyScript `
+            -ArgumentList $configuration.AdminUserName, $configuration.StandardUser -ErrorAction Stop | Out-Null
+    }
+    finally {
+        Remove-PSSession $session -ErrorAction SilentlyContinue
+    }
+}
+
 # Windows Setup Dynamic Update is the primary Win10 servicing path. Verify its result against the
 # .NET 10 CET floor (1904x.5007); only then use online Windows Update as a fallback and replace the
 # pre-update checkpoint. Windows 11 media does not need this compatibility step.
@@ -408,7 +427,9 @@ if (-not $SkipWindowsUpdate -and (Get-VM -Name $vmName -ErrorAction SilentlyCont
         Write-Warning "Windows Setup Dynamic Update left '$vmName' at $($guestVersion.Display); .NET 10 needs 1904x.5007 or newer. Falling back to online Windows Update."
         & (Join-Path $PSScriptRoot 'Update-LocalVmGuest.ps1') `
             -VmName $vmName `
-            -CredentialPath $CredentialPath
+            -CredentialPath $CredentialPath `
+            -AdminUserName $configuration.AdminUserName `
+            -StandardUser $configuration.StandardUser
 
         & ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\vm\Reset-LocalVm.ps1'))) `
             -ConfigPath $ConfigPath `

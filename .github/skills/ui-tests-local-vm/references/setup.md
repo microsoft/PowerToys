@@ -74,7 +74,8 @@ elevation, which no tool call can approve, and one needs a password, which must 
 through a model. `Initialize-LocalVmHost.ps1` does all three, reports what is already in place,
 performs only what is missing, and is safe to re-run. It also refreshes copied scaffold scripts from
 the current skill templates before mutating anything, stages VC++ and PowerShell 7 prerequisites,
-and verifies Windows 10's .NET 10 CET floor before recapturing the baseline.
+refreshes the guest administrator's per-account password non-expiry flag, and verifies Windows 10's
+.NET 10 CET floor before recapturing the baseline.
 
 | # | Prerequisite | Why a human |
 |---|---|---|
@@ -170,6 +171,35 @@ Get-Credential -UserName PTAdmin -Message 'Local UI-test VM administrator' |
 ```
 
 The file decrypts only for the same Windows user on the same host.
+
+### Disposable guest account password expiry
+
+Provisioning sets `PasswordNeverExpires` on the existing local account named by `AdminUserName`
+in `vm.config.psd1`, as well as preserving the standard user's existing non-expiry/autologon setup.
+The two configured accounts must be different. The administrator must already exist and belong to
+Administrators; the helper fails rather than creating it or granting privileges.
+
+This is a **per-account setting for the disposable guest**, not a change to machine-wide maximum
+password age. It does not reset the administrator password, enable an account, disable policies,
+or make the standard user an administrator. `ProvisioningReady.json` records `AdminUserName` and
+`AdminPasswordNeverExpires` after successful new-guest provisioning.
+
+For an existing guest with working PowerShell Direct authentication, a human can rerun step 0
+without recreating the guest. The setup helper applies the current source helper even with
+`-SkipWindowsUpdate` or `-SkipScaffoldRefresh`; `-CheckOnly` does not connect to or change guest
+accounts. Normal setup may start a stopped guest to apply the flag.
+Refreshing the guest does **not** rewrite existing checkpoints. Refresh again after restoring an
+older checkpoint, or deliberately replace the clean baseline after verifying it.
+
+`Update-LocalVmGuest.ps1` also applies the flag before Windows servicing. Its optional
+`-AdminUserName` defaults to the local name in the existing credential; `-StandardUser` keeps its
+`PTUser` default, so pass both configured names for a customized guest. No password is supplied as
+an argument. Direct legacy calls to `Provision-UiTestVm.ps1` retain `PTAdmin` as the administrator
+default; refreshed new-VM scripts always pass both configured names explicitly.
+
+An already expired password may prevent PowerShell Direct from authenticating before any helper
+can run. A human must restore access through the guest console first; do not try to repair this
+by changing host credentials, resetting secrets automatically, or weakening the guest's policy.
 
 ## 3. Get Windows media
 

@@ -1,15 +1,18 @@
 <#
 .SYNOPSIS
-Provisions the PowerToys UI-test guest: standard-user desktop, auto-logon, and optional tooling.
+Provisions the PowerToys UI-test guest: control account, standard-user desktop, and optional tooling.
 
 .DESCRIPTION
 The host reaches this guest over PowerShell Direct, so no remote listener, no firewall opening, and
 no certificate is created. The guest keeps its default inbound posture.
+The existing administrator's password is made non-expiring without changing its password.
+AdminUserName defaults to PTAdmin for older callers; new scaffolds pass the configured account.
 #>
 
 [CmdletBinding()]
 param(
-    [string]$StandardUser = 'PTUser'
+    [string]$StandardUser = 'PTUser',
+    [string]$AdminUserName = 'PTAdmin'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,6 +33,9 @@ function Invoke-OfflineInstaller {
         throw "Installer '$Path' failed with exit code $($process.ExitCode)."
     }
 }
+
+$adminAccount = & (Join-Path $PSScriptRoot 'Set-UiTestAdminPasswordPolicy.ps1') `
+    -AdminUserName $AdminUserName -StandardUser $standardUser
 
 $autoLogonScript = 'C:\OEM\Set-UiTestAutoLogon.ps1'
 if (-not (Test-Path $autoLogonScript -PathType Leaf)) {
@@ -149,6 +155,8 @@ $dotNet10CetReady = $windowsBuild -ge 22000 -or
 [ordered]@{
     ProvisionedUtc = [DateTime]::UtcNow.ToString('O')
     ComputerName = $env:COMPUTERNAME
+    AdminUserName = $adminAccount.AdminUserName
+    AdminPasswordNeverExpires = $adminAccount.AdminPasswordNeverExpires
     StandardUser = $standardUser
     StandardUserIsAdministrator = $false
     WorkRoot = $workRoot
