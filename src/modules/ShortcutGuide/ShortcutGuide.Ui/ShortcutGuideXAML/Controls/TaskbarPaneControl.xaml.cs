@@ -44,9 +44,9 @@ namespace ShortcutGuide.Controls
         /// <param name="overlayPhysicalOriginX">The overlay window's physical left in screen coordinates.</param>
         /// <param name="overlayPhysicalOriginY">The overlay window's physical top in screen coordinates.</param>
         /// <param name="dpi">DPI scale factor of the host overlay window.</param>
-        /// <param name="workAreaPhysical">The work area of the overlay's monitor in physical pixels.</param>
         /// <param name="edge">The screen edge the taskbar is docked to.</param>
-        internal TaskbarPaneLayout? UpdateTasklistButtons(int overlayPhysicalOriginX, int overlayPhysicalOriginY, float dpi, Rect workAreaPhysical, TaskbarEdge edge)
+        internal TaskbarPaneLayout? UpdateTasklistButtons(
+            int overlayPhysicalOriginX, int overlayPhysicalOriginY, float dpi, TaskbarEdge edge)
         {
             TasklistButton[] buttons = [];
             try
@@ -110,10 +110,14 @@ namespace ShortcutGuide.Controls
             {
                 double leftmostPhysicalX = buttons[0].X;
                 double rightmostPhysicalX = buttons[0].X + buttons[0].Width;
+                double topmostPhysicalY = buttons[0].Y;
+                double bottommostPhysicalY = buttons[0].Y + buttons[0].Height;
                 foreach (TasklistButton b in buttons)
                 {
                     leftmostPhysicalX = Math.Min(leftmostPhysicalX, b.X);
                     rightmostPhysicalX = Math.Max(rightmostPhysicalX, b.X + b.Width);
+                    topmostPhysicalY = Math.Min(topmostPhysicalY, b.Y);
+                    bottommostPhysicalY = Math.Max(bottommostPhysicalY, b.Y + b.Height);
                 }
 
                 for (int i = 0; i < buttons.Length; i++)
@@ -130,11 +134,10 @@ namespace ShortcutGuide.Controls
                     indicator.PlayEntrance();
                 }
 
-                // Anchor the strip just inside the taskbar edge: the tail tip
-                // sits EdgeMarginDip away from the bottom (or top) of the work area.
+                // Anchor the strip adjacent to the taskbar buttons.
                 double paneOriginPhysicalY = edge == TaskbarEdge.Bottom
-                    ? workAreaPhysical.Bottom - ((indicatorThicknessDip + EdgeMarginDip) * dpi)
-                    : workAreaPhysical.Top + (EdgeMarginDip * dpi);
+                    ? topmostPhysicalY - ((indicatorThicknessDip + EdgeMarginDip) * dpi)
+                    : bottommostPhysicalY + (EdgeMarginDip * dpi);
 
                 double paneLeftDip = (leftmostPhysicalX - overlayPhysicalOriginX) / dpi;
                 double paneTopDip = (paneOriginPhysicalY - overlayPhysicalOriginY) / dpi;
@@ -146,10 +149,14 @@ namespace ShortcutGuide.Controls
             {
                 double topmostPhysicalY = buttons[0].Y;
                 double bottommostPhysicalY = buttons[0].Y + buttons[0].Height;
+                double leftmostPhysicalX = buttons[0].X;
+                double rightmostPhysicalX = buttons[0].X + buttons[0].Width;
                 foreach (TasklistButton b in buttons)
                 {
                     topmostPhysicalY = Math.Min(topmostPhysicalY, b.Y);
                     bottommostPhysicalY = Math.Max(bottommostPhysicalY, b.Y + b.Height);
+                    leftmostPhysicalX = Math.Min(leftmostPhysicalX, b.X);
+                    rightmostPhysicalX = Math.Max(rightmostPhysicalX, b.X + b.Width);
                 }
 
                 for (int i = 0; i < buttons.Length; i++)
@@ -166,11 +173,12 @@ namespace ShortcutGuide.Controls
                     indicator.PlayEntrance();
                 }
 
-                // Anchor the strip just inside the taskbar edge: the tail tip
-                // sits EdgeMarginDip away from the left (or right) of the work area.
+                // Anchor the strip adjacent to the taskbar buttons rather than
+                // the monitor work area, keeping the indicators outside the
+                // taskbar area even when auto-hide expands into the work area.
                 double paneOriginPhysicalX = edge == TaskbarEdge.Left
-                    ? workAreaPhysical.Left + (EdgeMarginDip * dpi)
-                    : workAreaPhysical.Right - ((indicatorThicknessDip + EdgeMarginDip) * dpi);
+                    ? rightmostPhysicalX + (EdgeMarginDip * dpi)
+                    : leftmostPhysicalX - ((indicatorThicknessDip + EdgeMarginDip) * dpi);
 
                 double paneLeftDip = (paneOriginPhysicalX - overlayPhysicalOriginX) / dpi;
                 double paneTopDip = (topmostPhysicalY - overlayPhysicalOriginY) / dpi;
