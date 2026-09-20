@@ -11,6 +11,17 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 public sealed class NotepadReadinessTests
 {
     [TestMethod]
+    [DataRow("Edit", false, true)]
+    [DataRow("edit", false, true)]
+    [DataRow("RichEditD2DPT", false, false)]
+    [DataRow("RichEditD2DPT", true, true)]
+    [DataRow("", false, false)]
+    public void SettingsReadinessDistinguishesClassicAndModernEditors(string className, bool settingsPresent, bool expected)
+    {
+        Assert.AreEqual(expected, NotepadReadiness.IsSettingsReady(className, settingsPresent));
+    }
+
+    [TestMethod]
     public void ReplacementWindowMustBeReadyTwiceBeforeUse()
     {
         var observed = 0;

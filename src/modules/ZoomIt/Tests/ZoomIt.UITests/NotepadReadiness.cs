@@ -9,6 +9,10 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 
 internal static class NotepadReadiness
 {
+    // Classic Notepad's Edit can also report UIA Document; that does not imply a Settings page.
+    internal static bool IsSettingsReady(string editorClassName, bool settingsPresent) =>
+        editorClassName.Equals("Edit", StringComparison.OrdinalIgnoreCase) || settingsPresent;
+
     internal static WaitHelper.StableWaitResult<T> WaitForStableWindow<T>(
         Func<T?> observeReadyWindow,
         Func<T, long> windowHandle,

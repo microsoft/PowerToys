@@ -383,7 +383,7 @@ public sealed partial class ZoomItTests
 
                 var settings = window.FindAll<Button>(By.Name("Settings"), 0)
                     .SingleOrDefault(button => button.Name == "Settings" && button.Displayed && button.IsEnabled);
-                return requireSettings && editor.ControlType == "Document" && settings is null
+                return requireSettings && !NotepadReadiness.IsSettingsReady(editor.ClassName, settings is not null)
                     ? null
                     : new NotepadDocument(window, editor, settings);
             },
