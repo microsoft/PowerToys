@@ -50,9 +50,6 @@ After generation, [build and deploy Command Palette](../README.md#building-cmdpa
 
 `{Locked}` follows the localization-comment convention described in [Microsoft's resource guidance](https://learn.microsoft.com/en-us/globalization/internationalization/externalize-resources#separate-localizable-and-nonlocalizable-resources). Microsoft's [VS Code localization guidance](https://github.com/microsoft/vscode-livepreview/issues/221) calls these tool-interpreted annotations "functional commenting". The pseudo-localizer explicitly interprets them when generating resources.
 
-> [!NOTE]  
-> TODO: check if PT localization pipeline supports these forms: [localization pipeline](../../../../.pipelines/loc/loc.yml), `TouchdownBuildTask@5`
-
 Add a directive to a resource entry's `<comment>` element. This local script supports the forms below, with double quotes required around literal fragments:
 
 | Directive | Effect in the pseudo-localizer |
