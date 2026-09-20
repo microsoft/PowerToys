@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml;
 using RobocopyUI.Helpers;
+using WinUIEx;
 
 namespace RobocopyUI
 {
@@ -15,22 +16,26 @@ namespace RobocopyUI
         public ShellPage()
         {
             InitializeComponent();
-
-            this.Title = ResourceLoaderInstance.ResourceLoader.GetString("ShellPageWindow/Title");
-
+            this.Activated += ShellPage_Activated;
             ContentFrame.Navigate(typeof(HomePage));
         }
 
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        private void ShellPage_Activated(object sender, WindowActivatedEventArgs args)
         {
+            this.CenterOnScreen(1200, 900);
+
             // Extend the canvas to include the title bar so the app can support theming
             ExtendsContentIntoTitleBar = true;
-            SetTitleBar(titleBar);
             TitleBarHelper.SetPreferredTheme(this);
+            SetTitleBar(titleBar);
 
             AppWindow.SetIcon("Assets\\RobocopyUI\\RobocopyUI.ico");
-            titleBar.Title = "Robocopy UI";
-            AppWindow.Title = "Robocopy UI";
+            var title = ResourceLoaderInstance.ResourceLoader.GetString("ShellPageWindow/Title");
+            this.Title = title;
+            titleBar.Title = title;
+            AppWindow.Title = title;
+
+            this.Activated -= ShellPage_Activated;
         }
     }
 }
