@@ -17,8 +17,6 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class PinToDockDialogContent : UserControl
 {
-    private string _title = string.Empty;
-    private string _subtitle = string.Empty;
     private IReadOnlyList<MonitorInfo>? _monitors;
 
     public DockPinSide SelectedSide => SectionSegmented.SelectedIndex switch
@@ -56,30 +54,16 @@ public sealed partial class PinToDockDialogContent : UserControl
 
     public void Configure(string title, string subtitle, IconInfoViewModel? icon, DockSide dockSide, IReadOnlyList<MonitorInfo>? monitors = null)
     {
-        _title = title;
-        _subtitle = subtitle;
-
         var hasTitle = !string.IsNullOrEmpty(title);
         var hasSubtitle = !string.IsNullOrEmpty(subtitle);
 
-        PreviewTitleText.Text = title;
-        PreviewTitleText.Visibility = hasTitle ? Visibility.Visible : Visibility.Collapsed;
-
-        PreviewSubtitleText.Text = subtitle;
-        PreviewSubtitleText.Visibility = hasSubtitle ? Visibility.Visible : Visibility.Collapsed;
-
-        PreviewTextPanel.Visibility = (hasTitle || hasSubtitle) ? Visibility.Visible : Visibility.Collapsed;
+        Preview.Configure(title, subtitle, icon);
 
         ShowTitleCheckBox.Visibility = hasTitle ? Visibility.Visible : Visibility.Collapsed;
         ShowTitleCheckBox.IsChecked = hasTitle;
 
         ShowSubtitleCheckBox.Visibility = hasSubtitle ? Visibility.Visible : Visibility.Collapsed;
         ShowSubtitleCheckBox.IsChecked = hasSubtitle;
-
-        if (icon is not null)
-        {
-            PreviewIcon.SourceKey = icon;
-        }
 
         ApplyDockOrientation(dockSide);
         ConfigureMonitorSelector(monitors);
@@ -172,8 +156,7 @@ public sealed partial class PinToDockDialogContent : UserControl
 
     private void OnLabelOptionChanged(object sender, RoutedEventArgs e)
     {
-        if (PreviewTitleText is null || PreviewSubtitleText is null ||
-            PreviewTextPanel is null || ShowTitleCheckBox is null || ShowSubtitleCheckBox is null)
+        if (Preview is null || ShowTitleCheckBox is null || ShowSubtitleCheckBox is null)
         {
             return;
         }
@@ -181,13 +164,7 @@ public sealed partial class PinToDockDialogContent : UserControl
         var showTitle = ShowTitleCheckBox.IsChecked == true;
         var showSubtitle = ShowSubtitleCheckBox.IsChecked == true;
 
-        PreviewTitleText.Text = showTitle ? _title : string.Empty;
-        PreviewTitleText.Visibility = showTitle ? Visibility.Visible : Visibility.Collapsed;
-
-        PreviewSubtitleText.Text = showSubtitle ? _subtitle : string.Empty;
-        PreviewSubtitleText.Visibility = showSubtitle ? Visibility.Visible : Visibility.Collapsed;
-
-        PreviewTextPanel.Visibility = (showTitle || showSubtitle) ? Visibility.Visible : Visibility.Collapsed;
+        Preview.SetTextVisibility(showTitle, showSubtitle);
     }
 
     private void ConfigureMonitorSelector(IReadOnlyList<MonitorInfo>? monitors)

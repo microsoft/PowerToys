@@ -121,7 +121,6 @@
       <PreprocessorDefinitions>_WINRT_DLL;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <SpectreMitigation>Spectre</SpectreMitigation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
