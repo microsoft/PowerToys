@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -43,7 +44,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
-    private readonly ISettledSearchSource? _searchSettlement;
+    private readonly MainListPage? _homePage;
 
     // Background fetches alone take this lock. Selection, realization, and teardown
     // never acquire it, so installing a coordinator cannot block the UI thread.
@@ -137,8 +138,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private volatile bool _forceFirstItemPending;
 
     // GH #48670: Enter pressed before a settled snapshot for this query exists is queued.
-    // Only pages that implement ISettledSearchSource can release that queue. A bare
-    // ItemsChanged does not identify which query it belongs to.
+    // Only the host home page can release that queue: the host owns ranking and fallbacks.
+    // A bare ItemsChanged from an extension does not identify which query it belongs to.
     private int _searchEpoch;
     private int _readySearchEpoch;
     private int _searchAppliedEpoch;
@@ -163,10 +164,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
-        _searchSettlement = model as ISettledSearchSource;
-        if (_searchSettlement is not null)
+        _homePage = model as MainListPage;
+        if (_homePage is not null)
         {
-            _searchSettlement.SearchSettlementChanged += OnSearchSettlementChanged;
+            _homePage.SearchSettlementChanged += OnHomeSearchSettlementChanged;
         }
     }
 
@@ -1008,17 +1009,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
         return TryInvokePending(PendingActivation.Secondary, selectedItem);
     }
 
-    // Pages without a settlement contract keep the old Enter behavior: run the
-    // visible selection now, and never auto-run a later fetch.
+    // Extension pages keep the old Enter behavior: run the visible selection now,
+    // and never auto-run a later fetch. Only the home page can queue Enter.
     private bool CanQueueActivation =>
-        _searchSettlement is not null && !string.IsNullOrEmpty(SearchTextBox);
+        _homePage is not null && !string.IsNullOrEmpty(SearchTextBox);
 
     private bool IsActivationReady =>
         Volatile.Read(ref _readySearchEpoch) == Volatile.Read(ref _searchEpoch) &&
         !IsFetching &&
-        _searchSettlement?.CurrentFetchIsSettledFor(SearchTextBox) == true;
+        _homePage?.CurrentFetchIsSettledFor(SearchTextBox) == true;
 
-    private void OnSearchSettlementChanged(object sender, ISearchSettlementChangedEventArgs args) =>
+    private void OnHomeSearchSettlementChanged(object? sender, EventArgs e) =>
         DoOnUiThread(TryConsumePendingActivation);
 
     private void InvokeOrQueue(ListItemViewModel? selectedItem, PendingActivation kind)
@@ -1752,9 +1753,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters?.SafeCleanup();
 
-        if (_searchSettlement is not null)
+        if (_homePage is not null)
         {
-            _searchSettlement.SearchSettlementChanged -= OnSearchSettlementChanged;
+            _homePage.SearchSettlementChanged -= OnHomeSearchSettlementChanged;
         }
 
         var model = _model.Unsafe;

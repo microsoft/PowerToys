@@ -334,17 +334,6 @@ namespace Microsoft.CommandPalette.Extensions
         String SearchText { set; };
     }
 
-    [uuid("a191b6d2-b24a-46d3-9bb0-24b1a24b5b2f")]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ISearchSettlementChangedEventArgs {
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ISettledSearchSource {
-        Boolean CurrentFetchIsSettledFor(String query);
-        event Windows.Foundation.TypedEventHandler<Object, ISearchSettlementChangedEventArgs> SearchSettlementChanged;
-    };
-
     [uuid("b64def0f-8911-4afa-8f8f-042bd778d088")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContent requires INotifyPropChanged {

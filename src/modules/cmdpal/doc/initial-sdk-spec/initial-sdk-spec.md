@@ -796,12 +796,6 @@ Lists can be either "static" or "dynamic":
     * Ex: The GitHub extension may want to allow the user to type `is:issue
       is:open`, then return a list of open issues, without string matching on
       the text.
-  * A dynamic page may also implement `ISettledSearchSource`. That contract is
-    optional. Command Palette uses it to run a queued Enter only after the page
-    reports that the latest `GetItems()` snapshot is the settled ranking for
-    that exact query. Raise `SearchSettlementChanged` when that becomes true,
-    and raise `ItemsChanged` so the host fetches the snapshot. Pages that do
-    not implement the interface are never auto-activated.
 
 
 ```csharp
@@ -865,14 +859,6 @@ interface IListPage requires IPage, INotifyItemsChanged {
 
 interface IDynamicListPage requires IListPage {
     String SearchText { set; };
-}
-
-[uuid("a191b6d2-b24a-46d3-9bb0-24b1a24b5b2f")]
-interface ISearchSettlementChangedEventArgs { }
-
-interface ISettledSearchSource {
-    Boolean CurrentFetchIsSettledFor(String query);
-    event Windows.Foundation.TypedEventHandler<Object, ISearchSettlementChangedEventArgs> SearchSettlementChanged;
 }
 ```
 
