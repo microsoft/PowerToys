@@ -29,8 +29,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// This class encapsulates the data we load from built-in providers and extensions to use within the same extension-UI system for a <see cref="ListPage"/>.
 /// TODO: Need to think about how we structure/interop for the page -> section -> item between the main setup, the extensions, and our viewmodels.
 /// </summary>
-public sealed partial class MainListPage : DynamicListPage,
-    ISettledSearchSource,
+public sealed partial class MainListPage : SettledDynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>,
     IDisposable
@@ -111,15 +110,8 @@ public sealed partial class MainListPage : DynamicListPage,
     private long _builtEpoch;
     private string? _activationQuery;
     private string? _builtActivationQuery;
-    private EventHandler? _searchSettlementChanged;
 
-    event EventHandler? ISettledSearchSource.SearchSettlementChanged
-    {
-        add => _searchSettlementChanged += value;
-        remove => _searchSettlementChanged -= value;
-    }
-
-    public bool CurrentFetchIsSettledFor(string query)
+    public override bool CurrentFetchIsSettledFor(string query)
     {
         lock (_tlcManager.TopLevelCommands)
         {
@@ -909,7 +901,7 @@ public sealed partial class MainListPage : DynamicListPage,
             _activationEpoch++;
         }
 
-        _searchSettlementChanged?.Invoke(this, EventArgs.Empty);
+        RaiseSearchSettlementChanged();
 
         // Rebuild so GetItems() observes the settled epoch and the fallback titles
         // that landed before this gate opened.

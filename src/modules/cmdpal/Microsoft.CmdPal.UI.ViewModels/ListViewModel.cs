@@ -1018,7 +1018,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         !IsFetching &&
         _searchSettlement?.CurrentFetchIsSettledFor(SearchTextBox) == true;
 
-    private void OnSearchSettlementChanged(object? sender, EventArgs e) =>
+    private void OnSearchSettlementChanged(object sender, ISearchSettlementChangedEventArgs args) =>
         DoOnUiThread(TryConsumePendingActivation);
 
     private void InvokeOrQueue(ListItemViewModel? selectedItem, PendingActivation kind)

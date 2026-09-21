@@ -22,7 +22,7 @@ public sealed partial class ListViewModelPendingActivationTests
         public override string? GetExtensionDisplayName() => "Pending activation test host";
     }
 
-    private sealed partial class DelayedSearchPage : DynamicListPage, ISettledSearchSource
+    private sealed partial class DelayedSearchPage : SettledDynamicListPage
     {
         private IListItem[] _items;
         private int _getItemsCount;
@@ -35,9 +35,7 @@ public sealed partial class ListViewModelPendingActivationTests
 
         internal DelayedSearchPage(params IListItem[] items) => _items = items;
 
-        public event EventHandler? SearchSettlementChanged;
-
-        public bool CurrentFetchIsSettledFor(string query) =>
+        public override bool CurrentFetchIsSettledFor(string query) =>
             _builtQuery == query && _activationQuery == query && query.Length > 0;
 
         public override IListItem[] GetItems()
@@ -74,7 +72,7 @@ public sealed partial class ListViewModelPendingActivationTests
         {
             _activationQuery = query;
             RaiseItemsChanged(1);
-            SearchSettlementChanged?.Invoke(this, EventArgs.Empty);
+            RaiseSearchSettlementChanged();
         }
     }
 
