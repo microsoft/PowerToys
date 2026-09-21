@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -19,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class MeasureToolViewModel : PageViewModelBase
     {
         private const int DefaultUnitsOfMeasureIndex = 0;
-        private const int MaximumUnitsOfMeasureIndex = 3;
+        internal const int MaximumUnitsOfMeasureIndex = 4;
 
         protected override string ModuleName => MeasureToolSettings.ModuleName;
 
@@ -287,9 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             return value switch
             {
-                // Before the units selector was added, this setting stored Measurement::Unit
-                // enum values. Preserve the user's centimetre/millimetre choice during migration.
-                4 => 2,
+                // Legacy enum migration (pre-ComboBox builds stored Millimeters as 4).
                 8 => 3,
                 >= DefaultUnitsOfMeasureIndex and <= MaximumUnitsOfMeasureIndex => value,
                 _ => DefaultUnitsOfMeasureIndex,
