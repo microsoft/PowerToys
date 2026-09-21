@@ -44,6 +44,43 @@ try {
     Assert-Check ($moduleSettings.properties.Name2IP.value -eq 'PEER 192.0.2.1') 'MWB name mapping is retained in the typed settings schema'
     & {
         . "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\EndpointSupport.ps1"
+        . "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\ModernSandboxRecovery.ps1"
+        $recoveryRunId = [guid]::NewGuid().ToString()
+        $control = "$fixture\control\$recoveryRunId"
+        $provisioning = [pscustomobject]@{
+            RunId = $recoveryRunId; SandboxBackend = 'WinApp'
+            SandboxWinAppPath = "$fixture\preview\winapp.exe"; SandboxWinAppSha256 = ('A' * 64)
+        }
+        $modern = [pscustomobject]@{
+            Backend = 'WinApp'; InstanceId = $recoveryRunId; CreationAttempted = $true; CreationConfirmed = $true
+            WinAppPath = $provisioning.SandboxWinAppPath; WinAppSha256 = $provisioning.SandboxWinAppSha256
+            TargetStateRoot = "$control\winapp-target"
+        }
+        $identity = Get-MwbModernRecoveryIdentity $modern $provisioning $control
+        Assert-Check ($identity.InstanceId -eq [guid]$recoveryRunId) 'modern recovery derives the owned ID from protected provisioning'
+        $modern.InstanceId = [guid]::NewGuid().ToString()
+        Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'protected run identity'
+        $modern.InstanceId = $recoveryRunId
+        $modern.TargetStateRoot = "$fixture\unrelated"
+        Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'private state identity changed'
+        $modern.TargetStateRoot = "$control\winapp-target"
+        $modern.WinAppPath = "$fixture\untrusted\winapp.exe"
+        Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'private state identity changed'
+        $modern.WinAppPath = $provisioning.SandboxWinAppPath
+        $modern.CreationAttempted = 'true'
+        Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'creation evidence is malformed'
+        Assert-Check (@(Get-MwbModernInstanceIds ([pscustomobject]@{ WindowsSandboxEnvironments = @() })).Count -eq 0) 'an empty modern provider inventory is valid'
+        Assert-Check (@(Get-MwbModernInstanceIds ([pscustomobject]@{
+            WindowsSandboxEnvironments = @([pscustomobject]@{ Id = $recoveryRunId })
+        }))[0] -eq [guid]$recoveryRunId) 'modern provider inventory preserves exact identity'
+        Assert-Throws { Get-MwbModernInstanceIds ([pscustomobject]@{}) } 'expected instance array'
+        Assert-Throws { Get-MwbModernInstanceIds ([pscustomobject]@{
+            WindowsSandboxEnvironments = @([pscustomobject]@{ Id = $recoveryRunId }, [pscustomobject]@{ Id = $recoveryRunId })
+        }) } 'duplicate identities'
+        $null = New-Item -ItemType Directory -Path "$control\winapp-target"
+        [IO.File]::WriteAllText("$control\winapp-target\fixture.txt", 'private fixture')
+        Remove-MwbPrivateTargetState "$control\winapp-target"
+        Assert-Check (-not (Test-Path -LiteralPath "$control\winapp-target")) 'only the explicitly scoped private target state is removed'
         $script:settingsRoot = "$fixture\mapping-settings"
         $OutputRoot = "$fixture\endpoint"
         $script:expectedPeerMapping = 'PEER 192.0.2.1'

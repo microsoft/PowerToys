@@ -8,19 +8,70 @@ Packages the MWB, helper, Settings and Quick Access dependency closure for Sandb
 .DESCRIPTION
 Run during payload preparation, not in the interactive MSTest process. Managed
 assets come from the built .deps.json files. Native MWB activation libraries and
-WinUI resources are included explicitly. No build, installation, or UI is run.
+WinUI resources are included explicitly. No installation or UI is run. Optional
+ReadyToRun preparation compiles only the private staged copy using an explicit,
+matching native SDK Crossgen2 compiler; the product build remains unchanged.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$ProductRoot,
-    [Parameter(Mandatory = $true)][string]$ArchivePath
+    [Parameter(Mandatory = $true)][string]$ArchivePath,
+    [switch]$ReadyToRun,
+    [string]$Crossgen2Path,
+    [ValidateRange(1, 16)][int]$ReadyToRunParallelism = 2,
+    [ValidateRange(1, 3600)][int]$ReadyToRunTimeoutSeconds = 600
 )
 $ErrorActionPreference = 'Stop'
-$root = (Resolve-Path -LiteralPath $ProductRoot).Path.TrimEnd('\')
-$archive = [IO.Path]::GetFullPath($ArchivePath)
+
+function Resolve-MwbArchiveFileSystemPath {
+    param([string]$Path, [switch]$AllowMissing)
+    $provider = $null
+    $drive = $null
+    $full = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path, [ref]$provider, [ref]$drive)
+    if ($provider.Name -ne 'FileSystem') { throw 'Runtime archive paths must use the FileSystem provider.' }
+    $full = [IO.Path]::GetFullPath($full)
+    $ancestor = $full
+    $missing = [Collections.Generic.Stack[string]]::new()
+    if ($AllowMissing) {
+        while (-not (Test-Path -LiteralPath $ancestor)) {
+            $parent = [IO.Path]::GetDirectoryName($ancestor)
+            if ([string]::IsNullOrEmpty($parent) -or $parent -eq $ancestor) {
+                throw 'The runtime archive path has no existing filesystem ancestor.'
+            }
+            $missing.Push([IO.Path]::GetFileName($ancestor))
+            $ancestor = $parent
+        }
+    }
+    # Resolve-Path can preserve DOS short names. Get-Item's filesystem identity
+    # expands them, including when only an ancestor of a new output exists.
+    $item = Get-Item -LiteralPath $ancestor -Force -ErrorAction Stop
+    if ($missing.Count -and -not $item.PSIsContainer) {
+        throw 'The runtime archive path has a non-directory ancestor.'
+    }
+    $normalized = $item.FullName
+    while ($missing.Count) { $normalized = [IO.Path]::Combine($normalized, $missing.Pop()) }
+    [IO.Path]::GetFullPath($normalized)
+}
+
+$root = (Resolve-MwbArchiveFileSystemPath $ProductRoot).TrimEnd('\')
+if (-not (Test-Path -LiteralPath $root -PathType Container)) { throw 'ProductRoot must be an existing directory.' }
+$archive = Resolve-MwbArchiveFileSystemPath $ArchivePath -AllowMissing
 $stage = "$archive.staging"
 if (Test-Path -LiteralPath $archive) { throw 'Use a new archive path to preserve payload provenance.' }
 if (Test-Path -LiteralPath $stage) { throw 'The staging directory already exists.' }
+if ($ReadyToRun) {
+    if ([string]::IsNullOrWhiteSpace($Crossgen2Path)) { throw 'ReadyToRun requires an explicit -Crossgen2Path.' }
+    if ($stage.StartsWith("$root\", [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'ReadyToRun staging must be outside the product build directory.'
+    }
+    if (Test-Path -LiteralPath "$archive.manifest.json") { throw 'Use a new ReadyToRun manifest path.' }
+    . "$PSScriptRoot\MwbReadyToRun.ps1"
+    Initialize-MwbReadyToRunMetadata
+    $null = Get-MwbReadyToRunCompiler $Crossgen2Path
+}
+elseif (-not [string]::IsNullOrWhiteSpace($Crossgen2Path)) {
+    throw 'Use -ReadyToRun when supplying -Crossgen2Path.'
+}
 $files = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 if (-not ('MwbPeImports' -as [type])) {
     Add-Type -TypeDefinition @'
@@ -196,18 +247,55 @@ foreach ($directory in @($root, (Join-Path $root 'WinUI3Apps'))) {
                 ForEach-Object { Add-RuntimeFile $_.FullName }
         }
 }
-$null = New-Item -ItemType Directory -Path $stage -Force
-foreach ($relative in $files) {
-    $destination = Join-Path $stage $relative
-    $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
-    Copy-Item -LiteralPath (Join-Path $root $relative) -Destination $destination
+$stageOwned = $false
+$archivePublished = $false
+$manifestPublished = $false
+$archiveOutput = $archive
+$manifestOutput = "$archive.manifest.json"
+if ($ReadyToRun) {
+    $attempt = '.readytorun-' + [guid]::NewGuid().ToString('N')
+    $archiveOutput = Join-Path (Split-Path $archive) ([IO.Path]::GetFileNameWithoutExtension($archive) + $attempt + [IO.Path]::GetExtension($archive))
+    $manifestOutput = "$archiveOutput.manifest.json"
 }
-& tar.exe -a -cf $archive -C $stage .
-if ($LASTEXITCODE -ne 0) { throw 'Native runtime archive packaging failed.' }
-[ordered]@{
-    ProductRoot = $root; ArchivePath = $archive; FileCount = $files.Count
-    Length = (Get-Item -LiteralPath $archive).Length
-    Sha256 = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
-    Files = @($files | Sort-Object)
-} | ConvertTo-Json -Depth 4 | Set-Content "$archive.manifest.json"
-[pscustomobject]@{ ArchivePath = $archive; FileCount = $files.Count; Megabytes = [Math]::Round((Get-Item $archive).Length / 1MB, 1) }
+try {
+    $null = New-Item -ItemType Directory -Path $stage
+    $stageOwned = $true
+    foreach ($relative in $files) {
+        $destination = Join-Path $stage $relative
+        $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
+        Copy-Item -LiteralPath (Join-Path $root $relative) -Destination $destination
+    }
+    $compilation = $null
+    if ($ReadyToRun) {
+        $compilation = Convert-MwbStagedRuntimeToReadyToRun -StageRoot $stage -Crossgen2Path $Crossgen2Path `
+            -Parallelism $ReadyToRunParallelism -TimeoutSeconds $ReadyToRunTimeoutSeconds
+    }
+    & tar.exe -a -cf $archiveOutput -C $stage .
+    if ($LASTEXITCODE -ne 0) { throw 'Native runtime archive packaging failed.' }
+    $manifest = [ordered]@{
+        ProductRoot = $root; ArchivePath = $archive; FileCount = $files.Count
+        Length = (Get-Item -LiteralPath $archiveOutput).Length
+        Sha256 = (Get-FileHash -LiteralPath $archiveOutput -Algorithm SHA256).Hash
+        Files = @($files | Sort-Object)
+    }
+    if ($ReadyToRun) { $manifest.ReadyToRun = $compilation }
+    $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestOutput
+    if ($ReadyToRun) {
+        [IO.File]::Move($archiveOutput, $archive)
+        $archivePublished = $true
+        [IO.File]::Move($manifestOutput, "$archive.manifest.json")
+        $manifestPublished = $true
+    }
+    [pscustomobject]@{ ArchivePath = $archive; FileCount = $files.Count; Megabytes = [Math]::Round((Get-Item $archive).Length / 1MB, 1) }
+}
+catch {
+    if ($ReadyToRun) {
+        foreach ($path in @($archiveOutput, $manifestOutput)) {
+            if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force }
+        }
+        if ($archivePublished) { Remove-Item -LiteralPath $archive -Force }
+        if ($manifestPublished) { Remove-Item -LiteralPath "$archive.manifest.json" -Force }
+        if ($stageOwned) { Remove-Item -LiteralPath $stage -Recurse -Force }
+    }
+    throw
+}

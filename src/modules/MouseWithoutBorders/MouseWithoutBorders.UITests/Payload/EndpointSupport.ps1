@@ -77,6 +77,41 @@ function Write-BootstrapStage {
     }
 }
 
+function Write-EndpointCommandStage {
+    param(
+        [string]$Stage,
+        [string]$Operation = '',
+        [int]$RequestSequence = 0,
+        [int]$ChildProcessId = 0,
+        [long]$ElapsedMilliseconds = 0
+    )
+    try {
+        if ($script:config.Role -ne 'Guest') { return }
+        $runId = [guid]::Empty
+        if (-not [guid]::TryParse([string]$script:config.RunId, [ref]$runId)) { return }
+        if ($Stage -cnotin @(
+            'RequestReadStarting', 'RequestDispatching', 'RequestFailed',
+            'ResponsePublishing', 'ResponsePublished',
+            'UiPreparing', 'UiProcessStarting', 'UiProcessStarted', 'UiWaiting',
+            'UiProcessExited', 'UiTimedOut', 'UiOutputRead', 'UiResultParsed'
+        )) { $Stage = 'Unknown' }
+        if ($Operation -cnotin @(
+            'Start', 'Connect', 'VerifyPeerMapping', 'ClipboardSharing', 'Transport',
+            'FocusInput', 'ClearInput', 'PublishClipboard', 'Observe', 'Evidence', 'StopPeers', 'Finish',
+            'search', 'inspect', 'invoke', 'set-value', 'get-property', ''
+        )) { $Operation = 'Unknown' }
+        $script:commandStageNumber++
+        # One bounded snapshot, never request/UI arguments, values, trees, or exceptions.
+        Write-RunJson "$OutputRoot\command-stage.json" @{
+            RunId = $runId.ToString(); TimestampUtc = [DateTime]::UtcNow.ToString('o')
+            StageNumber = $script:commandStageNumber; Stage = $Stage; Operation = $Operation
+            RequestSequence = $RequestSequence; WorkerProcessId = $PID; ChildProcessId = $ChildProcessId
+            ElapsedMilliseconds = $ElapsedMilliseconds
+        }
+    }
+    catch { }
+}
+
 function Expand-GuestRuntime {
     param([string]$Archive, [string]$Destination, [DateTime]$DeadlineUtc)
     $start = [Diagnostics.ProcessStartInfo]::new()
@@ -234,6 +269,7 @@ function Write-EndpointJournal {
         Worker = [Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]::Capture($PID)
         Processes = @($script:owned.ToArray()); Settings = @($script:backups)
         Status = $script:status; GuestFirewallRule = $script:firewallRule
+        GuestFirewallOwnership = $script:firewallOwnership
         SettingsRestored = $script:settingsRestored; ClipboardRestored = $script:clipboardRestored
         ClipboardMayHaveChanged = $script:clipboardMayHaveChanged
         TimestampUtc = [DateTime]::UtcNow.ToString('o')
@@ -358,6 +394,212 @@ function Get-ReadySettingsCandidates {
     $Candidates | Where-Object { Test-SettingsWindowReady $_.Responding $_.Windows }
 }
 
+function New-EndpointFirewallPolicy {
+    New-Object -ComObject HNetCfg.FwPolicy2
+}
+
+function New-EndpointFirewallRuleObject {
+    New-Object -ComObject HNetCfg.FWRule
+}
+
+function Release-EndpointFirewallComObject {
+    param($Value)
+    if ($null -ne $Value -and [Runtime.InteropServices.Marshal]::IsComObject($Value)) {
+        $null = [Runtime.InteropServices.Marshal]::ReleaseComObject($Value)
+    }
+}
+
+function Read-EndpointFirewallRules {
+    param($Policy, [string]$Name)
+    $rules = $null
+    $enumerator = $null
+    try {
+        $rules = $Policy.Rules
+        $enumerator = [Management.Automation.LanguagePrimitives]::GetEnumerator($rules)
+        if ($null -eq $enumerator) { throw 'Endpoint firewall rules could not be enumerated.' }
+        while ($enumerator.MoveNext()) {
+            $rule = $enumerator.Current
+            try {
+                if (-not [string]::Equals($rule.Name, $Name, [StringComparison]::OrdinalIgnoreCase)) { continue }
+                [pscustomobject]@{
+                    Name = [string]$rule.Name; Program = [string]$rule.ApplicationName
+                    Protocol = [int]$rule.Protocol; LocalPorts = [string]$rule.LocalPorts
+                    RemotePorts = [string]$rule.RemotePorts; LocalAddresses = [string]$rule.LocalAddresses
+                    PeerAddress = [string]$rule.RemoteAddresses; Direction = [int]$rule.Direction
+                    Action = [int]$rule.Action; Enabled = [bool]$rule.Enabled; Profiles = [int]$rule.Profiles
+                    EdgeTraversal = [bool]$rule.EdgeTraversal; InterfaceTypes = [string]$rule.InterfaceTypes
+                    ServiceName = [string]$rule.ServiceName
+                }
+            }
+            finally { Release-EndpointFirewallComObject $rule }
+        }
+    }
+    finally {
+        if ($enumerator -is [IDisposable]) { $enumerator.Dispose() }
+        Release-EndpointFirewallComObject $enumerator
+        Release-EndpointFirewallComObject $rules
+    }
+}
+
+function Test-EndpointFirewallRuleScope {
+    param($Rule, $Ownership)
+    $peerParts = @($Rule.PeerAddress.Trim().Split('/'))
+    $peer = $null
+    $exactPeer = $peerParts.Count -in 1, 2 -and
+        [Net.IPAddress]::TryParse($peerParts[0], [ref]$peer) -and
+        $peer.AddressFamily -eq [Net.Sockets.AddressFamily]::InterNetwork -and
+        $peer.Equals([Net.IPAddress]::Parse($Ownership.PeerAddress)) -and
+        ($peerParts.Count -eq 1 -or $peerParts[1] -in '32', '255.255.255.255')
+    $ports = $Rule.LocalPorts -replace '\s', ''
+    [string]::Equals($Rule.Name, $Ownership.Name, [StringComparison]::OrdinalIgnoreCase) -and
+        [string]::Equals($Rule.Program, $Ownership.Program, [StringComparison]::OrdinalIgnoreCase) -and
+        $Rule.Protocol -eq 6 -and $ports -match '^(15100,15101|15101,15100|15100-15101)$' -and
+        $exactPeer -and $Rule.LocalAddresses -eq '*' -and $Rule.RemotePorts -eq '*' -and
+        $Rule.Direction -eq 1 -and $Rule.Action -eq 1 -and $Rule.Enabled -and
+        $Rule.Profiles -eq 2147483647 -and -not $Rule.EdgeTraversal -and
+        $Rule.InterfaceTypes -eq 'All' -and [string]::IsNullOrEmpty($Rule.ServiceName)
+}
+
+function Save-EndpointFirewallOwnership {
+    param($Ownership)
+    $script:firewallOwnership = $Ownership
+    $script:firewallRule = if ($Ownership.State -eq 'Verified') { $Ownership.Name } else { '' }
+    Write-EndpointJournal
+}
+
+function Add-EndpointFirewallRule {
+    param([string]$Name, [string]$Program, [string]$PeerAddress)
+    $peer = [Net.IPAddress]::Parse($PeerAddress)
+    if ($peer.AddressFamily -ne [Net.Sockets.AddressFamily]::InterNetwork) {
+        throw 'The endpoint firewall requires one IPv4 peer.'
+    }
+    $ownership = [pscustomobject]@{
+        Name = $Name; Program = $Program; PeerAddress = $peer.ToString()
+        State = 'Unclaimed'; Error = $null
+        CreationReadback = @(); RemovalReadback = $null; AbsentVerifiedUtc = $null
+    }
+    $policy = $null
+    $rules = $null
+    $rule = $null
+    try {
+        $policy = New-EndpointFirewallPolicy
+        if (@(Read-EndpointFirewallRules $policy $Name).Count) {
+            throw 'Refusing a pre-existing endpoint firewall friendly name.'
+        }
+        $rule = New-EndpointFirewallRuleObject
+        $rule.Name = $Name
+        $rule.ApplicationName = $Program
+        $rule.Protocol = 6
+        $rule.LocalPorts = '15100,15101'
+        $rule.RemotePorts = '*'
+        $rule.LocalAddresses = '*'
+        $rule.RemoteAddresses = $ownership.PeerAddress
+        $rule.Direction = 1
+        $rule.Action = 1
+        $rule.Enabled = $true
+        $rule.Profiles = 2147483647
+        $rule.EdgeTraversal = $false
+        $rule.InterfaceTypes = 'All'
+        $rules = $policy.Rules
+        # COM uses the friendly name, not NetSecurity's internal instance ID.
+        # Do not claim or overwrite any same-name rule found before Add.
+        if (@(Read-EndpointFirewallRules $policy $Name).Count) {
+            throw 'An endpoint firewall friendly-name collision appeared before creation.'
+        }
+        $ownership.State = 'CreationPending'
+        Save-EndpointFirewallOwnership $ownership
+        $addError = $null
+        try { $null = $rules.Add($rule) }
+        catch { $addError = $_ }
+        try {
+            $observed = @(Read-EndpointFirewallRules $policy $Name)
+            $ownership.CreationReadback = $observed
+            if ($observed.Count -eq 1 -and (Test-EndpointFirewallRuleScope $observed[0] $ownership)) {
+                $ownership.State = 'Verified'
+            }
+            elseif ($addError -and $observed.Count -eq 0) {
+                $ownership.State = 'Absent'
+                $ownership.AbsentVerifiedUtc = [DateTime]::UtcNow.ToString('o')
+            }
+            else {
+                throw 'Endpoint firewall creation did not produce one exact scoped rule.'
+            }
+        }
+        catch {
+            $ownership.State = 'Uncertain'
+            $ownership.Error = $_.Exception.Message
+            Save-EndpointFirewallOwnership $ownership
+            throw
+        }
+        if ($addError) { $ownership.Error = $addError.Exception.Message }
+        Save-EndpointFirewallOwnership $ownership
+        if ($addError) { throw $addError }
+    }
+    finally {
+        Release-EndpointFirewallComObject $rule
+        Release-EndpointFirewallComObject $rules
+        Release-EndpointFirewallComObject $policy
+    }
+}
+
+function Remove-EndpointFirewallRule {
+    param($Ownership)
+    if ($null -eq $Ownership -or $Ownership.State -in 'Absent', 'Removed') { return }
+    if ($Ownership.State -ne 'Verified') {
+        throw 'Endpoint firewall ownership is uncertain; refusing removal.'
+    }
+    $policy = $null
+    $rules = $null
+    $scopeVerified = $false
+    try {
+        $policy = New-EndpointFirewallPolicy
+        $observed = @(Read-EndpointFirewallRules $policy $Ownership.Name)
+        $Ownership.RemovalReadback = $observed
+        if ($observed.Count -gt 0) {
+            if ($observed.Count -ne 1 -or -not (Test-EndpointFirewallRuleScope $observed[0] $Ownership)) {
+                $Ownership.State = 'Uncertain'
+                throw 'Endpoint firewall scope changed; refusing removal.'
+            }
+            $scopeVerified = $true
+            $rules = $policy.Rules
+            $Ownership.State = 'RemovalPending'
+            Save-EndpointFirewallOwnership $Ownership
+            $removeError = $null
+            try { $null = $rules.Remove($Ownership.Name) }
+            catch { $removeError = $_ }
+            $remaining = @(Read-EndpointFirewallRules $policy $Ownership.Name)
+            $Ownership.RemovalReadback = $remaining
+            if ($remaining.Count) {
+                if ($remaining.Count -ne 1 -or -not (Test-EndpointFirewallRuleScope $remaining[0] $Ownership)) {
+                    $Ownership.State = 'Uncertain'
+                }
+                else { $Ownership.State = 'Verified' }
+                throw 'Endpoint firewall rule remains after removal.'
+            }
+            $Ownership.State = 'Removed'
+            $Ownership.AbsentVerifiedUtc = [DateTime]::UtcNow.ToString('o')
+            if ($removeError) { throw $removeError }
+        }
+        else {
+            $Ownership.State = 'Removed'
+            $Ownership.AbsentVerifiedUtc = [DateTime]::UtcNow.ToString('o')
+        }
+        Save-EndpointFirewallOwnership $Ownership
+    }
+    catch {
+        if ($Ownership.State -eq 'RemovalPending' -or (-not $scopeVerified -and $Ownership.State -ne 'Removed')) {
+            $Ownership.State = 'Uncertain'
+        }
+        $Ownership.Error = $_.Exception.Message
+        Save-EndpointFirewallOwnership $Ownership
+        throw
+    }
+    finally {
+        Release-EndpointFirewallComObject $rules
+        Release-EndpointFirewallComObject $policy
+    }
+}
+
 function Start-Endpoint {
     param([string]$PeerName, [string]$PeerAddress, $GlobalSettings, [string]$ExpectedLocalAddress)
     Assert-CleanEndpoint
@@ -396,12 +638,8 @@ function Start-Endpoint {
     Write-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json" $settings
     $null = Assert-PeerMapping 'seeded'
     if ($script:config.Role -eq 'Guest') {
-        $script:firewallRule = "PowerToys.Mwb.Guest.$($script:config.RunId)"
-        Write-EndpointJournal
-        $null = New-NetFirewallRule -Name $script:firewallRule -DisplayName $script:firewallRule `
-            -Direction Inbound -Action Allow -Enabled True -Profile Any -Protocol TCP -LocalPort 15100,15101 `
-            -Program (Join-Path $ProductRoot 'PowerToys.MouseWithoutBorders.exe') -RemoteAddress $PeerAddress `
-            -EdgeTraversalPolicy Block -ErrorAction Stop
+        Add-EndpointFirewallRule -Name "PowerToys.Mwb.Guest.$($script:config.RunId)" `
+            -Program (Join-Path $ProductRoot 'PowerToys.MouseWithoutBorders.exe') -PeerAddress $PeerAddress
     }
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = Join-Path $ProductRoot 'PowerToys.exe'
@@ -515,16 +753,15 @@ function Stop-Endpoint {
     } while ([DateTime]::UtcNow -lt $deadline)
     Assert-CleanEndpoint
     Restore-Settings
-    if ($script:firewallRule) {
-        Remove-NetFirewallRule -Name $script:firewallRule -ErrorAction Stop
-        $script:firewallRule = ''
-    }
+    Remove-EndpointFirewallRule $script:firewallOwnership
     $script:status = 'PeersStoppedSettingsRestored'
     Write-EndpointJournal
 }
 
 function Invoke-GuestUi {
     param([string[]]$Arguments)
+    $launchWatch = [Diagnostics.Stopwatch]::StartNew()
+    Write-EndpointCommandStage 'UiPreparing' $Arguments[0] $script:requestNumber
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = $WinApp
     $start.UseShellExecute = $false
@@ -537,27 +774,34 @@ function Invoke-GuestUi {
     $start.Arguments = (@($allArgs | ForEach-Object {
         '"' + [regex]::Replace([regex]::Replace($_, '(\\*)"', '$1$1\"'), '(\\+)$', '$1$1') + '"'
     })) -join ' '
+    Write-EndpointCommandStage 'UiProcessStarting' $Arguments[0] $script:requestNumber
     $process = [Diagnostics.Process]::Start($start)
     $watch = [Diagnostics.Stopwatch]::StartNew()
     try {
+        Write-EndpointCommandStage 'UiProcessStarted' $Arguments[0] $script:requestNumber $process.Id $launchWatch.ElapsedMilliseconds
         $stdout = $process.StandardOutput.ReadToEndAsync()
         $stderr = $process.StandardError.ReadToEndAsync()
+        Write-EndpointCommandStage 'UiWaiting' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         if (-not $process.WaitForExit(90000)) {
             $process.Kill()
             $null = $process.WaitForExit(5000)
+            Write-EndpointCommandStage 'UiTimedOut' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
             throw "Guest winapp $($Arguments[0]) exceeded 90 seconds."
         }
+        Write-EndpointCommandStage 'UiProcessExited' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($stdout, $stderr), 5000)) {
             throw 'Guest winapp output handles did not close within five seconds of process exit.'
         }
         $raw = $stdout.GetAwaiter().GetResult()
         $null = $stderr.GetAwaiter().GetResult()
+        Write-EndpointCommandStage 'UiOutputRead' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         # Never put command arguments, UI trees, or stderr in errors: Connect contains a key.
         try { $data = $raw | ConvertFrom-Json -ErrorAction Stop }
         catch { throw "Guest winapp $($Arguments[0]) did not return valid JSON." }
         if ($process.ExitCode -ne 0 -and -not ($Arguments[0] -eq 'search' -and $process.ExitCode -eq 1 -and $data.matchCount -eq 0)) {
             throw "Guest winapp $($Arguments[0]) failed (exit $($process.ExitCode))."
         }
+        Write-EndpointCommandStage 'UiResultParsed' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         return $data
     }
     finally {

@@ -44,9 +44,27 @@ public sealed class ScreenRecording : IDisposable
 
     /// <summary>Records a specific window, or the main display when the handle is zero.</summary>
     public ScreenRecording(string outputDirectory, IntPtr windowHandle)
+        : this(outputDirectory, windowHandle, TargetFps, OutputWidth, OutputHeight)
     {
+    }
+
+    /// <summary>Records with an explicitly bounded video profile for resource-constrained test workloads.</summary>
+    public ScreenRecording(string outputDirectory, IntPtr windowHandle, int frameRate, int frameWidth, int frameHeight)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameRate, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(frameRate, 60);
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameWidth, 2);
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameHeight, 2);
+        if ((frameWidth & 1) != 0 || (frameHeight & 1) != 0)
+        {
+            throw new ArgumentException("H.264 frame dimensions must be even.");
+        }
+
         this.outputDirectory = outputDirectory;
         this.windowHandle = windowHandle;
+        FrameRate = frameRate;
+        FrameWidth = frameWidth;
+        FrameHeight = frameHeight;
         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
         outputFilePath = Path.Combine(outputDirectory, $"recording_{timestamp}_{Guid.NewGuid():N}.mp4");
     }
@@ -86,6 +104,15 @@ public sealed class ScreenRecording : IDisposable
     /// <summary>Directory containing the recording output.</summary>
     public string OutputDirectory => outputDirectory;
 
+    /// <summary>Requested fixed recording frame rate.</summary>
+    public int FrameRate { get; }
+
+    /// <summary>Requested encoded frame width.</summary>
+    public int FrameWidth { get; }
+
+    /// <summary>Requested encoded frame height.</summary>
+    public int FrameHeight { get; }
+
     /// <summary>Whether the recorder accepted a start request.</summary>
     public bool WasStarted { get; private set; }
 
@@ -118,15 +145,14 @@ public sealed class ScreenRecording : IDisposable
                     {
                         RecorderMode = RecorderMode.Video,
 
-                        // Downscale from the test desktop (normalized to 1080p) to 720p. Both are 16:9 so
-                        // Uniform is a clean scale with no letterboxing, and encoding ~2.25x fewer pixels
-                        // is the single biggest CPU saving when the runner falls back to software H.264.
-                        OutputFrameSize = new ScreenSize(OutputWidth, OutputHeight),
+                        // The default profile downscales 1080p to 720p; callers with
+                        // nested workloads can reduce it further without changing capture semantics.
+                        OutputFrameSize = new ScreenSize(FrameWidth, FrameHeight),
                         Stretch = StretchMode.Uniform,
                     },
                     VideoEncoderOptions = new VideoEncoderOptions
                     {
-                        Framerate = TargetFps,
+                        Framerate = FrameRate,
 
                         // Baseline is the cheapest H.264 profile to encode (no B-frames/CABAC); the
                         // library's own docs note lesser profiles "use less resources" — ideal for a
@@ -179,7 +205,7 @@ public sealed class ScreenRecording : IDisposable
 
                 WasStarted = true;
                 isRecording = true;
-                Console.WriteLine($"Started screen recording at {TargetFps} FPS to {outputFilePath}");
+                Console.WriteLine($"Started screen recording at {FrameRate} FPS to {outputFilePath}");
             }
             catch (Exception ex)
             {

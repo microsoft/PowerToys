@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Xml.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
-internal sealed class LegacySandbox
+internal sealed class LegacySandbox : ISandboxSession
 {
     private readonly List<ProcessIdentity> owned = [];
     private readonly Action saveJournal;
@@ -25,6 +25,10 @@ internal sealed class LegacySandbox
     }
 
     public IReadOnlyList<ProcessIdentity> Processes => owned;
+
+    public string Backend => "Legacy";
+
+    public JsonObject? RecoveryState => null;
 
     public long ViewerHwnd => viewerHwnd;
 
@@ -58,32 +62,7 @@ internal sealed class LegacySandbox
     public void Start(string configurationPath, string productArchive, string payloadRoot, string toolsRoot, EndpointChannel guest)
     {
         AssertNoneRunning();
-        static XElement Mapping(string source, string target, bool readOnly) =>
-            new("MappedFolder", new XElement("HostFolder", source), new XElement("SandboxFolder", target), new XElement("ReadOnly", readOnly));
-
-        var document = new XDocument(
-            new XElement(
-                "Configuration",
-                // Enabling vGPU (tested: run localvm-20260914-073258, RunId
-                // 34fdda19-ac0f-43f5-9b5e-e7158e2331da) made no difference to the WinUI3
-                // startup failure below, so keep the more conservative, isolation-preserving
-                // default rather than leave an unproven change in place.
-                new XElement("VGpu", "Disable"),
-                new XElement("MemoryInMB", 4096),
-                new XElement("Networking", "Enable"),
-                new XElement("ClipboardRedirection", "Disable"),
-                new XElement("AudioInput", "Disable"),
-                new XElement("VideoInput", "Disable"),
-                new XElement("PrinterRedirection", "Disable"),
-                new XElement("MappedFolders",
-                    Mapping(Path.GetDirectoryName(productArchive)!, @"C:\MwbArchive", true),
-                    Mapping(payloadRoot, @"C:\MwbPayload", true),
-                    Mapping(toolsRoot, @"C:\MwbTools", true),
-                    Mapping(guest.InputRoot, @"C:\MwbInput", true),
-                    Mapping(guest.OutputRoot, @"C:\MwbOutput", false)),
-                new XElement("LogonCommand", new XElement("Command",
-                    @"powershell.exe -NoProfile -ExecutionPolicy Bypass -STA -WindowStyle Hidden -File C:\MwbPayload\EndpointWorker.ps1 -InputRoot C:\MwbInput -OutputRoot C:\MwbOutput -ProductRoot C:\MwbProduct -WinApp C:\MwbTools\winapp.exe -ProductArchive " +
-                    "\"C:\\MwbArchive\\" + Path.GetFileName(productArchive) + "\""))));
+        var document = SandboxConfiguration.Create(productArchive, payloadRoot, toolsRoot, guest, legacyBootstrap: true);
         document.Save(configurationPath);
         var start = new ProcessStartInfo(Path.Combine(systemRoot, "System32", "WindowsSandbox.exe"))
         {
@@ -188,6 +167,11 @@ internal sealed class LegacySandbox
         // Encoding must not block the readiness polling path. Desktop capture
         // already covers startup while this separate viewer capture initializes.
         captureViewer(viewerHwnd);
+    }
+
+    public void CaptureEvidence()
+    {
+        // Legacy evidence is collected by the endpoint worker and viewer recorder.
     }
 
     public void Stop()

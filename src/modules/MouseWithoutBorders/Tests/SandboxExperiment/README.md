@@ -102,6 +102,28 @@ standard-user desktop, and performs firewall cleanup in `finally`. No provisioni
 occurs during `-PlanOnly`. It does not enable nesting or restore a VM checkpoint
 implicitly; image provisioning and clean-baseline selection remain explicit.
 
+### Optional ReadyToRun preparation
+
+For CPU-bound nested-VM startup, opt in to precompiling the same Debug IL:
+
+```powershell
+.\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\New-MwbRuntimeArchive.ps1 `
+    -ProductRoot .\x64\Debug `
+    -ArchivePath C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders\mwb-runtime-r2r.zip `
+    -ReadyToRun -Crossgen2Path C:\SdkTools\crossgen2\crossgen2.exe
+```
+
+Supply the matching **x64 Windows SDK Crossgen2 package**, including its adjacent
+native libraries. Nothing is downloaded or installed. Actual CLR and compiler
+builds must match exactly. Self-contained framework declarations may name an older
+patch in the same runtime family; they are recorded, never rewritten.
+Compilation touches only private staging; Debug attributes, managed IL, method
+metadata, and identical assembly copies are verified before publication. The
+archive manifest records compiler/runtime hashes, options, and per-assembly
+provenance. Failed opt-in attempts remove their partial archive and staging.
+Without `-ReadyToRun`, packaging is unchanged. For a coherent comparison, select
+the same prepared archive as both `-ProductArchive` and `-GuestRuntimeArchive`.
+
 The complete Win10 autonomous smoke has now **passed unattended**, but is not
 full-module or CI sign-off. A later repeat stalled in guest Settings initialization,
 so repeat reliability remains unresolved.

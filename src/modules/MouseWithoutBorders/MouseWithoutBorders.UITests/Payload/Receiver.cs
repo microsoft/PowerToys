@@ -70,6 +70,12 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public Rectangle ClickBounds { get { return Invoke(delegate { return receiver.ClickBounds; }); } }
 
+        public long ClickTargetHandle { get { return Invoke(delegate { return receiver.ClickTargetHandle; }); } }
+
+        public int MouseDownMessages { get { return Invoke(delegate { return receiver.MouseDownMessages; }); } }
+
+        public int MouseUpMessages { get { return Invoke(delegate { return receiver.MouseUpMessages; }); } }
+
         public void FocusInput() { Invoke(delegate { receiver.FocusInput(); return true; }); }
 
         public void ClearInput() { Invoke(delegate { receiver.ClearInput(); return true; }); }
@@ -112,8 +118,22 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
     public sealed class Receiver : Form
     {
+        private sealed class ClickPanel : Panel
+        {
+            public int MouseDownMessages { get; private set; }
+
+            public int MouseUpMessages { get; private set; }
+
+            protected override void WndProc(ref Message message)
+            {
+                if (message.Msg == 0x0201) { MouseDownMessages++; }
+                if (message.Msg == 0x0202) { MouseUpMessages++; }
+                base.WndProc(ref message);
+            }
+        }
+
         private readonly TextBox input;
-        private readonly Panel clickTarget;
+        private readonly ClickPanel clickTarget;
         private readonly DataObject originalClipboard;
         private readonly string role;
         private readonly string runId;
@@ -136,7 +156,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 Height = 150,
                 Font = new Font("Consolas", 22),
             };
-            clickTarget = new Panel
+            clickTarget = new ClickPanel
             {
                 Name = "ClickTarget",
                 AccessibleName = "MWB mouse target",
@@ -179,6 +199,12 @@ namespace Microsoft.MouseWithoutBorders.UITests
         }
 
         public int Clicks { get; private set; }
+
+        public long ClickTargetHandle { get { return clickTarget.Handle.ToInt64(); } }
+
+        public int MouseDownMessages { get { return clickTarget.MouseDownMessages; } }
+
+        public int MouseUpMessages { get { return clickTarget.MouseUpMessages; } }
 
         public string ReceivedText
         {

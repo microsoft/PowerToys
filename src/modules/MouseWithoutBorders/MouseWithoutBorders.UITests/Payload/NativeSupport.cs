@@ -194,6 +194,19 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public bool HasOwner { get; set; }
     }
 
+    public sealed class MouseTargetState
+    {
+        public long Window { get; set; }
+
+        public long RootWindow { get; set; }
+
+        public int ProcessId { get; set; }
+
+        public long CaptureWindow { get; set; }
+
+        public bool LeftButtonDown { get; set; }
+    }
+
     public static class NativeSupport
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -201,6 +214,23 @@ namespace Microsoft.MouseWithoutBorders.UITests
         {
             public int X;
             public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct GuiThreadInfo
+        {
+            public uint Size;
+            public uint Flags;
+            public IntPtr Active;
+            public IntPtr Focus;
+            public IntPtr Capture;
+            public IntPtr MenuOwner;
+            public IntPtr MoveSize;
+            public IntPtr Caret;
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -297,6 +327,18 @@ namespace Microsoft.MouseWithoutBorders.UITests
         private static extern bool GetCursorPos(out Point point);
 
         [DllImport("user32.dll")]
+        private static extern IntPtr WindowFromPoint(Point point);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int key);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetGUIThreadInfo(uint thread, ref GuiThreadInfo info);
+
+        [DllImport("user32.dll")]
         private static extern IntPtr OpenInputDesktop(uint flags, bool inherit, uint access);
 
         [DllImport("user32.dll")]
@@ -316,6 +358,21 @@ namespace Microsoft.MouseWithoutBorders.UITests
             uint processId;
             GetWindowThreadProcessId(window, out processId);
             return (int)processId;
+        }
+
+        public static MouseTargetState MouseTarget(int x, int y)
+        {
+            IntPtr window = WindowFromPoint(new Point { X = x, Y = y });
+            var info = new GuiThreadInfo { Size = (uint)Marshal.SizeOf(typeof(GuiThreadInfo)) };
+            bool available = GetGUIThreadInfo(0, ref info);
+            return new MouseTargetState
+            {
+                Window = window.ToInt64(),
+                RootWindow = GetAncestor(window, 2 /* GA_ROOT */).ToInt64(),
+                ProcessId = WindowProcessId(window),
+                CaptureWindow = available ? info.Capture.ToInt64() : 0,
+                LeftButtonDown = (GetAsyncKeyState(1 /* VK_LBUTTON */) & 0x8000) != 0,
+            };
         }
 
         public static void FocusWindow(IntPtr window)

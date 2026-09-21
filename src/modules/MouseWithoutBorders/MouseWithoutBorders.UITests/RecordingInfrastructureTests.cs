@@ -19,6 +19,15 @@ public sealed class RecordingInfrastructureTests
     {
         var directory = Path.Combine(RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory),
             "mwb-recording-probe-" + Guid.NewGuid().ToString("N"));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ScreenRecording(directory, IntPtr.Zero, 0, 960, 540));
+        Assert.ThrowsExactly<ArgumentException>(() => new ScreenRecording(directory, IntPtr.Zero, 5, 959, 540));
+        using (var defaults = new ScreenRecording(directory))
+        {
+            Assert.AreEqual(15, defaults.FrameRate);
+            Assert.AreEqual(1280, defaults.FrameWidth);
+            Assert.AreEqual(720, defaults.FrameHeight);
+        }
+
         using var subject = new ReceiverController("Recorded window", Guid.NewGuid().ToString());
         subject.FocusInput();
         var session = Session.FromProcess(Environment.ProcessId.ToString(), timeoutMS: 10_000);
@@ -54,6 +63,9 @@ public sealed class RecordingInfrastructureTests
             Assert.IsTrue(recording!["Started"]!.GetValue<bool>(), recording.ToJsonString());
             Assert.IsTrue(recording["Completed"]!.GetValue<bool>(), recording.ToJsonString());
             Assert.IsTrue(recording["Available"]!.GetValue<bool>(), recording.ToJsonString());
+            Assert.AreEqual(5, recording["FrameRate"]!.GetValue<int>());
+            Assert.AreEqual(960, recording["FrameWidth"]!.GetValue<int>());
+            Assert.AreEqual(540, recording["FrameHeight"]!.GetValue<int>());
             var path = Path.Combine(directory, recording["File"]!.GetValue<string>());
             Assert.IsTrue(new FileInfo(path).Length > 0, "A finalized video must persist outside MSTest's deployment tree.");
         }

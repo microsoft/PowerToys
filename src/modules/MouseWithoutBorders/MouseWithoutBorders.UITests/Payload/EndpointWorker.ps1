@@ -33,10 +33,12 @@ $script:clipboardRestored = $false
 $script:clipboardMayHaveChanged = $false
 $script:status = 'Bootstrapping'
 $script:firewallRule = ''
+$script:firewallOwnership = $null
 $script:settingsPid = 0
 $script:expectedPeerMapping = ''
 $script:receiver = $null
 $script:requestNumber = 0
+$script:commandStageNumber = 0
 $script:leaseNumber = 0
 $script:lastLease = $null
 $script:stopping = $false
@@ -151,6 +153,8 @@ try {
             Write-RunJson "$OutputRoot\heartbeat.json" @{
                 RunId = $script:config.RunId; TimestampUtc = [DateTime]::UtcNow.ToString('o')
                 LeaseSequence = $script:leaseNumber; LeaseTimestampUtc = $lease.TimestampUtc
+                NextRequestSequence = $script:requestNumber + 1
+                Stage = 'BeforeRequestProbe'
             }
             $next = $script:requestNumber + 1
             $requestPath = Join-Path "$InputRoot\requests" ("{0:D4}.json" -f $next)
@@ -158,11 +162,13 @@ try {
                 Start-Sleep -Milliseconds 200
                 continue
             }
+            Write-EndpointCommandStage 'RequestReadStarting' -RequestSequence $next
             $request = Read-RunJson $requestPath
             if ($request.RunId -ne $script:config.RunId -or $request.Sequence -ne $next) { throw 'Request correlation mismatch.' }
             $script:requestNumber = $next
             $response = @{ RunId = $script:config.RunId; Sequence = $next; Status = 'Completed'; Result = $null }
             try {
+                Write-EndpointCommandStage 'RequestDispatching' $request.Action $next
                 switch ($request.Action) {
                     'Start' {
                         $response.Result = Start-Endpoint $request.PeerName $request.PeerAddress `
@@ -204,6 +210,10 @@ try {
                             ClickLeft = $bounds.Left; ClickTop = $bounds.Top; ClickRight = $bounds.Right; ClickBottom = $bounds.Bottom
                             ForegroundHwnd = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::GetForegroundWindow().ToInt64()
                             ReceiverHwnd = $script:receiver.Handle.ToInt64()
+                            ClickTargetHwnd = $script:receiver.ClickTargetHandle
+                            MouseDownMessages = $script:receiver.MouseDownMessages
+                            MouseUpMessages = $script:receiver.MouseUpMessages
+                            MouseTarget = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::MouseTarget($point.X, $point.Y)
                             Desktop = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::Desktop()
                         }
                     }
@@ -240,8 +250,11 @@ try {
                     $response.Error = $response.Error.Replace($request.Key, '[REDACTED]')
                 }
                 $response.ScriptStackTrace = $_.ScriptStackTrace
+                Write-EndpointCommandStage 'RequestFailed' $request.Action $next
             }
+            Write-EndpointCommandStage 'ResponsePublishing' $request.Action $next
             Write-RunJson (Join-Path $OutputRoot ("{0:D4}.json" -f $next)) $response
+            Write-EndpointCommandStage 'ResponsePublished' $request.Action $next
             if ($script:stopping) { $script:receiver.Close() }
         }
         catch {
@@ -271,7 +284,11 @@ finally {
             }
         }
         catch {
-            Write-RunJson "$OutputRoot\cleanup-failed.json" @{ RunId = $script:config.RunId; Error = $_.Exception.Message }
+            $cleanupError = $_.Exception.Message
+            $script:status = 'CleanupFailed'
+            try { Write-EndpointJournal }
+            catch { $cleanupError += "; journal update failed: $($_.Exception.Message)" }
+            Write-RunJson "$OutputRoot\cleanup-failed.json" @{ RunId = $script:config.RunId; Error = $cleanupError }
         }
     }
     if ($script:receiver) { $script:receiver.Dispose() }

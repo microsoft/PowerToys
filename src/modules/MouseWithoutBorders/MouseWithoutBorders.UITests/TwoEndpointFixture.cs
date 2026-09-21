@@ -47,7 +47,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     private JsonObject provision = new();
     private EndpointChannel? host;
     private EndpointChannel? guest;
-    private LegacySandbox? sandbox;
+    private ISandboxSession? sandbox;
     private TestRecordings? recordings;
     private ProcessIdentity? hostWorker;
     private Session? settings;
@@ -65,7 +65,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     public void Run()
     {
         Phase("Preflight and protected provisioning identity", Prepare);
-        Phase("Legacy Sandbox and correlated desktop readiness", StartWorkers);
+        Phase("Sandbox and correlated desktop readiness", StartWorkers);
         Phase("Matching Debug endpoints", StartPeers);
         Phase("Settings New key and Connect", Pair);
         Phase("Bidirectional owned MWB transport", VerifyTransport);
@@ -85,6 +85,13 @@ internal sealed class TwoEndpointFixture : IDisposable
 
         cleanupComplete = true;
         phase = "Cleanup";
+        Attempt("Capture Sandbox-native evidence before teardown", () =>
+        {
+            if (sandbox?.GuestAcknowledged == true)
+            {
+                sandbox.CaptureEvidence();
+            }
+        });
         Attempt("Capture guest evidence before teardown", () =>
         {
             if (guest?.Ready == true)
@@ -128,7 +135,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             }
         });
         Attempt("Finalize Sandbox video before closing its window", () => recordings?.StopSandbox());
-        Attempt("Close owned legacy Sandbox viewer", () =>
+        Attempt("Close the owned Sandbox", () =>
         {
             sandbox?.Stop();
             guestStopped = true;
@@ -211,7 +218,13 @@ internal sealed class TwoEndpointFixture : IDisposable
         Assert.IsTrue(!string.IsNullOrWhiteSpace(provision["RuleName"]?.GetValue<string>()), "Missing scoped firewall rule identity.");
         Assert.IsTrue(provision["Status"]?.GetValue<string>() is "WaitingForSandbox" or "Ready",
             "BLOCKED_INFRASTRUCTURE: privileged provisioning must be WaitingForSandbox or Ready before the test.");
-        LegacySandbox.AssertNoneRunning();
+        var backend = SandboxBackendSelection.Resolve(
+            provision["SandboxBackend"]?.GetValue<string>(),
+            Environment.OSVersion.Version.Build);
+        if (backend == "Legacy")
+        {
+            LegacySandbox.AssertNoneRunning();
+        }
         foreach (var process in Process.GetProcesses())
         {
             using (process)
@@ -259,7 +272,22 @@ internal sealed class TwoEndpointFixture : IDisposable
 
         RunFiles.Write(Path.Combine(runRoot, "payload-manifest.json"), manifest);
         RunFiles.Write(Path.Combine(runRoot, "host-desktop.json"), desktop);
-        sandbox = new LegacySandbox(SaveJournal, recordings.CaptureSandboxWindow);
+        if (backend == "Legacy")
+        {
+            sandbox = new LegacySandbox(SaveJournal, recordings.CaptureSandboxWindow);
+        }
+        else
+        {
+            var sandboxWinApp = provision["SandboxWinAppPath"]?.GetValue<string>()
+                ?? throw new InvalidOperationException("Protected provisioning must identify the Sandbox-capable winapp.exe.");
+            using var binary = File.OpenRead(sandboxWinApp);
+            Assert.AreEqual(
+                provision["SandboxWinAppSha256"]?.GetValue<string>(),
+                Convert.ToHexString(SHA256.HashData(binary)),
+                true,
+                "Sandbox winapp.exe changed after privileged provisioning.");
+            sandbox = new WinAppSandbox(runId, controlRoot, runRoot, sandboxWinApp, SaveJournal, context);
+        }
         // Keep liveness outside MTP/native recording, and isolate mapped guest writes
         // from host publication so one stalled path cannot starve both endpoints.
         using var owner = Process.GetCurrentProcess();
@@ -551,6 +579,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         int beforeY = before["CursorY"]!.GetValue<int>();
         RequireHostForeground();
         MouseHelper.MoveBy(30, 30, steps: 3);
+        int stableClickTarget = 0;
         RunFiles.Wait(() =>
         {
             var current = Observe(guest);
@@ -567,14 +596,19 @@ internal sealed class TwoEndpointFixture : IDisposable
             int bottom = current["ClickBottom"]!.GetValue<int>();
             if (x > left + 30 && x < right - 30 && y > top + 30 && y < bottom - 30)
             {
-                return true;
+                // A delayed MWB cursor overlay can still intercept the button
+                // even when the receiver is foreground and the cursor is inside.
+                stableClickTarget = ReceiverObservation.IsPhysicalClickTarget(current, guestReceiverHwnd)
+                    ? stableClickTarget + 1 : 0;
+                return stableClickTarget >= 2;
             }
 
+            stableClickTarget = 0;
             RequireHostForeground();
             MouseHelper.MoveBy(Math.Clamp(((left + right) / 2) - x, -100, 100),
                 Math.Clamp(((top + bottom) / 2) - y, -100, 100), steps: 4);
             return false;
-        }, TimeSpan.FromSeconds(20), "Remote cursor did not enter the receiver's physical click surface.");
+        }, TimeSpan.FromSeconds(20), "Remote cursor did not settle on the receiver's unobstructed physical click surface.");
         Assert.AreEqual(guestReceiverHwnd, Observe(guest)["ForegroundHwnd"]!.GetValue<long>(), "Guest receiver lost foreground before click.");
         RequireHostForeground();
         MouseHelper.LeftClick();
@@ -606,7 +640,8 @@ internal sealed class TwoEndpointFixture : IDisposable
         Assert.IsFalse(toggle.IsOn, "Host clipboard sharing must begin disabled.");
         toggle.Invoke(msPostAction: 0);
         Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", 10_000), "Host clipboard sharing UI did not enable.");
-        guest!.Request("ClipboardSharing", new JsonObject { ["Enabled"] = true }, timeoutSeconds: 90);
+        // Enclose all three bounded UIA calls, persistence confirmation, and the mapped reply.
+        guest!.Request("ClipboardSharing", new JsonObject { ["Enabled"] = true }, timeoutSeconds: 300);
         var hostSource = Publish(host!);
         WaitClipboard(guest, hostSource);
         var guestSource = Publish(guest);
@@ -787,6 +822,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 HostName = hostName, TestProcess = testProcess,
                 ProvisioningMarker = markerPath, RuleName = provision["RuleName"]?.GetValue<string>(),
                 TestUserSid = userSid, HostWorker = hostWorker, LeasePublishers = leaseProcesses, SandboxProcesses = sandbox?.Processes,
+                SandboxBackend = sandbox?.Backend, ModernSandbox = sandbox?.RecoveryState,
                 ViewerHwnd = sandbox?.ViewerHwnd, GuestAcknowledged = sandbox?.GuestAcknowledged,
                 HostEndpointJournal = host is null ? null : Path.Combine(host.OutputRoot, "endpoint-journal.json"),
                 GuestEndpointJournal = guest is null ? null : Path.Combine(guest.OutputRoot, "endpoint-journal.json"),

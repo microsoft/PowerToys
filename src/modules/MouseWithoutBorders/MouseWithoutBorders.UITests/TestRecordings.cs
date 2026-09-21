@@ -76,6 +76,9 @@ internal sealed class TestRecordings : IDisposable
                 recording.StoppedUtc,
                 Started = recording.Recorder?.WasStarted ?? false,
                 Completed = recording.Recorder?.CompletedSuccessfully ?? false,
+                FrameRate = recording.Recorder?.FrameRate,
+                FrameWidth = recording.Recorder?.FrameWidth,
+                FrameHeight = recording.Recorder?.FrameHeight,
                 Available = recording.HasOutput,
                 Error = recording.UnavailableReason ?? recording.Recorder?.FailureReason,
                 File = recording.Recorder is null ? null : Path.GetRelativePath(directory, recording.Recorder.OutputFilePath),
@@ -110,7 +113,9 @@ internal sealed class TestRecordings : IDisposable
             return recording;
         }
 
-        recording.Recorder = new ScreenRecording(Path.Combine(directory, name), handle);
+        // Nested Sandbox bootstrap and two real endpoints must not compete with
+        // diagnostic software encoding for the same four virtual processors.
+        recording.Recorder = new ScreenRecording(Path.Combine(directory, name), handle, 5, 960, 540);
         recording.Recorder.StartRecordingAsync().GetAwaiter().GetResult();
         if (!recording.Recorder.WasStarted)
         {

@@ -4,7 +4,7 @@
 
 <#
 .SYNOPSIS
-Runs the autonomous MWB MSTest executable in an existing nested-Sandbox Win10 VM.
+Runs the autonomous MWB MSTest executable in an existing nested-Sandbox VM.
 .DESCRIPTION
 Uses the local-VM skill for standard-user test dispatch, payloads and evidence.
 A protected, noninteractive provisioning task creates only the test's scoped
@@ -21,6 +21,12 @@ param(
     [string]$Filter,
     [string]$StandardUser = 'PTUser',
     [string]$GuestRuntimeArchive = 'mwb-guest-runtime.zip',
+    [string]$ProductArchive = 'powertoys-runtime.zip',
+    [string]$TestsArchive = 'ui-tests.zip',
+    [ValidateSet('x64Win10', 'x64Win11')][string]$Platform = 'x64Win10',
+    [ValidateSet('Auto', 'Legacy', 'WinApp')][string]$SandboxBackend = 'Auto',
+    [string]$SandboxWinAppArchive,
+    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
     [switch]$ReuseStagedPayload,
     [switch]$PlanOnly
 )
@@ -29,26 +35,42 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..\..\..'))
 $skillRoot = Join-Path $repoRoot '.github\skills\ui-tests-local-vm\scripts'
 $controller = Join-Path $skillRoot 'Invoke-LocalVmUiTest.ps1'
+$backend = if ($SandboxBackend -eq 'Auto') {
+    if ($Platform -eq 'x64Win11') { 'WinApp' } else { 'Legacy' }
+} else { $SandboxBackend }
+if ($backend -eq 'WinApp' -and
+    ([string]::IsNullOrWhiteSpace($SandboxWinAppArchive) -or
+        -not (Test-Path -LiteralPath (Join-Path $ExchangeRoot $SandboxWinAppArchive) -PathType Leaf))) {
+    throw 'Stage a Sandbox-capable preview archive and pass -SandboxWinAppArchive for the WinApp backend.'
+}
 $parameters = @{
     VmRoot = $VmRoot; VmName = $VmName; ConfigurationPath = $ConfigurationPath
     ExchangeRoot = $ExchangeRoot; TestExecutable = 'MouseWithoutBorders.UITests.exe'
-    Platform = 'x64Win10'; BuildLabel = $BuildLabel; StandardUser = $StandardUser
+    Platform = $Platform; BuildLabel = $BuildLabel; StandardUser = $StandardUser
+    CredentialPath = $CredentialPath
+    ProductArchive = $ProductArchive; TestsArchive = $TestsArchive
     SuiteTimeout = '45m'; TimeoutMinutes = 60; StartupTimeoutMinutes = 15
     ReuseStagedPayload = $ReuseStagedPayload
 }
 if ($Filter) { $parameters.Filter = $Filter }
 if ($PlanOnly) {
-    & $controller @parameters -PlanOnly
+    $plan = (& $controller @parameters -PlanOnly | Out-String) | ConvertFrom-Json
+    $plan | Add-Member -NotePropertyName SandboxBackend -NotePropertyValue $backend
+    if ($backend -eq 'WinApp') {
+        $preview = Join-Path $ExchangeRoot $SandboxWinAppArchive
+        $plan | Add-Member -NotePropertyName SandboxPreviewArchive -NotePropertyValue $SandboxWinAppArchive
+        $plan | Add-Member -NotePropertyName SandboxPreviewArchiveSha256 -NotePropertyValue (Get-FileHash -LiteralPath $preview -Algorithm SHA256).Hash
+    }
+    $plan | ConvertTo-Json -Depth 10
     return
 }
-& (Join-Path $skillRoot 'Initialize-LocalVmHost.ps1') -VmRoot $VmRoot -ConfigPath $ConfigurationPath -CheckOnly
+& (Join-Path $skillRoot 'Initialize-LocalVmHost.ps1') -VmRoot $VmRoot -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -CheckOnly
 if ($LASTEXITCODE -ne 0) { throw 'Local-VM host readiness failed.' }
-& (Join-Path $VmRoot 'Start-LocalVm.ps1') -ConfigPath $ConfigurationPath -Wait -TimeoutMinutes 15
+& (Join-Path $VmRoot 'Start-LocalVm.ps1') -ConfigPath $ConfigurationPath -CredentialPath $CredentialPath -Wait -TimeoutMinutes 15
 $runId = [Guid]::NewGuid().ToString()
 $taskName = "PowerToys-Mwb-Provision-$runId"
 $guestTools = "C:\ProgramData\PowerToysMwbProvisioner\$runId"
-$credentialPath = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
-$credential = Import-Clixml $credentialPath
+$credential = Import-Clixml $CredentialPath
 $session = New-PSSession -VMName $VmName -Credential $credential
 $taskRegistered = $false
 $provisioned = $false
@@ -56,7 +78,7 @@ $result = $null
 try {
     # The protected marker fingerprints these exact files before the standard-user
     # controller extracts the same archive into the same product path.
-    $archive = Join-Path $ExchangeRoot 'powertoys-runtime.zip'
+    $archive = Join-Path $ExchangeRoot $ProductArchive
     $guestArchive = "C:\PowerToysUiTestExchange\MwbProvisioning\$runId\powertoys-runtime.zip"
     $archiveHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
     $reuseProduct = $false
@@ -75,7 +97,7 @@ try {
             -FileSource Host -CreateFullPath -Force
     }
     else {
-        $guestArchive = 'C:\PowerToysUiTestExchange\MouseWithoutBorders\powertoys-runtime.zip'
+        $guestArchive = "C:\PowerToysUiTestExchange\$(Split-Path $ExchangeRoot -Leaf)\$ProductArchive"
     }
     $sandboxArchive = "C:\PowerToysUiTestExchange\MwbProvisioning\$runId\sandbox\mwb-guest-runtime.zip"
     Copy-VMFile -Name $VmName -SourcePath (Join-Path $ExchangeRoot $GuestRuntimeArchive) `
@@ -103,38 +125,82 @@ try {
             "$env:COMPUTERNAME\$User", 'ReadAndExecute',
             'ContainerInherit,ObjectInherit', 'None', 'Allow'))
         Set-Acl -LiteralPath $Tools -AclObject $acl
+        $logRoot = Join-Path $Tools 'provisioning-logs'
+        $null = New-Item -ItemType Directory -Path $logRoot
+        $logAcl = New-Object Security.AccessControl.DirectorySecurity
+        $logAcl.SetAccessRuleProtection($true, $false)
+        foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+            $logAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
+                [Security.Principal.SecurityIdentifier]::new($sid), 'FullControl',
+                'ContainerInherit,ObjectInherit', 'None', 'Allow'))
+        }
+        Set-Acl -LiteralPath $logRoot -AclObject $logAcl
     } -ArgumentList $guestArchive, $guestTools, $reuseProduct, $StandardUser
+    $sandboxWinApp = ''
+    if ($backend -eq 'WinApp') {
+        $previewArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
+        $previewHash = (Get-FileHash -LiteralPath $previewArchive -Algorithm SHA256).Hash
+        Copy-VMFile -Name $VmName -SourcePath $previewArchive -DestinationPath "$guestTools\sandbox-winapp.zip" `
+            -FileSource Host -CreateFullPath -Force
+        $sandboxWinApp = Invoke-Command -Session $session -ScriptBlock {
+            param($Tools, $ExpectedHash)
+            $ErrorActionPreference = 'Stop'
+            $archive = "$Tools\sandbox-winapp.zip"
+            if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -cne $ExpectedHash) {
+                throw 'The protected Sandbox preview archive differs from its host source.'
+            }
+            $destination = "$Tools\sandbox-winapp"
+            Expand-Archive -LiteralPath $archive -DestinationPath $destination
+            $exe = Join-Path $destination 'winapp.exe'
+            if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+                throw 'Sandbox preview archive must contain winapp.exe directly at its root.'
+            }
+            $exe
+        } -ArgumentList $guestTools, $previewHash
+    }
     foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -ToSession $session -Destination $guestTools
     }
     Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\runUiTestAsUser.ps1') `
         -ToSession $session -Destination $guestTools
+    Copy-Item -LiteralPath (Join-Path $repoRoot '.pipelines\Invoke-MwbProvisioning.ps1') `
+        -ToSession $session -Destination $guestTools
     Invoke-Command -Session $session -ScriptBlock {
-        param($Tools, $TaskName, $User, $RunId, $Archive)
+        param($Tools, $TaskName, $User, $RunId, $Archive, $Backend, $SandboxWinApp)
         $ErrorActionPreference = 'Stop'
-        $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}\Initialize-AutonomousHost.ps1" -ProductRoot C:\PowerToysUiTestRun\PowerToys -TestUser "{1}\{2}" -RunId {3} -GuestArchivePath "{4}"' -f $Tools, $env:COMPUTERNAME, $User, $RunId, $Archive
+        $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}\Invoke-MwbProvisioning.ps1" -ProductRoot C:\PowerToysUiTestRun\PowerToys -TestUser "{1}\{2}" -RunId {3} -GuestArchivePath "{4}"' -f $Tools, $env:COMPUTERNAME, $User, $RunId, $Archive
+        $arguments += ' -SandboxBackend {0}' -f $Backend
+        if ($SandboxWinApp) { $arguments += ' -SandboxWinAppPath "{0}"' -f $SandboxWinApp }
         $action = New-ScheduledTaskAction -Execute 'C:\Program Files\PowerShell\7\pwsh.exe' -Argument $arguments
         $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
         $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 18)
         $null = Register-ScheduledTask -TaskName $TaskName -Action $action -Principal $principal -Settings $settings
         Start-ScheduledTask -TaskName $TaskName
-    } -ArgumentList $guestTools, $taskName, $StandardUser, $runId, $sandboxArchive
+    } -ArgumentList $guestTools, $taskName, $StandardUser, $runId, $sandboxArchive, $backend, $sandboxWinApp
     $taskRegistered = $true
-    $deadline = [DateTime]::UtcNow.AddSeconds(30)
+    $deadline = [DateTime]::UtcNow.AddSeconds(90)
     do {
         $marker = Invoke-Command -Session $session -ScriptBlock {
             $path = 'C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json'
             if (Test-Path -LiteralPath $path) { [IO.File]::ReadAllText($path) | ConvertFrom-Json }
         }
         if ($marker -and $marker.RunId -eq $runId) { break }
+        $task = Invoke-Command -Session $session -ScriptBlock {
+            param($Name)
+            $info = Get-ScheduledTaskInfo -TaskName $Name
+            [pscustomobject]@{
+                State = (Get-ScheduledTask -TaskName $Name).State.ToString()
+                LastRunTime = $info.LastRunTime
+                LastTaskResult = $info.LastTaskResult
+            }
+        } -ArgumentList $taskName
+        if ($task.State -ne 'Running' -and $task.LastRunTime.Year -ge 2000) {
+            throw "Privileged setup exited before its marker (result $($task.LastTaskResult)). Protected diagnostics: $guestTools\provisioning-logs"
+        }
         Start-Sleep -Milliseconds 500
     } while ([DateTime]::UtcNow -lt $deadline)
     if (-not $marker -or $marker.RunId -ne $runId -or $marker.Status -notin 'Ready', 'WaitingForSandbox') {
-        $task = Invoke-Command -Session $session -ScriptBlock {
-            param($Name)
-            Get-ScheduledTaskInfo -TaskName $Name | Select-Object LastTaskResult
-        } -ArgumentList $taskName
-        throw "Privileged setup did not initialize its marker. Task result: $($task.LastTaskResult)"
+        throw "Privileged setup did not initialize a ready marker within 90 seconds (state $($task.State), result $($task.LastTaskResult)). Protected diagnostics: $guestTools\provisioning-logs"
     }
     $provisioned = $true
     $result = & $controller @parameters

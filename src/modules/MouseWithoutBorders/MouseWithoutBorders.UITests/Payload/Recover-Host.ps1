@@ -18,10 +18,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\EndpointSupport.ps1"
+. "$PSScriptRoot\ModernSandboxRecovery.ps1"
 Add-Type -Path "$PSScriptRoot\NativeSupport.cs"
 $deadline = [DateTime]::UtcNow.AddMinutes(3)
 $failures = [Collections.Generic.List[string]]::new()
 $resultPath = ''
+$modernRecovery = $false
 $result = [ordered]@{
     FormatVersion = 1; Status = 'Incomplete'; RunId = ''; SettingsRestored = $false
     ClipboardRestored = $false; RequiresBaselineReset = $true; Errors = @()
@@ -205,6 +207,50 @@ try {
         foreach ($record in $processes) { Stop-RecordedProcess $record }
     }
 
+    if ($journal.PSObject.Properties['ModernSandbox'] -and $null -ne $journal.ModernSandbox) {
+        $controlRoot = Join-Path $env:LOCALAPPDATA "Microsoft\PowerToysUiTestControl\$runId"
+        if ([IO.Path]::GetFullPath([string]$journal.ControlRoot).TrimEnd('\') -ine $controlRoot) {
+            throw 'Modern Sandbox control path does not belong to this run.'
+        }
+        $modern = $journal.ModernSandbox
+        $modernIdentity = Get-MwbModernRecoveryIdentity $modern $provision $controlRoot
+        $modernRecovery = $true
+        if ((Get-FileHash -LiteralPath $modernIdentity.WinAppPath -Algorithm SHA256).Hash -ine
+            $provision.SandboxWinAppSha256) {
+            throw 'The protected Sandbox preview executable changed.'
+        }
+        $commands = @($modern.CommandProcesses)
+        if ($commands.Count -gt 4) { throw 'Unexpected persistent Sandbox command count.' }
+        $trustedProvider = $null
+        foreach ($record in $commands) {
+            $command = Convert-ProcessRecord $record
+            Assert-ChildIdentity $command $testProcess
+            if ($command.Path -ine $modernIdentity.WinAppPath) {
+                if (-not $trustedProvider) { $trustedProvider = Get-MwbTrustedSandboxCli -ResolvedExecutable }
+                if ($command.Path -ine $trustedProvider) { throw 'Unexpected Sandbox command executable.' }
+            }
+            Stop-RecordedProcess $command
+            if ($command.IsCurrent()) { throw 'An owned Sandbox command remains active.' }
+        }
+        if ($modern.CreationAttempted) {
+            $wsb = Get-MwbTrustedSandboxCli
+            $ids = @(Get-MwbModernInstanceIds (Invoke-MwbSandboxControl $wsb 'List' ([guid]::Empty)))
+            if ($modernIdentity.InstanceId -in $ids) {
+                Invoke-MwbSandboxControl $wsb 'Stop' $modernIdentity.InstanceId
+            }
+            $ids = @(Get-MwbModernInstanceIds (Invoke-MwbSandboxControl $wsb 'List' ([guid]::Empty)))
+            if ($modernIdentity.InstanceId -in $ids) { throw 'The owned modern Sandbox is still present.' }
+            if ($ids.Count -gt 0 -or
+                ($modern.PSObject.Properties['OwnershipUnconfirmed'] -and $modern.OwnershipUnconfirmed)) {
+                throw 'Modern Sandbox ownership changed; preserve private state and do not stop unowned instances.'
+            }
+            if (-not $modern.CreationConfirmed) {
+                throw 'Sandbox creation was interrupted before confirmation; preserve private state for reconciliation.'
+            }
+        }
+        Remove-MwbPrivateTargetState $modernIdentity.TargetStateRoot
+    }
+
     $sandbox = @()
     if ($journal.SandboxProcesses) {
         $sandbox = @($journal.SandboxProcesses | ForEach-Object { Convert-ProcessRecord $_ })
@@ -241,7 +287,7 @@ try {
         Assert-RecoveryDeadline
         $remaining = ''
         foreach ($process in Get-Process) {
-            if ($process.ProcessName -like 'WindowsSandbox*') {
+            if (-not $modernRecovery -and $process.ProcessName -like 'WindowsSandbox*') {
                 $remaining = 'Sandbox processes remain; no unrecorded process will be terminated.'
             }
             if ($process.ProcessName -match '^PowerToys($|\.)') {

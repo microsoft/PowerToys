@@ -15,6 +15,8 @@ param(
     [Parameter(Mandatory = $true)][string]$ProductRoot,
     [Parameter(Mandatory = $true)][string]$TestUser,
     [Parameter(Mandatory = $true)][string]$GuestArchivePath,
+    [ValidateSet('Legacy', 'WinApp')][string]$SandboxBackend = 'Legacy',
+    [string]$SandboxWinAppPath,
     [string]$InterfaceAlias = 'vEthernet (Default Switch)',
     [string]$StateRoot = 'C:\ProgramData\PowerToysMwbExperiment',
     [Guid]$RunId = [Guid]::NewGuid(),
@@ -23,6 +25,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
+$preparationWatch = [Diagnostics.Stopwatch]::StartNew()
+function Write-ProvisioningPhase {
+    param([string]$Phase)
+    Write-Host ('MWB provisioning: {0} ({1:N1}s)' -f $Phase, $preparationWatch.Elapsed.TotalSeconds)
+}
+Write-ProvisioningPhase 'Validating staged payload'
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 try {
     if (-not (New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole(
@@ -50,12 +58,38 @@ while ($ancestor) {
     }
     $ancestor = Split-Path $ancestor
 }
+Write-ProvisioningPhase 'Checking staged process inventory'
 if (@(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -ieq $executable }).Count) {
     throw 'Provision firewall rules before starting the staged MWB process.'
 }
+Write-ProvisioningPhase 'Checking Sandbox feature'
 $feature = Get-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM
 if ($feature.State -ne 'Enabled') {
     throw "BLOCKED_INFRASTRUCTURE: Windows Sandbox is $($feature.State); image setup/reboot is required."
+}
+$sandboxWinAppHash = $null
+if ($SandboxBackend -eq 'WinApp') {
+    Write-ProvisioningPhase 'Validating Sandbox preview'
+    $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
+    if ($windowsBuild -lt 26100) { throw 'BLOCKED_INFRASTRUCTURE: WinApp Sandbox requires Windows 11 24H2 or newer; use Legacy on Win10.' }
+    if ([string]::IsNullOrWhiteSpace($SandboxWinAppPath) -or
+        $SandboxWinAppPath -notmatch '^[A-Za-z]:\\' -or
+        [IO.Path]::GetFileName($SandboxWinAppPath) -ine 'winapp.exe' -or
+        -not (Test-Path -LiteralPath $SandboxWinAppPath -PathType Leaf)) {
+        throw 'BLOCKED_INFRASTRUCTURE: stage the Sandbox-capable preview winapp.exe explicitly for the WinApp backend.'
+    }
+    $SandboxWinAppPath = (Resolve-Path -LiteralPath $SandboxWinAppPath).Path
+    $ancestor = $SandboxWinAppPath
+    while ($ancestor) {
+        if ((Get-Item -LiteralPath $ancestor -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The staged Sandbox winapp must not be reached through a reparse point.'
+        }
+        $ancestor = Split-Path -Parent $ancestor
+    }
+    $sandboxWinAppHash = (Get-FileHash -LiteralPath $SandboxWinAppPath -Algorithm SHA256).Hash
+}
+elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
+    throw 'A Sandbox preview CLI is only accepted for the explicit WinApp backend.'
 }
 if ((Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') -or
     (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired')) {
@@ -75,6 +109,7 @@ if (Test-Path -LiteralPath $stateDirectory) {
         throw 'An earlier provisioning record needs cleanup before reuse.'
     }
 }
+Write-ProvisioningPhase 'Checking firewall conflicts'
 $applicationFilters = @(Get-NetFirewallApplicationFilter -PolicyStore ActiveStore | Where-Object {
     $_.Program -ieq $executable
 })
@@ -85,18 +120,8 @@ if ($conflicting.Count) {
     throw 'BLOCKED_INFRASTRUCTURE: existing firewall rules for this payload invalidate a fresh baseline; use a fresh payload path or clean image.'
 }
 
-$null = New-Item -ItemType Directory -Path $stateDirectory -Force
-$acl = New-Object Security.AccessControl.DirectorySecurity
-$acl.SetAccessRuleProtection($true, $false)
-$inheritance = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
-foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
-    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
-        [Security.Principal.SecurityIdentifier]::new($sid), 'FullControl', $inheritance, 'None', 'Allow'))
-}
-$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
-    $userSid, 'ReadAndExecute', $inheritance, 'None', 'Allow'))
-Set-Acl -LiteralPath $stateDirectory -AclObject $acl
 $ruleName = "PowerToys.Mwb.UITest.$RunId"
+Write-ProvisioningPhase 'Fingerprinting payload'
 $state = [ordered]@{
     FormatVersion = 1
     RunId = $RunId.ToString()
@@ -106,6 +131,9 @@ $state = [ordered]@{
     LibrarySha256 = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
     GuestArchivePath = $guestArchive
     GuestArchiveSha256 = (Get-FileHash -LiteralPath $guestArchive -Algorithm SHA256).Hash
+    SandboxBackend = $SandboxBackend
+    SandboxWinAppPath = $SandboxWinAppPath
+    SandboxWinAppSha256 = $sandboxWinAppHash
     RuleName = $ruleName
     HostAddress = ''
     InnerSubnet = ''
@@ -117,7 +145,21 @@ $state = [ordered]@{
     PreparedUtc = [DateTime]::UtcNow.ToString('o')
     Status = 'WaitingForSandbox'
 }
+# Complete the potentially slow hashes before creating a directory that requires
+# an ownership marker for recovery.
+$acl = New-Object Security.AccessControl.DirectorySecurity
+$acl.SetAccessRuleProtection($true, $false)
+$inheritance = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
+foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+    $acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
+        [Security.Principal.SecurityIdentifier]::new($sid), 'FullControl', $inheritance, 'None', 'Allow'))
+}
+$acl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new(
+    $userSid, 'ReadAndExecute', $inheritance, 'None', 'Allow'))
+$null = New-Item -ItemType Directory -Path $stateDirectory -Force
+Set-Acl -LiteralPath $stateDirectory -AclObject $acl
 [IO.File]::WriteAllText($marker, ($state | ConvertTo-Json -Depth 5), [Text.UTF8Encoding]::new($false))
+Write-ProvisioningPhase 'Waiting for Sandbox network'
 try {
     $deadline = [DateTime]::UtcNow.AddSeconds($NetworkTimeoutSeconds)
     do {
