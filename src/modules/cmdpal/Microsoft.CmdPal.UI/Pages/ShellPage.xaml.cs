@@ -1107,29 +1107,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             // Ctrl+Enter
             case VirtualKey.Enter when mods.OnlyCtrl:
-                if (ViewModel.CurrentPage is ListViewModel listForSecondary)
                 {
-                    listForSecondary.InvokeSecondaryCommandOrQueue();
-                }
-                else
-                {
-                    WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
-                }
+                    var secondary = new ActivateSecondaryCommandMessage();
+                    WeakReferenceMessenger.Default.Send(secondary);
+                    if (!secondary.Handled && ViewModel.CurrentPage is ListViewModel listForSecondary)
+                    {
+                        listForSecondary.InvokeSecondaryCommandOrQueue();
+                    }
 
-                break;
+                    break;
+                }
 
             // Enter
             case VirtualKey.Enter when mods.None:
-                if (ViewModel.CurrentPage is ListViewModel list)
                 {
-                    list.InvokeSelectedItemOrQueue();
-                }
-                else
-                {
-                    WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-                }
+                    var activate = new ActivateSelectedListItemMessage();
+                    WeakReferenceMessenger.Default.Send(activate);
+                    if (!activate.Handled && ViewModel.CurrentPage is ListViewModel list)
+                    {
+                        list.InvokeSelectedItemOrQueue();
+                    }
 
-                break;
+                    break;
+                }
 
             // Ctrl+K
             case VirtualKey.K when mods.OnlyCtrl:

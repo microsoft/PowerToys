@@ -61,11 +61,24 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         _onFallbackChanged = onFallbackChanged;
     }
 
-    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken, Action? onBatchCompleted = null)
     {
         if (commands.Count == 0 || string.IsNullOrWhiteSpace(query))
         {
+            onBatchCompleted?.Invoke();
             return;
+        }
+
+        // Each command completes exactly once: either the worker that ran it, or the
+        // pending retry when the in-flight cap deferred it. Settlement waits on this
+        // so a queued activation cannot run against a partial fallback ranking.
+        var remaining = commands.Count;
+        void FinishOne()
+        {
+            if (Interlocked.Decrement(ref remaining) == 0)
+            {
+                onBatchCompleted?.Invoke();
+            }
         }
 
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
@@ -103,7 +116,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var pendingCommand = command;
                     var pendingQuery = query;
                     var pendingCt = cancellationToken;
-                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter, FinishOne), pendingCt);
                     continue;
                 }
 
@@ -163,6 +176,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 {
                     counter.Release();
                     DispatchPending(counter.TakePending());
+                    FinishOne();
                 }
 
                 // Guard against a stale refresh if the COM call returned after cancellation.
@@ -195,10 +209,11 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
         // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
-        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr, Action finishOne)
         {
             if (ct.IsCancellationRequested)
             {
+                finishOne();
                 return;
             }
 
@@ -206,6 +221,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             {
                 // Still at capacity (a newer worker claimed the freed slot first).
                 // The pending was already consumed from TakePending, so it's dropped here.
+                finishOne();
                 return;
             }
 
@@ -222,6 +238,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             {
                 ctr.Release();
                 DispatchPending(ctr.TakePending());
+                finishOne();
             }
 
             if (changed && !ct.IsCancellationRequested)

@@ -22,16 +22,23 @@ public sealed partial class ListViewModelPendingActivationTests
         public override string? GetExtensionDisplayName() => "Pending activation test host";
     }
 
-    private sealed partial class DelayedSearchPage : DynamicListPage
+    private sealed partial class DelayedSearchPage : DynamicListPage, ISettledSearchSource
     {
         private IListItem[] _items;
         private int _getItemsCount;
+        private string? _activationQuery;
+        private string? _builtQuery;
 
         internal ManualResetEventSlim GetItemsStarted { get; } = new(false);
 
         internal ManualResetEventSlim GetItemsGate { get; } = new(true);
 
         internal DelayedSearchPage(params IListItem[] items) => _items = items;
+
+        public event EventHandler? SearchSettlementChanged;
+
+        public bool CurrentFetchIsSettledFor(string query) =>
+            _builtQuery == query && _activationQuery == query && query.Length > 0;
 
         public override IListItem[] GetItems()
         {
@@ -45,7 +52,9 @@ public sealed partial class ListViewModelPendingActivationTests
                 }
             }
 
-            return Volatile.Read(ref _items);
+            var items = Volatile.Read(ref _items);
+            _builtQuery = _activationQuery;
+            return items;
         }
 
         public override void UpdateSearchText(string oldSearch, string newSearch) =>
@@ -55,6 +64,17 @@ public sealed partial class ListViewModelPendingActivationTests
         {
             Volatile.Write(ref _items, items);
             RaiseItemsChanged(items.Length);
+        }
+
+        /// <summary>
+        /// Marks <paramref name="query"/> as the settled ranking and republishes so the host
+        /// can see that the latest GetItems snapshot belongs to that query.
+        /// </summary>
+        internal void Settle(string query)
+        {
+            _activationQuery = query;
+            RaiseItemsChanged(1);
+            SearchSettlementChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -99,9 +119,44 @@ public sealed partial class ListViewModelPendingActivationTests
             Assert.IsFalse(listener.Invoked.IsCompleted, "Enter should not run a stale result while the query is in flight.");
 
             page.GetItemsGate.Set();
+            await ObserveItemsAsync(viewModel, "Notepad", () => { });
+            Assert.IsFalse(listener.Invoked.IsCompleted, "A fetch that is not settled for the query must not run.");
+
+            page.Settle("Notepad");
 
             var invoked = await listener.Invoked.WaitAsync(TimeSpan.FromSeconds(3));
             Assert.AreEqual("Notepad", invoked);
+        }
+        finally
+        {
+            page.GetItemsGate.Set();
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public async Task ItemsChangedWithoutSettlement_DoesNotInvokeQueuedEnter()
+    {
+        var page = new DelayedSearchPage(CreateItem("Initial"));
+        var viewModel = CreateViewModel(page);
+        using var listener = new InvokeListener();
+
+        try
+        {
+            await ObserveItemsAsync(viewModel, "Initial", viewModel.InitializeProperties);
+
+            page.GetItemsGate.Reset();
+            page.GetItemsStarted.Reset();
+            viewModel.SearchTextBox = "Notepad";
+            Assert.IsTrue(page.GetItemsStarted.Wait(TimeSpan.FromSeconds(3)), "The search fetch did not start.");
+            viewModel.InvokeSelectedItemOrQueue(viewModel.FilteredItems[0]);
+
+            page.GetItemsGate.Set();
+            await ObserveItemsAsync(viewModel, "Notepad", () => { });
+            await Task.Delay(200);
+            Assert.IsFalse(listener.Invoked.IsCompleted, "ItemsChanged alone must not release a queued Enter.");
         }
         finally
         {

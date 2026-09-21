@@ -5,6 +5,11 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to perform a list item's secondary command when the user presses ctrl+enter in the search box
+/// Used to perform a list item's secondary command when the user presses ctrl+enter in the search box.
+/// Recipients set <see cref="Handled"/> when they actually invoked a command so the shell
+/// does not also queue the key.
 /// </summary>
-public record ActivateSecondaryCommandMessage;
+public record ActivateSecondaryCommandMessage
+{
+    public bool Handled { get; set; }
+}

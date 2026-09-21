@@ -35,7 +35,9 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigateLeftCommand>,
     IRecipient<NavigateRightCommand>,
     IRecipient<NavigatePageDownCommand>,
-    IRecipient<NavigatePageUpCommand>
+    IRecipient<NavigatePageUpCommand>,
+    IRecipient<ActivateSelectedListItemMessage>,
+    IRecipient<ActivateSecondaryCommandMessage>
 {
     private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
 
@@ -122,6 +124,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigateRightCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
+        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -138,6 +142,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigateRightCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -594,6 +600,34 @@ public sealed partial class ListItemsView : UserControl,
         {
             // In list view, right arrow doesn't navigate
             // This maintains consistency with the SearchBar behavior
+        }
+    }
+
+    public void Receive(ActivateSelectedListItemMessage message)
+    {
+        if (message.Handled)
+        {
+            return;
+        }
+
+        // Invoke only when this query's snapshot is safe. Otherwise leave the key
+        // unhandled so the shell can queue it until settlement (GH #48670).
+        if (ViewModel?.TryActivateSelectionNow(ItemView.SelectedItem as ListItemViewModel) == true)
+        {
+            message.Handled = true;
+        }
+    }
+
+    public void Receive(ActivateSecondaryCommandMessage message)
+    {
+        if (message.Handled)
+        {
+            return;
+        }
+
+        if (ViewModel?.TryActivateSecondarySelectionNow(ItemView.SelectedItem as ListItemViewModel) == true)
+        {
+            message.Handled = true;
         }
     }
 

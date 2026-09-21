@@ -43,6 +43,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
+    private readonly ISettledSearchSource? _searchSettlement;
 
     // Background fetches alone take this lock. Selection, realization, and teardown
     // never acquire it, so installing a coordinator cannot block the UI thread.
@@ -135,8 +136,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // subsequent FetchItems(true).
     private volatile bool _forceFirstItemPending;
 
-    // GH #48670: Enter pressed before the current query's results are published
-    // is queued and executed against the first match once that search settles.
+    // GH #48670: Enter pressed before a settled snapshot for this query exists is queued.
+    // Only pages that implement ISettledSearchSource can release that queue. A bare
+    // ItemsChanged does not identify which query it belongs to.
     private int _searchEpoch;
     private int _readySearchEpoch;
     private int _searchAppliedEpoch;
@@ -161,6 +163,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+        _searchSettlement = model as ISettledSearchSource;
+        if (_searchSettlement is not null)
+        {
+            _searchSettlement.SearchSettlementChanged += OnSearchSettlementChanged;
+        }
     }
 
     internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
@@ -958,26 +965,61 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     /// <summary>
-    /// Invokes the current selection, or queues Enter until the active query's
-    /// first result is published (GH #48670).
+    /// Invokes the current selection when this query is safe to activate, or queues
+    /// Enter until a settled snapshot for the query has been published (GH #48670).
+    /// The queued path does not keep the pre-query selection: that item can survive
+    /// the update and would launch the previous result.
     /// </summary>
-    public void InvokeSelectedItemOrQueue() => InvokeSelectedItemOrQueue(_lastSelectedItem);
+    public void InvokeSelectedItemOrQueue() => InvokeOrQueue(selectedItem: null, PendingActivation.Primary);
 
     public void InvokeSelectedItemOrQueue(ListItemViewModel? selectedItem) =>
         InvokeOrQueue(selectedItem, PendingActivation.Primary);
 
     /// <summary>
-    /// Invokes the current selection's secondary command, or queues Ctrl+Enter
-    /// until the active query's first result is published.
+    /// Invokes the visible selection when this query is already settled.
+    /// Returns false when activation must wait, so the caller can queue it.
     /// </summary>
-    public void InvokeSecondaryCommandOrQueue() => InvokeSecondaryCommandOrQueue(_lastSelectedItem);
+    public bool TryActivateSelectionNow(ListItemViewModel? selectedItem)
+    {
+        if (!IsWorkActive || (CanQueueActivation && !IsActivationReady))
+        {
+            return false;
+        }
+
+        return TryInvokePending(PendingActivation.Primary, selectedItem);
+    }
+
+    /// <summary>
+    /// Invokes the current selection's secondary command, or queues Ctrl+Enter
+    /// until a settled snapshot for the query has been published.
+    /// </summary>
+    public void InvokeSecondaryCommandOrQueue() => InvokeOrQueue(selectedItem: null, PendingActivation.Secondary);
 
     public void InvokeSecondaryCommandOrQueue(ListItemViewModel? selectedItem) =>
         InvokeOrQueue(selectedItem, PendingActivation.Secondary);
 
-    private bool AreSearchResultsReady =>
+    public bool TryActivateSecondarySelectionNow(ListItemViewModel? selectedItem)
+    {
+        if (!IsWorkActive || (CanQueueActivation && !IsActivationReady))
+        {
+            return false;
+        }
+
+        return TryInvokePending(PendingActivation.Secondary, selectedItem);
+    }
+
+    // Pages without a settlement contract keep the old Enter behavior: run the
+    // visible selection now, and never auto-run a later fetch.
+    private bool CanQueueActivation =>
+        _searchSettlement is not null && !string.IsNullOrEmpty(SearchTextBox);
+
+    private bool IsActivationReady =>
         Volatile.Read(ref _readySearchEpoch) == Volatile.Read(ref _searchEpoch) &&
-        !IsFetching;
+        !IsFetching &&
+        _searchSettlement?.CurrentFetchIsSettledFor(SearchTextBox) == true;
+
+    private void OnSearchSettlementChanged(object? sender, EventArgs e) =>
+        DoOnUiThread(TryConsumePendingActivation);
 
     private void InvokeOrQueue(ListItemViewModel? selectedItem, PendingActivation kind)
     {
@@ -986,30 +1028,35 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (AreSearchResultsReady)
+        if (!CanQueueActivation)
         {
-            if (TryInvokePending(kind, selectedItem))
-            {
-                return;
-            }
-
-            // Results are in but the first row isn't available yet (the
-            // catalog is still initializing). Queue until it is.
-            if (!IsInitialized || IsLoading)
-            {
-                Interlocked.Exchange(ref _pendingActivation, (int)kind);
-            }
-
+            TryInvokePending(kind, selectedItem);
             return;
         }
 
-        Interlocked.Exchange(ref _pendingActivation, (int)kind);
+        if (!IsActivationReady)
+        {
+            Interlocked.Exchange(ref _pendingActivation, (int)kind);
+            return;
+        }
+
+        if (TryInvokePending(kind, selectedItem))
+        {
+            return;
+        }
+
+        // Results are in but the first row isn't available yet (the
+        // catalog is still initializing). Queue until it is.
+        if (!IsInitialized || IsLoading)
+        {
+            Interlocked.Exchange(ref _pendingActivation, (int)kind);
+        }
     }
 
     private void TryConsumePendingActivation()
     {
         var pending = (PendingActivation)Volatile.Read(ref _pendingActivation);
-        if (pending == PendingActivation.None || !IsWorkActive || !AreSearchResultsReady)
+        if (pending == PendingActivation.None || !IsWorkActive || !IsActivationReady)
         {
             return;
         }
@@ -1704,6 +1751,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters?.SafeCleanup();
+
+        if (_searchSettlement is not null)
+        {
+            _searchSettlement.SearchSettlementChanged -= OnSearchSettlementChanged;
+        }
 
         var model = _model.Unsafe;
         if (model is not null)

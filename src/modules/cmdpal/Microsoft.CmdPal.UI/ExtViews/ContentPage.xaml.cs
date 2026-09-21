@@ -90,12 +90,24 @@ public sealed partial class ContentPage : Page,
     // this comes in on Enter keypresses in the SearchBox
     public void Receive(ActivateSelectedListItemMessage message)
     {
+        if (message.Handled)
+        {
+            return;
+        }
+
         ViewModel?.InvokePrimaryCommandCommand?.Execute(ViewModel);
+        message.Handled = true;
     }
 
     // this comes in on Ctrl+Enter keypresses in the SearchBox
     public void Receive(ActivateSecondaryCommandMessage message)
     {
+        if (message.Handled)
+        {
+            return;
+        }
+
         ViewModel?.InvokeSecondaryCommandCommand?.Execute(ViewModel);
+        message.Handled = true;
     }
 }
