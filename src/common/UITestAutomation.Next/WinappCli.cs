@@ -155,11 +155,8 @@ public static class WinappCli
         var overall = Stopwatch.StartNew();
         using var p = StartWinappProcess(psi);
 
-        // Must be read now, while the process is still alive: an App Execution Alias resolves
-        // psi.FileName (the %LOCALAPPDATA%\Microsoft\WindowsApps stub) to a different real image
-        // under ...\Program Files\WindowsApps\..., and module enumeration stops working the moment
-        // the process exits.
-        var ownerImagePath = ResolveOwnerImagePath(p, psi.FileName);
+        // The retained process handle identifies the resolved image, not an execution-alias stub.
+        var ownerImagePath = ResolveOwnerImagePath(p);
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
         var stderrTask = p.StandardError.ReadToEndAsync();
@@ -192,10 +189,13 @@ public static class WinappCli
         if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(2)))
         {
             Console.WriteLine(
-                "[winappcli] output stalled after winapp.exe exit (lingering child held the pipe); clearing strays for: " +
+                "[winappcli] output stalled after winapp.exe exit (lingering child held the pipe); checking owned children for: " +
                 $"winapp {string.Join(' ', args)}");
             KillOwnedWinappChildren(p, ownerImagePath);
-            Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(3));
+            if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(3)))
+            {
+                throw new TimeoutException("winapp output pipes remained open after ownership-scoped child cleanup.");
+            }
         }
 
         // Surface where slow calls actually spend their time — winapp.exe runtime vs waiting for the
@@ -221,12 +221,16 @@ public static class WinappCli
     /// </summary>
     /// <param name="owner">The (already exited) invocation whose stray children are being reaped.</param>
     /// <param name="ownerImagePath">
-    /// The owner's actual resolved image path, captured via <see cref="ResolveOwnerImagePath"/> while
-    /// it was still alive — not <see cref="ProcessStartInfo.FileName"/>, which for an App Execution
-    /// Alias is just the launch-time reparse-point stub.
+    /// The image obtained from the retained process handle, never the execution-alias launch path.
     /// </param>
-    private static void KillOwnedWinappChildren(Process owner, string ownerImagePath)
+    private static void KillOwnedWinappChildren(Process owner, string? ownerImagePath)
     {
+        if (string.IsNullOrWhiteSpace(ownerImagePath))
+        {
+            Console.WriteLine("[winappcli] child cleanup refused because the invocation's image identity is unavailable.");
+            return;
+        }
+
         Process[] strays;
         Dictionary<int, int> parents;
         DateTime started;
@@ -247,10 +251,11 @@ public static class WinappCli
         {
             try
             {
-                _ = stray.Handle;
+                _ = stray.SafeHandle;
                 if (!parents.TryGetValue(stray.Id, out var parent) ||
+                    parent != owner.Id ||
                     !IsOwnedWinappChild(owner.Id, started, exited, ownerImagePath,
-                        parent, stray.StartTime.ToUniversalTime(), stray.MainModule?.FileName))
+                        parent, stray.StartTime.ToUniversalTime(), ResolveOwnerImagePath(stray)))
                 {
                     continue;
                 }
@@ -271,38 +276,30 @@ public static class WinappCli
         }
     }
 
-    internal static bool IsOwnedWinappChild(int ownerId, DateTime ownerStarted, DateTime ownerExited, string ownerPath,
+    internal static bool IsOwnedWinappChild(int ownerId, DateTime ownerStarted, DateTime ownerExited, string? ownerPath,
         int parentId, DateTime childStarted, string? childPath) =>
         parentId == ownerId &&
         childStarted >= ownerStarted &&
         childStarted <= ownerExited &&
+        !string.IsNullOrWhiteSpace(ownerPath) &&
         !string.IsNullOrWhiteSpace(childPath) &&
         string.Equals(Path.GetFullPath(childPath), Path.GetFullPath(ownerPath), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Resolves the real, on-disk image backing a running process, preferring
-    /// <see cref="ProcessModule.FileName"/> (what <see cref="Process.MainModule"/> reports) over the
-    /// path used to launch it. An App Execution Alias is a reparse-point stub under
-    /// <c>%LOCALAPPDATA%\Microsoft\WindowsApps</c>; once <c>CreateProcess</c> resolves it, both this
-    /// process and any genuine same-image child report the real installed path (e.g. under
-    /// <c>...\Program Files\WindowsApps\...</c>) from their main module — comparing a stray against
-    /// the alias stub instead would reject every genuine child. Module enumeration only works while
-    /// the process is alive, so <paramref name="owner"/> must still be running when this is called;
-    /// <paramref name="launchPath"/> (the original <see cref="ProcessStartInfo.FileName"/>) is the
-    /// fallback once the owner has exited or the module can't be read.
+    /// Queries the actual image through the retained handle while the process is alive.
+    /// An exit race must never fall back to an unverified launch path.
     /// </summary>
-    internal static string ResolveOwnerImagePath(Process owner, string launchPath)
+    internal static string? ResolveOwnerImagePath(Process owner)
     {
-        try
+        var path = new StringBuilder(32768);
+        uint length = (uint)path.Capacity;
+        if (QueryFullProcessImageName(owner.SafeHandle, 0, path, ref length))
         {
-            return owner.MainModule?.FileName ?? launchPath;
+            return path.ToString();
         }
-        catch
-        {
-            // Not alive anymore, or the module list couldn't be read (e.g. a bitness mismatch) —
-            // fall back to the launch path rather than losing stray cleanup entirely.
-            return launchPath;
-        }
+
+        Console.WriteLine($"[winappcli] process image identity unavailable (Win32 error {Marshal.GetLastWin32Error()}).");
+        return null;
     }
 
     private static Dictionary<int, int> ReadProcessParents()
@@ -345,6 +342,10 @@ public static class WinappCli
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern SafeFileHandle CreateToolhelp32Snapshot(uint flags, uint processId);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool QueryFullProcessImageName(SafeProcessHandle process, uint flags, StringBuilder path, ref uint length);
 
     [DllImport("kernel32.dll", EntryPoint = "Process32FirstW", CharSet = CharSet.Unicode, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
