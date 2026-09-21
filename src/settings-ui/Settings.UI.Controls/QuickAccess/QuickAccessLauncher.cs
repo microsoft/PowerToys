@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -11,6 +12,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public class QuickAccessLauncher : IQuickAccessLauncher
     {
+        private const int AllowAnyProcess = -1;
+
+        [DllImport("user32.dll")]
+        private static extern bool AllowSetForegroundWindow(int processId);
+
         private readonly bool _isElevated;
 
         public QuickAccessLauncher(bool isElevated)
@@ -22,6 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             switch (moduleType)
             {
+                case ModuleType.DEPiP:
+                    AllowSetForegroundWindow(AllowAnyProcess);
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowDEPiPSharedEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 case ModuleType.ColorPicker:
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
                     {

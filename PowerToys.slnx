@@ -446,6 +446,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/DEPiP/">
+    <Project Path="src/modules/DEPiP/DEPiP/DEPiP.vcxproj" Id="28d979e9-70c9-416c-b883-fc99577cd8c3" />
+    <Project Path="src/modules/DEPiP/DEPiPModuleInterface/DEPiPModuleInterface.vcxproj" Id="e68bb923-3f1a-41fb-879b-06281eb07280" />
+  </Folder>
   <Folder Name="/modules/EnvironmentVariables/">
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

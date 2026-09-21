@@ -6713,4 +6713,68 @@ Text uses the current drawing color.</value>
     <value>Example: game.exe</value>
     <comment>{Locked="game.exe"}</comment>
   </data>
+  <data name="DEPiP.ModuleTitle" xml:space="preserve">
+    <value>DEPiP: Display Extended PiP</value>
+    <comment>DEPiP is a product name and should not be localized. Display Extended PiP should be localized.</comment>
+  </data>
+  <data name="DEPiP.ModuleDescription" xml:space="preserve">
+    <value>Mirror any connected display in a movable window on another display.</value>
+  </data>
+  <data name="Shell_DEPiP.Content" xml:space="preserve">
+    <value>DEPiP: Display Extended PiP</value>
+    <comment>DEPiP is a product name and should not be localized. Display Extended PiP should be localized.</comment>
+  </data>
+  <data name="DEPiP_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>DEPiP: Display Extended PiP</value>
+    <comment>DEPiP is a product name and should not be localized. Display Extended PiP should be localized.</comment>
+  </data>
+  <data name="DEPiP_DisplaySelectorInfo.Title" xml:space="preserve">
+    <value>Display selection</value>
+  </data>
+  <data name="DEPiP_DisplaySelectorInfo.Message" xml:space="preserve">
+    <value>When you open DEPiP, select any connected display to mirror. The primary display is available even when only one display is connected.</value>
+  </data>
+  <data name="DEPiP_Settings_GroupSettings.Header" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DEPiP_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Display Extended PiP</value>
+  </data>
+  <data name="DEPiP_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Select a display to mirror in a PiP window</value>
+  </data>
+  <data name="DEPiP_InactiveTransparency.Header" xml:space="preserve">
+    <value>Inactive transparency</value>
+  </data>
+  <data name="DEPiP_InactiveTransparency.Description" xml:space="preserve">
+    <value>Controls how transparent the mirror becomes when the pointer is on a display other than the one being mirrored</value>
+  </data>
+  <data name="DEPiP_LockAspectRatio.Header" xml:space="preserve">
+    <value>Lock aspect ratio</value>
+  </data>
+  <data name="DEPiP_LockAspectRatio.Description" xml:space="preserve">
+    <value>Keep the mirror window proportional to the selected display while resizing</value>
+  </data>
+  <data name="DEPiP_AlwaysOnTop.Header" xml:space="preserve">
+    <value>Always on top</value>
+  </data>
+  <data name="DEPiP_AlwaysOnTop.Description" xml:space="preserve">
+    <value>Keep the mirrored display above other windows</value>
+  </data>
+  <data name="Oobe_DEPiP.Title" xml:space="preserve">
+    <value>DEPiP: Display Extended PiP</value>
+    <comment>DEPiP is a product name and should not be localized. Display Extended PiP should be localized.</comment>
+  </data>
+  <data name="Oobe_DEPiP.Description" xml:space="preserve">
+    <value>Mirror any connected display in a movable, resizable window on another display.</value>
+  </data>
+  <data name="Oobe_DEPiP_HowToUse.Text" xml:space="preserve">
+    <value>Enable **DEPiP**, select **Open Display Extended PiP**, choose the display you want to mirror, and select **OK**. Move or resize the mirror window like any other application window.</value>
+  </data>
+  <data name="Oobe_DEPiP_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can select the primary display even when only one display is connected. Mirroring a display onto itself creates a recursive image.</value>
+  </data>
+  <data name="Launch_DEPiP.Content" xml:space="preserve">
+    <value>Open Display Extended PiP</value>
+  </data>
 </root>

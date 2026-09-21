@@ -1,0 +1,8 @@
+namespace DEPiP
+{
+    [default_interface]
+    runtimeclass DisplaySelectorWindow : Microsoft.UI.Xaml.Window
+    {
+        DisplaySelectorWindow();
+    }
+}

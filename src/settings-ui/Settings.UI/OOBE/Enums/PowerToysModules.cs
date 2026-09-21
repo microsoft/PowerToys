@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         CmdPal,
         ColorPicker,
         CropAndLock,
+        DEPiP,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,

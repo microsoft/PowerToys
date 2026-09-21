@@ -1,0 +1,8 @@
+namespace DEPiP
+{
+    [default_interface]
+    runtimeclass MirrorWindow : Microsoft.UI.Xaml.Window
+    {
+        MirrorWindow();
+    }
+}

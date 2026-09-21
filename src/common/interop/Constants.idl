@@ -56,6 +56,7 @@ namespace PowerToys
             static String ShowHostsSharedEvent();
             static String ShowHostsAdminSharedEvent();
             static String TerminateHostsSharedEvent();
+            static String ShowDEPiPSharedEvent();
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
             static String CropAndLockScreenshotEvent();

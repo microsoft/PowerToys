@@ -440,6 +440,10 @@ function Test-CoreFiles {
         'PowerToys.ZoomIt.exe',
         'PowerToys.ZoomItModuleInterface.dll',
         'PowerToys.ZoomItSettingsInterop.dll',
+
+        # DEPiP
+        'PowerToys.DEPiP.exe',
+        'PowerToys.DEPiPModuleInterface.dll',
         
         # Command Palette
         'PowerToys.CmdPalModuleInterface.dll',

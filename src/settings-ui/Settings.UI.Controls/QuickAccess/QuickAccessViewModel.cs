@@ -71,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             AddFlyoutMenuItem(ModuleType.ColorPicker);
             AddFlyoutMenuItem(ModuleType.CmdPal);
+            AddFlyoutMenuItem(ModuleType.DEPiP);
             AddFlyoutMenuItem(ModuleType.EnvironmentVariables);
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);

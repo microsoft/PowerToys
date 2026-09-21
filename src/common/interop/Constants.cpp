@@ -225,6 +225,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::TERMINATE_HOSTS_EVENT;
     }
+    hstring Constants::ShowDEPiPSharedEvent()
+    {
+        return CommonSharedConstants::SHOW_DEPIP_EVENT;
+    }
     hstring Constants::CropAndLockThumbnailEvent()
     {
         return CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT;
