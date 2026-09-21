@@ -15,6 +15,33 @@ public sealed class WinAppSandboxProtocolTests
     private static readonly Guid Instance = Guid.Parse("d2b96d2f-5b49-42d1-9576-227250294fb0");
     private static readonly Guid UnrelatedInstance = Guid.Parse("638638e2-b7c3-4f31-b779-cb7715cb0145");
 
+    [DataTestMethod]
+    [DataRow(nameof(WinAppSandboxPrerequisite.UserPackageRegistration), "Exactly one", "registered for this user")]
+    [DataRow(nameof(WinAppSandboxPrerequisite.UserExecutionAlias), "WindowsApps", "reparse point")]
+    [DataRow(nameof(WinAppSandboxPrerequisite.PackageExecutable), "registered modern Sandbox package", "wsb.exe")]
+    [DataRow(nameof(WinAppSandboxPrerequisite.ProviderVersion), "--version", "successful nonempty version")]
+    public void MissingProviderPrerequisitesExplainTheStandardUserInfrastructureGate(
+        string prerequisite, string expectedEvidence, string expectedRequirement)
+    {
+        var error = new WinAppSandboxException(Enum.Parse<WinAppSandboxPrerequisite>(prerequisite));
+        Assert.AreEqual("trusted_provider_unavailable", error.Code);
+        Assert.IsNull(error.ExitCode);
+        StringAssert.StartsWith(error.Message, "BLOCKED_INFRASTRUCTURE:");
+        StringAssert.Contains(error.Message, "current interactive test user");
+        StringAssert.Contains(error.Message, expectedEvidence);
+        StringAssert.Contains(error.Message, expectedRequirement);
+        StringAssert.Contains(error.Message, "No fallback was attempted");
+    }
+
+    [TestMethod]
+    public void OrdinaryProviderFailuresRetainTheirCodeAndExitStatus()
+    {
+        var error = new WinAppSandboxException("command_failed", 7);
+        Assert.AreEqual("command_failed", error.Code);
+        Assert.AreEqual(7, error.ExitCode);
+        Assert.AreEqual("Modern Sandbox operation failed (command_failed; exit 7).", error.Message);
+    }
+
     [TestMethod]
     public void GuestLoginProbeRequiresAnExplicitSuccessfulGuestExitCode()
     {

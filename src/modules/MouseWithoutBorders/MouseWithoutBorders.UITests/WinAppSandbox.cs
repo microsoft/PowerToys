@@ -385,16 +385,20 @@ internal sealed class WinAppSandbox : ISandboxSession
 
         var packages = new PackageManager().FindPackagesForUser(string.Empty, SandboxPackageFamily)
             .Where(package => package.Id.FamilyName == SandboxPackageFamily).ToArray();
-        if (packages.Length != 1 ||
-            !File.Exists(wsbPath) || (File.GetAttributes(wsbPath) & FileAttributes.ReparsePoint) == 0)
+        if (packages.Length != 1)
         {
-            throw new WinAppSandboxException("trusted_provider_unavailable");
+            throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserPackageRegistration);
+        }
+
+        if (!File.Exists(wsbPath) || (File.GetAttributes(wsbPath) & FileAttributes.ReparsePoint) == 0)
+        {
+            throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserExecutionAlias);
         }
 
         trustedWsbExecutablePath = Path.Combine(packages[0].InstalledLocation.Path, "wsb.exe");
         if (!File.Exists(trustedWsbExecutablePath))
         {
-            throw new WinAppSandboxException("trusted_provider_unavailable");
+            throw new WinAppSandboxException(WinAppSandboxPrerequisite.PackageExecutable);
         }
 
         WinAppSandboxPayload.RequirePlainPath(controlRoot);
@@ -421,9 +425,20 @@ internal sealed class WinAppSandbox : ISandboxSession
         }
 
         WinAppSandboxProtocol.RequireCapabilities(Run(winappPath, ["--cli-schema"], Budget(TimeSpan.FromSeconds(30), bootstrap: true)));
-        if (string.IsNullOrWhiteSpace(Run(wsbPath, ["--version"], Budget(TimeSpan.FromSeconds(15), bootstrap: true))))
+        string version;
+        try
         {
-            throw new WinAppSandboxException("trusted_provider_unavailable");
+            version = Run(wsbPath, ["--version"], Budget(TimeSpan.FromSeconds(15), bootstrap: true));
+        }
+        catch (Exception error) when (IsExpectedFailure(error))
+        {
+            throw new AggregateException(
+                new Exception[] { new WinAppSandboxException(WinAppSandboxPrerequisite.ProviderVersion) }.Concat(SafeFailures(error)));
+        }
+
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            throw new WinAppSandboxException(WinAppSandboxPrerequisite.ProviderVersion);
         }
     }
 
