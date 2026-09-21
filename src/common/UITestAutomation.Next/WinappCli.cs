@@ -5,9 +5,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.PowerToys.UITest.Next;
 
@@ -46,8 +48,8 @@ public static class WinappCli
 
     /// <summary>
     /// Serializes winapp.exe invocations. Two CLI UIA clients querying the same target at once can hang
-    /// each other (worst against the live Measure Tool overlay), and the stray-process guard in
-    /// <see cref="Invoke"/> must never race a legitimate in-flight call — so invocations run one at a time.
+    /// each other (worst against the live Measure Tool overlay), so this wrapper's UI invocations
+    /// run one at a time. Other owners may keep independent transport clients running.
     /// </summary>
     private static readonly object InvokeGate = new();
 
@@ -117,26 +119,22 @@ public static class WinappCli
     }
 
     /// <summary>Run <c>winapp.exe</c> with the given arguments. Returns exit code and captured streams.</summary>
-    public static Result Invoke(params string[] args)
+    public static Result Invoke(params string[] args) => InvokeExecutable(ExecutablePath.Value, args);
+
+    internal static Result InvokeExecutable(string executable, params string[] args)
     {
-        // Serialize invocations so two winapp.exe never run at once — and so the stray-process guard in
-        // InvokeLocked can't race a legitimate in-flight call.
+        // Serialize this wrapper's UI invocations, not independently owned clients.
         lock (InvokeGate)
         {
-            return InvokeLocked(args);
+            return InvokeLocked(executable, args);
         }
     }
 
-    private static Result InvokeLocked(string[] args)
+    private static Result InvokeLocked(string executable, string[] args)
     {
-        // Before spinning up a new winapp.exe, kill any stray one left behind by a previous
-        // timed-out/killed call: a second UIA client against the same target (e.g. the live Measure
-        // Tool overlay) can wedge the new call. Serialized, so anything alive here is a leftover.
-        KillStrayWinappProcesses(args);
-
         var psi = new ProcessStartInfo
         {
-            FileName = ExecutablePath.Value,
+            FileName = executable,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -156,6 +154,12 @@ public static class WinappCli
 
         var overall = Stopwatch.StartNew();
         using var p = StartWinappProcess(psi);
+
+        // Must be read now, while the process is still alive: an App Execution Alias resolves
+        // psi.FileName (the %LOCALAPPDATA%\Microsoft\WindowsApps stub) to a different real image
+        // under ...\Program Files\WindowsApps\..., and module enumeration stops working the moment
+        // the process exits.
+        var ownerImagePath = ResolveOwnerImagePath(p, psi.FileName);
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
         var stderrTask = p.StandardError.ReadToEndAsync();
@@ -183,15 +187,14 @@ public static class WinappCli
 
         // Bound the wait for the async stdout/stderr readers. The output is already buffered, but a
         // child that inherited the redirected pipe keeps the handle open so the readers (and a
-        // parameterless WaitForExit) never see EOF. After a short grace, clear strays — invocations are
-        // serialized, so any winapp.exe alive now is that child — which closes the pipe so the reads
-        // finish with the full, already-captured output.
+        // parameterless WaitForExit) never see EOF. Only a child proved to belong to
+        // this invocation may be stopped; another owner's transport is not a stray.
         if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(2)))
         {
             Console.WriteLine(
                 "[winappcli] output stalled after winapp.exe exit (lingering child held the pipe); clearing strays for: " +
                 $"winapp {string.Join(' ', args)}");
-            KillStrayWinappProcesses(args);
+            KillOwnedWinappChildren(p, ownerImagePath);
             Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(3));
         }
 
@@ -213,16 +216,26 @@ public static class WinappCli
     }
 
     /// <summary>
-    /// Kill any <c>winapp.exe</c> still running before a new invocation (or when output stalls). A stray
-    /// instance is a leftover from a previous call that timed out / didn't fully exit; a second UIA
-    /// client against the same target can wedge a call, so we clear them and log each kill. Best-effort
-    /// and bounded — never throws.
+    /// Stops only direct same-image children born during this invocation's lifetime.
+    /// A process name or a shared executable path alone is not ownership.
     /// </summary>
-    private static void KillStrayWinappProcesses(string[] args)
+    /// <param name="owner">The (already exited) invocation whose stray children are being reaped.</param>
+    /// <param name="ownerImagePath">
+    /// The owner's actual resolved image path, captured via <see cref="ResolveOwnerImagePath"/> while
+    /// it was still alive — not <see cref="ProcessStartInfo.FileName"/>, which for an App Execution
+    /// Alias is just the launch-time reparse-point stub.
+    /// </param>
+    private static void KillOwnedWinappChildren(Process owner, string ownerImagePath)
     {
         Process[] strays;
+        Dictionary<int, int> parents;
+        DateTime started;
+        DateTime exited;
         try
         {
+            started = owner.StartTime.ToUniversalTime();
+            exited = owner.ExitTime.ToUniversalTime();
+            parents = ReadProcessParents();
             strays = Process.GetProcessesByName("winapp");
         }
         catch
@@ -234,10 +247,17 @@ public static class WinappCli
         {
             try
             {
+                _ = stray.Handle;
+                if (!parents.TryGetValue(stray.Id, out var parent) ||
+                    !IsOwnedWinappChild(owner.Id, started, exited, ownerImagePath,
+                        parent, stray.StartTime.ToUniversalTime(), stray.MainModule?.FileName))
+                {
+                    continue;
+                }
+
                 Console.WriteLine(
-                    $"[winappcli] found a stray winapp.exe (pid {stray.Id}) still running; killing it before: " +
-                    $"winapp {string.Join(' ', args)}");
-                stray.Kill(entireProcessTree: true);
+                    $"[winappcli] stopping a pipe-holding child of the completed invocation (pid {stray.Id}).");
+                stray.Kill();
                 stray.WaitForExit(5000);
             }
             catch
@@ -250,6 +270,89 @@ public static class WinappCli
             }
         }
     }
+
+    internal static bool IsOwnedWinappChild(int ownerId, DateTime ownerStarted, DateTime ownerExited, string ownerPath,
+        int parentId, DateTime childStarted, string? childPath) =>
+        parentId == ownerId &&
+        childStarted >= ownerStarted &&
+        childStarted <= ownerExited &&
+        !string.IsNullOrWhiteSpace(childPath) &&
+        string.Equals(Path.GetFullPath(childPath), Path.GetFullPath(ownerPath), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Resolves the real, on-disk image backing a running process, preferring
+    /// <see cref="ProcessModule.FileName"/> (what <see cref="Process.MainModule"/> reports) over the
+    /// path used to launch it. An App Execution Alias is a reparse-point stub under
+    /// <c>%LOCALAPPDATA%\Microsoft\WindowsApps</c>; once <c>CreateProcess</c> resolves it, both this
+    /// process and any genuine same-image child report the real installed path (e.g. under
+    /// <c>...\Program Files\WindowsApps\...</c>) from their main module — comparing a stray against
+    /// the alias stub instead would reject every genuine child. Module enumeration only works while
+    /// the process is alive, so <paramref name="owner"/> must still be running when this is called;
+    /// <paramref name="launchPath"/> (the original <see cref="ProcessStartInfo.FileName"/>) is the
+    /// fallback once the owner has exited or the module can't be read.
+    /// </summary>
+    internal static string ResolveOwnerImagePath(Process owner, string launchPath)
+    {
+        try
+        {
+            return owner.MainModule?.FileName ?? launchPath;
+        }
+        catch
+        {
+            // Not alive anymore, or the module list couldn't be read (e.g. a bitness mismatch) —
+            // fall back to the launch path rather than losing stray cleanup entirely.
+            return launchPath;
+        }
+    }
+
+    private static Dictionary<int, int> ReadProcessParents()
+    {
+        using var snapshot = CreateToolhelp32Snapshot(2, 0);
+        if (snapshot.IsInvalid)
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+
+        var entry = new ProcessEntry { Size = (uint)Marshal.SizeOf<ProcessEntry>() };
+        var parents = new Dictionary<int, int>();
+        if (Process32First(snapshot, ref entry))
+        {
+            do
+            {
+                parents[checked((int)entry.ProcessId)] = checked((int)entry.ParentProcessId);
+            }
+            while (Process32Next(snapshot, ref entry));
+        }
+
+        return parents;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct ProcessEntry
+    {
+        public uint Size;
+        public uint Usage;
+        public uint ProcessId;
+        public nint DefaultHeapId;
+        public uint ModuleId;
+        public uint Threads;
+        public uint ParentProcessId;
+        public int BasePriority;
+        public uint Flags;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string Executable;
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern SafeFileHandle CreateToolhelp32Snapshot(uint flags, uint processId);
+
+    [DllImport("kernel32.dll", EntryPoint = "Process32FirstW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool Process32First(SafeFileHandle snapshot, ref ProcessEntry entry);
+
+    [DllImport("kernel32.dll", EntryPoint = "Process32NextW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool Process32Next(SafeFileHandle snapshot, ref ProcessEntry entry);
 
     /// <summary>
     /// Process-guard budget for one invocation. Defaults to <see cref="DefaultInvokeTimeout"/>; when the
