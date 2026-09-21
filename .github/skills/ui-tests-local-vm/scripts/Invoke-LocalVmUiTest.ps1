@@ -202,7 +202,9 @@ function Start-InteractiveTask {
         $principal = New-ScheduledTaskPrincipal `
             -UserId "$env:COMPUTERNAME\$InteractiveUser" `
             -LogonType Interactive -RunLevel Limited
-        $settings = New-ScheduledTaskSettingsSet `
+        # Priority 7 defaults to background CPU/I/O scheduling and propagates to
+        # product children. Interactive UI tests need normal scheduling under VM load.
+        $settings = New-ScheduledTaskSettingsSet -Priority 4 `
             -ExecutionTimeLimit (New-TimeSpan -Minutes $LimitMinutes) `
             -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
         $task = New-ScheduledTask -Action $action -Principal $principal -Settings $settings
