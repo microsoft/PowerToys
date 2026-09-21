@@ -20,7 +20,7 @@ foreach ($name in @('Assert-MwbLocalPath', 'Get-MwbSandboxPayload', 'Get-MwbPubl
 }
 
 function Invoke-MwbTestProvisioner {
-    param([string] $Directory)
+    param([string] $Directory, [string[]] $ExtraArguments = @())
 
     $start = [Diagnostics.ProcessStartInfo]::new((Get-Process -Id $PID).Path)
     $start.UseShellExecute = $false
@@ -33,6 +33,7 @@ function Invoke-MwbTestProvisioner {
         '-GuestArchivePath', (Join-Path $Directory 'guest archive.zip'))) {
         $start.ArgumentList.Add($argument)
     }
+    foreach ($argument in $ExtraArguments) { $start.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
     try {
@@ -181,6 +182,26 @@ exit 23
             (Get-Item -LiteralPath $path).Length | Should BeGreaterThan 5242880
             Get-Content -LiteralPath $path -Tail 1 | Should Be "$name complete"
         }
+    }
+
+    It 'forwards the optional modern backend without changing legacy defaults' {
+        Set-Content -LiteralPath $initializer -Value @'
+param([string] $ProductRoot, [string] $TestUser, [guid] $RunId,
+    [int] $NetworkTimeoutSeconds, [string] $GuestArchivePath,
+    [string] $SandboxBackend = 'Legacy', [string] $SandboxWinAppPath)
+[Console]::Out.WriteLine($SandboxBackend)
+[Console]::Out.WriteLine($SandboxWinAppPath)
+'@
+        $preview = Join-Path $directory 'sandbox preview\winapp.exe'
+        $result = Invoke-MwbTestProvisioner $directory -ExtraArguments @(
+            '-SandboxBackend', 'WinApp', '-SandboxWinAppPath', $preview)
+        $result.ExitCode | Should Be 0
+        $lines = @(Get-Content -LiteralPath (Join-Path $logRoot 'stdout.log'))
+        $lines[0] | Should Be 'WinApp'
+        $lines[1] | Should Be $preview
+        $result = Invoke-MwbTestProvisioner $directory
+        $result.ExitCode | Should Be 0
+        (Get-Content -LiteralPath (Join-Path $logRoot 'stdout.log'))[0] | Should Be 'Legacy'
     }
 
     It 'does not run the initializer or report success when log files cannot be opened' {
@@ -342,7 +363,7 @@ Describe 'MWB Sandbox artifact discovery' {
             Set-Content -LiteralPath (Join-Path $tests $name) -Value 'test fixture'
         }
         New-Item -ItemType Directory -Path (Join-Path $tests 'Payload') -Force | Out-Null
-        foreach ($name in @('Recover-Host.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
             Set-Content -LiteralPath (Join-Path $tests "Payload\$name") -Value 'test fixture'
         }
     }
@@ -382,6 +403,7 @@ Describe 'MWB Sandbox artifact discovery' {
 
     It 'requires the complete fixed recovery payload before provisioning' -TestCases @(
         @{ Name = 'Recover-Host.ps1' }
+        @{ Name = 'ModernSandboxRecovery.ps1' }
         @{ Name = 'EndpointSupport.ps1' }
         @{ Name = 'NativeSupport.cs' }
     ) {

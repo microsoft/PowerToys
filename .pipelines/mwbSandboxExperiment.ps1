@@ -11,11 +11,14 @@ param(
     [Parameter(Mandatory)]
     [guid] $RunId,
     [string] $ArtifactRoot,
-    [string] $ResultsDirectory
+    [string] $ResultsDirectory,
+    [string] $Platform,
+    [string] $SourceRevision = $env:BUILD_SOURCEVERSION
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. "$PSScriptRoot\MwbSandboxCi.Common.ps1"
 
 function Assert-MwbLocalPath {
     param([string] $Path)
@@ -62,7 +65,7 @@ function Get-MwbSandboxPayload {
     if (-not (Test-Path -LiteralPath $testExecutable -PathType Leaf)) {
         throw 'The MWB Sandbox MTP executable was not staged with its runtime configuration.'
     }
-    foreach ($name in @('Recover-Host.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+    foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
         $path = Join-Path $runners[0].DirectoryName "Payload\$name"
         Assert-MwbLocalPath $path
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -115,6 +118,22 @@ function New-MwbProtectedDirectory {
     }
     [IO.FileSystemAclExtensions]::Create([IO.DirectoryInfo]::new($Path), $acl)
     Assert-MwbProtectedDirectory $Path
+}
+
+function Protect-MwbCiPayloadTree {
+    param([string] $Path)
+
+    # Inherit the run directory's admin-write/test-user-read ACL, but assign ownership
+    # explicitly: an elevated agent's default creator owner need not be Administrators.
+    $owner = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-544')
+    foreach ($item in @((Get-Item -LiteralPath $Path -Force)) +
+        @(Get-ChildItem -LiteralPath $Path -Force -Recurse)) {
+        Assert-MwbLocalPath $item.FullName
+        $acl = Get-Acl -LiteralPath $item.FullName
+        $acl.SetOwner($owner)
+        Set-Acl -LiteralPath $item.FullName -AclObject $acl
+        Assert-MwbProtectedDirectory $item.FullName
+    }
 }
 
 function Read-MwbProvisioningMarker {
@@ -215,6 +234,17 @@ $powerShell = (Get-Process -Id $PID).Path
 
 if ($Mode -eq 'Prepare') {
     $payload = Get-MwbSandboxPayload $ArtifactRoot
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision
+    $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
+    $backend = Get-MwbCiBackend $Platform $windowsBuild
+    $feature = Get-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM
+    Write-Host "MWB prerequisite evidence: Platform=$Platform; WindowsBuild=$windowsBuild; Backend=$backend; SandboxFeature=$($feature.State)."
+    if ($feature.State -ne 'Enabled') {
+        throw "BLOCKED_INFRASTRUCTURE: Sandbox feature is $($feature.State). Image preparation is required; this job never enables features or reboots."
+    }
+    if ($backend -eq 'WinApp') {
+        Write-Host 'Win11 additionally requires the registered modern Sandbox client and a successful bounded wsb version/capability probe under the Limited interactive test user. Enabled feature state alone is not readiness.'
+    }
     $interactiveUser = (Get-CimInstance Win32_ComputerSystem).UserName
     if ([string]::IsNullOrWhiteSpace($interactiveUser)) {
         throw 'BLOCKED_INFRASTRUCTURE: no logged-on interactive desktop user is available.'
@@ -250,7 +280,30 @@ if ($Mode -eq 'Prepare') {
     New-MwbProtectedDirectory (Join-Path $runRoot 'provisioning-logs')
     $sourceRoot = Join-Path $PSScriptRoot '..\src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
     $guestArchive = Join-Path $runRoot 'guest-runtime\product.zip'
-    & (Join-Path $sourceRoot 'New-MwbRuntimeArchive.ps1') -ProductRoot $payload.ProductRoot -ArchivePath $guestArchive | Out-Null
+    $null = New-Item -ItemType Directory -Path (Split-Path $guestArchive)
+    Copy-Item -LiteralPath (Join-Path $bundle.Root 'runtime.zip') -Destination $guestArchive
+    Assert-MwbCiHash $guestArchive $bundle.Manifest.Runtime.Sha256
+    Protect-MwbCiPayloadTree (Split-Path $guestArchive)
+    $hostProductRoot = Join-Path $runRoot 'host-product'
+    Expand-MwbCiRuntime -Archive $guestArchive -Destination $hostProductRoot -Files $bundle.Manifest.Runtime.Files
+    Protect-MwbCiPayloadTree $hostProductRoot
+    Assert-MwbProtectedDirectory $hostProductRoot
+    $previewPath = ''
+    if ($backend -eq 'WinApp') {
+        $previewRoot = Join-Path $runRoot 'sandbox-preview'
+        $null = New-Item -ItemType Directory -Path $previewRoot
+        foreach ($entry in $bundle.Manifest.Preview.Files) {
+            $destination = Join-Path $previewRoot $entry.Path
+            Copy-Item -LiteralPath (Join-Path $bundle.Root "preview\$($entry.Path)") -Destination $destination
+            Assert-MwbCiHash $destination $entry.Sha256
+        }
+        Protect-MwbCiPayloadTree $previewRoot
+        $previewPath = Join-Path $previewRoot 'winapp.exe'
+    }
+    Copy-Item -LiteralPath (Join-Path $bundle.Root 'manifest.json') -Destination (Join-Path $runRoot 'payload-manifest.json')
+    Copy-Item -LiteralPath (Join-Path $bundle.Root 'runtime.zip.manifest.json') -Destination (Join-Path $runRoot 'runtime-manifest.json')
+    Assert-MwbCiHash (Join-Path $runRoot 'payload-manifest.json') $bundle.ManifestSha256
+    Assert-MwbCiHash (Join-Path $runRoot 'runtime-manifest.json') $bundle.Manifest.Runtime.ManifestSha256
     $hashes = @{}
     foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1', 'Invoke-MwbProvisioning.ps1')) {
         $source = if ($name -ceq 'Invoke-MwbProvisioning.ps1') {
@@ -267,10 +320,18 @@ if ($Mode -eq 'Prepare') {
         $hashes[$name] = $hash
     }
     $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -GuestArchivePath "{4}"' -f
-        $setupPath, $payload.ProductRoot, $interactiveUser, $RunId, $guestArchive
+        $setupPath, $hostProductRoot, $interactiveUser, $RunId, $guestArchive
+    $arguments += ' -SandboxBackend "{0}"' -f $backend
+    if ($previewPath) { $arguments += ' -SandboxWinAppPath "{0}"' -f $previewPath }
     @{
         RunId = $RunId.ToString()
-        ProductRoot = $payload.ProductRoot
+        ProductRoot = $hostProductRoot
+        HostProductRoot = $hostProductRoot
+        SourceProductRoot = $payload.ProductRoot
+        SourceRevision = $SourceRevision
+        BundleManifestSha256 = $bundle.ManifestSha256
+        SandboxBackend = $backend
+        SandboxWinAppPath = $previewPath
         TestExecutable = $payload.TestExecutable
         InteractiveUser = $interactiveUser
         TestUserSid = $userSid.Value
@@ -300,7 +361,7 @@ if ($Mode -eq 'Prepare') {
                 continue
             }
             # The initial marker is enough. On Win10, only the test can start Sandbox's Default Switch.
-            $marker = Read-MwbProvisioningMarker $payload.ProductRoot $userSid.Value
+            $marker = Read-MwbProvisioningMarker $hostProductRoot $userSid.Value
             if ($marker.Status -in @('WaitingForSandbox', 'Ready')) {
                 Write-Host "Privileged setup $($marker.Status); dispatch may start Sandbox as $interactiveUser."
                 return
@@ -337,15 +398,28 @@ if ($manifest.RunId -cne $RunId.ToString()) {
 
 if ($Mode -eq 'Run') {
     $payload = Get-MwbSandboxPayload $ArtifactRoot
-    if ($payload.ProductRoot -ine $manifest.ProductRoot -or $payload.TestExecutable -ine $manifest.TestExecutable) {
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision
+    if ($payload.ProductRoot -ine $manifest.SourceProductRoot -or $payload.TestExecutable -ine $manifest.TestExecutable -or
+        $manifest.SourceRevision -ine $SourceRevision -or $bundle.ManifestSha256 -ine $manifest.BundleManifestSha256 -or
+        $manifest.HostProductRoot -ine (Join-Path $runRoot 'host-product') -or $manifest.ProductRoot -ine $manifest.HostProductRoot) {
         throw 'The staged MWB test or product root changed after preparation.'
     }
-    $marker = Read-MwbProvisioningMarker $payload.ProductRoot $manifest.TestUserSid
+    Assert-MwbProtectedDirectory $manifest.HostProductRoot
+    foreach ($entry in $bundle.Manifest.Runtime.Files) {
+        $path = Get-MwbCiRelativePath $manifest.HostProductRoot $entry.Path
+        Assert-MwbProtectedDirectory $path
+        Assert-MwbCiHash $path $entry.Sha256
+    }
+    $marker = Read-MwbProvisioningMarker $manifest.HostProductRoot $manifest.TestUserSid
+    if ($marker.SandboxBackend -cne $manifest.SandboxBackend -or
+        $marker.SandboxWinAppPath -ine $manifest.SandboxWinAppPath) {
+        throw 'The protected Sandbox backend or preview path changed after preparation.'
+    }
     if ($marker.Status -notin @('WaitingForSandbox', 'Ready')) {
         Write-MwbProvisioningDiagnostics $runRoot
         throw "BLOCKED_INFRASTRUCTURE: privileged setup status is $($marker.Status)."
     }
-    $env:POWERTOYS_INSTALL_DIR = $payload.ProductRoot
+    $env:POWERTOYS_INSTALL_DIR = $manifest.HostProductRoot
     $env:POWERTOYS_MWB_RUN_ROOT = Get-MwbPublicRunRoot $ResultsDirectory $RunId
     $env:useInstallerForTest = 'false'
     & "$PSScriptRoot\runUiTestAsUser.ps1" -TestExecutable $payload.TestExecutable `

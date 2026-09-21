@@ -51,6 +51,7 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
           buildTests: true
+          mwbSandboxExperiment: ${{ parameters.mwbSandboxExperiment }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 

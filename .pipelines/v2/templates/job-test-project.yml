@@ -105,9 +105,10 @@ jobs:
             '${{ parameters.platform }}' -cnotin @('x64Win10', 'x64Win11') -or
             '${{ parameters.inputArtifactStem }}' -ne '' -or
             '${{ parameters.autoSelectUiTests }}' -ne 'False' -or
+            '${{ parameters.useLatestWebView2 }}' -ne 'False' -or
             '${{ parameters.installMode }}' -ne 'machine' -or
             $modules.Count -ne 1 -or $modules[0] -cne 'MouseWithoutBorders.UITests') {
-          throw 'MWB Sandbox requires buildNow, the unmodified build-x64-Debug artifact, and exactly MouseWithoutBorders.UITests on x64Win10/x64Win11.'
+          throw 'MWB Sandbox requires buildNow, the build-x64-Debug artifact with its private CI bundle, exactly MouseWithoutBorders.UITests on x64Win10/x64Win11, and no WebView2 installation/policy changes.'
         }
       } elseif ($modules -contains 'MouseWithoutBorders.UITests') {
         throw 'MouseWithoutBorders.UITests is Debug-only. Set mwbSandboxExperiment=true with buildNow and buildPlatforms=[x64].'

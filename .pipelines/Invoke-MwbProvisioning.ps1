@@ -8,7 +8,9 @@ param(
     [Parameter(Mandatory)][string] $ProductRoot,
     [Parameter(Mandatory)][string] $TestUser,
     [Parameter(Mandatory)][guid] $RunId,
-    [Parameter(Mandatory)][string] $GuestArchivePath
+    [Parameter(Mandatory)][string] $GuestArchivePath,
+    [ValidateSet('Legacy', 'WinApp')][string] $SandboxBackend = 'Legacy',
+    [string] $SandboxWinAppPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,6 +22,10 @@ $setupPath = Join-Path $PSScriptRoot 'Initialize-AutonomousHost.ps1'
 $logRoot = Join-Path $PSScriptRoot 'provisioning-logs'
 $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -ProductRoot "{1}" -TestUser "{2}" -RunId "{3}" -NetworkTimeoutSeconds 900 -GuestArchivePath "{4}"' -f
     $setupPath, $ProductRoot, $TestUser, $RunId, $GuestArchivePath
+if ($SandboxBackend -ne 'Legacy' -or $SandboxWinAppPath) {
+    $arguments += ' -SandboxBackend "{0}"' -f $SandboxBackend
+    if ($SandboxWinAppPath) { $arguments += ' -SandboxWinAppPath "{0}"' -f $SandboxWinAppPath }
+}
 
 # Start-Process drains both redirected streams concurrently to files rather than
 # accumulating output in memory or waiting on one pipe while the other fills.

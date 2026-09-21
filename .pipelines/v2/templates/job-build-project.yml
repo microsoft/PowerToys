@@ -62,6 +62,9 @@ parameters:
   - name: buildInstallers
     type: boolean
     default: true
+  - name: mwbSandboxExperiment
+    type: boolean
+    default: false
   - name: useVSPreview
     type: boolean
     default: false
@@ -174,6 +177,15 @@ jobs:
       targetPath: $(LogOutputDirectory)
       condition: or(failed(), canceled())
   steps:
+  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    - pwsh: |
+        if ('$(BuildPlatform)' -cne 'x64' -or '$(BuildConfiguration)' -cne 'Debug' -or
+            '${{ parameters.buildInstallers }}' -ne 'False' -or '${{ parameters.buildTests }}' -ne 'True' -or
+            '${{ parameters.artifactStem }}' -ne '') {
+          throw 'MWB CI preparation requires the unmodified build-x64-Debug artifact, buildTests=true and buildInstallers=false.'
+        }
+      displayName: Validate gated MWB build preparation
+
   - checkout: self
     clean: true
     submodules: true
@@ -701,6 +713,37 @@ jobs:
         New-Item -Type Directory $FinalOutputRoot -EA:Ignore
         Move-Item $ProjectBuildDirectory $FinalOutputRoot
       displayName: Move entire output directory into artifacts
+
+  - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
+    - task: UseDotNet@2
+      displayName: Stage isolated pinned SDK for the private MWB Sandbox preview
+      inputs:
+        packageType: sdk
+        version: '10.0.401'
+        installationPath: '$(Pipeline.Workspace)\mwb-ci-tools\dotnet'
+        performMultiLevelLookup: false
+
+    - pwsh: |
+        $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
+        try {
+          & "$(Build.SourcesDirectory)\.pipelines\New-MwbSandboxCiArtifact.ps1" `
+            -ProductRoot "$(JobOutputDirectory)\x64\Debug\x64\Debug" `
+            -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
+            -WorkRoot $work `
+            -DotNetPath "$(Pipeline.Workspace)\mwb-ci-tools\dotnet\dotnet.exe" `
+            -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
+        } finally {
+          # Preserve preparation diagnostics, never the external source tree or package cache.
+          if (Test-Path -LiteralPath $work) {
+            foreach ($log in Get-ChildItem -LiteralPath $work -Filter '*.log' -File -Recurse) {
+              $destination = Join-Path "$(LogOutputDirectory)\mwb-ci" ([IO.Path]::GetRelativePath($work, $log.FullName))
+              $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
+              Copy-Item -LiteralPath $log.FullName -Destination $destination
+            }
+          }
+        }
+      displayName: Prepare coherent lean MWB runtime and pinned private Sandbox preview
+      timeoutInMinutes: 35
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)

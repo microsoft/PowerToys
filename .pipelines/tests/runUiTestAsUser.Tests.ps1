@@ -320,6 +320,9 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
         Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
             $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
         }
+        Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Priority -eq 4
+        }
         Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
     }
 
@@ -364,6 +367,9 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
             $state.CapturedRequest.MwbRecoveryJournal | Should Be $journal
             Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
                 $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
+            }
+            Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+                $Priority -eq 4
             }
         }
         $state.AclWrites.Count | Should Be 4

@@ -46,7 +46,7 @@ parameters:
 
 stages:
   # Reject invalid selections instead of expanding any build/download/install jobs.
-  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), eq(length(parameters.buildPlatforms), 1), containsValue(parameters.buildPlatforms, 'x64'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))))) }}:
+  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), eq(length(parameters.buildPlatforms), 1), containsValue(parameters.buildPlatforms, 'x64'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'), eq(parameters.useLatestWebView2, false))))) }}:
     - stage: InvalidMwbSandboxSelection
       displayName: Reject unsupported MWB Sandbox selection
       jobs:
@@ -61,7 +61,7 @@ stages:
           steps:
             - checkout: none
             - pwsh: |
-                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, buildPlatforms=[x64], and exactly uiTestModules=[MouseWithoutBorders.UITests]. Release/installed builds and ARM64 are not supported by this pilot.'
+                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, buildPlatforms=[x64], exactly uiTestModules=[MouseWithoutBorders.UITests], and useLatestWebView2=false. Release/installed builds and ARM64 are not supported by this pilot.'
               displayName: Fail before building or mutating a test host
 
   - ${{ else }}:

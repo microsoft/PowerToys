@@ -1,0 +1,77 @@
+diff --git a/src/winapp-CLI/WinApp.Cli.Tests/SandboxUxRegressionTests.cs b/src/winapp-CLI/WinApp.Cli.Tests/SandboxUxRegressionTests.cs
+index 0e16753..2956715 100644
+--- a/src/winapp-CLI/WinApp.Cli.Tests/SandboxUxRegressionTests.cs
++++ b/src/winapp-CLI/WinApp.Cli.Tests/SandboxUxRegressionTests.cs
+@@ -80,10 +80,51 @@ public class SandboxUxRegressionTests
+ 
+         var rule = harness.Cli.Operations.Single(op => op.Contains("New-NetFirewallRule", StringComparison.Ordinal));
+ 
+-        StringAssert.Contains(rule, $"-LocalPort {material.Port}");
+-        StringAssert.Contains(rule, "-Program $agent");
+-        StringAssert.Contains(rule, "-Direction Inbound");
+-        StringAssert.Contains(rule, "-Protocol TCP");
++        StringAssert.Contains(
++            rule,
++            $"-Direction Inbound -Action Allow -Protocol TCP -LocalPort {material.Port} -Program $agent " +
++            "-Profile Any -EdgeTraversalPolicy Allow -PolicyStore ActiveStore -ErrorAction Stop | Out-Null");
++    }
++
++    [TestMethod]
++    public async Task FirewallCleanup_EnumeratesApplicationFiltersOnceAndResolvesOnlyExactProgramMatches()
++    {
++        using var harness = new BackendHarness();
++
++        await harness.RunUntilAgentLaunchAsync(TestContext.CancellationToken);
++
++        var command = harness.Cli.Operations.Single(op => op.Contains("New-NetFirewallRule", StringComparison.Ordinal));
++
++        StringAssert.Contains(
++            command,
++            "$existing=Get-NetFirewallApplicationFilter -PolicyStore ActiveStore -ErrorAction SilentlyContinue | " +
++            "Where-Object { $_.Program -eq $agent } | ForEach-Object { " +
++            "Get-NetFirewallRule -AssociatedNetFirewallApplicationFilter $_ -PolicyStore ActiveStore -ErrorAction SilentlyContinue }; ");
++        Assert.AreEqual(
++            1,
++            command.Split("Get-NetFirewallApplicationFilter", StringSplitOptions.None).Length - 1,
++            "The bulk query must not be followed by a per-rule application-filter query.");
++    }
++
++    [TestMethod]
++    public async Task FirewallCleanup_RemovesBlockAndStaleAllowRulesFromBothStoresBeforeCreatingTheNewRule()
++    {
++        using var harness = new BackendHarness();
++
++        await harness.RunUntilAgentLaunchAsync(TestContext.CancellationToken);
++
++        var command = harness.Cli.Operations.Single(op => op.Contains("New-NetFirewallRule", StringComparison.Ordinal));
++        var cleanup = command[..command.IndexOf("New-NetFirewallRule", StringComparison.Ordinal)];
++
++        // Filtering by action or port would leave a blocking rule or the old allowed port behind.
++        Assert.IsFalse(cleanup.Contains("-Action", StringComparison.Ordinal));
++        Assert.IsFalse(cleanup.Contains("-LocalPort", StringComparison.Ordinal));
++        StringAssert.Contains(
++            command,
++            "foreach ($rule in $existing) { " +
++            "Remove-NetFirewallRule -Name $rule.Name -PolicyStore ActiveStore -ErrorAction SilentlyContinue; " +
++            "Remove-NetFirewallRule -Name $rule.Name -PolicyStore PersistentStore -ErrorAction SilentlyContinue }; " +
++            "New-NetFirewallRule");
+     }
+ 
+     /// <summary>The assigned port stays inside the dynamic range.</summary>
+diff --git a/src/winapp-CLI/WinApp.Cli/ExecutionTargets/WindowsSandbox/WindowsSandboxBackend.cs b/src/winapp-CLI/WinApp.Cli/ExecutionTargets/WindowsSandbox/WindowsSandboxBackend.cs
+index d7183b9..339e2fd 100644
+--- a/src/winapp-CLI/WinApp.Cli/ExecutionTargets/WindowsSandbox/WindowsSandboxBackend.cs
++++ b/src/winapp-CLI/WinApp.Cli/ExecutionTargets/WindowsSandbox/WindowsSandboxBackend.cs
+@@ -1115,8 +1115,10 @@ internal sealed class WindowsSandboxBackend(
+             // Any existing rule for this exact program path is removed first, block or allow: a
+             // block rule would defeat the new allow, and a stale allow from an earlier attempt at
+             // this same generation would leave a port open that is no longer in use.
+-            @"$existing=Get-NetFirewallRule -PolicyStore ActiveStore -ErrorAction SilentlyContinue | Where-Object { " +
+-            @"($_ | Get-NetFirewallApplicationFilter -ErrorAction SilentlyContinue).Program -eq $agent }; " +
++            // Enumerate filters once, then resolve only matches instead of querying every rule's filter.
++            @"$existing=Get-NetFirewallApplicationFilter -PolicyStore ActiveStore -ErrorAction SilentlyContinue | " +
++            @"Where-Object { $_.Program -eq $agent } | ForEach-Object { " +
++            @"Get-NetFirewallRule -AssociatedNetFirewallApplicationFilter $_ -PolicyStore ActiveStore -ErrorAction SilentlyContinue }; " +
+             @"foreach ($rule in $existing) { " +
+             @"Remove-NetFirewallRule -Name $rule.Name -PolicyStore ActiveStore -ErrorAction SilentlyContinue; " +
+             @"Remove-NetFirewallRule -Name $rule.Name -PolicyStore PersistentStore -ErrorAction SilentlyContinue }; " +

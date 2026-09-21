@@ -1,0 +1,15 @@
+{
+  "Repository": "https://github.com/microsoft/winappCli.git",
+  "Commit": "114e6ec6cfec9267a43b4b324f2eb9d20a297261",
+  "Patch": "firewall-query.patch",
+  "PatchSha256": "9decf83b90178454b2a186b470aa27f84aae4b47dbfae5f9b9ed15215ae3c00c",
+  "Version": "0.6.3-prerelease.52+firewall-query-optimized.114e6ec6",
+  "AssemblyVersion": "0.6.3.52",
+  "SdkVersion": "10.0.401",
+  "RuntimeVersion": "10.0.12",
+  "Files": [
+    "winapp.exe",
+    "libHarfBuzzSharp.dll",
+    "libSkiaSharp.dll"
+  ]
+}

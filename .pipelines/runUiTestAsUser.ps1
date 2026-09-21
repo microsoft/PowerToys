@@ -277,7 +277,9 @@ try {
     }
     $action = New-ScheduledTaskAction -Execute $powerShell -Argument $arguments
     $principal = New-ScheduledTaskPrincipal -UserId $InteractiveUser -LogonType Interactive -RunLevel Limited
-    $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes ($TimeoutMinutes + 1)) `
+    # Interactive tests and recovery must not seed background CPU/I/O priority
+    # into their product children or the per-user Sandbox broker.
+    $settings = New-ScheduledTaskSettingsSet -Priority 4 -ExecutionTimeLimit (New-TimeSpan -Minutes ($TimeoutMinutes + 1)) `
         -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
     Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal -Settings $settings | Out-Null
     $registered = $true

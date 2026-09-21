@@ -2,13 +2,15 @@
 steps:
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Prepare `
-        -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)"
+        -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
+        -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)"
     displayName: Prepare asynchronous privileged MWB Sandbox prerequisite
     timeoutInMinutes: 15
 
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Run `
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
+        -SourceRevision "$(Build.SourceVersion)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Run MWB Sandbox MSTest once on the standard-user desktop
     timeoutInMinutes: 48
