@@ -108,7 +108,11 @@ internal sealed class OpenWindows
 
         var newWindow = new Window(hwnd);
 
-        if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
+        // An owned window is normally a dialog or palette belonging to its owner, so it is
+        // skipped. WS_EX_APPWINDOW is how an application overrides that and asks for the window
+        // to be treated as a top-level one -- it is what puts an owned window on the taskbar --
+        // so honor it here too and keep the list in step with the taskbar. (Issue #38862.)
+        if (newWindow.IsWindow && newWindow.Visible && (newWindow.IsOwner || newWindow.IsAppWindow) &&
             (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
             (newWindow.Desktop.IsVisible || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
             newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != PowerLauncherExe)
