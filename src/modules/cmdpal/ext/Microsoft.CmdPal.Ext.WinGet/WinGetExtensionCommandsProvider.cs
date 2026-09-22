@@ -84,6 +84,11 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
     private void QueueOperationFeedback(WinGetPackageOperation operation, bool isStarting)
     {
+        if (!IsWinGetExtensionOperation(operation))
+        {
+            return;
+        }
+
         _ = Task.Factory.StartNew(
             () =>
             {
@@ -114,11 +119,14 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
     private void UpdatePageTitle()
     {
-        var activeOperation = _operationTracker.Operations.FirstOrDefault(operation => !operation.IsCompleted);
+        var activeOperation = _operationTracker.Operations.FirstOrDefault(static operation => !operation.IsCompleted && IsWinGetExtensionOperation(operation));
         _page.Title = activeOperation is null
             ? string.Empty
             : FormatMessage(GetStartingMessageFormat(activeOperation), activeOperation);
     }
+
+    private static bool IsWinGetExtensionOperation(WinGetPackageOperation operation) =>
+        operation.Source == WinGetPackageOperationSource.WinGetExtension;
 
     private static CompositeFormat GetStartingMessageFormat(WinGetPackageOperation operation) =>
         operation.Kind == WinGetPackageOperationKind.Uninstall ? UninstallingPackage : InstallingPackage;

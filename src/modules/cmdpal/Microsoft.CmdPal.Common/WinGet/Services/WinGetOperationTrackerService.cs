@@ -54,7 +54,11 @@ public sealed class WinGetOperationTrackerService : IWinGetOperationTrackerServi
         return null;
     }
 
-    internal WinGetPackageOperation StartOperation(string packageId, string packageName, WinGetPackageOperationKind kind)
+    internal WinGetPackageOperation StartOperation(
+        string packageId,
+        string packageName,
+        WinGetPackageOperationKind kind,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.Unspecified)
     {
         var now = DateTimeOffset.UtcNow;
         var operation = new WinGetPackageOperation(
@@ -71,7 +75,10 @@ public sealed class WinGetOperationTrackerService : IWinGetOperationTrackerServi
             ErrorMessage: null,
             StartedAt: now,
             UpdatedAt: now,
-            CompletedAt: null);
+            CompletedAt: null)
+        {
+            Source = source,
+        };
 
         lock (_operationsLock)
         {

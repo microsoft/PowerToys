@@ -113,7 +113,9 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
     {
         var first = CreateOperation("Test.First", "First App");
         var second = CreateOperation("Test.Second", "Second App");
+        var gallery = CreateOperation("Test.Gallery", "Gallery Extension", source: WinGetPackageOperationSource.Unspecified);
         StartOperation(first);
+        StartOperation(gallery);
         StartOperation(second);
         Assert.AreEqual(Format(Resources.winget_installing_package, second.PackageName), _page.Title);
 
@@ -124,22 +126,73 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
         CompleteOperation(first, WinGetPackageOperationState.Succeeded);
 
         Assert.AreEqual(string.Empty, _page.Title);
+        Assert.HasCount(4, _notifications);
     }
 
     [TestMethod]
-    public void ConstructorRestoresActiveOperationTitle()
+    [DataRow(WinGetPackageOperationSource.Unspecified)]
+    [DataRow(WinGetPackageOperationSource.WinGetExtension)]
+    public void ConstructorRestoresOnlyWinGetExtensionOperationTitle(WinGetPackageOperationSource source)
     {
-        var operation = CreateOperation("Test.App", "Test App");
+        var operation = CreateOperation("Test.App", "Test App", source: source);
         _operations.Add(operation);
         var provider = new WinGetExtensionCommandsProvider(Mock.Of<IWinGetPackageManagerService>(), _tracker.Object, _scheduler);
         try
         {
-            Assert.AreEqual(Format(Resources.winget_installing_package, operation.PackageName), ((IPage)provider.TopLevelCommands()[0].Command).Title);
+            var expectedTitle = source == WinGetPackageOperationSource.WinGetExtension
+                ? Format(Resources.winget_installing_package, operation.PackageName)
+                : string.Empty;
+            Assert.AreEqual(expectedTitle, ((IPage)provider.TopLevelCommands()[0].Command).Title);
         }
         finally
         {
             provider.Dispose();
         }
+    }
+
+    [TestMethod]
+    [DataRow(WinGetPackageOperationKind.Install, WinGetPackageOperationState.Succeeded)]
+    [DataRow(WinGetPackageOperationKind.Install, WinGetPackageOperationState.Failed)]
+    [DataRow(WinGetPackageOperationKind.Install, WinGetPackageOperationState.Canceled)]
+    [DataRow(WinGetPackageOperationKind.Uninstall, WinGetPackageOperationState.Succeeded)]
+    [DataRow(WinGetPackageOperationKind.Uninstall, WinGetPackageOperationState.Failed)]
+    [DataRow(WinGetPackageOperationKind.Uninstall, WinGetPackageOperationState.Canceled)]
+    public void OtherSurfaceOperationsDoNotChangeFooterOrShowNotifications(WinGetPackageOperationKind kind, WinGetPackageOperationState state)
+    {
+        var operation = CreateOperation("Test.Gallery", "Gallery Extension", kind, WinGetPackageOperationSource.Unspecified);
+
+        StartOperation(operation);
+
+        Assert.AreEqual(string.Empty, _page.Title);
+        Assert.IsEmpty(_notifications);
+
+        CompleteOperation(operation, state);
+
+        Assert.AreEqual(string.Empty, _page.Title);
+        Assert.IsEmpty(_notifications);
+    }
+
+    [TestMethod]
+    public void OtherSurfaceOperationForSamePackageDoesNotReplaceWinGetFeedback()
+    {
+        var winget = CreateOperation("Test.App", "WinGet App");
+        var gallery = CreateOperation("Test.App", "Gallery Extension", source: WinGetPackageOperationSource.Unspecified);
+        StartOperation(winget);
+
+        StartOperation(gallery);
+
+        Assert.AreEqual(Format(Resources.winget_installing_package, winget.PackageName), _page.Title);
+        Assert.HasCount(1, _notifications);
+
+        CompleteOperation(gallery, WinGetPackageOperationState.Succeeded);
+
+        Assert.AreEqual(Format(Resources.winget_installing_package, winget.PackageName), _page.Title);
+        Assert.HasCount(1, _notifications);
+
+        CompleteOperation(winget, WinGetPackageOperationState.Succeeded);
+
+        Assert.AreEqual(string.Empty, _page.Title);
+        Assert.AreEqual(Format(Resources.winget_install_package_finished, winget.PackageName), _notifications[1]);
     }
 
     [TestMethod]
@@ -190,7 +243,8 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
     private static WinGetPackageOperation CreateOperation(
         string packageId,
         string packageName,
-        WinGetPackageOperationKind kind = WinGetPackageOperationKind.Install) =>
+        WinGetPackageOperationKind kind = WinGetPackageOperationKind.Install,
+        WinGetPackageOperationSource source = WinGetPackageOperationSource.WinGetExtension) =>
         new(
             OperationId: Guid.NewGuid(),
             PackageId: packageId,
@@ -205,7 +259,10 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
             ErrorMessage: null,
             StartedAt: DateTimeOffset.UtcNow,
             UpdatedAt: DateTimeOffset.UtcNow,
-            CompletedAt: null);
+            CompletedAt: null)
+        {
+            Source = source,
+        };
 
     private sealed class QueuedTaskScheduler : TaskScheduler
     {
