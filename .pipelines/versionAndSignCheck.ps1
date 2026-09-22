@@ -26,6 +26,8 @@ $versionExceptions = @(
     "WinRT.Host.Shim.dll",
     "WyHash.dll",
     "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
+    "Microsoft.AI.Foundry.Local.dll",
+    "Microsoft.ML.OnnxRuntimeGenAI.dll",
     "ObjectModelCsProjection.dll",
     "RendererCsProjection.dll",
     "Microsoft.ML.OnnxRuntime.dll") -join '|';
@@ -57,7 +59,8 @@ $nullVersionExceptions = @(
     "boost_regex_vc143_mt_gd_x32_1_87.dll",
     "boost_regex_vc143_mt_gd_x64_1_87.dll",
     "boost_regex_vc143_mt_x32_1_87.dll",
-    "boost_regex_vc143_mt_x64_1_87.dll"
+    "boost_regex_vc143_mt_x64_1_87.dll",
+    "foundry_local.dll"
     ) -join '|';
 $totalFailure = 0;
 
