@@ -347,8 +347,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void OnPinStateChanged(object? sender, EventArgs e)
         {
-            // update our MoreCommands
-            _commandItem.RefreshMoreCommands();
+            _commandItem.RefreshContextMenu();
         }
 
         ~PinToContextItem()
@@ -372,7 +371,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void OnMoveStateChanged(object? sender, EventArgs e)
         {
-            _commandItem.RefreshMoreCommands();
+            _commandItem.RefreshContextMenu();
         }
 
         ~MovePinnedContextItem()
