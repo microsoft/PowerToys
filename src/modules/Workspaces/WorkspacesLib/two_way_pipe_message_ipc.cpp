@@ -479,6 +479,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::queue_output_message(Output
     {
         if (message.completion)
         {
+            message.completion->result.store(false);
             SetEvent(message.completion->event.get());
         }
         return;
@@ -520,6 +521,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::interrupt_output_queue()
         auto& message = pending_messages.front();
         if (message.completion)
         {
+            message.completion->result.store(false);
             SetEvent(message.completion->event.get());
         }
         pending_messages.pop();
