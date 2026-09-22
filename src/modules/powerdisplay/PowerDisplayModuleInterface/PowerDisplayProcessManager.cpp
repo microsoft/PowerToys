@@ -192,8 +192,22 @@ void PowerDisplayProcessManager::refresh()
     {
         Logger::trace(L"Exiting PowerDisplay process");
 
-        send_named_pipe_message(CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE);
-        WaitForSingleObject(m_hProcess, 5000);
+        constexpr auto shutdown_timeout = std::chrono::milliseconds{ 5000 };
+        const auto shutdown_deadline = std::chrono::steady_clock::now() + shutdown_timeout;
+        const bool terminate_message_delivered = send_named_pipe_message(CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE,
+                                                                         L"",
+                                                                         shutdown_timeout);
+        if (terminate_message_delivered)
+        {
+            const auto remaining_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                shutdown_deadline - std::chrono::steady_clock::now());
+            const DWORD wait_timeout = remaining_time.count() > 0 ? static_cast<DWORD>(remaining_time.count()) : 0;
+            WaitForSingleObject(m_hProcess, wait_timeout);
+        }
+        else
+        {
+            Logger::error(L"Failed to deliver terminate command to PowerDisplay process");
+        }
 
         if (is_process_running())
         {
@@ -208,11 +222,19 @@ void PowerDisplayProcessManager::refresh()
     }
 }
 
-void PowerDisplayProcessManager::send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg)
+bool PowerDisplayProcessManager::send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg, std::chrono::milliseconds timeout)
 {
     if (m_write_pipe.get())
     {
         const auto message = message_arg.empty() ? message_type : std::format(L"{} {}", message_type, message_arg);
+        if (timeout > std::chrono::milliseconds::zero())
+        {
+            return m_write_pipe->send_and_wait(message, timeout);
+        }
+
         m_write_pipe->send(message);
+        return true;
     }
+
+    return false;
 }

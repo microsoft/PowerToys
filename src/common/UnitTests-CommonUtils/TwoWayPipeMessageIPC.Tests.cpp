@@ -1200,6 +1200,130 @@ namespace UnitTestsCommonUtils
                            L"end waited too long for an unavailable output pipe");
         }
 
+        TEST_METHOD(SendAndWaitSucceedsWhenPeerAppearsBeforeTimeout)
+        {
+            const std::wstring output_pipe_name = UniquePipeName();
+            const std::wstring expected_message = L"terminate";
+            HANDLE peer_ready = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE peer_connected = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(peer_ready);
+            Assert::IsNotNull(peer_connected);
+
+            std::wstring received_message;
+            std::thread peer([&]() {
+                Sleep(200);
+                HANDLE server = CreateNamedPipeW(output_pipe_name.c_str(),
+                                                 PIPE_ACCESS_DUPLEX,
+                                                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                                 1,
+                                                 4096,
+                                                 4096,
+                                                 0,
+                                                 nullptr);
+                if (server == INVALID_HANDLE_VALUE)
+                {
+                    return;
+                }
+                SetEvent(peer_ready);
+
+                HANDLE connect_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+                OVERLAPPED connect_overlapped{};
+                connect_overlapped.hEvent = connect_event;
+                BOOL connected = ConnectNamedPipe(server, &connect_overlapped);
+                if (!connected)
+                {
+                    const DWORD connect_error = GetLastError();
+                    if (connect_error == ERROR_IO_PENDING)
+                    {
+                        if (WaitForSingleObject(connect_event, 2'000) == WAIT_OBJECT_0)
+                        {
+                            DWORD ignored = 0;
+                            connected = GetOverlappedResult(server, &connect_overlapped, &ignored, FALSE);
+                        }
+                        else
+                        {
+                            CancelIoEx(server, &connect_overlapped);
+                        }
+                    }
+                    else
+                    {
+                        connected = connect_error == ERROR_PIPE_CONNECTED;
+                    }
+                }
+
+                if (connected)
+                {
+                    SetEvent(peer_connected);
+                    wchar_t buffer[64]{};
+                    DWORD bytes_read = 0;
+                    if (ReadFile(server, buffer, sizeof(buffer), &bytes_read, nullptr) == TRUE && bytes_read > 0)
+                    {
+                        received_message.assign(buffer, bytes_read / sizeof(wchar_t));
+                    }
+                }
+                if (connect_event)
+                {
+                    CloseHandle(connect_event);
+                }
+                CloseHandle(server);
+            });
+
+            TwoWayPipeMessageIPC ipc(UniquePipeName(), output_pipe_name, nullptr);
+            ipc.start(nullptr);
+
+            const auto start = std::chrono::steady_clock::now();
+            const bool result = ipc.send_and_wait(expected_message, std::chrono::milliseconds{ 2'000 });
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - start);
+
+            const auto peer_ready_result = WaitForSingleObject(peer_ready, 2'000);
+            const auto peer_connected_result = WaitForSingleObject(peer_connected, 2'000);
+            peer.join();
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), peer_ready_result);
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), peer_connected_result);
+            Assert::IsTrue(result, L"send_and_wait did not report successful delivery");
+            Assert::AreEqual(expected_message.c_str(), received_message.c_str());
+            Assert::IsTrue(elapsed.count() >= 150 && elapsed.count() < 2'000,
+                           L"send_and_wait did not wait for delayed peer connection correctly");
+
+            ipc.end();
+            CloseHandle(peer_ready);
+            CloseHandle(peer_connected);
+        }
+
+        TEST_METHOD(SendAndWaitTimesOutWhenPeerIsUnavailable)
+        {
+            TwoWayPipeMessageIPC ipc(UniquePipeName(), UniquePipeName(), nullptr);
+            ipc.start(nullptr);
+
+            const auto start = std::chrono::steady_clock::now();
+            const bool result = ipc.send_and_wait(L"terminate", std::chrono::milliseconds{ 400 });
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - start);
+
+            Assert::IsFalse(result, L"send_and_wait should fail when no peer exists");
+            Assert::IsTrue(elapsed.count() >= 300 && elapsed.count() < 2'000,
+                           L"send_and_wait did not complete within the expected timeout bound");
+
+            ipc.end();
+        }
+
+        TEST_METHOD(SendAndWaitReturnsFalseAfterIpcEnd)
+        {
+            TwoWayPipeMessageIPC ipc(UniquePipeName(), UniquePipeName(), nullptr);
+            ipc.start(nullptr);
+            ipc.end();
+
+            const auto start = std::chrono::steady_clock::now();
+            const bool result = ipc.send_and_wait(L"terminate", std::chrono::milliseconds{ 500 });
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - start);
+
+            Assert::IsFalse(result, L"send_and_wait should fail after IPC is ended");
+            Assert::IsTrue(elapsed.count() < 500, L"send_and_wait should fail quickly after end()");
+        }
+
         TEST_METHOD(DestructorCancelsPendingOutputWrite)
         {
             FaultInjectionReset reset;
