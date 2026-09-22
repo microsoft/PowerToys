@@ -21,6 +21,7 @@ namespace LightSwitchServiceUnitTests
             std::optional<bool> apps = true;
             SYSTEMTIME now{};
             bool nightLight = false;
+            bool failNightLightRead = false;
             bool readableSettings = true;
             bool failSystemRead = false;
             bool failAppsRead = false;
@@ -71,7 +72,9 @@ namespace LightSwitchServiceUnitTests
                         afterWrite(systemTarget);
                     return ERROR_SUCCESS;
                 };
-                dependencies.readNightLight = [this]() { return nightLight; };
+                dependencies.readNightLight = [this]() -> std::optional<bool> {
+                    return failNightLightRead ? std::nullopt : std::optional<bool>(nightLight);
+                };
                 dependencies.localTime = [this]() { return now; };
                 dependencies.notifyThemeChanged = [this](bool light) { notifications.push_back(light); };
                 dependencies.updateSunTimes = [this](const LightSwitchConfig&, const SYSTEMTIME&) {
@@ -383,6 +386,176 @@ namespace LightSwitchServiceUnitTests
             Assert::IsFalse(result.status.manualOverride);
             Assert::IsTrue(*result.status.systemLight);
             Assert::IsFalse(*result.status.appsLight);
+            Assert::AreEqual(0, environment.writes);
+        }
+
+        TEST_METHOD (NightLightReadFailuresPreserveOverridesAcrossNotificationPaths)
+        {
+            for (const bool nightLight : { false, true })
+            {
+                for (const int notification : { 0, 1, 2 })
+                {
+                    Environment environment;
+                    environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                    environment.nightLight = nightLight;
+                    LightSwitchStateManager manager(environment.Dependencies());
+                    manager.SyncInitialThemeState();
+                    Assert::IsTrue(manager.SetTheme(nightLight).status.manualOverride);
+                    const auto writes = environment.writes;
+
+                    environment.failNightLightRead = true;
+                    ++environment.now.wMinute;
+                    if (notification == 0)
+                    {
+                        manager.DetectExternalThemeChange();
+                        manager.OnTick();
+                    }
+                    else if (notification == 1)
+                    {
+                        const auto result = manager.OnSettingsChanged();
+                        Assert::IsFalse(result.success);
+                        Assert::AreEqual(L"THEME_READ_FAILED", result.errorCode.c_str());
+                    }
+                    else
+                    {
+                        manager.OnNightLightChange();
+                    }
+                    Assert::IsTrue(manager.GetState().isManualOverride);
+                    Assert::AreEqual(nightLight, manager.GetState().isNightLightActive);
+
+                    environment.failNightLightRead = false;
+                    ++environment.now.wMinute;
+                    manager.DetectExternalThemeChange();
+                    manager.OnTick();
+                    Assert::IsTrue(manager.GetState().isManualOverride);
+                    Assert::AreEqual(nightLight, *environment.system);
+                    Assert::AreEqual(nightLight, *environment.apps);
+                    Assert::AreEqual(writes, environment.writes);
+
+                    environment.nightLight = !nightLight;
+                    manager.OnTick();
+                    Assert::IsFalse(manager.GetState().isManualOverride);
+                }
+            }
+        }
+
+        TEST_METHOD (UnknownNightLightAtStartupDefersThePlan)
+        {
+            for (const bool nightLight : { false, true })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                environment.nightLight = nightLight;
+                environment.system = environment.apps = nightLight;
+                environment.failNightLightRead = true;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                manager.OnTick();
+                Assert::AreEqual(0, environment.writes);
+                Assert::IsTrue(environment.notifications.empty());
+
+                environment.failNightLightRead = false;
+                manager.DetectExternalThemeChange();
+                manager.OnTick();
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(!nightLight, *environment.system);
+                Assert::AreEqual(!nightLight, *environment.apps);
+                Assert::AreEqual(2, environment.writes);
+            }
+        }
+
+        TEST_METHOD (ManualCommandsDuringNightLightReadFailureEstablishANewBaseline)
+        {
+            for (const bool hadBaseline : { false, true })
+            {
+                for (const bool toggle : { false, true })
+                {
+                    Environment environment;
+                    environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                    environment.failNightLightRead = !hadBaseline;
+                    LightSwitchStateManager manager(environment.Dependencies());
+                    manager.SyncInitialThemeState();
+
+                    // Night Light changes before the command, but cannot be sampled.
+                    environment.nightLight = true;
+                    environment.failNightLightRead = true;
+                    environment.system = environment.apps = false;
+                    const auto result = toggle ? manager.ToggleTheme() : manager.SetTheme(true);
+                    Assert::IsTrue(result.success);
+                    Assert::IsTrue(result.status.manualOverride);
+                    Assert::IsTrue(*result.status.systemLight);
+
+                    environment.failNightLightRead = false;
+                    manager.DetectExternalThemeChange();
+                    manager.OnTick();
+                    manager.OnNightLightChange();
+                    Assert::IsTrue(manager.GetState().isManualOverride);
+                    Assert::IsTrue(*environment.system);
+                    Assert::IsTrue(*environment.apps);
+
+                    environment.nightLight = false;
+                    manager.OnTick();
+                    Assert::IsFalse(manager.GetState().isManualOverride);
+                }
+            }
+        }
+
+        TEST_METHOD (ToggleWithANewlyAvailableNightLightBaselineUsesTheCurrentPlan)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            environment.nightLight = true;
+            environment.failNightLightRead = true;
+            LightSwitchStateManager manager(environment.Dependencies());
+            Assert::IsTrue(manager.SetTheme(true).status.manualOverride);
+            environment.failNightLightRead = false;
+            const auto release = manager.ToggleTheme();
+            Assert::IsTrue(release.success);
+            Assert::IsFalse(release.status.manualOverride);
+            Assert::IsFalse(*release.status.systemLight);
+            Assert::IsTrue(manager.ToggleTheme().status.manualOverride);
+        }
+
+        TEST_METHOD (ReenteringNightLightDoesNotReuseAnUnavailableOldPlan)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            environment.nightLight = true;
+            LightSwitchStateManager manager(environment.Dependencies());
+            manager.SyncInitialThemeState();
+            environment.config.scheduleMode = ScheduleMode::FixedHours;
+            Assert::IsTrue(manager.OnSettingsChanged().success);
+            Assert::IsTrue(*environment.system);
+            const auto writes = environment.writes;
+
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            environment.failNightLightRead = true;
+            Assert::IsFalse(manager.OnSettingsChanged().success);
+            manager.OnTick();
+            Assert::IsTrue(*environment.system);
+            Assert::AreEqual(writes, environment.writes);
+            environment.failNightLightRead = false;
+            manager.OnTick();
+            Assert::IsFalse(*environment.system);
+        }
+
+        TEST_METHOD (UnavailableNightLightPollDoesNotApplyAStalePlan)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            LightSwitchStateManager manager(environment.Dependencies());
+            manager.SyncInitialThemeState();
+            environment.nightLight = true;
+            environment.system = environment.apps = false;
+            environment.failNightLightRead = true;
+            manager.DetectExternalThemeChange();
+            manager.OnTick();
+            Assert::IsFalse(*environment.system);
+            Assert::AreEqual(0, environment.writes);
+            environment.failNightLightRead = false;
+            manager.DetectExternalThemeChange();
+            manager.OnTick();
+            Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::AreEqual(0, environment.writes);
         }
 
@@ -940,6 +1113,205 @@ namespace LightSwitchServiceUnitTests
             }
         }
 
+        TEST_METHOD (RecoveredScheduledWritesNotifyPowerDisplayExactlyOnce)
+        {
+            for (const int targets : { 1, 2, 3 })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                environment.config.changeSystem = (targets & 1) != 0;
+                environment.config.changeApps = (targets & 2) != 0;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                environment.afterWrite = [&](bool system) {
+                    if (!system || !environment.config.changeApps)
+                        environment.failSystemRead = environment.failAppsRead = true;
+                };
+                environment.nightLight = true;
+                manager.OnNightLightChange();
+                Assert::IsTrue(environment.notifications.empty());
+                const auto writes = environment.writes;
+
+                environment.afterWrite = nullptr;
+                environment.failSystemRead = environment.failAppsRead = false;
+                manager.DetectExternalThemeChange();
+                manager.OnTick();
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(writes, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::IsFalse(environment.notifications.front());
+                manager.OnTick();
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            }
+        }
+
+        TEST_METHOD (ThemeNotificationUsesTheAlreadyVerifiedSnapshot)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            auto dependencies = environment.Dependencies();
+            const auto readTheme = dependencies.readTheme;
+            bool finalSnapshot = false;
+            dependencies.readTheme = [&](bool system, bool& light) {
+                const auto result = readTheme(system, light);
+                if (finalSnapshot && !system)
+                    environment.failSystemRead = environment.failAppsRead = true;
+                return result;
+            };
+            LightSwitchStateManager manager(std::move(dependencies));
+            manager.SyncInitialThemeState();
+            environment.afterWrite = [&](bool system) {
+                if (!system)
+                    finalSnapshot = true;
+            };
+            environment.nightLight = true;
+            manager.OnNightLightChange();
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsFalse(environment.notifications.front());
+            finalSnapshot = false;
+            environment.afterWrite = nullptr;
+            environment.failSystemRead = environment.failAppsRead = false;
+            manager.OnTick();
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+        }
+
+        TEST_METHOD (ManualCommandsConfirmOrSupersedePendingScheduledNotifications)
+        {
+            for (const int command : { 0, 1, 2 })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                environment.afterWrite = [&](bool system) {
+                    if (!system)
+                        environment.failSystemRead = environment.failAppsRead = true;
+                };
+                environment.nightLight = true;
+                manager.OnNightLightChange();
+                Assert::IsTrue(environment.notifications.empty());
+                environment.afterWrite = nullptr;
+                environment.failSystemRead = environment.failAppsRead = false;
+
+                const bool requestedLight = command != 0;
+                const auto result = command == 2 ? manager.ToggleTheme() : manager.SetTheme(requestedLight);
+                Assert::IsTrue(result.success);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::AreEqual(requestedLight, static_cast<bool>(environment.notifications.front()));
+                Assert::AreEqual(command == 0 ? 2 : 4, environment.writes);
+                manager.OnTick();
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            }
+        }
+
+        TEST_METHOD (FailedManualCommandsRetainTheUnchangedScheduledNotification)
+        {
+            for (const bool toggle : { false, true })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                environment.afterWrite = [&](bool system) {
+                    if (!system)
+                        environment.failSystemRead = environment.failAppsRead = true;
+                };
+                environment.nightLight = true;
+                manager.OnNightLightChange();
+                environment.afterWrite = nullptr;
+                environment.failSystemRead = environment.failAppsRead = false;
+                environment.failSystemWrite = environment.failAppsWrite = true;
+
+                const auto result = toggle ? manager.ToggleTheme() : manager.SetTheme(true);
+                Assert::IsFalse(result.success);
+                Assert::IsFalse(*result.status.systemLight);
+                Assert::IsFalse(*result.status.appsLight);
+                Assert::IsTrue(environment.notifications.empty());
+                environment.failSystemWrite = environment.failAppsWrite = false;
+                manager.DetectExternalThemeChange();
+                manager.OnTick();
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::IsFalse(environment.notifications.front());
+                Assert::AreEqual(4, environment.writes);
+                manager.OnTick();
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            }
+        }
+
+        TEST_METHOD (ToggleNotificationUsesTheAlreadyVerifiedSnapshot)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::Off;
+            auto dependencies = environment.Dependencies();
+            const auto readTheme = dependencies.readTheme;
+            int reads = 0;
+            dependencies.readTheme = [&](bool system, bool& light) -> LSTATUS {
+                ++reads;
+                // The first four reads are the pre-write and verified post-write
+                // snapshots. A temporary later failure must not discard that proof.
+                if (reads == 5 || reads == 6)
+                    return ERROR_ACCESS_DENIED;
+                return readTheme(system, light);
+            };
+            LightSwitchStateManager manager(std::move(dependencies));
+            Assert::IsTrue(manager.ToggleTheme().success);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsFalse(environment.notifications.front());
+            Assert::IsFalse(*manager.GetStatusSnapshot().systemLight);
+            Assert::IsFalse(*environment.apps);
+        }
+
+        TEST_METHOD (ChangedConfigurationDiscardsPendingScheduledNotifications)
+        {
+            for (const bool disableSchedule : { false, true })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                environment.afterWrite = [&](bool system) {
+                    if (!system)
+                        environment.failSystemRead = environment.failAppsRead = true;
+                };
+                environment.nightLight = true;
+                manager.OnNightLightChange();
+                environment.afterWrite = nullptr;
+                environment.failSystemRead = environment.failAppsRead = false;
+                if (disableSchedule)
+                    environment.config.scheduleMode = ScheduleMode::Off;
+                else
+                    environment.config.changeSystem = environment.config.changeApps = false;
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+                manager.OnTick();
+                Assert::IsTrue(environment.notifications.empty());
+            }
+        }
+
+        TEST_METHOD (ExternalManualChangesDiscardPendingScheduledNotifications)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            auto dependencies = environment.Dependencies();
+            const auto writeTheme = dependencies.writeTheme;
+            dependencies.writeTheme = [&](bool system, bool light) {
+                writeTheme(system, light);
+                return ERROR_WRITE_FAULT;
+            };
+            LightSwitchStateManager manager(std::move(dependencies));
+            manager.SyncInitialThemeState();
+            environment.nightLight = true;
+            manager.OnNightLightChange();
+            Assert::IsTrue(environment.notifications.empty());
+            environment.system = environment.apps = true;
+            manager.DetectExternalThemeChange();
+            manager.OnTick();
+            Assert::IsTrue(manager.GetState().isManualOverride);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsTrue(environment.notifications.front());
+        }
+
         TEST_METHOD (UnverifiedScheduledWritesAreNotLaterMistakenForExternalChanges)
         {
             Environment environment;
@@ -966,6 +1338,8 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(*environment.system);
             Assert::IsTrue(*environment.apps);
             Assert::AreEqual(4, environment.writes);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsTrue(environment.notifications.front());
         }
 
         TEST_METHOD (UnverifiedToggleWritesDoNotInventAnExternalOverride)

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ThemeHelper.h"
 #include <logger/logger.h>
+#include <memory>
+#include <new>
 
 namespace LightSwitchThemeHelpers
 {
@@ -36,6 +38,46 @@ namespace LightSwitchThemeHelpers
             return result;
         }
         return actual == isLight ? ERROR_SUCCESS : ERROR_WRITE_FAULT;
+    }
+
+    LSTATUS ReadNightLightState(HKEY key, bool& enabled)
+    {
+        constexpr DWORD minimumSize = 25;
+        constexpr DWORD maximumSize = 64 * 1024;
+        DWORD size = 0;
+        auto result = RegGetValueW(key, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size);
+        if (result != ERROR_SUCCESS)
+        {
+            return result;
+        }
+        if (size < minimumSize)
+        {
+            return ERROR_INVALID_DATA;
+        }
+        if (size > maximumSize)
+        {
+            return ERROR_MORE_DATA;
+        }
+
+        // Bound the allocation and recheck the actual size: CloudStore can replace
+        // this value between the size query and the data read.
+        const std::unique_ptr<BYTE[]> data(new (std::nothrow) BYTE[size]);
+        if (!data)
+        {
+            return ERROR_NOT_ENOUGH_MEMORY;
+        }
+        result = RegGetValueW(key, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.get(), &size);
+        if (result != ERROR_SUCCESS)
+        {
+            return result;
+        }
+        if (size < minimumSize)
+        {
+            return ERROR_INVALID_DATA;
+        }
+
+        enabled = data[23] == 0x10 && data[24] == 0x00;
+        return ERROR_SUCCESS;
     }
 }
 
@@ -150,29 +192,22 @@ bool GetCurrentAppsTheme()
     TryGetAppsTheme(isLight);
     return isLight;
 }
+
+LSTATUS TryGetNightLightState(bool& enabled)
+{
+    HKEY key = nullptr;
+    auto result = RegOpenKeyExW(HKEY_CURRENT_USER, NIGHT_LIGHT_REGISTRY_PATH, 0, KEY_QUERY_VALUE, &key);
+    if (result == ERROR_SUCCESS)
+    {
+        result = LightSwitchThemeHelpers::ReadNightLightState(key, enabled);
+        RegCloseKey(key);
+    }
+    return result;
+}
+
 bool IsNightLightEnabled()
 {
-    HKEY hKey;
-    const wchar_t* path = NIGHT_LIGHT_REGISTRY_PATH;
-
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, path, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-        return false;
-
-    // RegGetValueW will set size to the size of the data and we expect that to be at least 25 bytes (we need to access bytes 23 and 24)
-    DWORD size = 0;
-    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size) != ERROR_SUCCESS || size < 25)
-    {
-        RegCloseKey(hKey);
-        return false;
-    }
-
-    std::vector<BYTE> data(size);
-    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.data(), &size) != ERROR_SUCCESS)
-    {
-        RegCloseKey(hKey);
-        return false;
-    }
-
-    RegCloseKey(hKey);
-    return data[23] == 0x10 && data[24] == 0x00;
+    bool enabled = false;
+    TryGetNightLightState(enabled);
+    return enabled;
 }

@@ -4,8 +4,10 @@
 
 #include <CppUnitTest.h>
 #include "ThemeHelper.h"
+#include <array>
 #include <atomic>
 #include <string>
+#include <vector>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -76,6 +78,82 @@ namespace LightSwitchServiceUnitTests
             const auto result = LightSwitchThemeHelpers::WriteThemeValue(readOnly, L"Theme", true);
             RegCloseKey(readOnly);
             Assert::AreEqual<LSTATUS>(ERROR_ACCESS_DENIED, result);
+        }
+
+        TEST_METHOD (NightLightBinaryValuesDistinguishOnAndOff)
+        {
+            TemporaryRegistryKey registry;
+            std::array<BYTE, 25> data{};
+            for (const bool expected : { true, false })
+            {
+                data[23] = expected ? 0x10 : 0;
+                Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_BINARY, data.data(), static_cast<DWORD>(data.size())));
+                bool enabled = !expected;
+                Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled));
+                Assert::AreEqual(expected, enabled);
+            }
+
+            data[23] = 0x10;
+            data[24] = 1;
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_BINARY, data.data(), static_cast<DWORD>(data.size())));
+            bool enabled = true;
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled));
+            Assert::IsFalse(enabled);
+        }
+
+        TEST_METHOD (MissingNightLightDataDoesNotInventAnOffState)
+        {
+            TemporaryRegistryKey registry;
+            for (const bool initial : { false, true })
+            {
+                bool enabled = initial;
+                Assert::AreEqual<LSTATUS>(ERROR_FILE_NOT_FOUND, LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled));
+                Assert::AreEqual(initial, enabled);
+            }
+        }
+
+        TEST_METHOD (WrongTypeAndTruncatedNightLightDataPreserveTheOutput)
+        {
+            TemporaryRegistryKey registry;
+            const wchar_t text[] = L"Night Light enabled";
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_SZ, reinterpret_cast<const BYTE*>(text), sizeof(text)));
+            bool enabled = true;
+            Assert::IsTrue(LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled) != ERROR_SUCCESS);
+            Assert::IsTrue(enabled);
+
+            std::array<BYTE, 24> truncated{};
+            truncated[23] = 0x10;
+            for (const DWORD size : { DWORD{ 0 }, static_cast<DWORD>(truncated.size()) })
+            {
+                Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_BINARY, truncated.data(), size));
+                Assert::AreEqual<LSTATUS>(ERROR_INVALID_DATA, LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled));
+                Assert::IsTrue(enabled);
+            }
+        }
+
+        TEST_METHOD (OversizedNightLightDataPreservesTheOutput)
+        {
+            TemporaryRegistryKey registry;
+            const std::vector<BYTE> oversized(64 * 1024 + 1);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_BINARY, oversized.data(), static_cast<DWORD>(oversized.size())));
+            bool enabled = true;
+            Assert::AreEqual<LSTATUS>(ERROR_MORE_DATA, LightSwitchThemeHelpers::ReadNightLightState(registry.key, enabled));
+            Assert::IsTrue(enabled);
+        }
+
+        TEST_METHOD (NightLightReadAccessFailuresPreserveTheOutput)
+        {
+            TemporaryRegistryKey registry;
+            std::array<BYTE, 25> data{};
+            data[23] = 0x10;
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(registry.key, L"Data", 0, REG_BINARY, data.data(), static_cast<DWORD>(data.size())));
+            HKEY writeOnly = nullptr;
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegOpenKeyExW(HKEY_CURRENT_USER, registry.path.c_str(), 0, KEY_SET_VALUE, &writeOnly));
+            bool enabled = true;
+            const auto result = LightSwitchThemeHelpers::ReadNightLightState(writeOnly, enabled);
+            RegCloseKey(writeOnly);
+            Assert::AreEqual<LSTATUS>(ERROR_ACCESS_DENIED, result);
+            Assert::IsTrue(enabled);
         }
     };
 }

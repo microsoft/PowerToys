@@ -41,7 +41,8 @@ struct LightSwitchStateManagerDependencies
     std::function<bool(LightSwitchConfig&, std::wstring&)> loadSettings;
     std::function<LSTATUS(bool system, bool& light)> readTheme;
     std::function<LSTATUS(bool system, bool light)> writeTheme;
-    std::function<bool()> readNightLight;
+    // An unavailable registry value must not be mistaken for Night Light being off.
+    std::function<std::optional<bool>()> readNightLight;
     std::function<SYSTEMTIME()> localTime;
     std::function<void(bool light)> notifyThemeChanged;
     std::function<std::pair<int, int>(const LightSwitchConfig&, const SYSTEMTIME&)> updateSunTimes;
@@ -71,6 +72,9 @@ private:
     LightSwitchStateManagerDependencies _dependencies;
     LightSwitchConfig _settingsSnapshot;
     bool _hasSettingsSnapshot = false;
+    bool _hasNightLightState = false;
+    // Invalidated by effective configuration changes and successful manual choices.
+    std::optional<bool> _pendingScheduledThemeNotification;
     std::optional<bool> _lastObservedSystemTheme;
     std::optional<bool> _lastObservedAppsTheme;
     std::optional<std::uint64_t> _lastTickTime;
@@ -78,7 +82,8 @@ private:
     int _lastTickDarkMinutes = 0;
 
     bool LoadSettingsLocked(std::wstring& error);
-    bool RefreshNightLightStateLocked(const LightSwitchConfig& config);
+    // nullopt: read failed; false: baseline established/unchanged; true: transition.
+    std::optional<bool> RefreshNightLightStateLocked(const LightSwitchConfig& config);
     StatusSnapshot GetStatusSnapshotLocked(const LightSwitchConfig& config);
     void SyncThemeStateLocked(const StatusSnapshot& snapshot, bool recordObservation = true);
     void DetectExternalThemeChangeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
@@ -86,9 +91,9 @@ private:
     void RecordEvaluationTimeLocked(const SYSTEMTIME& now);
     bool HasCrossedScheduleBoundaryLocked(const SYSTEMTIME& now) const;
     bool ScheduledThemeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
-    LSTATUS ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed);
+    LSTATUS ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed, StatusSnapshot& snapshot);
     LSTATUS EvaluateAndApplyIfNeededLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
-    LSTATUS OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
+    LSTATUS OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now, const StatusSnapshot& snapshot);
     void NotifyAppliedThemeLocked(const LightSwitchConfig& config, const StatusSnapshot& snapshot);
     ThemeCommandResult CompleteCommandLocked(const LightSwitchConfig& config, const wchar_t* errorCode = L"", const std::wstring& message = L"");
     bool CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon);

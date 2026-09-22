@@ -150,6 +150,16 @@ external theme choices while genuine plan changes still take effect.
 
 The worker also reconciles Night Light on minute ticks, recovering from a
 settings read or theme write failure without requiring another notification.
+An unavailable Night Light value is not treated as off: automatic scheduling
+waits for a successful read, preserving the last confirmed state and any manual
+override. A manual command issued while Night Light is unreadable establishes
+its boundary baseline on recovery, so an older, unobserved transition does not
+cancel the newer choice.
+If a scheduled theme write takes effect but its readback fails, PowerDisplay is
+notified once the same planned state is confirmed. New plans and successful
+manual commands supersede that pending notification; a failed manual write does
+not discard it. Notifications use the verified theme snapshot without rereading
+it immediately before sending the event.
 Calculated sun times share the schedule command's settings lock and are saved
 only while their effective configuration remains current. An older calculation
 cannot restore a mode that a completed schedule command has replaced.
