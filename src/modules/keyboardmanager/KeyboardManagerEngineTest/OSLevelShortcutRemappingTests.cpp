@@ -43,6 +43,58 @@ namespace RemappingLogicTests
             });
         }
 
+        TEST_METHOD (HasInvokedShortcutRemap_ShouldInspectOSAndAppSpecificTables)
+        {
+            const Shortcut osSource(std::vector<int32_t>{ VK_CONTROL, 'A' });
+            const Shortcut appSource(std::vector<int32_t>{ VK_MENU, 'B' });
+            const Shortcut target(std::vector<int32_t>{ VK_SHIFT, 'V' });
+            testState.AddOSLevelShortcut(osSource, target);
+            testState.AddAppSpecificShortcut(L"test.exe", appSource, target);
+
+            Assert::IsFalse(testState.HasInvokedShortcutRemap());
+            testState.osLevelShortcutReMap[osSource].isShortcutInvoked = true;
+            Assert::IsTrue(testState.HasInvokedShortcutRemap());
+            testState.osLevelShortcutReMap[osSource].isShortcutInvoked = false;
+            testState.appSpecificShortcutReMap[L"test.exe"][appSource].isShortcutInvoked = true;
+            Assert::IsTrue(testState.HasInvokedShortcutRemap());
+        }
+
+        TEST_METHOD (DrainOnly_ShouldFinishInvokedShortcutWithoutTransitioningToAnotherRemap)
+        {
+            const Shortcut firstSource(std::vector<int32_t>{ VK_CONTROL, 'A' });
+            const Shortcut firstTarget(std::vector<int32_t>{ VK_MENU, 'V' });
+            const Shortcut secondSource(std::vector<int32_t>{ VK_CONTROL, 'X' });
+            const Shortcut secondTarget(std::vector<int32_t>{ VK_LWIN, 'C' });
+            testState.AddOSLevelShortcut(firstSource, firstTarget);
+            testState.AddOSLevelShortcut(secondSource, secondTarget);
+
+            const std::vector<INPUT> firstPress{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(firstPress);
+            Assert::IsTrue(testState.osLevelShortcutReMap[firstSource].isShortcutInvoked);
+
+            mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                {
+                    return 1LL;
+                }
+                return KeyboardEventHandlers::HandleOSLevelShortcutRemapEventWithOptions(
+                    mockedInputHandler,
+                    data,
+                    testState,
+                    false);
+            });
+            const std::vector<INPUT> nextAction{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'X' } },
+            };
+            mockedInputHandler.SendVirtualInput(nextAction);
+
+            Assert::IsFalse(testState.osLevelShortcutReMap[firstSource].isShortcutInvoked);
+            Assert::IsFalse(testState.osLevelShortcutReMap[secondSource].isShortcutInvoked);
+        }
+
         // Tests for shortcut to shortcut remappings
 
         // Test if correct keyboard states are set for a 2 key shortcut remap with different modifiers key down

@@ -28,6 +28,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store shortcut to text remaps.
     inline const std::wstring RemapShortcutsToTextSettingName = L"remapShortcutsToText";
 
+    // Name of the property used to store text expansions.
+    inline const std::wstring TextReplacementsSettingName = L"textReplacements";
+
     // Name of the property use to store shortcut to run-program remaps.
     inline const std::wstring RemapShortcutsToRunProgramSettingName = L"remapShortcutsToRunProgram";
 
@@ -52,6 +55,13 @@ namespace KeyboardManagerConstants
 
     // Name of the property use to store new remapped string.
     inline const std::wstring NewTextSettingName = L"unicodeText";
+
+    // Text expansion fields.
+    inline const std::wstring TextExpansionIdSettingName = L"id";
+    inline const std::wstring TextExpansionSourceTextSettingName = L"sourceText";
+    inline const std::wstring TextExpansionActivationKeysSettingName = L"activationKeys";
+    inline const std::wstring TextExpansionReplacementTextSettingName = L"replacementText";
+    inline const std::wstring TextExpansionEnabledSettingName = L"enabled";
 
     // Name of the property use to store runProgramStartInDir.
     inline const std::wstring RunProgramStartInDirSettingName = L"runProgramStartInDir";
@@ -94,6 +104,9 @@ namespace KeyboardManagerConstants
     inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SUPPRESS_FLAG = 0x111; // Key events which must be suppressed
+    // Replayed physical downs must traverse Keyboard Manager normally after Text
+    // Expansion restores an interrupted trigger. Keep the common injected bit clear.
+    inline const ULONG_PTR KEYBOARDMANAGER_TEXT_EXPANSION_REPLAY_FLAG = 0x200;
 
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
@@ -103,4 +116,7 @@ namespace KeyboardManagerConstants
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
+
+    inline constexpr size_t MaxTextExpansionSourceLength = 256;
+    inline constexpr size_t MaxTextExpansionReplacementLength = 256;
 }

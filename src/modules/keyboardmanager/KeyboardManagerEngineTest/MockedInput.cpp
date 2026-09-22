@@ -10,18 +10,45 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 }
 
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
-bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
+SendVirtualInputResult MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
 {
+    sentInputBatches.push_back(inputs);
+
+    if (inputs.empty())
+    {
+        return { SendVirtualInputStatus::Complete, 0 };
+    }
+
     // Simulate an injection failure (e.g. SendInput blocked) when configured.
     if (sendVirtualInputShouldFail != nullptr && sendVirtualInputShouldFail(inputs))
     {
-        return false;
+        return { SendVirtualInputStatus::None, 0 };
     }
 
+    const size_t injectedEventCount = sendVirtualInputInjectedCount == nullptr ?
+                                          inputs.size() :
+                                          (std::min)(sendVirtualInputInjectedCount(inputs), inputs.size());
+
     // Iterate over inputs
-    for (const INPUT& input : inputs)
+    for (size_t inputIndex = 0; inputIndex < injectedEventCount; ++inputIndex)
     {
+        const INPUT& input = inputs[inputIndex];
         LowlevelKeyboardEvent keyEvent{};
+        DWORD virtualKey = input.ki.wVk;
+        if ((input.ki.dwFlags & KEYEVENTF_UNICODE) != 0)
+        {
+            virtualKey = VK_PACKET;
+        }
+        else if ((input.ki.dwFlags & KEYEVENTF_SCANCODE) != 0 && input.ki.wScan != 0)
+        {
+            const UINT scanCode = input.ki.wScan |
+                                  ((input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ? 0xE000 : 0);
+            const UINT mappedKey = MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX);
+            if (mappedKey != 0)
+            {
+                virtualKey = mappedKey;
+            }
+        }
 
         // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown
         if (input.ki.dwFlags & KEYEVENTF_KEYUP)
@@ -37,7 +64,7 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         else
         {
-            if (input.ki.wVk == VK_F10 || keyboardState[VK_MENU] == true)
+            if (virtualKey == VK_F10 || keyboardState[VK_MENU] == true)
             {
                 keyEvent.wParam = WM_SYSKEYDOWN;
             }
@@ -48,8 +75,10 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
-        lParam.vkCode = input.ki.wVk;
+        lParam.vkCode = virtualKey;
+        lParam.scanCode = input.ki.wScan;
+        lParam.flags = ((input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY) != 0 ? LLKHF_EXTENDED : 0) |
+                       ((input.ki.dwFlags & KEYEVENTF_KEYUP) != 0 ? LLKHF_UP : 0);
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
@@ -65,11 +94,21 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         // Set keyboard state if the hook does not suppress the input
         if (result == 0)
         {
+            if (input.type == INPUT_KEYBOARD &&
+                (input.ki.dwFlags & KEYEVENTF_UNICODE) != 0 &&
+                (input.ki.dwFlags & KEYEVENTF_KEYUP) == 0)
+            {
+                injectedUnicodeText.push_back(static_cast<wchar_t>(input.ki.wScan));
+            }
+
             // If key up flag is set, then set keyboard state to false
-            keyboardState[input.ki.wVk] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+            if (virtualKey < keyboardState.size())
+            {
+                keyboardState[virtualKey] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
+            }
 
             // Handling modifier key codes
-            switch (input.ki.wVk)
+            switch (virtualKey)
             {
             case VK_CONTROL:
                 if (input.ki.dwFlags & KEYEVENTF_KEYUP)
@@ -113,7 +152,16 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
             }
         }
     }
-    return true;
+
+    if (injectedEventCount == 0)
+    {
+        return { SendVirtualInputStatus::None, 0 };
+    }
+
+    return {
+        injectedEventCount == inputs.size() ? SendVirtualInputStatus::Complete : SendVirtualInputStatus::Partial,
+        static_cast<UINT>(injectedEventCount),
+    };
 }
 
 // Function to simulate keyboard hook behavior
@@ -146,6 +194,8 @@ void MockedInput::SetKeyboardState(int key, bool state)
 void MockedInput::ResetKeyboardState()
 {
     std::fill(keyboardState.begin(), keyboardState.end(), false);
+    sentInputBatches.clear();
+    injectedUnicodeText.clear();
 }
 
 // Function to set SendVirtualInput call count condition
@@ -161,10 +211,25 @@ void MockedInput::SetSendVirtualInputShouldFail(std::function<bool(const std::ve
     sendVirtualInputShouldFail = condition;
 }
 
+void MockedInput::SetSendVirtualInputInjectedCount(std::function<size_t(const std::vector<INPUT>&)> countProvider)
+{
+    sendVirtualInputInjectedCount = countProvider;
+}
+
 // Function to get SendVirtualInput call count
 int MockedInput::GetSendVirtualInputCallCount()
 {
     return sendVirtualInputCallCount;
+}
+
+const std::vector<std::vector<INPUT>>& MockedInput::GetSentInputBatches() const
+{
+    return sentInputBatches;
+}
+
+const std::wstring& MockedInput::GetInjectedUnicodeText() const
+{
+    return injectedUnicodeText;
 }
 
 // Function to get the foreground process name
