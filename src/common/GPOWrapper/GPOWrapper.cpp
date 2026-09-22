@@ -312,4 +312,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideBuiltInNewContextMenuValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredGlobalUtilityEnabledValue()
+    {
+        // Experimental modules without their own policy still honor the existing
+        // global utility setting; this does not introduce a new registry policy.
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredValue(powertoys_gpo::POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES));
+    }
 }

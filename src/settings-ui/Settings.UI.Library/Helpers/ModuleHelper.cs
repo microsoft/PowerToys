@@ -38,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
                 ModuleType.GeneralSettings => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
+                ModuleType.TryRun => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
                 _ => $"ms-appx:///Assets/Settings/Icons/{moduleType}.png",
             };
         }
@@ -72,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerLauncher => generalSettingsConfig.Enabled.PowerLauncher,
                 ModuleType.PowerAccent => generalSettingsConfig.Enabled.PowerAccent,
                 ModuleType.RegistryPreview => generalSettingsConfig.Enabled.RegistryPreview,
+                ModuleType.TryRun => generalSettingsConfig.Enabled.TryRun,
                 ModuleType.MeasureTool => generalSettingsConfig.Enabled.MeasureTool,
                 ModuleType.ShortcutGuide => generalSettingsConfig.Enabled.ShortcutGuide,
                 ModuleType.PowerOCR => generalSettingsConfig.Enabled.PowerOcr,
@@ -114,6 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerLauncher: generalSettingsConfig.Enabled.PowerLauncher = isEnabled; break;
                 case ModuleType.PowerAccent: generalSettingsConfig.Enabled.PowerAccent = isEnabled; break;
                 case ModuleType.RegistryPreview: generalSettingsConfig.Enabled.RegistryPreview = isEnabled; break;
+                case ModuleType.TryRun: generalSettingsConfig.Enabled.TryRun = isEnabled; break;
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
@@ -160,6 +163,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerAccent => PowerAccentSettings.ModuleName,
                 ModuleType.PowerDisplay => PowerDisplaySettings.ModuleName,
                 ModuleType.RegistryPreview => RegistryPreviewSettings.ModuleName,
+                ModuleType.TryRun => TryRunSettings.ModuleName,
                 ModuleType.MeasureTool => MeasureToolSettings.ModuleName,
                 ModuleType.ShortcutGuide => ShortcutGuideSettings.ModuleName,
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,

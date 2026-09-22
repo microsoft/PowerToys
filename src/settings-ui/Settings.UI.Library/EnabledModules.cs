@@ -596,6 +596,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool tryRun; // Experimental module defaults to off.
+
+        [JsonPropertyName("TryRun")]
+        public bool TryRun
+        {
+            get => tryRun;
+            set
+            {
+                if (tryRun != value)
+                {
+                    LogTelemetryEvent(value);
+                    tryRun = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

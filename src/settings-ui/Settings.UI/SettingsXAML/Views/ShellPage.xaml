@@ -249,6 +249,12 @@
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
                             AutomationProperties.AutomationId="ZoomItNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
+                        <NavigationViewItem
+                            x:Name="TryRunNavigationItem"
+                            x:Uid="Shell_TryRun"
+                            helpers:NavHelper.NavigateTo="views:TryRunPage"
+                            AutomationProperties.AutomationId="TryRunNavItem"
+                            Icon="{ui:FontIcon Glyph=&#xE72E;}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

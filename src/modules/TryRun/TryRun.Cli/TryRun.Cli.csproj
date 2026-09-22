@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PowerToys.TryRun.Cli</AssemblyName>
+    <RootNamespace>PowerToys.TryRun.Cli</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\TryRun\CLI\</OutputPath>
+    <OutputPath Condition="'$(TryRunOutputRoot)' != ''">$(TryRunOutputRoot)\CLI\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TryRun.Core\TryRun.Core.csproj" />
+  </ItemGroup>
+</Project>

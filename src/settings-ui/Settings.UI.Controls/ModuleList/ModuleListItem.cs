@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private string _icon = string.Empty;
         private bool _isNew;
         private bool _isLocked;
+        private bool _canChangeEnabled = true;
         private object? _tag;
         private ICommand? _clickCommand;
         private bool _isUpdating;
@@ -83,9 +84,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     _isLocked = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsToggleEnabled));
                 }
             }
         }
+
+        public bool CanChangeEnabled
+        {
+            get => _canChangeEnabled;
+            set
+            {
+                if (_canChangeEnabled != value)
+                {
+                    _canChangeEnabled = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsToggleEnabled));
+                }
+            }
+        }
+
+        public bool IsToggleEnabled => !IsLocked && CanChangeEnabled;
 
         public virtual bool IsEnabled
         {

@@ -858,6 +858,35 @@
     </Project>
     <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
   </Folder>
+  <Folder Name="/modules/TryRun/">
+    <Project Path="src/modules/TryRun/TryRun.ModuleInterface/TryRun.ModuleInterface.vcxproj" Id="72d672c5-91b3-43bd-b7b0-f0a4231cb195" />
+    <Project Path="src/modules/TryRun/TryRun.Core/TryRun.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/TryRun/TryRun/TryRun.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/TryRun/TryRun.Explorer/TryRun.Explorer.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/TryRun/TryRun.Cli/TryRun.Cli.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/TryRun/TryRun.CmdPal/TryRun.CmdPal.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <!-- The pinned external MXC SDK/native backend is built explicitly through TryRun.slnx. -->
+    <Project Path="src/modules/TryRun/TryRun.Worker/TryRun.Worker.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Build Project="false" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/PowerDisplay/Tests/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1308,6 +1337,7 @@
   </Project>
   <Project Path="src/PackageIdentity/PackageIdentity.vcxproj" Id="e2a5a82e-1e5b-4c8d-9a4f-2b1a8f9e5c3d" />
   <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
+    <BuildDependency Project="src/modules/TryRun/TryRun.ModuleInterface/TryRun.ModuleInterface.vcxproj" />
     <BuildDependency Project="src/ActionRunner/ActionRunner.vcxproj" />
     <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
     <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />

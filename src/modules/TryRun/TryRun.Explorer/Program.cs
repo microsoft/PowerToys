@@ -117,7 +117,9 @@ internal static class Program
         try
         {
             // No HKLM, elevation, installer, shell restart, or in-process DLL.
-            var unavailable = RuntimeRequirements.GetUnavailableReason();
+            // Removing this build's HKCU binding must still work when its
+            // workload backend or required Windows version is unavailable.
+            var unavailable = operation == "--unregister" ? null : RuntimeRequirements.GetUnavailableReason();
             if (unavailable is not null)
             {
                 throw new InvalidOperationException(unavailable);
@@ -132,7 +134,7 @@ internal static class Program
                     ExplorerRegistration.Register(classes, application, broker);
                     break;
                 case "--unregister":
-                    ExplorerRegistration.Unregister(classes);
+                    ExplorerRegistration.Unregister(classes, broker);
                     break;
                 default:
                     if (!ExplorerRegistration.IsRegistered(classes, broker))

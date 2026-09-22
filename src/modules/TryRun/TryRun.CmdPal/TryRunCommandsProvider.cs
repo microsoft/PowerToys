@@ -17,10 +17,12 @@ public sealed partial class TryRunCommandsProvider : CommandProvider
         DisplayName = "Try Run (experimental)";
         Icon = new IconInfo("\uE768");
         var application = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "PowerToys.TryRun.exe"));
+        var worker = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "Worker", "PowerToys.TryRun.Worker.exe"));
         commands =
         [
             new CommandItem(new OpenTryRunCommand(application, [])) { Title = "Try Run", Subtitle = "Configure a Windows application or script in MXC" },
             new CommandItem(new TryRunFilePage(application)) { Title = "Try Run a file", Subtitle = "Paste a file or folder path to configure its run" },
+            new CommandItem(new SavedPolicyPage(worker)) { Title = "Try Run with a saved policy", Subtitle = "Review a saved Windows policy and run without the setup window" },
         ];
     }
 

@@ -6,4 +6,7 @@ using PowerToys.TryRun.Core;
 
 namespace PowerToys.TryRun;
 
-internal sealed record FileAccessRun(ExecutionRequest Request, string[] InputPaths, string Description);
+internal sealed record FileAccessRun(ExecutionRequest Request, string[] InputPaths, string Description)
+{
+    public string? WorkloadFile { get; init; }
+}

@@ -1,0 +1,51 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.TryRunPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main">
+
+    <controls:SettingsPageControl x:Uid="TryRun">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <InfoBar
+                    x:Uid="TryRun_Experimental"
+                    IsClosable="False"
+                    IsOpen="True"
+                    Severity="Informational" />
+                <InfoBar
+                    x:Uid="TryRun_Elevated"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}"
+                    Severity="Warning" />
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Name="TryRunEnable"
+                        x:Uid="TryRun_Enable"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}"
+                        IsEnabled="{x:Bind ViewModel.CanChangeEnabled, Mode=OneWay}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+                <controls:SettingsGroup x:Uid="TryRun_Integration" IsEnabled="{x:Bind ViewModel.CanLaunch, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Name="TryRunContextMenu"
+                        x:Uid="TryRun_ContextMenu"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowInContextMenu, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Name="TryRunLaunch"
+                        x:Uid="TryRun_Launch"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE768;}"
+                        IsClickEnabled="True" />
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

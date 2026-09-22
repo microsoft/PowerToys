@@ -40,5 +40,6 @@ namespace ManagedCommon
         GrabAndMove,
         ZoomIt,
         GeneralSettings,
+        TryRun,
     }
 }

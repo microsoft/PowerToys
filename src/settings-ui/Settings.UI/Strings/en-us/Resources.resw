@@ -6646,4 +6646,46 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="Shell_TryRun.Content" xml:space="preserve">
+    <value>Try Run</value>
+  </data>
+  <data name="TryRun.ModuleTitle" xml:space="preserve">
+    <value>Try Run</value>
+  </data>
+  <data name="TryRun.ModuleDescription" xml:space="preserve">
+    <value>Configure and reuse MXC policies to run applications and scripts with controlled access to files, networking, and other resources.</value>
+  </data>
+  <data name="TryRun_Experimental.Title" xml:space="preserve">
+    <value>Experimental MXC integration</value>
+  </data>
+  <data name="TryRun_Experimental.Message" xml:space="preserve">
+    <value>Requires Windows 11 24H2 or later. Available restrictions depend on the backend and Windows version. Explicit writable host paths can change original files. Open Try Run without administrator privileges.</value>
+  </data>
+  <data name="TryRun_Elevated.Title" xml:space="preserve">
+    <value>Restart PowerToys without administrator privileges</value>
+  </data>
+  <data name="TryRun_Elevated.Message" xml:space="preserve">
+    <value>This experimental integration can only enable Try Run and change its File Explorer menu from a normal user session. Exit PowerToys and start it normally to configure this module.</value>
+  </data>
+  <data name="TryRun_Enable.Header" xml:space="preserve">
+    <value>Enable Try Run</value>
+  </data>
+  <data name="TryRun_Enable.Description" xml:space="preserve">
+    <value>Enable the experimental PowerToys module. Running a selected file still requires reviewing its configuration.</value>
+  </data>
+  <data name="TryRun_Integration.Header" xml:space="preserve">
+    <value>Launch and File Explorer integration</value>
+  </data>
+  <data name="TryRun_ContextMenu.Header" xml:space="preserve">
+    <value>Show Try Run in the File Explorer context menu</value>
+  </data>
+  <data name="TryRun_ContextMenu.Description" xml:space="preserve">
+    <value>Select files or folders, right-click, then choose Try Run to review the workload and permissions. On Windows 11, choose Show more options to find this menu item.</value>
+  </data>
+  <data name="TryRun_Launch.Header" xml:space="preserve">
+    <value>Open Try Run</value>
+  </data>
+  <data name="TryRun_Launch.Description" xml:space="preserve">
+    <value>Configure a workload, inspect results, and save a policy for reuse.</value>
+  </data>
 </root>

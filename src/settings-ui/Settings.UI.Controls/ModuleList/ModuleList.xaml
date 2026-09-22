@@ -96,7 +96,7 @@
                     <ToggleSwitch
                         HorizontalAlignment="Right"
                         AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
-                        IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                        IsEnabled="{x:Bind IsToggleEnabled, Mode=OneWay}"
                         IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                         OffContent=""
                         OnContent="" />

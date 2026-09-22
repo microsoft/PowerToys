@@ -30,7 +30,7 @@ public partial class MainWindow : Window
     private CmdPalSelection? startupCmdPalSelection;
     private string[]? importedArguments;
     private CancellationTokenSource? cancellation;
-    private RunSession? session;
+    private RunExecution? execution;
     private bool closeWhenStopped;
     private bool canProbe;
     private bool available;
@@ -78,6 +78,7 @@ public partial class MainWindow : Window
 
         policy.Validate(IsLinuxProfile);
         policyDrafts[IsLinuxProfile] = policy.Clone();
+        UpdateSavedPolicyStatus();
         UpdateRunSummary();
         SetRunning(false);
         Status = "Permissions updated. Review the summary before running.";
@@ -111,8 +112,9 @@ public partial class MainWindow : Window
         startupCmdPalSelection = cmdPalSelection;
     }
 
-    internal MainWindow(string[] startupPaths, string? startupError, string? workerExecutable, Func<bool>? confirmDiscard)
+    internal MainWindow(string[] startupPaths, string? startupError, string? workerExecutable, Func<bool>? confirmDiscard, PolicyProfileStore? profileStore = null)
     {
+        policyStore = profileStore ?? new PolicyProfileStore();
         workerPath = workerExecutable ?? Path.Combine(AppContext.BaseDirectory, "Worker", "PowerToys.TryRun.Worker.exe");
         this.confirmDiscard = confirmDiscard;
         this.startupPaths = startupPaths;
@@ -329,6 +331,7 @@ public partial class MainWindow : Window
         }
 
         UpdateProfileState();
+        RefreshSavedPolicies();
         UpdateRunSummary();
         SetRunning(cancellation is not null);
     }
@@ -781,45 +784,63 @@ public partial class MainWindow : Window
         WindowBorderText.Text = "Windows in this run will have a cyan border after MXC starts the application.";
         try
         {
-            session?.Dispose();
-            session = new RunSession();
-            workspace = new FileWorkspace(session);
-            var runBundle = await Task.Run(() => TaskBundle.Inspect(inputPaths, cancellation.Token));
-            if (entry is not null && !runBundle.EntryPoints.Any(candidate => candidate.RelativePath == entry.RelativePath && candidate.Kind == entry.Kind))
-            {
-                throw new IOException("The selected entry point changed or was removed. Select the files again.");
-            }
-
-            var relativeFile = retry is not null ? retry.Request.FileRelativePath : entry?.RelativePath ?? (kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? runBundle.GetRelativePath(workloadFile) : null);
-            await Task.Run(() => workspace.Import(runBundle.Inputs, cancellation.Token));
-            prepared = true;
-            canReview = true;
-            hasUnreviewedResults = true;
-            Status = "Starting a restricted run…";
-            RunPhaseText.Text = "Starting";
-            var request = retry is not null ? retry.Request with
+            execution?.Dispose();
+            execution = null;
+            workspace = null;
+            var configuration = retry is not null ? new RunConfiguration
             {
                 Policy = policy,
-                WorkingDirectory = session.WorkingDirectory,
-                TemporaryDirectory = session.TemporaryDirectory,
+                Kind = retry.Request.Kind,
+                Script = retry.Request.Script,
+                ApplicationPath = retry.Request.ApplicationPath,
+                WorkloadFile = retry.WorkloadFile,
+                FileRelativePath = retry.WorkloadFile is null ? retry.Request.FileRelativePath : null,
+                WorkingSubdirectory = retry.Request.WorkingSubdirectory,
+                InputPaths = inputPaths,
                 Arguments = retry.Request.Arguments.ToArray(),
+                TimeoutSeconds = retry.Request.TimeoutSeconds,
+                Image = retry.Request.Image,
+                ImageTarPath = retry.Request.ImageTarPath,
+                Interpreter = retry.Request.Interpreter,
+                CaptureDenials = policy.Enabled("captureEnabled"),
+                IsolationDemo = retry.Request.IsolationDemo,
             }
-            : new ExecutionRequest(entry is null ? ScriptBox.Text : string.Empty, session.WorkingDirectory, session.TemporaryDirectory, timeout)
+            : new RunConfiguration
             {
-                Policy = policy,
+                Policy = CurrentPolicyReference is null ? policy : null,
+                Profile = CurrentPolicyReference,
                 Kind = kind,
+                Script = entry is null ? ScriptBox.Text : string.Empty,
                 ApplicationPath = entry is null && kind == WorkloadKind.WindowsApplication ? workloadFile : null,
-                FileRelativePath = relativeFile,
+                WorkloadFile = entry is null && kind != WorkloadKind.WindowsApplication && !string.IsNullOrWhiteSpace(workloadFile) ? workloadFile : null,
+                FileRelativePath = entry?.RelativePath,
                 WorkingSubdirectory = entry?.WorkingSubdirectory,
+                InputPaths = inputPaths,
                 Arguments = GetConfiguredArguments(),
+                TimeoutSeconds = timeout,
                 Image = ImageBox.Text.Trim(),
                 ImageTarPath = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython or WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ImageTarBox.Text) ? ImageTarBox.Text.Trim() : null,
                 Interpreter = kind is WorkloadKind.LinuxShell or WorkloadKind.LinuxPython ? InterpreterBox.Text.Trim() : null,
                 CaptureDenials = policy.Enabled("captureEnabled"),
                 IsolationDemo = isolationDemo,
             };
-            request.Validate();
-            fileAccessRun = new FileAccessRun(request with { Policy = policy.Clone(), Arguments = request.Arguments.ToArray() }, inputPaths.ToArray(), ActiveRunText.Text);
+            execution = await new RunCoordinator(workerPath, policyStore).PrepareAsync(configuration, cancellation.Token);
+            workspace = execution.Workspace;
+            prepared = true;
+            canReview = true;
+            hasUnreviewedResults = true;
+            Status = "Starting a restricted run…";
+            RunPhaseText.Text = "Starting";
+            var request = execution.Request;
+            var policyIdentity = execution.Profile is { } reference ? $"\nSaved policy: {reference.Id} · revision {reference.Revision}" : string.Empty;
+            var runDescription = ActiveRunText.Text;
+            ActiveRunText.Text += policyIdentity;
+            if (retry is not null)
+            {
+                ActiveRunText.Text += "\nCustom permissions for this read-only grant retry.";
+            }
+
+            fileAccessRun = new FileAccessRun(request with { Policy = request.Policy?.Clone(), Arguments = request.Arguments.ToArray() }, inputPaths.ToArray(), runDescription) { WorkloadFile = configuration.WorkloadFile };
             var environmentReceived = false;
             void MarkRunning()
             {
@@ -848,7 +869,7 @@ public partial class MainWindow : Window
                 {
                     fileAccessEnvironment = environment;
                     environmentReceived = true;
-                    ReportEnvironmentBox.Text = environment.Describe();
+                    ReportEnvironmentBox.Text = environment.Describe() + policyIdentity;
                 }
 
                 if (message.Report is { } report)
@@ -868,7 +889,7 @@ public partial class MainWindow : Window
                     OutputBox.ScrollToEnd();
                 }
             });
-            var result = await new WorkerClient(workerPath).RunAsync(request, progress, cancellation.Token);
+            var result = await execution.RunAsync(progress, cancellation.Token);
             finalPhase = result.TimedOut ? "Time limit reached" : result.ExitCode == 0 ? "Completed" : "Failed";
             Status = result.TimedOut ? "Stopped: time limit reached." : result.ExitCode == 0 ? "Finished. Exit code: 0." : $"Run failed. Exit code: {result.ExitCode}. See the output for details.";
         }
@@ -930,10 +951,9 @@ public partial class MainWindow : Window
         Status = "Reviewing result files…";
         try
         {
-            var originals = await Task.Run(() => workspace!.CheckOriginals(cancellation!.Token));
-            OriginalCheckText.Text = originals.ToString();
-            var comparison = await Task.Run(() => workspace!.Review(cancellation!.Token));
-            changes = comparison.Select(change => new FileChangeRow(change)).ToList();
+            var review = await execution!.ReviewAsync(cancellation!.Token);
+            OriginalCheckText.Text = review.Originals.ToString();
+            changes = review.Changes.Select(change => new FileChangeRow(change)).ToList();
             ChangesGrid.ItemsSource = changes;
             unexported.Clear();
             foreach (var change in changes.Where(change => change.IsSelected))
@@ -1043,6 +1063,9 @@ public partial class MainWindow : Window
         LinuxDemoButton.IsEnabled = !running;
         CaptureBox.IsEnabled = !running && !policyDrafts.ContainsKey(IsLinuxProfile) && backends?.NativeDenialCaptureAvailable == true;
         PolicyButton.IsEnabled = !running && !showingRun;
+        SavedPolicyBox.IsEnabled = !running && !showingRun;
+        SavePolicyButton.IsEnabled = !running && !showingRun;
+        RefreshPoliciesButton.IsEnabled = !running && !showingRun;
         var hasCommand = !string.IsNullOrWhiteSpace(WorkloadFileBox.Text) || (kind is not WorkloadKind.WindowsApplication and not WorkloadKind.LinuxApplication && !string.IsNullOrWhiteSpace(ScriptBox.Text));
         RunButton.IsEnabled = available && !running && (manual ? hasCommand : EntryPointBox.SelectedItem is TaskEntryPoint);
         EntryPointBox.IsEnabled = !running && !manual;
@@ -1110,7 +1133,7 @@ public partial class MainWindow : Window
 
         try
         {
-            session?.Dispose();
+            execution?.Dispose();
         }
         catch (IOException exception)
         {

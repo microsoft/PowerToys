@@ -450,6 +450,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
+                case "TryRun": return typeof(TryRunPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 case "NewPlus": return typeof(NewPlusPage);

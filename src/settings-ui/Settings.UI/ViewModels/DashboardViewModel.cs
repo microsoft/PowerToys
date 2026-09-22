@@ -220,8 +220,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Tag = moduleType,
                     Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                    IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
+                    IsEnabled = !(moduleType == ModuleType.TryRun && App.IsElevated) && (gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType))),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                    CanChangeEnabled = !(moduleType == ModuleType.TryRun && App.IsElevated),
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     IsNew = moduleType == ModuleType.AltWindowCycle,
                     DashboardModuleItems = GetModuleItems(moduleType),
@@ -306,6 +307,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // If Disabled: module is off and the user cannot enable it.
                 // Otherwise, the setting is unlocked and the user can enable/disable it.
                 bool newEnabledState = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag));
+                item.CanChangeEnabled = !(item.Tag == ModuleType.TryRun && App.IsElevated);
+                if (!item.CanChangeEnabled)
+                {
+                    newEnabledState = false;
+                }
 
                 // Lock the toggle when GPO is controlling the module.
                 bool newLockedState = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled;
@@ -334,6 +340,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var dashboardListItem = (DashboardListItem)item;
             var isEnabled = dashboardListItem.IsEnabled;
+            if (dashboardListItem.Tag == ModuleType.TryRun && App.IsElevated)
+            {
+                dashboardListItem.UpdateStatus(false);
+                return;
+            }
 
             // Ignore toggle operations during sorting to prevent race conditions.
             // Revert the toggle state since UI already changed due to TwoWay binding.
@@ -508,6 +519,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
                 ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
+                ModuleType.TryRun => GetModuleItemsTryRun(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
@@ -794,6 +806,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsTryRun()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("TryRun_Launch/Header"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/PowerToys.png", ButtonClickHandler = TryRunLaunchClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMeasureTool()
         {
             ISettingsRepository<MeasureToolSettings> moduleSettingsRepository = SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default);
@@ -874,6 +895,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void TryRunLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var gpo = ModuleGpoHelper.GetModuleGpoConfiguration(ModuleType.TryRun);
+            if (!App.IsElevated && (gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && generalSettingsConfig.Enabled.TryRun)))
+            {
+                SendConfigMSG("{\"action\":{\"TryRun\":{\"action_name\":\"Launch\",\"value\":\"\"}}}");
+            }
         }
 
         private void PowerDisplayLaunchClicked(object sender, RoutedEventArgs e)

@@ -318,6 +318,18 @@
                                     x:Name="PolicySummaryText"
                                     Margin="0,16,0,0"
                                     TextWrapping="Wrap" />
+                                <Label Margin="0,12,0,0" Content="Reusable policy" Target="{Binding ElementName=SavedPolicyBox}" />
+                                <ComboBox
+                                    x:Name="SavedPolicyBox"
+                                    MinHeight="36"
+                                    AutomationProperties.Name="Reusable policy"
+                                    DisplayMemberPath="DisplayName"
+                                    SelectionChanged="OnSavedPolicyChanged" />
+                                <WrapPanel Margin="0,8,0,0">
+                                    <Button x:Name="SavePolicyButton" Click="OnSavePolicy" Content="Save policy…" />
+                                    <Button x:Name="RefreshPoliciesButton" Margin="8,0,0,0" Click="OnRefreshPolicies" Content="Refresh" />
+                                </WrapPanel>
+                                <TextBlock x:Name="SavedPolicyStatusText" Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" />
                                 <Button
                                     x:Name="PolicyButton"
                                     Margin="0,12,0,0"
