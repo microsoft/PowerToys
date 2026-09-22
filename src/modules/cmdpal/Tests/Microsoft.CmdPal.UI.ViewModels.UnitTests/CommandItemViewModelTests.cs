@@ -41,6 +41,15 @@ public partial class CommandItemViewModelTests
         }
     }
 
+    private sealed partial class ThrowingFiltersListPage : ListPage
+    {
+        public override IFilters? Filters
+        {
+            get => throw new AssertFailedException("Command shape detection must not access filters.");
+            set => throw new AssertFailedException("Command shape detection must not access filters.");
+        }
+    }
+
     [TestMethod]
     public void AllCommands_ReturnCachedSnapshot()
     {
@@ -208,6 +217,27 @@ public partial class CommandItemViewModelTests
         Assert.AreEqual(1, viewModel.AllCommands.Count);
         Assert.IsTrue(viewModel.CanOpenContextMenu);
         Assert.AreEqual("Primary", ((CommandContextItemViewModel)viewModel.AllCommands[0]).Name);
+        Assert.IsTrue(viewModel.Command.IsInvokableCommand);
+        Assert.IsFalse(viewModel.Command.IsPage);
+        Assert.IsFalse(viewModel.Command.IsListPage);
+    }
+
+    [TestMethod]
+    public void FastInitializeProperties_CachesListPageShapeWithoutAccessingFilters()
+    {
+        var pageContext = new TestPageContext();
+        var page = new ThrowingFiltersListPage
+        {
+            Name = "List page",
+        };
+        var item = new CommandItem(page) { Title = page.Name };
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+
+        viewModel.FastInitializeProperties();
+
+        Assert.IsTrue(viewModel.Command.IsPage);
+        Assert.IsTrue(viewModel.Command.IsListPage);
+        Assert.IsFalse(viewModel.Command.IsInvokableCommand);
     }
 
     [TestMethod]

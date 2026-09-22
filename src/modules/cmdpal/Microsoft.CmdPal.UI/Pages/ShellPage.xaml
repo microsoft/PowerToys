@@ -52,6 +52,10 @@
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
             </Style>
 
+            <Style x:Key="ExternalCommandLinkWarningTextBlockStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
             <Style
                 x:Key="SeparatorKeyTextBlockStyle"
                 BasedOn="{StaticResource BodyStrongTextBlockStyle}"

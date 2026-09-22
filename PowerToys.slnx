@@ -952,6 +952,10 @@
     <Project Path="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" Id="08e71c67-6a7e-4ca1-b04e-2fb336410bac" />
   </Folder>
   <Folder Name="/modules/LightSwitch/Tests/">
+    <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests.Next/LightSwitch.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests/LightSwitch.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1224,6 +1228,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/WorkspacesEditorUITest/Workspaces.Editor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/WorkspacesLauncherUI.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
