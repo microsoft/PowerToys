@@ -286,7 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             return value switch
             {
-                // Legacy enum migration (pre-ComboBox builds stored Millimeters as 4).
+                // Legacy enum migration (pre-ComboBox builds stored Millimetres as 8).
                 8 => 3,
                 >= DefaultUnitsOfMeasureIndex and <= MaximumUnitsOfMeasureIndex => value,
                 _ => DefaultUnitsOfMeasureIndex,
