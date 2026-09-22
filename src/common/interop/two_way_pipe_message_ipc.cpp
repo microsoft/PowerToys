@@ -489,12 +489,7 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
         return false;
     }
 
-    struct PendingWrite
-    {
-        OVERLAPPED overlapped{};
-        OwnedPipeHandle completed_event;
-    };
-    auto pending_write = std::make_shared<PendingWrite>();
+    auto pending_write = std::make_shared<PendingWriteContext>();
     pending_write->completed_event.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
     if (!pending_write->completed_event.valid())
     {
@@ -520,11 +515,7 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
                             FALSE,
                             DUPLICATE_SAME_ACCESS))
         {
-            std::thread([pending_write, duplicate_output_pipe]() {
-                DWORD ignored = 0;
-                GetOverlappedResult(duplicate_output_pipe, &pending_write->overlapped, &ignored, TRUE);
-                CloseHandle(duplicate_output_pipe);
-            }).detach();
+            queue_canceled_write_cleanup(duplicate_output_pipe, pending_write);
         }
     };
     {
@@ -651,6 +642,51 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::interrupt_output_queue()
     }
 }
 
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::queue_canceled_write_cleanup(HANDLE pipe_handle, const std::shared_ptr<PendingWriteContext>& pending_write)
+{
+    std::scoped_lock lock(canceled_writes_mutex);
+    canceled_writes.push_back(CanceledWriteCleanup{
+        OwnedPipeHandle(pipe_handle),
+        pending_write,
+    });
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::reap_canceled_write_cleanups(bool wait_for_completion)
+{
+    std::vector<CanceledWriteCleanup> pending_cleanups;
+    {
+        std::scoped_lock lock(canceled_writes_mutex);
+        if (canceled_writes.empty())
+        {
+            return;
+        }
+        pending_cleanups.swap(canceled_writes);
+    }
+
+    std::vector<CanceledWriteCleanup> incomplete_cleanups;
+    for (auto& cleanup : pending_cleanups)
+    {
+        DWORD ignored = 0;
+        const BOOL completed = GetOverlappedResult(cleanup.pipe_handle.get(),
+                                                   &cleanup.pending_write->overlapped,
+                                                   &ignored,
+                                                   wait_for_completion ? TRUE : FALSE);
+        if (!completed && !wait_for_completion && GetLastError() == ERROR_IO_INCOMPLETE)
+        {
+            incomplete_cleanups.push_back(std::move(cleanup));
+        }
+    }
+
+    if (!incomplete_cleanups.empty())
+    {
+        std::scoped_lock lock(canceled_writes_mutex);
+        for (auto& cleanup : incomplete_cleanups)
+        {
+            canceled_writes.push_back(std::move(cleanup));
+        }
+    }
+}
+
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread()
 {
     OutputMessage output_message;
@@ -664,7 +700,10 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread
         }
 
         output_message = {};
+        reap_canceled_write_cleanups(false);
     }
+
+    reap_canceled_write_cleanups(true);
 }
 
 BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, PSID* ppsid)
