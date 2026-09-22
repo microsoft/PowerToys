@@ -386,6 +386,7 @@
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.dll",
                 "TestableIO.System.IO.Abstractions.Wrappers.dll",
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.Wrappers.dll",
+                "WinUI3Apps\\Betalgo.Ranul.OpenAI.dll",
                 "WinUI3Apps\\OpenAI.dll",
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
