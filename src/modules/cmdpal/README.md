@@ -38,6 +38,8 @@ Projects of interest are:
 * `Microsoft.CommandPalette.Extensions.Toolkit`: This is a C# helper library for creating extensions. This makes writing extensions easier.
 * Everything under "SampleExtensions": These are example plugins to demo how to author extensions. Deploy any number of these, to get a feel for how the extension API works.
 
+WinGet is a built-in extension, so testing its changes uses the `Microsoft.CmdPal.UI` build rather than a separately deployed extension package. During package operations, its page footer names the app being installed or uninstalled. Start and completion notifications use the host's toast window for four seconds; detailed progress remains available from the status badge.
+
 ### Footnotes and other links
 
 * [Initial SDK Spec]
@@ -49,5 +51,4 @@ Projects of interest are:
 [generic samples]: ./ext/SamplePagesExtension 
 [real samples]: ./ext/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
-
 
