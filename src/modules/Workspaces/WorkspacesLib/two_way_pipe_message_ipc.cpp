@@ -375,22 +375,48 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
         return false;
     }
 
-    HANDLE write_complete_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    if (!write_complete_event)
+    struct PendingWrite
+    {
+        OVERLAPPED overlapped{};
+        OwnedPipeHandle completed_event;
+    };
+    auto pending_write = std::make_shared<PendingWrite>();
+    pending_write->completed_event.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    if (!pending_write->completed_event.valid())
     {
         return false;
     }
+    pending_write->overlapped.hEvent = pending_write->completed_event.get();
 
-    OVERLAPPED write_overlapped{};
-    write_overlapped.hEvent = write_complete_event;
     DWORD bytes_written = 0;
     const DWORD bytes_to_write = (lstrlen(message_send)) * sizeof(WCHAR);
     BOOL write_succeeded = FALSE;
+    const auto cancel_pending_write_without_wait = [&]() {
+        if (!CancelIoEx(output_pipe_handle, &pending_write->overlapped))
+        {
+            return;
+        }
+
+        HANDLE duplicate_output_pipe = INVALID_HANDLE_VALUE;
+        if (DuplicateHandle(GetCurrentProcess(),
+                            output_pipe_handle,
+                            GetCurrentProcess(),
+                            &duplicate_output_pipe,
+                            0,
+                            FALSE,
+                            DUPLICATE_SAME_ACCESS))
+        {
+            std::thread([pending_write, duplicate_output_pipe]() {
+                DWORD ignored = 0;
+                GetOverlappedResult(duplicate_output_pipe, &pending_write->overlapped, &ignored, TRUE);
+                CloseHandle(duplicate_output_pipe);
+            }).detach();
+        }
+    };
     {
         std::scoped_lock lock(output_pipe_mutex);
         if (closed.load())
         {
-            CloseHandle(write_complete_event);
             return false;
         }
         active_output_pipe_handle = output_pipe_handle;
@@ -398,13 +424,12 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
                                     message_send,
                                     bytes_to_write,
                                     &bytes_written,
-                                    &write_overlapped);
+                                    &pending_write->overlapped);
     }
     if (!write_succeeded)
     {
         if (GetLastError() != ERROR_IO_PENDING)
         {
-            CloseHandle(write_complete_event);
             clear_active_output_pipe();
             return false;
         }
@@ -413,45 +438,36 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
             const auto now = std::chrono::steady_clock::now();
             if (now >= output_message.deadline.value())
             {
-                CancelIoEx(output_pipe_handle, &write_overlapped);
-                DWORD ignored = 0;
-                GetOverlappedResult(output_pipe_handle, &write_overlapped, &ignored, TRUE);
-                CloseHandle(write_complete_event);
+                cancel_pending_write_without_wait();
                 clear_active_output_pipe();
                 return false;
             }
 
             const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(output_message.deadline.value() - now);
-            const DWORD wait_result = WaitForSingleObject(write_complete_event, static_cast<DWORD>(remaining.count()));
+            const DWORD wait_result = WaitForSingleObject(pending_write->completed_event.get(), static_cast<DWORD>(remaining.count()));
             if (wait_result != WAIT_OBJECT_0)
             {
                 if (wait_result == WAIT_TIMEOUT)
                 {
-                    CancelIoEx(output_pipe_handle, &write_overlapped);
-                    DWORD ignored = 0;
-                    GetOverlappedResult(output_pipe_handle, &write_overlapped, &ignored, TRUE);
+                    cancel_pending_write_without_wait();
                 }
-                CloseHandle(write_complete_event);
                 clear_active_output_pipe();
                 return false;
             }
 
-            if (!GetOverlappedResult(output_pipe_handle, &write_overlapped, &bytes_written, FALSE))
+            if (!GetOverlappedResult(output_pipe_handle, &pending_write->overlapped, &bytes_written, FALSE))
             {
-                CloseHandle(write_complete_event);
                 clear_active_output_pipe();
                 return false;
             }
         }
-        else if (!GetOverlappedResult(output_pipe_handle, &write_overlapped, &bytes_written, TRUE))
+        else if (!GetOverlappedResult(output_pipe_handle, &pending_write->overlapped, &bytes_written, TRUE))
         {
-            CloseHandle(write_complete_event);
             clear_active_output_pipe();
             return false;
         }
     }
 
-    CloseHandle(write_complete_event);
     clear_active_output_pipe();
     return true;
 }
