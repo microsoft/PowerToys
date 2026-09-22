@@ -414,6 +414,8 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
             if (now >= output_message.deadline.value())
             {
                 CancelIoEx(output_pipe_handle, &write_overlapped);
+                DWORD ignored = 0;
+                GetOverlappedResult(output_pipe_handle, &write_overlapped, &ignored, TRUE);
                 CloseHandle(write_complete_event);
                 clear_active_output_pipe();
                 return false;
@@ -426,6 +428,8 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(const Out
                 if (wait_result == WAIT_TIMEOUT)
                 {
                     CancelIoEx(output_pipe_handle, &write_overlapped);
+                    DWORD ignored = 0;
+                    GetOverlappedResult(output_pipe_handle, &write_overlapped, &ignored, TRUE);
                 }
                 CloseHandle(write_complete_event);
                 clear_active_output_pipe();
