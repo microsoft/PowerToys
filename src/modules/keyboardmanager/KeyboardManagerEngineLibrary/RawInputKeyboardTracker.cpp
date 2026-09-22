@@ -38,11 +38,17 @@ namespace
 RawInputKeyboardTracker::RawInputKeyboardTracker(Callback callback) :
     m_callback(std::move(callback))
 {
+    m_readyEvent = CreateEventW(nullptr, TRUE /* manual reset */, FALSE, nullptr);
 }
 
 RawInputKeyboardTracker::~RawInputKeyboardTracker()
 {
     Stop();
+    if (m_readyEvent != nullptr)
+    {
+        CloseHandle(m_readyEvent);
+        m_readyEvent = nullptr;
+    }
 }
 
 void RawInputKeyboardTracker::Start()
@@ -53,6 +59,11 @@ void RawInputKeyboardTracker::Start()
         return;
     }
 
+    if (m_readyEvent != nullptr)
+    {
+        ResetEvent(m_readyEvent);
+    }
+
     m_thread = std::thread([this] { ThreadMain(); });
 }
 
@@ -61,6 +72,14 @@ void RawInputKeyboardTracker::Stop()
     if (!m_started.exchange(false))
     {
         return;
+    }
+
+    // Wait until the worker has created its message queue before posting WM_QUIT; otherwise the
+    // post can be lost and join() would block forever. Bounded so a worker that died before
+    // signalling still lets Stop() proceed (join() then returns immediately).
+    if (m_readyEvent != nullptr)
+    {
+        WaitForSingleObject(m_readyEvent, 5000);
     }
 
     const DWORD threadId = m_threadId.load();
@@ -156,6 +175,10 @@ void RawInputKeyboardTracker::ThreadMain()
     {
         Logger::error(L"RawInputKeyboardTracker: CreateWindow failed ({})", GetLastError());
         UnregisterClassW(RawInputWindowClassName, wc.hInstance);
+        if (m_readyEvent != nullptr)
+        {
+            SetEvent(m_readyEvent);
+        }
         return;
     }
 
@@ -169,7 +192,18 @@ void RawInputKeyboardTracker::ThreadMain()
         Logger::error(L"RawInputKeyboardTracker: RegisterRawInputDevices failed ({})", GetLastError());
         DestroyWindow(hwnd);
         UnregisterClassW(RawInputWindowClassName, wc.hInstance);
+        if (m_readyEvent != nullptr)
+        {
+            SetEvent(m_readyEvent);
+        }
         return;
+    }
+
+    // The window exists, so this thread now has a message queue and Stop()'s PostThreadMessageW
+    // will be delivered. Let Stop() proceed.
+    if (m_readyEvent != nullptr)
+    {
+        SetEvent(m_readyEvent);
     }
 
     Logger::trace(L"RawInputKeyboardTracker: listening for raw keyboard input");

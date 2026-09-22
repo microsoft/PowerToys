@@ -227,49 +227,9 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
-                bool changed = false;
-                var orphanedIds = new List<string>();
-
-                foreach (KeyValuePair<string, ShortcutSettings> entry in updatedSettings.ShortcutSettingsDictionary)
-                {
-                    if (!RemoveProfile(entry.Value, profileName))
-                    {
-                        continue;
-                    }
-
-                    changed = true;
-                    if (GetProfiles(entry.Value).Count == 0)
-                    {
-                        orphanedIds.Add(entry.Key);
-                    }
-                }
-
-                foreach (string id in orphanedIds)
-                {
-                    ShortcutOperationType operationType = updatedSettings.ShortcutSettingsDictionary[id].Shortcut.OperationType;
-                    updatedSettings.ShortcutSettingsDictionary.Remove(id);
-                    if (updatedSettings.ShortcutsByOperationType.TryGetValue(operationType, out List<string>? operationIds))
-                    {
-                        operationIds.Remove(id);
-                    }
-                }
-
-                foreach (string profile in updatedSettings.ProfileDictionary.Keys
-                    .Where(profile => profile.Equals(profileName, StringComparison.OrdinalIgnoreCase))
-                    .ToList())
-                {
-                    changed |= updatedSettings.ProfileDictionary.Remove(profile);
-                }
-
-                if (!changed)
+                if (!ApplyProfileMembershipRemoval(updatedSettings, profileName))
                 {
                     return;
-                }
-
-                updatedSettings.ProfileDictionary = BuildProfileIndex(updatedSettings);
-                if (string.Equals(updatedSettings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
-                {
-                    updatedSettings.ActiveProfile = string.Empty;
                 }
 
                 if (WriteSettings(updatedSettings))
@@ -281,6 +241,64 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): {exception.Message}");
             }
+        }
+
+        /// <summary>
+        /// Pure core of <see cref="RemoveProfileMembership"/>: mutates <paramref name="settings"/> in
+        /// place and returns whether anything changed. Split out from the public method (which also
+        /// writes to disk) so the membership rules are unit-testable in isolation. A mapping owned
+        /// only by <paramref name="profileName"/> is removed from both indexes; one still named by
+        /// another profile is kept with the remaining membership; an untagged (profile-less) mapping
+        /// is left untouched; the profile index is rebuilt and a matching active profile cleared.
+        /// </summary>
+        internal static bool ApplyProfileMembershipRemoval(EditorSettings settings, string profileName)
+        {
+            bool changed = false;
+            var orphanedIds = new List<string>();
+
+            foreach (KeyValuePair<string, ShortcutSettings> entry in settings.ShortcutSettingsDictionary)
+            {
+                if (!RemoveProfile(entry.Value, profileName))
+                {
+                    continue;
+                }
+
+                changed = true;
+                if (GetProfiles(entry.Value).Count == 0)
+                {
+                    orphanedIds.Add(entry.Key);
+                }
+            }
+
+            foreach (string id in orphanedIds)
+            {
+                ShortcutOperationType operationType = settings.ShortcutSettingsDictionary[id].Shortcut.OperationType;
+                settings.ShortcutSettingsDictionary.Remove(id);
+                if (settings.ShortcutsByOperationType.TryGetValue(operationType, out List<string>? operationIds))
+                {
+                    operationIds.Remove(id);
+                }
+            }
+
+            foreach (string profile in settings.ProfileDictionary.Keys
+                .Where(profile => profile.Equals(profileName, StringComparison.OrdinalIgnoreCase))
+                .ToList())
+            {
+                changed |= settings.ProfileDictionary.Remove(profile);
+            }
+
+            if (!changed)
+            {
+                return false;
+            }
+
+            settings.ProfileDictionary = BuildProfileIndex(settings);
+            if (string.Equals(settings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
+            {
+                settings.ActiveProfile = string.Empty;
+            }
+
+            return true;
         }
 
         private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service)
@@ -683,18 +701,30 @@ namespace KeyboardManagerEditorUI.Settings
             return true;
         }
 
-        internal static bool IsMappingInActiveProfile(ShortcutSettings shortcutSettings)
+        /// <summary>
+        /// Resolves the profile used to filter the list. This reads the active profile from disk
+        /// (via <see cref="CurrentProfileName"/>), so a caller filtering a whole list should call
+        /// it ONCE before the loop and pass the result to
+        /// <see cref="IsMappingInActiveProfile(ShortcutSettings, string?)"/> — otherwise the disk
+        /// read/parse repeats for every mapping (dozens or hundreds on a large configuration).
+        /// </summary>
+        internal static string? ResolveActiveProfileForFiltering()
         {
             string? profileName = CurrentProfileName;
-            if (string.IsNullOrWhiteSpace(profileName))
-            {
-                profileName = EditorSettings.ActiveProfile;
-            }
-
-            return string.IsNullOrWhiteSpace(profileName) ||
-                   GetProfiles(shortcutSettings).Count == 0 ||
-                   BelongsToProfile(shortcutSettings, profileName);
+            return string.IsNullOrWhiteSpace(profileName) ? EditorSettings.ActiveProfile : profileName;
         }
+
+        internal static bool IsMappingInActiveProfile(ShortcutSettings shortcutSettings, string? activeProfileName)
+        {
+            return string.IsNullOrWhiteSpace(activeProfileName) ||
+                   GetProfiles(shortcutSettings).Count == 0 ||
+                   BelongsToProfile(shortcutSettings, activeProfileName);
+        }
+
+        // Convenience for single-item checks; resolves the active profile itself. Do not call this
+        // in a per-mapping loop — use the overload above with a pre-resolved profile name.
+        internal static bool IsMappingInActiveProfile(ShortcutSettings shortcutSettings)
+            => IsMappingInActiveProfile(shortcutSettings, ResolveActiveProfileForFiltering());
 
         internal static bool NormalizeSettings(EditorSettings settings)
         {

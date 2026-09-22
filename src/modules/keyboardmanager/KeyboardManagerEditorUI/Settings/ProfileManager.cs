@@ -47,6 +47,17 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static string ConfigPath(string profile) => Path.Combine(_settingsDirectory, profile + ".json");
 
+        // Files that live in the save folder but are NOT remap-profile configs and must never
+        // be surfaced as selectable profiles: the module settings, the editor's per-profile
+        // caches ("editorSettings*"), the device->profile auto-switch map ("deviceProfiles"),
+        // and dotted backups like "default.backup-...". Kept in one place so the discovery scan
+        // and the name validator can never drift apart.
+        private static bool IsReservedConfigStem(string stem) =>
+            stem.Contains('.') ||
+            stem.Equals("settings", StringComparison.OrdinalIgnoreCase) ||
+            stem.StartsWith("editorSettings", StringComparison.OrdinalIgnoreCase) ||
+            stem.Equals("deviceProfiles", StringComparison.OrdinalIgnoreCase);
+
         /// <summary>
         /// Returns the known profile names. Reads "keyboardConfigurations" from settings.json and
         /// also scans "{name}.json" files so externally created profiles are picked up. Always
@@ -83,10 +94,8 @@ namespace KeyboardManagerEditorUI.Settings
                     {
                         string stem = Path.GetFileNameWithoutExtension(file);
 
-                        // Skip settings.json, editor caches, and backups like "default.backup-...".
-                        if (stem.Equals("settings", StringComparison.OrdinalIgnoreCase) ||
-                            stem.StartsWith("editorSettings", StringComparison.OrdinalIgnoreCase) ||
-                            stem.Contains('.'))
+                        // Skip settings.json, editor caches, the device map, and dotted backups.
+                        if (IsReservedConfigStem(stem))
                         {
                             continue;
                         }
@@ -221,8 +230,19 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 bool wasActive = GetActiveProfile().Equals(profile, StringComparison.OrdinalIgnoreCase);
 
-                TryDeleteFile(ConfigPath(profile));
+                // Abort before touching any other store if the config file can't be removed:
+                // otherwise we'd unregister the profile while its {name}.json stays on disk, and
+                // the directory scan in GetProfiles() would resurrect it on the next refresh.
+                if (!TryDeleteFile(ConfigPath(profile)))
+                {
+                    return false;
+                }
+
                 SettingsManager.RemoveProfileMembership(profile);
+
+                // Drop any keyboard->profile assignments for the deleted profile so auto-switch
+                // never targets a profile that no longer exists.
+                DeviceProfileManager.RemoveAssignmentsForProfile(profile);
 
                 JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
                 JsonObject properties = EnsureObject(root, "properties");
@@ -276,14 +296,14 @@ namespace KeyboardManagerEditorUI.Settings
                 return false;
             }
 
-            // Dots are reserved to distinguish backups / editor caches from profile configs.
-            if (profile.Contains('.') || profile.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            // Reject reserved names (settings / editor caches / device map / dotted backups)
+            // and any name with filesystem-invalid characters.
+            if (profile.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || IsReservedConfigStem(profile))
             {
                 return false;
             }
 
-            return !profile.Equals("settings", StringComparison.OrdinalIgnoreCase) &&
-                   !profile.StartsWith("editorSettings", StringComparison.OrdinalIgnoreCase);
+            return true;
         }
 
         private static JsonNode? ReadSettingsRoot()
@@ -355,7 +375,10 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        private static void TryDeleteFile(string path)
+        // Returns true when the file is gone after the call (deleted, or never existed);
+        // false when a delete was attempted but failed (e.g. the file is locked), so callers
+        // can abort before unregistering a profile whose config is still on disk.
+        private static bool TryDeleteFile(string path)
         {
             try
             {
@@ -363,10 +386,13 @@ namespace KeyboardManagerEditorUI.Settings
                 {
                     File.Delete(path);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogWarning($"ProfileManager: failed deleting '{path}': {ex.Message}");
+                return false;
             }
         }
     }

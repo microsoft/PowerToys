@@ -110,6 +110,14 @@ namespace KeyboardManagerEditorUI.Interop
 
         private readonly Action<DetectedKeyboard> _onKeyboard;
         private readonly WndProcDelegate _wndProc;
+
+        // Set by the worker once it has published its thread id AND created its message queue
+        // (which CreateWindowExW does), or once it has bailed out. Stop() waits on this before
+        // posting WM_QUIT so the quit is never sent to a thread that has no queue yet — otherwise
+        // PostThreadMessageW is skipped/lost and Join() blocks forever if the dialog is dismissed
+        // immediately after Start(). It is also set on every early-exit path so Stop() can't hang.
+        private readonly ManualResetEventSlim _workerReady = new(false);
+
         private Thread? _thread;
         private uint _threadId;
 
@@ -126,6 +134,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return;
             }
 
+            _workerReady.Reset();
             _thread = new Thread(ThreadMain) { IsBackground = true, Name = "KbmRawInputWatcher" };
             _thread.Start();
         }
@@ -139,6 +148,11 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             _thread = null;
+
+            // Wait until the worker has a message queue before posting WM_QUIT. The bounded wait
+            // guards against a worker that died before signalling (it would still have exited, so
+            // Join returns); it is not the normal path.
+            _workerReady.Wait(TimeSpan.FromSeconds(5));
             if (_threadId != 0)
             {
                 PostThreadMessageW(_threadId, WmQuit, IntPtr.Zero, IntPtr.Zero);
@@ -148,7 +162,11 @@ namespace KeyboardManagerEditorUI.Interop
             _threadId = 0;
         }
 
-        public void Dispose() => Stop();
+        public void Dispose()
+        {
+            Stop();
+            _workerReady.Dispose();
+        }
 
         private void ThreadMain()
         {
@@ -167,6 +185,7 @@ namespace KeyboardManagerEditorUI.Interop
             if (hwnd == IntPtr.Zero)
             {
                 Logger.LogError("RawInputWatcher: CreateWindow failed");
+                _workerReady.Set();
                 return;
             }
 
@@ -179,8 +198,13 @@ namespace KeyboardManagerEditorUI.Interop
                 Logger.LogError("RawInputWatcher: RegisterRawInputDevices failed");
                 DestroyWindow(hwnd);
                 UnregisterClassW(className, wc.HInstance);
+                _workerReady.Set();
                 return;
             }
+
+            // The window now exists, so this thread has a message queue and PostThreadMessageW
+            // from Stop() will be delivered. Safe to let Stop() proceed.
+            _workerReady.Set();
 
             while (GetMessageW(out NativeMessage msg, IntPtr.Zero, 0, 0) > 0)
             {

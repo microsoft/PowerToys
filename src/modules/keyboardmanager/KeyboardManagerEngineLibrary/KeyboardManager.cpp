@@ -29,6 +29,12 @@ namespace
     // virtual keyboards (e.g. Target_KIP) are assigned a fresh <instanceId> over time, which would
     // break an exact-path match. Match on the stable prefix instead: everything up to the instance
     // (the 2nd '#'). This keeps distinct keyboards apart while tolerating instance-id churn.
+    //
+    // Known, intentional limitation (SPEC §7): the dropped <instanceId> is also what tells two
+    // keyboards of the SAME model apart, so an identical pair collapses to one identity and shares
+    // one profile. Accepted for the MVP — the churn this fixes is common, a second identical
+    // keyboard is rare. The editor's NormalizeDevicePath applies the exact same rule so both sides
+    // agree. Per-instance identity for identical models is deferred, not overlooked.
     std::wstring NormalizeDevicePath(const std::wstring& path)
     {
         const size_t first = path.find(L'#');
@@ -185,9 +191,11 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     std::wstring current;
+    std::wstring requested;
     {
         std::lock_guard<std::mutex> lock(activeProfileMutex);
         current = activeProfileName;
+        requested = requestedProfile;
     }
 
     if (target == current)
@@ -195,12 +203,17 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
         // Already on the right profile; reset any pending switch.
         pendingTarget.clear();
         pendingCount = 0;
-        requestedProfile.clear();
+        {
+            std::lock_guard<std::mutex> lock(activeProfileMutex);
+            requestedProfile.clear();
+        }
         return;
     }
 
-    // A switch to this profile was already requested; wait for the reload to take effect.
-    if (target == requestedProfile)
+    // A switch to this profile was already requested and no reload has completed since; wait for
+    // it rather than re-issuing. LoadSettings clears requestedProfile on every reload, so a switch
+    // to a different profile by another path can no longer leave a stale request wedged here.
+    if (target == requested)
     {
         return;
     }
@@ -222,7 +235,10 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     pendingCount = 0;
-    requestedProfile = target;
+    {
+        std::lock_guard<std::mutex> lock(activeProfileMutex);
+        requestedProfile = target;
+    }
     Logger::trace(L"Auto-switch: keyboard {} -> profile '{}'", keyEvent.devicePath, target);
     SwitchActiveProfile(target);
 }
@@ -363,8 +379,17 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     {
         const auto path = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\settings.json";
         auto parsed = json::from_file(path);
-        json::JsonObject root = parsed.has_value() ? parsed.value() : json::JsonObject{};
+        if (!parsed.has_value())
+        {
+            // A transient read/parse failure must NOT be treated as an empty settings object:
+            // writing that back would erase every other Keyboard Manager property (e.g.
+            // keyboardConfigurations). Abort and leave the file untouched, matching
+            // CycleActiveProfile. The next keystroke retries the switch.
+            Logger::error(L"Auto-switch: settings.json unreadable; leaving it untouched");
+            return;
+        }
 
+        json::JsonObject root = parsed.value();
         json::JsonObject properties = root.HasKey(L"properties") ? root.GetNamedObject(L"properties") : json::JsonObject{};
 
         json::JsonObject activeConfiguration;
@@ -413,6 +438,11 @@ void KeyboardManager::LoadSettings()
     {
         std::lock_guard<std::mutex> lock(activeProfileMutex);
         activeProfileName = state.currentConfig;
+
+        // A reload just completed, so any pending auto-switch request is now resolved — fulfilled
+        // if the active profile landed on the requested one, or superseded if it changed by another
+        // path. Clearing it here is what lets auto-switch return to a profile after a manual switch.
+        requestedProfile.clear();
     }
     LoadDeviceProfiles();
 

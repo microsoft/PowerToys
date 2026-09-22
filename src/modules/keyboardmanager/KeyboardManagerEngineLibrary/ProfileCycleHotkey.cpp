@@ -11,11 +11,17 @@ namespace
 ProfileCycleHotkey::ProfileCycleHotkey(Callback callback) :
     m_callback(std::move(callback))
 {
+    m_readyEvent = CreateEventW(nullptr, TRUE /* manual reset */, FALSE, nullptr);
 }
 
 ProfileCycleHotkey::~ProfileCycleHotkey()
 {
     Stop();
+    if (m_readyEvent != nullptr)
+    {
+        CloseHandle(m_readyEvent);
+        m_readyEvent = nullptr;
+    }
 }
 
 void ProfileCycleHotkey::Start()
@@ -26,6 +32,11 @@ void ProfileCycleHotkey::Start()
         return;
     }
 
+    if (m_readyEvent != nullptr)
+    {
+        ResetEvent(m_readyEvent);
+    }
+
     m_thread = std::thread([this] { ThreadMain(); });
 }
 
@@ -34,6 +45,14 @@ void ProfileCycleHotkey::Stop()
     if (!m_started.exchange(false))
     {
         return;
+    }
+
+    // Wait until the worker has created its message queue before posting WM_QUIT; otherwise the
+    // post can be lost and join() would block forever. Bounded so a worker that died before
+    // signalling still lets Stop() proceed.
+    if (m_readyEvent != nullptr)
+    {
+        WaitForSingleObject(m_readyEvent, 5000);
     }
 
     const DWORD threadId = m_threadId.load();
@@ -134,11 +153,22 @@ void ProfileCycleHotkey::ThreadMain()
     {
         Logger::error(L"ProfileCycleHotkey: CreateWindow failed ({})", GetLastError());
         UnregisterClassW(HotkeyWindowClassName, wc.hInstance);
+        if (m_readyEvent != nullptr)
+        {
+            SetEvent(m_readyEvent);
+        }
         return;
     }
 
     m_hwnd.store(hwnd);
     ApplyPendingRegistration(hwnd);
+
+    // The window exists, so this thread now has a message queue and Stop()'s PostThreadMessageW
+    // will be delivered. Let Stop() proceed.
+    if (m_readyEvent != nullptr)
+    {
+        SetEvent(m_readyEvent);
+    }
 
     MSG msg;
     while (GetMessageW(&msg, nullptr, 0, 0) > 0)

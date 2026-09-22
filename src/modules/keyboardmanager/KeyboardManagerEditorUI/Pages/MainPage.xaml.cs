@@ -1418,10 +1418,11 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
-                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings))
+                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings, activeProfile))
                 {
                     continue;
                 }
@@ -1471,10 +1472,11 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
-                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings))
+                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings, activeProfile))
                 {
                     continue;
                 }
@@ -1509,10 +1511,11 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
-                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings))
+                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings, activeProfile))
                 {
                     continue;
                 }
@@ -1552,10 +1555,11 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
-                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings))
+                    !SettingsManager.IsMappingInActiveProfile(shortcutSettings, activeProfile))
                 {
                     continue;
                 }

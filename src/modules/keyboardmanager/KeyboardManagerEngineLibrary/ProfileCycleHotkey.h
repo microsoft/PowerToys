@@ -48,4 +48,9 @@ private:
     std::atomic<UINT> m_pendingModifiers{ 0 };
     std::atomic<UINT> m_pendingVk{ 0 };
     bool m_registered = false; // listener-thread only
+
+    // Manual-reset event the worker sets once its message queue exists (after CreateWindowExW),
+    // or once it has bailed out. Stop() waits on it before PostThreadMessageW so WM_QUIT is never
+    // posted before the thread has a queue (which would lose the quit and block join() forever).
+    HANDLE m_readyEvent{ nullptr };
 };

@@ -51,6 +51,13 @@ namespace KeyboardManagerEditorUI.Interop
         /// dropping the instance id that some virtual keyboards churn. Must match the engine's
         /// NormalizeDevicePath so the UI and the engine agree on device identity.
         /// </summary>
+        /// <remarks>
+        /// Known and intentional limitation: the instance-id segment we drop is also the only thing
+        /// that distinguishes two keyboards of the SAME model, so such a pair normalizes to one
+        /// identity and shares a single profile assignment. This is the MVP trade-off — the churn
+        /// the normalization fixes is common, a second identical keyboard is rare — and is recorded
+        /// in SPEC §7. Per-instance identity for identical models is deferred, not overlooked.
+        /// </remarks>
         public static string NormalizeDevicePath(string path)
         {
             if (string.IsNullOrEmpty(path))

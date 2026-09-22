@@ -616,7 +616,13 @@
   <data name="NewProfileBtnTooltip.Text" xml:space="preserve">
     <value>Create a new profile</value>
   </data>
+  <data name="NewProfileBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>Create a new profile</value>
+  </data>
   <data name="DeleteProfileBtnTooltip.Text" xml:space="preserve">
+    <value>Delete the current profile</value>
+  </data>
+  <data name="DeleteProfileBtn.AutomationProperties.Name" xml:space="preserve">
     <value>Delete the current profile</value>
   </data>
   <data name="NewProfileDialog.Title" xml:space="preserve">

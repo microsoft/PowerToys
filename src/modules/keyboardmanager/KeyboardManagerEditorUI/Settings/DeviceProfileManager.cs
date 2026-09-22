@@ -95,6 +95,38 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
+        /// <summary>
+        /// Removes every keyboard assignment that points at <paramref name="profile"/> and, if any
+        /// were removed, rewrites the file and signals the engine. Called when a profile is deleted
+        /// so no keyboard is left mapped to a profile that no longer exists (which would otherwise
+        /// make auto-switch write a nonexistent profile into activeConfiguration on the next keystroke).
+        /// </summary>
+        public static void RemoveAssignmentsForProfile(string profile)
+        {
+            if (string.IsNullOrEmpty(profile))
+            {
+                return;
+            }
+
+            try
+            {
+                DeviceProfilesFile file = Load();
+                int removed = file.Map.RemoveAll(e => string.Equals(e.Profile, profile, StringComparison.Ordinal));
+                if (removed == 0)
+                {
+                    return;
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
+                File.WriteAllText(_filePath, JsonSerializer.Serialize(file, _jsonOptions));
+                ProfileManager.SignalEngineReload();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to prune deviceProfiles.json for '{profile}': {ex.Message}");
+            }
+        }
+
         private static DeviceProfilesFile Load()
         {
             try

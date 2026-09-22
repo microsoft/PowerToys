@@ -146,6 +146,7 @@
                             SelectionChanged="ProfileSelector_SelectionChanged" />
                         <Button
                             x:Name="NewProfileBtn"
+                            x:Uid="NewProfileBtn"
                             Width="36"
                             Height="32"
                             Padding="0"
@@ -158,6 +159,7 @@
                         </Button>
                         <Button
                             x:Name="DeleteProfileBtn"
+                            x:Uid="DeleteProfileBtn"
                             Width="36"
                             Height="32"
                             Padding="0"

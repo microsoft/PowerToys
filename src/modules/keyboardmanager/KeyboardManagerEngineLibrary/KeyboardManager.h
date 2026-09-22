@@ -122,9 +122,15 @@ private:
     std::wstring activeProfileName;
     std::mutex activeProfileMutex;
 
-    // Tracker-thread-only auto-switch policy state.
+    // Tracker-thread-only auto-switch hysteresis state.
     std::wstring pendingTarget;
     int pendingCount = 0;
+
+    // The profile a switch was last requested for, while waiting for the reload to apply it
+    // (dedupes repeated SwitchActiveProfile calls during the async reload window). Guarded by
+    // activeProfileMutex because LoadSettings clears it when any reload completes — otherwise an
+    // external profile change (manual picker / cycle hotkey / editor) would leave a stale request
+    // that permanently blocks auto-switching back to that profile.
     std::wstring requestedProfile;
 
     // Last keyboard seen, logged on change to help discover device paths for the profile map.
