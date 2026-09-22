@@ -19,20 +19,23 @@ namespace ShortcutGuide.Helpers
     /// </summary>
     internal sealed partial class PowerToysShortcutsPopulator
     {
+        public static string PowerToysManifestPath { get; } = Path.Combine(
+            ManifestInterpreter.PathOfManifestFiles,
+            $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
+
         /// <summary>
         /// Populates the PowerToys shortcuts in the manifest files.
         /// </summary>
         public static void Populate()
         {
-            string path = Path.Combine(ManifestInterpreter.PathOfManifestFiles, $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
-
-            if (!File.Exists(path))
+            if (!File.Exists(PowerToysManifestPath))
             {
-                Logger.LogWarning($"PowerToys manifest file not found: '{path}'. PowerToys-specific shortcuts will not appear in ShortcutGuide.");
+                Logger.LogWarning($"PowerToys manifest file not found: '{PathAnonymizer.Anonymize(PowerToysManifestPath)}'. PowerToys-specific shortcuts will not appear in ShortcutGuide.");
                 return;
             }
 
-            StringBuilder content = new(File.ReadAllText(path));
+            string originalContent = File.ReadAllText(PowerToysManifestPath);
+            StringBuilder content = new(originalContent);
 
             const string populateStartString = "# <Populate start>";
             const string populateEndString = "# <Populate end>";
@@ -180,7 +183,11 @@ namespace ShortcutGuide.Helpers
 
             content.Append(populateEndString);
 
-            File.WriteAllText(path, content.ToString());
+            string updatedContent = content.ToString();
+            if (!string.Equals(originalContent, updatedContent, StringComparison.Ordinal))
+            {
+                File.WriteAllText(PowerToysManifestPath, updatedContent);
+            }
         }
 
         /// <summary>
@@ -192,21 +199,22 @@ namespace ShortcutGuide.Helpers
         /// <returns>Yaml code for the manifest file.</returns>
         private static string HotkeySettingsToYaml(HotkeySettings hotkeySettings, string moduleName, string? description = null)
         {
-            string content = string.Empty;
-            content += "      - Name: " + moduleName + Environment.NewLine;
-            content += "        Shortcut: " + Environment.NewLine;
-            content += "        - Win: " + hotkeySettings.Win.ToString() + Environment.NewLine;
-            content += "          Ctrl: " + hotkeySettings.Ctrl.ToString() + Environment.NewLine;
-            content += "          Alt: " + hotkeySettings.Alt.ToString() + Environment.NewLine;
-            content += "          Shift: " + hotkeySettings.Shift.ToString() + Environment.NewLine;
-            content += "          Keys:" + Environment.NewLine;
-            content += "            - " + hotkeySettings.Code.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
+            var sb = new StringBuilder();
+            sb.Append("      - Name: ").AppendLine(moduleName)
+              .AppendLine("        Shortcut: ")
+              .Append("        - Win: ").AppendLine(hotkeySettings.Win.ToString())
+              .Append("          Ctrl: ").AppendLine(hotkeySettings.Ctrl.ToString())
+              .Append("          Alt: ").AppendLine(hotkeySettings.Alt.ToString())
+              .Append("          Shift: ").AppendLine(hotkeySettings.Shift.ToString())
+              .AppendLine("          Keys:")
+              .Append("            - ").AppendLine(hotkeySettings.Code.ToString(CultureInfo.InvariantCulture));
+
             if (description != null)
             {
-                content += "        Description: " + description + Environment.NewLine;
+                sb.Append("        Description: ").AppendLine(description);
             }
 
-            return content;
+            return sb.ToString();
         }
 
         /// <inheritdoc cref="HotkeySettingsToYaml(HotkeySettings, string, string?)"/>
