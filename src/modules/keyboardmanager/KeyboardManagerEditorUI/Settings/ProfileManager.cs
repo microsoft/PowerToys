@@ -56,7 +56,8 @@ namespace KeyboardManagerEditorUI.Settings
             stem.Contains('.') ||
             stem.Equals("settings", StringComparison.OrdinalIgnoreCase) ||
             stem.StartsWith("editorSettings", StringComparison.OrdinalIgnoreCase) ||
-            stem.Equals("deviceProfiles", StringComparison.OrdinalIgnoreCase);
+            stem.Equals("deviceProfiles", StringComparison.OrdinalIgnoreCase) ||
+            stem.Equals("profileMetadata", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Returns the known profile names. Reads "keyboardConfigurations" from settings.json and
@@ -118,6 +119,49 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             return names;
+        }
+
+        /// <summary>
+        /// A profile as the UI should present it: <see cref="Id"/> is the stable identity (the config
+        /// filename stem, used in activeConfiguration / keyboardConfigurations / mapping membership /
+        /// device assignments), and <see cref="DisplayName"/> is the editable label shown to the user
+        /// (equal to the id until it has been renamed).
+        /// </summary>
+        public readonly record struct ProfileInfo(string Id, string DisplayName);
+
+        /// <summary>
+        /// Returns the known profiles as (id, display name) pairs, in the same order as
+        /// <see cref="GetProfiles"/>. The display name falls back to the id when none has been set.
+        /// </summary>
+        public static IReadOnlyList<ProfileInfo> GetProfilesWithDisplayNames()
+        {
+            var result = new List<ProfileInfo>();
+            foreach (string id in GetProfiles())
+            {
+                result.Add(new ProfileInfo(id, ProfileMetadataManager.GetDisplayName(id)));
+            }
+
+            return result;
+        }
+
+        /// <summary>Gets the editable display name for a profile id (falls back to the id itself).</summary>
+        public static string GetDisplayName(string id) => ProfileMetadataManager.GetDisplayName(id);
+
+        /// <summary>
+        /// Renames a profile by changing only its display name. The profile's id (its {id}.json file
+        /// and every reference in settings.json / mapping membership / device assignments) is left
+        /// untouched, so a rename can never orphan a config or silently break auto-switching — the cost
+        /// that made a filename-based rename risky. The new name is a free-form label; it need not be a
+        /// valid filename because it is never used as one. Returns false for a blank name.
+        /// </summary>
+        public static bool RenameProfile(string id, string newDisplayName)
+        {
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(newDisplayName))
+            {
+                return false;
+            }
+
+            return ProfileMetadataManager.SetDisplayName(id, newDisplayName.Trim());
         }
 
         /// <summary>Gets the active profile name (defaults to "default").</summary>
@@ -243,6 +287,10 @@ namespace KeyboardManagerEditorUI.Settings
                 // Drop any keyboard->profile assignments for the deleted profile so auto-switch
                 // never targets a profile that no longer exists.
                 DeviceProfileManager.RemoveAssignmentsForProfile(profile);
+
+                // Drop the display-name metadata for the deleted id so a later profile that happens
+                // to reuse the id doesn't inherit a stale name.
+                ProfileMetadataManager.Remove(profile);
 
                 JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
                 JsonObject properties = EnsureObject(root, "properties");
