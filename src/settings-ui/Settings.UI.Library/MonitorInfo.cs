@@ -389,7 +389,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         /// <summary>
         /// Compare two VcpCodesFormatted lists for equality by content.
-        /// Returns true if both lists have the same VCP codes (by code value).
+        /// Returns true if both lists have the same codes, values, and display names.
         /// </summary>
         private static bool AreVcpCodesEqual(List<VcpCodeDisplayInfo> list1, List<VcpCodeDisplayInfo> list2)
         {
@@ -411,17 +411,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Compare by code values - order matters for our use case
             for (int i = 0; i < list1.Count; i++)
             {
-                if (list1[i].Code != list2[i].Code)
+                if (list1[i].Code != list2[i].Code
+                    || list1[i].Title != list2[i].Title
+                    || list1[i].Values != list2[i].Values
+                    || list1[i].HasValues != list2[i].HasValues)
                 {
                     return false;
                 }
 
-                // Also compare ValueList count to detect preset changes
+                // Compare values as well as their count; capability refreshes and custom
+                // names can change the available options without changing the list size.
                 var values1 = list1[i].ValueList;
                 var values2 = list2[i].ValueList;
                 if ((values1?.Count ?? 0) != (values2?.Count ?? 0))
                 {
                     return false;
+                }
+
+                for (int valueIndex = 0; valueIndex < (values1?.Count ?? 0); valueIndex++)
+                {
+                    if (values1[valueIndex].Value != values2[valueIndex].Value
+                        || values1[valueIndex].Name != values2[valueIndex].Name)
+                    {
+                        return false;
+                    }
                 }
             }
 
