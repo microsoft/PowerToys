@@ -78,6 +78,22 @@ if ($newProjects.Count -ne 11) { throw "Expected 11 native/managed protected-sto
 foreach ($projectNode in $newProjects) {
     if (!(Test-Path -LiteralPath (Join-Path $repo $projectNode.Path))) { throw "Missing solution project: $($projectNode.Path)" }
 }
+$installerSolution = [xml](Get-Content -LiteralPath (Join-Path $repo 'installer\PowerToysSetup.slnx') -Raw)
+$installerProjects = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+foreach ($projectNode in $installerSolution.SelectNodes('//Project')) {
+    $path = [IO.Path]::GetFullPath((Join-Path "$repo\installer" $projectNode.Path))
+    [void]$installerProjects.Add($path)
+}
+foreach ($path in $installerProjects) {
+    $projectXml = [xml](Get-Content -LiteralPath $path -Raw)
+    foreach ($reference in $projectXml.SelectNodes('//*[local-name()="ProjectReference"]')) {
+        $relative = $reference.Include.Replace('$(RepoRoot)', "$repo\")
+        $dependency = [IO.Path]::GetFullPath([IO.Path]::Combine([IO.Path]::GetDirectoryName($path), $relative))
+        if (!$installerProjects.Contains($dependency)) {
+            throw "Installer solution omits a transitive project mapping; graph builds can fall back to Debug|Win32: $dependency"
+        }
+    }
+}
 if ($Compile) {
     $nugetRoot = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
     $wix = Join-Path $nugetRoot 'wixtoolset.sdk\5.0.2\tools\net6.0\wix.dll'

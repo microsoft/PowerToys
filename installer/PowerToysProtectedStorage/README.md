@@ -103,6 +103,10 @@ imports, reproducing the SDK-only evaluation used by CI's `dotnet restore`.
 Both native property sheets load the repository version explicitly when that
 evaluation has not imported `Directory.Build.props`; they never invent a fallback
 release version.
+The standalone installer solution includes the bootstrapper's updater and
+SettingsAPI dependencies, not just its direct DLL projects. The installer
+contract test checks that complete project-reference closure so static-graph
+builds retain the requested configuration and architecture.
 
 The inventory has a `clients` array of `{ "path": "...", "role": "..." }`.
 Supported client roles are `workspaces.writer`, `workspaces.reader`,
