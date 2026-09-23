@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.Workspaces.UITests
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Workspaces.UITests
     {
         private const int AppModelErrorNoPackage = 15700;
         private const int ErrorInsufficientBuffer = 122;
+        private const uint ProcessQueryLimitedInformation = 0x1000;
 
         [DllImport("user32.dll")]
         internal static extern uint GetDpiForWindow(IntPtr window);
@@ -23,6 +25,32 @@ namespace Microsoft.Workspaces.UITests
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern int GetPackageFullName(IntPtr process, ref uint length, StringBuilder? packageFullName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern SafeProcessHandle OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, int processId);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool QueryFullProcessImageName(SafeProcessHandle process, uint flags, StringBuilder imageName, ref uint length);
+
+        internal static string ProcessImagePath(Process process)
+        {
+            using var handle = OpenProcess(ProcessQueryLimitedInformation, false, process.Id);
+            if (handle.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), $"Could not open PID {process.Id} for image lookup.");
+            }
+
+            // The image path is available before the process's module list is initialized.
+            var name = new StringBuilder(32768);
+            uint length = (uint)name.Capacity;
+            if (!QueryFullProcessImageName(handle, 0, name, ref length))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), $"Could not read the image path for PID {process.Id}.");
+            }
+
+            return name.ToString();
+        }
 
         internal static string? PackageFullName(int processId)
         {

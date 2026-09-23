@@ -60,12 +60,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
-    public bool AllowExternalReload
+    public bool EnableExternalCommandLinks
     {
-        get => _settingsService.Settings.AllowExternalReload;
+        get => _settingsService.Settings.EnableExternalCommandLinks;
         set
         {
-            _settingsService.UpdateSettings(s => s with { AllowExternalReload = value });
+            _settingsService.UpdateSettings(s => s with { EnableExternalCommandLinks = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableExternalCommandLinks)));
         }
     }
 
