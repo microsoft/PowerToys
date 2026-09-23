@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
@@ -22,7 +23,7 @@ public class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "test" };
+        var icon = CreateIcon();
         var requests = new ConcurrentBag<Task<IconSource?>>();
 
         Parallel.For(0, 32, _ => requests.Add(provider.GetIconSource(icon, 1.0)));
@@ -45,7 +46,7 @@ public class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "test" };
+        var icon = CreateIcon();
 
         var first = provider.GetIconSource(icon, 1.0);
         loader.CompleteNext(null);
@@ -67,7 +68,7 @@ public class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader();
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "test" };
+        var icon = CreateIcon();
 
         var failed = provider.GetIconSource(icon, 1.0);
         loader.FailNext(new InvalidOperationException("Icon load failed."));
@@ -92,7 +93,7 @@ public class CachedIconSourceProviderTests
     {
         var loader = new ControllableIconLoader { AcceptLoads = false };
         var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
-        var icon = new IconDataViewModel { Icon = "test" };
+        var icon = CreateIcon();
 
         var rejected = provider.GetIconSource(icon, 1.0);
 
@@ -117,10 +118,17 @@ public class CachedIconSourceProviderTests
         var loader = new ControllableIconLoader { AcceptLoads = false };
         var provider = new IconSourceProvider(loader, new Size(16, 16));
 
-        var rejected = provider.GetIconSource(new IconDataViewModel { Icon = "test" }, 1.0);
+        var rejected = provider.GetIconSource(CreateIcon(), 1.0);
 
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await rejected);
         Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    private static IconDataViewModel CreateIcon()
+    {
+        var icon = new IconDataViewModel(new IconData("test"));
+        icon.InitializeProperties();
+        return icon;
     }
 
     private static int GetInFlightCount(CachedIconSourceProvider provider)

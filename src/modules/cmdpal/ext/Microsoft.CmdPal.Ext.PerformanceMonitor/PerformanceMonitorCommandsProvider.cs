@@ -134,7 +134,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
                 Title = disabledValue,
                 Subtitle = GetBandSubtitle(metric),
                 Icon = icon,
-            };
+            }.SetDockLabelWidth(PerformanceMonitorDockItemPresentation.DisabledLabelWidth);
             bands.Add(new WrappedDockItem([item], PerformanceWidgetsPage.GetBandId(metric), GetBandDisplayTitle(metric))
             {
                 Icon = icon,

@@ -17,16 +17,6 @@ namespace Wox.Infrastructure.Storage
         Collection<string> IFileSystemWatcherWrapper.Filters
         {
             get => this.Filters;
-            set
-            {
-                if (value != null)
-                {
-                    foreach (string filter in value)
-                    {
-                        this.Filters.Add(filter);
-                    }
-                }
-            }
         }
     }
 }

@@ -157,6 +157,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.UITests.Next/AdvancedPaste.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste.UnitTests/AdvancedPaste.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -506,6 +510,126 @@
       <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
     </Project>
   </Folder>
+  <Folder Name="/modules/File Explorer Add-ons/">
+    <Project Path="src/modules/previewpane/BgcodePreviewHandler/BgcodePreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/BgcodeThumbnailProvider/BgcodeThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/Common/PreviewHandlerCommon.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/FileExplorerDllExporter/FileExplorerDllExporter.vcxproj" Id="f6088a11-1c9e-4420-aa90-cf7e78dd7f1c" />
+    <Project Path="src/modules/previewpane/GcodePreviewHandler/GcodePreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/GcodeThumbnailProvider/GcodeThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/PdfThumbnailProvider/PdfThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/powerpreview/powerpreview.vcxproj" Id="217df501-135c-4e38-bfc8-99d4821032ea">
+      <BuildDependency Project="src/common/version/version.vcxproj" />
+    </Project>
+    <Project Path="src/modules/previewpane/QoiPreviewHandler/QoiPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/QoiThumbnailProvider/QoiThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/File Explorer Add-ons/Tests/">
+    <Project Path="src/modules/previewpane/PreviewPane.UITests/PreviewPane.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-BgcodeThumbnailProvider/Preview.BgcodeThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-GcodePreviewHandler/Preview.GcodePreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-GcodeThumbnailProvider/Preview.GcodeThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-MarkdownPreviewHandler/Preview.MarkdownPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PdfPreviewHandler/Preview.PdfPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PdfThumbnailProvider/Preview.PdfThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PreviewHandlerCommon/Preview.PreviewHandlerCommon.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-QoiPreviewHandler/Preview.QoiPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-QoiThumbnailProvider/Preview.QoiThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-StlThumbnailProvider/Preview.StlThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-SvgPreviewHandler/Preview.SvgPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-SvgThumbnailProvider/Preview.SvgThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/FileLocksmith/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/FileLocksmithCLI.vcxproj" Id="49d456d3-f485-45af-8875-45b44f193ddc" />
     <Project Path="src/modules/FileLocksmith/FileLocksmithContextMenu/FileLocksmithContextMenu.vcxproj" Id="799a50d8-de89-4ed1-8ff8-ad5a9ed8c0ca" />
@@ -594,6 +718,9 @@
     </Project>
   </Folder>
   <Folder Name="/modules/MouseUtils/">
+    <Project Path="src/modules/MouseUtils/AutoHideCursor/AutoHideCursor.vcxproj" Id="c48d6dd5-c77e-487d-bda2-60fff377e60f" />
+    <Project Path="src/modules/MouseUtils/AutoHideCursor/AutoHideCursorWorker.vcxproj" Id="03426add-c046-4105-b845-9c1c26cfb990" />
+    <Project Path="src/modules/MouseUtils/AutoHideCursor/UnitTests/AutoHideCursorUnitTests.vcxproj" Id="5934c9df-8ba2-4816-8b40-bbf98b51e884" />
     <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
     <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
     <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
@@ -834,6 +961,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/LightSwitch/Tests/LightSwitchService.UnitTests/LightSwitchService.UnitTests.vcxproj" />
+    <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests.Next/LightSwitch.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests/LightSwitch.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -932,6 +1063,10 @@
   <Folder Name="/modules/New+/">
     <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu.win10/NewPlus.ShellExtension.win10.vcxproj" Id="0db0f63a-d2f8-4da3-a650-2d0b8724218e" />
     <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu/NewShellExtensionContextMenu.vcxproj" Id="8acb33d9-c95b-47d4-8363-9731ee0930a0" />
+    <Project Path="src/modules/NewPlus/Tests/NewPlus.UITests/NewPlus.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/Peek/">
     <Project Path="src/modules/peek/Peek.Common/Peek.Common.csproj">
@@ -994,10 +1129,18 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/PowerOCR/PowerOCR.Core/PowerOCR.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/PowerOCR/PowerOCRModuleInterface/PowerOCRModuleInterface.vcxproj" Id="6ab6a2d6-f859-4a82-9184-0bd29c9f07d1" />
   </Folder>
   <Folder Name="/modules/PowerOCR/Tests/">
     <Project Path="src/modules/PowerOCR/PowerOCR-UITests/PowerOCR.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerOCR/PowerOCR.Core.UnitTests/PowerOCR.Core.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1026,138 +1169,6 @@
     <Project Path="src/modules/powerrename/unittests/PowerRenameLibUnitTests.vcxproj" Id="2151f984-e006-4a9f-92ef-c6dde3dc8413">
       <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
       <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
-    </Project>
-  </Folder>
-  <Folder Name="/modules/previewpane/">
-    <Project Path="src/modules/previewpane/BgcodePreviewHandler/BgcodePreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/BgcodePreviewHandlerCpp/BgcodePreviewHandlerCpp.vcxproj" Id="f6088a11-1c9e-4420-aa90-cf7e78dd7f1c" />
-    <Project Path="src/modules/previewpane/BgcodeThumbnailProvider/BgcodeThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/BgcodeThumbnailProviderCpp/BgcodeThumbnailProviderCpp.vcxproj" Id="47b0678c-806b-4fe1-9f50-46ba88989532" />
-    <Project Path="src/modules/previewpane/Common/PreviewHandlerCommon.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/GcodePreviewHandler/GcodePreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/GcodePreviewHandlerCpp/GcodePreviewHandlerCpp.vcxproj" Id="5a5dd09d-723a-44d3-8f2b-293584c3d731" />
-    <Project Path="src/modules/previewpane/GcodeThumbnailProvider/GcodeThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/GcodeThumbnailProviderCpp/GcodeThumbnailProviderCpp.vcxproj" Id="56cc2f10-6e41-453d-be16-c593a5e58482" />
-    <Project Path="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/MarkdownPreviewHandlerCpp/MarkdownPreviewHandlerCpp.vcxproj" Id="ed9a1ac6-aeb0-4569-a6e9-e1696182b545" />
-    <Project Path="src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/MonacoPreviewHandlerCpp/MonacoPreviewHandlerCpp.vcxproj" Id="b3e869c4-8210-4ebd-a621-ff4c4afcbfa9" />
-    <Project Path="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/PdfPreviewHandlerCpp/PdfPreviewHandlerCpp.vcxproj" Id="54f7c616-fd41-4e62-bff9-015686914f4d" />
-    <Project Path="src/modules/previewpane/PdfThumbnailProvider/PdfThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/PdfThumbnailProviderCpp/PdfThumbnailProviderCpp.vcxproj" Id="ca5518ed-0458-4b09-8f53-4122b9888655" />
-    <Project Path="src/modules/previewpane/powerpreview/powerpreview.vcxproj" Id="217df501-135c-4e38-bfc8-99d4821032ea">
-      <BuildDependency Project="src/common/version/version.vcxproj" />
-    </Project>
-    <Project Path="src/modules/previewpane/QoiPreviewHandler/QoiPreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/QoiPreviewHandlerCpp/QoiPreviewHandlerCpp.vcxproj" Id="3baf9c81-a194-4925-a035-5e24a5d1e542" />
-    <Project Path="src/modules/previewpane/QoiThumbnailProvider/QoiThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/QoiThumbnailProviderCpp/QoiThumbnailProviderCpp.vcxproj" Id="ccb5e44f-84d9-4203-83c6-1c9ec9302bc7" />
-    <Project Path="src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/StlThumbnailProviderCpp/StlThumbnailProviderCpp.vcxproj" Id="d6dcc3ae-18c0-488a-b978-baa9e3cff09d" />
-    <Project Path="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/SvgPreviewHandlerCpp/SvgPreviewHandlerCpp.vcxproj" Id="143f13e3-d2e3-4d83-b035-356612d99956" />
-    <Project Path="src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
-  </Folder>
-  <Folder Name="/modules/previewpane/Tests/">
-    <Project Path="src/modules/previewpane/PreviewPane.UITests/PreviewPane.UITests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-BgcodeThumbnailProvider/Preview.BgcodeThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-GcodePreviewHandler/Preview.GcodePreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-GcodeThumbnailProvider/Preview.GcodeThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-MarkdownPreviewHandler/Preview.MarkdownPreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-PdfPreviewHandler/Preview.PdfPreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-PdfThumbnailProvider/Preview.PdfThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-PreviewHandlerCommon/Preview.PreviewHandlerCommon.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-QoiPreviewHandler/Preview.QoiPreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-QoiThumbnailProvider/Preview.QoiThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-StlThumbnailProvider/Preview.StlThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-SvgPreviewHandler/Preview.SvgPreviewHandler.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/previewpane/UnitTests-SvgThumbnailProvider/Preview.SvgThumbnailProvider.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
   <Folder Name="/modules/RegistryPreview/">
@@ -1217,7 +1228,19 @@
     <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
   </Folder>
   <Folder Name="/modules/Workspaces/Tests/">
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.TestApp/Workspaces.TestApp.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests.Next/Workspaces.UITests.Next.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/Workspaces/WorkspacesEditorUITest/Workspaces.Editor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/WorkspacesLauncherUI.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1243,6 +1266,11 @@
     <Project Path="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" Id="94ba3051-c8d7-454a-9d46-1a7c78e228a3" />
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
+    <Project Path="src/modules/ZoomIt/unittests/ZoomItAnimation.UnitTests.vcxproj" Id="67b0a49b-34da-4c99-9d1d-b247a6b9fb3e" />
+    <Project Path="src/modules/ZoomIt/Tests/ZoomIt.UITests/ZoomIt.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/GrabAndMove/">
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />

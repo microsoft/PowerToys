@@ -146,6 +146,11 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | Resolve an HWND's monitor and work area | `MonitorInfo.GetFromWindow(hwnd)` (`WorkLeft`, `WorkTop`, `WorkRight`, `WorkBottom`) |
 | Stop an exact process tree and await exit | `WindowControl.TryKillProcessTreeByNameAndWait(name, timeoutMS)` |
 | Set/read exact Explorer Shell selection | `ExplorerShell.SetSelectionAndWaitForStable(...)` / `TryGetSelection(hwnd)` |
+| Open/close/recover Explorer file windows | `ExplorerControl.OpenFolder(...)` / `CloseFileWindows(...)` / `FindReplacementWindow(...)`; caller owns registration, selection, sizing, and foreground. |
+| Restart Explorer without killing descendants | `ExplorerControl.RestartShell(...)`; requires a fresh PID and taskbar; the caller owns any once-per-class flag. |
+| Discover and inspect Shell menus | `ShellMenu.WaitForWindow(...)` / `FindVisibleMenuItem(...)` / `WaitForSubmenu(...)` / `ReadMenuNames(...)`; reuse shared popup classes and readiness instead of private copies. |
+| Open a selected control's classic/default menu | `ShellMenu.OpenForFocusedControl(...)`; establish selection/focus first; module-specific modifier holds remain local. |
+| Compare created files/folder trees | `FileSystemAssert.AreFilesEqual(...)` / `AreDirectoryTreesEqual(...)`; includes byte contents and empty directories and permits concurrent producer writes. |
 | Set/read Explorer view mode + icon size | `ExplorerShell.SetViewModeAndIconSizeAndWait(hwnd, ViewMode.Icons, iconSize)` | Uses Shell automation, not a timing-sensitive keyboard shortcut. |
 | Seed module on/off baseline | `SettingsConfigHelper.ConfigureGlobalModuleSettings("ColorPicker", …)` |
 | Edit a module's own settings.json | `SettingsConfigHelper.UpdateModuleSettings(name, default, json => {…})` |
