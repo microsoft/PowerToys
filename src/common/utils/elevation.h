@@ -153,7 +153,7 @@ namespace
                                               CComVariant(workingDir),
                                               CComVariant(L""),
                                               CComVariant(SW_SHOWNORMAL));
-        if (FAILED(result))
+        if (result != S_OK)
         {
             Logger::warn(L"ShellExecuteW() failed. {}", GetErrorString(result));
             return false;
