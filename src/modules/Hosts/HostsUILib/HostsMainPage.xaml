@@ -190,7 +190,7 @@
                 GotFocus="Entries_GotFocus"
                 IsItemClickEnabled="True"
                 ItemClick="Entries_ItemClick"
-                ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+                ItemsSource="{x:Bind ViewModel.Entries, Mode=OneWay}"
                 RightTapped="Entries_RightTapped"
                 SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
                 <ListView.ContextFlyout>
