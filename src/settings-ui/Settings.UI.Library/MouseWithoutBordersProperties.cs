@@ -26,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public class MouseWithoutBordersProperties : ICloneable
     {
+        private List<string> _machineMatrixString = new List<string>();
+
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeySwitch2AllPC => new HotkeySettings();
 
@@ -82,7 +84,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
         [CmdConfigureIgnoreAttribute]
-        public List<string> MachineMatrixString { get; init; }
+        public List<string> MachineMatrixString
+        {
+            get => _machineMatrixString;
+            init => _machineMatrixString = value ?? new List<string>();
+        }
 
         [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }

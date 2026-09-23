@@ -162,6 +162,26 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void MouseWithoutBordersCollectionRemainsMutableWhenJsonValueIsNull()
+        {
+            const string json = """
+                {
+                  "MachineMatrixString": null
+                }
+                """;
+
+            var properties = JsonSerializer.Deserialize<MouseWithoutBordersProperties>(json);
+
+            Assert.IsNotNull(properties);
+            Assert.IsNotNull(properties.MachineMatrixString);
+            Assert.IsEmpty(properties.MachineMatrixString);
+
+            properties.MachineMatrixString.Add("machine-1");
+
+            CollectionAssert.AreEqual(new[] { "machine-1" }, properties.MachineMatrixString);
+        }
+
+        [TestMethod]
         public void PowerDisplayCollectionsDeserializeWithInitOnlySetters()
         {
             const string json = """
@@ -198,6 +218,36 @@ namespace CommonLibTest
             Assert.HasCount(1, properties.Monitors);
             Assert.HasCount(1, properties.Monitors[0].VcpCodesFormatted);
             Assert.HasCount(1, properties.Monitors[0].VcpCodesFormatted[0].ValueList);
+            Assert.HasCount(1, properties.ExcludedFromSyncMonitorIds);
+            Assert.HasCount(1, properties.CustomVcpMappings);
+        }
+
+        [TestMethod]
+        public void PowerDisplayCollectionsRemainMutableWhenJsonValuesAreNull()
+        {
+            const string json = """
+                {
+                  "monitors": null,
+                  "excluded_from_sync_monitor_ids": null,
+                  "custom_vcp_mappings": null
+                }
+                """;
+
+            var properties = JsonSerializer.Deserialize<PowerDisplayProperties>(json);
+
+            Assert.IsNotNull(properties);
+            Assert.IsNotNull(properties.Monitors);
+            Assert.IsNotNull(properties.ExcludedFromSyncMonitorIds);
+            Assert.IsNotNull(properties.CustomVcpMappings);
+            Assert.IsEmpty(properties.Monitors);
+            Assert.IsEmpty(properties.ExcludedFromSyncMonitorIds);
+            Assert.IsEmpty(properties.CustomVcpMappings);
+
+            properties.Monitors.Add(new MonitorInfo());
+            properties.ExcludedFromSyncMonitorIds.Add("monitor-1");
+            properties.CustomVcpMappings.Add(new CustomVcpValueMapping());
+
+            Assert.HasCount(1, properties.Monitors);
             Assert.HasCount(1, properties.ExcludedFromSyncMonitorIds);
             Assert.HasCount(1, properties.CustomVcpMappings);
         }
