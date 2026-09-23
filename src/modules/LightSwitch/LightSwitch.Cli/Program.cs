@@ -71,16 +71,10 @@ public static class Program
         catch (Exception ex)
         {
             LogError(ex.ToString());
-            try
-            {
-                return CliApplication.WriteUnexpectedFailure(CliCommandLine.ParsePresentationOptions(args).Json, Console.Out, Console.Error);
-            }
-            catch (Exception)
-            {
-                // A closed output stream cannot display an error, but should still yield a
-                // failure exit code instead of an unhandled exception and raw stack trace.
-                return 1;
-            }
+
+            // RunAsync owns error output. If setup or output itself fails, do not reparse
+            // response files or attempt another response on an unusable output stream.
+            return 1;
         }
     }
 

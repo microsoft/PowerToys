@@ -35,6 +35,8 @@ internal sealed class CliApplication
     internal async Task<int> RunAsync(string[] args, TextWriter stdout, TextWriter stderr, CancellationToken cancellationToken = default)
     {
         bool json = false;
+        CliInformation? information = null;
+        CliResponse? response = null;
 
         try
         {
@@ -47,74 +49,62 @@ internal sealed class CliApplication
 
             if (presentation.Help)
             {
-                WriteInformation(new CliInformation { Help = CliCommandLine.HelpText }, json, stdout);
-                return 0;
+                information = new CliInformation { Help = CliCommandLine.HelpText };
             }
-
-            if (presentation.Version)
+            else if (presentation.Version)
             {
-                WriteInformation(new CliInformation { CliVersion = CliVersion }, json, stdout);
-                return 0;
+                information = new CliInformation { CliVersion = CliVersion };
             }
-
-            var commandLine = new CliCommandLine();
-            var parsed = commandLine.Parse(presentation.Arguments);
-
-            if (parsed.Errors.Count != 0)
+            else
             {
-                throw new CliException("INVALID_ARGUMENT", string.Join(" ", parsed.Errors.Select(error => error.Message)));
-            }
+                var commandLine = new CliCommandLine();
+                var parsed = commandLine.Parse(presentation.Arguments);
 
-            var request = commandLine.CreateRequest(parsed);
-            string requestJson = JsonSerializer.Serialize(request, CliJsonContext.Default.CliRequest);
-            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(_operationTimeout);
-            string responseJson = await _send(requestJson, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
-            var response = CliProtocol.ParseResponse(responseJson);
-            if (!response.Success)
-            {
-                LogError($"{response.Error!.Code}: {response.Error.Message}");
-            }
+                if (parsed.Errors.Count != 0)
+                {
+                    throw new CliException("INVALID_ARGUMENT", string.Join(" ", parsed.Errors.Select(error => error.Message)));
+                }
 
-            WriteResponse(response, json, stdout, stderr);
-            return response.Success ? 0 : CliProtocol.ExitCode(response.Error!.Code);
+                var request = commandLine.CreateRequest(parsed);
+                string requestJson = JsonSerializer.Serialize(request, CliJsonContext.Default.CliRequest);
+                using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                deadline.CancelAfter(_operationTimeout);
+                string responseJson = await _send(requestJson, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
+                response = CliProtocol.ParseResponse(responseJson);
+                if (!response.Success)
+                {
+                    LogError($"{response.Error!.Code}: {response.Error.Message}");
+                }
+            }
         }
         catch (OperationCanceledException)
         {
-            return WriteFailure(
-                "TIMEOUT",
-                Resources.Error_TimedOut,
-                json,
-                stdout,
-                stderr);
+            response = CreateFailure("TIMEOUT", Resources.Error_TimedOut);
         }
         catch (CliException ex)
         {
-            return WriteFailure(ex.Code, ex.Message, json, stdout, stderr);
+            response = CreateFailure(ex.Code, ex.Message);
         }
         catch (Exception ex)
         {
             LogError(ex.ToString());
-            return WriteUnexpectedFailure(json, stdout, stderr);
-        }
-    }
-
-    internal static int WriteUnexpectedFailure(bool json, TextWriter stdout, TextWriter stderr)
-    {
-        WriteResponse(
-            new CliResponse
+            response = new CliResponse
             {
                 Success = false,
-                Error = new CliError
-                {
-                    Code = "EXECUTION_FAILED",
-                    Message = Resources.Error_UnexpectedFailure,
-                },
-            },
-            json,
-            stdout,
-            stderr);
-        return 1;
+                Error = new CliError { Code = "EXECUTION_FAILED", Message = Resources.Error_UnexpectedFailure },
+            };
+        }
+
+        // Output failures escape to Main's log/exit guard. Retrying here could append
+        // a second envelope after an output stream accepted only part of the first.
+        if (information is not null)
+        {
+            WriteInformation(information, json, stdout);
+            return 0;
+        }
+
+        WriteResponse(response!, json, stdout, stderr);
+        return response!.Success ? 0 : CliProtocol.ExitCode(response.Error!.Code);
     }
 
     private static void WriteInformation(CliInformation information, bool json, TextWriter stdout)
@@ -167,11 +157,10 @@ internal sealed class CliApplication
         _ => mode,
     };
 
-    private int WriteFailure(string code, string message, bool json, TextWriter stdout, TextWriter stderr)
+    private CliResponse CreateFailure(string code, string message)
     {
         LogError($"{code}: {message}");
-        WriteResponse(new CliResponse { Success = false, Error = new CliError { Code = code, Message = message } }, json, stdout, stderr);
-        return CliProtocol.ExitCode(code);
+        return new CliResponse { Success = false, Error = new CliError { Code = code, Message = message } };
     }
 
     private void LogError(string message)

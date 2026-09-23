@@ -631,4 +631,59 @@ public sealed class CliApplicationTests
         Assert.IsFalse(stdout.ToString().Contains("Private diagnostic detail", StringComparison.Ordinal));
         Assert.AreEqual(string.Empty, stderr.ToString());
     }
+
+    [TestMethod]
+    [DataRow("--help --json")]
+    [DataRow("--version --json")]
+    [DataRow("status --json")]
+    [DataRow("status")]
+    [DataRow("missing-command --json")]
+    [DataRow("missing-command")]
+    public async Task OutputFailuresDoNotAttemptAReplacementResponse(string arguments)
+    {
+        var application = new CliApplication(static (_, _) => Task.FromResult(SuccessfulResponse));
+        using var output = new FailingWriter();
+
+        await Assert.ThrowsExceptionAsync<IOException>(() => application.RunAsync(arguments.Split(' '), output, output));
+
+        Assert.AreEqual(1, output.Attempts);
+    }
+
+    [TestMethod]
+    public async Task UnexpectedFailureRetainsTheResponseFilePresentationSnapshot()
+    {
+        string path = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(path, "status --json");
+            var application = new CliApplication((_, _) =>
+            {
+                File.WriteAllText(path, "status --json=false");
+                throw new InvalidOperationException("Transport construction failed.");
+            });
+            using var stdout = new StringWriter(CultureInfo.InvariantCulture);
+            using var stderr = new StringWriter(CultureInfo.InvariantCulture);
+
+            Assert.AreEqual(1, await application.RunAsync(new[] { "@" + path }, stdout, stderr));
+
+            using var response = JsonDocument.Parse(stdout.ToString());
+            Assert.AreEqual("EXECUTION_FAILED", response.RootElement.GetProperty("error").GetProperty("code").GetString());
+            Assert.AreEqual(string.Empty, stderr.ToString());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private sealed class FailingWriter : StringWriter
+    {
+        internal int Attempts { get; private set; }
+
+        public override void WriteLine(string? value)
+        {
+            Attempts++;
+            throw new IOException("Output unavailable.");
+        }
+    }
 }

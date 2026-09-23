@@ -250,19 +250,8 @@ void LightSwitchSettings::InitFileWatcher()
                         m_debouncePending = false;
                     }
 
-                    Logger::info(L"[LightSwitchSettings] Settings file stabilized, reloading.");
-
-                    try
-                    {
-                        LoadSettings();
-                        SetEvent(m_settingsChangedEvent);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        std::wstring wmsg;
-                        wmsg.assign(e.what(), e.what() + strlen(e.what()));
-                        Logger::error(L"[LightSwitchSettings] Exception during debounced reload: {}", wmsg);
-                    }
+                    Logger::info(L"[LightSwitchSettings] Settings file stabilized, notifying worker.");
+                    SetEvent(m_settingsChangedEvent);
                 });
             });
     }

@@ -87,7 +87,10 @@ internal sealed class CliPipeClient
     internal static async Task<string> ReadResponseLineAsync(TextReader reader, CancellationToken cancellationToken)
     {
         var line = new StringBuilder();
-        var buffer = new char[CliProtocol.BufferSize];
+
+        // Consume buffered characters individually so ReadAsync cannot wait for more
+        // data after the newline when a response fills StreamReader's byte buffer.
+        var buffer = new char[1];
         while (true)
         {
             int count = await reader.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -97,26 +100,23 @@ internal sealed class CliPipeClient
                 throw new EndOfStreamException("The response did not contain a line terminator.");
             }
 
-            for (int i = 0; i < count; i++)
+            char character = buffer[0];
+            if (character == '\n')
             {
-                char character = buffer[i];
-                if (character == '\n')
+                if (line.Length > 0 && line[^1] == '\r')
                 {
-                    if (line.Length > 0 && line[^1] == '\r')
-                    {
-                        line.Length--;
-                    }
-
-                    return line.ToString();
+                    line.Length--;
                 }
 
-                if (line.Length >= CliProtocol.MaxMessageChars && !(line.Length == CliProtocol.MaxMessageChars && character == '\r'))
-                {
-                    throw new CliException("PROTOCOL_ERROR", Resources.Error_ResponseTooLarge);
-                }
-
-                line.Append(character);
+                return line.ToString();
             }
+
+            if (line.Length >= CliProtocol.MaxMessageChars && !(line.Length == CliProtocol.MaxMessageChars && character == '\r'))
+            {
+                throw new CliException("PROTOCOL_ERROR", Resources.Error_ResponseTooLarge);
+            }
+
+            line.Append(character);
         }
     }
 }

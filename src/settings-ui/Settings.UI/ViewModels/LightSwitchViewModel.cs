@@ -164,11 +164,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                var oldMode = ModuleSettings.Properties.ScheduleMode.Value;
                 ModuleSettings.Properties.ScheduleMode.Value = value;
                 OnPropertyChanged(nameof(ScheduleMode));
 
-                if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")
+                if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours")
                 {
                     LightTime = 360;
                     DarkTime = 1080;

@@ -65,6 +65,43 @@ public sealed class CliPipeClientTests
 
     [TestMethod]
     [Timeout(10000)]
+    [DataRow(510, "\n")]
+    [DataRow(511, "\n")]
+    [DataRow(512, "\n")]
+    [DataRow(1535, "\n")]
+    [DataRow(510, "\r\n")]
+    public async Task ResponseAtStreamReaderBufferBoundaryDoesNotWaitForServerClose(int responseLength, string terminator)
+    {
+        string name = NewPipeName();
+        using var server = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 4096, 4096);
+        using var client = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        Task connected = server.WaitForConnectionAsync(cancellation.Token);
+        await client.ConnectAsync(cancellation.Token);
+        await connected;
+
+        const string ResponsePrefix = "{\"version\":1,\"success\":false,\"error\":{\"code\":\"EXECUTION_FAILED\",\"message\":\"";
+        const string ResponseSuffix = "\"}}";
+        string response = ResponsePrefix + new string('a', responseLength - ResponsePrefix.Length - ResponseSuffix.Length) + ResponseSuffix;
+
+        // Buffer the whole frame before reading so the byte boundary is deterministic.
+        // The service keeps its connection open until the client consumes the response.
+        await server.WriteAsync(CliProtocol.Encoding.GetBytes(response + terminator), cancellation.Token);
+        Task clientClosed = WaitForClientCloseAsync(server, cancellation.Token);
+        using var reader = new StreamReader(client, CliProtocol.Encoding, false, CliProtocol.BufferSize, leaveOpen: true);
+        try
+        {
+            Assert.AreEqual(response, await CliPipeClient.ReadResponseLineAsync(reader, cancellation.Token));
+        }
+        finally
+        {
+            client.Dispose();
+            await clientClosed;
+        }
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
     public async Task UntrustedServerReceivesNoRequestBytes()
     {
         string name = NewPipeName();
