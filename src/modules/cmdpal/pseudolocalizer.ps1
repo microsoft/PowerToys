@@ -309,7 +309,7 @@ function Process-File {
     } catch [System.Xml.XmlException] {
         Write-Error "Invalid XML document: $InputPath"
         return 1
-    } catch [System.IO.IOException] {
+    } catch [System.IO.IOException], [System.UnauthorizedAccessException] {
         Write-Error "Failed to read file: $InputPath"
         return 1
     }
@@ -353,12 +353,20 @@ function Process-File {
     }
 
     $outputPath = Get-OutputPath $InputPath $CultureName
-    $outputDirectory = [System.IO.Path]::GetDirectoryName($outputPath)
-    if (-not [string]::IsNullOrWhiteSpace($outputDirectory)) {
-        [System.IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
+
+    # .NET exceptions only end the current statement, so catch them to avoid reporting success.
+    try {
+        $outputDirectory = [System.IO.Path]::GetDirectoryName($outputPath)
+        if (-not [string]::IsNullOrWhiteSpace($outputDirectory)) {
+            [System.IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
+        }
+
+        $document.Save($outputPath, [System.Xml.Linq.SaveOptions]::DisableFormatting)
+    } catch {
+        Write-Error "Failed to write file: $outputPath ($($_.Exception.Message))"
+        return 1
     }
 
-    $document.Save($outputPath, [System.Xml.Linq.SaveOptions]::DisableFormatting)
     Write-Host "Generated $outputPath"
     return 0
 }
@@ -420,9 +428,21 @@ function Clear-Directory {
         return 0
     }
 
+    # Keep removing the remaining files when one is locked, and report the failure at the end.
+    $failures = 0
     foreach ($file in $files) {
-        Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop
-        Write-Host "Deleted $($file.FullName)"
+        try {
+            Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop
+            Write-Host "Deleted $($file.FullName)"
+        } catch {
+            Write-Error -ErrorRecord $_
+            $failures++
+        }
+    }
+
+    if ($failures -gt 0) {
+        Write-Host "Failed to remove $failures of $($files.Count) file(s)."
+        return 1
     }
 
     Write-Host "Removed $($files.Count) file(s)."
@@ -496,15 +516,20 @@ function Invoke-PseudoLocalization {
     Write-Host "Generating pseudo-localized resources for '$Path' (mode: $Mode, culture: $normalizedCulture)."
 
     $result = 0
-    $fullPath = Resolve-InputPath $Path
-    if (-not $fullPath) {
-        $result = 1
-    } elseif (Test-Path -LiteralPath $fullPath -PathType Leaf) {
-        $result = Process-File $fullPath $Mode $normalizedCulture
-    } elseif (Test-Path -LiteralPath $fullPath -PathType Container) {
-        $result = Process-Directory $fullPath $Mode $normalizedCulture
-    } else {
-        Write-Error "Path not found: $fullPath"
+    try {
+        $fullPath = Resolve-InputPath $Path
+        if (-not $fullPath) {
+            $result = 1
+        } elseif (Test-Path -LiteralPath $fullPath -PathType Leaf) {
+            $result = Process-File $fullPath $Mode $normalizedCulture
+        } elseif (Test-Path -LiteralPath $fullPath -PathType Container) {
+            $result = Process-Directory $fullPath $Mode $normalizedCulture
+        } else {
+            Write-Error "Path not found: $fullPath"
+            $result = 1
+        }
+    } catch {
+        Write-Error -ErrorRecord $_
         $result = 1
     }
 
