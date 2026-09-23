@@ -237,7 +237,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         {
             return SerializeResult(applied);
         }
-        const auto status = stateManager.GetStatusSnapshot();
+        const auto& status = applied.status;
         if (status.config.scheduleMode != target)
         {
             return light_switch_cli::MakeError(

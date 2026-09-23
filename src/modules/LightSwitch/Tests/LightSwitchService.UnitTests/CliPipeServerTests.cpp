@@ -11,7 +11,7 @@
 #include <chrono>
 #include <future>
 #include <thread>
-#include <utility>
+#include <wil/resource.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace light_switch_cli;
@@ -22,28 +22,6 @@ namespace LightSwitchServiceUnitTests
 {
     namespace
     {
-        class TestHandle
-        {
-        public:
-            explicit TestHandle(HANDLE value = nullptr) noexcept : m_value(value) {}
-            ~TestHandle() { Reset(); }
-            TestHandle(const TestHandle&) = delete;
-            TestHandle& operator=(const TestHandle&) = delete;
-            TestHandle(TestHandle&& other) noexcept : m_value(std::exchange(other.m_value, nullptr)) {}
-            HANDLE Get() const noexcept { return m_value; }
-            void Reset() noexcept
-            {
-                if (m_value && m_value != INVALID_HANDLE_VALUE)
-                {
-                    CloseHandle(m_value);
-                }
-                m_value = nullptr;
-            }
-
-        private:
-            HANDLE m_value;
-        };
-
         CliPipeServer::Options TestOptions()
         {
             static std::atomic<unsigned int> sequence = 0;
@@ -55,7 +33,7 @@ namespace LightSwitchServiceUnitTests
             return options;
         }
 
-        TestHandle Connect(const std::wstring& name, DWORD identificationLevel = SECURITY_IDENTIFICATION)
+        wil::unique_handle Connect(const std::wstring& name, DWORD identificationLevel = SECURITY_IDENTIFICATION)
         {
             const auto deadline = GetTickCount64() + 5000;
             while (true)
@@ -63,7 +41,7 @@ namespace LightSwitchServiceUnitTests
                 HANDLE pipe = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | identificationLevel, nullptr);
                 if (pipe != INVALID_HANDLE_VALUE)
                 {
-                    return TestHandle(pipe);
+                    return wil::unique_handle(pipe);
                 }
                 const auto error = GetLastError();
                 if (error != ERROR_PIPE_BUSY || GetTickCount64() >= deadline)
@@ -77,10 +55,10 @@ namespace LightSwitchServiceUnitTests
         template<typename BeginOperation>
         DWORD ClientIo(HANDLE pipe, BeginOperation beginOperation)
         {
-            TestHandle event(CreateEventW(nullptr, TRUE, FALSE, nullptr));
-            winrt::check_bool(event.Get() != nullptr);
+            wil::unique_handle event(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+            winrt::check_bool(event.get() != nullptr);
             OVERLAPPED operation{};
-            operation.hEvent = event.Get();
+            operation.hEvent = event.get();
             DWORD count = 0;
             if (!beginOperation(operation))
             {
@@ -89,7 +67,7 @@ namespace LightSwitchServiceUnitTests
                 {
                     throw winrt::hresult_error(HRESULT_FROM_WIN32(error));
                 }
-                if (WaitForSingleObject(event.Get(), 5000) != WAIT_OBJECT_0)
+                if (WaitForSingleObject(event.get(), 5000) != WAIT_OBJECT_0)
                 {
                     CancelIoEx(pipe, &operation);
                     GetOverlappedResult(pipe, &operation, &count, TRUE);
@@ -155,8 +133,8 @@ namespace LightSwitchServiceUnitTests
         JsonObject Exchange(const std::wstring& name, std::wstring_view request)
         {
             auto client = Connect(name);
-            WriteRequest(client.Get(), request);
-            return ReadResponse(client.Get());
+            WriteRequest(client.get(), request);
+            return ReadResponse(client.get());
         }
 
         void AssertError(const JsonObject& response, std::wstring_view code)
@@ -186,8 +164,8 @@ namespace LightSwitchServiceUnitTests
             for (int index = 0; index < 3; ++index)
             {
                 Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
-                TestHandle rogue(CreateNamedPipeW(options.pipeName.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE, 1, 0, 0, 0, nullptr));
-                Assert::IsTrue(rogue.Get() == INVALID_HANDLE_VALUE);
+                wil::unique_handle rogue(CreateNamedPipeW(options.pipeName.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE, 1, 0, 0, 0, nullptr));
+                Assert::IsTrue(rogue.get() == INVALID_HANDLE_VALUE);
             }
             server.Stop();
             Assert::AreEqual(3, calls.load());
@@ -214,7 +192,7 @@ namespace LightSwitchServiceUnitTests
                 HANDLE token = nullptr;
                 const BOOL opened = OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token);
                 const auto error = GetLastError();
-                TestHandle cleanup(token);
+                wil::unique_handle cleanup(token);
                 ranWithoutImpersonation = !opened && error == ERROR_NO_TOKEN;
                 return MakeSuccess(TestState());
             },
@@ -236,16 +214,16 @@ namespace LightSwitchServiceUnitTests
                 HANDLE token = nullptr;
                 const BOOL opened = OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token);
                 const auto error = GetLastError();
-                TestHandle cleanup(token);
+                wil::unique_handle cleanup(token);
                 ranWithoutImpersonation = !opened && error == ERROR_NO_TOKEN;
                 return MakeSuccess(TestState());
             },
                                  options);
             Assert::IsTrue(server.Start());
             auto anonymous = Connect(options.pipeName, SECURITY_ANONYMOUS);
-            WriteRequest(anonymous.Get(), StatusRequest);
-            AssertError(ReadResponse(anonymous.Get()), L"SERVICE_UNAVAILABLE");
-            anonymous.Reset();
+            WriteRequest(anonymous.get(), StatusRequest);
+            AssertError(ReadResponse(anonymous.get()), L"SERVICE_UNAVAILABLE");
+            anonymous.reset();
             Assert::AreEqual(0, calls.load());
             Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
             server.Stop();
@@ -266,9 +244,9 @@ namespace LightSwitchServiceUnitTests
             const auto size = framed.size() * sizeof(wchar_t);
             for (size_t index = 0; index < size; ++index)
             {
-                WriteBytes(client.Get(), bytes + index, 1);
+                WriteBytes(client.get(), bytes + index, 1);
             }
-            Assert::IsTrue(ReadResponse(client.Get()).GetNamedBoolean(L"success"));
+            Assert::IsTrue(ReadResponse(client.get()).GetNamedBoolean(L"success"));
         }
 
         TEST_METHOD (MalformedAndOversizedRequestsNeverInvokeTheHandler)
@@ -310,10 +288,10 @@ namespace LightSwitchServiceUnitTests
             CliPipeServer server([&](const Request&) { ++calls; return MakeSuccess(TestState()); }, options);
             Assert::IsTrue(server.Start());
             auto client = Connect(options.pipeName);
-            WriteRequest(client.Get(), StatusRequest);
-            Assert::IsTrue(ReadResponse(client.Get()).GetNamedBoolean(L"success"));
-            WriteRequest(client.Get(), StatusRequest);
-            client.Reset();
+            WriteRequest(client.get(), StatusRequest);
+            Assert::IsTrue(ReadResponse(client.get()).GetNamedBoolean(L"success"));
+            WriteRequest(client.get(), StatusRequest);
+            client.reset();
             server.Stop();
             Assert::AreEqual(1, calls.load());
         }
@@ -327,11 +305,11 @@ namespace LightSwitchServiceUnitTests
             CliPipeServer server([&](const Request&) { invoked.set_value(); return MakeSuccess(TestState()); }, options);
             Assert::IsTrue(server.Start());
             auto client = Connect(options.pipeName);
-            WriteRequest(client.Get(), StatusRequest);
+            WriteRequest(client.get(), StatusRequest);
             Assert::IsTrue(invocation.wait_for(2s) == std::future_status::ready);
             // A server that disconnects immediately after WriteFile discards its unread reply.
             std::this_thread::sleep_for(50ms);
-            Assert::IsTrue(ReadResponse(client.Get()).GetNamedBoolean(L"success"));
+            Assert::IsTrue(ReadResponse(client.get()).GetNamedBoolean(L"success"));
         }
 
         TEST_METHOD (ReadTimeoutIsReportedAndTheNextClientCanConnect)
@@ -344,9 +322,9 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(server.Start());
             auto stalled = Connect(options.pipeName);
             const BYTE incompleteCodeUnit = '{';
-            WriteBytes(stalled.Get(), &incompleteCodeUnit, 1);
-            AssertError(ReadResponse(stalled.Get()), L"TIMEOUT");
-            stalled.Reset();
+            WriteBytes(stalled.get(), &incompleteCodeUnit, 1);
+            AssertError(ReadResponse(stalled.get()), L"TIMEOUT");
+            stalled.reset();
             Assert::IsTrue(Exchange(options.pipeName, StatusRequest).GetNamedBoolean(L"success"));
             server.Stop();
             Assert::AreEqual(1, calls.load());
@@ -385,7 +363,7 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(server.Start());
             auto client = Connect(options.pipeName);
             const BYTE incompleteCodeUnit = '{';
-            WriteBytes(client.Get(), &incompleteCodeUnit, 1);
+            WriteBytes(client.get(), &incompleteCodeUnit, 1);
             start = GetTickCount64();
             server.Stop();
             Assert::IsTrue(GetTickCount64() - start < 2000);
@@ -410,7 +388,7 @@ namespace LightSwitchServiceUnitTests
                                  options);
             Assert::IsTrue(server.Start());
             auto client = Connect(options.pipeName);
-            WriteRequest(client.Get(), StatusRequest);
+            WriteRequest(client.get(), StatusRequest);
             const auto handlerStarted = invocation.wait_for(2s) == std::future_status::ready;
             auto stopped = std::async(std::launch::async, [&]() { server.Stop(); });
             const auto waitedForHandler = stopped.wait_for(50ms) == std::future_status::timeout;

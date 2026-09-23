@@ -4,8 +4,6 @@
 #include <CppUnitTest.h>
 #include "TestSupport.h"
 #include "../../LightSwitchService/ScheduleCommandQueue.h"
-#include <atomic>
-#include <thread>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace winrt::Windows::Data::Json;
@@ -34,19 +32,92 @@ namespace LightSwitchServiceTests
             Assert::IsTrue(response.get().GetNamedBoolean(L"success"));
         }
 
-        TEST_METHOD (TimedOutQueuedRequestIsNotExecuted)
+        TEST_METHOD (TimedOutQueuedRequestsReleaseThePendingSlot)
         {
             Apartment apartment;
             ScheduleCommandQueue queue;
-            const auto response = queue.Submit(
-                { Command::ScheduleDisable, std::nullopt }, std::chrono::milliseconds(1));
+            for (int attempt = 0; attempt < 10; ++attempt)
+            {
+                const auto response = queue.Submit(
+                    { Command::ScheduleDisable, std::nullopt }, std::chrono::milliseconds(1));
+                Assert::AreEqual(L"TIMEOUT", response.GetNamedObject(L"error").GetNamedString(L"code").c_str());
+            }
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(queue.Event(), 0));
             bool executed = false;
             queue.ProcessPending([&](const Request&) {
                 executed = true;
                 return MakeSuccess(JsonObject{});
             });
             Assert::IsFalse(executed);
-            Assert::AreEqual(L"TIMEOUT", response.GetNamedObject(L"error").GetNamedString(L"code").c_str());
+
+            auto response = std::async(std::launch::async, [&]() {
+                Apartment apartment;
+                return queue.Submit({ Command::ScheduleEnable, L"FixedHours" });
+            });
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(queue.Event(), 5000));
+            queue.ProcessPending([](const Request&) { return MakeSuccess(JsonObject{}); });
+            Assert::IsTrue(response.get().GetNamedBoolean(L"success"));
+        }
+
+        TEST_METHOD (StartedTimeoutDoesNotLoseTheFollowingRequest)
+        {
+            Apartment apartment;
+            for (const bool stopWhileRunning : { false, true })
+            {
+                ScheduleCommandQueue queue;
+                wil::unique_handle started(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                wil::unique_handle release(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                Assert::IsTrue(started && release);
+                auto worker = std::async(std::launch::async, [&]() {
+                    Apartment apartment;
+                    if (WaitForSingleObject(queue.Event(), 5000) == WAIT_OBJECT_0)
+                    {
+                        queue.ProcessPending([&](const Request&) {
+                            SetEvent(started.get());
+                            WaitForSingleObject(release.get(), 5000);
+                            return MakeSuccess(JsonObject{});
+                        });
+                    }
+                });
+                std::future<JsonObject> firstResponse;
+                std::future<JsonObject> nextResponse;
+                const auto cleanup = wil::scope_exit([&]() {
+                    SetEvent(release.get());
+                    queue.Stop();
+                });
+                firstResponse = std::async(std::launch::async, [&]() {
+                    Apartment apartment;
+                    return queue.Submit({ Command::ScheduleDisable, std::nullopt }, std::chrono::seconds(1));
+                });
+                Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(started.get(), 5000));
+                const auto error = firstResponse.get().GetNamedObject(L"error");
+                Assert::AreEqual(L"TIMEOUT", error.GetNamedString(L"code").c_str());
+                Assert::AreEqual(L"Light Switch did not finish in time. The schedule may have changed; query status before retrying.", error.GetNamedString(L"message").c_str());
+
+                nextResponse = std::async(std::launch::async, [&]() {
+                    Apartment apartment;
+                    return queue.Submit({ Command::ScheduleEnable, L"FixedHours" }, std::chrono::seconds(5));
+                });
+                Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(queue.Event(), 5000));
+                if (stopWhileRunning)
+                {
+                    queue.Stop();
+                }
+                SetEvent(release.get());
+                worker.get();
+                bool executed = false;
+                queue.ProcessPending([&](const Request&) {
+                    executed = true;
+                    return MakeSuccess(JsonObject{});
+                });
+                const auto response = nextResponse.get();
+                Assert::AreEqual(!stopWhileRunning, executed);
+                Assert::AreEqual(!stopWhileRunning, response.GetNamedBoolean(L"success"));
+                if (stopWhileRunning)
+                {
+                    Assert::AreEqual(L"SERVICE_UNAVAILABLE", response.GetNamedObject(L"error").GetNamedString(L"code").c_str());
+                }
+            }
         }
 
         TEST_METHOD (StopReleasesWaitingCallerAndRejectsNewRequests)

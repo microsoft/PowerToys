@@ -28,4 +28,3 @@ void SetSystemTheme(bool isLight);
 void SetAppsTheme(bool isLight);
 bool GetCurrentSystemTheme();
 bool GetCurrentAppsTheme();
-bool IsNightLightEnabled();

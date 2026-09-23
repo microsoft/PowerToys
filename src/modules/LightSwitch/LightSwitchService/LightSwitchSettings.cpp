@@ -124,6 +124,10 @@ namespace
         LightSwitchConfig& config,
         std::wstring& error)
     {
+        LightSwitchConfig saved;
+        if (!TryParseLightSwitchConfig(document, saved, error))
+            return SettingsFileSaveResult::Failed;
+
         const auto serialized = document.Stringify();
         TemporarySettingsFile temporary(path, operation);
         if (!temporary.Write(winrt::to_string(serialized), error))
@@ -148,13 +152,6 @@ namespace
             return SettingsFileSaveResult::Failed;
         }
 
-        const auto savedDocument = json::from_file(path);
-        LightSwitchConfig saved;
-        if (!savedDocument || !TryParseLightSwitchConfig(*savedDocument, saved, error) || savedDocument->Stringify() != serialized)
-        {
-            error = L"The saved Light Switch settings could not be verified.";
-            return SettingsFileSaveResult::Failed;
-        }
         config = std::move(saved);
         error.clear();
         return SettingsFileSaveResult::Saved;

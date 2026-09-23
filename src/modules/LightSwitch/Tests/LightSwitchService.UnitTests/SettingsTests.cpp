@@ -289,6 +289,7 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(config.scheduleMode == ScheduleMode::Off);
             const auto saved = json::from_file(file.path);
             Assert::IsTrue(saved.has_value());
+            Assert::IsTrue(HasSameEffectiveLightSwitchSettings(ParseConfig(*saved), config));
             Assert::AreEqual(L"retained", saved->GetNamedString(L"metadata").c_str());
             const auto properties = saved->GetNamedObject(L"properties");
             Assert::AreEqual(L"keep", properties.GetNamedObject(L"futureProperty").GetNamedString(L"value").c_str());
@@ -332,6 +333,7 @@ namespace LightSwitchServiceUnitTests
             Assert::AreEqual(1210, saved.darkTime);
             properties.GetNamedObject(L"lightTime").SetNamedValue(L"value", json::value(500));
             properties.GetNamedObject(L"darkTime").SetNamedValue(L"value", json::value(1210));
+            Assert::IsTrue(HasSameEffectiveLightSwitchSettings(ParseConfig(document), saved));
             Assert::AreEqual(document.Stringify().c_str(), json::from_file(file.path)->Stringify().c_str());
         }
 

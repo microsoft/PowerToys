@@ -20,43 +20,11 @@ namespace light_switch_cli
 {
     namespace
     {
-        class Handle
-        {
-        public:
-            explicit Handle(HANDLE value = nullptr) noexcept : m_value(value) {}
-            ~Handle() { Reset(); }
-            Handle(const Handle&) = delete;
-            Handle& operator=(const Handle&) = delete;
-            HANDLE Get() const noexcept { return m_value; }
-            HANDLE* Put() noexcept
-            {
-                Reset();
-                return &m_value;
-            }
-            void Reset(HANDLE value = nullptr) noexcept
-            {
-                if (m_value && m_value != INVALID_HANDLE_VALUE)
-                {
-                    CloseHandle(m_value);
-                }
-                m_value = value;
-            }
-
-        private:
-            HANDLE m_value;
-        };
-
-        struct LocalMemory
-        {
-            void* value = nullptr;
-            ~LocalMemory() { LocalFree(value); }
-        };
-
         std::wstring SidString(PSID sid)
         {
-            LocalMemory text;
-            winrt::check_bool(ConvertSidToStringSidW(sid, reinterpret_cast<LPWSTR*>(&text.value)));
-            return static_cast<const wchar_t*>(text.value);
+            wil::unique_hlocal_string text;
+            winrt::check_bool(ConvertSidToStringSidW(sid, text.put()));
+            return text.get();
         }
 
         DWORD RemainingTime(ULONGLONG deadline) noexcept
@@ -108,22 +76,22 @@ namespace light_switch_cli
                     m_options.pipeName = GetPipeName();
                 }
 
-                Handle token;
-                winrt::check_bool(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, token.Put()));
-                m_identity = ReadTokenIdentity(token.Get());
-                m_stopEvent.Reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
-                winrt::check_bool(m_stopEvent.Get() != nullptr);
+                wil::unique_handle token;
+                winrt::check_bool(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, token.put()));
+                m_identity = ReadTokenIdentity(token.get());
+                m_stopEvent.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+                winrt::check_bool(m_stopEvent.get() != nullptr);
 
                 // Restrict clients to this logon. A medium label also permits the normal CLI
                 // when PowerToys is elevated. GR/GW includes the pipe-instance right, so keep
                 // the single, first instance open until Stop; never release/reacquire its name.
                 const auto descriptorText = L"O:" + SidString(m_identity.userSid.data()) +
                                             L"D:P(A;;GRGW;;;" + SidString(m_identity.logonSid.data()) + L")S:(ML;;NW;;;ME)";
-                LocalMemory descriptor;
+                wil::unique_hlocal_security_descriptor descriptor;
                 winrt::check_bool(ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                    descriptorText.c_str(), SDDL_REVISION_1, &descriptor.value, nullptr));
-                SECURITY_ATTRIBUTES attributes{ sizeof(attributes), descriptor.value, FALSE };
-                m_pipe.Reset(CreateNamedPipeW(
+                    descriptorText.c_str(), SDDL_REVISION_1, descriptor.put(), nullptr));
+                SECURITY_ATTRIBUTES attributes{ sizeof(attributes), descriptor.get(), FALSE };
+                m_pipe.reset(CreateNamedPipeW(
                     m_options.pipeName.c_str(),
                     PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE,
                     PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
@@ -132,7 +100,7 @@ namespace light_switch_cli
                     static_cast<DWORD>((MaxMessageCharacters + 1) * sizeof(wchar_t)),
                     0,
                     &attributes));
-                winrt::check_bool(m_pipe.Get() != INVALID_HANDLE_VALUE);
+                winrt::check_bool(m_pipe.get() != INVALID_HANDLE_VALUE);
 
                 std::promise<HRESULT> ready;
                 auto initialized = ready.get_future();
@@ -164,12 +132,12 @@ namespace light_switch_cli
             }
             if (m_thread.joinable())
             {
-                SetEvent(m_stopEvent.Get());
-                CancelIoEx(m_pipe.Get(), nullptr);
+                SetEvent(m_stopEvent.get());
+                CancelIoEx(m_pipe.get(), nullptr);
                 m_thread.join();
             }
-            m_pipe.Reset();
-            m_stopEvent.Reset();
+            m_pipe.reset();
+            m_stopEvent.reset();
             SetLastError(error);
             return false;
         }
@@ -179,20 +147,20 @@ namespace light_switch_cli
             std::lock_guard lock(m_lifecycleMutex);
             if (m_thread.joinable())
             {
-                SetEvent(m_stopEvent.Get());
-                CancelIoEx(m_pipe.Get(), nullptr);
+                SetEvent(m_stopEvent.get());
+                CancelIoEx(m_pipe.get(), nullptr);
                 // The worker drains cancelled OVERLAPPED operations and finishes any active
                 // handler before these handles or the handler's captured state can be freed.
                 m_thread.join();
             }
-            m_pipe.Reset();
-            m_stopEvent.Reset();
+            m_pipe.reset();
+            m_stopEvent.reset();
         }
 
     private:
         bool IsStopped() const noexcept
         {
-            return WaitForSingleObject(m_stopEvent.Get(), 0) == WAIT_OBJECT_0;
+            return WaitForSingleObject(m_stopEvent.get(), 0) == WAIT_OBJECT_0;
         }
 
         template<typename BeginOperation>
@@ -203,16 +171,16 @@ namespace light_switch_cli
             {
                 return IoResult::Stopped;
             }
-            Handle completed(CreateEventW(nullptr, TRUE, FALSE, nullptr));
-            if (!completed.Get())
+            wil::unique_handle completed(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+            if (!completed.get())
             {
                 return IoResult::Failed;
             }
             OVERLAPPED operation{};
-            operation.hEvent = completed.Get();
+            operation.hEvent = completed.get();
             if (beginOperation(operation))
             {
-                return GetOverlappedResult(m_pipe.Get(), &operation, &transferred, FALSE) ? IoResult::Completed : IoResult::Failed;
+                return GetOverlappedResult(m_pipe.get(), &operation, &transferred, FALSE) ? IoResult::Completed : IoResult::Failed;
             }
 
             const auto error = GetLastError();
@@ -225,11 +193,11 @@ namespace light_switch_cli
                 return error == ERROR_BROKEN_PIPE || error == ERROR_NO_DATA || error == ERROR_PIPE_NOT_CONNECTED ? IoResult::Closed : IoResult::Failed;
             }
 
-            const HANDLE waits[]{ m_stopEvent.Get(), completed.Get() };
+            const HANDLE waits[]{ m_stopEvent.get(), completed.get() };
             const auto wait = WaitForMultipleObjects(2, waits, FALSE, timeoutMs);
             if (wait == WAIT_OBJECT_0 + 1)
             {
-                if (GetOverlappedResult(m_pipe.Get(), &operation, &transferred, FALSE))
+                if (GetOverlappedResult(m_pipe.get(), &operation, &transferred, FALSE))
                 {
                     return IoResult::Completed;
                 }
@@ -237,10 +205,10 @@ namespace light_switch_cli
                 return completionError == ERROR_BROKEN_PIPE || completionError == ERROR_NO_DATA || completionError == ERROR_PIPE_NOT_CONNECTED ? IoResult::Closed : IoResult::Failed;
             }
 
-            CancelIoEx(m_pipe.Get(), &operation);
+            CancelIoEx(m_pipe.get(), &operation);
             // Even if completion raced cancellation, the kernel no longer references this
             // OVERLAPPED or its caller-owned buffer once GetOverlappedResult has returned.
-            GetOverlappedResult(m_pipe.Get(), &operation, &transferred, TRUE);
+            GetOverlappedResult(m_pipe.get(), &operation, &transferred, TRUE);
             if (wait == WAIT_OBJECT_0)
             {
                 return IoResult::Stopped;
@@ -253,24 +221,24 @@ namespace light_switch_cli
             // ReadRequest has consumed a bounded frame, so the pipe can identify its
             // sender. Identification-level impersonation needs no SeImpersonatePrivilege
             // and avoids opening an elevated client's process or primary token.
-            if (!ImpersonateNamedPipeClient(m_pipe.Get()))
+            if (!ImpersonateNamedPipeClient(m_pipe.get()))
             {
                 return false;
             }
-            Handle token;
+            wil::unique_handle token;
             {
                 const auto revert = wil::scope_exit([]() {
                     // Continuing with a client's thread token would compromise later requests.
                     FAIL_FAST_IF_WIN32_BOOL_FALSE(RevertToSelf());
                 });
-                if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, token.Put()))
+                if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, token.put()))
                 {
                     return false;
                 }
             }
             try
             {
-                return IsSameLogon(m_identity, ReadTokenIdentity(token.Get()));
+                return IsSameLogon(m_identity, ReadTokenIdentity(token.get()));
             }
             catch (...)
             {
@@ -288,7 +256,7 @@ namespace light_switch_cli
                 std::array<BYTE, 4096> bytes{};
                 DWORD count = 0;
                 const auto result = PerformIo(
-                    [&](OVERLAPPED& operation) { return ReadFile(m_pipe.Get(), bytes.data(), static_cast<DWORD>(bytes.size()), nullptr, &operation); },
+                    [&](OVERLAPPED& operation) { return ReadFile(m_pipe.get(), bytes.data(), static_cast<DWORD>(bytes.size()), nullptr, &operation); },
                     RemainingTime(deadline),
                     count);
                 if (result == IoResult::TimedOut)
@@ -342,7 +310,7 @@ namespace light_switch_cli
                 std::array<BYTE, 256> ignored{};
                 DWORD count = 0;
                 const auto result = PerformIo(
-                    [&](OVERLAPPED& operation) { return ReadFile(m_pipe.Get(), ignored.data(), static_cast<DWORD>(ignored.size()), nullptr, &operation); },
+                    [&](OVERLAPPED& operation) { return ReadFile(m_pipe.get(), ignored.data(), static_cast<DWORD>(ignored.size()), nullptr, &operation); },
                     RemainingTime(deadline),
                     count);
                 if (result != IoResult::Completed || count == 0)
@@ -367,7 +335,7 @@ namespace light_switch_cli
             {
                 DWORD count = 0;
                 const auto result = PerformIo(
-                    [&](OVERLAPPED& operation) { return WriteFile(m_pipe.Get(), reinterpret_cast<const BYTE*>(text.data()) + offset, size - offset, nullptr, &operation); },
+                    [&](OVERLAPPED& operation) { return WriteFile(m_pipe.get(), reinterpret_cast<const BYTE*>(text.data()) + offset, size - offset, nullptr, &operation); },
                     RemainingTime(deadline),
                     count);
                 if (result != IoResult::Completed || count == 0)
@@ -421,7 +389,7 @@ namespace light_switch_cli
                 {
                     DWORD ignored = 0;
                     const auto result = PerformIo(
-                        [&](OVERLAPPED& operation) { return ConnectNamedPipe(m_pipe.Get(), &operation); },
+                        [&](OVERLAPPED& operation) { return ConnectNamedPipe(m_pipe.get(), &operation); },
                         INFINITE,
                         ignored);
                     if (result == IoResult::Stopped)
@@ -452,15 +420,15 @@ namespace light_switch_cli
                     {
                     }
                 }
-                DisconnectNamedPipe(m_pipe.Get());
+                DisconnectNamedPipe(m_pipe.get());
             }
         }
 
         Handler m_handler;
         Options m_options;
         TokenIdentity m_identity;
-        Handle m_pipe;
-        Handle m_stopEvent;
+        wil::unique_handle m_pipe;
+        wil::unique_handle m_stopEvent;
         std::thread m_thread;
         std::mutex m_lifecycleMutex;
     };

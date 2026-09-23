@@ -6,15 +6,16 @@
 #include "CliProtocol.h"
 #include <wil/resource.h>
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 // Schedule changes also start/stop the Night Light observer, which belongs to the
 // service worker. The pipe thread waits for that worker's result, never while
-// holding a state/settings lock. Theme commands do not use this queue.
+// holding a state/settings lock. This synchronous producer needs one pending
+// slot; the worker owns a started request separately. Theme commands bypass it.
 class ScheduleCommandQueue
 {
 public:
@@ -52,14 +53,14 @@ public:
             {
                 return Unavailable();
             }
-            if (_pending.size() >= 8)
+            if (_pending)
             {
                 return light_switch_cli::MakeError(L"SERVER_BUSY", L"Light Switch is busy. Try again.");
             }
-            _pending.push_back(pending);
+            _pending = pending;
             if (!SetEvent(_event.get()))
             {
-                _pending.pop_back();
+                _pending.reset();
                 return light_switch_cli::MakeError(L"EXECUTION_FAILED", L"Could not notify the Light Switch worker.");
             }
         }
@@ -72,7 +73,10 @@ public:
         std::lock_guard lock(_mutex);
         // Never run a queued operation after its caller has already timed out.
         // An operation that has started cannot be rolled back by cancelling IPC.
-        pending->cancelled = true;
+        if (_pending == pending)
+        {
+            _pending.reset();
+        }
         return light_switch_cli::MakeError(
             L"TIMEOUT",
             pending->started ? L"Light Switch did not finish in time. The schedule may have changed; query status before retrying." : L"The schedule request timed out before it could be executed.");
@@ -80,47 +84,39 @@ public:
 
     void ProcessPending(const Handler& handler)
     {
-        for (;;)
+        std::shared_ptr<Pending> pending;
         {
-            std::shared_ptr<Pending> pending;
+            std::lock_guard lock(_mutex);
+            if (!_pending || _stopped)
             {
-                std::lock_guard lock(_mutex);
-                if (_pending.empty() || _stopped)
-                {
-                    return;
-                }
-                pending = std::move(_pending.front());
-                _pending.pop_front();
-                if (pending->cancelled)
-                {
-                    continue;
-                }
-                pending->started = true;
+                return;
             }
+            pending = std::move(_pending);
+            pending->started = true;
+        }
 
-            try
-            {
-                pending->completion.set_value(handler(pending->request));
-            }
-            catch (...)
-            {
-                pending->completion.set_value(light_switch_cli::MakeError(
-                    L"EXECUTION_FAILED", L"Light Switch could not apply the schedule."));
-            }
+        try
+        {
+            pending->completion.set_value(handler(pending->request));
+        }
+        catch (...)
+        {
+            pending->completion.set_value(light_switch_cli::MakeError(
+                L"EXECUTION_FAILED", L"Light Switch could not apply the schedule."));
         }
     }
 
     void Stop()
     {
-        std::deque<std::shared_ptr<Pending>> abandoned;
+        std::shared_ptr<Pending> abandoned;
         {
             std::lock_guard lock(_mutex);
             _stopped = true;
-            abandoned.swap(_pending);
+            abandoned = std::move(_pending);
         }
-        for (const auto& pending : abandoned)
+        if (abandoned)
         {
-            pending->completion.set_value(Unavailable());
+            abandoned->completion.set_value(Unavailable());
         }
     }
 
@@ -135,7 +131,6 @@ private:
         light_switch_cli::Request request;
         std::promise<Response> completion;
         bool started = false;
-        bool cancelled = false;
     };
 
     static Response Unavailable()
@@ -145,6 +140,6 @@ private:
 
     wil::unique_handle _event;
     std::mutex _mutex;
-    std::deque<std::shared_ptr<Pending>> _pending;
+    std::shared_ptr<Pending> _pending;
     bool _stopped = false;
 };

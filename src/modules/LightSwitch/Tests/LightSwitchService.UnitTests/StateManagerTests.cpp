@@ -1532,7 +1532,42 @@ namespace LightSwitchServiceUnitTests
             }
         }
 
-        TEST_METHOD (ToggleNotificationUsesTheAlreadyVerifiedSnapshot)
+        TEST_METHOD (ThemeCommandsReturnTheVerifiedSnapshot)
+        {
+            for (const bool settingsChanged : { false, true })
+            {
+                Environment environment;
+                environment.system = environment.apps = !settingsChanged;
+                auto dependencies = environment.Dependencies();
+                const auto readTheme = dependencies.readTheme;
+                bool writesCompleted = false;
+                environment.afterWrite = [&](bool system) {
+                    if (!system)
+                        writesCompleted = true;
+                };
+                dependencies.readTheme = [&](bool system, bool& light) {
+                    const auto result = readTheme(system, light);
+                    // The final pair is readable, but a later response-only read would fail.
+                    if (writesCompleted && !system)
+                        environment.failSystemRead = environment.failAppsRead = true;
+                    return result;
+                };
+                LightSwitchStateManager manager(std::move(dependencies));
+
+                const auto result = settingsChanged ? manager.OnSettingsChanged() : manager.SetTheme(false);
+                Assert::IsTrue(result.success);
+                Assert::IsTrue(result.status.systemLight.has_value());
+                Assert::IsTrue(result.status.appsLight.has_value());
+                Assert::AreEqual(settingsChanged, *result.status.systemLight);
+                Assert::AreEqual(settingsChanged, *result.status.appsLight);
+                Assert::AreEqual(!settingsChanged, result.status.manualOverride);
+                Assert::IsTrue(result.status.configurationAvailable);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::AreEqual(settingsChanged, static_cast<bool>(environment.notifications.front()));
+            }
+        }
+
+        TEST_METHOD (ToggleResponseAndNotificationUseTheVerifiedSnapshot)
         {
             Environment environment;
             environment.config.scheduleMode = ScheduleMode::Off;
@@ -1548,11 +1583,15 @@ namespace LightSwitchServiceUnitTests
                 return readTheme(system, light);
             };
             LightSwitchStateManager manager(std::move(dependencies));
-            Assert::IsTrue(manager.ToggleTheme().success);
+            const auto result = manager.ToggleTheme();
+            Assert::IsTrue(result.success);
             Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
             Assert::IsFalse(environment.notifications.front());
-            Assert::IsFalse(*manager.GetStatusSnapshot().systemLight);
-            Assert::IsFalse(*environment.apps);
+            Assert::IsTrue(result.status.systemLight.has_value());
+            Assert::IsTrue(result.status.appsLight.has_value());
+            Assert::IsFalse(*result.status.systemLight);
+            Assert::IsFalse(*result.status.appsLight);
+            Assert::IsTrue(result.status.manualOverride);
         }
 
         TEST_METHOD (ChangedConfigurationDiscardsPendingScheduledNotifications)

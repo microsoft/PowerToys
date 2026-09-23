@@ -26,18 +26,7 @@ namespace LightSwitchThemeHelpers
     LSTATUS WriteThemeValue(HKEY key, const wchar_t* name, bool isLight)
     {
         const DWORD value = isLight ? 1 : 0;
-        auto result = RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
-        if (result != ERROR_SUCCESS)
-        {
-            return result;
-        }
-        bool actual = false;
-        result = ReadThemeValue(key, name, actual);
-        if (result != ERROR_SUCCESS)
-        {
-            return result;
-        }
-        return actual == isLight ? ERROR_SUCCESS : ERROR_WRITE_FAULT;
+        return RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
     }
 
     LSTATUS ReadNightLightState(HKEY key, bool& enabled)
@@ -203,11 +192,4 @@ LSTATUS TryGetNightLightState(bool& enabled)
         RegCloseKey(key);
     }
     return result;
-}
-
-bool IsNightLightEnabled()
-{
-    bool enabled = false;
-    TryGetNightLightState(enabled);
-    return enabled;
 }

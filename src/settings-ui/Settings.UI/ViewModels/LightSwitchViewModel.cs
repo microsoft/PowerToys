@@ -462,31 +462,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string Latitude
-        {
-            get => ModuleSettings.Properties.Latitude.Value;
-            set
-            {
-                if (!_refreshingModuleSettings && ModuleSettings.Properties.Latitude.Value != value)
-                {
-                    ModuleSettings.Properties.Latitude.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public string Latitude => ModuleSettings.Properties.Latitude.Value;
 
-        public string Longitude
-        {
-            get => ModuleSettings.Properties.Longitude.Value;
-            set
-            {
-                if (!_refreshingModuleSettings && ModuleSettings.Properties.Longitude.Value != value)
-                {
-                    ModuleSettings.Properties.Longitude.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public string Longitude => ModuleSettings.Properties.Longitude.Value;
 
         private SearchLocation? _selectedSearchLocation;
 
@@ -513,18 +491,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _syncButtonInformation = "Please sync your location";
 
-        public string SyncButtonInformation
-        {
-            get => _syncButtonInformation;
-            set
-            {
-                if (_syncButtonInformation != value)
-                {
-                    _syncButtonInformation = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public string SyncButtonInformation => _syncButtonInformation;
 
         private double _locationPanelLatitude;
         private double _locationPanelLongitude;
@@ -830,28 +797,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged(nameof(SelectedLightModeProfile));
                 }
             }
-        }
-
-        private void CheckPowerDisplayEnabled()
-        {
-            try
-            {
-                var settingsUtils = SettingsUtils.Default;
-                var generalSettings = settingsUtils.GetSettingsOrDefault<GeneralSettings>(string.Empty);
-                IsPowerDisplayEnabled = generalSettings?.Enabled?.PowerDisplay ?? false;
-                Logger.LogInfo($"PowerDisplay enabled status: {IsPowerDisplayEnabled}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to check PowerDisplay enabled status: {ex.Message}");
-                IsPowerDisplayEnabled = false;
-            }
-        }
-
-        public void RefreshPowerDisplayStatus()
-        {
-            CheckPowerDisplayEnabled();
-            NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
         }
 
         public void RefreshEnabledState()
