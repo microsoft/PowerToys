@@ -141,12 +141,23 @@ namespace
             return false;
         }
 
-        CComQIPtr<IShellDispatch2>(spdispShell)
-            ->ShellExecuteW(CComBSTR(pszFile),
-                            CComVariant(pszParameters ? pszParameters : L""),
-                            CComVariant(workingDir),
-                            CComVariant(L""),
-                            CComVariant(SW_SHOWNORMAL));
+        CComQIPtr<IShellDispatch2> shellDispatch(spdispShell);
+        if (shellDispatch == nullptr)
+        {
+            Logger::warn(L"Failed to query IShellDispatch2");
+            return false;
+        }
+
+        result = shellDispatch->ShellExecuteW(CComBSTR(pszFile),
+                                              CComVariant(pszParameters ? pszParameters : L""),
+                                              CComVariant(workingDir),
+                                              CComVariant(L""),
+                                              CComVariant(SW_SHOWNORMAL));
+        if (result != S_OK)
+        {
+            Logger::warn(L"ShellExecuteW() failed. {}", GetErrorString(result));
+            return false;
+        }
 
         return true;
     }
