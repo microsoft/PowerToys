@@ -66,6 +66,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_RELOAD_SETTINGS	WM_USER+110
 #define WM_USER_RECORDING_STARTED WM_USER+111
 #define WM_USER_RECORDING_NO_FRAMES WM_USER+112
+#define WM_USER_RECORDING_AUDIO_UNAVAILABLE WM_USER+114
 
 typedef struct _TYPED_KEY {
     RECT		rc;

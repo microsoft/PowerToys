@@ -477,6 +477,7 @@
   <ItemGroup>
     <ClInclude Include="..\ZoomItBreak\BreakTimer.h" />
     <ClInclude Include="AudioSampleGenerator.h" />
+    <ClInclude Include="AudioSamplePacer.h" />
     <ClInclude Include="LoopbackCapture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h" />

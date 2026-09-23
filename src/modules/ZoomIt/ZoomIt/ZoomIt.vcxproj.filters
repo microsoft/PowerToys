@@ -149,6 +149,9 @@
     <ClInclude Include="AudioSampleGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AudioSamplePacer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="LoopbackCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
