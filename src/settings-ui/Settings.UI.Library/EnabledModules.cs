@@ -218,6 +218,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool altWindowCycle; // defaulting to off
+
+        [JsonPropertyName("AltWindowCycle")]
+        public bool AltWindowCycle
+        {
+            get => altWindowCycle;
+            set
+            {
+                if (altWindowCycle != value)
+                {
+                    LogTelemetryEvent(value);
+                    altWindowCycle = value;
+                }
+            }
+        }
+
         private bool mouseHighlighter = true;
 
         [JsonPropertyName("MouseHighlighter")]
@@ -509,6 +525,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LogTelemetryEvent(value);
                     zoomIt = value;
                     NotifyChange();
+                }
+            }
+        }
+
+        private bool autoHideCursor; // defaulting to off
+
+        [JsonPropertyName("AutoHideCursor")]
+        public bool AutoHideCursor
+        {
+            get => autoHideCursor;
+            set
+            {
+                if (autoHideCursor != value)
+                {
+                    LogTelemetryEvent(value);
+                    autoHideCursor = value;
                 }
             }
         }

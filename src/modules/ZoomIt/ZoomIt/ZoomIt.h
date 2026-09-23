@@ -29,10 +29,8 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 
 #define ZOOM_LEVEL_MIN		1
 #define ZOOM_LEVEL_INIT		2
-#define ZOOM_LEVEL_STEP_IN	((float) 1.1)
-#define ZOOM_LEVEL_STEP_OUT	((float) 0.8)
-#define ZOOM_LEVEL_MAX		32
-#define ZOOM_LEVEL_STEP_TIME	20
+#define ZOOM_LEVEL_MAX		256
+#define ZOOM_ANIMATION_FRAME_TIME	10
 
 #define LIVEZOOM_MOVE_REGIONS	8
 
@@ -67,6 +65,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_EXIT_MODE		WM_USER+109
 #define WM_USER_RELOAD_SETTINGS	WM_USER+110
 #define WM_USER_RECORDING_STARTED WM_USER+111
+#define WM_USER_RECORDING_NO_FRAMES WM_USER+112
 
 typedef struct _TYPED_KEY {
     RECT		rc;

@@ -76,6 +76,7 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         { L"SnipPanoramaSaveToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"BreakTimerKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"DemoTypeToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
+        { L"MirrorToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"PenColor", SPECIAL_SEMANTICS_COLOR },
         { L"BreakPenColor", SPECIAL_SEMANTICS_COLOR },
         { L"Font", SPECIAL_SEMANTICS_LOG_FONT },

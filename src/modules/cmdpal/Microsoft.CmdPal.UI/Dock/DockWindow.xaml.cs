@@ -157,8 +157,6 @@ public sealed partial class DockWindow : WindowEx,
 
         InitializeComponent();
         Root.Children.Add(_dock);
-        ExtendsContentIntoTitleBar = true;
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {
@@ -613,6 +611,30 @@ public sealed partial class DockWindow : WindowEx,
         if (refreshed is not null)
         {
             _targetMonitor = refreshed;
+        }
+    }
+
+    internal void RefreshForMonitorChange()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        RefreshTargetMonitor();
+
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            // The Shell caches the monitor coordinates from the original
+            // ABM_NEW registration, so after a topology change the stale
+            // AppBar rect cannot be repositioned correctly. Destroy and
+            // recreate to re-register with the new monitor geometry.
+            DestroyAppBar(_hwnd);
+            CreateAppBar(_hwnd);
+        }
+        else
+        {
+            UpdateWindowPosition();
         }
     }
 
@@ -1297,45 +1319,6 @@ public sealed partial class DockWindow : WindowEx,
                 DispatcherQueue.TryEnqueue(HandleWorkAreaChanged);
             }
         }
-        else if (msg == PInvoke.WM_DISPLAYCHANGE)
-        {
-            Logger.LogDebug("WM_DISPLAYCHANGE");
-
-            // Invalidate the monitor cache so DockWindowManager can reconcile
-            _monitorService.NotifyMonitorsChanged();
-
-            // Use dispatcher to ensure we're on the UI thread.
-            // Refresh _targetMonitor before re-positioning: the MonitorInfo
-            // captured at construction is an immutable record, so its Bounds
-            // are stale after a topology change (e.g. an external display was
-            // disconnected, shifting our monitor's virtual-screen origin).
-            // Without this, UpdateAppBarDataForEdge would compute the AppBar
-            // rect against the old coordinates and produce a wildly incorrect
-            // size/position.
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
-                RefreshTargetMonitor();
-
-                if (_appBarData.hWnd != IntPtr.Zero)
-                {
-                    // The Shell caches the monitor coordinates from the original
-                    // ABM_NEW registration, so after a topology change the stale
-                    // AppBar rect cannot be repositioned correctly. Destroy and
-                    // recreate to re-register with the new monitor geometry.
-                    DestroyAppBar(_hwnd);
-                    CreateAppBar(_hwnd);
-                }
-                else
-                {
-                    UpdateWindowPosition();
-                }
-            });
-        }
         else if (msg == PInvoke.WM_MOUSEMOVE)
         {
             HandleMouseMoveForAutoHide();
@@ -1353,13 +1336,12 @@ public sealed partial class DockWindow : WindowEx,
             HandleDeactivationForAutoHide();
         }
 
-        // Intercept WM_SYSCOMMAND to prevent minimize and maximize
+        // Prevent close, minimize, and maximize system commands.
         else if (msg == PInvoke.WM_SYSCOMMAND)
         {
             var command = (int)(wParam.Value & 0xFFF0);
-            if (command == PInvoke.SC_MINIMIZE || command == PInvoke.SC_MAXIMIZE)
+            if (command == PInvoke.SC_CLOSE || command == PInvoke.SC_MINIMIZE || command == PInvoke.SC_MAXIMIZE)
             {
-                // Block minimize and maximize commands
                 return new LRESULT(0);
             }
         }

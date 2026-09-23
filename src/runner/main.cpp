@@ -265,9 +265,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.AwakeModuleInterface.dll",
             L"PowerToys.FindMyMouse.dll",
             L"PowerToys.MouseHighlighter.dll",
-            L"PowerToys.MouseJump.dll",
+            L"WinUI3Apps/PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.AutoHideCursor.dll",
             L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
@@ -288,6 +289,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.LightSwitchModuleInterface.dll",
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
+            L"PowerToys.AltWindowCycle.dll",
         };
 
         for (auto moduleSubdir : knownModules)

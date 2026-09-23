@@ -2,29 +2,32 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Reflection;
-using System.Text;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Imaging;
-using MouseJump.Common.Models.Drawing;
-using MouseJump.Common.Models.Styles;
+using MouseJump.Models.Display;
+using MouseJump.Models.Drawing;
+using MouseJump.Models.Styles;
 
 namespace MouseJump.Common.UnitTests.Helpers;
 
-[TestClass]
 public static class DrawingHelperTests
 {
     [TestClass]
-    public sealed class RenderPreviewTests
+    public sealed class GetPreviewLayoutTests
     {
         public sealed class TestCase
         {
-            public TestCase(PreviewStyle previewStyle, List<RectangleInfo> screens, PointInfo activatedLocation, string desktopImageFilename, string expectedImageFilename)
+            public TestCase(PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation, string desktopImageFilename, string expectedImageFilename)
             {
                 this.PreviewStyle = previewStyle;
-                this.Screens = screens;
+                this.DisplayInfo = displayInfo;
+                this.ActivatedScreen = activatedScreen;
                 this.ActivatedLocation = activatedLocation;
                 this.DesktopImageFilename = desktopImageFilename;
                 this.ExpectedImageFilename = expectedImageFilename;
@@ -32,7 +35,9 @@ public static class DrawingHelperTests
 
             public PreviewStyle PreviewStyle { get; }
 
-            public List<RectangleInfo> Screens { get; }
+            public DisplayInfo DisplayInfo { get; }
+
+            public ScreenInfo ActivatedScreen { get; }
 
             public PointInfo ActivatedLocation { get; }
 
@@ -43,32 +48,94 @@ public static class DrawingHelperTests
 
         public static IEnumerable<object[]> GetTestCases()
         {
-            /* 4-grid */
+            // colors like "SystemColors.Highlight" can change between versions of windows,
+            // so we'll use hard-coded colors instead to reduce false test failures
+            var systemHighlight = Color.FromArgb(0, 120, 215);
+            var previewStyle = StyleHelper.BezelledPreviewStyle;
+            previewStyle = new(
+                canvasSize: previewStyle.CanvasSize,
+                canvasStyle: new(
+                    marginStyle: previewStyle.CanvasStyle.MarginStyle,
+                    borderStyle: previewStyle.CanvasStyle.BorderStyle.WithColor(systemHighlight),
+                    paddingStyle: previewStyle.CanvasStyle.PaddingStyle,
+                    backgroundStyle: previewStyle.CanvasStyle.BackgroundStyle
+                ),
+                screenStyle: previewStyle.ScreenStyle,
+                extraColors: previewStyle.ExtraColors
+            );
+
+            // 4-grid
+            var displayInfo = new DisplayInfo(
+                devices: new DeviceInfo[]
+                {
+                    new(
+                        hostname: "localhost",
+                        localhost: true,
+                        screens: new List<ScreenInfo>
+                        {
+                            new(
+                                handle: 0,
+                                primary: true,
+                                displayArea: new(0, 0, 500, 500),
+                                workingArea: new(0, 0, 500, 500)),
+                            new(
+                                handle: 0,
+                                primary: false,
+                                displayArea: new(500, 0, 500, 500),
+                                workingArea: new(500, 0, 500, 500)),
+                            new(
+                                handle: 0,
+                                primary: false,
+                                displayArea: new(500, 500, 500, 500),
+                                workingArea: new(500, 500, 500, 500)),
+                            new(
+                                handle: 0,
+                                primary: false,
+                                displayArea: new(0, 500, 500, 500),
+                                workingArea: new(0, 500, 500, 500)),
+                        }
+                    ),
+                });
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.BezelledPreviewStyle,
-                    screens: new List<RectangleInfo>()
-                    {
-                        new(0, 0, 500, 500),
-                        new(500, 0, 500, 500),
-                        new(500, 500, 500, 500),
-                        new(0, 500, 500, 500),
-                    },
+                    previewStyle: previewStyle,
+                    displayInfo: displayInfo,
+                    activatedScreen: displayInfo.Devices[0].Screens[0],
                     activatedLocation: new(x: 50, y: 50),
                     desktopImageFilename: "_test-4grid-desktop.png",
                     expectedImageFilename: "_test-4grid-expected.png"),
             };
-            /* win 11 */
+
+            // win 11
+            displayInfo = new(
+                devices: new DeviceInfo[]
+                {
+                    new(
+                        hostname: "localhost",
+                        localhost: true,
+                        screens: new List<ScreenInfo>
+                        {
+                            new(
+                                handle: 0,
+                                primary: true,
+                                displayArea: new(5120, 349, 1920, 1080),
+                                workingArea: new(5120, 349, 1920, 1080)),
+                            new(
+                                handle: 0,
+                                primary: false,
+                                displayArea: new(0, 0, 5120, 1440),
+                                workingArea: new(0, 0, 5120, 1440)),
+                        }
+                    ),
+                }
+            );
             yield return new object[]
             {
                 new TestCase(
-                    previewStyle: StyleHelper.BezelledPreviewStyle,
-                    screens: new List<RectangleInfo>()
-                    {
-                        new(5120, 349, 1920, 1080),
-                        new(0, 0, 5120, 1440),
-                    },
+                    previewStyle: previewStyle,
+                    displayInfo: displayInfo,
+                    activatedScreen: displayInfo.Devices[0].Screens[0],
                     activatedLocation: new(x: 50, y: 50),
                     desktopImageFilename: "_test-win11-desktop.png",
                     expectedImageFilename: "_test-win11-expected.png"),
@@ -76,22 +143,36 @@ public static class DrawingHelperTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(GetTestCases), DynamicDataSourceType.Method)]
-        public void RunTestCases(TestCase data)
+        [DynamicData(nameof(GetTestCases))]
+        public async Task RunTestCases(TestCase data)
         {
             // load the fake desktop image
-            using var desktopImage = RenderPreviewTests.LoadImageResource(data.DesktopImageFilename);
+            using var desktopImage = GetPreviewLayoutTests.LoadImageResource(data.DesktopImageFilename);
+
+            var formLayout = LayoutHelper.GetFormLayout(
+                previewStyle: data.PreviewStyle,
+                displayInfo: data.DisplayInfo,
+                activatedScreen: data.ActivatedScreen,
+                activatedLocation: data.ActivatedLocation);
+
+            var imageCopyServices = formLayout.CanvasLayout.DeviceLayouts
+                .Select(
+                    deviceLayout => (IImageRegionCopyService)new StaticImageRegionCopyService(desktopImage))
+                .ToList();
 
             // draw the preview image
-            var previewLayout = LayoutHelper.GetPreviewLayout(
-                previewStyle: data.PreviewStyle,
-                screens: data.Screens,
-                activatedLocation: data.ActivatedLocation);
-            var imageCopyService = new StaticImageRegionCopyService(desktopImage);
-            using var actual = DrawingHelper.RenderPreview(previewLayout, imageCopyService);
+            using var actual = await DrawingHelper.RenderPreviewAsync(formLayout.CanvasLayout, data.ActivatedScreen, imageCopyServices);
+
+            // save the actual image so we can pick it up as a build artifact
+            var actualFilename = Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_actual" + Path.GetExtension(data.ExpectedImageFilename);
+            actual.Save(actualFilename, ImageFormat.Png);
 
             // load the expected image
-            var expected = RenderPreviewTests.LoadImageResource(data.ExpectedImageFilename);
+            var expected = GetPreviewLayoutTests.LoadImageResource(data.ExpectedImageFilename);
+
+            // save the actual image so we can pick it up as a build artifact
+            var expectedFilename = Path.GetFileNameWithoutExtension(data.ExpectedImageFilename) + "_expected" + Path.GetExtension(data.ExpectedImageFilename);
+            expected.Save(expectedFilename, ImageFormat.Png);
 
             // compare the images
             AssertImagesEqual(expected, actual);
@@ -99,24 +180,26 @@ public static class DrawingHelperTests
 
         private static Bitmap LoadImageResource(string filename)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
-            var resourceName = $"{typeof(DrawingHelperTests).Namespace}.{filename.Replace("/", ".")}";
-            var resourceNames = assembly.GetManifestResourceNames();
+            var referenceType = typeof(DrawingHelperTests);
+            var resourceAssembly = referenceType.Assembly;
+
+            var resourcePrefix = referenceType.Namespace;
+            var resourceName = $"{resourcePrefix}.{filename.Replace("/", ".")}";
+            var resourceNames = resourceAssembly.GetManifestResourceNames();
             if (!resourceNames.Contains(resourceName))
             {
-                var message = new StringBuilder();
-                message.AppendLine(CultureInfo.InvariantCulture, $"Embedded resource '{resourceName}' does not exist.");
-                message.AppendLine($"Known resources:");
-                foreach (var name in resourceNames)
-                {
-                    message.AppendLine(name);
-                }
-
-                throw new InvalidOperationException(message.ToString());
+                var message = string.Join(
+                    Environment.NewLine,
+                    new List<string>([
+                        $"Embedded resource '{resourceName}' does not exist.",
+                        string.Empty,
+                        "Valid resource names are:",
+                        string.Empty])
+                    .Concat(resourceNames));
+                throw new InvalidOperationException(message);
             }
 
-            var stream = assembly.GetManifestResourceStream(resourceName)
+            var stream = resourceAssembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException();
             var image = (Bitmap)Image.FromStream(stream);
             return image;
@@ -143,12 +226,11 @@ public static class DrawingHelperTests
                     var actualPixel = actual.GetPixel(x, y);
 
                     // allow a small tolerance for rounding differences in gdi
-                    // using a tolerance of 3 for support of minor differences in Windows Server 2025 CI
                     Assert.IsTrue(
-                        (Math.Abs(expectedPixel.A - actualPixel.A) <= 3) &&
-                        (Math.Abs(expectedPixel.R - actualPixel.R) <= 3) &&
-                        (Math.Abs(expectedPixel.G - actualPixel.G) <= 3) &&
-                        (Math.Abs(expectedPixel.B - actualPixel.B) <= 3),
+                        (Math.Abs(expectedPixel.A - actualPixel.A) <= 1) &&
+                        (Math.Abs(expectedPixel.R - actualPixel.R) <= 1) &&
+                        (Math.Abs(expectedPixel.G - actualPixel.G) <= 1) &&
+                        (Math.Abs(expectedPixel.B - actualPixel.B) <= 1),
                         $"images differ at pixel ({x}, {y}) - expected: {expectedPixel}, actual: {actualPixel}");
                 }
             }

@@ -8,10 +8,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
-using Windows.Storage.Pickers;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.System;
 using WinRT.Interop;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
@@ -154,6 +154,7 @@ namespace KeyboardManagerEditorUI.Controls
             _triggerKeys.CollectionChanged += (_, _) =>
             {
                 UpdatePlaceholderVisibility();
+                UpdateConditionVisibility();
                 RaiseValidationStateChanged();
             };
 
@@ -207,6 +208,8 @@ namespace KeyboardManagerEditorUI.Controls
                     UncheckAllToggleButtons();
                 }
             }
+
+            UpdateConditionVisibility();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -264,6 +267,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             HideValidationMessage();
+            UpdateConditionVisibility();
             RaiseValidationStateChanged();
         }
 
@@ -632,36 +636,54 @@ namespace KeyboardManagerEditorUI.Controls
 
         private async void ProgramPathSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileOpenPicker();
-
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            picker.FileTypeFilter.Add(".exe");
-
-            StorageFile file = await picker.PickSingleFileAsync();
-
-            if (file != null)
+            try
             {
-                ProgramPathInput.Text = file.Path;
-                RaiseValidationStateChanged();
+                var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+
+                var picker = new FileOpenPicker(windowId)
+                {
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+
+                picker.FileTypeFilter.Add(".exe");
+
+                var file = await picker.PickSingleFileAsync();
+
+                if (file != null)
+                {
+                    ProgramPathInput.Text = file.Path;
+                    RaiseValidationStateChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to pick program path", ex);
             }
         }
 
         private async void StartInSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FolderPicker();
-
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            picker.FileTypeFilter.Add("*");
-
-            StorageFolder folder = await picker.PickSingleFolderAsync();
-
-            if (folder != null)
+            try
             {
-                StartInPathInput.Text = folder.Path;
+                var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+
+                var picker = new FolderPicker(windowId)
+                {
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+
+                var folder = await picker.PickSingleFolderAsync();
+
+                if (folder != null)
+                {
+                    StartInPathInput.Text = folder.Path;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to pick start-in folder", ex);
             }
         }
 
@@ -787,6 +809,12 @@ namespace KeyboardManagerEditorUI.Controls
         /// Gets the elevation level (for OpenApp action type).
         /// </summary>
         public ElevationLevel GetElevationLevel() => (ElevationLevel)(ElevationComboBox?.SelectedIndex ?? 0);
+
+        /// <summary>
+        /// Gets the single-key remap condition (Always/Alone). Only meaningful for single-key remaps.
+        /// </summary>
+        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>
+            (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox?.SelectedIndex ?? 0);
 
         /// <summary>
         /// Gets the window visibility (for OpenApp action type).
@@ -957,6 +985,17 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         /// <summary>
+        /// Sets the single-key remap condition (Always/Alone).
+        /// </summary>
+        public void SetCondition(KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition condition)
+        {
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = (int)condition;
+            }
+        }
+
+        /// <summary>
         /// Sets the window visibility (for OpenApp action type).
         /// </summary>
         public void SetVisibility(StartWindowType visibility)
@@ -1047,6 +1086,31 @@ namespace KeyboardManagerEditorUI.Controls
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// Shows the single-key remap "Condition" (Always / Alone) combo box only when the mapping is a
+        /// single-key remap whose action is a key/shortcut or Disable — the cases where the alone
+        /// condition is meaningful and supported by the engine (a key/shortcut alone target, or an
+        /// "alone-disable" that swallows a solo tap while the key still works in combination). Only
+        /// toggles visibility; never changes the selection, so a condition set via
+        /// <see cref="SetCondition"/> during load is preserved.
+        /// </summary>
+        private void UpdateConditionVisibility()
+        {
+            if (ConditionComboBox == null)
+            {
+                return;
+            }
+
+            int nonEmptyTriggerKeys = _triggerKeys.Count(k => !string.IsNullOrEmpty(k));
+            bool isSingleKeyRemap = CurrentTriggerType == TriggerType.KeyOrShortcut
+                && nonEmptyTriggerKeys == 1
+                && (CurrentActionType == ActionType.KeyOrShortcut || CurrentActionType == ActionType.Disable);
+
+            ConditionComboBox.Visibility = isSingleKeyRemap
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private void RaiseValidationStateChanged()
@@ -1174,6 +1238,11 @@ namespace KeyboardManagerEditorUI.Controls
             if (ElevationComboBox != null)
             {
                 ElevationComboBox.SelectedIndex = 0;
+            }
+
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = 0;
             }
 
             if (IfRunningComboBox != null)

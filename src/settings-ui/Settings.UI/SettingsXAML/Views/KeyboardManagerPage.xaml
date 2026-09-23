@@ -245,6 +245,7 @@
                                     IsExpanded="True">
                                     <Button
                                         x:Uid="KeyboardManager_LaunchEditor_Button"
+                                        AutomationProperties.AutomationId="KeyboardManagerLaunchEditorButton"
                                         Command="{Binding Path=OpenNewEditorCommand}"
                                         Style="{StaticResource AccentButtonStyle}" />
                                     <tkcontrols:SettingsExpander.Items>

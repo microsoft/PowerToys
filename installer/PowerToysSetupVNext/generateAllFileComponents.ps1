@@ -28,11 +28,22 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml")
+    # *.winmd: WinRT metadata for the Windows App SDK AI APIs (Phi Silica, Imaging, etc.). The AI
+    # runtime resolves these from the app directory at runtime, so they must ship with the product.
+    # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
+    # RO_E_METADATA_NAME_NOT_FOUND (0x8000000F). The build already emits them into the app output
+    # (e.g. WinUI3Apps); they were previously dropped here because the harvest didn't include them.
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
     $fileExclusionList += @("mfc140.dll", "mfc140u.dll", "mfcm140.dll", "mfcm140u.dll")
+
+    # Microsoft.CommandPalette.Extensions.winmd already has a dedicated WiX component
+    # (Microsoft_CommandPalette_Extensions_winmd in BaseApplications.wxs, placed in WinUI3Apps for
+    # CmdPal's WinRT resolution). Exclude it from the generic *.winmd harvest so it isn't declared
+    # by two components (WIX ICE30 "installed by two different components" breaks ref-counting).
+    $fileExclusionList += @("Microsoft.CommandPalette.Extensions.winmd")
 
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
@@ -142,20 +153,27 @@ if ($platform -ceq "arm64") {
 }
 
 #BaseApplications
-# WORKAROUND: Exclude ImageResizer files that leak into the root output directory.
-# ImageResizerCLI (Exe, SelfContained) has a ProjectReference to ImageResizerUI (WinExe, SelfContained).
-# MSBuild copies the referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root
-# output directory as a side effect. These files are incomplete (missing the managed .dll) and should
-# not be included in the installer. The complete ImageResizer files are in WinUI3Apps/ and are handled
-# by WinUI3ApplicationsFiles. TODO: Refactor ImageResizer to use a shared Library project instead.
+# WORKAROUND: Exclude app-host files that leak into the root output directory.
+# A SelfContained Exe with a ProjectReference to a SelfContained WinExe makes MSBuild copy the
+# referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root output directory
+# as a side effect. These files are incomplete (missing the managed .dll) and should not be in the
+# installer; the complete app is in WinUI3Apps/ and is handled by WinUI3ApplicationsFiles.
+#   - ImageResizer: ImageResizerCLI (Exe) references ImageResizerUI (WinExe).
+#   - ColorPicker: ColorPickerUI.UnitTests (Exe) references ColorPickerUI (WinExe). The leaked root
+#     PowerToys.ColorPickerUI.exe is also unsigned (ESRP only signs the WinUI3Apps copy), so it must
+#     be stripped or the "Verify all binaries are signed and versioned" stage fails.
+# TODO: Refactor these to use a shared Library project instead.
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
 
-# Remove leaked ImageResizer artifacts from BaseApplications
+# Remove leaked app-host artifacts from BaseApplications
 $baseAppWxsPath = "$PSScriptRoot\BaseApplications.wxs"
 $baseAppWxs = Get-Content $baseAppWxsPath -Raw
 $baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.exe;?', ''
 $baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.deps\.json;?', ''
 $baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.runtimeconfig\.json;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.exe;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.deps\.json;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.runtimeconfig\.json;?', ''
 # Clean up trailing/double semicolons left after removal
 $baseAppWxs = $baseAppWxs -replace ';;+', ';'
 $baseAppWxs = $baseAppWxs -replace '=;', '='
@@ -237,7 +255,7 @@ Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $
 Generate-FileComponents -fileListName "AwakeImagesFiles" -wxsFilePath $PSScriptRoot\Awake.wxs
 
 #ColorPicker
-Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ColorPicker"
+Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ColorPicker"
 Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs
 
 #Environment Variables

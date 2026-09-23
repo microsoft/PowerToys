@@ -212,7 +212,19 @@ public sealed class Session
 
         while (true)
         {
-            var matches = ExecuteSearch(by);
+            List<SearchHit> matches;
+            try
+            {
+                matches = ExecuteSearch(by);
+            }
+            catch (AssertFailedException ex) when (
+                DateTime.UtcNow < deadline &&
+                ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase))
+            {
+                Thread.Sleep(200);
+                continue;
+            }
+
             var typed = new List<T>(matches.Count);
             foreach (var m in matches)
             {
@@ -300,6 +312,21 @@ public sealed class Session
     public string Screenshot(string outputPath, Element? element = null, bool captureScreen = false)
     {
         WinappCli.InvokeAssertSuccess(BuildScreenshotArgs(outputPath, element, captureScreen));
+        return outputPath;
+    }
+
+    /// <summary>
+    /// Capture the session's visible DWM frame from the desktop, including composed content while
+    /// excluding the invisible resize border around top-level windows.
+    /// </summary>
+    public string ScreenshotVisibleWindow(string outputPath)
+    {
+        Assert.IsTrue(Scope == TargetScope.Window && WindowHandle != 0, "Visible-frame capture requires a window-scoped session.");
+        var windowHandle = new IntPtr(WindowHandle);
+        var foregroundFailure = $"HWND {WindowHandle} did not become foreground before screenshot capture. " +
+                                $"Current foreground: {WindowControl.GetForegroundWindowInfo()}";
+        Assert.IsTrue(WindowControl.WaitForForeground(windowHandle, timeoutMS: 5_000), foregroundFailure);
+        WindowHelper.CaptureVisibleWindow(windowHandle, outputPath);
         return outputPath;
     }
 
@@ -419,24 +446,45 @@ public sealed class Session
 
     private List<SearchHit> ExecuteSearch(By by)
     {
+        if (by.Selector == By.Kind.Slug)
+        {
+            // search matches Name/AutomationId text, not semantic slugs. inspect resolves a slug
+            // directly, including unnamed containers and repeated controls in a scoped subtree.
+            var inspected = WinappCli.InvokeJson("ui", "inspect", by.Value, TargetFlag, TargetValue, "--json", "-d", "1");
+            return ParseSearchResult(inspected, fromInspection: true);
+        }
+
         // winappcli accepts the selector text directly as the first positional argument.
         var root = WinappCli.InvokeJson("ui", "search", by.Value, TargetFlag, TargetValue, "--json");
+        return ParseSearchResult(root, fromInspection: false);
+    }
 
+    internal static List<SearchHit> ParseSearchResult(JsonElement root, bool fromInspection)
+    {
         var result = new List<SearchHit>();
-        if (root.TryGetProperty("matches", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        IEnumerable<JsonElement> matches = [];
+        if (fromInspection && root.TryGetProperty("windows", out var windows) && windows.ValueKind == JsonValueKind.Array)
         {
-            foreach (var m in arr.EnumerateArray())
-            {
-                result.Add(new SearchHit(
-                    Selector: m.TryGetProperty("selector", out var s) ? (s.GetString() ?? string.Empty) : string.Empty,
-                    Name: m.TryGetProperty("name", out var n) ? (n.GetString() ?? string.Empty) : string.Empty,
-                    ControlType: m.TryGetProperty("type", out var t) ? (t.GetString() ?? string.Empty) : string.Empty,
-                    ClassName: m.TryGetProperty("className", out var c) ? (c.GetString() ?? string.Empty) : string.Empty,
-                    X: ReadInt(m, "x"),
-                    Y: ReadInt(m, "y"),
-                    Width: ReadInt(m, "width"),
-                    Height: ReadInt(m, "height")));
-            }
+            matches = windows.EnumerateArray()
+                .Where(window => window.TryGetProperty("elements", out var elements) && elements.ValueKind == JsonValueKind.Array)
+                .SelectMany(window => window.GetProperty("elements").EnumerateArray());
+        }
+        else if (root.TryGetProperty("matches", out var array) && array.ValueKind == JsonValueKind.Array)
+        {
+            matches = array.EnumerateArray();
+        }
+
+        foreach (var m in matches)
+        {
+            result.Add(new SearchHit(
+                Selector: m.TryGetProperty("selector", out var s) ? (s.GetString() ?? string.Empty) : string.Empty,
+                Name: m.TryGetProperty("name", out var n) ? (n.GetString() ?? string.Empty) : string.Empty,
+                ControlType: m.TryGetProperty("type", out var t) ? (t.GetString() ?? string.Empty) : string.Empty,
+                ClassName: m.TryGetProperty("className", out var c) ? (c.GetString() ?? string.Empty) : string.Empty,
+                X: ReadInt(m, "x"),
+                Y: ReadInt(m, "y"),
+                Width: ReadInt(m, "width"),
+                Height: ReadInt(m, "height")));
         }
 
         return result;
@@ -445,5 +493,5 @@ public sealed class Session
             el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetInt32() : 0;
     }
 
-    private sealed record SearchHit(string Selector, string Name, string ControlType, string ClassName, int X, int Y, int Width, int Height);
+    internal sealed record SearchHit(string Selector, string Name, string ControlType, string ClassName, int X, int Y, int Width, int Height);
 }

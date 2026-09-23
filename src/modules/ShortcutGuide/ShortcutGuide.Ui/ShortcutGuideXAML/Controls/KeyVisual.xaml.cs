@@ -107,6 +107,8 @@ namespace ShortcutGuide.Controls
                     "<Arrow>" => "\uE0E2\uE0E3\uE0E4\uE0E5",
                     "<Enter>" => "\uE751",
                     "<Backspace>" => "\uE750",
+                    "<LessThan>" => "<",
+                    "<GreaterThan>" => ">",
                     "<Escape>" => "Esc",
                     string s when s.StartsWith('<') => s.Trim('<', '>'),
                     _ => key,
@@ -175,7 +177,7 @@ namespace ShortcutGuide.Controls
 
         private void SetGlyphOrText(string glyphOrText)
         {
-            this.RenderKeyAsGlyph = ((glyphOrText[0] >> 12) & 0xF) is 0xE or 0xF;
+            this.RenderKeyAsGlyph = glyphOrText.Length > 0 && ((glyphOrText[0] >> 12) & 0xF) is 0xE or 0xF;
             this._keyPresenter.Content = glyphOrText;
 
             this._keyPresenter.Style = this.RenderKeyAsGlyph

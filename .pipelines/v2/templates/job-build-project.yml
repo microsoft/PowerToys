@@ -65,6 +65,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: resolvedVersionNumber
+    type: string
+    default: ''
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -140,6 +143,10 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    ${{ if eq(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
@@ -206,14 +213,12 @@ jobs:
     parameters:
       sdk: true
       version: '10.0'
+      # SDK 10.0.303 contains runtime 10.0.11. Keep this aligned with DotNetRuntimePackageVersion in Directory.Packages.props.
+      exactVersion: '10.0.303'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
-
-  - pwsh: |-
-      & '.pipelines/applyXamlStyling.ps1' -Passive
-    displayName: Verify XAML formatting
 
   - task: NuGetAuthenticate@1
     displayName: Authenticate NuGet feeds for verification
@@ -271,6 +276,17 @@ jobs:
         VCWhereExtraVersionTarget: '-prerelease'
 
   - ${{ if eq(parameters.official, true) }}:
+    # M.W.T.V Setup.ps1 sets the pipeline-level XES_APPXMANIFESTVERSION env var
+    # from the supplied -ProjectDirectory's custom.props. Whichever invocation
+    # runs last wins. cmdpal MUST run last because $(CmdPalVersion) (used by the
+    # VNext installer and CmdPal's AppxPackageTestDir) falls back to that env
+    # var; if AP wins, CmdPal's folder name and MSIX filename disagree on
+    # VersionMinor and the installer fails with WIX0103. Each project's own
+    # custom.props is still applied at MSBuild time, so AP versioning is
+    # unaffected by the order.
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\AdvancedPaste
     - template: .\steps-setup-versioning.yml
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
@@ -599,7 +615,7 @@ jobs:
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
+      versionNumber: $(EffectiveVersionNumber)
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   # This saves ~1GiB per architecture. We won't need these later.
@@ -663,7 +679,7 @@ jobs:
 
   # Publishing the GPO files
   - pwsh: |-
-      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-$(EffectiveVersionNumber).zip"
       tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
 

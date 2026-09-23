@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -26,6 +27,15 @@ public sealed partial class DockWindowManager : IDisposable
     private bool _disposed;
     private int _syncing;
 
+    /// <summary>
+    /// Debounces rapid-fire monitor-change notifications (several WM_DISPLAYCHANGE messages
+    /// during a Win+P switch or dock/undock). Without it, each intermediate topology
+    /// snapshot gets reconciled and persisted, which can permanently corrupt dock configs
+    /// even though things settle fine on their own a moment later.
+    /// </summary>
+    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromMilliseconds(400);
+    private readonly DispatcherQueueTimer _monitorsChangedDebounceTimer;
+
     private bool? _lastSyncedEnableDock;
     private DockSettings? _lastSyncedDockSettings;
 
@@ -37,6 +47,7 @@ public sealed partial class DockWindowManager : IDisposable
         _monitorService = monitorService;
         _settingsService = settingsService;
         _dispatcherQueue = dispatcherQueue;
+        _monitorsChangedDebounceTimer = _dispatcherQueue.CreateTimer();
 
         _monitorService.MonitorsChanged += OnMonitorsChanged;
         _settingsService.SettingsChanged += OnSettingsChanged;
@@ -74,7 +85,7 @@ public sealed partial class DockWindowManager : IDisposable
     /// <summary>
     /// Synchronizes running dock windows to match the current settings and connected monitors.
     /// </summary>
-    public void SyncDocksToSettings()
+    public void SyncDocksToSettings(bool refreshDockWindows = false)
     {
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0)
         {
@@ -83,7 +94,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         try
         {
-            SyncDocksToSettingsCore();
+            SyncDocksToSettingsCore(refreshDockWindows);
         }
         finally
         {
@@ -91,7 +102,7 @@ public sealed partial class DockWindowManager : IDisposable
         }
     }
 
-    private void SyncDocksToSettingsCore()
+    private void SyncDocksToSettingsCore(bool refreshDockWindows)
     {
         var settings = _settingsService.Settings;
         if (!settings.EnableDock)
@@ -167,6 +178,16 @@ public sealed partial class DockWindowManager : IDisposable
                 dock.ViewModel.Dispose();
             }
         }
+
+        if (!refreshDockWindows)
+        {
+            return;
+        }
+
+        foreach (var (_, (window, _)) in _docks)
+        {
+            window.RefreshForMonitorChange();
+        }
     }
 
     public void Dispose()
@@ -179,6 +200,8 @@ public sealed partial class DockWindowManager : IDisposable
         _disposed = true;
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
+
+        _monitorsChangedDebounceTimer.Stop();
 
         HideDocks();
     }
@@ -211,10 +234,15 @@ public sealed partial class DockWindowManager : IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                SyncDocksToSettings();
+                return;
             }
+
+            _monitorsChangedDebounceTimer.Debounce(
+                () => SyncDocksToSettings(refreshDockWindows: true),
+                interval: MonitorsChangedDebounceInterval,
+                immediate: false);
         });
     }
 

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using FormsSendKeys = System.Windows.Forms.SendKeys;
 
@@ -11,7 +12,10 @@ namespace Microsoft.PowerToys.UITest.Next;
 public enum Key : byte
 {
     Ctrl = 0x11,
+    LCtrl = 0xA2,
+    RCtrl = 0xA3,
     Shift = 0x10,
+    LShift = 0xA0,
     Alt = 0x12,
     LWin = 0x5B,
     Tab = 0x09,
@@ -80,10 +84,11 @@ public enum Key : byte
     F10 = 0x79,
     F11 = 0x7A,
     F12 = 0x7B,
+    OemPeriod = 0xBE,
 }
 
 /// <summary>
-/// Global keyboard input. Uses the same hybrid strategy as the legacy harness because pure
+/// Global keyboard input. <see cref="SendKeys"/> uses the same hybrid strategy as the legacy harness because pure
 /// <c>keybd_event</c> injection doesn't reliably trigger <c>RegisterHotKey</c>-registered global
 /// hotkeys for the PowerToys runner: hold LWIN down via <c>keybd_event</c>, then send the
 /// remaining chord via <see cref="System.Windows.Forms.SendKeys.SendWait"/> which uses
@@ -96,18 +101,92 @@ public static class KeyboardHelper
     private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
 #pragma warning restore SA1300
 
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int vKey);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint count, Input[] inputs, int size);
+
     private const uint KEYEVENTF_KEYUP = 0x2;
     private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
-    private const byte VK_LWIN = 0x5B;
 
     /// <summary>
-    /// Send a chord of keys. If the chord contains <see cref="Key.LWin"/>, LWIN is held via
-    /// <c>keybd_event</c> while the remaining keys are sent via <see cref="FormsSendKeys.SendWait"/>.
-    /// Otherwise everything goes through SendKeys.SendWait (the modifier-aware Windows path).
+    /// Press all keys in order, then release them in reverse order, in a single <c>SendInput</c> batch.
+    /// </summary>
+    public static void SendChord(params Key[] keys)
+    {
+        var inputs = CreateChordInputPlan(keys);
+
+        // Queue the complete chord atomically. Releasing a SendKeys modifier after the module
+        // starts its own Ctrl+V can otherwise turn the product's paste into a literal 'v'.
+        var sent = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (sent != inputs.Length)
+        {
+            var error = Marshal.GetLastWin32Error();
+            foreach (var key in keys.Reverse())
+            {
+                ReleaseKey(key);
+            }
+
+            throw new Win32Exception(error, $"Only {sent} of {inputs.Length} keyboard events were injected.");
+        }
+    }
+
+    internal static Input[] CreateChordInputPlan(params Key[] keys)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        ArgumentOutOfRangeException.ThrowIfZero(keys.Length);
+        var inputs = new Input[keys.Length * 2];
+        for (var index = 0; index < keys.Length; index++)
+        {
+            inputs[index] = CreateInput(keys[index], keyUp: false);
+            inputs[keys.Length + index] = CreateInput(keys[keys.Length - index - 1], keyUp: true);
+        }
+
+        return inputs;
+    }
+
+    /// <summary>
+    /// Send a chord of keys. LWIN and side-specific Ctrl keys are held via <c>keybd_event</c> while
+    /// the remaining keys are sent via <see cref="FormsSendKeys.SendWait"/>. Otherwise everything
+    /// goes through SendKeys.SendWait (the modifier-aware Windows path).
     /// </summary>
     public static void SendKeys(params Key[] keys)
     {
-        bool winDown = false;
+        var (chord, heldKeys) = CreateChordPlan(keys);
+        foreach (var key in heldKeys)
+        {
+            PressKey(key);
+        }
+
+        try
+        {
+            if (chord.Length > 0)
+            {
+                FormsSendKeys.SendWait(chord);
+            }
+            else if (heldKeys.Count > 0)
+            {
+                Thread.Sleep(20);
+            }
+        }
+        finally
+        {
+            for (var index = heldKeys.Count - 1; index >= 0; index--)
+            {
+                ReleaseKey(heldKeys[index]);
+            }
+        }
+    }
+
+    internal static (string Chord, IReadOnlyList<Key> HeldKeys) CreateChordPlan(params Key[] keys)
+    {
+        if (keys.Contains(Key.OemPeriod))
+        {
+            throw new NotSupportedException($"Use {nameof(SendKey)} for OEM keys so input follows the active keyboard layout.");
+        }
+
+        var heldKeys = new List<Key>();
         var chord = new System.Text.StringBuilder();
 
         foreach (var k in keys)
@@ -115,11 +194,14 @@ public static class KeyboardHelper
             switch (k)
             {
                 case Key.LWin:
-                    keybd_event(VK_LWIN, 0, 0, UIntPtr.Zero);
-                    winDown = true;
+                case Key.LCtrl:
+                case Key.RCtrl:
+                    heldKeys.Add(k);
                     break;
-                case Key.Ctrl: chord.Append('^'); break;
-                case Key.Shift: chord.Append('+'); break;
+                case Key.Ctrl:
+                    chord.Append('^'); break;
+                case Key.Shift:
+                case Key.LShift: chord.Append('+'); break;
                 case Key.Alt: chord.Append('%'); break;
                 case Key.Esc: chord.Append("{ESC}"); break;
                 case Key.Enter: chord.Append("{ENTER}"); break;
@@ -155,21 +237,15 @@ public static class KeyboardHelper
             }
         }
 
-        try
-        {
-            if (chord.Length > 0)
-            {
-                FormsSendKeys.SendWait(chord.ToString());
-            }
-        }
-        finally
-        {
-            if (winDown)
-            {
-                keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
-            }
-        }
+        return (chord.ToString(), heldKeys);
     }
+
+    /// <summary>
+    /// Whether <paramref name="key"/> is currently held, per the system's async key state. A key that a
+    /// low-level keyboard hook swallowed never reaches this state, so this also tells a test whether an
+    /// injected key was consumed by another process's hook.
+    /// </summary>
+    public static bool IsKeyDown(Key key) => (GetAsyncKeyState((byte)key) & 0x8000) != 0;
 
     /// <summary>Press (and hold) a key via <c>keybd_event</c>. Pair with <see cref="ReleaseKey"/>.</summary>
     public static void PressKey(Key key) =>
@@ -198,7 +274,63 @@ public static class KeyboardHelper
     }
 
     private static bool IsExtended(Key key) => key is
+        Key.LWin or Key.RCtrl or
         Key.Left or Key.Up or Key.Right or Key.Down or
         Key.Home or Key.End or Key.PageUp or Key.PageDown or
         Key.Insert or Key.Delete;
+
+    private static Input CreateInput(Key key, bool keyUp)
+    {
+        return new Input
+        {
+            Type = 1,
+            Data = new InputData
+            {
+                Keyboard = new KeyboardInput
+                {
+                    VirtualKey = (ushort)key,
+                    Flags = (keyUp ? KEYEVENTF_KEYUP : 0u) | (IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u),
+                },
+            },
+        };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Input
+    {
+        internal uint Type;
+        internal InputData Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct InputData
+    {
+        [FieldOffset(0)]
+        internal KeyboardInput Keyboard;
+
+        // MOUSEINPUT is the largest union member and determines the native INPUT size.
+        [FieldOffset(0)]
+        internal MouseInput Mouse;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct KeyboardInput
+    {
+        internal ushort VirtualKey;
+        internal ushort ScanCode;
+        internal uint Flags;
+        internal uint Time;
+        internal UIntPtr ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MouseInput
+    {
+        internal int X;
+        internal int Y;
+        internal uint MouseData;
+        internal uint Flags;
+        internal uint Time;
+        internal UIntPtr ExtraInfo;
+    }
 }

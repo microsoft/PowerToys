@@ -44,7 +44,9 @@ public record SettingsModel
     public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
         = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public bool AllowExternalReload { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
+
+    public bool AllowAltF4 { get; init; }
 
     public bool CompactMode { get; set; }
 
@@ -172,13 +174,15 @@ public record SettingsModel
           ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
-          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null,
+          bool enableExternalCommandLinks = true)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
         FallbackRanks = fallbackRanks ?? [];
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        EnableExternalCommandLinks = enableExternalCommandLinks;
     }
 
     public SettingsModel()

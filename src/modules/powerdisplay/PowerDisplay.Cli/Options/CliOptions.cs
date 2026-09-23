@@ -143,6 +143,15 @@ public static class CliOptions
         Arity = ArgumentArity.Zero,
     };
 
+    // A pure presence flag so it can appear immediately before a subcommand argument without
+    // consuming that argument (for example, `apply-profile --json 3`).
+    public static readonly Option<bool> Json = new(
+        ["--json"],
+        "Write compact JSON Lines output for scripting and automation.")
+    {
+        Arity = ArgumentArity.Zero,
+    };
+
     // Arity is Zero (a pure presence flag), not ZeroOrOne: same greedy-swallow reasoning as --quiet
     // and the up/down setting flags. A bare --confirm-power-off resolves to true.
     public static readonly Option<bool> ConfirmPowerOff = new(

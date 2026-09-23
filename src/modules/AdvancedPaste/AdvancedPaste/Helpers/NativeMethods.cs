@@ -157,8 +157,6 @@ namespace AdvancedPaste.Helpers
         {
             public int X;
             public int Y;
-
-            public static explicit operator System.Windows.Point(PointInter point) => new System.Windows.Point(point.X, point.Y);
         }
 
         [DllImport("user32.dll")]

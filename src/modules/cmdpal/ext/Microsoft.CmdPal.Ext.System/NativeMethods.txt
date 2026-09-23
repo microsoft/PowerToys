@@ -1,0 +1,12 @@
+InitiateShutdown
+OpenProcessToken
+GetCurrentProcess
+LookupPrivilegeValue
+AdjustTokenPrivileges
+
+SHUTDOWN_FLAGS
+SHUTDOWN_REASON
+TOKEN_PRIVILEGES_ATTRIBUTES
+TOKEN_ACCESS_MASK
+WIN32_ERROR
+SE_SHUTDOWN_NAME

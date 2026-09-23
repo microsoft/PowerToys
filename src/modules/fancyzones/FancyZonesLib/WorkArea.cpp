@@ -5,6 +5,7 @@
 
 #include "FancyZonesData/AppliedLayouts.h"
 #include "FancyZonesData/AppZoneHistory.h"
+#include "FancyZonesData/CustomLayouts.h"
 #include "ZonesOverlay.h"
 #include "Settings.h"
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
@@ -204,6 +205,30 @@ void WorkArea::FlashZones()
     }
 }
 
+void WorkArea::ShowMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation)
+{
+    if (!m_zonesOverlay)
+    {
+        return;
+    }
+
+    std::vector<RECT> localWindowRects;
+    localWindowRects.reserve(windowRects.size());
+    for (const auto& rect : windowRects)
+    {
+        localWindowRects.push_back(RECT{
+            .left = rect.left - m_workAreaRect.left(),
+            .top = rect.top - m_workAreaRect.top(),
+            .right = rect.right - m_workAreaRect.left(),
+            .bottom = rect.bottom - m_workAreaRect.top(),
+        });
+    }
+
+    SetWorkAreaWindowAsTopmost(nullptr);
+    m_zonesOverlay->DrawMonitorRotationPreview(localWindowRects, monitorNumber, reverse, animateRotation);
+    m_zonesOverlay->Show();
+}
+
 void WorkArea::InitLayout()
 {
     InitLayout({});
@@ -303,11 +328,26 @@ void WorkArea::InitSnappedWindows()
 
 void WorkArea::CalculateZoneSet()
 {
-    const auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
+    auto appliedLayout = AppliedLayouts::instance().GetDeviceLayout(m_uniqueId);
     if (!appliedLayout.has_value())
     {
         Logger::error(L"Layout wasn't applied. Can't init layout on work area {}x{}", m_workAreaRect.width(), m_workAreaRect.height());
         return;
+    }
+
+    // For custom layouts the spacing, sensitivity radius and zone count live in the custom
+    // layout definition (custom-layouts.json), while the applied-layouts.json snapshot keeps a
+    // copy taken at apply time. Editing those properties only rewrites custom-layouts.json, so
+    // without this sync the snapshot stays stale and the edits don't take effect until the layout
+    // is re-applied (see GH #44058). Re-derive the scalar properties from the current custom
+    // layout using the same logic the apply path uses (CustomLayouts::GetLayout also derives the
+    // canvas zone count from the zone list, keeping it consistent with Layout::Init validation).
+    if (appliedLayout->type == FancyZonesDataTypes::ZoneSetLayoutType::Custom)
+    {
+        if (const auto refreshed = CustomLayouts::instance().GetLayout(appliedLayout->uuid))
+        {
+            appliedLayout = refreshed;
+        }
     }
 
     m_layout = std::make_unique<Layout>(appliedLayout.value());

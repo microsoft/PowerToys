@@ -19,6 +19,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: runAffectedUiTests
+    type: boolean
+    default: false
   - name: useVSPreview
     type: boolean
     default: false
@@ -91,6 +94,47 @@ stages:
               artifactName: ${{ parameters.artifactName }}
               metaPackageName: ${{ parameters.metaPackageName }}
             timeoutInMinutes: 90
+
+        - ${{ if eq(parameters.runAffectedUiTests, true) }}:
+          - template: job-resolve-ui-tests.yml
+
+          - ${{ if eq(platform, 'x64') }}:
+            - template: job-test-project.yml
+              parameters:
+                platform: x64Win10
+                configuration: Release
+                buildSource: buildNowSlim
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                autoSelectUiTests: true
+                dependsOn:
+                  - Build
+                  - Resolve
+                condition: and(succeeded(), eq(dependencies.Resolve.outputs['resolve.hasUiTests'], 'true'))
+
+            - template: job-test-project.yml
+              parameters:
+                platform: x64Win11
+                configuration: Release
+                buildSource: buildNowSlim
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                autoSelectUiTests: true
+                dependsOn:
+                  - Build
+                  - Resolve
+                condition: and(succeeded(), eq(dependencies.Resolve.outputs['resolve.hasUiTests'], 'true'))
+
+          - ${{ if ne(platform, 'x64') }}:
+            - template: job-test-project.yml
+              parameters:
+                platform: ${{ platform }}
+                configuration: Release
+                buildSource: buildNowSlim
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                autoSelectUiTests: true
+                dependsOn:
+                  - Build
+                  - Resolve
+                condition: and(succeeded(), eq(dependencies.Resolve.outputs['resolve.hasUiTests'], 'true'))
 
   - stage: Build_SDK
     displayName: Build Command Palette Toolkit SDK

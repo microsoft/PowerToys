@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
         [JsonPropertyName("colorhistory")]
         [CmdConfigureIgnoreAttribute]
-        public List<string> ColorHistory { get; set; }
+        public List<string> ColorHistory { get; init; }
 
         [JsonPropertyName("colorhistorylimit")]
         [CmdConfigureIgnoreAttribute]
@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("visiblecolorformats")]
         [CmdConfigureIgnoreAttribute]
-        public Dictionary<string, KeyValuePair<bool, string>> VisibleColorFormats { get; set; }
+        public Dictionary<string, KeyValuePair<bool, string>> VisibleColorFormats { get; init; }
 
         [JsonPropertyName("showcolorname")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]

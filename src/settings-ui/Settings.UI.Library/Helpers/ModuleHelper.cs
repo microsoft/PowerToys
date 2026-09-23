@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Workspaces => "Workspaces/ModuleTitle",
                 ModuleType.PowerAccent => "QuickAccent/ModuleTitle",
                 ModuleType.PowerOCR => "TextExtractor/ModuleTitle",
+                ModuleType.AutoHideCursor => "MouseUtils_AutoHideCursor/Header",
                 ModuleType.FindMyMouse => "MouseUtils_FindMyMouse/Header",
                 ModuleType.MouseHighlighter => "MouseUtils_MouseHighlighter/Header",
                 ModuleType.MouseJump => "MouseUtils_MouseJump/Header",
@@ -30,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             return moduleType switch
             {
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
+                ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
+                ModuleType.AutoHideCursor => "ms-appx:///Assets/Settings/Icons/MouseUtils.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
@@ -47,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => generalSettingsConfig.Enabled.AdvancedPaste,
                 ModuleType.AlwaysOnTop => generalSettingsConfig.Enabled.AlwaysOnTop,
+                ModuleType.AutoHideCursor => generalSettingsConfig.Enabled.AutoHideCursor,
                 ModuleType.Awake => generalSettingsConfig.Enabled.Awake,
                 ModuleType.CmdPal => generalSettingsConfig.Enabled.CmdPal,
                 ModuleType.ColorPicker => generalSettingsConfig.Enabled.ColorPicker,
@@ -56,6 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FancyZones => generalSettingsConfig.Enabled.FancyZones,
                 ModuleType.FileLocksmith => generalSettingsConfig.Enabled.FileLocksmith,
                 ModuleType.FindMyMouse => generalSettingsConfig.Enabled.FindMyMouse,
+                ModuleType.AltWindowCycle => generalSettingsConfig.Enabled.AltWindowCycle,
                 ModuleType.Hosts => generalSettingsConfig.Enabled.Hosts,
                 ModuleType.ImageResizer => generalSettingsConfig.Enabled.ImageResizer,
                 ModuleType.KeyboardManager => generalSettingsConfig.Enabled.KeyboardManager,
@@ -88,6 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 case ModuleType.AdvancedPaste: generalSettingsConfig.Enabled.AdvancedPaste = isEnabled; break;
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
+                case ModuleType.AutoHideCursor: generalSettingsConfig.Enabled.AutoHideCursor = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
                 case ModuleType.CmdPal: generalSettingsConfig.Enabled.CmdPal = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
@@ -97,6 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
+                case ModuleType.AltWindowCycle: generalSettingsConfig.Enabled.AltWindowCycle = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
                 case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
@@ -132,6 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             {
                 ModuleType.AdvancedPaste => AdvancedPasteSettings.ModuleName,
                 ModuleType.AlwaysOnTop => AlwaysOnTopSettings.ModuleName,
+                ModuleType.AutoHideCursor => AutoHideCursorSettings.ModuleName,
                 ModuleType.Awake => AwakeSettings.ModuleName,
                 ModuleType.CmdPal => "CmdPal", // No dedicated settings class
                 ModuleType.ColorPicker => ColorPickerSettings.ModuleName,
@@ -141,6 +149,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.FancyZones => FancyZonesSettings.ModuleName,
                 ModuleType.FileLocksmith => FileLocksmithSettings.ModuleName,
                 ModuleType.FindMyMouse => FindMyMouseSettings.ModuleName,
+                ModuleType.AltWindowCycle => AltWindowCycleSettings.ModuleName,
                 ModuleType.Hosts => HostsSettings.ModuleName,
                 ModuleType.ImageResizer => ImageResizerSettings.ModuleName,
                 ModuleType.KeyboardManager => KeyboardManagerSettings.ModuleName,

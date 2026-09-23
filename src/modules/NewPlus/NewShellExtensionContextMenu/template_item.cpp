@@ -1,13 +1,23 @@
 #include "pch.h"
 #include "template_item.h"
-#include <shellapi.h>
+#include "newplus_icon_utilities.h"
 #include "new_utilities.h"
-#include <cassert>
+#include <chrono>
 #include <thread>
 #include <shlobj_core.h>
 
 using namespace Microsoft::WRL;
 using namespace newplus;
+
+namespace
+{
+    struct rename_worker_context
+    {
+        std::filesystem::path target_fullpath;
+        POINT mouse_position_at_invoke;
+        HMODULE module_reference;
+    };
+}
 
 template_item::template_item(const std::filesystem::path entry)
 {
@@ -147,12 +157,16 @@ std::wstring template_item::remove_starting_digits_from_filename(std::wstring fi
 
 std::wstring template_item::get_explorer_icon() const
 {
-    return utilities::get_explorer_icon(path);
+    // Use the non-throwing filesystem query: this runs while Explorer builds the context menu, so a
+    // throwing directory check here could take down the shell extension. On error, treat as a file.
+    std::error_code ec;
+    const bool is_dir = std::filesystem::is_directory(path, ec) && !ec;
+    return icon_utilities::get_explorer_icon(path, is_dir);
 }
 
 HICON template_item::get_explorer_icon_handle() const
 {
-    return utilities::get_explorer_icon_handle(path);
+    return icon_utilities::get_explorer_icon_handle(path);
 }
 
 std::filesystem::path template_item::copy_object_to(const HWND window_handle, const std::filesystem::path destination) const
@@ -188,18 +202,103 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 }
 
-void template_item::enter_rename_mode(const std::filesystem::path target_fullpath) const
+void template_item::enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke) const
 {
-    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_fullpath);
-    thread_for_renaming_workaround.detach();
+    HMODULE module_reference = nullptr;
+    if (!GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+            reinterpret_cast<LPCWSTR>(&module_instance_handle),
+            &module_reference))
+    {
+        return;
+    }
+
+    std::unique_ptr<rename_worker_context> context;
+    try
+    {
+        context = std::make_unique<rename_worker_context>(
+            target_fullpath,
+            mouse_position_at_invoke,
+            module_reference);
+    }
+    catch (...)
+    {
+        FreeLibrary(module_reference);
+        return;
+    }
+
+    active_rename_workers.fetch_add(1);
+    const HANDLE thread = CreateThread(nullptr, 0, rename_worker_thread_proc, context.get(), 0, nullptr);
+    if (thread == nullptr)
+    {
+        active_rename_workers.fetch_sub(1);
+        FreeLibrary(module_reference);
+        return;
+    }
+
+    context.release();
+    CloseHandle(thread);
 }
 
-void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath)
+DWORD WINAPI template_item::rename_worker_thread_proc(void* parameter)
 {
-    // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
-    // Sleep for a bit to only enter rename mode when icon has been drawn.
-    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 50 };
-    std::this_thread::sleep_for(std::chrono::milliseconds(approx_wait_for_icon_redraw_not_needed));
+    std::unique_ptr<rename_worker_context> context(static_cast<rename_worker_context*>(parameter));
+    const HMODULE module_reference = context->module_reference;
 
-    newplus::utilities::explorer_enter_rename_mode(target_fullpath);
+    rename_on_other_thread_workaround(context->target_fullpath, context->mouse_position_at_invoke);
+    context.reset();
+    active_rename_workers.fetch_sub(1);
+    FreeLibraryAndExitThread(module_reference, 0);
+}
+
+void template_item::rename_on_other_thread_workaround(const std::filesystem::path& target_fullpath, const POINT mouse_position_at_invoke)
+{
+    struct worker_cleanup
+    {
+        bool com_initialized = false;
+
+        ~worker_cleanup()
+        {
+            if (com_initialized)
+            {
+                CoUninitialize();
+            }
+        }
+    } cleanup;
+
+    const HRESULT com_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
+    if (FAILED(com_result))
+    {
+        return;
+    }
+    cleanup.com_initialized = true;
+
+    // Have been unable to have Windows Explorer Shell enter rename mode from the main thread.
+    // Poll until the item appears in the folder view so icon is positioned and rename mode is entered
+    // without a jump in the positioning
+    constexpr std::chrono::milliseconds initial_poll_interval{ 30 };
+    constexpr std::chrono::milliseconds maximum_poll_interval{ 240 };
+    constexpr std::chrono::milliseconds poll_timeout{ 2000 };
+    const auto deadline = std::chrono::steady_clock::now() + poll_timeout;
+    auto poll_interval = initial_poll_interval;
+
+    try
+    {
+        while (std::chrono::steady_clock::now() < deadline)
+        {
+            if (newplus::utilities::explorer_enter_rename_mode_and_reposition(target_fullpath, mouse_position_at_invoke))
+            {
+                return;
+            }
+            std::this_thread::sleep_for(poll_interval);
+            poll_interval = std::min(poll_interval * 2, maximum_poll_interval);
+        }
+
+        // Final attempt: the item may have appeared during the last sleep interval (after the previous
+        // attempt but before the deadline), so try once more so a just-in-time item still enters rename mode.
+        newplus::utilities::explorer_enter_rename_mode_and_reposition(target_fullpath, mouse_position_at_invoke);
+    }
+    catch (...)
+    {
+    }
 }
