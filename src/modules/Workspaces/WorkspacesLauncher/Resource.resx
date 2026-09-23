@@ -136,4 +136,7 @@
   <data name="Project_not_found" xml:space="preserve">
     <value>Workspace {0} not found.</value>
   </data>
+  <data name="Protected_storage_error" xml:space="preserve">
+    <value>Workspaces protected storage is unavailable, has changed, or requires recovery. Open Workspaces Editor to complete setup or resolve the problem, then retry. No legacy or temporary file will be used.</value>
+  </data>
 </root>

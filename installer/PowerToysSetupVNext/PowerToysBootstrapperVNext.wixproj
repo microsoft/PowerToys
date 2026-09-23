@@ -1,4 +1,5 @@
 <Project Sdk="WixToolset.Sdk/5.0.2">
+  <Import Project="..\PowerToysProtectedStorage\ProtectedStorage.Release.props" />
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -58,4 +59,10 @@
     </ItemGroup>
   </Target>
   <Target Name="Restore" />
+  <Import Project="..\PowerToysProtectedStorage\ProtectedStorage.Release.targets" />
+  <Target Name="VerifyProtectedStorageBundlePayload" BeforeTargets="BeforeBuild" DependsOnTargets="RequireProtectedStorageRelease">
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);ProtectedStorageSetupPath=$(ProtectedStorageSetupPath)</DefineConstants>
+    </PropertyGroup>
+  </Target>
 </Project>

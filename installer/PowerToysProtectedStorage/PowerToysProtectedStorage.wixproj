@@ -1,0 +1,16 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <OutputName>PowerToys.ProtectedStorage.Carrier</OutputName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ProtectedStorageStage Condition="'$(ProtectedStorageStage)' == ''">$(RepoRoot)artifacts\ProtectedStorage\$(Platform)\$(Configuration)\Package</ProtectedStorageStage>
+    <OutputPath>$(ProtectedStorageStage)\</OutputPath>
+    <IntermediateOutputPath>$(ProtectedStorageStage)\obj\</IntermediateOutputPath>
+    <DefineConstants>ProductVersion=$(ProtectedStorageVersion);ProductCode=$(ProtectedStorageProductCode);BuildDir=$(ProtectedStorageStage)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="Product.wxs" /></ItemGroup>
+  <Target Name="RequireFinalizedCarrierInputs" BeforeTargets="Compile">
+    <Error Condition="'$(ProtectedStorageProductCode)' == '' Or '$(ProtectedStorageVersion)' == ''" Text="Build via Build-Carrier.ps1 -Package with explicit release signing inputs." />
+    <Error Condition="!Exists('$(ProtectedStorageStage)\ClientCatalog.p7s') Or !Exists('$(ProtectedStorageStage)\manifest.p7s')" Text="Signed release manifests are required; unsigned runtime packages are not supported." />
+  </Target>
+</Project>

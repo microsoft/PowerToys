@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\ProtectedStorage\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\</IntDir>
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <_StorageExplicitVersion Condition="'$(ProtectedStorageVersion)' != ''">true</_StorageExplicitVersion>
+    <ProtectedStorageVersion Condition="'$(ProtectedStorageVersion)' == '' And $([System.Version]::Parse('$(Version)').Revision) == -1">$(Version).0</ProtectedStorageVersion>
+    <ProtectedStorageVersion Condition="'$(ProtectedStorageVersion)' == ''">$(Version)</ProtectedStorageVersion>
+    <ProtectedStorageVersionMajor Condition="'$(ProtectedStorageVersionMajor)' == ''">$([System.Version]::Parse('$(ProtectedStorageVersion)').Major)</ProtectedStorageVersionMajor>
+    <ProtectedStorageVersionMinor Condition="'$(ProtectedStorageVersionMinor)' == ''">$([System.Version]::Parse('$(ProtectedStorageVersion)').Minor)</ProtectedStorageVersionMinor>
+    <ProtectedStorageVersionBuild Condition="'$(ProtectedStorageVersionBuild)' == ''">$([System.Version]::Parse('$(ProtectedStorageVersion)').Build)</ProtectedStorageVersionBuild>
+    <ProtectedStorageVersionRevision Condition="'$(ProtectedStorageVersionRevision)' == ''">$([System.Version]::Parse('$(ProtectedStorageVersion)').Revision)</ProtectedStorageVersionRevision>
+    <ProtectedStorageEffectiveVersion>$(ProtectedStorageVersionMajor).$(ProtectedStorageVersionMinor).$(ProtectedStorageVersionBuild).$(ProtectedStorageVersionRevision)</ProtectedStorageEffectiveVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)ProtectedStorage.Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>PTPS_VERSION_MAJOR=$(ProtectedStorageVersionMajor);PTPS_VERSION_MINOR=$(ProtectedStorageVersionMinor);PTPS_VERSION_BUILD=$(ProtectedStorageVersionBuild);PTPS_VERSION_REVISION=$(ProtectedStorageVersionRevision);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <Target Name="ValidateProtectedStorageVersion" BeforeTargets="PrepareForBuild">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(ProtectedStorageVersionMajor)', '^(0|[1-9][0-9]{0,4})$')) Or $(ProtectedStorageVersionMajor) &gt; 65535"
+           Text="ProtectedStorageVersionMajor must be a canonical PE version component." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(ProtectedStorageVersionMinor)', '^(0|[1-9][0-9]{0,4})$')) Or $(ProtectedStorageVersionMinor) &gt; 65535"
+           Text="ProtectedStorageVersionMinor must be a canonical PE version component." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(ProtectedStorageVersionBuild)', '^(0|[1-9][0-9]{0,4})$')) Or $(ProtectedStorageVersionBuild) &gt; 65535"
+           Text="ProtectedStorageVersionBuild must be a canonical PE version component." />
+    <Error Condition="'$(ProtectedStorageVersionRevision)' != '0'"
+           Text="Protected-storage carrier PE versions must equal the three-part MSI version plus .0." />
+    <Error Condition="'$(_StorageExplicitVersion)' == 'true' And '$(ProtectedStorageVersion)' != '$(ProtectedStorageEffectiveVersion)'"
+           Text="ProtectedStorageVersion conflicts with the explicit protected-storage version components." />
+  </Target>
+</Project>

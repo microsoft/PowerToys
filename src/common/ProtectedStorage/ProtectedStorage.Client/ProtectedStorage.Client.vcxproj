@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals"><ProjectGuid>{1177C4C8-133C-43BD-91CA-D323772EECD2}</ProjectGuid><ProjectName>ProtectedStorage.Client</ProjectName></PropertyGroup>
+  <PropertyGroup Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\ProtectedStorage.Native.props" />
+  <ItemGroup><ClCompile Include="ProtectedStoreClient.cpp" /><ClInclude Include="ProtectedStoreClient.h" /><ClInclude Include="ClientProtocol.h" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -1,0 +1,96 @@
+parameters:
+  - name: versionNumber
+    type: string
+  - name: signingIdentity
+    type: object
+    default: {}
+
+steps:
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      . .\installer\PowerToysProtectedStorage\ReleaseTools.ps1
+      $bin = Join-Path '$(Build.SourcesDirectory)' '$(BuildPlatform)\$(BuildConfiguration)'
+      $editor = Join-Path $bin 'PowerToys.WorkspacesEditor.exe'
+      $signature = Get-AuthenticodeSignature -LiteralPath $editor
+      if ($signature.Status -ne 'Valid' -or !$signature.SignerCertificate) {
+        throw 'The final ESRP-signed Editor is required before deriving the release signer pin.'
+      }
+      $version = (Get-CarrierVersion '${{ parameters.versionNumber }}').PE
+      if ([Diagnostics.FileVersionInfo]::GetVersionInfo($editor).FileVersion -ne $version) {
+        throw 'The ESRP-signed Editor version does not match this release.'
+      }
+      $pin = Get-CertificatePin $signature.SignerCertificate
+      Write-Host "##vso[task.setvariable variable=ProtectedStorageExpectedSignerSha256;isReadOnly=true]$pin"
+      $root = Join-Path '$(Build.SourcesDirectory)' 'artifacts\ProtectedStorage\$(BuildPlatform)\$(BuildConfiguration)'
+      Write-Host "##vso[task.setvariable variable=ProtectedStorageStageRoot;isReadOnly=true]$root"
+      & .\tools\build\New-ProtectedStorageClientInventory.ps1 `
+        -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -ModuleServicesHostPath (Join-Path $bin 'WinUI3Apps\Microsoft.CmdPal.Ext.PowerToys.exe') `
+        -OutputPath (Join-Path $root 'clients.json')
+    displayName: Prepare Protected Storage signed-client inventory
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Payloads -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}' -ExpectedSignerSha256 '$(ProtectedStorageExpectedSignerSha256)' `
+        -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"'
+    displayName: Build Protected Storage payloads and MSI action
+
+  - template: steps-esrp-sign-files-authenticode.yml
+    parameters:
+      displayName: Sign Protected Storage payloads and MSI action
+      signingIdentity: ${{ parameters.signingIdentity }}
+      folder: '$(ProtectedStorageStageRoot)\Package'
+      pattern: |-
+        Bootstrap.exe
+        Runtime.exe
+        PowerToys.ProtectedStorageMsiAction.exe
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Documents -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}' -ExpectedSignerSha256 '$(ProtectedStorageExpectedSignerSha256)' `
+        -ClientCatalogInput '$(ProtectedStorageStageRoot)\clients.json'
+      $package = '$(ProtectedStorageStageRoot)\Package'
+      Copy-Item -LiteralPath "$package\manifest.txt" -Destination "$package\manifest.p7s" -Force
+      Copy-Item -LiteralPath "$package\ClientCatalog.json" -Destination "$package\ClientCatalog.p7s" -Force
+    displayName: Generate Protected Storage manifests and detached-signing inputs
+
+  - template: steps-esrp-sign-files-detached.yml
+    parameters:
+      signingIdentity: ${{ parameters.signingIdentity }}
+      folder: '$(ProtectedStorageStageRoot)\Package'
+
+  - ${{ each phase in split('Lifecycle,Carrier,Broker,Setup', ',') }}:
+    - pwsh: |-
+        & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+          -ReleaseStage '${{ phase }}' -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+          -Version '${{ parameters.versionNumber }}' -ExpectedSignerSha256 '$(ProtectedStorageExpectedSignerSha256)' `
+          -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"'
+      displayName: Build Protected Storage ${{ phase }}
+
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign Protected Storage ${{ phase }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: '$(ProtectedStorageStageRoot)\Package'
+        ${{ if eq(phase, 'Lifecycle') }}:
+          pattern: PowerToys.ProtectedStorageLifecycle.exe
+        ${{ elseif eq(phase, 'Carrier') }}:
+          pattern: PowerToys.ProtectedStorage.Carrier.msi
+        ${{ elseif eq(phase, 'Broker') }}:
+          pattern: PowerToys.ProtectedStorageProvisionBroker.exe
+        ${{ else }}:
+          pattern: PowerToys.ProtectedStorageSetup.exe
+
+  - pwsh: |-
+      & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+        -ReleaseStage Publish -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+        -Version '${{ parameters.versionNumber }}' -ExpectedSignerSha256 '$(ProtectedStorageExpectedSignerSha256)'
+      $package = '$(ProtectedStorageStageRoot)\Package'
+      $destination = Join-Path '$(Build.ArtifactStagingDirectory)' 'ProtectedStorage'
+      New-Item -ItemType Directory -Path $destination -Force | Out-Null
+      Get-ChildItem -LiteralPath $package -File | Where-Object {
+        $_.Extension -in '.exe', '.msi', '.json', '.txt', '.p7s'
+      } | Copy-Item -Destination $destination
+    displayName: Verify and publish finalized Protected Storage release

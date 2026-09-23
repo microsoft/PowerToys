@@ -20,6 +20,7 @@
 #include <common/updating/installer.h>
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
+#include <common/updating/protectedStorageUpdate.h>
 #include <common/utils/appMutex.h>
 #include <common/utils/elevation.h>
 #include <common/utils/os-detect.h>
@@ -574,6 +575,36 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         const bool with_dont_elevate_arg = cmdLine.find("--dont-elevate") != std::string::npos;
         const bool run_elevated_setting = general_settings.GetNamedBoolean(L"run_elevated", false);
         const bool with_restartedElevated_arg = cmdLine.find("--restartedElevated") != std::string::npos;
+
+        if (!(elevated && with_dont_elevate_arg && !run_elevated_setting) &&
+            (elevated || !run_elevated_setting || with_dont_elevate_arg || with_restartedElevated_arg))
+        {
+            const auto installDirectory = std::filesystem::path(get_module_folderpath());
+            try
+            {
+                std::thread{ [installDirectory] {
+                    try
+                    {
+                        winrt::init_apartment(winrt::apartment_type::multi_threaded);
+                        const auto apartment = wil::scope_exit([] { winrt::uninit_apartment(); });
+                        // Never provision or elevate from this background path.
+                        updating::SynchronizeProtectedStorageForOwner(installDirectory);
+                    }
+                    catch (const winrt::hresult_error& error)
+                    {
+                        Logger::error(L"Protected-storage startup coordination failed: {}", error.message());
+                    }
+                    catch (const std::exception& error)
+                    {
+                        Logger::error("Protected-storage startup coordination failed: {}", error.what());
+                    }
+                } }.detach();
+            }
+            catch (const std::exception& error)
+            {
+                Logger::error("Could not start protected-storage background coordination: {}", error.what());
+            }
+        }
 
         // Update scoobe behavior based on setting and gpo
         bool scoobeSettingDisabled = general_settings.GetNamedBoolean(L"show_whats_new_after_updates", true) == false;

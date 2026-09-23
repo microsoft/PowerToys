@@ -68,6 +68,25 @@
     <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
+  <Folder Name="/common/ProtectedStorage/">
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Common/ProtectedStorage.Common.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Client/ProtectedStorage.Client.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Client.Managed/ProtectedStorage.Client.Managed.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Bootstrap/ProtectedStorage.Bootstrap.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Runtime/ProtectedStorage.Runtime.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Setup/ProtectedStorage.Setup.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.ProvisionBroker/ProtectedStorage.ProvisionBroker.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.Lifecycle/ProtectedStorage.Lifecycle.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.MsiAction/ProtectedStorage.MsiAction.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.UnitTests/ProtectedStorage.UnitTests.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/tests/ProtectedStorage.Client.Managed.UnitTests/ProtectedStorage.Client.Managed.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/common/interop/">
     <Project Path="src/common/interop/interop-tests/Common.Interop.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -113,6 +132,7 @@
     <File Path="src/common/utils/MsWindowsSettings.h" />
     <File Path="src/common/utils/OnThreadExecutor.h" />
     <File Path="src/common/utils/os-detect.h" />
+    <File Path="src/common/utils/owner_process.h" />
     <File Path="src/common/utils/package.h" />
     <File Path="src/common/utils/ProcessWaiter.h" />
     <File Path="src/common/utils/process_path.h" />
@@ -1262,4 +1282,3 @@
   <Project Path="src/runner/UnitTests/UnitTests-Runner.vcxproj" Id="97bdacf8-261d-4e23-a708-a27e0b60e444" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
-

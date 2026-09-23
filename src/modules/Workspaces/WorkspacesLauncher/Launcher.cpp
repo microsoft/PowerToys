@@ -10,11 +10,9 @@
 #include <AppLauncher.h>
 #include <WorkspacesLib/AppUtils.h>
 
-Launcher::Launcher(const WorkspacesData::WorkspacesProject& project, 
-    std::vector<WorkspacesData::WorkspacesProject>& workspaces,
+Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     InvokePoint invokePoint) :
     m_project(project),
-    m_workspaces(workspaces),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
     m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1))),
@@ -28,7 +26,7 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
 
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
-    m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool
+    m_windowArrangerHelper->Launch(m_project, launchElevated, [&]() -> bool
         {
             if (m_launchingStatus.AllLaunchedAndMoved())
             {
@@ -54,22 +52,6 @@ Launcher::~Launcher()
 {
     // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
-
-    // update last-launched time
-    if (m_invokePoint != InvokePoint::LaunchAndEdit)
-    {
-        time_t launchedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        m_project.lastLaunchedTime = launchedTime;
-        for (int i = 0; i < m_workspaces.size(); i++)
-        {
-            if (m_workspaces[i].id == m_project.id)
-            {
-                m_workspaces[i] = m_project;
-                break;
-            }
-        }
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(m_workspaces));
-    }
 
     // telemetry
     auto end = std::chrono::high_resolution_clock::now();

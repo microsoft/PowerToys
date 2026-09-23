@@ -47,6 +47,8 @@
     <ClInclude Include="WbemHelper.h" />
     <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="WorkspacesData.h" />
+    <ClInclude Include="WorkspacesRepository.h" />
+    <ClInclude Include="WorkspaceLaunchSession.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <ItemGroup>
@@ -65,9 +67,14 @@
     <ClCompile Include="WbemHelper.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />
+    <ClCompile Include="WorkspacesRepository.cpp" />
+    <ClCompile Include="WorkspaceLaunchSession.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\ProtectedStorage\ProtectedStorage.Client\ProtectedStorage.Client.vcxproj">
+      <Project>{1177C4C8-133C-43BD-91CA-D323772EECD2}</Project>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\interop\PowerToys.Interop.vcxproj">
       <Project>{f055103b-f80b-4d0c-bf48-057c55620033}</Project>
     </ProjectReference>

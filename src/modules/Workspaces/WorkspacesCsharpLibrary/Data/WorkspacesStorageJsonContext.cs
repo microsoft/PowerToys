@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace WorkspacesCsharpLibrary.Data;
 
-[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-[JsonSerializable(typeof(WorkspacesStorage.WorkspacesFile))]
-[JsonSerializable(typeof(WorkspacesStorage.WorkspaceProject))]
+[JsonSourceGenerationOptions(MaxDepth = 32, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
+[JsonSerializable(typeof(WorkspacesData.WorkspacesListWrapper))]
+[JsonSerializable(typeof(ProjectWrapper))]
 [JsonSerializable(typeof(ApplicationWrapper))]
 [JsonSerializable(typeof(ApplicationWrapper.WindowPositionWrapper))]
 [JsonSerializable(typeof(MonitorConfigurationWrapper))]

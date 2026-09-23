@@ -25,6 +25,16 @@ namespace WorkspacesEditor.Properties {
     public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
+
+        public static string ProtectedStorageTitle => ResourceManager.GetString("ProtectedStorageTitle", resourceCulture);
+        public static string ProtectedStorageImport => ResourceManager.GetString("ProtectedStorageImport", resourceCulture);
+        public static string ProtectedStorageExport => ResourceManager.GetString("ProtectedStorageExport", resourceCulture);
+        public static string ProtectedStorageReload => ResourceManager.GetString("ProtectedStorageReload", resourceCulture);
+        public static string ProtectedStorageRetryCleanup => ResourceManager.GetString("ProtectedStorageRetryCleanup", resourceCulture);
+        public static string ProtectedStorageReplaceConfirm => ResourceManager.GetString("ProtectedStorageReplaceConfirm", resourceCulture);
+        public static string ProtectedStorageCleanupPending => ResourceManager.GetString("ProtectedStorageCleanupPending", resourceCulture);
+        public static string ProtectedStorageCaptureFailed => ResourceManager.GetString("ProtectedStorageCaptureFailed", resourceCulture);
+        public static string ProtectedStorageLaunchFailed => ResourceManager.GetString("ProtectedStorageLaunchFailed", resourceCulture);
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         

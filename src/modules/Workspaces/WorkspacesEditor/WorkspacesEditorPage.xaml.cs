@@ -29,27 +29,40 @@ namespace WorkspacesEditor
             InitializeComponent();
         }
 
-        private void SaveButtonClicked(object sender, RoutedEventArgs e)
+        private async void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
-            Project projectToSave = this.DataContext as Project;
-            projectToSave.CloseExpanders();
-
-            if (_mainViewModel.Workspaces.Any(x => x.Id == projectToSave.Id))
+            IsEnabled = false;
+            try
             {
-                _mainViewModel.SaveProject(projectToSave);
-            }
-            else
-            {
-                _mainViewModel.AddNewProject(projectToSave);
-            }
+                Project projectToSave = this.DataContext as Project;
+                projectToSave.CloseExpanders();
 
-            _mainViewModel.SwitchToMainView();
+                if (_mainViewModel.Workspaces.Any(x => x.Id == projectToSave.Id))
+                {
+                    if (!await _mainViewModel.SaveProjectAsync(projectToSave))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    if (!await _mainViewModel.AddNewProjectAsync(projectToSave))
+                    {
+                        return;
+                    }
+                }
+
+                _mainViewModel.SwitchToMainView();
+            }
+            finally
+            {
+                IsEnabled = true;
+            }
         }
 
-        private void CancelButtonClicked(object sender, RoutedEventArgs e)
+        private async void CancelButtonClicked(object sender, RoutedEventArgs e)
         {
-            // delete the temp file created by the snapshot tool
-            TempProjectData.DeleteTempFile();
+            await _mainViewModel.ReleasePreviewAsync();
 
             _mainViewModel.SwitchToMainView();
         }

@@ -1,0 +1,37 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="PowerToys Protected Storage" Manufacturer="Microsoft Corporation"
+           Version="$(var.ProductVersion)" ProductCode="$(var.ProductCode)"
+           UpgradeCode="{9A6A81D4-D538-4D8A-9B30-602C38B1BA23}" Scope="perUser" Language="1033">
+    <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer PowerToys Protected Storage release is installed." />
+    <Launch Condition="NOT ALLUSERS AND NOT TRANSFORMS" Message="This carrier requires the original ordinary-owner per-user package without transforms." />
+    <Launch Condition="NOT RollbackDisabled" Message="Windows Installer rollback must be enabled." />
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="INSTALLFOLDER" Name="PowerToysProtectedStorage">
+        <Component Id="OwnerProduct" Guid="{4142ED1D-18F8-471F-AD9A-BA1B6EB6D69E}">
+          <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys\ProtectedStorage" Name="CarrierVersion" Value="[ProductVersion]" Type="string" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <Feature Id="ProtectedStorage" Level="1" Title="Per-owner protected storage"><ComponentRef Id="OwnerProduct" /></Feature>
+    <Binary Id="Provisioner" SourceFile="$(var.BuildDir)\PowerToys.ProtectedStorageLifecycle.exe" />
+    <Binary Id="MsiAction" SourceFile="$(var.BuildDir)\PowerToys.ProtectedStorageMsiAction.exe" />
+    <Binary Id="Bootstrap" SourceFile="$(var.BuildDir)\Bootstrap.exe" />
+    <Binary Id="Runtime" SourceFile="$(var.BuildDir)\Runtime.exe" />
+    <Binary Id="Manifest" SourceFile="$(var.BuildDir)\manifest.txt" />
+    <Binary Id="ManifestSignature" SourceFile="$(var.BuildDir)\manifest.p7s" />
+    <Binary Id="ClientCatalog" SourceFile="$(var.BuildDir)\ClientCatalog.json" />
+    <Binary Id="ClientCatalogSignature" SourceFile="$(var.BuildDir)\ClientCatalog.p7s" />
+    <CustomAction Id="BeginProtectedStorage" BinaryRef="MsiAction" ExeCommand="begin &quot;[OriginalDatabase]&quot;" Execute="immediate" Impersonate="yes" Return="check" />
+    <CustomAction Id="RollbackProtectedStorage" BinaryRef="MsiAction" ExeCommand="rollback" Execute="rollback" Impersonate="yes" Return="check" />
+    <CustomAction Id="PrepareProtectedStorage" BinaryRef="MsiAction" ExeCommand="prepare" Execute="deferred" Impersonate="yes" Return="check" />
+    <CustomAction Id="CommitProtectedStorage" BinaryRef="MsiAction" ExeCommand="commit" Execute="commit" Impersonate="yes" Return="check" />
+    <CustomAction Id="RequireRemovalAuthorization" BinaryRef="MsiAction" ExeCommand="remove-guard" Execute="deferred" Impersonate="yes" Return="check" />
+    <InstallExecuteSequence>
+      <Custom Action="BeginProtectedStorage" After="InstallInitialize" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RollbackProtectedStorage" After="BeginProtectedStorage" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="PrepareProtectedStorage" After="InstallFiles" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="CommitProtectedStorage" After="PrepareProtectedStorage" Condition="NOT REMOVE~=&quot;ALL&quot;" />
+      <Custom Action="RequireRemovalAuthorization" Before="RemoveRegistryValues" Condition="Installed AND REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>

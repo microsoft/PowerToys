@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals"><ProjectGuid>{F9F31D87-C3B7-4E78-9ED6-1CF8124B9083}</ProjectGuid><RootNamespace>PowerToysProtectedStorage</RootNamespace></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\ProtectedStorage.Setup\Installer.props" />
+  <PropertyGroup><TargetName>PowerToys.ProtectedStorageLifecycle</TargetName></PropertyGroup>
+  <ItemGroup><ClCompile Include="Lifecycle.cpp" /><ClInclude Include="StorageInitialization.h" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
+  <ItemGroup Condition="Exists('$(ProtectedStorageGeneratedDir)Lifecycle.rc')"><ResourceCompile Include="$(ProtectedStorageGeneratedDir)Lifecycle.rc" /></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

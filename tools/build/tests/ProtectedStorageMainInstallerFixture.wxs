@@ -1,0 +1,22 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?if $(var.PerUser) = "true" ?>
+    <?define FixtureScope="perUser"?>
+    <?define FixtureRoot="LocalAppDataFolder"?>
+  <?else?>
+    <?define FixtureScope="perMachine"?>
+    <?define FixtureRoot="ProgramFiles6432Folder"?>
+  <?endif?>
+  <Package Name="Non-installable protected storage authoring fixture"
+           Manufacturer="PowerToys Tests"
+           Version="0.0.1"
+           Scope="$(var.FixtureScope)"
+           UpgradeCode="{36313031-CB59-4DB0-B84A-AC455930BBEA}">
+    <Launch Condition="0" Message="This compile-only fixture must never be installed." />
+    <StandardDirectory Id="$(var.FixtureRoot)">
+      <Directory Id="INSTALLFOLDER" Name="PowerToysFixture" />
+    </StandardDirectory>
+    <Feature Id="Fixture">
+      <ComponentGroupRef Id="ProtectedStorageComponents" />
+    </Feature>
+  </Package>
+</Wix>

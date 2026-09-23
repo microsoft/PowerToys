@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
+    <ProjectReference Include="..\..\..\common\ProtectedStorage\ProtectedStorage.Client.Managed\ProtectedStorage.Client.Managed.csproj" />
   </ItemGroup>
 
 </Project>

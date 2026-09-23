@@ -333,4 +333,27 @@
   <data name="Yesterday" xml:space="preserve">
     <value>yesterday</value>
   </data>
+  <data name="ProtectedStorageTitle" xml:space="preserve"><value>Workspaces protected storage</value></data>
+  <data name="ProtectedStorageRetry" xml:space="preserve"><value>Retry</value></data>
+  <data name="ProtectedStorageSetup" xml:space="preserve"><value>Set up / repair</value></data>
+  <data name="ProtectedStorageUnavailable" xml:space="preserve"><value>Protected storage is unavailable. Your draft has not been discarded. Complete setup or repair, then retry this operation. Other PowerToys modules are not affected.</value></data>
+  <data name="ProtectedStorageConflict" xml:space="preserve"><value>Another process changed your workspaces. Your draft has not been saved or discarded. Cancel this operation and reload the latest workspaces before applying your changes.</value></data>
+  <data name="ProtectedStorageUnknown" xml:space="preserve"><value>The save result could not be confirmed. Retry checks the same operation without overwriting newer changes. Do not assume the save failed or import the legacy file again.</value></data>
+  <data name="ProtectedStorageInvalid" xml:space="preserve"><value>The operation could not be completed. Check the input and retry. No partial workspace document was imported or saved, and your current draft is retained.</value></data>
+  <data name="ProtectedStorageSetupFailed" xml:space="preserve"><value>Setup did not complete. Resolve the reported setup problem and try again. Workspaces will not use an unprotected file as a fallback.</value></data>
+  <data name="ProtectedStorageCleanupPending" xml:space="preserve"><value>Migration completed. The legacy source could not be removed or has changed. Protected storage is now authoritative. Use Retry cleanup to remove only the matching migrated source.</value></data>
+  <data name="ProtectedStorageCaptureFailed" xml:space="preserve"><value>Could not create or read the protected workspace capture.</value></data>
+  <data name="ProtectedStorageLaunchFailed" xml:space="preserve"><value>The workspace launch did not complete. Check the launcher error before starting it again.</value></data>
+  <data name="ProtectedStorageImport" xml:space="preserve"><value>Import</value></data>
+  <data name="ProtectedStorageExport" xml:space="preserve"><value>Export</value></data>
+  <data name="ProtectedStorageReload" xml:space="preserve"><value>Reload</value></data>
+  <data name="ProtectedStorageRetryCleanup" xml:space="preserve"><value>Retry cleanup</value></data>
+  <data name="ProtectedStorageReplaceConfirm" xml:space="preserve"><value>Replace your workspace collection with the selected import? The complete file will be validated first. A conflict will not overwrite newer changes.</value></data>
+  <data name="ProtectedStorageRunNormally" xml:space="preserve"><value>Restart PowerToys normally, not as administrator, to set up protected storage for your account. Setup will request administrator authorization only when needed.</value></data>
+  <data name="ProtectedStorageIncompatible" xml:space="preserve"><value>The owner storage runtime is not compatible with this PowerToys version. Close old Workspaces processes and retry using the current PowerToys release. Workspaces Editor synchronizes an existing older runtime without requesting administrator authorization.</value></data>
+  <data name="ProtectedStorageRestart" xml:space="preserve"><value>Protected storage maintenance requires a Windows restart. Restart before retrying this operation.</value></data>
+  <data name="ProtectedStorageSetupUnknown" xml:space="preserve"><value>The maintenance result needs inspection or recovery. Retry checks the recorded operation; it does not reinstall PowerToys or repeat an unknown commit. Resolve the reported setup state before retrying Workspaces.</value></data>
+  <data name="ProtectedStorageInspect" xml:space="preserve"><value>Inspect</value></data>
+  <data name="ProtectedStorageMaintenanceCleanup" xml:space="preserve"><value>Protected storage maintenance completed. Some cleanup remains pending; inspect its status before retrying cleanup. Your workspace data was not rolled back.</value></data>
+  <data name="ProtectedStorageConfirmBootstrapRepair" xml:space="preserve"><value>Repair the protected storage service startup components with administrator authorization? This preserves workspace data and does not repair a damaged workspace record. Continue only if service startup repair is required.</value></data>
 </root>

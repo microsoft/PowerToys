@@ -4,7 +4,6 @@
 
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditorUITest;
 
@@ -55,19 +54,9 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         captureButton.Click();
         Task.Delay(3000).Wait();
 
-        // Verify captured windows by reading the temporary workspaces file as the ground truth.
-        var editorIO = new WorkspacesEditorIO();
-        var workspace = editorIO.ParseTempProject();
-
-        Assert.IsNotNull(workspace, "Workspace data should be deserialized.");
-        Assert.IsNotNull(workspace.Applications, "Workspace should contain a list of apps.");
-
-        bool isCalculatorFound = workspace.Applications.Any(app => app.AppPath.Contains("Calculator", StringComparison.OrdinalIgnoreCase));
-
-        // bool isSettingsFound = workspace.Applications.Any(app => app.AppPath.Contains("Settings", StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(isCalculatorFound, "Calculator should be captured in the workspace data.");
-
-        // Assert.IsTrue(isSettingsFound, "Settings should be captured in the workspace data.");
+        // The automation host has no protected-store role. Inspect the rendered capture.
+        AttachWorkspacesEditor();
+        Assert.IsNotNull(Find<Element>("Calculator"), "Calculator should be visible in the protected capture.");
 
         // Cancel to clean up
         AttachWorkspacesEditor();

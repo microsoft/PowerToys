@@ -60,6 +60,12 @@ steps:
           **/SilentFilesInUseBAFunction.dll
 
   ## INSTALLER START
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-build-protected-storage.yml
+      parameters:
+        versionNumber: ${{ parameters.versionNumber }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+
   #### MSI BUILDING AND SIGNING
   #
   # The MSI build contains code that reverts the .wxs files to their in-tree versions.
@@ -80,6 +86,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -96,6 +103,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -148,6 +156,7 @@ steps:
         -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -164,6 +173,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)

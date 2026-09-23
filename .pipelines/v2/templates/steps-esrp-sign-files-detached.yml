@@ -1,0 +1,37 @@
+parameters:
+  - name: folder
+    type: string
+  - name: signingIdentity
+    type: object
+    default: {}
+
+steps:
+  # ESRP replaces these payload copies with DER signatures. Never submit the
+  # original manifest/catalog files, which must remain byte-for-byte unchanged.
+  # Contract: microsoft/mcp, c5c6ce286686d616528079af31c979c8fade84a8,
+  # eng/pipelines/templates/jobs/mcpb/pack-and-sign-mcpb.yml.
+  - template: steps-esrp-signing.yml
+    parameters:
+      displayName: Sign Protected Storage detached manifests
+      signingIdentity: ${{ parameters.signingIdentity }}
+      inputs:
+        FolderPath: ${{ parameters.folder }}
+        Pattern: |-
+          manifest.p7s
+          ClientCatalog.p7s
+        UseMinimatch: true
+        signConfigType: inlineSignParams
+        inlineOperation: |-
+          [
+            {
+              "KeyCode": "CP-230012",
+              "OperationCode": "Pkcs7DetachedSign",
+              "ToolName": "sign",
+              "ToolVersion": "1.0",
+              "Parameters": {
+                "P7CE": "/p7ce DetachedSignedData",
+                "P7EKU": "1.2.840.113549.1.7.1",
+                "FileDigest": "/fd SHA256"
+              }
+            }
+          ]

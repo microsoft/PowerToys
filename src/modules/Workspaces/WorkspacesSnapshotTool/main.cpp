@@ -7,6 +7,7 @@
 
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/WorkspacesData.h>
+#include <WorkspacesLib/WorkspacesRepository.h>
 
 #include <SnapshotUtils.h>
 
@@ -56,6 +57,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
+    if (project.monitors.empty())
+    {
+        Logger::error("Cannot capture a workspace without a monitor configuration");
+        CoUninitialize();
+        return 1;
+    }
     bool isGuidNeeded = cmdArgs.invokePoint == InvokePoint::LaunchAndEdit;
     project.apps = SnapshotUtils::GetApps(isGuidNeeded, [&](HWND window) -> unsigned int {
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
@@ -80,7 +87,28 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
         return project.monitors[0].monitorRectDpiUnaware; });
 
-    JsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
+    try
+    {
+        for (auto& app : project.apps)
+        {
+            if (app.id.empty()) app.id = CreateGuidString();
+        }
+        Workspaces::Repository repository;
+        auto id = repository.CreatePreview(project);
+        DWORD written = 0;
+        if (!WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), id.data(), static_cast<DWORD>(id.size()), &written, nullptr) || written != id.size())
+        {
+            Logger::error("Could not return the protected capture reference");
+            CoUninitialize();
+            return 1;
+        }
+    }
+    catch (...)
+    {
+        Logger::error("Could not create a complete protected Workspaces capture");
+        CoUninitialize();
+        return 1;
+    }
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
 
     CoUninitialize();

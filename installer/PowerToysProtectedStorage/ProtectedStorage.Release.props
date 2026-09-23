@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <ProtectedStoragePackageRoot Condition="'$(ProtectedStoragePackageRoot)' == ''">$(RepoRoot)artifacts\ProtectedStorage\$(Platform)\$(Configuration)\Package</ProtectedStoragePackageRoot>
+    <ProtectedStoragePublishDirectory Condition="'$(ProtectedStoragePublishDirectory)' == '' And '$(BinDir)' != ''">$(BinDir)</ProtectedStoragePublishDirectory>
+    <ProtectedStoragePublishDirectory Condition="'$(ProtectedStoragePublishDirectory)' == ''">$(RepoRoot)$(Platform)\$(Configuration)</ProtectedStoragePublishDirectory>
+    <ProtectedStorageStagedSetupPath>$(ProtectedStoragePackageRoot)\PowerToys.ProtectedStorageSetup.exe</ProtectedStorageStagedSetupPath>
+    <ProtectedStorageSetupPath>$(ProtectedStoragePublishDirectory)\PowerToys.ProtectedStorageSetup.exe</ProtectedStorageSetupPath>
+    <ProtectedStorageCarrierPath>$(ProtectedStoragePackageRoot)\PowerToys.ProtectedStorage.Carrier.msi</ProtectedStorageCarrierPath>
+    <ProtectedStorageLifecyclePath>$(ProtectedStoragePackageRoot)\PowerToys.ProtectedStorageLifecycle.exe</ProtectedStorageLifecyclePath>
+    <ProtectedStorageReleaseManifestPath>$(ProtectedStoragePackageRoot)\release.json</ProtectedStorageReleaseManifestPath>
+    <ProtectedStorageReleaseVersion Condition="'$(ProtectedStorageReleaseVersion)' == ''">$(Version)</ProtectedStorageReleaseVersion>
+  </PropertyGroup>
+</Project>

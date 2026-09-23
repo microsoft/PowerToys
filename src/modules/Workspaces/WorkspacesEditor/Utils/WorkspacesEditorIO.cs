@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ManagedCommon;
+using PowerToys.ProtectedStorage;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
@@ -16,26 +18,18 @@ namespace WorkspacesEditor.Utils
 {
     public class WorkspacesEditorIO
     {
-        public WorkspacesEditorIO()
-        {
-        }
+        private readonly WorkspacesRepository repository = new();
+        private Revision revision;
 
-        public ParsingResult ParseWorkspaces(MainViewModel mainViewModel)
+        public Guid? PreviewId { get; set; }
+
+        public async Task<ParsingResult> ParseWorkspacesAsync(MainViewModel mainViewModel, bool initialize = false)
         {
             try
             {
-                WorkspacesData parser = new();
-                if (!File.Exists(parser.File))
-                {
-                    Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
-                    return new ParsingResult(true);
-                }
-
-                WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
-                if (workspaces.Workspaces == null)
-                {
-                    return new ParsingResult(true);
-                }
+                var snapshot = initialize ? await repository.EnsureReadyAsync() : await repository.LoadAsync();
+                revision = snapshot.Revision;
+                WorkspacesData.WorkspacesListWrapper workspaces = new() { Workspaces = snapshot.Projects.ToList() };
 
                 if (!SetWorkspaces(mainViewModel, workspaces))
                 {
@@ -43,37 +37,36 @@ namespace WorkspacesEditor.Utils
                     return new ParsingResult(false, WorkspacesEditor.Properties.Resources.Error_Parsing_Message);
                 }
 
-                return new ParsingResult(true);
+                return new ParsingResult(true, snapshot.SourceCleanupPending ? Properties.Resources.ProtectedStorageCleanupPending : string.Empty);
             }
             catch (Exception e)
             {
                 Logger.LogError($"Exception while parsing storage file: {e.Message}");
-                return new ParsingResult(false, e.Message);
+                throw;
             }
         }
 
-        public Project ParseTempProject()
+        public async Task<Project> ParsePreviewAsync()
         {
-            try
+            if (PreviewId is Guid id)
             {
-                ProjectData parser = new();
-                if (!File.Exists(TempProjectData.File))
-                {
-                    Logger.LogWarning($"ParseProject method. Workspaces storage file not found: {TempProjectData.File}");
-                    return null;
-                }
+                return new Project(await repository.ReadPreviewAsync(id));
+            }
 
-                Project project = new(parser.Read(TempProjectData.File));
-                return project;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError($"ParseProject method. Exception while parsing storage file: {e.Message}");
-                return null;
-            }
+            throw new InvalidOperationException("No capture preview is available.");
         }
 
-        public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
+        public async Task SerializeWorkspacesAsync(List<Project> workspaces)
+        {
+            if (revision == null)
+            {
+                throw new ProtectedStorageException("NotProvisioned");
+            }
+
+            revision = await repository.SaveAsync(ToWrappers(workspaces), revision);
+        }
+
+        private static List<ProjectWrapper> ToWrappers(List<Project> workspaces)
         {
             WorkspacesData serializer = new();
             WorkspacesData.WorkspacesListWrapper workspacesWrapper = new() { };
@@ -149,16 +142,7 @@ namespace WorkspacesEditor.Utils
                 workspacesWrapper.Workspaces.Add(wrapper);
             }
 
-            try
-            {
-                IOUtils ioUtils = new();
-                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
-            }
-            catch (Exception e)
-            {
-                // TODO: show error
-                Logger.LogError($"Exception while writing storage file: {e.Message}");
-            }
+            return workspacesWrapper.Workspaces;
         }
 
         private bool AddWorkspaces(MainViewModel mainViewModel, WorkspacesData.WorkspacesListWrapper workspaces)
@@ -178,9 +162,55 @@ namespace WorkspacesEditor.Utils
             return AddWorkspaces(mainViewModel, workspaces);
         }
 
-        internal void SerializeTempProject(Project project)
+        internal async Task SerializePreviewAsync(Project project)
         {
-            SerializeWorkspaces([project], true);
+            var wrapper = ToWrappers([project])[0];
+            if (PreviewId is Guid current)
+            {
+                try
+                {
+                    await repository.UpdatePreviewAsync(current, wrapper);
+                    return;
+                }
+                catch (ProtectedStorageException exception) when (exception.ErrorCode == "NotFound")
+                {
+                    // A restarted service or expired preview can be recreated from the
+                    // retained, validated draft, never from the old temporary file.
+                }
+            }
+
+            var id = await repository.CreatePreviewAsync(wrapper);
+            await ReleasePreviewAsync();
+            PreviewId = id;
+        }
+
+        public async Task ReleasePreviewAsync()
+        {
+            if (PreviewId is Guid id)
+            {
+                await repository.ReleasePreviewAsync(id);
+                PreviewId = null;
+            }
+        }
+
+        public Task<bool> RetrySourceCleanupAsync()
+        {
+            return repository.RetrySourceCleanupAsync();
+        }
+
+        public async Task ImportAsync(string path)
+        {
+            if (revision == null)
+            {
+                throw new ProtectedStorageException("NotProvisioned");
+            }
+
+            revision = await repository.ImportAsync(path, revision);
+        }
+
+        public Task ExportAsync(string path)
+        {
+            return repository.ExportAsync(path);
         }
     }
 }

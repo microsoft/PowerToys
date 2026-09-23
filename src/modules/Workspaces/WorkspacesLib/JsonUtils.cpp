@@ -7,7 +7,7 @@
 
 namespace JsonUtils
 {
-    Result<WorkspacesData::WorkspacesProject, WorkspacesFileError> ReadSingleWorkspace(const std::wstring& fileName)
+    Result<WorkspacesData::WorkspacesProject, WorkspacesFileError> ImportSingleWorkspace(const std::wstring& fileName)
     {
         if (std::filesystem::exists(fileName))
         {
@@ -40,10 +40,10 @@ namespace JsonUtils
             }
         }
 
-        return Ok(WorkspacesData::WorkspacesProject{});
+        return Error(WorkspacesFileError::FileReadingError);
     }
 
-    Result<std::vector<WorkspacesData::WorkspacesProject>, WorkspacesFileError> ReadWorkspaces(const std::wstring& fileName)
+    Result<std::vector<WorkspacesData::WorkspacesProject>, WorkspacesFileError> ImportWorkspaces(const std::wstring& fileName)
     {
         try
         {
@@ -74,7 +74,7 @@ namespace JsonUtils
         }
     }
 
-    bool Write(const std::wstring& fileName, const std::vector<WorkspacesData::WorkspacesProject>& projects)
+    bool Export(const std::wstring& fileName, const std::vector<WorkspacesData::WorkspacesProject>& projects)
     {
         try
         {
@@ -89,7 +89,7 @@ namespace JsonUtils
         return true;
     }
 
-    bool Write(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
+    bool Export(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
     {
         try
         {

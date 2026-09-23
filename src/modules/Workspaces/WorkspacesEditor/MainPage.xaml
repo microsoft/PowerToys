@@ -22,6 +22,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -59,9 +60,16 @@
             </StackPanel>
         </Button>
 
+        <StackPanel Grid.Row="1" Margin="24,0,24,12" Orientation="Horizontal">
+            <Button Margin="0,0,8,0" Click="ImportWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageImport}" />
+            <Button Margin="0,0,8,0" Click="ExportWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageExport}" />
+            <Button Margin="0,0,8,0" Click="ReloadWorkspaces_Click" Content="{x:Static props:Resources.ProtectedStorageReload}" />
+            <Button Click="RetryCleanup_Click" Content="{x:Static props:Resources.ProtectedStorageRetryCleanup}" />
+        </StackPanel>
+
         <!--  search + sort  -->
         <StackPanel
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="24,0,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
@@ -102,7 +110,7 @@
         </StackPanel>
 
         <StackPanel
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="0,0,24,0"
             HorizontalAlignment="Right"
             Orientation="Horizontal">
@@ -120,7 +128,7 @@
 
         <!--  content  -->
         <TextBlock
-            Grid.Row="2"
+            Grid.Row="3"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             FontSize="16"
@@ -129,7 +137,7 @@
             TextAlignment="Center"
             Visibility="{Binding IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
         <ScrollViewer
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="0,24,0,0"
             VerticalContentAlignment="Stretch"
             VerticalScrollBarVisibility="Auto"

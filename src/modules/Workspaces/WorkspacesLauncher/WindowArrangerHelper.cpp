@@ -20,7 +20,7 @@ WindowArrangerHelper::~WindowArrangerHelper()
 {
     Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", m_processId);
     
-    HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, m_processId);
+    HANDLE process = m_process.get();
     if (process)
     {
         bool res = TerminateProcess(process, 0);
@@ -35,7 +35,7 @@ WindowArrangerHelper::~WindowArrangerHelper()
     }
 }
 
-void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, std::function<bool()> keepWaitingCallback)
+void WindowArrangerHelper::Launch(const WorkspacesData::WorkspacesProject& project, bool elevated, std::function<bool()> keepWaitingCallback)
 {
     Logger::trace(L"Starting WorkspacesWindowArranger");
 
@@ -43,23 +43,25 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring path = std::filesystem::path(buffer).parent_path();
 
-    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", projectId, elevated);
+    Workspaces::LaunchSession session;
+    auto res = AppLauncher::LaunchApp(path + L"\\PowerToys.WorkspacesWindowArranger.exe", session.Arguments(), elevated);
     if (res.isOk())
     {
         auto value = res.value();
         m_processId = GetProcessId(value.hProcess);
+        m_process.reset(value.hProcess);
+        session.Send(m_process.get(), project);
         Logger::info(L"WorkspacesWindowArranger started with pid {}", m_processId);
         std::atomic_bool timeoutExpired = false;
         m_threadExecutor.submit(OnThreadExecutor::task_t{
             [&] {
                 HANDLE process = value.hProcess;
-                while (keepWaitingCallback())
+                while (keepWaitingCallback() && WaitForSingleObject(process, 0) == WAIT_TIMEOUT)
                 {
                     WaitForSingleObject(process, 100);
                 }
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");
-                CloseHandle(process);
             }}).wait();
 
         timeoutExpired = true;
@@ -67,6 +69,7 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
     else
     {
         Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error());
+        throw PowerToys::ProtectedStorage::StorageError(PowerToys::ProtectedStorage::ErrorCode::AuthorizationRequired);
     }
 }
 

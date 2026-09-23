@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="ARM64" />
+  </Configurations>
+  <Project Path="ProtectedStorage.Common\ProtectedStorage.Common.vcxproj" />
+  <Project Path="ProtectedStorage.Client\ProtectedStorage.Client.vcxproj" />
+  <Project Path="ProtectedStorage.Bootstrap\ProtectedStorage.Bootstrap.vcxproj" />
+  <Project Path="ProtectedStorage.Runtime\ProtectedStorage.Runtime.vcxproj" />
+  <Project Path="ProtectedStorage.UnitTests\ProtectedStorage.UnitTests.vcxproj" />
+</Solution>

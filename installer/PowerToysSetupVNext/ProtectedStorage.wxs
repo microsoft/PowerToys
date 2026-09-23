@@ -1,0 +1,38 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="ProtectedStorageSetupComponent" Guid="5B19FC94-2680-4B66-A9DE-0EC1B55EF8C9" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Name="ProtectedStorageSetupComponent" Type="string" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="PowerToysProtectedStorageSetupExe"
+              Name="PowerToys.ProtectedStorageSetup.exe"
+              Source="$(var.ProtectedStorageSetupPath)" />
+      </Component>
+    </DirectoryRef>
+    <ComponentGroup Id="ProtectedStorageComponents">
+      <ComponentRef Id="ProtectedStorageSetupComponent" />
+    </ComponentGroup>
+  </Fragment>
+
+  <?if $(var.PerUser) = "false" ?>
+  <Fragment>
+    <!-- MSI extracts its own verified Binary resource; never execute a helper
+         selected from a user's writable installation as SYSTEM. -->
+    <Binary Id="PTStorageRemoval" SourceFile="$(var.ProtectedStorageLifecyclePath)" />
+    <CustomAction Id="RemoveProtectedStorageInstances"
+                  BinaryRef="PTStorageRemoval"
+                  ExeCommand="machine-remove --keep-data"
+                  Execute="commit"
+                  Impersonate="no"
+                  Return="ignore" />
+    <InstallExecuteSequence>
+      <Custom Action="RemoveProtectedStorageInstances"
+              After="RemoveFiles"
+              Condition="Installed AND REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+    </InstallExecuteSequence>
+  </Fragment>
+  <?endif?>
+</Wix>

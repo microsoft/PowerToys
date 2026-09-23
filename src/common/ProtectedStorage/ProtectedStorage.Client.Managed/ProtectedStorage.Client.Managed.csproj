@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <PropertyGroup>
+    <AssemblyName>PowerToys.ProtectedStorage.Client.Managed</AssemblyName>
+    <RootNamespace>PowerToys.ProtectedStorage</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+</Project>

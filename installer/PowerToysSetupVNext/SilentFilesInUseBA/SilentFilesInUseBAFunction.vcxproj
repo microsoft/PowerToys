@@ -32,6 +32,7 @@
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" />
   
   <!-- Configuration-specific property groups -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -83,10 +84,21 @@
     <PackageReference Include="WixToolset.BootstrapperApplicationApi" />
     <PackageReference Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\updating\updating.vcxproj">
+      <Project>{17DA04DF-E393-4397-9CF0-84DABE11032E}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
+      <Project>{D9B8FC84-322A-4F9F-BBB9-20915C47DDFD}</Project>
+    </ProjectReference>
+  </ItemGroup>
 
   <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RepoRoot)src;$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
-      <AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wintrust.lib;crypt32.lib;msi.lib;WindowsApp.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>bafunctions.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -118,4 +130,6 @@
   </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" />
 </Project>

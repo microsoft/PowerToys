@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <winrt/base.h>
 
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/InvokePoint.h>
@@ -16,6 +17,8 @@ struct CommandLineArgs
     std::wstring workspaceId;
     InvokePoint invokePoint;
     bool isRestarted;
+    std::string previewId;
+    std::wstring plan;
 };
 
 CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
@@ -36,7 +39,16 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
 
     for (const auto& token : tokens)
     {
-        if (token == NonLocalizable::restartedString)
+        if (token.starts_with(L"--preview="))
+        {
+            const auto value = token.substr(10);
+            cmdArgs.previewId = winrt::to_string(value);
+        }
+        else if (token.starts_with(L"--plan="))
+        {
+            cmdArgs.plan = token.substr(7);
+        }
+        else if (token == NonLocalizable::restartedString)
         {
             cmdArgs.isRestarted = true;
         }

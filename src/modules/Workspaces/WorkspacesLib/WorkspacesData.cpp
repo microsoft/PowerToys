@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "WorkspacesData.h"
-#include <common/SettingsAPI/settings_helpers.h>
+#include <shlobj.h>
 
 #include <workspaces-common/GuidUtils.h>
 
@@ -11,16 +11,13 @@ namespace NonLocalizable
 
 namespace WorkspacesData
 {
-    std::wstring WorkspacesFile()
+    std::wstring LegacyWorkspacesFile()
     {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\workspaces.json";
-    }
-
-    std::wstring TempWorkspacesFile()
-    {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\temp-workspaces.json";
+        PWSTR directory = nullptr;
+        winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &directory));
+        const std::wstring path(directory);
+        CoTaskMemFree(directory);
+        return path + L"\\Microsoft\\PowerToys\\Workspaces\\workspaces.json";
     }
 
     RECT WorkspacesProject::Application::Position::toRect() const noexcept
@@ -314,10 +311,10 @@ namespace WorkspacesData
 
             json.SetNamedValue(NonLocalizable::IdID, json::value(data.id));
             json.SetNamedValue(NonLocalizable::NameID, json::value(data.name));
-            json.SetNamedValue(NonLocalizable::CreationTimeID, json::value(static_cast<long>(data.creationTime)));
+            json.SetNamedValue(NonLocalizable::CreationTimeID, json::value(static_cast<double>(data.creationTime)));
             if (data.lastLaunchedTime.has_value())
             {
-                json.SetNamedValue(NonLocalizable::LastLaunchedTimeID, json::value(static_cast<long>(data.lastLaunchedTime.value())));
+                json.SetNamedValue(NonLocalizable::LastLaunchedTimeID, json::value(static_cast<double>(data.lastLaunchedTime.value())));
             }
             json.SetNamedValue(NonLocalizable::IsShortcutNeededID, json::value(data.isShortcutNeeded));
             json.SetNamedValue(NonLocalizable::MoveExistingWindowsID, json::value(data.moveExistingWindows));

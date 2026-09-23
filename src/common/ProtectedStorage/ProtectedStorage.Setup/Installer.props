@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\ProtectedStorage\</OutDir>
+    <IntDir>$(RepoRoot)$(Platform)\$(Configuration)\Intermediate\$(MSBuildProjectName)\</IntDir>
+    <ProtectedStorageGeneratedDir Condition="'$(ProtectedStorageGeneratedDir)' == ''">$(MSBuildThisFileDirectory)Generated\</ProtectedStorageGeneratedDir>
+    <ProtectedStorageVersionMajor Condition="'$(ProtectedStorageVersionMajor)' == ''">$([System.Version]::Parse('$(Version)').Major)</ProtectedStorageVersionMajor>
+    <ProtectedStorageVersionMinor Condition="'$(ProtectedStorageVersionMinor)' == ''">$([System.Version]::Parse('$(Version)').Minor)</ProtectedStorageVersionMinor>
+    <ProtectedStorageVersionBuild Condition="'$(ProtectedStorageVersionBuild)' == ''">$([System.Version]::Parse('$(Version)').Build)</ProtectedStorageVersionBuild>
+    <ProtectedStorageVersionRevision Condition="'$(ProtectedStorageVersionRevision)' == ''">0</ProtectedStorageVersionRevision>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProtectedStorageGeneratedDir);$(MSBuildThisFileDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>PTPS_VERSION_MAJOR=$(ProtectedStorageVersionMajor);PTPS_VERSION_MINOR=$(ProtectedStorageVersionMinor);PTPS_VERSION_BUILD=$(ProtectedStorageVersionBuild);PTPS_VERSION_REVISION=$(ProtectedStorageVersionRevision);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>advapi32.lib;msi.lib;userenv.lib;shell32.lib;ole32.lib;bcrypt.lib;crypt32.lib;wintrust.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/DEPENDENTLOADFLAG:0x800 %(AdditionalOptions)</AdditionalOptions>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>wmainCRTStartup</EntryPointSymbol>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

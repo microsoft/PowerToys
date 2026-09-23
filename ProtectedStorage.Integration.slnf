@@ -1,0 +1,32 @@
+{
+  "solution": {
+    "path": "PowerToys.slnx",
+    "projects": [
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Common\\ProtectedStorage.Common.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Client\\ProtectedStorage.Client.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Client.Managed\\ProtectedStorage.Client.Managed.csproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Bootstrap\\ProtectedStorage.Bootstrap.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Runtime\\ProtectedStorage.Runtime.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Setup\\ProtectedStorage.Setup.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.ProvisionBroker\\ProtectedStorage.ProvisionBroker.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.Lifecycle\\ProtectedStorage.Lifecycle.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.MsiAction\\ProtectedStorage.MsiAction.vcxproj",
+      "src\\common\\ProtectedStorage\\ProtectedStorage.UnitTests\\ProtectedStorage.UnitTests.vcxproj",
+      "src\\common\\ProtectedStorage\\tests\\ProtectedStorage.Client.Managed.UnitTests\\ProtectedStorage.Client.Managed.UnitTests.csproj",
+      "src\\modules\\Workspaces\\WorkspacesCsharpLibrary\\WorkspacesCsharpLibrary.csproj",
+      "src\\modules\\Workspaces\\Workspaces.ModuleServices\\Workspaces.ModuleServices.csproj",
+      "src\\modules\\Workspaces\\WorkspacesEditor\\WorkspacesEditor.csproj",
+      "src\\modules\\Workspaces\\WorkspacesLauncherUI\\WorkspacesLauncherUI.csproj",
+      "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\Microsoft.CmdPal.Ext.PowerToys.csproj",
+      "src\\modules\\Workspaces\\WorkspacesLib\\WorkspacesLib.vcxproj",
+      "src\\modules\\Workspaces\\WorkspacesLauncher\\WorkspacesLauncher.vcxproj",
+      "src\\modules\\Workspaces\\WorkspacesWindowArranger\\WorkspacesWindowArranger.vcxproj",
+      "src\\modules\\Workspaces\\WorkspacesSnapshotTool\\WorkspacesSnapshotTool.vcxproj",
+      "src\\modules\\Workspaces\\WorkspacesModuleInterface\\WorkspacesModuleInterface.vcxproj",
+      "src\\modules\\Workspaces\\WorkspacesLib.UnitTests\\WorkspacesLibUnitTests.vcxproj",
+      "src\\runner\\runner.vcxproj",
+      "src\\Update\\PowerToys.Update.vcxproj",
+      "src\\common\\updating\\UnitTests\\UpdatingUnitTests.vcxproj"
+    ]
+  }
+}

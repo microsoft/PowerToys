@@ -16,6 +16,7 @@
 #include <common/updating/installer.h>
 #include <common/updating/configBackup.h>
 #include <common/updating/updateLifecycle.h>
+#include <common/updating/protectedStorageUpdate.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/HttpClient.h>
@@ -380,6 +381,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         if (!failed)
         {
+            if (updating::CanRelaunchAfterUpdate(nArgs))
+            {
+                const auto storage = updating::SynchronizeProtectedStorageForOwner(fs::path(args[3]));
+                if (storage.state != updating::ProtectedStorageSyncState::Completed)
+                {
+                    Logger::warn(L"PowerToys updated; protected storage needs owner coordination: state={}, nativeCode={}",
+                                 updating::ProtectedStorageSyncStateName(storage.state), storage.nativeCode);
+                }
+            }
             // Relaunch PowerToys from the install directory
             if (updating::CanRelaunchAfterUpdate(nArgs))
             {
