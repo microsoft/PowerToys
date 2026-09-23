@@ -438,20 +438,24 @@
     <value>[BLOB, {0} bytes]</value>
     <comment>Placeholder shown in a Sqlite cell for binary (BLOB) data; {0} is the size in bytes</comment>
   </data>
-  <data name="ShortcutButton_PreviewShortcut_Text" xml:space="preserve">
+  <data name="ShortcutButton_Text" xml:space="preserve">
     <value>Shortcut</value>
-    <comment>Text of the title bar button that previews the shortcut file itself instead of the item the shortcut points to.</comment>
+    <comment>Text of the title bar button that goes back to previewing the shortcut file instead of its target.</comment>
   </data>
-  <data name="ShortcutButton_PreviewShortcut_ToolTip" xml:space="preserve">
-    <value>Showing the target of {0}. Select to show the shortcut file instead.</value>
-    <comment>Tooltip of the title bar button that switches the preview back to the shortcut file. {0} is the name of the shortcut.</comment>
+  <data name="ShortcutButton_ToolTip" xml:space="preserve">
+    <value>Showing the target of {0}. Select to show the shortcut file.</value>
+    <comment>Tooltip of the title bar button that goes back to the shortcut file. {0} is the name of the shortcut.</comment>
   </data>
-  <data name="ShortcutButton_PreviewTarget_Text" xml:space="preserve">
-    <value>Target</value>
-    <comment>Text of the title bar button that previews the item a shortcut points to.</comment>
+  <data name="ShortcutTarget_Peek_Text" xml:space="preserve">
+    <value>Open in Peek</value>
+    <comment>Text of the link on a shortcut's card that previews the item the shortcut points to.</comment>
   </data>
-  <data name="ShortcutButton_PreviewTarget_ToolTip" xml:space="preserve">
-    <value>Showing {0}. Select to show the item this shortcut points to instead.</value>
-    <comment>Tooltip of the title bar button that switches the preview to the shortcut target. {0} is the name of the shortcut.</comment>
+  <data name="ShortcutTarget_Peek_ToolTip" xml:space="preserve">
+    <value>Peek the target of this shortcut.</value>
+    <comment>Tooltip of the link on a shortcut's card that previews the shortcut target.</comment>
+  </data>
+  <data name="UnsupportedFile_ShortcutTarget" xml:space="preserve">
+    <value>Target: {0}</value>
+    <comment>Target path shown on a shortcut's card. {0} is the path the shortcut points to.</comment>
   </data>
 </root>

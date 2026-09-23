@@ -82,6 +82,30 @@
                     <ToolTip Content="{x:Bind FormatFileDateModified(Source.DateModified), Mode=OneWay}" />
                 </ToolTipService.ToolTip>
             </TextBlock>
+
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="8"
+                Visibility="{x:Bind conv:VisibilityConverter.Convert(Source.HasShortcutTarget), Mode=OneWay}">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{x:Bind FormatShortcutTarget(Source.ShortcutTarget), Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind Source.ShortcutTarget, Mode=OneWay}" />
+                    </ToolTipService.ToolTip>
+                </TextBlock>
+                <HyperlinkButton
+                    VerticalAlignment="Center"
+                    Command="{x:Bind Source.PeekShortcutTargetCommand, Mode=OneWay}"
+                    CommandParameter="{x:Bind Source.ShortcutTarget, Mode=OneWay}"
+                    Content="{x:Bind PeekTargetText}"
+                    IsEnabled="{x:Bind Source.CanPeekShortcutTarget, Mode=OneWay}">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind PeekTargetToolTip}" />
+                    </ToolTipService.ToolTip>
+                </HyperlinkButton>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>

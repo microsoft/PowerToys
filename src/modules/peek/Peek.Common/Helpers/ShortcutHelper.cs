@@ -17,12 +17,6 @@ namespace Peek.Common.Helpers
         public const string ShortcutFileExtension = ".lnk";
 
         /// <summary>
-        /// The maximum number of shortcuts that are followed when a shortcut points to another
-        /// shortcut.
-        /// </summary>
-        private const int MaxShortcutDepth = 5;
-
-        /// <summary>
         /// Determines whether a path points to a Windows shortcut file.
         /// </summary>
         /// <param name="path">The path to check.</param>
@@ -37,40 +31,14 @@ namespace Peek.Common.Helpers
         /// </summary>
         /// <param name="shortcutPath">The path of the shortcut file.</param>
         /// <returns>The target path, or null when the given path is not a shortcut, the shortcut
-        /// cannot be read, or the target no longer exists.</returns>
+        /// cannot be read, or it stores no target.</returns>
         public static string? TryGetTargetPath(string? shortcutPath)
         {
-            string? currentPath = shortcutPath;
-
-            // Shortcuts can point at other shortcuts. Follow the chain, but stop at a fixed depth
-            // so that a cycle between shortcuts cannot loop forever.
-            for (int depth = 0; depth < MaxShortcutDepth; depth++)
+            if (string.IsNullOrEmpty(shortcutPath) || !IsShortcut(shortcutPath))
             {
-                if (currentPath == null || !IsShortcut(currentPath))
-                {
-                    return null;
-                }
-
-                string? targetPath = ResolveTargetPath(currentPath);
-
-                if (targetPath == null || !IsShortcut(targetPath))
-                {
-                    return targetPath;
-                }
-
-                currentPath = targetPath;
+                return null;
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Resolves a single shortcut to the path it stores.
-        /// </summary>
-        /// <param name="shortcutPath">The path of the shortcut file.</param>
-        /// <returns>The stored target path, or null when it cannot be read or does not exist.</returns>
-        private static string? ResolveTargetPath(string shortcutPath)
-        {
             string targetPath;
 
             try
@@ -117,7 +85,15 @@ namespace Peek.Common.Helpers
                 }
             }
 
-            return File.Exists(targetPath) || Directory.Exists(targetPath) ? targetPath : null;
+            return targetPath;
         }
+
+        /// <summary>
+        /// Determines whether the resolved target of a shortcut exists.
+        /// </summary>
+        /// <param name="targetPath">The target path returned by <see cref="TryGetTargetPath"/>.</param>
+        /// <returns>True when the target is an existing file or folder.</returns>
+        public static bool TargetExists(string? targetPath) =>
+            !string.IsNullOrEmpty(targetPath) && (File.Exists(targetPath) || Directory.Exists(targetPath));
     }
 }

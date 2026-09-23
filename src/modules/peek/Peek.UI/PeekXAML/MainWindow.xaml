@@ -53,7 +53,7 @@
             IsPreviewingShortcutTarget="{x:Bind ViewModel.IsPreviewingShortcutTarget, Mode=OneWay}"
             Item="{x:Bind ViewModel.PreviewItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
-            PreviewShortcutTargetCommand="{x:Bind ViewModel.ToggleShortcutPreviewCommand, Mode=OneWay}"
+            ShowSelectedItemCommand="{x:Bind ViewModel.ShowSelectedItemCommand, Mode=OneWay}"
             ShortcutName="{x:Bind ViewModel.ShortcutName, Mode=OneWay}" />
 
         <fp:FilePreview
@@ -61,6 +61,7 @@
             Grid.Row="1"
             Item="{x:Bind ViewModel.PreviewItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
+            PeekShortcutTargetCommand="{x:Bind ViewModel.PeekShortcutTargetCommand, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
             Visibility="{x:Bind ContentVisibility(ViewModel.IsErrorVisible), Mode=OneWay}" />

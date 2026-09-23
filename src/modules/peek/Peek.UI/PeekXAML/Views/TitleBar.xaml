@@ -105,22 +105,22 @@
             </Button>
 
             <Button
-                x:Name="ShortcutPreviewButton"
+                x:Name="ShortcutButton"
                 VerticalAlignment="Center"
-                Command="{x:Bind ShortcutPreviewCommand, Mode=OneWay}"
+                Command="{x:Bind ShortcutButtonCommand, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
-                ToolTipService.ToolTip="{x:Bind ShortcutPreviewToolTip, Mode=OneWay}"
-                Visibility="{x:Bind ShortcutPreviewButtonVisibility, Mode=OneWay}">
+                ToolTipService.ToolTip="{x:Bind ShortcutButtonToolTip, Mode=OneWay}"
+                Visibility="{x:Bind ShortcutButtonVisibility, Mode=OneWay}">
                 <Button.Content>
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <FontIcon
-                            x:Name="ShortcutPreviewButton_Icon"
+                            x:Name="ShortcutButton_Icon"
                             FontSize="14"
                             Glyph="&#xE71B;" />
                         <TextBlock
-                            x:Name="ShortcutPreviewButton_Text"
+                            x:Name="ShortcutButton_Text"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ShortcutPreviewText, Mode=OneWay}" />
+                            Text="{x:Bind ShortcutButtonText}" />
                     </StackPanel>
                 </Button.Content>
             </Button>
@@ -157,7 +157,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
-                        <Setter Target="ShortcutPreviewButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="ShortcutButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">

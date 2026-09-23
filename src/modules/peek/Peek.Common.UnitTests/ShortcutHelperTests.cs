@@ -69,7 +69,7 @@ namespace Peek.Common.UnitTests
         /// <summary>
         /// Product code: ShortcutHelper.TryGetTargetPath(string)
         /// What: Verifies the target of a shortcut to a file is resolved
-        /// Why: Peek previews the target of the selected shortcut instead of the shortcut file
+        /// Why: Peek shows the target path of a shortcut and offers to peek that file
         /// </summary>
         [TestMethod]
         public void TryGetTargetPath_ShortcutToFile_ShouldReturnTargetPath()
@@ -83,6 +83,7 @@ namespace Peek.Common.UnitTests
 
             Assert.IsNotNull(targetResult);
             Assert.AreEqual(targetPath, targetResult, true);
+            Assert.IsTrue(ShortcutHelper.TargetExists(targetResult));
         }
 
         /// <summary>
@@ -102,35 +103,16 @@ namespace Peek.Common.UnitTests
 
             Assert.IsNotNull(targetResult);
             Assert.AreEqual(targetPath, targetResult, true);
+            Assert.IsTrue(ShortcutHelper.TargetExists(targetResult));
         }
 
         /// <summary>
         /// Product code: ShortcutHelper.TryGetTargetPath(string)
-        /// What: Verifies that a shortcut pointing to another shortcut is followed to the end
-        /// Why: The shell executes the end of the chain, so the preview should show that item
+        /// What: Verifies that a shortcut whose target no longer exists still reports that target
+        /// Why: The shortcut card shows the stored target, but only offers to peek it when it exists
         /// </summary>
         [TestMethod]
-        public void TryGetTargetPath_ShortcutToShortcut_ShouldReturnFinalTargetPath()
-        {
-            string targetPath = Path.Combine(testDirectory, "chained-target.txt");
-            File.WriteAllText(targetPath, "target");
-
-            string firstShortcutPath = CreateShortcut("first-shortcut.lnk", targetPath);
-            string secondShortcutPath = CreateShortcut("second-shortcut.lnk", firstShortcutPath);
-
-            var targetResult = ShortcutHelper.TryGetTargetPath(secondShortcutPath);
-
-            Assert.IsNotNull(targetResult);
-            Assert.AreEqual(targetPath, targetResult, true);
-        }
-
-        /// <summary>
-        /// Product code: ShortcutHelper.TryGetTargetPath(string)
-        /// What: Verifies that a shortcut whose target is gone is not followed
-        /// Why: Previewing a missing file would leave the user without any information
-        /// </summary>
-        [TestMethod]
-        public void TryGetTargetPath_ShortcutWithMissingTarget_ShouldReturnNull()
+        public void TryGetTargetPath_ShortcutWithMissingTarget_ShouldReturnPathThatDoesNotExist()
         {
             string targetPath = Path.Combine(testDirectory, "deleted-target.txt");
             File.WriteAllText(targetPath, "target");
@@ -139,7 +121,11 @@ namespace Peek.Common.UnitTests
 
             File.Delete(targetPath);
 
-            Assert.IsNull(ShortcutHelper.TryGetTargetPath(shortcutPath));
+            var targetResult = ShortcutHelper.TryGetTargetPath(shortcutPath);
+
+            Assert.IsNotNull(targetResult);
+            Assert.AreEqual(targetPath, targetResult, true);
+            Assert.IsFalse(ShortcutHelper.TargetExists(targetResult));
         }
 
         /// <summary>

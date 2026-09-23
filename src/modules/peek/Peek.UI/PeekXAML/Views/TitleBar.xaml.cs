@@ -72,9 +72,9 @@ namespace Peek.UI.Views
                 typeof(TitleBar),
                 new PropertyMetadata(false, (d, e) => ((TitleBar)d).OnShortcutPropertyChanged()));
 
-        public static readonly DependencyProperty PreviewShortcutTargetCommandProperty =
+        public static readonly DependencyProperty ShowSelectedItemCommandProperty =
             DependencyProperty.Register(
-                nameof(PreviewShortcutTargetCommand),
+                nameof(ShowSelectedItemCommand),
                 typeof(ICommand),
                 typeof(TitleBar),
                 new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnShortcutPropertyChanged()));
@@ -98,16 +98,13 @@ namespace Peek.UI.Views
         private bool pinned = false;
 
         [ObservableProperty]
-        private Visibility shortcutPreviewButtonVisibility = Visibility.Collapsed;
+        private Visibility shortcutButtonVisibility = Visibility.Collapsed;
 
         [ObservableProperty]
-        private string shortcutPreviewText = string.Empty;
+        private string shortcutButtonToolTip = string.Empty;
 
         [ObservableProperty]
-        private string shortcutPreviewToolTip = string.Empty;
-
-        [ObservableProperty]
-        private ICommand? shortcutPreviewCommand;
+        private ICommand? shortcutButtonCommand;
 
         public TitleBar()
         {
@@ -153,11 +150,13 @@ namespace Peek.UI.Views
             set => SetValue(IsPreviewingShortcutTargetProperty, value);
         }
 
-        public ICommand PreviewShortcutTargetCommand
+        public ICommand ShowSelectedItemCommand
         {
-            get => (ICommand)GetValue(PreviewShortcutTargetCommandProperty);
-            set => SetValue(PreviewShortcutTargetCommandProperty, value);
+            get => (ICommand)GetValue(ShowSelectedItemCommandProperty);
+            set => SetValue(ShowSelectedItemCommandProperty, value);
         }
+
+        public string ShortcutButtonText => ResourceLoaderInstance.ResourceLoader.GetString("ShortcutButton_Text");
 
         private Window? MainWindow { get; set; }
 
@@ -312,12 +311,13 @@ namespace Peek.UI.Views
         /// </summary>
         private void OnShortcutPropertyChanged()
         {
-            ShortcutPreviewButtonVisibility = string.IsNullOrEmpty(ShortcutName) ? Visibility.Collapsed : Visibility.Visible;
-            ShortcutPreviewText = ResourceLoaderInstance.ResourceLoader.GetString(IsPreviewingShortcutTarget ? "ShortcutButton_PreviewShortcut_Text" : "ShortcutButton_PreviewTarget_Text");
-            ShortcutPreviewToolTip = ReadableStringHelper.FormatResourceString(
-                IsPreviewingShortcutTarget ? "ShortcutButton_PreviewShortcut_ToolTip" : "ShortcutButton_PreviewTarget_ToolTip",
-                ShortcutName);
-            ShortcutPreviewCommand = PreviewShortcutTargetCommand;
+            // The button is only shown while a target is previewed: it takes the user back to the
+            // shortcut that was selected in File Explorer.
+            bool isVisible = IsPreviewingShortcutTarget && !string.IsNullOrEmpty(ShortcutName);
+
+            ShortcutButtonVisibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            ShortcutButtonToolTip = ReadableStringHelper.FormatResourceString("ShortcutButton_ToolTip", ShortcutName);
+            ShortcutButtonCommand = ShowSelectedItemCommand;
         }
 
         private void OnFileIndexPropertyChanged()
