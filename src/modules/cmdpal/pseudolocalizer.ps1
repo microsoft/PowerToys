@@ -421,7 +421,7 @@ function Clear-Directory {
     }
 
     foreach ($file in $files) {
-        Remove-Item -LiteralPath $file.FullName -Force
+        Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop
         Write-Host "Deleted $($file.FullName)"
     }
 
@@ -441,14 +441,14 @@ function Clear-File {
     }
 
     if (Is-QpsPlocFile $InputPath $CultureName) {
-        Remove-Item -LiteralPath $InputPath -Force
+        Remove-Item -LiteralPath $InputPath -Force -ErrorAction Stop
         Write-Host "Deleted $InputPath"
         return 0
     }
 
     $outputPath = Get-OutputPath $InputPath $CultureName
     if (Test-Path -LiteralPath $outputPath -PathType Leaf) {
-        Remove-Item -LiteralPath $outputPath -Force
+        Remove-Item -LiteralPath $outputPath -Force -ErrorAction Stop
         Write-Host "Deleted $outputPath"
     } else {
         Write-Host "No $CultureName file found for $InputPath"
@@ -535,15 +535,20 @@ function Clear-PseudoLocalization {
     Write-Host "Clearing pseudo-localized resources for '$Path' (culture: $normalizedCulture)."
 
     $result = 0
-    $fullPath = Resolve-InputPath $Path
-    if (-not $fullPath) {
-        $result = 1
-    } elseif (Test-Path -LiteralPath $fullPath -PathType Leaf) {
-        $result = Clear-File $fullPath $normalizedCulture
-    } elseif (Test-Path -LiteralPath $fullPath -PathType Container) {
-        $result = Clear-Directory $fullPath $normalizedCulture
-    } else {
-        Write-Error "Path not found: $fullPath"
+    try {
+        $fullPath = Resolve-InputPath $Path
+        if (-not $fullPath) {
+            $result = 1
+        } elseif (Test-Path -LiteralPath $fullPath -PathType Leaf) {
+            $result = Clear-File $fullPath $normalizedCulture
+        } elseif (Test-Path -LiteralPath $fullPath -PathType Container) {
+            $result = Clear-Directory $fullPath $normalizedCulture
+        } else {
+            Write-Error "Path not found: $fullPath"
+            $result = 1
+        }
+    } catch {
+        Write-Error -ErrorRecord $_
         $result = 1
     }
 
