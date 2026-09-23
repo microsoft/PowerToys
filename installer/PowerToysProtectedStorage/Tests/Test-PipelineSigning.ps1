@@ -36,6 +36,9 @@ foreach ($marker in @(
 if ($pipeline -match 'SigningCertificateThumbprint|Set-AuthenticodeSignature|New-SelfSignedCertificate') {
     throw 'The remote pipeline must not use a local product-signing key.'
 }
+if ($pipeline.Contains('/p:RestoreConfigFile="')) {
+    throw 'PowerShell argument-array values must not contain literal quotes in RestoreConfigFile.'
+}
 if (!$pipeline.Contains("Get-AuthenticodeSignature -LiteralPath '`$(ProtectedStorageStageRoot)\Package\Bootstrap.exe'") -or
     !$pipeline.Contains('Assert-ReleaseSignature -Path ''$(ProtectedStorageStageRoot)\Package\Runtime.exe'' -ExpectedSignerSha256 $pin')) {
     throw 'Carrier pin must come from its own signed runtime payloads, not a client certificate.'

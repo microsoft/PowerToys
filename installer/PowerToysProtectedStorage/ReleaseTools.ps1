@@ -56,9 +56,15 @@ function Assert-DetachedSignature {
     $content = [Security.Cryptography.Pkcs.ContentInfo]::new($bytes)
     $cms = [Security.Cryptography.Pkcs.SignedCms]::new($content, $true)
     $cms.Decode($signatureBytes)
-    if ($cms.SignerInfos.Count -ne 1 -or $cms.SignerInfos[0].DigestAlgorithm.Value -ne '2.16.840.1.101.3.4.2.1' -or
-        (Get-CertificatePin $cms.SignerInfos[0].Certificate) -ne $ExpectedSignerSha256.ToLowerInvariant()) {
-        throw "Detached release signature must have exactly one SHA256 signer matching the policy pin: $Path"
+    if ($cms.SignerInfos.Count -ne 1) {
+        throw "Detached release signature must have exactly one signer: $Path; actual=$($cms.SignerInfos.Count)"
+    }
+    if ($cms.SignerInfos[0].DigestAlgorithm.Value -ne '2.16.840.1.101.3.4.2.1') {
+        throw "Detached release signature must use SHA256: $Path; actual=$($cms.SignerInfos[0].DigestAlgorithm.Value)"
+    }
+    $actualPin = Get-CertificatePin $cms.SignerInfos[0].Certificate
+    if ($actualPin -ne $ExpectedSignerSha256.ToLowerInvariant()) {
+        throw "Detached release signer mismatch: $Path; expected=$ExpectedSignerSha256; actual=$actualPin; subject=$($cms.SignerInfos[0].Certificate.Subject)"
     }
     $cms.CheckSignature($true)
     if (!('PowerToys.ProtectedStorage.Build.SignatureVerification' -as [type])) {
