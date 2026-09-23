@@ -98,6 +98,11 @@ SHA256, exact pin, version, and payload-hash requirements.
 `Tests\Test-ReleaseTools.ps1` exercises version normalization and real in-memory
 CMS verification, including altered data, wrong pins, multiple signers, SHA1,
 and malformed signatures. It never installs its short-lived test certificate.
+`Tests\Test-ProjectEvaluation.ps1` checks native version properties without VC
+imports, reproducing the SDK-only evaluation used by CI's `dotnet restore`.
+Both native property sheets load the repository version explicitly when that
+evaluation has not imported `Directory.Build.props`; they never invent a fallback
+release version.
 
 The inventory has a `clients` array of `{ "path": "...", "role": "..." }`.
 Supported client roles are `workspaces.writer`, `workspaces.reader`,

@@ -52,6 +52,7 @@ finally { Pop-Location }
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-Authoring.ps1') -Platform $Platform -Configuration $Configuration -Compile
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ReleaseTools.ps1')
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-PipelineSigning.ps1')
+& (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ProjectEvaluation.ps1')
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ReleasePublication.ps1')
 RunMSBuild (Join-Path $repoRoot 'installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj') '/t:Restore /p:RestorePackagesConfig=true' $Platform $Configuration
 & (Join-Path $PSScriptRoot 'Test-ProtectedStorageMainInstaller.ps1') -Platform $Platform -Configuration $Configuration -Compile
