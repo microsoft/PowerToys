@@ -41,10 +41,10 @@ public sealed class FilePathListSetting : Setting<IReadOnlyList<string>>
     }
 
     /// <summary>
-    /// Gets or sets the file extensions shown by the file picker.
+    /// Gets the file extensions shown by the file picker.
     /// Values may use forms such as <c>.txt</c>, <c>*.txt</c>, or <c>*</c>.
     /// </summary>
-    public List<string> FileTypeFilter { get; set; } = [];
+    public List<string> FileTypeFilter { get; init; } = [];
 
     /// <summary>
     /// Gets or sets an optional regular expression that every path must match.
