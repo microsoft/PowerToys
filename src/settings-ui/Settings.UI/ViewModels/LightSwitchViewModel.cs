@@ -294,6 +294,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.SunriseOffset.Value = value;
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunriseOffsetMin));
+                    OnPropertyChanged(nameof(SunriseOffsetMax));
                     OnPropertyChanged(nameof(SunsetOffsetMin));
                 }
             }
@@ -309,16 +311,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.SunsetOffset.Value = value;
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
                     OnPropertyChanged(nameof(SunriseOffsetMax));
+                    OnPropertyChanged(nameof(SunsetOffsetMin));
+                    OnPropertyChanged(nameof(SunsetOffsetMax));
                 }
             }
         }
 
+        // A saved offset can fall outside today's range as solar times change.
+        // Keep it visible without rewriting settings during a refresh. User edits
+        // toward the normal range tighten these bounds again.
         public int SunriseOffsetMin
         {
             get
             {
-                // Minimum: don't let adjusted sunrise go before 00:00
-                return -DisplayLightMinutes;
+                // Normal minimum: adjusted sunrise stays at or after 00:00.
+                return Math.Min(-DisplayLightMinutes, SunriseOffset);
             }
         }
 
@@ -326,9 +333,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                // Maximum: adjusted sunrise must stay before adjusted sunset
+                // Normal maximum: adjusted sunrise stays before adjusted sunset.
                 int adjustedSunset = DisplayDarkMinutes + SunsetOffset;
-                return Math.Max(0, adjustedSunset - DisplayLightMinutes - 1);
+                return Math.Max(SunriseOffset, Math.Max(0, adjustedSunset - DisplayLightMinutes - 1));
             }
         }
 
@@ -336,9 +343,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                // Minimum: adjusted sunset must stay after adjusted sunrise
+                // Normal minimum: adjusted sunset stays after adjusted sunrise.
                 int adjustedSunrise = DisplayLightMinutes + SunriseOffset;
-                return Math.Min(0, adjustedSunrise - DisplayDarkMinutes + 1);
+                return Math.Min(SunsetOffset, Math.Min(0, adjustedSunrise - DisplayDarkMinutes + 1));
             }
         }
 
@@ -346,8 +353,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                // Maximum: don't let adjusted sunset go past 23:59 (1439 minutes)
-                return 1439 - DisplayDarkMinutes;
+                // Normal maximum: adjusted sunset stays at or before 23:59.
+                return Math.Max(1439 - DisplayDarkMinutes, SunsetOffset);
             }
         }
 

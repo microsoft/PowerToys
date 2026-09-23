@@ -74,7 +74,7 @@ private:
     bool _hasSettingsSnapshot = false;
     bool _hasNightLightState = false;
     // Invalidated by effective configuration changes and successful manual choices.
-    std::optional<bool> _pendingScheduledThemeNotification;
+    std::optional<bool> _pendingThemeNotification;
     std::optional<bool> _lastObservedSystemTheme;
     std::optional<bool> _lastObservedAppsTheme;
     std::optional<std::uint64_t> _lastTickTime;
@@ -91,7 +91,7 @@ private:
     void RecordEvaluationTimeLocked(const SYSTEMTIME& now);
     bool HasCrossedScheduleBoundaryLocked(const SYSTEMTIME& now) const;
     bool ScheduledThemeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
-    LSTATUS ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed, StatusSnapshot& snapshot);
+    LSTATUS ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed, StatusSnapshot& snapshot, bool preserveUntouchedObservations = false);
     LSTATUS EvaluateAndApplyIfNeededLocked(const LightSwitchConfig& config, const SYSTEMTIME& now);
     LSTATUS OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now, const StatusSnapshot& snapshot);
     void NotifyAppliedThemeLocked(const LightSwitchConfig& config, const StatusSnapshot& snapshot);

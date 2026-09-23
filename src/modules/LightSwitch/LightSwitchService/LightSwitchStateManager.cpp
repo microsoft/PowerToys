@@ -111,7 +111,7 @@ bool LightSwitchStateManager::LoadSettingsLocked(std::wstring& error)
         const bool enteringNightLight = !_hasSettingsSnapshot || _settingsSnapshot.scheduleMode != ScheduleMode::FollowNightLight;
         _state.isManualOverride = false;
         _state.lastEvaluatedDate.reset();
-        _pendingScheduledThemeNotification.reset();
+        _pendingThemeNotification.reset();
         if (config.scheduleMode == ScheduleMode::FollowNightLight && enteringNightLight)
         {
             _hasNightLightState = false;
@@ -233,7 +233,7 @@ void LightSwitchStateManager::OnManualOverride()
 
 LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now, const StatusSnapshot& snapshot)
 {
-    _pendingScheduledThemeNotification.reset();
+    _pendingThemeNotification.reset();
     UpdateEffectiveTimesLocked(config, now);
     bool crossedBoundary = false;
     bool unknownNightLight = false;
@@ -373,10 +373,12 @@ bool LightSwitchStateManager::ScheduledThemeLocked(const LightSwitchConfig& conf
                                                                    ShouldBeLight(Minutes(now), _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
 }
 
-LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed, StatusSnapshot& snapshot)
+LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchConfig& config, bool& changed, StatusSnapshot& snapshot, bool preserveUntouchedObservations)
 {
     LSTATUS result = ERROR_SUCCESS;
     changed = false;
+    bool attemptedSystemWrite = false;
+    bool attemptedAppsWrite = false;
     for (const bool system : { true, false })
     {
         if (!(system ? config.changeSystem : config.changeApps))
@@ -387,6 +389,7 @@ LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchC
             // If readback fails, this write's result must not later look like
             // an external edit relative to the value observed before the write.
             (system ? _lastObservedSystemTheme : _lastObservedAppsTheme).reset();
+            (system ? attemptedSystemWrite : attemptedAppsWrite) = true;
             const auto writeResult = _dependencies.writeTheme(system, light);
             if (writeResult != ERROR_SUCCESS && result == ERROR_SUCCESS)
                 result = writeResult;
@@ -394,12 +397,23 @@ LSTATUS LightSwitchStateManager::ApplyThemeLocked(bool light, const LightSwitchC
         }
     }
     snapshot = GetStatusSnapshotLocked(config);
-    SyncThemeStateLocked(snapshot);
     if ((config.changeSystem && snapshot.systemLight != std::optional<bool>(light)) ||
         (config.changeApps && snapshot.appsLight != std::optional<bool>(light)))
     {
         if (result == ERROR_SUCCESS)
             result = ERROR_WRITE_FAULT;
+    }
+    // A failed command may have skipped a target already changed by an external
+    // editor. Leave that observation pending, while recording our own write
+    // attempts so their partial results do not become external overrides.
+    const bool recordAllObservations = result == ERROR_SUCCESS || !preserveUntouchedObservations;
+    SyncThemeStateLocked(snapshot, recordAllObservations);
+    if (!recordAllObservations)
+    {
+        if (attemptedSystemWrite && snapshot.systemLight)
+            _lastObservedSystemTheme = snapshot.systemLight;
+        if (attemptedAppsWrite && snapshot.appsLight)
+            _lastObservedAppsTheme = snapshot.appsLight;
     }
     return result;
 }
@@ -431,17 +445,17 @@ LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitc
         return ERROR_READ_FAULT;
     _state.lastAppliedMode = config.scheduleMode;
     const bool light = ScheduledThemeLocked(config, now);
-    if (_pendingScheduledThemeNotification != std::optional<bool>(light))
-        _pendingScheduledThemeNotification.reset();
+    if (_pendingThemeNotification != std::optional<bool>(light))
+        _pendingThemeNotification.reset();
     bool changed = false;
     StatusSnapshot snapshot;
     const auto result = ApplyThemeLocked(light, config, changed, snapshot);
     if (changed)
-        _pendingScheduledThemeNotification = light;
-    if (result == ERROR_SUCCESS && _pendingScheduledThemeNotification)
+        _pendingThemeNotification = light;
+    if (result == ERROR_SUCCESS && _pendingThemeNotification)
     {
         NotifyAppliedThemeLocked(config, snapshot);
-        _pendingScheduledThemeNotification.reset();
+        _pendingThemeNotification.reset();
     }
     else if (result != ERROR_SUCCESS)
         Logger::warn(L"[LightSwitchStateManager] Scheduled theme application failed (error: {}).", result);
@@ -463,6 +477,8 @@ void LightSwitchStateManager::NotifyAppliedThemeLocked(const LightSwitchConfig& 
 ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
+    const bool hadSettingsSnapshot = _hasSettingsSnapshot;
+    const auto previousConfig = _settingsSnapshot;
     std::wstring error;
     if (!LoadSettingsLocked(error))
         return CompleteCommandLocked(_settingsSnapshot, L"SETTINGS_READ_FAILED", error);
@@ -471,11 +487,27 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
         return CompleteCommandLocked(config, L"NO_TARGETS", L"No theme targets are enabled in Light Switch settings.");
     // A successful command confirms or supersedes a pending scheduled notification.
     // A failed write leaves the schedule responsible for reconciling its result.
+    const auto previousSystemTheme = _lastObservedSystemTheme;
+    const auto previousAppsTheme = _lastObservedAppsTheme;
+    const bool unchangedSettings = hadSettingsSnapshot && HasSameEffectiveLightSwitchSettings(previousConfig, config);
     bool changed = false;
     StatusSnapshot snapshot;
-    const auto result = ApplyThemeLocked(light, config, changed, snapshot);
+    const auto result = ApplyThemeLocked(light, config, changed, snapshot, unchangedSettings);
     if (result != ERROR_SUCCESS)
+    {
+        // A failed verification can hide a write that took effect. Let a later
+        // successful retry confirm it even when that retry needs no more writes.
+        const bool unreadableTarget = (config.changeSystem && !snapshot.systemLight) || (config.changeApps && !snapshot.appsLight);
+        const bool targetsMatch = (!config.changeSystem || snapshot.systemLight == std::optional<bool>(light)) &&
+                                  (!config.changeApps || snapshot.appsLight == std::optional<bool>(light));
+        if (changed && !_pendingThemeNotification && (unreadableTarget || targetsMatch))
+            _pendingThemeNotification = light;
+        // Handle a skipped external choice now so its override expires at the
+        // next boundary, rather than dating it from a delayed recovery poll.
+        if (unchangedSettings)
+            DetectExternalThemeChangeLocked(config, _dependencies.localTime());
         return CompleteCommandLocked(config, L"THEME_WRITE_FAILED", ThemeError(result));
+    }
 
     const auto now = _dependencies.localTime();
     UpdateEffectiveTimesLocked(config, now);
@@ -489,9 +521,13 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
     _state.isManualOverride = config.scheduleMode != ScheduleMode::Off &&
                               ((config.scheduleMode == ScheduleMode::FollowNightLight && !_hasNightLightState) || light != ScheduledThemeLocked(config, now));
     RecordEvaluationTimeLocked(now);
-    if (changed || _pendingScheduledThemeNotification)
+    // A no-op set can confirm an external choice before the minute poll sees it.
+    // Acknowledge that transition once, even though no registry write was needed.
+    const bool observedChange = (config.changeSystem && previousSystemTheme && snapshot.systemLight != previousSystemTheme) ||
+                                (config.changeApps && previousAppsTheme && snapshot.appsLight != previousAppsTheme);
+    if (changed || observedChange || _pendingThemeNotification)
         NotifyAppliedThemeLocked(config, snapshot);
-    _pendingScheduledThemeNotification.reset();
+    _pendingThemeNotification.reset();
     return CompleteCommandLocked(config);
 }
 
@@ -564,7 +600,7 @@ void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchC
     if (mismatch)
     {
         Logger::info(L"[LightSwitchStateManager] External theme change detected.");
-        _pendingScheduledThemeNotification.reset();
+        _pendingThemeNotification.reset();
         _state.isManualOverride = true;
         if (config.scheduleMode == ScheduleMode::FollowNightLight)
         {
@@ -574,6 +610,12 @@ void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchC
         SyncThemeStateLocked(snapshot);
         RecordEvaluationTimeLocked(now);
         NotifyAppliedThemeLocked(config, snapshot);
+    }
+    else
+    {
+        // Matching the current plan is also an observation. Retaining an older
+        // value here would invent an external edit at the next boundary.
+        SyncThemeStateLocked(snapshot);
     }
 }
 // Notify PowerDisplay that LightSwitch applied a new theme.

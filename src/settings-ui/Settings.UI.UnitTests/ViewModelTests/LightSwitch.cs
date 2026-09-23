@@ -204,6 +204,142 @@ public class LightSwitch
     }
 
     [TestMethod]
+    [DataRow("SunsetToSunrise", "SunsetToSunrise", 599, 1200, -600, 0)]
+    [DataRow("SunsetToSunrise", "SunsetToSunrise", 600, 1199, 599, 0)]
+    [DataRow("SunsetToSunrise", "SunsetToSunrise", 601, 1200, 0, -599)]
+    [DataRow("SunsetToSunrise", "SunsetToSunrise", 600, 1201, 0, 239)]
+    [DataRow("SunsetToSunrise", "FixedHours", 599, 1201, -600, 239)]
+    [DataRow("SunsetToSunrise", "Off", 599, 1201, -600, 239)]
+    [DataRow("SunsetToSunrise", "FollowNightLight", 599, 1201, -600, 239)]
+    [DataRow("FixedHours", "SunsetToSunrise", 599, 1201, -600, 239)]
+    [DataRow("Off", "SunsetToSunrise", 599, 1201, -600, 239)]
+    [DataRow("FollowNightLight", "SunsetToSunrise", 599, 1201, -600, 239)]
+    public void ModuleSettingsRefreshKeepsStoredOffsetsVisibleAcrossTimeAndModeChanges(
+        string initialMode, string nextMode, int lightMinutes, int darkMinutes, int sunriseOffset, int sunsetOffset)
+    {
+        var settings = CreateSunSettings(600, 1200, sunriseOffset, sunsetOffset);
+        settings.Properties.ScheduleMode.Value = initialMode;
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(settings, message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        viewModel.RefreshModuleSettings();
+        using var controls = new OffsetControlFeedback(viewModel);
+        int pageSaves = 0;
+        viewModel.PropertyChanged += (_, _) =>
+        {
+            if (!viewModel.IsRefreshingModuleSettings)
+            {
+                ++pageSaves;
+            }
+        };
+        var nextSettings = (LightSwitchSettings)settings.Clone();
+        nextSettings.Properties.ScheduleMode.Value = nextMode;
+        nextSettings.Properties.LightTime.Value = lightMinutes;
+        nextSettings.Properties.DarkTime.Value = darkMinutes;
+        string savedSettings = nextSettings.ToJsonString();
+
+        viewModel.ModuleSettings = nextSettings;
+
+        Assert.AreEqual(sunriseOffset, controls.SunriseValue);
+        Assert.AreEqual(sunsetOffset, controls.SunsetValue);
+        Assert.AreEqual(savedSettings, nextSettings.ToJsonString());
+        Assert.AreEqual(0, pageSaves);
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    public void ModuleSettingsRefreshReplacesClampedOldControlValuesWithStoredOffsets()
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(CreateSunSettings(600, 1200, -600, 239), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        viewModel.RefreshModuleSettings();
+        using var controls = new OffsetControlFeedback(viewModel);
+        var settings = CreateSunSettings(100, 1200, 1000, -1000);
+        string savedSettings = settings.ToJsonString();
+        viewModel.PropertyChanged += (_, _) => Assert.IsTrue(viewModel.IsRefreshingModuleSettings);
+
+        // The new bounds first clamp the controls' old values. Those callbacks
+        // must not replace the new snapshot before its offset values are bound.
+        viewModel.ModuleSettings = settings;
+
+        Assert.AreEqual(1000, controls.SunriseValue);
+        Assert.AreEqual(-1000, controls.SunsetValue);
+        Assert.AreEqual(savedSettings, settings.ToJsonString());
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    public void InitialSunSchedulePreviewKeepsOffsetsOutsideTodaysRangeVisibleWithoutSaving()
+    {
+        var today = DateTime.Now;
+        double longitude = (((TimeZoneInfo.Local.GetUtcOffset(today).TotalHours * 15) + 540) % 360) - 180;
+        var sunTimes = SunCalc.CalculateSunriseSunset(1, longitude, today.Year, today.Month, today.Day);
+        int lightMinutes = (sunTimes.SunriseHour * 60) + sunTimes.SunriseMinute;
+        int darkMinutes = (sunTimes.SunsetHour * 60) + sunTimes.SunsetMinute;
+        var settings = CreateSunSettings(lightMinutes + 1, darkMinutes - 1, -lightMinutes - 1, 1440 - darkMinutes);
+        settings.Properties.Latitude.Value = "1";
+        settings.Properties.Longitude.Value = longitude.ToString(CultureInfo.InvariantCulture);
+        string savedSettings = settings.ToJsonString();
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(settings, message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        using var controls = new OffsetControlFeedback(viewModel);
+        int pageSaves = 0;
+        viewModel.PropertyChanged += (_, _) =>
+        {
+            if (!viewModel.IsRefreshingModuleSettings)
+            {
+                ++pageSaves;
+            }
+        };
+
+        viewModel.InitializeScheduleMode();
+
+        Assert.AreEqual(-lightMinutes - 1, controls.SunriseValue);
+        Assert.AreEqual(1440 - darkMinutes, controls.SunsetValue);
+        Assert.AreEqual(savedSettings, settings.ToJsonString());
+        Assert.AreEqual(0, pageSaves);
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, -601, -600)]
+    [DataRow(true, 600, 599)]
+    [DataRow(false, -600, -599)]
+    [DataRow(false, 240, 239)]
+    public void EditingStoredOffsetsBackIntoRangeUpdatesTheControlsOwnBounds(bool sunrise, int storedOffset, int editedOffset)
+    {
+        var settings = CreateSunSettings(600, 1200, sunrise ? storedOffset : 0, sunrise ? 0 : storedOffset);
+        using var viewModel = CreateViewModel(settings, _ => 0);
+        viewModel.RefreshModuleSettings();
+
+        // The first XAML binding must also accept an already out-of-range value.
+        Assert.IsTrue(viewModel.SunriseOffset >= viewModel.SunriseOffsetMin && viewModel.SunriseOffset <= viewModel.SunriseOffsetMax);
+        Assert.IsTrue(viewModel.SunsetOffset >= viewModel.SunsetOffsetMin && viewModel.SunsetOffset <= viewModel.SunsetOffsetMax);
+        using var controls = new OffsetControlFeedback(viewModel);
+
+        controls.EditOffset(sunrise, editedOffset);
+        Assert.AreEqual(editedOffset, sunrise ? viewModel.SunriseOffset : viewModel.SunsetOffset);
+
+        // Once the user corrects the offset, the NumberBox must enforce the
+        // normal range again instead of retaining the old extended boundary.
+        controls.EditOffset(sunrise, storedOffset);
+
+        Assert.AreEqual(editedOffset, sunrise ? controls.SunriseValue : controls.SunsetValue);
+        Assert.AreEqual(editedOffset, sunrise ? viewModel.SunriseOffset : viewModel.SunsetOffset);
+    }
+
+    [TestMethod]
     [DataRow(-61)]
     [DataRow(-1)]
     [DataRow(1440)]
@@ -522,6 +658,8 @@ public class LightSwitch
         public int SunriseValue => sunrise.Value;
 
         public int SunsetValue => sunset.Value;
+
+        public void EditOffset(bool editSunrise, int value) => (editSunrise ? sunrise : sunset).SetValue(value);
 
         public void Dispose() => viewModel.PropertyChanged -= OnPropertyChanged;
 

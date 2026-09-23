@@ -139,6 +139,9 @@ modifying Windows and sending a delayed completion notification. The Command
 Palette's existing toggle event still reaches that shortcut adapter. This
 preserves the number of requests received by the module and avoids an old
 completion event cancelling a newer CLI override.
+Both the shortcut and Command Palette request path restart an exited service
+before submitting their toggle. This does not change the standalone CLI's
+requirement for an already-running service.
 
 Manual overrides use a full local date/time baseline. Scheduled boundaries that
 pass during sleep expire an override, while a backward clock adjustment does
@@ -160,6 +163,12 @@ notified once the same planned state is confirmed. New plans and successful
 manual commands supersede that pending notification; a failed manual write does
 not discard it. Notifications use the verified theme snapshot without rereading
 it immediately before sending the event.
+An explicit theme command also acknowledges an external choice that has not yet
+been polled, even when no Windows write is needed. If a command fails, external
+changes on targets it did not write are still handled against the current plan;
+the command's own partial writes are not treated as external overrides. A later
+successful retry can confirm an earlier write whose verification failed without
+losing the PowerDisplay notification.
 Calculated sun times share the schedule command's settings lock and are saved
 only while their effective configuration remains current. An older calculation
 cannot restore a mode that a completed schedule command has replaced.
