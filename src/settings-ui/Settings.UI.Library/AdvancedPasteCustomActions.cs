@@ -16,7 +16,7 @@ public sealed class AdvancedPasteCustomActions
     };
 
     [JsonPropertyName("value")]
-    public ObservableCollection<AdvancedPasteCustomAction> Value { get; set; } = [];
+    public ObservableCollection<AdvancedPasteCustomAction> Value { get; init; } = [];
 
     public AdvancedPasteCustomActions()
     {

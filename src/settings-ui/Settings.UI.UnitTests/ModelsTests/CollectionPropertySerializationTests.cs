@@ -5,6 +5,7 @@
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CommonLibTest
@@ -116,6 +117,55 @@ namespace CommonLibTest
             Assert.IsTrue(upgraded.Properties.VisibleColorFormats["HEX"].Key);
             Assert.IsFalse(upgraded.Properties.VisibleColorFormats["RGB"].Key);
             Assert.AreEqual("HEX", upgraded.Properties.CopiedColorRepresentation);
+        }
+
+        [TestMethod]
+        public void SettingsCollectionsDeserializeInitOnlyProperties()
+        {
+            var awake = JsonSerializer.Deserialize<AwakeProperties>("""
+                { "customTrayTimes": { "Morning": 30 } }
+                """);
+            var customActions = JsonSerializer.Deserialize<AdvancedPasteCustomActions>("""
+                { "value": [] }
+                """);
+            var shortcutConflicts = JsonSerializer.Deserialize<ShortcutConflictProperties>("""
+                { "ignored_shortcuts": [] }
+                """);
+
+            Assert.IsNotNull(awake);
+            Assert.AreEqual(30u, awake.CustomTrayTimes["Morning"]);
+            Assert.IsNotNull(customActions);
+            Assert.IsEmpty(customActions.Value);
+            Assert.IsNotNull(shortcutConflicts);
+            Assert.IsEmpty(shortcutConflicts.IgnoredShortcuts);
+        }
+
+        [TestMethod]
+        public void HotkeyConflictCollectionsDeserializeInitOnlyProperties()
+        {
+            var allConflicts = JsonSerializer.Deserialize<AllHotkeyConflictsData>("""
+                { "InAppConflicts": [], "SystemConflicts": [] }
+                """);
+            var moduleConflicts = JsonSerializer.Deserialize<ModuleConflictsData>("""
+                { "InAppConflicts": [], "SystemConflicts": [] }
+                """);
+            var group = JsonSerializer.Deserialize<HotkeyConflictGroupData>("""
+                { "Modules": [] }
+                """);
+            var info = JsonSerializer.Deserialize<HotkeyConflictInfo>("""
+                { "AllConflictingModules": ["FancyZones:1"] }
+                """);
+
+            Assert.IsNotNull(allConflicts);
+            Assert.IsEmpty(allConflicts.InAppConflicts);
+            Assert.IsEmpty(allConflicts.SystemConflicts);
+            Assert.IsNotNull(moduleConflicts);
+            Assert.IsEmpty(moduleConflicts.InAppConflicts);
+            Assert.IsEmpty(moduleConflicts.SystemConflicts);
+            Assert.IsNotNull(group);
+            Assert.IsEmpty(group.Modules);
+            Assert.IsNotNull(info);
+            CollectionAssert.Contains(info.AllConflictingModules, "FancyZones:1");
         }
     }
 }
