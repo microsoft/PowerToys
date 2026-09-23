@@ -179,10 +179,10 @@ jobs:
   steps:
   - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
     - pwsh: |
-        if ('$(BuildPlatform)' -cne 'x64' -or '$(BuildConfiguration)' -cne 'Debug' -or
+        if (('$(BuildPlatform)' -cne 'x64' -and '$(BuildPlatform)' -cne 'arm64') -or '$(BuildConfiguration)' -cne 'Debug' -or
             '${{ parameters.buildInstallers }}' -ne 'False' -or '${{ parameters.buildTests }}' -ne 'True' -or
             '${{ parameters.artifactStem }}' -ne '') {
-          throw 'MWB CI preparation requires the unmodified build-x64-Debug artifact, buildTests=true and buildInstallers=false.'
+          throw 'MWB CI preparation requires the unmodified build-x64-Debug or build-arm64-Debug artifact, buildTests=true and buildInstallers=false.'
         }
       displayName: Validate gated MWB build preparation
 
@@ -727,10 +727,11 @@ jobs:
         $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
         try {
           & "$(Build.SourcesDirectory)\.pipelines\New-MwbSandboxCiArtifact.ps1" `
-            -ProductRoot "$(JobOutputDirectory)\x64\Debug\x64\Debug" `
+            -ProductRoot "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)" `
             -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
             -WorkRoot $work `
             -DotNetPath "$(Pipeline.Workspace)\mwb-ci-tools\dotnet\dotnet.exe" `
+            -Platform "$(BuildPlatform)" `
             -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
         } finally {
           # Preserve preparation diagnostics, never the external source tree or package cache.

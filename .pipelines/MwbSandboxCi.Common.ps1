@@ -8,10 +8,20 @@ function Get-MwbCiBackend {
     if ($Platform -ceq 'x64Win10' -and $WindowsBuild -ge 19041 -and $WindowsBuild -lt 22000) {
         return 'Legacy'
     }
-    if ($Platform -ceq 'x64Win11' -and $WindowsBuild -ge 26100) {
+    # ARM64 has no Windows 10 tier in this pilot: the single arm64 test pool is a Windows 11
+    # 24H2+ image, so it only ever selects the modern WinApp backend, exactly like x64Win11.
+    if (($Platform -ceq 'x64Win11' -or $Platform -ceq 'arm64') -and $WindowsBuild -ge 26100) {
         return 'WinApp'
     }
-    throw "BLOCKED_INFRASTRUCTURE: MWB platform $Platform does not match Windows build $WindowsBuild. Win11 requires the registered modern Sandbox client on 24H2 or newer; no Legacy fallback is allowed."
+    throw "BLOCKED_INFRASTRUCTURE: MWB platform $Platform does not match Windows build $WindowsBuild. Win11 (x64 or ARM64) requires the registered modern Sandbox client on 24H2 or newer; no Legacy fallback is allowed."
+}
+
+function Get-MwbCiArchitecture {
+    param([string] $Platform)
+
+    if ($Platform -ceq 'x64Win10' -or $Platform -ceq 'x64Win11') { return 'x64' }
+    if ($Platform -ceq 'arm64') { return 'arm64' }
+    throw "BLOCKED_INFRASTRUCTURE: unrecognized MWB test platform $Platform."
 }
 
 function Get-MwbPreviewPin {
@@ -93,20 +103,20 @@ function Get-MwbCiRelativePath {
 }
 
 function Get-MwbCiBundle {
-    param([string] $Root, [string] $SourceRevision)
+    param([string] $Root, [string] $SourceRevision, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
 
     $bundle = Join-Path $Root 'mwb-sandbox-ci'
     $manifestPath = Join-Path $bundle 'manifest.json'
     Assert-MwbCiPlainPath $manifestPath
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
-        throw 'BLOCKED_INFRASTRUCTURE: build-x64-Debug lacks the build-job MWB CI bundle. Rebuild the gated pilot; test agents never build or download preview/compiler bits.'
+        throw "BLOCKED_INFRASTRUCTURE: build-$Platform-Debug lacks the build-job MWB CI bundle. Rebuild the gated pilot; test agents never build or download preview/compiler bits."
     }
     $manifestBytes = [IO.File]::ReadAllBytes($manifestPath)
     $manifest = [Text.Encoding]::UTF8.GetString($manifestBytes).TrimStart([char]0xFEFF) | ConvertFrom-Json
     $manifestHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($manifestBytes))
     $pin = Get-MwbPreviewPin
     if ($SourceRevision -notmatch '^[0-9a-fA-F]{40}$' -or
-        $manifest.FormatVersion -ne 1 -or $manifest.Platform -cne 'x64' -or
+        $manifest.FormatVersion -ne 1 -or $manifest.Platform -cne $Platform -or
         $manifest.Configuration -cne 'Debug' -or $manifest.SourceRevision -ine $SourceRevision -or
         $manifest.Preview.Repository -cne $pin.Repository -or
         $manifest.Preview.Commit -cne $pin.Commit -or

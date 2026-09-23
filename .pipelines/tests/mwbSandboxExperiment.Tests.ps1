@@ -422,6 +422,41 @@ Describe 'MWB Sandbox artifact discovery' {
     }
 }
 
+Describe 'MWB Sandbox ARM64 artifact discovery' {
+    BeforeEach {
+        $armArtifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-arm64-Debug"
+        $armProduct = Join-Path $armArtifact 'arm64\Debug\arm64\Debug'
+        $armTests = Join-Path $armProduct 'tests\MouseWithoutBorders.UITests'
+        New-Item -ItemType Directory -Path $armTests -Force | Out-Null
+        foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe', 'PowerToys.MouseWithoutBorders.dll')) {
+            Set-Content -LiteralPath (Join-Path $armProduct $name) -Value 'test fixture'
+        }
+        foreach ($name in @('MouseWithoutBorders.UITests.exe', 'MouseWithoutBorders.UITests.runtimeconfig.json')) {
+            Set-Content -LiteralPath (Join-Path $armTests $name) -Value 'test fixture'
+        }
+        New-Item -ItemType Directory -Path (Join-Path $armTests 'Payload') -Force | Out-Null
+        foreach ($name in @('Recover-Host.ps1', 'ModernSandboxRecovery.ps1', 'EndpointSupport.ps1', 'NativeSupport.cs')) {
+            Set-Content -LiteralPath (Join-Path $armTests "Payload\$name") -Value 'test fixture'
+        }
+    }
+
+    It 'uses the ARM64 product and test outputs from the same Debug artifact when explicitly requested' {
+        $payload = Get-MwbSandboxPayload $armArtifact -Architecture arm64
+        $payload.ProductRoot | Should Be ([IO.Path]::GetFullPath($armProduct))
+        $payload.TestExecutable | Should Be ([IO.Path]::GetFullPath((Join-Path $armTests 'MouseWithoutBorders.UITests.exe')))
+    }
+
+    It 'rejects the ARM64 artifact when x64 is the default/requested architecture' {
+        { Get-MwbSandboxPayload $armArtifact } | Should Throw 'build-x64-Debug'
+    }
+
+    It 'rejects an x64 artifact when ARM64 is explicitly requested' {
+        $x64Artifact = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N'))\build-x64-Debug"
+        New-Item -ItemType Directory -Path $x64Artifact -Force | Out-Null
+        { Get-MwbSandboxPayload $x64Artifact -Architecture arm64 } | Should Throw 'build-arm64-Debug'
+    }
+}
+
 Describe 'MWB public recovery path' {
     It 'uses the correlated launcher directory without reading a test journal' {
         $id = [guid]'01234567-89ab-cdef-0123-456789abcdef'

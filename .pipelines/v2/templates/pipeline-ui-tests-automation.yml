@@ -42,11 +42,12 @@ parameters:
   - name: mwbSandboxExperiment
     type: boolean
     default: false
-    displayName: "Opt in to the Debug x64 Mouse Without Borders Sandbox pilot"
+    displayName: "Opt in to the Debug Mouse Without Borders Sandbox pilot (x64 and/or arm64)"
 
 stages:
-  # Reject invalid selections instead of expanding any build/download/install jobs.
-  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), eq(length(parameters.buildPlatforms), 1), containsValue(parameters.buildPlatforms, 'x64'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'), eq(parameters.useLatestWebView2, false))))) }}:
+  # Reject invalid selections instead of expanding any build/download/install jobs. buildPlatforms
+  # must be one or both of exactly x64/arm64 (no empty selection, duplicates, or unknown platforms).
+  - ${{ if or(and(eq(parameters.mwbSandboxExperiment, false), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests')), and(eq(parameters.mwbSandboxExperiment, true), not(and(eq(parameters.buildSource, 'buildNow'), or(and(eq(length(parameters.buildPlatforms), 1), or(containsValue(parameters.buildPlatforms, 'x64'), containsValue(parameters.buildPlatforms, 'arm64'))), and(eq(length(parameters.buildPlatforms), 2), containsValue(parameters.buildPlatforms, 'x64'), containsValue(parameters.buildPlatforms, 'arm64'))), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'), eq(parameters.useLatestWebView2, false))))) }}:
     - stage: InvalidMwbSandboxSelection
       displayName: Reject unsupported MWB Sandbox selection
       jobs:
@@ -61,7 +62,7 @@ stages:
           steps:
             - checkout: none
             - pwsh: |
-                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, buildPlatforms=[x64], exactly uiTestModules=[MouseWithoutBorders.UITests], and useLatestWebView2=false. Release/installed builds and ARM64 are not supported by this pilot.'
+                throw 'MouseWithoutBorders.UITests requires mwbSandboxExperiment=true, buildSource=buildNow, buildPlatforms one or both of exactly [x64]/[arm64] (no duplicates or unknown platforms), exactly uiTestModules=[MouseWithoutBorders.UITests], and useLatestWebView2=false. Release/installed builds are not supported by this pilot.'
               displayName: Fail before building or mutating a test host
 
   - ${{ else }}:

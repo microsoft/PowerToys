@@ -18,6 +18,7 @@ param(
     [Parameter(Mandatory = $true)][string]$ArchivePath,
     [switch]$ReadyToRun,
     [string]$Crossgen2Path,
+    [ValidateSet('x64', 'arm64')][string]$Platform = 'x64',
     [ValidateRange(1, 16)][int]$ReadyToRunParallelism = 2,
     [ValidateRange(1, 3600)][int]$ReadyToRunTimeoutSeconds = 600
 )
@@ -67,7 +68,7 @@ if ($ReadyToRun) {
     if (Test-Path -LiteralPath "$archive.manifest.json") { throw 'Use a new ReadyToRun manifest path.' }
     . "$PSScriptRoot\MwbReadyToRun.ps1"
     Initialize-MwbReadyToRunMetadata
-    $null = Get-MwbReadyToRunCompiler $Crossgen2Path
+    $null = Get-MwbReadyToRunCompiler $Crossgen2Path -TargetArchitecture $Platform
 }
 elseif (-not [string]::IsNullOrWhiteSpace($Crossgen2Path)) {
     throw 'Use -ReadyToRun when supplying -Crossgen2Path.'
@@ -168,7 +169,7 @@ foreach ($application in @(
             $group = $library.Value.PSObject.Properties[$kind]
             if (-not $group) { continue }
             foreach ($asset in $group.Value.PSObject.Properties) {
-                if ($kind -eq 'runtimeTargets' -and $asset.Value.rid -notmatch '^win(?:10)?-x64$') { continue }
+                if ($kind -eq 'runtimeTargets' -and $asset.Value.rid -notmatch "^win(?:10)?-$Platform`$") { continue }
                 $name = [IO.Path]::GetFileName($asset.Name)
                 if ($name -eq '_._') { continue }
                 $candidates = @((Join-Path $directory $asset.Name), (Join-Path $directory $name))
@@ -217,7 +218,10 @@ foreach ($directory in @($root, (Join-Path $root 'WinUI3Apps'))) {
     } | ForEach-Object {
         if ($_.Extension -notin '.pdb', '.lib', '.exp', '.ilk', '.idb') { Add-RuntimeFile $_.FullName }
     }
-    foreach ($folder in @('Assets', 'SettingsXAML', 'QuickAccessXaml', 'Controls', 'Microsoft.UI.Xaml', 'amd64')) {
+    # Native x64 companions (msdia140.dll, KernelTraceControl.dll, etc.) are staged by their
+    # NuGet packages under an 'amd64' folder rather than 'x64'; ARM64 uses its normal RID name.
+    $nativeArchFolder = if ($Platform -eq 'arm64') { 'arm64' } else { 'amd64' }
+    foreach ($folder in @('Assets', 'SettingsXAML', 'QuickAccessXaml', 'Controls', 'Microsoft.UI.Xaml', $nativeArchFolder)) {
         $path = Join-Path $directory $folder
         if (Test-Path -LiteralPath $path -PathType Container) {
             Get-ChildItem -LiteralPath $path -File -Recurse | ForEach-Object { Add-RuntimeFile $_.FullName }
@@ -268,7 +272,7 @@ try {
     $compilation = $null
     if ($ReadyToRun) {
         $compilation = Convert-MwbStagedRuntimeToReadyToRun -StageRoot $stage -Crossgen2Path $Crossgen2Path `
-            -Parallelism $ReadyToRunParallelism -TimeoutSeconds $ReadyToRunTimeoutSeconds
+            -TargetArchitecture $Platform -Parallelism $ReadyToRunParallelism -TimeoutSeconds $ReadyToRunTimeoutSeconds
     }
     & tar.exe -a -cf $archiveOutput -C $stage .
     if ($LASTEXITCODE -ne 0) { throw 'Native runtime archive packaging failed.' }

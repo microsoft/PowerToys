@@ -91,7 +91,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: ${{ parameters.platform }}
-            configuration: Release
+            configuration: ${{ iif(parameters.mwbSandboxExperiment, 'Debug', 'Release') }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}

@@ -107,6 +107,15 @@ Describe 'MWB explicit ReadyToRun compiler contracts' {
         $result.Files.Count | Should Be 3
         $result.Files[1].Path | Should Match 'jitinterface_x64.dll$'
         $result.Files[2].Path | Should Match 'clrjit_win_x64_x64.dll$'
+        $result.TargetArchitecture | Should Be 'x64'
+    }
+
+    It 'selects the universal ARM64 cross-target JIT for an explicit ARM64 target' {
+        $result = Get-MwbReadyToRunCompiler $compilerPath -TargetArchitecture arm64
+        $result.Files.Count | Should Be 3
+        $result.Files[1].Path | Should Match 'jitinterface_x64.dll$'
+        $result.Files[2].Path | Should Match 'clrjit_universal_arm64_x64.dll$'
+        $result.TargetArchitecture | Should Be 'arm64'
     }
 
     It 'rejects missing runtime-version metadata' {
@@ -134,6 +143,12 @@ Describe 'MWB native compiler image validation' {
         $file = Join-Path $TestDrive 'managed.dll'
         New-ReadyToRunFixtureAssembly $file
         { Get-MwbReadyToRunFileIdentity $file -Native } | Should Throw 'x64 native'
+    }
+
+    It 'rejects nonnative images when native ARM64 is explicitly requested' {
+        $file = Join-Path $TestDrive 'managed-arm64.dll'
+        New-ReadyToRunFixtureAssembly $file
+        { Get-MwbReadyToRunFileIdentity $file -Native -NativeArchitecture arm64 } | Should Throw 'arm64 native'
     }
 }
 
@@ -322,7 +337,7 @@ Describe 'MWB optional archive publication and failure cleanup' {
             $_.Extent.Text -eq '$stageOwned = $false'
         }
         $script:publishFixture = [scriptblock]::Create(
-            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds)' +
+            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds,$Platform = ''x64'')' +
             "`n`$ErrorActionPreference = 'Stop'`n" + $script:archiveAst.Extent.Text.Substring($start.Extent.StartOffset))
         $pathFunction = $script:archiveAst.Find({
             param($node)
@@ -536,6 +551,39 @@ Describe 'MWB explicit native SDK compiler integration' {
         [IO.File]::WriteAllBytes($altered, $bytes)
         { [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($original, $altered) } |
             Should Throw 'attributes changed'
+    }
+
+    It 'cross-compiles a tiny fixture assembly for a native ARM64 target from this x64 host and preserves Debug IL' -Skip:(
+        -not $env:POWERTOYS_TEST_CROSSGEN2_PATH -or -not $env:POWERTOYS_TEST_ARM64_RUNTIME_REFERENCE_ROOT
+    ) {
+        $stage = Join-Path $TestDrive 'tiny-stage-arm64'
+        $null = New-Item -ItemType Directory (Join-Path $stage 'WinUI3Apps') -Force
+        $assemblyPath = Join-Path $stage 'Fixture.dll'
+        New-ReadyToRunFixtureAssembly $assemblyPath
+        $original = Join-Path $TestDrive 'original-arm64.dll'
+        Copy-Item $assemblyPath $original
+        Copy-Item $assemblyPath (Join-Path $stage 'WinUI3Apps\Fixture.dll')
+        foreach ($name in @('System.Private.CoreLib.dll', 'System.Runtime.dll')) {
+            Copy-Item (Join-Path $env:POWERTOYS_TEST_ARM64_RUNTIME_REFERENCE_ROOT $name) (Join-Path $stage $name)
+        }
+        Mock Get-MwbReadyToRunRuntime { [pscustomobject]@{ Version = 'fixture'; Files = @() } }
+        $result = Convert-MwbStagedRuntimeToReadyToRun $stage $env:POWERTOYS_TEST_CROSSGEN2_PATH `
+            -TargetArchitecture arm64 -TimeoutSeconds 120
+        $result.ManagedILAndAttributesUnchanged | Should Be $true
+        $result.TargetArchitecture | Should Be 'arm64'
+        ($result.VerifiedMethods -gt 0) | Should Be $true
+        (Get-FileHash $assemblyPath).Hash | Should Be ((Get-FileHash (Join-Path $stage 'WinUI3Apps\Fixture.dll')).Hash)
+        [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Read($assemblyPath).Configuration | Should Be 'Debug'
+        [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($original, $assemblyPath, 'arm64') | Should BeGreaterThan 0
+        @(Get-ChildItem $stage -Filter '*.ni.dll' -Recurse).Count | Should Be 0
+        @(Get-ChildItem $stage -Filter '.readytorun-*' -Directory).Count | Should Be 0
+
+        # Prove the produced image is genuinely native ARM64 (Machine 0xAA64) and not x64 or the
+        # ARM64EC hybrid (0xA641), i.e. a real cross-compilation output, not a managed fallback.
+        $peBytes = [IO.File]::ReadAllBytes($assemblyPath)
+        $peHeaderOffset = [BitConverter]::ToInt32($peBytes, 0x3C)
+        $machine = [BitConverter]::ToUInt16($peBytes, $peHeaderOffset + 4)
+        $machine | Should Be 0xAA64
     }
 
     It 'terminates only its owned native compiler when the deadline expires' -Skip:(-not $env:POWERTOYS_TEST_CROSSGEN2_PATH) {

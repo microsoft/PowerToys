@@ -203,9 +203,27 @@ internal sealed class TwoEndpointFixture : IDisposable
         var desktop = NativeSupport.Desktop();
         Assert.IsTrue(desktop.Ready && !desktop.Elevated, "BLOCKED_INFRASTRUCTURE: an active, unlocked standard-user L1 desktop is required.");
         Assert.AreEqual(1, System.Windows.Forms.Screen.AllScreens.Length, "The first nested-Sandbox pilot requires one L1 display.");
-        Assert.AreEqual(Architecture.X64, System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture, "This pilot requires x64.");
         Assert.IsTrue(File.Exists(markerPath), $"BLOCKED_INFRASTRUCTURE: privileged provisioning marker is missing: {markerPath}");
         provision = RunFiles.Read(markerPath);
+        var provisionedArchitecture = provision["Architecture"]?.GetValue<string>();
+        var expectedArchitecture = provisionedArchitecture switch
+        {
+            "X64" => Architecture.X64,
+            "Arm64" => Architecture.Arm64,
+            _ => throw new InvalidOperationException($"BLOCKED_INFRASTRUCTURE: unsupported provisioned architecture: {provisionedArchitecture}"),
+        };
+
+        // Compare against the architecture privileged provisioning actually recorded (never a
+        // hardcoded x64), and require the OS architecture to match too: a mismatch would mean
+        // this process is running under emulation (for example x64-on-ARM64) instead of native.
+        Assert.AreEqual(
+            expectedArchitecture,
+            RuntimeInformation.ProcessArchitecture,
+            "This pilot must run natively as the architecture privileged provisioning recorded.");
+        Assert.AreEqual(
+            expectedArchitecture,
+            RuntimeInformation.OSArchitecture,
+            "BLOCKED_INFRASTRUCTURE: refusing an emulated process; the OS architecture must match the native target.");
         productRoot = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR")
             ?? throw new InvalidOperationException("Set POWERTOYS_INSTALL_DIR to the coherently staged Debug product."));
         productRoot = productRoot.TrimEnd('\\');

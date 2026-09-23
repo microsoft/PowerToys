@@ -139,6 +139,10 @@ $state = [ordered]@{
     InnerSubnet = ''
     InterfaceAlias = $InterfaceAlias
     TestUserSid = $userSid.Value
+    # Recorded from this elevated, already-native provisioning process so the standard-user
+    # test fixture can assert it is running natively too, never emulated (for example x64
+    # under Windows-on-ARM emulation), regardless of which architecture was requested.
+    Architecture = [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
     ProvisionerProcessId = $PID
     ProvisionerStartTimeUtc = (Get-Process -Id $PID).StartTime.ToUniversalTime().ToString('o')
     ProvisionerExecutable = (Get-Process -Id $PID).Path

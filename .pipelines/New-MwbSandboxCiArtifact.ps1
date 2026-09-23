@@ -10,6 +10,7 @@ param(
     [Parameter(Mandatory)][string] $WorkRoot,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string] $SourceRevision,
     [Parameter(Mandatory)][string] $DotNetPath,
+    [ValidateSet('x64', 'arm64')][string] $Platform = 'x64',
     [switch] $ReadyToRun
 )
 
@@ -93,11 +94,16 @@ function Get-MwbCiRuntimeVersion {
 }
 
 function Get-MwbCiCrossgen2 {
-    param([string] $RuntimeVersion, [string] $Directory)
+    param([string] $RuntimeVersion, [string] $Directory, [ValidateSet('x64', 'arm64')][string] $TargetArchitecture = 'x64')
 
     if ($RuntimeVersion -notmatch '^\d+\.\d+\.\d+$') {
         throw 'MWB CI Crossgen2 requires an exact stable runtime package version.'
     }
+    # The Crossgen2 compiler package is always the win-x64 host tool: it runs on this x64 build
+    # agent regardless of the RID it is asked to target. The target-specific native JIT it loads
+    # differs by file name only; ARM64 codegen is OS-independent, so the SDK ships it as
+    # clrjit_universal_arm64_x64.dll rather than a win-specific name like the x64 JIT.
+    $targetJit = if ($TargetArchitecture -eq 'arm64') { 'clrjit_universal_arm64_x64.dll' } else { 'clrjit_win_x64_x64.dll' }
     $candidates = @(
         (Join-Path (Split-Path $DotNetPath) "packs\Microsoft.NETCore.App.Crossgen2.win-x64\$RuntimeVersion\tools\crossgen2.exe")
     )
@@ -107,7 +113,7 @@ function Get-MwbCiCrossgen2 {
     foreach ($candidate in $candidates) {
         if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and
             (Test-Path -LiteralPath (Join-Path (Split-Path $candidate) 'jitinterface_x64.dll') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path (Split-Path $candidate) 'clrjit_win_x64_x64.dll') -PathType Leaf)) {
+            (Test-Path -LiteralPath (Join-Path (Split-Path $candidate) $targetJit) -PathType Leaf)) {
             # The packager verifies the native images, file versions, commits and hashes
             # before invoking even an already-restored SDK compiler.
             return $candidate
@@ -136,9 +142,13 @@ function Get-MwbCiCrossgen2 {
     $compiler
 }
 
-function Assert-MwbCiNativeX64File {
-    param([string] $Path)
+function Assert-MwbCiNativePreviewFile {
+    param([string] $Path, [ValidateSet('x64', 'arm64')][string] $Architecture = 'x64')
 
+    # 0x8664 = IMAGE_FILE_MACHINE_AMD64, 0xAA64 = IMAGE_FILE_MACHINE_ARM64. An exact-equality
+    # check also rejects ARM64EC (0xA641) and any managed/emulated substitute when native
+    # ARM64 is requested: only the literal native machine value for the target is accepted.
+    $expectedMachine = if ($Architecture -eq 'arm64') { 0xAA64 } else { 0x8664 }
     $stream = [IO.File]::OpenRead($Path)
     $reader = [IO.BinaryReader]::new($stream)
     try {
@@ -147,8 +157,8 @@ function Assert-MwbCiNativeX64File {
         $header = $reader.ReadInt32()
         if ($header -lt 64 -or $header + 264 -gt $stream.Length) { throw 'MWB preview output has an invalid PE header.' }
         $stream.Position = $header
-        if ($reader.ReadUInt32() -ne 0x4550 -or $reader.ReadUInt16() -ne 0x8664) {
-            throw 'MWB preview output is not native x64.'
+        if ($reader.ReadUInt32() -ne 0x4550 -or $reader.ReadUInt16() -ne $expectedMachine) {
+            throw "MWB preview output is not native $Architecture."
         }
         $stream.Position = $header + 24
         if ($reader.ReadUInt16() -ne 0x20B) { throw 'MWB preview output is not PE32+.' }
@@ -159,23 +169,24 @@ function Assert-MwbCiNativeX64File {
 }
 
 function Get-MwbCiPreviewPublishCommand {
-    param([string] $VcVars, [string] $DotNet, [string] $PublishRoot, $Pin)
+    param([string] $VcVars, [string] $DotNet, [string] $PublishRoot, $Pin, [string] $RuntimeIdentifier = 'win-x64')
 
     @"
 @echo off
 call "$VcVars" >nul
 if errorlevel 1 exit /b %errorlevel%
-"$DotNet" publish "src\winapp-CLI\WinApp.Cli\WinApp.Cli.csproj" -c Release -r win-x64 --self-contained -o "$PublishRoot" /p:Version=$($Pin.AssemblyVersion) /p:AssemblyVersion=$($Pin.AssemblyVersion) /p:FileVersion=$($Pin.AssemblyVersion) /p:InformationalVersion=$($Pin.Version) /p:IncludeSourceRevisionInInformationalVersion=false --nologo -v:minimal
+"$DotNet" publish "src\winapp-CLI\WinApp.Cli\WinApp.Cli.csproj" -c Release -r $RuntimeIdentifier --self-contained -o "$PublishRoot" /p:Version=$($Pin.AssemblyVersion) /p:AssemblyVersion=$($Pin.AssemblyVersion) /p:FileVersion=$($Pin.AssemblyVersion) /p:InformationalVersion=$($Pin.Version) /p:IncludeSourceRevisionInInformationalVersion=false --nologo -v:minimal
 exit /b %errorlevel%
 "@
 }
 
 function Get-MwbCiPreviewRuntimeProvenance {
-    param([string] $Directory, [string] $ExpectedVersion)
+    param([string] $Directory, [string] $ExpectedVersion, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
 
     if ($ExpectedVersion -notmatch '^\d+\.\d+\.\d+$') { throw 'The preview runtime pin must be an exact version.' }
     $framework = 'net10.0-windows10.0.19041.0'
-    $targetName = "$framework/win-x64"
+    $rid = "win-$Platform"
+    $targetName = "$framework/$rid"
     $projects = @()
     $compilerPackages = @()
     $runtimeVersion = $null
@@ -194,9 +205,13 @@ function Get-MwbCiPreviewRuntimeProvenance {
         if (@($downloads | Group-Object name | Where-Object Count -GT 1).Count) {
             throw "The published preview has duplicate package downloads: $project."
         }
-        $required = @('Microsoft.NETCore.App.Runtime.win-x64')
+        $required = @("Microsoft.NETCore.App.Runtime.$rid")
         if ($project -ceq 'WinApp.Cli') {
-            $required += @('Microsoft.NETCore.App.Runtime.NativeAOT.win-x64', 'runtime.win-x64.Microsoft.DotNet.ILCompiler')
+            # The NativeAOT *target* runtime pack matches the requested RID; the ILCompiler
+            # *host* package is always win-x64 because it runs on this x64 build agent, and it
+            # is restored as a framework download dependency (not a target library) whenever
+            # cross-compiling, exactly like the runtime packs above.
+            $required += @("Microsoft.NETCore.App.Runtime.NativeAOT.$rid", 'runtime.win-x64.Microsoft.DotNet.ILCompiler')
         }
         $runtimePacks = foreach ($id in $required) {
             $entries = @($downloads | Where-Object name -EQ $id)
@@ -209,7 +224,12 @@ function Get-MwbCiPreviewRuntimeProvenance {
             [ordered]@{ Id = $id; Version = $runtimeVersion }
         }
         if ($project -ceq 'WinApp.Cli') {
-            foreach ($id in @('Microsoft.DotNet.ILCompiler', 'runtime.win-x64.Microsoft.DotNet.ILCompiler')) {
+            # These two package ids are the ones NuGet actually records as regular target
+            # dependencies for the requested RID (with sha512 library provenance): the
+            # host-agnostic meta package, and the ILCompiler package matching the *target* RID
+            # itself. The host x64 executable package is verified above via its download pin;
+            # for a non-cross (x64) build the target RID *is* x64, so both checks agree.
+            foreach ($id in @('Microsoft.DotNet.ILCompiler', "runtime.$rid.Microsoft.DotNet.ILCompiler")) {
                 $entries = @($target.Value.PSObject.Properties | Where-Object {
                     $_.Name.StartsWith("$id/", [StringComparison]::OrdinalIgnoreCase)
                 })
@@ -235,13 +255,13 @@ function Get-MwbCiPreviewRuntimeProvenance {
         }
     }
     [ordered]@{
-        RuntimeVersion = $runtimeVersion; TargetFramework = $framework; RuntimeIdentifier = 'win-x64'
+        RuntimeVersion = $runtimeVersion; TargetFramework = $framework; RuntimeIdentifier = $rid
         Projects = $projects; CompilerPackages = $compilerPackages
     }
 }
 
 function New-MwbCiPreview {
-    param([string] $Directory, [string] $Destination)
+    param([string] $Directory, [string] $Destination, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
 
     $pin = Get-MwbPreviewPin
     $patch = Get-MwbPreviewPatchPath
@@ -274,26 +294,33 @@ function New-MwbCiPreview {
     $sdk = Invoke-MwbCiBuildCommand $DotNetPath @('--version') $Directory (Join-Path $Directory 'sdk.log') 30
     if ($sdk -cne $pin.SdkVersion) { throw 'The preview build SDK differs from its frozen pin.' }
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-    $vs = Invoke-MwbCiBuildCommand $vswhere @('-latest', '-prerelease', '-products', '*', '-requires',
-        'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath') $Directory (Join-Path $Directory 'vs.log') 30
-    $vcvars = Join-Path $vs 'VC\Auxiliary\Build\vcvars64.bat'
+    $vcRequirements = @('Microsoft.VisualStudio.Component.VC.Tools.x86.x64')
+    if ($Platform -eq 'arm64') { $vcRequirements += 'Microsoft.VisualStudio.Component.VC.Tools.ARM64' }
+    $vsRequiresArguments = @()
+    foreach ($requirement in $vcRequirements) { $vsRequiresArguments += @('-requires', $requirement) }
+    $vs = Invoke-MwbCiBuildCommand $vswhere (@('-latest', '-prerelease', '-products', '*') + $vsRequiresArguments +
+        @('-property', 'installationPath')) $Directory (Join-Path $Directory 'vs.log') 30
+    # x64 targets build with the plain x64 host/target script; ARM64 is cross-compiled from
+    # this x64 build agent using the host=amd64/target=arm64 cross-toolchain script.
+    $vcvarsName = if ($Platform -eq 'arm64') { 'vcvarsamd64_arm64.bat' } else { 'vcvars64.bat' }
+    $vcvars = Join-Path $vs "VC\Auxiliary\Build\$vcvarsName"
     if (-not (Test-Path -LiteralPath $vcvars -PathType Leaf)) {
-        throw 'BLOCKED_INFRASTRUCTURE: the build agent lacks the x64 NativeAOT Visual Studio toolchain.'
+        throw "BLOCKED_INFRASTRUCTURE: the build agent lacks the $Platform NativeAOT Visual Studio toolchain."
     }
     $publish = Join-Path $Directory 'portable'
     # Environment setup and NativeAOT compilation must share one cmd.exe process.
     $commandFile = Join-Path $Directory 'publish.cmd'
-    Get-MwbCiPreviewPublishCommand -VcVars $vcvars -DotNet $DotNetPath -PublishRoot $publish -Pin $pin |
+    Get-MwbCiPreviewPublishCommand -VcVars $vcvars -DotNet $DotNetPath -PublishRoot $publish -Pin $pin -RuntimeIdentifier "win-$Platform" |
         Set-Content -LiteralPath $commandFile -Encoding ascii
     $null = Invoke-MwbCiBuildCommand $env:ComSpec @('/d', '/c', $commandFile) $Directory (Join-Path $Directory 'publish.log')
     # The exact SDK selects servicing packs independently for .NET and the Windows SDK.
     # A global RuntimeFrameworkVersion would incorrectly override the latter as well.
-    $runtimeProvenance = Get-MwbCiPreviewRuntimeProvenance $Directory $pin.RuntimeVersion
+    $runtimeProvenance = Get-MwbCiPreviewRuntimeProvenance $Directory $pin.RuntimeVersion -Platform $Platform
     $null = New-Item -ItemType Directory -Path $Destination
     $files = foreach ($name in $pin.Files) {
         $source = Join-Path $publish $name
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw "The preview portable output is missing $name." }
-        Assert-MwbCiNativeX64File $source
+        Assert-MwbCiNativePreviewFile $source -Architecture $Platform
         if ($name -ceq 'winapp.exe' -and
             (Get-MwbCiFileVersion $source).ProductVersion -cne $pin.Version) {
             throw 'The private preview informational version does not match its pinned source baseline.'
@@ -305,8 +332,8 @@ function New-MwbCiPreview {
         Repository = $pin.Repository; Commit = $commit; PatchSha256 = $pin.PatchSha256
         Version = $pin.Version; SdkVersion = $sdk; RuntimeVersion = $runtimeProvenance.RuntimeVersion
         RuntimeProvenance = $runtimeProvenance
-        VisualStudioVersion = Invoke-MwbCiBuildCommand $vswhere @('-latest', '-prerelease', '-products', '*', '-requires',
-            'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationVersion') $Directory (Join-Path $Directory 'vs-version.log') 30
+        VisualStudioVersion = Invoke-MwbCiBuildCommand $vswhere (@('-latest', '-prerelease', '-products', '*') + $vsRequiresArguments +
+            @('-property', 'installationVersion')) $Directory (Join-Path $Directory 'vs-version.log') 30
         Files = @($files)
     }
 }
@@ -340,9 +367,9 @@ function Get-MwbCiPreparationPaths {
         $output.StartsWith("$work\", [StringComparison]::OrdinalIgnoreCase)) {
         throw 'MWB preview audit/build work must be outside the source checkout and published bundle.'
     }
-    if ($product -notmatch '\\x64\\Debug$' -or
+    if ($product -notmatch "\\$Platform\\Debug`$" -or
         -not (Test-Path -LiteralPath (Join-Path $product 'PowerToys.MouseWithoutBorders.dll') -PathType Leaf)) {
-        throw 'MWB CI preparation accepts only the built x64 Debug product.'
+        throw "MWB CI preparation accepts only the built $Platform Debug product."
     }
     [pscustomobject]@{ ProductRoot = $product; SourceRoot = $source; OutputRoot = $output; WorkRoot = $work }
 }
@@ -360,9 +387,9 @@ $options = @{}
 if ($ReadyToRun) {
     $runtimeVersion = Get-MwbCiRuntimeVersion $product
     $options.ReadyToRun = $true
-    $options.Crossgen2Path = Get-MwbCiCrossgen2 $runtimeVersion (Join-Path $work 'compiler')
+    $options.Crossgen2Path = Get-MwbCiCrossgen2 $runtimeVersion (Join-Path $work 'compiler') -TargetArchitecture $Platform
 }
-& (Join-Path $experiment 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive @options | Out-Null
+& (Join-Path $experiment 'New-MwbRuntimeArchive.ps1') -ProductRoot $product -ArchivePath $archive -Platform $Platform @options | Out-Null
 $runtime = Get-Content -LiteralPath "$archive.manifest.json" -Raw | ConvertFrom-Json
 $files = foreach ($relative in $runtime.Files) {
     $path = Get-MwbCiRelativePath "$archive.staging" $relative
@@ -370,10 +397,10 @@ $files = foreach ($relative in $runtime.Files) {
 }
 # The archive, not a second packaging pass, is the source for both endpoints.
 Remove-Item -LiteralPath "$archive.staging" -Recurse -Force
-$preview = New-MwbCiPreview (Join-Path $work 'preview-source') (Join-Path $output 'preview')
+$preview = New-MwbCiPreview (Join-Path $work 'preview-source') (Join-Path $output 'preview') -Platform $Platform
 [ordered]@{
     FormatVersion = 1; SourceRevision = $SourceRevision.ToLowerInvariant()
-    Platform = 'x64'; Configuration = 'Debug'
+    Platform = $Platform; Configuration = 'Debug'
     Runtime = [ordered]@{
         Sha256 = $runtime.Sha256
         ManifestSha256 = (Get-FileHash -LiteralPath "$archive.manifest.json" -Algorithm SHA256).Hash
@@ -382,4 +409,4 @@ $preview = New-MwbCiPreview (Join-Path $work 'preview-source') (Join-Path $outpu
     }
     Preview = $preview
 } | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $output 'manifest.json')
-Write-Host "Prepared private MWB x64 Debug bundle (ReadyToRun=$([bool]$ReadyToRun)); original product files were not modified."
+Write-Host "Prepared private MWB $Platform Debug bundle (ReadyToRun=$([bool]$ReadyToRun)); original product files were not modified."

@@ -11,7 +11,7 @@ $buildAst = [Management.Automation.Language.Parser]::ParseFile($buildPath, [ref]
 if ($parseErrors) { throw 'MWB CI preparation contains PowerShell parse errors.' }
 # Load definitions only: no downloads, native compiler execution, OS mutation, or UI.
 foreach ($name in @('Get-MwbCiCrossgen2', 'Invoke-MwbCiBuildCommand', 'Get-MwbCiRuntimeVersion',
-    'Get-MwbCiFileVersion', 'Assert-MwbCiNativeX64File', 'New-MwbCiPreview', 'Get-MwbCiPreparationPaths',
+    'Get-MwbCiFileVersion', 'Assert-MwbCiNativePreviewFile', 'New-MwbCiPreview', 'Get-MwbCiPreparationPaths',
     'Get-MwbCiGitOptions', 'Get-MwbCiPreviewPublishCommand', 'Get-MwbCiPreviewRuntimeProvenance')) {
     $definition = $buildAst.Find({
         param($node)
@@ -93,6 +93,7 @@ Describe 'Canonical CI preparation path containment' {
         $productRoot = Join-Path $sourceRoot 'x64\Debug'
         $outputRoot = Join-Path $fixtureRoot 'output\bundle'
         $workRoot = Join-Path $fixtureRoot 'work\audit'
+        $Platform = 'x64'
         $null = New-Item -ItemType Directory -Path $productRoot -Force
         Set-Content -LiteralPath (Join-Path $productRoot 'PowerToys.MouseWithoutBorders.dll') -Value 'inert fixture'
     }
@@ -282,11 +283,13 @@ Describe 'MWB CI manifest and initializer agreement' {
 }
 
 Describe 'Explicit MWB CI hybrid backend selection' {
-    It 'retains Win10 Legacy while selecting modern only for the Win11 job' -TestCases @(
+    It 'retains Win10 Legacy while selecting modern only for the Win11 x64/ARM64 jobs' -TestCases @(
         @{ Platform = 'x64Win10'; Build = 19044; Expected = 'Legacy' }
         @{ Platform = 'x64Win10'; Build = 19045; Expected = 'Legacy' }
         @{ Platform = 'x64Win11'; Build = 26100; Expected = 'WinApp' }
         @{ Platform = 'x64Win11'; Build = 26200; Expected = 'WinApp' }
+        @{ Platform = 'arm64'; Build = 26100; Expected = 'WinApp' }
+        @{ Platform = 'arm64'; Build = 26200; Expected = 'WinApp' }
     ) {
         param($Platform, $Build, $Expected)
         Get-MwbCiBackend $Platform $Build | Should Be $Expected
@@ -296,11 +299,31 @@ Describe 'Explicit MWB CI hybrid backend selection' {
         @{ Platform = 'x64Win11'; Build = 22631 }
         @{ Platform = 'x64Win11'; Build = 19045 }
         @{ Platform = 'x64Win10'; Build = 26100 }
-        @{ Platform = 'arm64'; Build = 26100 }
+        @{ Platform = 'arm64'; Build = 22631 }
+        @{ Platform = 'arm64'; Build = 19045 }
+        @{ Platform = 'arm64Win10'; Build = 19044 }
         @{ Platform = ''; Build = 26100 }
     ) {
         param($Platform, $Build)
         { Get-MwbCiBackend $Platform $Build } | Should Throw 'BLOCKED_INFRASTRUCTURE'
+    }
+}
+
+Describe 'Explicit MWB CI test-platform architecture mapping' {
+    It 'maps each test platform to its unambiguous build architecture' -TestCases @(
+        @{ Platform = 'x64Win10'; Expected = 'x64' }
+        @{ Platform = 'x64Win11'; Expected = 'x64' }
+        @{ Platform = 'arm64'; Expected = 'arm64' }
+    ) {
+        param($Platform, $Expected)
+        Get-MwbCiArchitecture $Platform | Should Be $Expected
+    }
+
+    It 'rejects unrecognized test platforms rather than guessing an architecture' -TestCases @(
+        @{ Platform = 'arm64Win10' }; @{ Platform = 'arm64Win11' }; @{ Platform = 'x86' }; @{ Platform = '' }
+    ) {
+        param($Platform)
+        { Get-MwbCiArchitecture $Platform } | Should Throw 'BLOCKED_INFRASTRUCTURE'
     }
 }
 
@@ -450,6 +473,27 @@ Describe 'Build-only pinned SDK compiler resolution' {
         Test-Path -LiteralPath $directory | Should Be $false
     }
 
+    It 'reuses the same host x64 compiler package for an ARM64 cross-compilation target' {
+        $nativeRoot = Join-Path $env:NUGET_PACKAGES 'microsoft.netcore.app.crossgen2.win-x64\10.0.12\tools'
+        $null = New-Item -ItemType Directory -Path $nativeRoot -Force
+        foreach ($name in @('crossgen2.exe', 'jitinterface_x64.dll', 'clrjit_universal_arm64_x64.dll')) {
+            Set-Content -LiteralPath (Join-Path $nativeRoot $name) -Value 'nonexecutable compiler fixture'
+        }
+        Get-MwbCiCrossgen2 '10.0.12' $directory -TargetArchitecture arm64 | Should Be (Join-Path $nativeRoot 'crossgen2.exe')
+        Assert-MockCalled Invoke-MwbCiBuildCommand -Times 0 -Exactly -Scope It
+        Test-Path -LiteralPath $directory | Should Be $false
+    }
+
+    It 'does not reuse an x64-only staged compiler for an ARM64 target missing its universal JIT' {
+        $nativeRoot = Join-Path $env:NUGET_PACKAGES 'microsoft.netcore.app.crossgen2.win-x64\10.0.12\tools'
+        $null = New-Item -ItemType Directory -Path $nativeRoot -Force
+        foreach ($name in @('crossgen2.exe', 'jitinterface_x64.dll', 'clrjit_win_x64_x64.dll')) {
+            Set-Content -LiteralPath (Join-Path $nativeRoot $name) -Value 'nonexecutable compiler fixture'
+        }
+        Get-MwbCiCrossgen2 '10.0.12' $directory -TargetArchitecture arm64 | Should Not Be (Join-Path $nativeRoot 'crossgen2.exe')
+        Assert-MockCalled Invoke-MwbCiBuildCommand -Times 1 -Exactly -Scope It
+    }
+
     It 'restores only the exact SDK native Crossgen2 package using NuGet' {
         $compiler = Get-MwbCiCrossgen2 '10.0.12' $directory
         $compiler | Should Match 'crossgen2\.win-x64\\10\.0\.12\\tools\\crossgen2\.exe$'
@@ -495,22 +539,23 @@ Describe 'Build-only pinned SDK compiler resolution' {
 }
 
 function New-CiPreviewAssetsFixture {
-    param([string] $Directory)
+    param([string] $Directory, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
 
+    $rid = "win-$Platform"
     $framework = 'net10.0-windows10.0.19041.0'
     foreach ($project in @('WinApp.Cli', 'WinApp.UIAutomation', 'WinApp.UIAutomation.Recording')) {
         $downloads = @(
-            @{ name = 'Microsoft.NETCore.App.Runtime.win-x64'; version = '[10.0.12, 10.0.12]' },
+            @{ name = "Microsoft.NETCore.App.Runtime.$rid"; version = '[10.0.12, 10.0.12]' },
             @{ name = 'Microsoft.Windows.SDK.NET.Ref'; version = '[10.0.19041.57, 10.0.19041.57]' }
         )
         $target = @{}
         $libraries = @{}
         if ($project -ceq 'WinApp.Cli') {
             $downloads += @(
-                @{ name = 'Microsoft.NETCore.App.Runtime.NativeAOT.win-x64'; version = '[10.0.12, 10.0.12]' },
+                @{ name = "Microsoft.NETCore.App.Runtime.NativeAOT.$rid"; version = '[10.0.12, 10.0.12]' },
                 @{ name = 'runtime.win-x64.Microsoft.DotNet.ILCompiler'; version = '[10.0.12, 10.0.12]' }
             )
-            foreach ($id in @('Microsoft.DotNet.ILCompiler', 'runtime.win-x64.Microsoft.DotNet.ILCompiler')) {
+            foreach ($id in @('Microsoft.DotNet.ILCompiler', "runtime.$rid.Microsoft.DotNet.ILCompiler")) {
                 $target["$id/10.0.12"] = @{ type = 'package' }
                 $libraries["$id/10.0.12"] = @{ type = 'package'; sha512 = [Convert]::ToBase64String([byte[]](0..63)) }
             }
@@ -518,7 +563,7 @@ function New-CiPreviewAssetsFixture {
         $assets = @{
             version = 4
             project = @{ frameworks = @{ $framework = @{ downloadDependencies = $downloads } } }
-            targets = @{ "$framework/win-x64" = $target }
+            targets = @{ "$framework/$rid" = $target }
             libraries = $libraries
         }
         $path = Join-Path $Directory "src\winapp-CLI\$project\obj\project.assets.json"
@@ -548,6 +593,14 @@ Describe 'SDK-selected preview runtime verification' {
         $buildAst.Extent.Text | Should Match 'version = \$pin.SdkVersion; rollForward = ''disable'''
     }
 
+    It 'cross-publishes for an explicit ARM64 target RID from this x64 build agent' {
+        $pin = Get-MwbPreviewPin
+        $command = Get-MwbCiPreviewPublishCommand -VcVars 'C:\fixture-vs\vcvarsamd64_arm64.bat' `
+            -DotNet 'C:\fixture-sdk\dotnet.exe' -PublishRoot 'C:\fixture-output' -Pin $pin -RuntimeIdentifier 'win-arm64'
+        $command | Should Match 'publish "src\\winapp-CLI\\WinApp.Cli\\WinApp.Cli.csproj" -c Release -r win-arm64 --self-contained'
+        $command | Should Match ([regex]::Escape('call "C:\fixture-vs\vcvarsamd64_arm64.bat"'))
+    }
+
     It 'records actual .NET runtime/compiler versions while leaving Windows SDK reference versions independent' {
         $result = Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12'
         $result.RuntimeVersion | Should Be '10.0.12'
@@ -564,6 +617,22 @@ Describe 'SDK-selected preview runtime verification' {
             $project.AssetsSha256 | Should Be (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
             $project.WindowsSdkReferences[0].VersionRange | Should Be '[10.0.19041.57, 10.0.19041.57]'
         }
+    }
+
+    It 'records ARM64 target compiler provenance while separately pinning the win-x64 host executable' {
+        $armDirectory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-CiPreviewAssetsFixture $armDirectory -Platform arm64
+        $result = Get-MwbCiPreviewRuntimeProvenance $armDirectory '10.0.12' -Platform arm64
+        $result.RuntimeIdentifier | Should Be 'win-arm64'
+        $result.Projects.Count | Should Be 3
+        $result.CompilerPackages.Count | Should Be 2
+        # CompilerPackages holds the target-RID library provenance (sha512-verifiable target
+        # dependencies); the actual win-x64 host executable is pinned separately below via its
+        # framework download dependency, since only that one can physically run on this agent.
+        ($result.CompilerPackages.Id -contains 'Microsoft.DotNet.ILCompiler') | Should Be $true
+        ($result.CompilerPackages.Id -contains 'runtime.win-arm64.Microsoft.DotNet.ILCompiler') | Should Be $true
+        $cliProject = $result.Projects | Where-Object Project -eq 'WinApp.Cli'
+        ($cliProject.RuntimePacks.Id -contains 'runtime.win-x64.Microsoft.DotNet.ILCompiler') | Should Be $true
     }
 
     It 'rejects runtime/compiler downloads that differ from the pin in any published project' -TestCases @(
@@ -707,19 +776,35 @@ Describe 'Portable preview native architecture validation' {
     }
 
     It 'accepts only an x64 PE32+ image without a CLR directory' {
-        { Assert-MwbCiNativeX64File $image } | Should Not Throw
+        { Assert-MwbCiNativePreviewFile $image } | Should Not Throw
     }
 
-    It 'rejects ARM64 output even when named winapp.exe' {
+    It 'rejects ARM64 output even when named winapp.exe and x64 is expected' {
         [BitConverter]::GetBytes([uint16]0xAA64).CopyTo($bytes, 132)
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativeX64File $image } | Should Throw 'not native x64'
+        { Assert-MwbCiNativePreviewFile $image } | Should Throw 'not native x64'
     }
 
     It 'rejects a managed executable rather than requiring a test-host SDK' {
         [BitConverter]::GetBytes([uint64]1).CopyTo($bytes, (128 + 24 + 112 + (14 * 8)))
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativeX64File $image } | Should Throw 'managed runtime'
+        { Assert-MwbCiNativePreviewFile $image } | Should Throw 'managed runtime'
+    }
+
+    It 'accepts a native ARM64 PE32+ image without a CLR directory when ARM64 is requested' {
+        [BitConverter]::GetBytes([uint16]0xAA64).CopyTo($bytes, 132)
+        [IO.File]::WriteAllBytes($image, $bytes)
+        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Not Throw
+    }
+
+    It 'rejects x64 output when native ARM64 is expected' {
+        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Throw 'not native arm64'
+    }
+
+    It 'rejects the ARM64EC hybrid machine type when native ARM64 is expected' {
+        [BitConverter]::GetBytes([uint16]0xA641).CopyTo($bytes, 132)
+        [IO.File]::WriteAllBytes($image, $bytes)
+        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Throw 'not native arm64'
     }
 }
 
@@ -740,6 +825,22 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
             (Get-FileHash -LiteralPath (Join-Path $root "fixture-files\$($entry.Path)")).Hash | Should Be $entry.Sha256
         }
         (Get-FileHash -LiteralPath (Join-Path $bundle.Root 'runtime.zip')).Hash | Should Be $fixture.Runtime.Sha256
+    }
+
+    It 'accepts an explicitly requested ARM64 bundle when the manifest actually declares ARM64' {
+        $fixture.Platform = 'arm64'
+        $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
+        (Get-MwbCiBundle $root ('a' * 40) -Platform arm64).Manifest.Platform | Should Be 'arm64'
+    }
+
+    It 'rejects a Platform mismatch between the request and the actual manifest in either direction' -TestCases @(
+        @{ ManifestPlatform = 'arm64'; RequestedPlatform = 'x64' }
+        @{ ManifestPlatform = 'x64'; RequestedPlatform = 'arm64' }
+    ) {
+        param($ManifestPlatform, $RequestedPlatform)
+        $fixture.Platform = $ManifestPlatform
+        $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
+        { Get-MwbCiBundle $root ('a' * 40) -Platform $RequestedPlatform } | Should Throw 'provenance'
     }
 
     It 'blocks an old artifact without build preparation rather than repackaging on the test agent' {

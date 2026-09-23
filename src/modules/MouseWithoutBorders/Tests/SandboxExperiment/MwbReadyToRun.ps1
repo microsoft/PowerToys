@@ -9,14 +9,14 @@ function Initialize-MwbReadyToRunMetadata {
 }
 
 function Get-MwbReadyToRunFileIdentity {
-    param([string]$Path, [switch]$Native)
+    param([string]$Path, [switch]$Native, [ValidateSet('x64', 'arm64')][string]$NativeArchitecture = 'x64')
     $ErrorActionPreference = 'Stop'
     $file = Get-Item -LiteralPath $Path -ErrorAction Stop
     if ($file.PSIsContainer -or $file.PSProvider.Name -ne 'FileSystem') {
         throw "A ReadyToRun input must be an existing file: $Path"
     }
-    if ($Native -and -not [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::IsNativeX64($file.FullName)) {
-        throw "ReadyToRun requires an x64 native compiler/runtime file: $Path"
+    if ($Native -and -not [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::IsNativeArchitecture($file.FullName, $NativeArchitecture)) {
+        throw "ReadyToRun requires the $NativeArchitecture native compiler/runtime file: $Path"
     }
     $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($file.FullName)
     $commit = $null
@@ -33,13 +33,15 @@ function Get-MwbReadyToRunFileIdentity {
 }
 
 function Get-MwbReadyToRunCompiler {
-    param([string]$Crossgen2Path)
+    param([string]$Crossgen2Path, [ValidateSet('x64', 'arm64')][string]$TargetArchitecture = 'x64')
     $ErrorActionPreference = 'Stop'
     if ([string]::IsNullOrWhiteSpace($Crossgen2Path) -or
         -not (Test-Path -LiteralPath $Crossgen2Path -PathType Leaf) -or
         [IO.Path]::GetFileName($Crossgen2Path) -ine 'crossgen2.exe') {
         throw 'Pass an existing native SDK crossgen2.exe explicitly with -Crossgen2Path.'
     }
+    # The compiler executable and every native JIT dependency are host (x64) binaries
+    # regardless of which architecture they are asked to target.
     $compiler = Get-MwbReadyToRunFileIdentity $Crossgen2Path -Native
     if ($compiler.ProductVersion -notmatch '^\d+\.\d+\.\d+(?:[-+].*)?$') {
         throw 'The supplied compiler does not identify a .NET runtime version.'
@@ -49,8 +51,12 @@ function Get-MwbReadyToRunCompiler {
     if ($productVersion.Major -ne $fileVersion.Major -or $productVersion.Minor -ne $fileVersion.Minor) {
         throw 'The compiler file and product version resources disagree.'
     }
+    # Crossgen2 selects its target-architecture JIT by file name. x64 uses the OS-specific
+    # clrjit_win_x64_x64.dll; ARM64 codegen is shared across OSes, so the SDK ships it as
+    # clrjit_universal_arm64_x64.dll instead of a win-specific name.
+    $targetJit = if ($TargetArchitecture -eq 'arm64') { 'clrjit_universal_arm64_x64.dll' } else { 'clrjit_win_x64_x64.dll' }
     $files = @($compiler)
-    foreach ($name in @('jitinterface_x64.dll', 'clrjit_win_x64_x64.dll')) {
+    foreach ($name in @('jitinterface_x64.dll', $targetJit)) {
         $dependency = Get-MwbReadyToRunFileIdentity (Join-Path (Split-Path $compiler.Path) $name) -Native
         if ($dependency.FileVersion -ne $compiler.FileVersion -or
             ($compiler.Commit -and $dependency.Commit -ne $compiler.Commit)) {
@@ -58,12 +64,16 @@ function Get-MwbReadyToRunCompiler {
         }
         $files += $dependency
     }
-    [pscustomobject]@{ Path = $compiler.Path; ProductVersion = $compiler.ProductVersion; Files = $files }
+    [pscustomobject]@{
+        Path = $compiler.Path; ProductVersion = $compiler.ProductVersion; Files = $files
+        TargetArchitecture = $TargetArchitecture
+    }
 }
 
 function Get-MwbReadyToRunRuntime {
     param([string]$StageRoot, $Compiler)
     $ErrorActionPreference = 'Stop'
+    $targetArchitecture = if ($Compiler.PSObject.Properties['TargetArchitecture']) { $Compiler.TargetArchitecture } else { 'x64' }
     $runtimeVersion = [regex]::Match($Compiler.ProductVersion, '^\d+\.\d+\.\d+').Value
     $actualVersion = [version]$runtimeVersion
     $declarations = @()
@@ -102,7 +112,10 @@ function Get-MwbReadyToRunRuntime {
     $files = @()
     foreach ($directory in @($StageRoot, (Join-Path $StageRoot 'WinUI3Apps'))) {
         foreach ($name in @('coreclr.dll', 'hostfxr.dll', 'hostpolicy.dll', 'clrjit.dll', 'System.Private.CoreLib.dll')) {
-            $identity = Get-MwbReadyToRunFileIdentity (Join-Path $directory $name) -Native:($name -ne 'System.Private.CoreLib.dll')
+            # coreclr/hostfxr/hostpolicy/clrjit are the staged target-architecture runtime;
+            # System.Private.CoreLib.dll is managed IL and is never native-checked.
+            $identity = Get-MwbReadyToRunFileIdentity (Join-Path $directory $name) `
+                -Native:($name -ne 'System.Private.CoreLib.dll') -NativeArchitecture $targetArchitecture
             if ($identity.FileVersion -ne $Compiler.Files[0].FileVersion -or
                 ($Compiler.Files[0].Commit -and $identity.Commit -ne $Compiler.Files[0].Commit)) {
                 throw "The compiler and staged CLR build differ: $($identity.Path)"
@@ -175,6 +188,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
     param(
         [string]$StageRoot,
         [string]$Crossgen2Path,
+        [ValidateSet('x64', 'arm64')][string]$TargetArchitecture = 'x64',
         [ValidateRange(1, 16)][int]$Parallelism = 2,
         [ValidateRange(1, 3600)][int]$TimeoutSeconds = 600
     )
@@ -185,7 +199,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
         throw 'ReadyToRun staging must be an existing filesystem directory.'
     }
     $root = $stage.FullName.TrimEnd('\')
-    $compiler = Get-MwbReadyToRunCompiler $Crossgen2Path
+    $compiler = Get-MwbReadyToRunCompiler $Crossgen2Path -TargetArchitecture $TargetArchitecture
     $runtime = Get-MwbReadyToRunRuntime $root $compiler
     $assemblies = @(Get-MwbReadyToRunAssemblies $root)
     $references = @()
@@ -208,7 +222,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
     $watch = [Diagnostics.Stopwatch]::StartNew()
     try {
         $options = @('--single-file-compilation', '--out-near-input', '--targetos:windows',
-            '--targetarch:x64', "--parallelism:$Parallelism", '--optimize')
+            "--targetarch:$TargetArchitecture", "--parallelism:$Parallelism", '--optimize')
         $arguments = @($options)
         foreach ($reference in $references) { $arguments += '-r:"{0}"' -f $reference.Path }
         foreach ($assembly in $inputs) { $arguments += '"{0}"' -f $assembly.Path }
@@ -233,7 +247,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
             $assembly = $inputs[$index]
             $native = $nativeOutputs[$index]
             if (-not (Test-Path -LiteralPath $native -PathType Leaf)) { throw "Missing Crossgen2 output: $native" }
-            $methods = [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($assembly.Path, $native)
+            $methods = [Microsoft.MouseWithoutBorders.SandboxExperiment.ReadyToRunMetadata]::Verify($assembly.Path, $native, $TargetArchitecture)
             $copies = @($assemblies | Where-Object Sha256 -eq $assembly.Sha256)
             $verified += [pscustomobject]@{
                 Name = $assembly.Metadata.Name; Identity = $assembly.Metadata.Identity; Mvid = $assembly.Metadata.Mvid
@@ -254,6 +268,7 @@ function Convert-MwbStagedRuntimeToReadyToRun {
         }
         [pscustomobject]@{
             FormatVersion = 1; RuntimeVersion = $runtime.Version; Compiler = $compiler
+            TargetArchitecture = $TargetArchitecture
             RuntimeFiles = $runtime.Files; DeclaredFrameworks = $runtime.DeclaredFrameworks
             Options = $options; CompiledAssemblies = $inputs.Count; ElapsedSeconds = $watch.Elapsed.TotalSeconds
             VerifiedAssemblyCopies = ($verified | ForEach-Object { $_.Paths.Count } | Measure-Object -Sum).Sum

@@ -31,13 +31,33 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
 
     public static class ReadyToRunMetadata
     {
-        public static bool IsNativeX64(string path)
+        public static bool IsNativeX64(string path) => IsNativeArchitecture(path, "x64");
+
+        // Host build tools (crossgen2.exe, its JIT dependencies) and the WinApp Sandbox preview
+        // CLI are all native images; only the expected target Machine differs. ARM64EC (hybrid)
+        // is deliberately not accepted here: a native ARM64 request must produce Machine.Arm64,
+        // never the x64-compatible hybrid Machine.Arm64EC.
+        public static bool IsNativeArchitecture(string path, string architecture)
         {
+            var expected = ResolveMachine(architecture);
             using (var stream = File.OpenRead(path))
             using (var image = new PEReader(stream))
             {
-                return image.PEHeaders.CoffHeader.Machine == Machine.Amd64 &&
+                return image.PEHeaders.CoffHeader.Machine == expected &&
                     image.PEHeaders.CorHeader == null;
+            }
+        }
+
+        private static Machine ResolveMachine(string architecture)
+        {
+            switch (architecture)
+            {
+                case "x64":
+                    return Machine.Amd64;
+                case "arm64":
+                    return Machine.Arm64;
+                default:
+                    throw new ArgumentException("Unsupported native architecture: " + architecture, nameof(architecture));
             }
         }
 
@@ -71,8 +91,9 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
             }
         }
 
-        public static int Verify(string originalPath, string compiledPath)
+        public static int Verify(string originalPath, string compiledPath, string targetArchitecture = "x64")
         {
+            var expectedMachine = ResolveMachine(targetArchitecture);
             using (var originalStream = File.OpenRead(originalPath))
             using (var compiledStream = File.OpenRead(compiledPath))
             using (var original = new PEReader(originalStream))
@@ -82,7 +103,7 @@ namespace Microsoft.MouseWithoutBorders.SandboxExperiment
                 var after = compiled.GetMetadataReader();
                 if (compiled.PEHeaders.CorHeader == null ||
                     compiled.PEHeaders.CorHeader.ManagedNativeHeaderDirectory.Size == 0 ||
-                    compiled.PEHeaders.CoffHeader.Machine != Machine.Amd64 ||
+                    compiled.PEHeaders.CoffHeader.Machine != expectedMachine ||
                     AssemblyName.GetAssemblyName(originalPath).FullName != AssemblyName.GetAssemblyName(compiledPath).FullName ||
                     before.GetGuid(before.GetModuleDefinition().Mvid) != after.GetGuid(after.GetModuleDefinition().Mvid))
                 {

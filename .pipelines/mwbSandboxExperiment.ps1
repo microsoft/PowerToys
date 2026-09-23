@@ -37,16 +37,17 @@ function Assert-MwbLocalPath {
 }
 
 function Get-MwbSandboxPayload {
-    param([string] $Root)
+    param([string] $Root, [ValidateSet('x64', 'arm64')][string] $Architecture = 'x64')
 
     Assert-MwbLocalPath $Root
     $rootPath = (Resolve-Path -LiteralPath $Root).Path.TrimEnd('\')
-    if ((Split-Path $rootPath -Leaf) -cne 'build-x64-Debug') {
-        throw 'MWB Sandbox requires the directly downloaded build-x64-Debug artifact.'
+    $expectedLeaf = "build-$Architecture-Debug"
+    if ((Split-Path $rootPath -Leaf) -cne $expectedLeaf) {
+        throw "MWB Sandbox requires the directly downloaded $expectedLeaf artifact."
     }
     $products = @(Get-ChildItem -LiteralPath $rootPath -Filter 'PowerToys.exe' -File -Recurse |
         Where-Object {
-            $_.DirectoryName -match '\\x64\\Debug$' -and
+            $_.DirectoryName -match "\\$Architecture\\Debug`$" -and
             (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'PowerToys.MouseWithoutBorders.exe')) -and
             (Test-Path -LiteralPath (Join-Path $_.DirectoryName 'PowerToys.MouseWithoutBorders.dll'))
         })
@@ -233,8 +234,9 @@ $cleanupPath = Join-Path $runRoot 'Remove-AutonomousHost.ps1'
 $powerShell = (Get-Process -Id $PID).Path
 
 if ($Mode -eq 'Prepare') {
-    $payload = Get-MwbSandboxPayload $ArtifactRoot
-    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision
+    $architecture = Get-MwbCiArchitecture $Platform
+    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture
     $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
     $backend = Get-MwbCiBackend $Platform $windowsBuild
     $feature = Get-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM
@@ -397,8 +399,9 @@ if ($manifest.RunId -cne $RunId.ToString()) {
 }
 
 if ($Mode -eq 'Run') {
-    $payload = Get-MwbSandboxPayload $ArtifactRoot
-    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision
+    $architecture = Get-MwbCiArchitecture $Platform
+    $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture
+    $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture
     if ($payload.ProductRoot -ine $manifest.SourceProductRoot -or $payload.TestExecutable -ine $manifest.TestExecutable -or
         $manifest.SourceRevision -ine $SourceRevision -or $bundle.ManifestSha256 -ine $manifest.BundleManifestSha256 -or
         $manifest.HostProductRoot -ine (Join-Path $runRoot 'host-product') -or $manifest.ProductRoot -ine $manifest.HostProductRoot) {
