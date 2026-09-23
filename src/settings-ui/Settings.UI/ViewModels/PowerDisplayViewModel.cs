@@ -105,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings (filtered)");
 
-            Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
+            ReplaceMonitors(new ObservableCollection<MonitorInfo>(loadedMonitors));
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -465,31 +465,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
 
-        public ObservableCollection<MonitorInfo> Monitors
+        public ObservableCollection<MonitorInfo> Monitors => _monitors;
+
+        private void ReplaceMonitors(ObservableCollection<MonitorInfo> value)
         {
-            get => _monitors;
-            set
+            if (_monitors != null)
             {
-                if (_monitors != null)
-                {
-                    _monitors.CollectionChanged -= Monitors_CollectionChanged;
-                    UnsubscribeFromItemPropertyChanged(_monitors);
-                }
-
-                _monitors = value;
-
-                if (_monitors != null)
-                {
-                    _monitors.CollectionChanged += Monitors_CollectionChanged;
-                    SubscribeToItemPropertyChanged(_monitors);
-                }
-
-                OnPropertyChanged(nameof(Monitors));
-                HasMonitors = _monitors?.Count > 0;
-
-                // Update TotalMonitorCount for dynamic DisplayName
-                UpdateTotalMonitorCount();
+                _monitors.CollectionChanged -= Monitors_CollectionChanged;
+                UnsubscribeFromItemPropertyChanged(_monitors);
             }
+
+            _monitors = value;
+
+            if (_monitors != null)
+            {
+                _monitors.CollectionChanged += Monitors_CollectionChanged;
+                SubscribeToItemPropertyChanged(_monitors);
+            }
+
+            OnPropertyChanged(nameof(Monitors));
+            HasMonitors = _monitors?.Count > 0;
+
+            // Update TotalMonitorCount for dynamic DisplayName
+            UpdateTotalMonitorCount();
         }
 
         public bool HasMonitors
@@ -724,7 +722,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (Monitors == null)
                 {
                     // First time initialization - create new collection
-                    Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+                    ReplaceMonitors(new ObservableCollection<MonitorInfo>(updatedMonitors));
                 }
                 else
                 {
@@ -763,7 +761,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Rebuild _settings.Properties.Monitors so visible items share refs
                 // with _monitors (user toggles will be visible to save). Legacy entries
                 // use the freshly-read instances; we never bind them to UI.
-                _settings.Properties.Monitors = _monitors.Concat(legacyFromDisk).ToList();
+                _settings.Properties.Monitors.Clear();
+                _settings.Properties.Monitors.AddRange(_monitors.Concat(legacyFromDisk));
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
@@ -1258,7 +1257,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SaveCustomVcpMappings()
         {
-            _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            _settings.Properties.CustomVcpMappings.Clear();
+            _settings.Properties.CustomVcpMappings.AddRange(CustomVcpMappings);
             NotifySettingsChanged();
 
             // Signal PowerDisplay to reload settings
@@ -1277,7 +1277,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
-                _settings.Properties.ExcludedFromSyncMonitorIds = current.Properties.ExcludedFromSyncMonitorIds;
+                _settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+                _settings.Properties.ExcludedFromSyncMonitorIds.AddRange(current.Properties.ExcludedFromSyncMonitorIds);
             }
             catch (Exception ex)
             {

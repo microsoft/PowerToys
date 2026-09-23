@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private Dictionary<string, string> _colorFormatsPreview;
+        private readonly ObservableCollection<KeyValuePair<string, string>> _colorFormatsPreview = new();
 
         public ColorPickerViewModel(
             SettingsUtils settingsUtils,
@@ -255,15 +255,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
-        public Dictionary<string, string> ColorFormatsPreview
-        {
-            get => _colorFormatsPreview;
-            set
-            {
-                _colorFormatsPreview = value;
-                OnPropertyChanged(nameof(ColorFormatsPreview));
-            }
-        }
+        public ObservableCollection<KeyValuePair<string, string>> ColorFormatsPreview => _colorFormatsPreview;
 
         public int ColorFormatsPreviewIndex
         {
@@ -314,7 +306,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void UpdateColorFormatPreview()
         {
-            ColorFormatsPreview = ColorFormats.Select(x => new KeyValuePair<string, string>(x.Name, x.Name + " - " + x.Example)).ToDictionary(x => x.Key, x => x.Value);
+            ColorFormatsPreview.Clear();
+            foreach (var format in ColorFormats)
+            {
+                ColorFormatsPreview.Add(new KeyValuePair<string, string>(format.Name, format.Name + " - " + format.Example));
+            }
+
             SetPreviewSelectedIndex();
             ScheduleSavingOfSettings();
         }
