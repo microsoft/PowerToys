@@ -24,6 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool HasValues { get; set; }
 
         [JsonPropertyName("valueList")]
-        public System.Collections.Generic.List<VcpValueInfo> ValueList { get; set; } = new System.Collections.Generic.List<VcpValueInfo>();
+        public System.Collections.Generic.List<VcpValueInfo> ValueList { get; init; } = new System.Collections.Generic.List<VcpValueInfo>();
     }
 }

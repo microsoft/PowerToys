@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
         [CmdConfigureIgnoreAttribute]
-        public List<string> MachineMatrixString { get; set; }
+        public List<string> MachineMatrixString { get; init; }
 
         [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }

@@ -128,7 +128,7 @@ public class PowerDisplay
         monitor.ColorTemperatureVcp = 0x08;
         monitor.SupportsColorTemperature = false;
         monitor.CapabilitiesRaw = "(vcp(10))";
-        monitor.VcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+        monitor.ReplaceVcpCodesFormatted([]);
 
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),

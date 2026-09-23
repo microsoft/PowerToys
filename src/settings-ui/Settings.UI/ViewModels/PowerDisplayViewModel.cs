@@ -763,7 +763,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Rebuild _settings.Properties.Monitors so visible items share refs
                 // with _monitors (user toggles will be visible to save). Legacy entries
                 // use the freshly-read instances; we never bind them to UI.
-                _settings.Properties.Monitors = _monitors.Concat(legacyFromDisk).ToList();
+                _settings.Properties.Monitors.Clear();
+                _settings.Properties.Monitors.AddRange(_monitors.Concat(legacyFromDisk));
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
@@ -1258,7 +1259,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SaveCustomVcpMappings()
         {
-            _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            _settings.Properties.CustomVcpMappings.Clear();
+            _settings.Properties.CustomVcpMappings.AddRange(CustomVcpMappings);
             NotifySettingsChanged();
 
             // Signal PowerDisplay to reload settings
@@ -1277,7 +1279,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
-                _settings.Properties.ExcludedFromSyncMonitorIds = current.Properties.ExcludedFromSyncMonitorIds;
+                _settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+                _settings.Properties.ExcludedFromSyncMonitorIds.AddRange(current.Properties.ExcludedFromSyncMonitorIds);
             }
             catch (Exception ex)
             {

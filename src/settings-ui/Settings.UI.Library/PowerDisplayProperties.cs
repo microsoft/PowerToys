@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MouseWheelControlMode MouseWheelControlMode { get; set; }
 
         [JsonPropertyName("monitors")]
-        public List<MonitorInfo> Monitors { get; set; }
+        public List<MonitorInfo> Monitors { get; init; }
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
@@ -115,13 +115,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// including newly connected ones.
         /// </summary>
         [JsonPropertyName("excluded_from_sync_monitor_ids")]
-        public List<string> ExcludedFromSyncMonitorIds { get; set; }
+        public List<string> ExcludedFromSyncMonitorIds { get; init; }
 
         /// <summary>
         /// Gets or sets custom VCP value name mappings shared across all monitors.
         /// Allows users to define custom names for color temperature presets and input sources.
         /// </summary>
         [JsonPropertyName("custom_vcp_mappings")]
-        public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
+        public List<CustomVcpValueMapping> CustomVcpMappings { get; init; }
     }
 }
