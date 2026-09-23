@@ -6,6 +6,7 @@ using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Models;
 
 namespace CommonLibTest
 {
@@ -178,7 +179,8 @@ namespace CommonLibTest
 
             properties.MachineMatrixString.Add("machine-1");
 
-            CollectionAssert.AreEqual(new[] { "machine-1" }, properties.MachineMatrixString);
+            Assert.HasCount(1, properties.MachineMatrixString);
+            Assert.AreEqual("machine-1", properties.MachineMatrixString[0]);
         }
 
         [TestMethod]
@@ -260,7 +262,9 @@ namespace CommonLibTest
                 TextValueAsMultilineList = ["first", "second"],
             };
 
-            CollectionAssert.AreEqual(new[] { "first", "second" }, option.TextValueAsMultilineList);
+            Assert.HasCount(2, option.TextValueAsMultilineList);
+            Assert.AreEqual("first", option.TextValueAsMultilineList[0]);
+            Assert.AreEqual("second", option.TextValueAsMultilineList[1]);
         }
     }
 }
