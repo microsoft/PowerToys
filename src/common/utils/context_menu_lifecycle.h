@@ -5,6 +5,7 @@
 #include <appmodel.h>
 
 #include <atomic>
+#include <cstdint>
 #include <cwchar>
 #include <new>
 
@@ -36,9 +37,12 @@ namespace context_menu_lifecycle
             PCWSTR window_class_name = nullptr;
             DWORD shutdown_grace_ms = 0;
             initialization_callback report_initialization = nullptr;
-            std::atomic_uint64_t activity_state = 0;
+            // The worker and each waiting caller own a reference. A timeout
+            // releases only that caller; the worker can still finish safely.
+            std::atomic_uint32_t references = 1;
             HANDLE initialization_event = nullptr;
-            HRESULT initialization_result = E_UNEXPECTED;
+            std::atomic<HRESULT> initialization_result = E_PENDING;
+            std::atomic_flag initialization_reported = ATOMIC_FLAG_INIT;
         };
 
         constexpr uint64_t shutdown_requested_bit = uint64_t{ 1 } << 63;
@@ -53,30 +57,66 @@ namespace context_menu_lifecycle
             initialization_callback report_initialization = nullptr;
         };
 
-        inline std::atomic<monitor_state*>& state()
+        struct lifecycle_state
         {
-            static std::atomic<monitor_state*> value = nullptr;
+            SRWLOCK initialization_lock = SRWLOCK_INIT;
+            bool package_checked = false;
+            std::atomic_bool track_activity = false;
+            // Tokens outlive individual initialization attempts. Never reset
+            // this counter when a failed attempt is replaced.
+            std::atomic_uint64_t activity_state = 0;
+            // Protected by initialization_lock; kept alive by the worker.
+            monitor_state* monitor = nullptr;
+        };
+
+        inline lifecycle_state& state()
+        {
+            static lifecycle_state value;
             return value;
         }
 
-        inline INIT_ONCE& initialization_once()
+        class initialization_lock
         {
-            static INIT_ONCE value = INIT_ONCE_STATIC_INIT;
-            return value;
-        }
-
-        inline HRESULT& initialization_result()
-        {
-            static HRESULT value = E_UNEXPECTED;
-            return value;
-        }
-
-        inline void report(monitor_state* state, HRESULT result) noexcept
-        {
-            if (state->report_initialization)
+        public:
+            initialization_lock() noexcept
             {
-                state->report_initialization(result);
+                AcquireSRWLockExclusive(&state().initialization_lock);
             }
+
+            initialization_lock(const initialization_lock&) = delete;
+            initialization_lock& operator=(const initialization_lock&) = delete;
+
+            ~initialization_lock()
+            {
+                ReleaseSRWLockExclusive(&state().initialization_lock);
+            }
+        };
+
+        inline void release_monitor(monitor_state* monitor) noexcept
+        {
+            if (monitor->references.fetch_sub(1, std::memory_order_acq_rel) == 1)
+            {
+                if (monitor->initialization_event)
+                {
+                    CloseHandle(monitor->initialization_event);
+                }
+                delete monitor;
+            }
+        }
+
+        inline void report(monitor_state* monitor, HRESULT result) noexcept
+        {
+            if (!monitor->initialization_reported.test_and_set() && monitor->report_initialization)
+            {
+                monitor->report_initialization(result);
+            }
+        }
+
+        inline HRESULT last_error_hresult() noexcept
+        {
+            const DWORD error = GetLastError();
+            // A CBT hook can reject CreateWindowExW without setting LastError.
+            return error == ERROR_SUCCESS ? E_FAIL : HRESULT_FROM_WIN32(error);
         }
 
         inline bool is_expected_package_host(PCWSTR package_family_name_prefix) noexcept
@@ -92,11 +132,12 @@ namespace context_menu_lifecycle
             return wcsncmp(package_family_name, package_family_name_prefix, prefix_length) == 0;
         }
 
-        inline void terminate_after_active_operations(monitor_state* state) noexcept
+        inline void terminate_after_active_operations(monitor_state* monitor) noexcept
         {
-            state->activity_state.fetch_or(shutdown_requested_bit, std::memory_order_acq_rel);
-            const ULONGLONG deadline = GetTickCount64() + state->shutdown_grace_ms;
-            while ((state->activity_state.load(std::memory_order_acquire) & active_operations_mask) != 0 &&
+            auto& activity = state().activity_state;
+            activity.fetch_or(shutdown_requested_bit, std::memory_order_acq_rel);
+            const ULONGLONG deadline = GetTickCount64() + monitor->shutdown_grace_ms;
+            while ((activity.load(std::memory_order_acquire) & active_operations_mask) != 0 &&
                    GetTickCount64() < deadline)
             {
                 Sleep(50);
@@ -144,150 +185,180 @@ namespace context_menu_lifecycle
 
         inline DWORD WINAPI monitor_thread(void* parameter)
         {
-            const auto state = static_cast<monitor_state*>(parameter);
+            const auto monitor = static_cast<monitor_state*>(parameter);
+            const HMODULE module = monitor->module;
             WNDCLASSW window_class{};
             window_class.lpfnWndProc = window_proc;
-            window_class.hInstance = state->module;
-            window_class.lpszClassName = state->window_class_name;
+            window_class.hInstance = module;
+            window_class.lpszClassName = monitor->window_class_name;
 
             const ATOM window_class_atom = RegisterClassW(&window_class);
+            HRESULT result = S_OK;
+            HWND window = nullptr;
             if (!window_class_atom && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
             {
-                state->initialization_result = HRESULT_FROM_WIN32(GetLastError());
-                SetEvent(state->initialization_event);
-                return 0;
+                result = last_error_hresult();
+            }
+            else
+            {
+                window = CreateWindowExW(
+                    WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW,
+                    monitor->window_class_name,
+                    L"",
+                    WS_POPUP,
+                    0,
+                    0,
+                    0,
+                    0,
+                    nullptr,
+                    nullptr,
+                    module,
+                    monitor);
+                if (!window)
+                {
+                    result = last_error_hresult();
+                }
             }
 
-            const HWND window = CreateWindowExW(
-                WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW,
-                state->window_class_name,
-                L"",
-                WS_POPUP,
-                0,
-                0,
-                0,
-                0,
-                nullptr,
-                nullptr,
-                state->module,
-                state);
+            if (window)
+            {
+                monitor->initialization_result.store(S_OK, std::memory_order_release);
+                SetEvent(monitor->initialization_event);
+                report(monitor, S_OK);
+
+                MSG message{};
+                while (GetMessageW(&message, nullptr, 0, 0) > 0)
+                {
+                    TranslateMessage(&message);
+                    DispatchMessageW(&message);
+                }
+                DestroyWindow(window);
+            }
+
+            if (window_class_atom)
+            {
+                UnregisterClassW(monitor->window_class_name, module);
+            }
+            {
+                initialization_lock lock;
+                // Remove the attempt only after its window/class are gone.
+                // Existing waiters retain their own references and result.
+                state().monitor = nullptr;
+            }
             if (!window)
             {
-                const DWORD error = GetLastError();
-                if (window_class_atom)
-                {
-                    UnregisterClassW(state->window_class_name, state->module);
-                }
-                state->initialization_result = HRESULT_FROM_WIN32(error);
-                SetEvent(state->initialization_event);
-                return 0;
+                monitor->initialization_result.store(result, std::memory_order_release);
+                SetEvent(monitor->initialization_event);
+                report(monitor, result);
             }
 
-            state->initialization_result = S_OK;
-            SetEvent(state->initialization_event);
-
-            MSG message{};
-            while (GetMessageW(&message, nullptr, 0, 0) > 0)
-            {
-                TranslateMessage(&message);
-                DispatchMessageW(&message);
-            }
-
-            return 0;
+            release_monitor(monitor);
+            // The module reference belongs to this thread, independently of
+            // the attempt's waiters. No DLL code may execute after releasing it.
+            FreeLibraryAndExitThread(module, 0);
         }
 
-        inline BOOL CALLBACK initialize(PINIT_ONCE, void* parameter, void**)
+        // Called with initialization_lock held. On success, the caller and the
+        // worker each own one reference; only the worker owns the module pin.
+        inline HRESULT start_monitor(const initialization_parameters& parameters, monitor_state*& monitor) noexcept
         {
-            const auto parameters = static_cast<initialization_parameters*>(parameter);
-            if (!is_expected_package_host(parameters->package_family_name_prefix))
-            {
-                initialization_result() = S_FALSE;
-                return TRUE;
-            }
-
             HMODULE module = nullptr;
             if (!GetModuleHandleExW(
                     GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                    reinterpret_cast<LPCWSTR>(parameters->module_address),
+                    reinterpret_cast<LPCWSTR>(parameters.module_address),
                     &module))
             {
-                initialization_result() = HRESULT_FROM_WIN32(GetLastError());
-                if (parameters->report_initialization)
-                {
-                    parameters->report_initialization(initialization_result());
-                }
-                SetLastError(HRESULT_CODE(initialization_result()));
-                return FALSE;
+                return last_error_hresult();
             }
 
-            auto monitor = new (std::nothrow) monitor_state{};
+            monitor = new (std::nothrow) monitor_state{};
             if (!monitor)
             {
-                initialization_result() = E_OUTOFMEMORY;
-                if (parameters->report_initialization)
-                {
-                    parameters->report_initialization(initialization_result());
-                }
                 FreeLibrary(module);
-                SetLastError(ERROR_OUTOFMEMORY);
-                return FALSE;
+                return E_OUTOFMEMORY;
             }
 
             monitor->module = module;
-            monitor->window_class_name = parameters->window_class_name;
-            monitor->shutdown_grace_ms = parameters->shutdown_grace_ms;
-            monitor->report_initialization = parameters->report_initialization;
+            monitor->window_class_name = parameters.window_class_name;
+            monitor->shutdown_grace_ms = parameters.shutdown_grace_ms;
+            monitor->report_initialization = parameters.report_initialization;
             monitor->initialization_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
             if (!monitor->initialization_event)
             {
-                initialization_result() = HRESULT_FROM_WIN32(GetLastError());
-                report(monitor, initialization_result());
+                const HRESULT result = last_error_hresult();
                 FreeLibrary(module);
-                delete monitor;
-                SetLastError(HRESULT_CODE(initialization_result()));
-                return FALSE;
+                release_monitor(monitor);
+                monitor = nullptr;
+                return result;
             }
 
+            monitor->references.fetch_add(1, std::memory_order_relaxed);
+            state().monitor = monitor;
             const HANDLE thread = CreateThread(nullptr, 0, monitor_thread, monitor, 0, nullptr);
             if (!thread)
             {
-                initialization_result() = HRESULT_FROM_WIN32(GetLastError());
-                report(monitor, initialization_result());
-                CloseHandle(monitor->initialization_event);
+                const HRESULT result = last_error_hresult();
+                state().monitor = nullptr;
+                release_monitor(monitor);
                 FreeLibrary(module);
-                delete monitor;
-                SetLastError(HRESULT_CODE(initialization_result()));
-                return FALSE;
+                release_monitor(monitor);
+                monitor = nullptr;
+                return result;
             }
-
-            const DWORD wait_result = WaitForSingleObject(monitor->initialization_event, 5000);
-            if (wait_result != WAIT_OBJECT_0)
-            {
-                initialization_result() = wait_result == WAIT_TIMEOUT ? HRESULT_FROM_WIN32(ERROR_TIMEOUT) : HRESULT_FROM_WIN32(GetLastError());
-                report(monitor, initialization_result());
-                state().store(monitor, std::memory_order_release);
-                CloseHandle(thread);
-                return TRUE;
-            }
-
-            initialization_result() = monitor->initialization_result;
-            CloseHandle(monitor->initialization_event);
-            monitor->initialization_event = nullptr;
-            if (FAILED(initialization_result()))
-            {
-                WaitForSingleObject(thread, INFINITE);
-                CloseHandle(thread);
-                report(monitor, initialization_result());
-                FreeLibrary(module);
-                delete monitor;
-                SetLastError(HRESULT_CODE(initialization_result()));
-                return FALSE;
-            }
-
-            state().store(monitor, std::memory_order_release);
             CloseHandle(thread);
-            report(monitor, S_OK);
-            return TRUE;
+            return S_OK;
+        }
+
+        inline HRESULT ensure_servicing_window(const initialization_parameters& parameters, DWORD initialization_timeout_ms) noexcept
+        {
+            monitor_state* monitor = nullptr;
+            HRESULT result = S_OK;
+            {
+                initialization_lock lock;
+                auto& lifecycle = state();
+                if (!lifecycle.package_checked)
+                {
+                    lifecycle.track_activity.store(is_expected_package_host(parameters.package_family_name_prefix), std::memory_order_release);
+                    lifecycle.package_checked = true;
+                }
+                if (!lifecycle.track_activity.load(std::memory_order_acquire))
+                {
+                    return S_FALSE;
+                }
+
+                monitor = lifecycle.monitor;
+                if (monitor)
+                {
+                    monitor->references.fetch_add(1, std::memory_order_relaxed);
+                }
+                else
+                {
+                    result = start_monitor(parameters, monitor);
+                }
+            }
+            if (FAILED(result))
+            {
+                if (parameters.report_initialization)
+                {
+                    parameters.report_initialization(result);
+                }
+                return result;
+            }
+
+            // Do not hold initialization_lock while waiting. Concurrent
+            // activations share this attempt, even after an earlier timeout.
+            const DWORD wait_result = WaitForSingleObject(monitor->initialization_event, initialization_timeout_ms);
+            if (wait_result == WAIT_OBJECT_0)
+            {
+                result = monitor->initialization_result.load(std::memory_order_acquire);
+            }
+            else
+            {
+                result = wait_result == WAIT_TIMEOUT ? HRESULT_FROM_WIN32(ERROR_TIMEOUT) : last_error_hresult();
+                report(monitor, result);
+            }
+            release_monitor(monitor);
+            return result;
         }
     }
 
@@ -308,33 +379,24 @@ namespace context_menu_lifecycle
             report_initialization
         };
 
-        const BOOL initialized = InitOnceExecuteOnce(
-            &details::initialization_once(),
-            details::initialize,
-            &parameters,
-            nullptr);
-        if (!initialized)
-        {
-            return details::initialization_result();
-        }
-
-        return details::initialization_result();
+        return details::ensure_servicing_window(parameters, 5000);
     }
 
     inline activity_token begin_activity() noexcept
     {
-        if (const auto monitor = details::state().load(std::memory_order_acquire))
+        auto& lifecycle = details::state();
+        if (lifecycle.track_activity.load(std::memory_order_acquire))
         {
-            auto current_state = monitor->activity_state.load(std::memory_order_acquire);
+            auto current_state = lifecycle.activity_state.load(std::memory_order_acquire);
             while ((current_state & details::shutdown_requested_bit) == 0)
             {
-                if (monitor->activity_state.compare_exchange_weak(
+                if (lifecycle.activity_state.compare_exchange_weak(
                         current_state,
                         current_state + 1,
                         std::memory_order_acq_rel,
                         std::memory_order_acquire))
                 {
-                    return { monitor, true };
+                    return { &lifecycle.activity_state, true };
                 }
             }
 
@@ -346,9 +408,9 @@ namespace context_menu_lifecycle
 
     inline void end_activity(activity_token token) noexcept
     {
-        if (const auto monitor = static_cast<details::monitor_state*>(token.monitor))
+        if (const auto activity = static_cast<std::atomic_uint64_t*>(token.monitor))
         {
-            monitor->activity_state.fetch_sub(1, std::memory_order_acq_rel);
+            activity->fetch_sub(1, std::memory_order_acq_rel);
         }
     }
 
