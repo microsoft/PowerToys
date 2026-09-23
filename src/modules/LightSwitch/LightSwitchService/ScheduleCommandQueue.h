@@ -4,7 +4,9 @@
 #pragma once
 
 #include "CliProtocol.h"
+#include "LocalizedStrings.h"
 #include <wil/resource.h>
+#include <cassert>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -53,15 +55,12 @@ public:
             {
                 return Unavailable();
             }
-            if (_pending)
-            {
-                return light_switch_cli::MakeError(L"SERVER_BUSY", L"Light Switch is busy. Try again.");
-            }
+            assert(!_pending && "The single pipe-thread producer must finish Submit before submitting again.");
             _pending = pending;
             if (!SetEvent(_event.get()))
             {
                 _pending.reset();
-                return light_switch_cli::MakeError(L"EXECUTION_FAILED", L"Could not notify the Light Switch worker.");
+                return light_switch_cli::MakeError(L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_WORKER_NOTIFY_FAILED));
             }
         }
 
@@ -79,7 +78,7 @@ public:
         }
         return light_switch_cli::MakeError(
             L"TIMEOUT",
-            pending->started ? L"Light Switch did not finish in time. The schedule may have changed; query status before retrying." : L"The schedule request timed out before it could be executed.");
+            pending->started ? GET_RESOURCE_STRING(IDS_SCHEDULE_STARTED_TIMEOUT) : GET_RESOURCE_STRING(IDS_SCHEDULE_QUEUED_TIMEOUT));
     }
 
     void ProcessPending(const Handler& handler)
@@ -87,7 +86,7 @@ public:
         std::shared_ptr<Pending> pending;
         {
             std::lock_guard lock(_mutex);
-            if (!_pending || _stopped)
+            if (!_pending)
             {
                 return;
             }
@@ -102,7 +101,7 @@ public:
         catch (...)
         {
             pending->completion.set_value(light_switch_cli::MakeError(
-                L"EXECUTION_FAILED", L"Light Switch could not apply the schedule."));
+                L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_SCHEDULE_APPLY_FAILED)));
         }
     }
 
@@ -135,7 +134,7 @@ private:
 
     static Response Unavailable()
     {
-        return light_switch_cli::MakeError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.");
+        return light_switch_cli::MakeError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_SERVICE_STOPPING));
     }
 
     wil::unique_handle _event;

@@ -14,9 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -49,9 +47,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _moduleSettings = initialSettings ?? new LightSwitchSettings();
             SendConfigMSG = ipcMSGCallBackFunc ?? (_ => 0);
-
-            ForceLightCommand = new RelayCommand(ForceLightNow);
-            ForceDarkCommand = new RelayCommand(ForceDarkNow);
 
             AvailableScheduleModes = new ObservableCollection<string>
             {
@@ -87,23 +82,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.LightSwitch;
             }
-        }
-
-        private void ForceLightNow()
-        {
-            Logger.LogInfo("Sending custom action: forceLight");
-            SendCustomAction("forceLight");
-        }
-
-        private void ForceDarkNow()
-        {
-            Logger.LogInfo("Sending custom action: forceDark");
-            SendCustomAction("forceDark");
-        }
-
-        private void SendCustomAction(string actionName)
-        {
-            SendConfigMSG("{\"action\":{\"LightSwitch\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         private void SaveSettings()
@@ -964,9 +942,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private PowerDisplayProfile? _selectedDarkModeProfile;
         private PowerDisplayProfile? _selectedLightModeProfile;
         private bool _suppressProfileSelectionPersistence;
-
-        public ICommand ForceLightCommand { get; }
-
-        public ICommand ForceDarkCommand { get; }
     }
 }

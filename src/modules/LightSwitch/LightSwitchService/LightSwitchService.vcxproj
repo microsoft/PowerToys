@@ -2,6 +2,9 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
+    <Exec LogStandardErrorAsError="false" Command="powershell -NonInteractive -executionpolicy Unrestricted -NoProfile -File &quot;$(RepoRoot)tools\build\convert-resx-to-rc.ps1&quot; &quot;$(MSBuildThisFileDirectory).&quot; resource.base.h resource.h LightSwitchService.base.rc LightSwitchService.rc" />
+  </Target>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -81,25 +84,25 @@
     <ClCompile Include="LightSwitchSettings.cpp" />
     <ClCompile Include="LightSwitchStateManager.cpp" />
     <ClCompile Include="NightLightRegistryObserver.cpp" />
-    <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="LightSwitchService.rc" />
+    <ResourceCompile Include="Generated Files\LightSwitchService.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CliIdentity.h" />
     <ClInclude Include="CliPipeServer.h" />
     <ClInclude Include="CliProtocol.h" />
+    <ClInclude Include="LocalizedStrings.h" />
+    <ClInclude Include="Generated Files\resource.h" />
+    <ClInclude Include="resource.base.h" />
     <ClInclude Include="ScheduleCommandQueue.h" />
     <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="LightSwitchStateManager.h" />
     <ClInclude Include="LightSwitchUtils.h" />
     <ClInclude Include="NightLightRegistryObserver.h" />
-    <ClInclude Include="SettingsConstants.h" />
-    <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="ThemeScheduler.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
@@ -120,6 +123,10 @@
     <ProjectReference Include="..\LightSwitchLib\LightSwitchLib.vcxproj">
       <Project>{79267138-2895-4346-9021-21408d65379f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LightSwitchService.base.rc" />
+    <None Include="Resources.resx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(RepoRoot)deps\spdlog.props" />

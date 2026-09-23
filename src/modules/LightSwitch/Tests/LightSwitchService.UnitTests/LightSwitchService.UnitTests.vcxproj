@@ -38,6 +38,7 @@
     <ClCompile Include="CliIdentityTests.cpp" />
     <ClCompile Include="CliProtocolTests.cpp" />
     <ClCompile Include="CliPipeServerTests.cpp" />
+    <ClCompile Include="LocalizedStringsTests.cpp" />
     <ClCompile Include="ScheduleCommandQueueTests.cpp" />
     <ClCompile Include="StateManagerTests.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
@@ -55,11 +56,21 @@
     <ClInclude Include="..\..\LightSwitchService\CliIdentity.h" />
     <ClInclude Include="..\..\LightSwitchService\CliProtocol.h" />
     <ClInclude Include="..\..\LightSwitchService\CliPipeServer.h" />
+    <ClInclude Include="..\..\LightSwitchService\LocalizedStrings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\LightSwitchService\Generated Files\LightSwitchService.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Generate the shared resources once, before this project compiles them. -->
+    <ProjectReference Include="..\..\LightSwitchService\LightSwitchService.vcxproj">
+      <Project>{08E71C67-6A7E-4CA1-B04E-2FB336410BAC}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446D-23F7-4023-9BB3-8657F904AF99}</Project>
     </ProjectReference>

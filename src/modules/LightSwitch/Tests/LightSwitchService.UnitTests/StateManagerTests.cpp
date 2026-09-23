@@ -138,7 +138,6 @@ namespace LightSwitchServiceUnitTests
 
                     Assert::IsTrue(manager.SetTheme(light).success);
                     ++environment.now.wMinute;
-                    manager.DetectExternalThemeChange();
                     manager.OnTick();
                     Assert::IsTrue(manager.GetState().isManualOverride);
                     Assert::AreEqual(0, environment.writes);
@@ -161,7 +160,7 @@ namespace LightSwitchServiceUnitTests
                 Assert::IsTrue(environment.notifications.empty());
 
                 (systemTarget ? environment.system : environment.apps) = false;
-                manager.DetectExternalThemeChange();
+                manager.OnTick();
                 Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
                 Assert::IsTrue(manager.SetTheme(false).success);
                 Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
@@ -186,7 +185,6 @@ namespace LightSwitchServiceUnitTests
 
                 environment.failSystemWrite = environment.failAppsWrite = false;
                 ++environment.now.wMinute;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(*(externalSystem ? environment.system : environment.apps));
                 Assert::IsTrue(*(externalSystem ? environment.apps : environment.system));
@@ -225,7 +223,6 @@ namespace LightSwitchServiceUnitTests
 
                 commandInProgress = false;
                 ++environment.now.wMinute;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsTrue(manager.GetState().isManualOverride);
                 Assert::IsFalse(*(externalSystem ? environment.system : environment.apps));
@@ -248,9 +245,8 @@ namespace LightSwitchServiceUnitTests
 
                 environment.failSystemWrite = environment.failAppsWrite = false;
                 ++environment.now.wMinute;
-                manager.DetectExternalThemeChange();
-                Assert::IsFalse(manager.GetState().isManualOverride);
                 manager.OnTick();
+                Assert::IsFalse(manager.GetState().isManualOverride);
                 Assert::IsTrue(*environment.system);
                 Assert::IsTrue(*environment.apps);
                 Assert::AreEqual(3, environment.writes);
@@ -272,7 +268,6 @@ namespace LightSwitchServiceUnitTests
                 environment.failSystemWrite = environment.failAppsWrite = false;
                 ++environment.now.wDay;
                 environment.now.wHour = 8;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
                 Assert::IsTrue(*environment.system);
@@ -299,7 +294,6 @@ namespace LightSwitchServiceUnitTests
                     }
                     else
                     {
-                        manager.DetectExternalThemeChange();
                         manager.OnTick();
                     }
                     Assert::IsFalse(manager.GetState().isManualOverride);
@@ -308,7 +302,6 @@ namespace LightSwitchServiceUnitTests
                     environment.failSystemWrite = environment.failAppsWrite = false;
                     ++environment.now.wDay;
                     environment.now.wHour = 8;
-                    manager.DetectExternalThemeChange();
                     manager.OnTick();
                     Assert::IsFalse(manager.GetState().isManualOverride);
                     Assert::IsTrue(*environment.system);
@@ -336,7 +329,6 @@ namespace LightSwitchServiceUnitTests
 
                 environment.failSystemWrite = environment.failAppsWrite = false;
                 environment.nightLight = false;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
                 Assert::IsTrue(*environment.system);
@@ -427,7 +419,7 @@ namespace LightSwitchServiceUnitTests
             LightSwitchStateManager manager(environment.Dependencies());
             manager.SyncInitialThemeState();
             environment.system = true;
-            manager.DetectExternalThemeChange();
+            manager.OnTick();
             Assert::IsTrue(manager.GetState().isManualOverride);
             const auto result = manager.ToggleTheme();
             Assert::IsTrue(result.success);
@@ -560,9 +552,8 @@ namespace LightSwitchServiceUnitTests
             environment.config.darkTime = 11 * 60;
             environment.now.wHour = 12;
             environment.now.wMinute = 0;
-            manager.DetectExternalThemeChange();
-            Assert::IsFalse(manager.GetState().isManualOverride);
             manager.OnTick();
+            Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::IsFalse(*environment.system);
             Assert::IsFalse(*environment.apps);
 
@@ -635,7 +626,7 @@ namespace LightSwitchServiceUnitTests
             Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
         }
 
-        TEST_METHOD (MinuteDetectionDoesNotMistakeANaturalBoundaryForAnExternalEdit)
+        TEST_METHOD (MinuteTickDoesNotMistakeANaturalBoundaryForAnExternalEdit)
         {
             Environment environment;
             environment.now.wHour = 19;
@@ -644,26 +635,72 @@ namespace LightSwitchServiceUnitTests
             manager.SyncInitialThemeState();
             environment.now.wHour = 20;
             environment.now.wMinute = 0;
-            manager.DetectExternalThemeChange();
-            Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::IsTrue(environment.notifications.empty());
             manager.OnTick();
+            Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::IsFalse(*environment.system);
             Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
         }
 
+        TEST_METHOD (MinuteTickDetectsExternalChoicesWithOneSettingsAndTimeSnapshot)
+        {
+            for (const bool initiallyReadableSettings : { false, true })
+            {
+                Environment environment;
+                environment.readableSettings = initiallyReadableSettings;
+                int timeReads = 0;
+                auto dependencies = environment.Dependencies();
+                dependencies.localTime = [&]() {
+                    ++timeReads;
+                    return environment.now;
+                };
+                LightSwitchStateManager manager(std::move(dependencies));
+                manager.SyncInitialThemeState();
+
+                // The initial theme observation must survive an unavailable
+                // settings file until the first successful minute tick.
+                environment.readableSettings = true;
+                environment.system = environment.apps = false;
+                environment.settingsReads = timeReads = 0;
+                manager.OnTick();
+
+                Assert::AreEqual(1, environment.settingsReads);
+                Assert::AreEqual(1, timeReads);
+                Assert::IsTrue(manager.GetState().isManualOverride);
+                Assert::IsFalse(*environment.system);
+                Assert::IsFalse(*environment.apps);
+                Assert::AreEqual(0, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::IsFalse(environment.notifications.front());
+            }
+        }
+
         TEST_METHOD (ARealSettingsChangeAppliesBeforePendingExternalThemeDetection)
         {
-            Environment environment;
-            LightSwitchStateManager manager(environment.Dependencies());
-            Assert::IsTrue(manager.OnSettingsChanged().success);
-            environment.system = environment.apps = false;
-            environment.config.darkTime = 23 * 60;
-            const auto result = manager.OnSettingsChanged();
-            Assert::IsTrue(result.success);
-            Assert::IsFalse(result.status.manualOverride);
-            Assert::IsTrue(*result.status.systemLight);
-            Assert::IsTrue(*result.status.appsLight);
+            for (const bool minuteTick : { false, true })
+            {
+                Environment environment;
+                LightSwitchStateManager manager(environment.Dependencies());
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+                environment.system = environment.apps = false;
+                environment.config.darkTime = 23 * 60;
+                StatusSnapshot status;
+                if (minuteTick)
+                {
+                    manager.OnTick();
+                    status = manager.GetStatusSnapshot();
+                }
+                else
+                {
+                    const auto result = manager.OnSettingsChanged();
+                    Assert::IsTrue(result.success);
+                    status = result.status;
+                }
+                Assert::IsFalse(status.manualOverride);
+                Assert::IsTrue(*status.systemLight);
+                Assert::IsTrue(*status.appsLight);
+                Assert::AreEqual(2, environment.writes);
+            }
         }
 
         TEST_METHOD (ExternalChangesToUnselectedTargetsDoNotCreateAnOverride)
@@ -699,7 +736,6 @@ namespace LightSwitchServiceUnitTests
                     ++environment.now.wMinute;
                     if (notification == 0)
                     {
-                        manager.DetectExternalThemeChange();
                         manager.OnTick();
                     }
                     else if (notification == 1)
@@ -717,7 +753,6 @@ namespace LightSwitchServiceUnitTests
 
                     environment.failNightLightRead = false;
                     ++environment.now.wMinute;
-                    manager.DetectExternalThemeChange();
                     manager.OnTick();
                     Assert::IsTrue(manager.GetState().isManualOverride);
                     Assert::AreEqual(nightLight, *environment.system);
@@ -747,7 +782,6 @@ namespace LightSwitchServiceUnitTests
                 Assert::IsTrue(environment.notifications.empty());
 
                 environment.failNightLightRead = false;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
                 Assert::AreEqual(!nightLight, *environment.system);
@@ -778,7 +812,6 @@ namespace LightSwitchServiceUnitTests
                     Assert::IsTrue(*result.status.systemLight);
 
                     environment.failNightLightRead = false;
-                    manager.DetectExternalThemeChange();
                     manager.OnTick();
                     manager.OnNightLightChange();
                     Assert::IsTrue(manager.GetState().isManualOverride);
@@ -840,12 +873,10 @@ namespace LightSwitchServiceUnitTests
             environment.nightLight = true;
             environment.system = environment.apps = false;
             environment.failNightLightRead = true;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsFalse(*environment.system);
             Assert::AreEqual(0, environment.writes);
             environment.failNightLightRead = false;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::AreEqual(0, environment.writes);
@@ -884,7 +915,6 @@ namespace LightSwitchServiceUnitTests
                 const auto result = manager.SetTheme(!initiallyOn);
                 Assert::IsTrue(result.success);
                 Assert::IsTrue(result.status.manualOverride);
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsTrue(manager.OnSettingsChanged().status.manualOverride);
                 manager.OnNightLightChange();
@@ -893,7 +923,6 @@ namespace LightSwitchServiceUnitTests
                 Assert::AreEqual(!initiallyOn, *environment.apps);
 
                 environment.nightLight = initiallyOn;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
             }
@@ -927,7 +956,6 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(result.success);
             Assert::IsTrue(result.status.manualOverride);
             Assert::IsFalse(*result.status.systemLight);
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsTrue(manager.OnSettingsChanged().status.manualOverride);
             manager.OnNightLightChange();
@@ -1002,7 +1030,6 @@ namespace LightSwitchServiceUnitTests
                     Assert::IsTrue(manager.OnSettingsChanged().success);
                 else
                 {
-                    manager.DetectExternalThemeChange();
                     manager.OnTick();
                 }
                 Assert::IsTrue(manager.GetState().isManualOverride);
@@ -1012,7 +1039,6 @@ namespace LightSwitchServiceUnitTests
                 Assert::IsFalse(*environment.system);
                 Assert::IsFalse(*environment.apps);
                 environment.nightLight = true;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
             }
@@ -1030,7 +1056,6 @@ namespace LightSwitchServiceUnitTests
 
             environment.failSystemWrite = environment.failAppsWrite = false;
             ++environment.now.wMinute;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
 
             Assert::IsFalse(manager.GetState().isManualOverride);
@@ -1058,7 +1083,6 @@ namespace LightSwitchServiceUnitTests
                 Assert::IsFalse(manager.GetState().isNightLightActive);
                 environment.readableSettings = true;
                 ++environment.now.wMinute;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
 
                 Assert::IsTrue(manager.GetState().isNightLightActive);
@@ -1090,7 +1114,7 @@ namespace LightSwitchServiceUnitTests
             }
         }
 
-        TEST_METHOD (MinuteDetectionLeavesANightLightTransitionForTheObserver)
+        TEST_METHOD (MinuteTickReconcilesNightLightBeforeTheDelayedObserver)
         {
             Environment environment;
             environment.config.scheduleMode = ScheduleMode::FollowNightLight;
@@ -1098,12 +1122,16 @@ namespace LightSwitchServiceUnitTests
             LightSwitchStateManager manager(environment.Dependencies());
             Assert::IsTrue(manager.OnSettingsChanged().success);
             environment.nightLight = false;
-            manager.DetectExternalThemeChange();
-            Assert::IsFalse(manager.GetState().isManualOverride);
-            manager.OnNightLightChange();
+            manager.OnTick();
             Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::IsTrue(*environment.system);
             Assert::IsTrue(*environment.apps);
+            const auto writes = environment.writes;
+            const auto notifications = environment.notifications.size();
+            manager.OnNightLightChange();
+            Assert::IsFalse(manager.GetState().isManualOverride);
+            Assert::AreEqual(writes, environment.writes);
+            Assert::AreEqual(notifications, environment.notifications.size());
         }
 
         TEST_METHOD (NightLightNotificationWithASettingsChangeAppliesTheNewPlan)
@@ -1149,7 +1177,6 @@ namespace LightSwitchServiceUnitTests
             Assert::IsTrue(manager.SetTheme(true).status.manualOverride);
             ++environment.now.wDay;
             environment.now.wHour = 22;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsFalse(manager.GetState().isManualOverride);
             Assert::IsFalse(*environment.system);
@@ -1191,7 +1218,6 @@ namespace LightSwitchServiceUnitTests
             LightSwitchStateManager manager(environment.Dependencies());
             Assert::IsTrue(manager.SetTheme(true).status.manualOverride);
             environment.now.wMinute = 0;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsTrue(manager.GetState().isManualOverride);
             Assert::IsTrue(*environment.system);
@@ -1394,7 +1420,6 @@ namespace LightSwitchServiceUnitTests
                 environment.failSystemRead = environment.failAppsRead = false;
                 environment.failSystemWrite = environment.failAppsWrite = false;
                 ++environment.now.wMinute;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
 
                 Assert::IsFalse(manager.GetState().isManualOverride);
@@ -1426,7 +1451,6 @@ namespace LightSwitchServiceUnitTests
 
                 environment.afterWrite = nullptr;
                 environment.failSystemRead = environment.failAppsRead = false;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::IsFalse(manager.GetState().isManualOverride);
                 Assert::AreEqual(writes, environment.writes);
@@ -1522,7 +1546,6 @@ namespace LightSwitchServiceUnitTests
                 Assert::IsFalse(*result.status.appsLight);
                 Assert::IsTrue(environment.notifications.empty());
                 environment.failSystemWrite = environment.failAppsWrite = false;
-                manager.DetectExternalThemeChange();
                 manager.OnTick();
                 Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
                 Assert::IsFalse(environment.notifications.front());
@@ -1636,7 +1659,6 @@ namespace LightSwitchServiceUnitTests
             manager.OnNightLightChange();
             Assert::IsTrue(environment.notifications.empty());
             environment.system = environment.apps = true;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             Assert::IsTrue(manager.GetState().isManualOverride);
             Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
@@ -1662,7 +1684,6 @@ namespace LightSwitchServiceUnitTests
             environment.afterWrite = nullptr;
             environment.failSystemRead = environment.failAppsRead = false;
             environment.nightLight = false;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
 
             Assert::IsFalse(manager.GetState().isManualOverride);
@@ -1690,7 +1711,6 @@ namespace LightSwitchServiceUnitTests
 
             environment.afterWrite = nullptr;
             environment.failSystemRead = environment.failAppsRead = false;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
 
             Assert::IsFalse(manager.GetState().isManualOverride);
@@ -1713,7 +1733,6 @@ namespace LightSwitchServiceUnitTests
 
             // The service's partial write is not an external manual override.
             environment.failAppsWrite = false;
-            manager.DetectExternalThemeChange();
             manager.OnTick();
             const auto retry = manager.OnSettingsChanged();
             Assert::IsTrue(retry.success);

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "LightSwitchStateManager.h"
+#include "LocalizedStrings.h"
 #include <logger.h>
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
@@ -80,7 +81,7 @@ namespace
 
     std::wstring ThemeError(LSTATUS result)
     {
-        return L"The requested theme could not be applied or verified (Windows error " + std::to_wstring(result) + L").";
+        return LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_THEME_WRITE_FAILED), result);
     }
 }
 
@@ -198,7 +199,7 @@ ThemeCommandResult LightSwitchStateManager::OnSettingsChanged()
     // External detection records the current Night Light baseline when it finds
     // a new manual choice. Sampling afterwards preserves that newer override.
     if (config.scheduleMode == ScheduleMode::FollowNightLight && !RefreshNightLightStateLocked(config).has_value())
-        return CompleteCommandLocked(config, L"THEME_READ_FAILED", L"The Windows Night Light state could not be read.");
+        return CompleteCommandLocked(config, L"THEME_READ_FAILED", GET_RESOURCE_STRING(IDS_NIGHT_LIGHT_READ_FAILED));
     auto snapshot = GetStatusSnapshotLocked(config);
     const auto result = EvaluateAndApplyIfNeededLocked(config, now, &snapshot);
     return result == ERROR_SUCCESS ? CompleteCommandLocked(std::move(snapshot)) : CompleteCommandLocked(std::move(snapshot), L"THEME_WRITE_FAILED", ThemeError(result));
@@ -207,15 +208,22 @@ ThemeCommandResult LightSwitchStateManager::OnSettingsChanged()
 void LightSwitchStateManager::OnTick()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
+    const bool hadSettingsSnapshot = _hasSettingsSnapshot;
+    const auto previousConfig = _settingsSnapshot;
     std::wstring error;
-    if (LoadSettingsLocked(error))
-    {
-        // A notification can be missed while settings are unreadable, and a
-        // failed theme write still needs a retry even without another transition.
-        if (_settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight && !RefreshNightLightStateLocked(_settingsSnapshot).has_value())
-            return;
-        EvaluateAndApplyIfNeededLocked(_settingsSnapshot, _dependencies.localTime());
-    }
+    if (!LoadSettingsLocked(error))
+        return;
+    const auto now = _dependencies.localTime();
+    // A minute tick can read an edit before its debounced settings notification.
+    // Apply that edit before comparing Windows with the new plan.
+    if (!hadSettingsSnapshot || HasSameEffectiveLightSwitchSettings(previousConfig, _settingsSnapshot))
+        DetectExternalThemeChangeLocked(_settingsSnapshot, now);
+    // Detect external choices before sampling Night Light so a newly established
+    // override is not cleared by an older, previously unobserved transition.
+    // Retry missed notifications and failed writes even without another transition.
+    if (_settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight && !RefreshNightLightStateLocked(_settingsSnapshot).has_value())
+        return;
+    EvaluateAndApplyIfNeededLocked(_settingsSnapshot, now);
 }
 
 LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now, StatusSnapshot& snapshot)
@@ -475,7 +483,7 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
         return CompleteCommandLocked(_settingsSnapshot, L"SETTINGS_READ_FAILED", error);
     const auto config = _settingsSnapshot;
     if (!config.changeSystem && !config.changeApps)
-        return CompleteCommandLocked(config, L"NO_TARGETS", L"No theme targets are enabled in Light Switch settings.");
+        return CompleteCommandLocked(config, L"NO_TARGETS", GET_RESOURCE_STRING(IDS_THEME_TARGETS_DISABLED));
     // A successful command confirms or supersedes a pending scheduled notification.
     // A failed write leaves the schedule responsible for reconciling its result.
     const auto previousSystemTheme = _lastObservedSystemTheme;
@@ -530,10 +538,10 @@ ThemeCommandResult LightSwitchStateManager::ToggleTheme()
         return CompleteCommandLocked(_settingsSnapshot, L"SETTINGS_READ_FAILED", error);
     const auto config = _settingsSnapshot;
     if (!config.changeSystem && !config.changeApps)
-        return CompleteCommandLocked(config, L"NO_TARGETS", L"No theme targets are enabled in Light Switch settings.");
+        return CompleteCommandLocked(config, L"NO_TARGETS", GET_RESOURCE_STRING(IDS_THEME_TARGETS_DISABLED));
     const auto before = GetStatusSnapshotLocked(config);
     if ((config.changeSystem && !before.systemLight) || (config.changeApps && !before.appsLight))
-        return CompleteCommandLocked(before, L"THEME_READ_FAILED", L"The current theme could not be read. No themes were changed.");
+        return CompleteCommandLocked(before, L"THEME_READ_FAILED", GET_RESOURCE_STRING(IDS_THEME_TOGGLE_READ_FAILED));
 
     LSTATUS result = ERROR_SUCCESS;
     for (const bool system : { true, false })
@@ -556,21 +564,6 @@ ThemeCommandResult LightSwitchStateManager::ToggleTheme()
     if (result == ERROR_SUCCESS)
         result = OnManualOverrideLocked(config, _dependencies.localTime(), after);
     return result == ERROR_SUCCESS ? CompleteCommandLocked(std::move(after)) : CompleteCommandLocked(std::move(after), L"THEME_WRITE_FAILED", ThemeError(result));
-}
-
-void LightSwitchStateManager::DetectExternalThemeChange()
-{
-    std::lock_guard<std::mutex> lock(_stateMutex);
-    const bool hadSettingsSnapshot = _hasSettingsSnapshot;
-    const auto previousConfig = _settingsSnapshot;
-    std::wstring error;
-    if (!LoadSettingsLocked(error) || _settingsSnapshot.scheduleMode == ScheduleMode::Off || _state.isManualOverride)
-        return;
-    // A minute tick can read an edit before its debounced settings notification.
-    // Let the scheduler apply that edit before comparing Windows with the new plan.
-    if (hadSettingsSnapshot && !HasSameEffectiveLightSwitchSettings(previousConfig, _settingsSnapshot))
-        return;
-    DetectExternalThemeChangeLocked(_settingsSnapshot, _dependencies.localTime());
 }
 
 void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchConfig& config, const SYSTEMTIME& now)

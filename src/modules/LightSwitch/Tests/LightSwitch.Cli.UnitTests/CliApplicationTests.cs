@@ -27,6 +27,21 @@ public sealed class CliApplicationTests
     private static readonly string[] LightJsonArguments = { "light", "--json" };
     private static readonly string[] StatusJsonArguments = { "status", "--json" };
 
+    private CultureInfo previousUICulture = null!;
+
+    [TestInitialize]
+    public void UseEnglishResources()
+    {
+        previousUICulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+    }
+
+    [TestCleanup]
+    public void RestoreUICulture()
+    {
+        CultureInfo.CurrentUICulture = previousUICulture;
+    }
+
     [TestMethod]
     [DataRow("status", "status", null)]
     [DataRow("light", "light", null)]
@@ -532,7 +547,6 @@ public sealed class CliApplicationTests
     [DataRow("INVALID_ARGUMENT", 2)]
     [DataRow("INVALID_CONFIGURATION", 2)]
     [DataRow("SERVICE_UNAVAILABLE", 3)]
-    [DataRow("SERVER_BUSY", 3)]
     [DataRow("TIMEOUT", 4)]
     [DataRow("EXECUTION_FAILED", 1)]
     [DataRow("NO_TARGETS", 1)]

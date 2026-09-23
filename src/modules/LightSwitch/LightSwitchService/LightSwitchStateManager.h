@@ -55,7 +55,6 @@ public:
     void OnTick();
     void OnNightLightChange();
     void SyncInitialThemeState();
-    void DetectExternalThemeChange();
 
     LightSwitchState GetState() const;
     StatusSnapshot GetStatusSnapshot();

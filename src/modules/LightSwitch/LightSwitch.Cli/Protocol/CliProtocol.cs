@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using LightSwitch.Cli.Properties;
 
 namespace LightSwitch.Cli.Protocol;
 
@@ -64,10 +65,10 @@ internal static class CliProtocol
     internal static int ExitCode(string code) => code switch
     {
         "INVALID_ARGUMENT" or "INVALID_CONFIGURATION" => 2,
-        "SERVICE_UNAVAILABLE" or "SERVER_BUSY" => 3,
+        "SERVICE_UNAVAILABLE" => 3,
         "TIMEOUT" => 4,
         _ => 1,
     };
 
-    private static CliException InvalidResponse() => new("PROTOCOL_ERROR", "Light Switch returned an invalid or incompatible response.");
+    private static CliException InvalidResponse() => new("PROTOCOL_ERROR", Resources.Error_InvalidResponse);
 }

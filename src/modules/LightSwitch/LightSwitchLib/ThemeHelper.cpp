@@ -93,7 +93,7 @@ namespace
     LSTATUS WritePersonalizationTheme(const wchar_t* name, bool isLight, bool system)
     {
         HKEY key = nullptr;
-        auto result = RegOpenKeyExW(HKEY_CURRENT_USER, PERSONALIZATION_REGISTRY_PATH, 0, KEY_QUERY_VALUE | KEY_SET_VALUE, &key);
+        auto result = RegOpenKeyExW(HKEY_CURRENT_USER, PERSONALIZATION_REGISTRY_PATH, 0, KEY_SET_VALUE, &key);
         if (result != ERROR_SUCCESS)
         {
             return result;
@@ -117,13 +117,6 @@ namespace
             if (system && isLight)
             {
                 SendMessageTimeoutW(HWND_BROADCAST, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
-            }
-            // The broadcasts may take time. Report the final registry state as well.
-            bool actual = false;
-            result = ReadPersonalizationTheme(name, actual);
-            if (result == ERROR_SUCCESS && actual != isLight)
-            {
-                result = ERROR_WRITE_FAULT;
             }
         }
         return result;

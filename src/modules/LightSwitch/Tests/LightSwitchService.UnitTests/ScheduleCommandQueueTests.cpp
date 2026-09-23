@@ -92,7 +92,7 @@ namespace LightSwitchServiceTests
                 Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(started.get(), 5000));
                 const auto error = firstResponse.get().GetNamedObject(L"error");
                 Assert::AreEqual(L"TIMEOUT", error.GetNamedString(L"code").c_str());
-                Assert::AreEqual(L"Light Switch did not finish in time. The schedule may have changed; query status before retrying.", error.GetNamedString(L"message").c_str());
+                Assert::AreEqual(GET_RESOURCE_STRING(IDS_SCHEDULE_STARTED_TIMEOUT).c_str(), error.GetNamedString(L"message").c_str());
 
                 nextResponse = std::async(std::launch::async, [&]() {
                     Apartment apartment;

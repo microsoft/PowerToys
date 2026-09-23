@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
@@ -19,6 +20,21 @@ public sealed class CliPipeClientTests
     private const string Request = "{\"version\":1,\"command\":\"status\"}";
 
     private static readonly byte[] InvalidUtf16Line = { 0x00, 0xD8, 0x0A, 0x00 };
+
+    private CultureInfo previousUICulture = null!;
+
+    [TestInitialize]
+    public void UseEnglishResources()
+    {
+        previousUICulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+    }
+
+    [TestCleanup]
+    public void RestoreUICulture()
+    {
+        CultureInfo.CurrentUICulture = previousUICulture;
+    }
 
     [TestMethod]
     [Timeout(10000)]

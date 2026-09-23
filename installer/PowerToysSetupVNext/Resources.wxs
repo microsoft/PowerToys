@@ -74,7 +74,11 @@
       <?endforeach?>
     <?endif?>
 
+    <!-- Generated only for CLI satellite assemblies present in the build output. -->
+    <!--LightSwitchCliResourceDirectories-->
+
     <ComponentGroup Id="ResourcesComponentGroup">
+      <!--LightSwitchCliResourceComponents-->
       <!-- Resource components should be added only if the installer is built on the build farm -->
       <?ifdef env.IsPipeline?>
       <!-- Components for adding resource files -->

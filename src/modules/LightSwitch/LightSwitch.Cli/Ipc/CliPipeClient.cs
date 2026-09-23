@@ -9,6 +9,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LightSwitch.Cli.Properties;
 using LightSwitch.Cli.Protocol;
 
 namespace LightSwitch.Cli.Ipc;
@@ -38,7 +39,7 @@ internal sealed class CliPipeClient
     {
         if (requestJson.Length > CliProtocol.MaxMessageChars || requestJson.Contains('\n') || requestJson.Contains('\r'))
         {
-            throw new CliException("PROTOCOL_ERROR", "The Light Switch request exceeds the protocol limits.");
+            throw new CliException("PROTOCOL_ERROR", Resources.Error_RequestTooLarge);
         }
 
         bool requestStarted = false;
@@ -55,7 +56,7 @@ internal sealed class CliPipeClient
             await client.ConnectAsync((int)_connectTimeout.TotalMilliseconds, cancellationToken).ConfigureAwait(false);
             if (!_verifyServer(client))
             {
-                throw new CliException("SERVICE_UNAVAILABLE", "The pipe is not owned by this installation's Light Switch service.");
+                throw new CliException("SERVICE_UNAVAILABLE", Resources.Error_UntrustedServer);
             }
 
             // A failed/cancelled write can still have delivered bytes. From this point onward,
@@ -69,17 +70,17 @@ internal sealed class CliPipeClient
         }
         catch (TimeoutException)
         {
-            throw new CliException("SERVICE_UNAVAILABLE", "Light Switch is not available. Enable it in PowerToys and try again.");
+            throw new CliException("SERVICE_UNAVAILABLE", Resources.Error_ServiceUnavailable);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             throw requestStarted
-                ? new CliException("TIMEOUT", "The connection closed before a complete response arrived. The command may already have taken effect; run status before trying again.")
-                : new CliException("SERVICE_UNAVAILABLE", "Light Switch is not available. Enable it in PowerToys and try again.");
+                ? new CliException("TIMEOUT", Resources.Error_ConnectionClosed)
+                : new CliException("SERVICE_UNAVAILABLE", Resources.Error_ServiceUnavailable);
         }
         catch (DecoderFallbackException)
         {
-            throw new CliException("PROTOCOL_ERROR", "Light Switch returned invalid UTF-16 data.");
+            throw new CliException("PROTOCOL_ERROR", Resources.Error_InvalidUtf16);
         }
     }
 
@@ -111,7 +112,7 @@ internal sealed class CliPipeClient
 
                 if (line.Length >= CliProtocol.MaxMessageChars && !(line.Length == CliProtocol.MaxMessageChars && character == '\r'))
                 {
-                    throw new CliException("PROTOCOL_ERROR", "The Light Switch response exceeds the protocol limit.");
+                    throw new CliException("PROTOCOL_ERROR", Resources.Error_ResponseTooLarge);
                 }
 
                 line.Append(character);

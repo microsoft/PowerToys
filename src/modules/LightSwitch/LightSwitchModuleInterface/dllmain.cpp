@@ -108,14 +108,10 @@ private:
     bool m_enabled = false;
 
     HANDLE m_process{ nullptr };
-    HANDLE m_force_light_event_handle;
-    HANDLE m_force_dark_event_handle;
     HANDLE m_toggle_request_semaphore{ nullptr };
     HANDLE m_toggle_event_handle{ nullptr };
     std::thread m_toggle_thread;
     std::atomic<bool> m_toggle_thread_running{ false };
-
-    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
     Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
@@ -130,8 +126,6 @@ public:
     {
         LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
 
-        m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
-        m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
         m_toggle_request_semaphore = CreateSemaphoreW(nullptr, 0, LONG_MAX, LIGHT_SWITCH_TOGGLE_REQUEST_SEMAPHORE);
         m_toggle_event_handle = CreateDefaultEvent(L"Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a");
 
@@ -313,8 +307,6 @@ public:
                 g_settings.m_changeApps = *v;
             }
 
-            auto previousMode = g_settings.m_scheduleMode;
-
             if (auto v = values.get_string_value(L"scheduleMode"))
             {
                 auto newMode = FromString(*v);
@@ -371,34 +363,6 @@ public:
         std::lock_guard lock(m_service_mutex);
         EnsureServiceRunningLocked();
     }
-
-    /*virtual void stop_worker_only()
-    {
-        if (m_process)
-        {
-            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService (worker only).");
-            constexpr DWORD timeout_ms = 1500;
-            DWORD result = WaitForSingleObject(m_process, timeout_ms);
-
-            if (result == WAIT_TIMEOUT)
-            {
-                Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
-                TerminateProcess(m_process, 0);
-            }
-
-            CloseHandle(m_process);
-            m_process = nullptr;
-        }
-    }*/
-
-    /*virtual void stop_service_if_running()
-    {
-        if (m_process)
-        {
-            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
-            stop_worker_only();
-        }
-    }*/
 
     virtual void enable()
     {

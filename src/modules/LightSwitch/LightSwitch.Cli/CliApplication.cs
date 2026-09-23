@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using LightSwitch.Cli.Properties;
 using LightSwitch.Cli.Protocol;
 
 namespace LightSwitch.Cli;
@@ -82,7 +83,7 @@ internal sealed class CliApplication
         {
             return WriteFailure(
                 "TIMEOUT",
-                "The request timed out or was cancelled. It may already have taken effect; run status before trying again.",
+                Resources.Error_TimedOut,
                 json,
                 stdout,
                 stderr);
@@ -107,7 +108,7 @@ internal sealed class CliApplication
                 Error = new CliError
                 {
                     Code = "EXECUTION_FAILED",
-                    Message = "The Light Switch command could not be completed. See the Light Switch log for details.",
+                    Message = Resources.Error_UnexpectedFailure,
                 },
             },
             json,
@@ -134,20 +135,37 @@ internal sealed class CliApplication
             stderr.WriteLine($"{response.Error!.Code}: {response.Error.Message}");
             if (response.Error.Code == "INVALID_ARGUMENT")
             {
-                stderr.WriteLine("Use 'PowerToys.LightSwitch.CLI.exe --help' for usage.");
+                stderr.WriteLine(Resources.Hint_Usage);
             }
         }
         else
         {
             var state = response.State!;
-            stdout.WriteLine($"System theme: {state.SystemTheme}");
-            stdout.WriteLine($"Apps theme: {state.AppsTheme}");
-            stdout.WriteLine($"System theme changes: {(state.ChangeSystem ? "enabled" : "disabled")}");
-            stdout.WriteLine($"App theme changes: {(state.ChangeApps ? "enabled" : "disabled")}");
-            stdout.WriteLine($"Schedule mode: {state.ScheduleMode}");
-            stdout.WriteLine($"Manual override: {(state.ManualOverride ? "active" : "inactive")}");
+            stdout.WriteLine(Resources.Text_SystemTheme(ThemeDisplayName(state.SystemTheme)));
+            stdout.WriteLine(Resources.Text_AppsTheme(ThemeDisplayName(state.AppsTheme)));
+            stdout.WriteLine(Resources.Text_ChangeSystem(state.ChangeSystem ? Resources.Value_Enabled : Resources.Value_Disabled));
+            stdout.WriteLine(Resources.Text_ChangeApps(state.ChangeApps ? Resources.Value_Enabled : Resources.Value_Disabled));
+            stdout.WriteLine(Resources.Text_ScheduleMode(ScheduleModeDisplayName(state.ScheduleMode)));
+            stdout.WriteLine(Resources.Text_ManualOverride(state.ManualOverride ? Resources.Value_Active : Resources.Value_Inactive));
         }
     }
+
+    // Only text output uses display names; the JSON state retains the protocol values.
+    private static string ThemeDisplayName(string theme) => theme switch
+    {
+        "light" => Resources.Value_Light,
+        "dark" => Resources.Value_Dark,
+        _ => Resources.Value_Unknown,
+    };
+
+    private static string ScheduleModeDisplayName(string mode) => mode switch
+    {
+        "Off" => Resources.Value_Off,
+        "FixedHours" => Resources.Value_FixedHours,
+        "SunsetToSunrise" => Resources.Value_SunsetToSunrise,
+        "FollowNightLight" => Resources.Value_FollowNightLight,
+        _ => mode,
+    };
 
     private int WriteFailure(string code, string message, bool json, TextWriter stdout, TextWriter stderr)
     {

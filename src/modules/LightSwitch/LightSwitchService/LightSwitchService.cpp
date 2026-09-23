@@ -17,6 +17,7 @@
 #include <trace.h>
 #include "CliPipeServer.h"
 #include "CliProtocol.h"
+#include "LocalizedStrings.h"
 #include "ScheduleCommandQueue.h"
 #include <array>
 #include <algorithm>
@@ -220,7 +221,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         else if (target == ScheduleMode::Off)
         {
             return light_switch_cli::MakeError(
-                L"INVALID_ARGUMENT", L"The schedule is off. Specify --mode fixed-hours, sunset-to-sunrise, or follow-night-light.");
+                L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_SCHEDULE_MODE_REQUIRED));
         }
 
         if (target != current.scheduleMode && !settingsStore.TrySetScheduleMode(target, current, error))
@@ -241,7 +242,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         if (status.config.scheduleMode != target)
         {
             return light_switch_cli::MakeError(
-                L"EXECUTION_FAILED", L"The schedule was changed by another settings update. Query status and try again.", SerializeStatus(status));
+                L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_SCHEDULE_CHANGED), SerializeStatus(status));
         }
         return light_switch_cli::MakeSuccess(SerializeStatus(status));
     };
@@ -249,7 +250,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
     light_switch_cli::CliPipeServer cliServer([&](const Request& request) -> JsonObject {
         if (WaitForSingleObject(g_ServiceStopEvent, 0) == WAIT_OBJECT_0)
         {
-            return light_switch_cli::MakeError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.");
+            return light_switch_cli::MakeError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_SERVICE_STOPPING));
         }
         switch (request.command)
         {
@@ -258,9 +259,9 @@ static DWORD RunServiceWorker(LPVOID lpParam)
             const auto status = stateManager.GetStatusSnapshot();
             if (!status.configurationAvailable)
             {
-                return light_switch_cli::MakeError(L"INVALID_CONFIGURATION", L"Light Switch settings have not been loaded successfully.");
+                return light_switch_cli::MakeError(L"INVALID_CONFIGURATION", GET_RESOURCE_STRING(IDS_SETTINGS_NOT_LOADED));
             }
-            return status.systemLight && status.appsLight ? light_switch_cli::MakeSuccess(SerializeStatus(status)) : light_switch_cli::MakeError(L"EXECUTION_FAILED", L"Windows theme state could not be read.", SerializeStatus(status));
+            return status.systemLight && status.appsLight ? light_switch_cli::MakeSuccess(SerializeStatus(status)) : light_switch_cli::MakeError(L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_THEME_READ_FAILED), SerializeStatus(status));
         }
         case Command::Light:
             return SerializeResult(stateManager.SetTheme(true));
@@ -272,7 +273,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         case Command::ScheduleDisable:
             return scheduleCommands.Submit(request);
         default:
-            return light_switch_cli::MakeError(L"INVALID_ARGUMENT", L"Unknown Light Switch command.");
+            return light_switch_cli::MakeError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_COMMAND_UNKNOWN));
         }
     });
     const auto stopCli = wil::scope_exit([&]() {
@@ -313,7 +314,6 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         const DWORD wait = WaitForMultipleObjects(count, waits.data(), FALSE, untilNextMinute);
         if (wait == WAIT_TIMEOUT)
         {
-            stateManager.DetectExternalThemeChange();
             stateManager.OnTick();
         }
         else if (wait == WAIT_FAILED)

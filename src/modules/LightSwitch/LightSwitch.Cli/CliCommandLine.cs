@@ -5,46 +5,22 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
+using LightSwitch.Cli.Properties;
 using LightSwitch.Cli.Protocol;
 
 namespace LightSwitch.Cli;
 
 internal sealed class CliCommandLine
 {
-    internal const string HelpText = """
-        PowerToys Light Switch
-        Control the running Light Switch service. Enable Light Switch in PowerToys first.
-
-        Usage:
-          PowerToys.LightSwitch.CLI.exe <command> [options]
-
-        Commands:
-          status                         Show the current themes and scheduling state.
-          light                          Apply the light theme to the configured targets.
-          dark                           Apply the dark theme to the configured targets.
-          toggle                         Toggle the configured theme targets.
-          schedule enable [--mode MODE]  Enable scheduling, optionally selecting a mode.
-          schedule disable               Disable scheduling.
-
-        Schedule modes:
-          fixed-hours, sunset-to-sunrise, follow-night-light
-
-        Options:
-          --json                         Write one JSON object, including errors.
-          -h, --help                     Show help without contacting the service.
-          --version                      Show the CLI version without contacting the service.
-
-        JSON command output uses the service response envelope: version, success, state or error.
-        JSON help/version output is local: version, success, and help or cliVersion.
-        """;
+    internal static string HelpText => Resources.Help_Text;
 
     private static readonly string[] HelpAliases = { "--help", "-h", "-?" };
 
-    private readonly RootCommand _root = new("Control the running PowerToys Light Switch service.");
-    private readonly Command _schedule = new("schedule", "Enable or disable scheduling.");
-    private readonly Command _enable = new("enable", "Enable scheduling.");
-    private readonly Command _disable = new("disable", "Disable scheduling.");
-    private readonly Option<string?> _mode = new("--mode", "fixed-hours, sunset-to-sunrise, or follow-night-light") { Arity = ArgumentArity.ExactlyOne };
+    private readonly RootCommand _root = new(Resources.Description_Root);
+    private readonly Command _schedule = new("schedule", Resources.Description_Schedule);
+    private readonly Command _enable = new("enable", Resources.Description_Enable);
+    private readonly Command _disable = new("disable", Resources.Description_Disable);
+    private readonly Option<string?> _mode = new("--mode", Resources.Description_Mode) { Arity = ArgumentArity.ExactlyOne };
 
     internal CliCommandLine()
         : this(presentationOnly: false)
@@ -61,21 +37,21 @@ internal sealed class CliCommandLine
             return;
         }
 
-        _root.AddCommand(new Command("status", "Show themes and scheduling state."));
-        _root.AddCommand(new Command("light", "Apply the light theme."));
-        _root.AddCommand(new Command("dark", "Apply the dark theme."));
-        _root.AddCommand(new Command("toggle", "Toggle the configured theme targets."));
+        _root.AddCommand(new Command("status", Resources.Description_Status));
+        _root.AddCommand(new Command("light", Resources.Description_Light));
+        _root.AddCommand(new Command("dark", Resources.Description_Dark));
+        _root.AddCommand(new Command("toggle", Resources.Description_Toggle));
         _enable.AddOption(_mode);
         _schedule.AddCommand(_enable);
         _schedule.AddCommand(_disable);
         _root.AddCommand(_schedule);
     }
 
-    internal Option<bool> Json { get; } = new("--json", "Write one JSON object.");
+    internal Option<bool> Json { get; } = new("--json", Resources.Description_Json);
 
-    internal Option<bool> Help { get; } = new(HelpAliases, "Show help.");
+    internal Option<bool> Help { get; } = new(HelpAliases, Resources.Description_Help);
 
-    internal Option<bool> Version { get; } = new("--version", "Show the CLI version.");
+    internal Option<bool> Version { get; } = new("--version", Resources.Description_Version);
 
     internal ParseResult Parse(string[] expandedArgs)
         => new Parser(new CommandLineConfiguration(_root, enableDirectives: false, enableTokenReplacement: false)).Parse(expandedArgs);
@@ -135,7 +111,7 @@ internal sealed class CliCommandLine
                 "fixed-hours" => "FixedHours",
                 "sunset-to-sunrise" => "SunsetToSunrise",
                 "follow-night-light" => "FollowNightLight",
-                _ => throw new CliException("INVALID_ARGUMENT", "Unknown schedule mode. Use fixed-hours, sunset-to-sunrise, or follow-night-light."),
+                _ => throw new CliException("INVALID_ARGUMENT", Resources.Error_UnknownScheduleMode),
             };
 
             return new CliRequest { Command = "schedule-enable", Mode = mode };
@@ -149,7 +125,7 @@ internal sealed class CliCommandLine
         return result.CommandResult.Command.Name switch
         {
             "status" or "light" or "dark" or "toggle" => new CliRequest { Command = result.CommandResult.Command.Name },
-            _ => throw new CliException("INVALID_ARGUMENT", "Specify a command. The schedule command requires enable or disable."),
+            _ => throw new CliException("INVALID_ARGUMENT", Resources.Error_CommandRequired),
         };
     }
 }

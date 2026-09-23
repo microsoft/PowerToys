@@ -4,6 +4,8 @@
 
 #pragma once
 
+// Shared JSON helpers require the Win32 GetObject macro before C++/WinRT declarations.
+#include <windows.h>
 #include <cstddef>
 #include <optional>
 #include <stdexcept>

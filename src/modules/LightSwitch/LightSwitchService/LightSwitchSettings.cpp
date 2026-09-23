@@ -1,7 +1,7 @@
 #include "LightSwitchSettings.h"
+#include "LocalizedStrings.h"
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
-#include "SettingsObserver.h"
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -42,7 +42,8 @@ namespace
             DWORD read = 0;
             if (!ReadFile(file, buffer.data(), static_cast<DWORD>(buffer.size()), &read, nullptr))
             {
-                error = L"Light Switch settings could not be read (error " + std::to_wstring(GetLastError()) + L").";
+                const auto readError = GetLastError();
+                error = LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_SETTINGS_READ_ERROR), readError);
                 return std::nullopt;
             }
             if (read == 0)
@@ -52,7 +53,7 @@ namespace
         json::JsonObject document;
         if (!json::JsonObject::TryParse(winrt::to_hstring(contents), document))
         {
-            error = L"Light Switch settings contain invalid JSON.";
+            error = GET_RESOURCE_STRING(IDS_SETTINGS_JSON_INVALID);
             return std::nullopt;
         }
         return document;
@@ -81,7 +82,8 @@ namespace
             wil::unique_hfile file(CreateFileW(_path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
             if (!file)
             {
-                error = L"A temporary settings file could not be created (error " + std::to_wstring(GetLastError()) + L").";
+                const auto createError = GetLastError();
+                error = LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_SETTINGS_TEMPORARY_FILE_FAILED), createError);
                 return false;
             }
             _created = true;
@@ -90,7 +92,7 @@ namespace
                 !WriteFile(file.get(), contents.data(), static_cast<DWORD>(contents.size()), &written, nullptr) ||
                 written != contents.size() || !FlushFileBuffers(file.get()))
             {
-                error = L"Light Switch settings could not be written.";
+                error = GET_RESOURCE_STRING(IDS_SETTINGS_WRITE_FAILED);
                 return false;
             }
             return true;
@@ -137,18 +139,18 @@ namespace
         const auto latest = json::from_file(path);
         if (!latest)
         {
-            error = L"Light Switch settings could not be read during the update.";
+            error = GET_RESOURCE_STRING(IDS_SETTINGS_UPDATE_READ_FAILED);
             return SettingsFileSaveResult::Failed;
         }
         if (std::wstring(latest->Stringify().c_str()) != original)
         {
-            error = L"Light Switch settings changed during the update. Try the command again.";
+            error = GET_RESOURCE_STRING(IDS_SETTINGS_UPDATE_SUPERSEDED);
             return SettingsFileSaveResult::Superseded;
         }
         if (!temporary.Publish(path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
         {
             const auto replacementError = GetLastError();
-            error = L"Light Switch settings could not be replaced (error " + std::to_wstring(replacementError) + L").";
+            error = LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_SETTINGS_REPLACE_FAILED), replacementError);
             return SettingsFileSaveResult::Failed;
         }
 
@@ -294,27 +296,6 @@ LightSwitchSettings::~LightSwitchSettings()
     Logger::info(L"[LightSwitchSettings] Cleanup complete.");
 }
 
-void LightSwitchSettings::AddObserver(SettingsObserver& observer)
-{
-    m_observers.insert(&observer);
-}
-
-void LightSwitchSettings::RemoveObserver(SettingsObserver& observer)
-{
-    m_observers.erase(&observer);
-}
-
-void LightSwitchSettings::NotifyObservers(SettingId id) const
-{
-    for (auto observer : m_observers)
-    {
-        if (observer->WantsToBeNotified(id))
-        {
-            observer->SettingsUpdate(id);
-        }
-    }
-}
-
 HANDLE LightSwitchSettings::GetSettingsChangedEvent() const
 {
     return m_settingsChangedEvent;
@@ -329,7 +310,7 @@ bool TryParseLightSwitchConfig(const json::JsonObject& values, LightSwitchConfig
         const std::wstring mode = properties.GetNamedObject(L"scheduleMode").GetNamedString(L"value").c_str();
         if (mode != L"Off" && mode != L"FixedHours" && mode != L"SunsetToSunrise" && mode != L"FollowNightLight")
         {
-            error = L"The configured scheduleMode is not supported.";
+            error = GET_RESOURCE_STRING(IDS_SETTINGS_MODE_UNSUPPORTED);
             return false;
         }
         parsed.scheduleMode = FromString(mode);
@@ -365,7 +346,7 @@ bool TryParseLightSwitchConfig(const json::JsonObject& values, LightSwitchConfig
     }
     catch (...)
     {
-        error = L"Light Switch settings contain missing or invalid properties.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_PROPERTIES_INVALID);
         return false;
     }
 }
@@ -386,7 +367,7 @@ bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfi
     const ApartmentScope apartment;
     if (!apartment.IsReady())
     {
-        error = L"The settings JSON runtime could not be initialized.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_RUNTIME_FAILED);
         return false;
     }
 
@@ -400,7 +381,7 @@ bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfi
             // parents and unreadable files are errors, not a first-run configuration.
             if (openError != ERROR_FILE_NOT_FOUND)
             {
-                error = L"Light Switch settings could not be opened (error " + std::to_wstring(openError) + L").";
+                error = LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_SETTINGS_OPEN_FAILED), openError);
                 return false;
             }
 
@@ -418,8 +399,7 @@ bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfi
             if (!existing)
             {
                 const auto readError = GetLastError();
-                error = L"Light Switch settings could not be opened after initialization (open error " +
-                        std::to_wstring(readError) + L", publish error " + std::to_wstring(publishError) + L").";
+                error = LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_SETTINGS_OPEN_AFTER_INITIALIZATION_FAILED), readError, publishError);
                 return false;
             }
             // A failed publish is only acceptable when a readable, valid file
@@ -435,7 +415,7 @@ bool TryInitializeLightSwitchSettings(const std::wstring& path, LightSwitchConfi
     }
     catch (...)
     {
-        error = L"Light Switch settings could not be initialized.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_INITIALIZATION_FAILED);
         return false;
     }
 }
@@ -445,13 +425,13 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
     const ApartmentScope apartment;
     if (!apartment.IsReady())
     {
-        error = L"The settings JSON runtime could not be initialized.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_RUNTIME_FAILED);
         return false;
     }
     if (mode != ScheduleMode::Off && mode != ScheduleMode::FixedHours &&
         mode != ScheduleMode::SunsetToSunrise && mode != ScheduleMode::FollowNightLight)
     {
-        error = L"The requested schedule mode is not supported.";
+        error = GET_RESOURCE_STRING(IDS_SCHEDULE_MODE_UNSUPPORTED);
         return false;
     }
     try
@@ -462,7 +442,7 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
         {
             if (!document)
             {
-                error = L"Light Switch settings could not be read.";
+                error = GET_RESOURCE_STRING(IDS_SETTINGS_READ_FAILED);
             }
             return false;
         }
@@ -480,7 +460,7 @@ bool TryPatchLightSwitchScheduleMode(const std::wstring& path, ScheduleMode mode
     }
     catch (...)
     {
-        error = L"Light Switch settings could not be updated.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_UPDATE_FAILED);
         return false;
     }
 }
@@ -490,7 +470,7 @@ SunTimesSaveResult SaveLightSwitchSunTimes(const std::wstring& path, const Light
     const ApartmentScope apartment;
     if (!apartment.IsReady())
     {
-        error = L"The settings JSON runtime could not be initialized.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_RUNTIME_FAILED);
         return SunTimesSaveResult::Failed;
     }
     try
@@ -500,7 +480,7 @@ SunTimesSaveResult SaveLightSwitchSunTimes(const std::wstring& path, const Light
         if (!document || !TryParseLightSwitchConfig(*document, current, error))
         {
             if (!document)
-                error = L"Light Switch settings could not be read.";
+                error = GET_RESOURCE_STRING(IDS_SETTINGS_READ_FAILED);
             return SunTimesSaveResult::Failed;
         }
         // Calculated values belong to one effective configuration. A later
@@ -541,7 +521,7 @@ SunTimesSaveResult SaveLightSwitchSunTimes(const std::wstring& path, const Light
     }
     catch (...)
     {
-        error = L"Light Switch sun times could not be saved.";
+        error = GET_RESOURCE_STRING(IDS_SUN_TIMES_SAVE_FAILED);
         return SunTimesSaveResult::Failed;
     }
 }
@@ -558,14 +538,14 @@ bool LightSwitchSettings::TryLoadSettings(LightSwitchConfig& config, std::wstrin
     const ApartmentScope apartment;
     if (!apartment.IsReady())
     {
-        error = L"The settings JSON runtime could not be initialized.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_RUNTIME_FAILED);
         return false;
     }
     std::lock_guard<std::mutex> guard(m_settingsMutex);
     const auto document = json::from_file(GetSettingsFileName());
     if (!document)
     {
-        error = L"Light Switch settings could not be read or contain invalid JSON.";
+        error = GET_RESOURCE_STRING(IDS_SETTINGS_READ_OR_JSON_FAILED);
         return false;
     }
     LightSwitchConfig loaded;
@@ -607,24 +587,7 @@ void LightSwitchSettings::ApplySettingsLocked(const LightSwitchConfig& config)
     if (previous.scheduleMode != config.scheduleMode)
     {
         Trace::LightSwitch::ScheduleModeToggled(ToString(config.scheduleMode));
-        NotifyObservers(SettingId::ScheduleMode);
     }
-    if (previous.latitude != config.latitude)
-        NotifyObservers(SettingId::Latitude);
-    if (previous.longitude != config.longitude)
-        NotifyObservers(SettingId::Longitude);
-    if (previous.lightTime != config.lightTime)
-        NotifyObservers(SettingId::LightTime);
-    if (previous.darkTime != config.darkTime)
-        NotifyObservers(SettingId::DarkTime);
-    if (previous.sunrise_offset != config.sunrise_offset)
-        NotifyObservers(SettingId::Sunrise_Offset);
-    if (previous.sunset_offset != config.sunset_offset)
-        NotifyObservers(SettingId::Sunset_Offset);
-    if (previous.changeSystem != config.changeSystem)
-        NotifyObservers(SettingId::ChangeSystem);
-    if (previous.changeApps != config.changeApps)
-        NotifyObservers(SettingId::ChangeApps);
     if (previous.changeSystem != config.changeSystem || previous.changeApps != config.changeApps)
     {
         Trace::LightSwitch::ThemeTargetChanged(config.changeApps, config.changeSystem);

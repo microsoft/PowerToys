@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include "CliProtocol.h"
+#include "LocalizedStrings.h"
 
 #include <set>
 #include <utility>
@@ -17,7 +18,7 @@ namespace light_switch_cli
         {
             if (message.empty() || message.size() > MaxMessageCharacters || message.front() == L'\xfeff')
             {
-                throw RequestError(L"PROTOCOL_ERROR", L"The request must be a nonempty, BOM-less JSON object of at most 32768 characters.");
+                throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_ENVELOPE_INVALID));
             }
 
             for (size_t index = 0; index < message.size(); ++index)
@@ -25,13 +26,13 @@ namespace light_switch_cli
                 const auto value = static_cast<unsigned int>(message[index]);
                 if (value == 0 || (value >= 0xdc00 && value <= 0xdfff))
                 {
-                    throw RequestError(L"PROTOCOL_ERROR", L"The request contains invalid UTF-16 data.");
+                    throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_ENCODING_INVALID));
                 }
                 if (value >= 0xd800 && value <= 0xdbff)
                 {
                     if (++index == message.size() || message[index] < 0xdc00 || message[index] > 0xdfff)
                     {
-                        throw RequestError(L"PROTOCOL_ERROR", L"The request contains invalid UTF-16 data.");
+                        throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_ENCODING_INVALID));
                     }
                 }
             }
@@ -67,7 +68,7 @@ namespace light_switch_cli
                 {
                     // Every supported field is a primitive. Reject nested containers before
                     // invoking the JSON parser, including arbitrarily deep untrusted input.
-                    throw RequestError(L"PROTOCOL_ERROR", L"Request properties must be primitive JSON values.");
+                    throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_PROPERTIES_PRIMITIVE));
                 }
                 else if (value == L'}')
                 {
@@ -109,7 +110,7 @@ namespace light_switch_cli
                         const auto key = JsonValue::Parse(winrt::hstring(message.substr(start, index - start + 1))).GetString();
                         if (!properties.emplace(key.c_str(), key.size()).second)
                         {
-                            throw RequestError(L"PROTOCOL_ERROR", L"Duplicate request properties are not allowed.");
+                            throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_DUPLICATE_PROPERTIES));
                         }
                         expectingProperty = false;
                     }
@@ -159,7 +160,7 @@ namespace light_switch_cli
         JsonObject object;
         if (!JsonObject::TryParse(winrt::hstring(message), object))
         {
-            throw RequestError(L"PROTOCOL_ERROR", L"The request must be a valid JSON object.");
+            throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_JSON_INVALID));
         }
         RejectDuplicateProperties(message);
 
@@ -167,18 +168,18 @@ namespace light_switch_cli
         {
             if (property.Key() != L"version" && property.Key() != L"command" && property.Key() != L"mode")
             {
-                throw RequestError(L"INVALID_ARGUMENT", L"The request contains an unsupported property.");
+                throw RequestError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_REQUEST_PROPERTY_UNSUPPORTED));
             }
         }
 
         if (!object.HasKey(L"version") || object.GetNamedValue(L"version").ValueType() != JsonValueType::Number ||
             object.GetNamedNumber(L"version") != ProtocolVersion)
         {
-            throw RequestError(L"PROTOCOL_ERROR", L"The request must specify protocol version 1.");
+            throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_VERSION_INVALID));
         }
         if (!object.HasKey(L"command") || object.GetNamedValue(L"command").ValueType() != JsonValueType::String)
         {
-            throw RequestError(L"INVALID_ARGUMENT", L"The request must specify a command string.");
+            throw RequestError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_REQUEST_COMMAND_REQUIRED));
         }
 
         const auto command = object.GetNamedString(L"command");
@@ -209,19 +210,19 @@ namespace light_switch_cli
         }
         else
         {
-            throw RequestError(L"INVALID_ARGUMENT", L"The request specifies an unsupported command.");
+            throw RequestError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_REQUEST_COMMAND_UNSUPPORTED));
         }
 
         if (object.HasKey(L"mode"))
         {
             if (request.command != Command::ScheduleEnable || object.GetNamedValue(L"mode").ValueType() != JsonValueType::String)
             {
-                throw RequestError(L"INVALID_ARGUMENT", L"Only schedule-enable accepts a mode string.");
+                throw RequestError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_REQUEST_MODE_NOT_ALLOWED));
             }
             const auto mode = object.GetNamedString(L"mode");
             if (mode != L"FixedHours" && mode != L"SunsetToSunrise" && mode != L"FollowNightLight")
             {
-                throw RequestError(L"INVALID_ARGUMENT", L"Mode must be FixedHours, SunsetToSunrise, or FollowNightLight.");
+                throw RequestError(L"INVALID_ARGUMENT", GET_RESOURCE_STRING(IDS_REQUEST_MODE_UNSUPPORTED));
             }
             request.mode = std::wstring(mode.c_str(), mode.size());
         }

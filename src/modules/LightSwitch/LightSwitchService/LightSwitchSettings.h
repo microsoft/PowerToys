@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_set>
 #include <string>
 #include <vector>
 #include <memory>
@@ -11,9 +10,6 @@
 #include <chrono>
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
-#include <SettingsConstants.h>
-
-class SettingsObserver;
 
 enum class ScheduleMode
 {
@@ -102,9 +98,6 @@ public:
     void InitFileWatcher();
     static std::wstring GetSettingsFileName();
 
-    void AddObserver(SettingsObserver& observer);
-    void RemoveObserver(SettingsObserver& observer);
-
     void LoadSettings();
     bool TryLoadSettings(LightSwitchConfig& config, std::wstring& error);
     bool TrySetScheduleMode(ScheduleMode mode, LightSwitchConfig& config, std::wstring& error);
@@ -118,9 +111,6 @@ private:
 
     LightSwitchConfig m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
-    std::unordered_set<SettingsObserver*> m_observers;
-
-    void NotifyObservers(SettingId id) const;
     void ApplySettingsLocked(const LightSwitchConfig& config);
 
     HANDLE m_settingsChangedEvent = nullptr;

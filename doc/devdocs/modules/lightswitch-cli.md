@@ -81,7 +81,16 @@ fail; an error response may include a state with that value set to `unknown`.
 Errors contain `version`, `success: false`, and an `error` object with stable
 `code` and human-readable `message` fields. When available, `state` describes the
 observed result, including partial theme changes. JSON output is one object on
-stdout. Human-readable errors go to stderr; logs do not mix with JSON.
+stdout. Without `--json`, human-readable errors go to stderr; logs do not mix
+with JSON.
+
+Help, text-mode labels, and human-readable messages use localized resources,
+with English fallback when a translation is unavailable. The service produces
+its messages in its own UI language. JSON property names, types, theme and
+schedule-mode values, error codes, version numbers, and exit codes stay invariant.
+Only the human-readable `help` and `error.message` fields may vary by language;
+consumers should inspect `success`, `error.code`, and structured `state` values.
+JSON serialization escapes translated text, including quotes and line breaks.
 
 | Exit code | Meaning |
 | --- | --- |

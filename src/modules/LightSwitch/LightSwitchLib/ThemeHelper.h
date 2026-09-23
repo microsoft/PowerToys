@@ -6,9 +6,10 @@ inline constexpr wchar_t PERSONALIZATION_REGISTRY_PATH[] = L"Software\\Microsoft
 inline constexpr wchar_t NIGHT_LIGHT_REGISTRY_PATH[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
 inline constexpr wchar_t LIGHT_SWITCH_TOGGLE_REQUEST_SEMAPHORE[] = L"Local\\PowerToys-LightSwitch-ToggleRequest-49904";
 
-// These functions report registry and read-back failures without guessing a theme.
+// Reads report registry failures without guessing a theme.
 LSTATUS TryGetSystemTheme(bool& isLight);
 LSTATUS TryGetAppsTheme(bool& isLight);
+// Writes report registry errors and broadcast changes. The service verifies the final theme snapshot.
 LSTATUS TrySetSystemTheme(bool isLight);
 LSTATUS TrySetAppsTheme(bool isLight);
 // Leaves enabled unchanged when the registry value cannot be read or validated.

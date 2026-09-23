@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include "CliPipeServer.h"
+#include "LocalizedStrings.h"
 #include "CliIdentity.h"
 
 #include <array>
@@ -261,15 +262,15 @@ namespace light_switch_cli
                     count);
                 if (result == IoResult::TimedOut)
                 {
-                    throw RequestError(L"TIMEOUT", L"Timed out waiting for a complete request.");
+                    throw RequestError(L"TIMEOUT", GET_RESOURCE_STRING(IDS_REQUEST_READ_TIMEOUT));
                 }
                 if (result == IoResult::Stopped)
                 {
-                    throw RequestError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.");
+                    throw RequestError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_SERVICE_STOPPING));
                 }
                 if (result != IoResult::Completed || count == 0)
                 {
-                    throw RequestError(L"PROTOCOL_ERROR", L"The UTF-16LE request must end with a newline.");
+                    throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_NEWLINE_REQUIRED));
                 }
 
                 for (DWORD index = 0; index < count; ++index)
@@ -285,18 +286,18 @@ namespace light_switch_cli
                     {
                         if (index + 1 != count)
                         {
-                            throw RequestError(L"PROTOCOL_ERROR", L"Only one request is allowed per connection.");
+                            throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_SINGLE_REQUIRED));
                         }
                         return message;
                     }
                     if (message.size() == MaxMessageCharacters)
                     {
-                        throw RequestError(L"PROTOCOL_ERROR", L"The request exceeds the 32768-character limit.");
+                        throw RequestError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_REQUEST_TOO_LONG));
                     }
                     message.push_back(value);
                 }
             }
-            throw RequestError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.");
+            throw RequestError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_SERVICE_STOPPING));
         }
 
         void WaitForClientClose()
@@ -325,7 +326,7 @@ namespace light_switch_cli
             std::wstring text(response.Stringify());
             if (text.size() > MaxMessageCharacters)
             {
-                text = MakeError(L"PROTOCOL_ERROR", L"The response exceeds the 32768-character limit.").Stringify();
+                text = MakeError(L"PROTOCOL_ERROR", GET_RESOURCE_STRING(IDS_RESPONSE_TOO_LONG)).Stringify();
             }
             text.push_back(L'\n');
             const auto size = static_cast<DWORD>(text.size() * sizeof(wchar_t));
@@ -355,15 +356,15 @@ namespace light_switch_cli
                 const auto message = ReadRequest();
                 if (!AuthenticateClient())
                 {
-                    response = MakeError(L"SERVICE_UNAVAILABLE", L"The client is not in the Light Switch user's logon session.");
+                    response = MakeError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_CLIENT_LOGON_MISMATCH));
                 }
                 else
                 {
                     const auto request = ParseRequest(message);
-                    response = IsStopped() ? MakeError(L"SERVICE_UNAVAILABLE", L"Light Switch is stopping.") : m_handler(request);
+                    response = IsStopped() ? MakeError(L"SERVICE_UNAVAILABLE", GET_RESOURCE_STRING(IDS_SERVICE_STOPPING)) : m_handler(request);
                     if (!response)
                     {
-                        response = MakeError(L"EXECUTION_FAILED", L"Light Switch did not return a response.");
+                        response = MakeError(L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_RESPONSE_MISSING));
                     }
                 }
             }
@@ -373,7 +374,7 @@ namespace light_switch_cli
             }
             catch (...)
             {
-                response = MakeError(L"EXECUTION_FAILED", L"Light Switch could not process the command.");
+                response = MakeError(L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_COMMAND_FAILED));
             }
             if (!IsStopped())
             {
@@ -413,7 +414,7 @@ namespace light_switch_cli
                     {
                         if (!IsStopped())
                         {
-                            WriteResponse(MakeError(L"EXECUTION_FAILED", L"Light Switch could not complete the request."));
+                            WriteResponse(MakeError(L"EXECUTION_FAILED", GET_RESOURCE_STRING(IDS_REQUEST_FAILED)));
                         }
                     }
                     catch (...)
