@@ -18,6 +18,6 @@ namespace PowerDisplay.Models
         public int Version { get; set; }
 
         [JsonPropertyName("entries")]
-        public List<MonitorBlacklistEntry> Entries { get; set; } = new();
+        public List<MonitorBlacklistEntry> Entries { get; init; } = new();
     }
 }

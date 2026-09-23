@@ -17,7 +17,7 @@ namespace PowerDisplay.Models
     public class PowerDisplayProfiles
     {
         [JsonPropertyName("profiles")]
-        public List<PowerDisplayProfile> Profiles { get; set; }
+        public List<PowerDisplayProfile> Profiles { get; init; }
 
         [JsonPropertyName("nextId")]
         public int NextId { get; set; }

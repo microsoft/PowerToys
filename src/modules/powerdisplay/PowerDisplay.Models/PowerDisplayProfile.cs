@@ -20,7 +20,7 @@ namespace PowerDisplay.Models
         public int Id { get; set; }
 
         [JsonPropertyName("monitorSettings")]
-        public List<ProfileMonitorSetting> MonitorSettings { get; set; }
+        public List<ProfileMonitorSetting> MonitorSettings { get; init; }
 
         [JsonPropertyName("createdDate")]
         public DateTime CreatedDate { get; set; }

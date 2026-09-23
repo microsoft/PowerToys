@@ -15,11 +15,11 @@ namespace PowerDisplay.Common.Models
     public sealed class MonitorStateFile
     {
         /// <summary>
-        /// Gets or sets the monitor states dictionary.
+        /// Gets the monitor states dictionary.
         /// Key is the monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).
         /// </summary>
         [JsonPropertyName("monitors")]
-        public Dictionary<string, MonitorStateEntry> Monitors { get; set; } = new();
+        public Dictionary<string, MonitorStateEntry> Monitors { get; init; } = new();
 
         /// <summary>
         /// Gets or sets when the file was last updated.
