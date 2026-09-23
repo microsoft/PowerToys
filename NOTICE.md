@@ -814,13 +814,14 @@ SOFTWARE.
 
 ## PowerToy: Installer/Runner
 
-### WiX Toolset Standard BootstrapperApplication Functions API
+### WiX Toolset Bootstrapper Application APIs
 
-The PowerToys installer uses WixToolset.WixStandardBootstrapperApplicationFunctionApi 5.0.2.
+The PowerToys installer uses the following WiX Toolset 5.0.2 packages:
 
-**Source**: <https://github.com/wixtoolset/wix/tree/v5.0.2/src/ext/Bal/wixstdfn>
-
-**Package**: <https://www.nuget.org/packages/WixToolset.WixStandardBootstrapperApplicationFunctionApi/5.0.2>
+| Package | Source |
+| --- | --- |
+| [WixToolset.WixStandardBootstrapperApplicationFunctionApi 5.0.2](https://www.nuget.org/packages/WixToolset.WixStandardBootstrapperApplicationFunctionApi/5.0.2) | <https://github.com/wixtoolset/wix/tree/v5.0.2/src/ext/Bal/wixstdfn> |
+| [WixToolset.BootstrapperApplicationApi 5.0.2](https://www.nuget.org/packages/WixToolset.BootstrapperApplicationApi/5.0.2) | <https://github.com/wixtoolset/wix/tree/v5.0.2/src/api/burn> |
 
 Copyright (c) .NET Foundation and contributors. All rights reserved.
 
