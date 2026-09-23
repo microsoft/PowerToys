@@ -54,6 +54,14 @@ acceptance machine before release.
 
 ## Release packaging is a separate, authenticated step
 
+**CI qualification is blocked:** ADO run `158436898` for `0.101.3000.0`
+completed with certificate-pin mismatches on both x64 and ARM64 and produced no
+main installers. ESRP returned different leaf certificates within the signed
+artifact graph, including two files in one signing task. The carrier README
+records exact evidence and the required signing-contract/policy decision.
+The current implementation continues to fail closed; its single-pin trust
+model has not been broadened to accommodate these outputs.
+
 The local Setup/Broker/Lifecycle/MsiAction compilation outputs deliberately do
 not contain finalized release resources and must not be treated as installers.
 They reject privileged execution when the required signed resources are absent.

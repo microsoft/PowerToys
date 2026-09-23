@@ -120,6 +120,32 @@ SettingsAPI dependencies, not just its direct DLL projects. The installer
 contract test checks that complete project-reference closure so static-graph
 builds retain the requested configuration and architecture.
 
+### Release qualification blocker (2026-09-24)
+
+The signed pipeline is wired, but release `0.101.3000.0` has **not** produced
+an installable main package. [ADO run 158436898](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158436898)
+on commit `eebf8c1e8e961188041e5087ac4ba75a94a8af5f` completed with failures:
+
+* ARM64: Bootstrap and Runtime returned different valid Authenticode signer
+  certificates from the same ESRP signing task (failure log 205).
+* x64: the manifest's detached CMS signer differed from the pinned
+  Authenticode signer (failure log 298).
+
+The observed DER SHA256 identities were
+`c30b441672c82883d92eddac6d24cb57e9960bda4486c7fb5865e74157f35850` and
+`d33927e4dda9b91def9f8ed282549a49217ed8cacf54577a690963cbc5eff3ed`.
+These are diagnostic observations, **not an approved trust allowlist**.
+Matching publisher and issuer names do not make the certificates identical.
+The selection mechanism (including any rotation or caching) is unconfirmed.
+
+Therefore the single-DER-certificate requirement is not established by merely
+using the same ESRP key code. An ESRP-supported immutable-certificate contract,
+or an explicitly approved bounded signer-policy redesign, is required before
+claiming release readiness. No exact-pin check has been disabled, no unknown
+certificate is automatically enrolled, and no unsupported signing parameter is
+used. Blind retries or restricting the build to x64 do not resolve this issue.
+Failure artifacts preserve signature/CMS metadata and native build logs.
+
 The inventory has a `clients` array of `{ "path": "...", "role": "..." }`.
 Supported client roles are `workspaces.writer`, `workspaces.reader`,
 `workspaces.launcher`, `workspaces.preview`, and the handoff-only
