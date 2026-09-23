@@ -7,6 +7,7 @@
 #pragma warning(pop)
 
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
+#include <filesystem>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -15,6 +16,61 @@ namespace RemappingLogicTests
     TEST_CLASS (ProgramLauncherTests)
     {
     public:
+        TEST_METHOD (RelativeProgramPath_ShouldUseEngineCurrentDirectory)
+        {
+            const auto expected = (std::filesystem::current_path() / L"NonexistentProgramLauncherTest.exe").wstring();
+            const auto actual = KeyboardEventHandlers::ProgramLauncher::ExpandAndGetAbsolutePath(L".\\NonexistentProgramLauncherTest.exe");
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(expected.c_str(), actual->c_str());
+        }
+
+        TEST_METHOD (RelativeStartInPath_ShouldUseEngineCurrentDirectory)
+        {
+            const auto expected = (std::filesystem::current_path() / L"ProgramLauncherTestWorkingDirectory").wstring();
+            const auto actual = KeyboardEventHandlers::ProgramLauncher::ExpandAndGetAbsolutePath(L".\\Unused\\..\\ProgramLauncherTestWorkingDirectory");
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(expected.c_str(), actual->c_str());
+        }
+
+        TEST_METHOD (EnvironmentVariable_ShouldExpandBeforeResolvingPath)
+        {
+            const DWORD capacity = GetEnvironmentVariableW(L"SystemRoot", nullptr, 0);
+            Assert::IsTrue(capacity != 0);
+            std::wstring systemRoot(capacity, L'\0');
+            const DWORD length = GetEnvironmentVariableW(L"SystemRoot", systemRoot.data(), capacity);
+            Assert::IsTrue(length != 0 && length < capacity);
+            systemRoot.resize(length);
+
+            const auto expected = (std::filesystem::path{ systemRoot } / L"NonexistentProgramLauncherTest.exe").wstring();
+            const auto actual = KeyboardEventHandlers::ProgramLauncher::ExpandAndGetAbsolutePath(L"%SystemRoot%\\System32\\..\\NonexistentProgramLauncherTest.exe");
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(expected.c_str(), actual->c_str());
+        }
+
+        TEST_METHOD (LongAbsolutePath_ShouldNotBeTruncated)
+        {
+            std::wstring expected = L"C:\\";
+            for (int i = 0; i < 10; ++i)
+            {
+                expected += L"ProgramLauncherLongPathTestDirectory\\";
+            }
+            expected += L"Example.exe";
+            Assert::IsTrue(expected.size() > MAX_PATH);
+
+            const auto actual = KeyboardEventHandlers::ProgramLauncher::ExpandAndGetAbsolutePath(expected);
+
+            Assert::IsTrue(actual.has_value());
+            Assert::AreEqual(expected.c_str(), actual->c_str());
+        }
+
+        TEST_METHOD (EmptyProgramPath_ShouldNotResolveToCurrentDirectory)
+        {
+            Assert::IsFalse(KeyboardEventHandlers::ProgramLauncher::ExpandAndGetAbsolutePath(L"").has_value());
+        }
+
         TEST_METHOD (NormalWindow_ShouldUseExplorerShell)
         {
             Assert::IsTrue(KeyboardEventHandlers::ProgramLauncher::ShouldUseExplorerShell(Shortcut::StartWindowType::Normal));
