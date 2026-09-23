@@ -78,7 +78,7 @@ It does not publish loose Bootstrap/Runtime update payloads.
 The signed ADO release pipeline instead uses the same builder's external
 `ReleaseStage` sequence, interleaving ESRP Authenticode and `Pkcs7DetachedSign`
 operations. It needs no local product private key. The exact signer DER pin
-comes from that job's final signed Editor; all returned carrier signatures must
+comes from that job's final signed Bootstrap; all returned carrier signatures must
 match it. Detached signatures are checked by both managed CMS verification and
 the runtime's native CryptoAPI before embedding. The complete contract and
 stage ordering are in the carrier README.

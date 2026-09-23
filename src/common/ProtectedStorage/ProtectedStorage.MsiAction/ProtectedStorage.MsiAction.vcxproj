@@ -7,6 +7,7 @@
   <Import Project="..\ProtectedStorage.Setup\Installer.props" />
   <PropertyGroup><TargetName>PowerToys.ProtectedStorageMsiAction</TargetName></PropertyGroup>
   <ItemGroup><ClCompile Include="MsiAction.cpp" /><ClInclude Include="PayloadCleanup.h" /></ItemGroup>
+  <ItemGroup><ResourceCompile Include="..\Version.rc" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
   <ItemGroup><ProjectReference Include="..\ProtectedStorage.Client\ProtectedStorage.Client.vcxproj"><Project>{1177C4C8-133C-43BD-91CA-D323772EECD2}</Project></ProjectReference></ItemGroup>
   <ItemGroup Condition="Exists('$(ProtectedStorageGeneratedDir)MsiAction.rc')"><ResourceCompile Include="$(ProtectedStorageGeneratedDir)MsiAction.rc" /></ItemGroup>

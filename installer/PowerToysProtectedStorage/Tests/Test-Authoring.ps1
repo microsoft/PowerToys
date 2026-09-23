@@ -51,6 +51,14 @@ if ($Compile) {
         $identity.OriginalFilename -cne 'PowerToys.ProtectedStorageSetup.exe') {
         throw 'Setup version-resource identity does not match the dedicated updater gate.'
     }
+    foreach ($name in @('PowerToys.ProtectedStorageMsiAction.exe', 'PowerToys.ProtectedStorageLifecycle.exe',
+        'PowerToys.ProtectedStorageProvisionBroker.exe')) {
+        $helper = [Diagnostics.FileVersionInfo]::GetVersionInfo("$repo\$Platform\$Configuration\ProtectedStorage\$name")
+        if ($helper.FileVersion -ne $identity.FileVersion -or $helper.ProductVersion -ne $identity.ProductVersion -or
+            $helper.CompanyName -cne 'Microsoft Corporation') {
+            throw "Installer helper must have the matching release version resource: $name"
+        }
+    }
     $scratch = Join-Path $PSScriptRoot ("Authoring-" + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory $scratch | Out-Null
     try {

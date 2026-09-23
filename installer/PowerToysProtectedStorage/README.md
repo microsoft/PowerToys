@@ -50,12 +50,14 @@ For example, pipeline version `0.101.3000.0` produces carrier MSI version
 ### External signing stages
 
 `-ReleaseStage` runs one assembly stage without requiring a local private key.
-Supply `-ExpectedSignerSha256`, platform, configuration, and version on every
-invocation. The stages are:
+Supply platform, configuration, and version on every invocation, plus
+`-ExpectedSignerSha256` for every stage after `RuntimePayloads`. The stages are:
 
 | Stage | Output requiring external signing before the next stage |
 |---|---|
-| `Payloads` | `Bootstrap.exe`, `Runtime.exe`, `PowerToys.ProtectedStorageMsiAction.exe` (Authenticode) |
+| `RuntimePayloads` | `Bootstrap.exe`, `Runtime.exe` (Authenticode; no policy embedded yet) |
+| `Action` | `PowerToys.ProtectedStorageMsiAction.exe` (Authenticode; embeds the explicit carrier signer pin) |
+| `Payloads` | Combined runtime/action stage for callers that already have the approved pin |
 | `Documents` | `ClientCatalog.json`, `manifest.txt` (detached CMS, SHA256, one signer) |
 | `Lifecycle` | `PowerToys.ProtectedStorageLifecycle.exe` (Authenticode) |
 | `Carrier` | `PowerToys.ProtectedStorage.Carrier.msi` (Authenticode) |
@@ -84,7 +86,10 @@ demonstrated by Microsoft's [MCP signing pipeline](https://github.com/microsoft/
 The pipeline submits copies named `manifest.p7s` and `ClientCatalog.p7s`;
 ESRP replaces their contents with DER signatures, leaving the originals intact.
 
-The exact DER pin is taken from this job's final ESRP-signed Editor, then
+For `RuntimePayloads` only, no pin is required: neither runtime embeds the seed
+policy. After signing, the pipeline derives the pin from Bootstrap and verifies
+Runtime matches before building the pin-bearing MSI action.
+The exact DER pin is taken from this job's final ESRP-signed Bootstrap, then
 required for every carrier artifact and CMS signer. The signing identity must
 be authorized for both operations and return the same certificate. Permission
 denials, certificate changes, or unexpected output stop packaging. No permission
@@ -94,6 +99,13 @@ requires the explicit protected-policy maintenance described in the design.
 Before embedding signatures, the pipeline checks both `SignedCms` and the
 native runtime's `CryptVerifyDetachedMessageSignature` API, plus one-signer,
 SHA256, exact pin, version, and payload-hash requirements.
+Client Authenticode certificates are not the carrier's update authority and need
+not equal its pin. CI verifies the clients' final signatures and the pinned CMS
+binds their exact hashes and roles. Reusing an older cached client signature must
+not select the trust root for newly signed service/installer payloads. This does
+not relax the native exact-pin checks for carrier files, manifests, or updates.
+All four installer helpers carry PE version resources, including the embedded
+MSI action, Lifecycle and Broker; the authoring compile test checks them.
 
 `Tests\Test-ReleaseTools.ps1` exercises version normalization and real in-memory
 CMS verification, including altered data, wrong pins, multiple signers, SHA1,

@@ -35,8 +35,9 @@ function Assert-ReleaseSignature {
     if ($signature.Status -ne 'Valid' -or !$signature.SignerCertificate) {
         throw "Protected-storage release is not validly signed: $Path"
     }
-    if ((Get-CertificatePin $signature.SignerCertificate) -ne $ExpectedSignerSha256.ToLowerInvariant()) {
-        throw "Protected-storage release signer mismatch: $Path"
+    $actualPin = Get-CertificatePin $signature.SignerCertificate
+    if ($actualPin -ne $ExpectedSignerSha256.ToLowerInvariant()) {
+        throw "Protected-storage release signer mismatch: $Path; expected=$ExpectedSignerSha256; actual=$actualPin; subject=$($signature.SignerCertificate.Subject)"
     }
 }
 

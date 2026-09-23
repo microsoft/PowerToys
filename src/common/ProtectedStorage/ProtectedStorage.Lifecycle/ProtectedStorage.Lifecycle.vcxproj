@@ -7,6 +7,7 @@
   <Import Project="..\ProtectedStorage.Setup\Installer.props" />
   <PropertyGroup><TargetName>PowerToys.ProtectedStorageLifecycle</TargetName></PropertyGroup>
   <ItemGroup><ClCompile Include="Lifecycle.cpp" /><ClInclude Include="StorageInitialization.h" /></ItemGroup>
+  <ItemGroup><ResourceCompile Include="..\Version.rc" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\ProtectedStorage.Common\ProtectedStorage.Common.vcxproj"><Project>{918F71A9-BC92-481E-9501-769353CE45EB}</Project></ProjectReference></ItemGroup>
   <ItemGroup Condition="Exists('$(ProtectedStorageGeneratedDir)Lifecycle.rc')"><ResourceCompile Include="$(ProtectedStorageGeneratedDir)Lifecycle.rc" /></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

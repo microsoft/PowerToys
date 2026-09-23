@@ -12,7 +12,7 @@ param(
     [string]$TimestampServer,
     [string]$ClientCatalogInput,
     [string]$PublishDirectory,
-    [ValidateSet('Compile', 'Payloads', 'Documents', 'Lifecycle', 'Carrier', 'Broker', 'Setup', 'Publish')]
+    [ValidateSet('Compile', 'RuntimePayloads', 'Action', 'Payloads', 'Documents', 'Lifecycle', 'Carrier', 'Broker', 'Setup', 'Publish')]
     [string]$ReleaseStage = 'Compile',
     [string[]]$AdditionalBuildArguments = @(),
     [switch]$RunTests
@@ -71,7 +71,7 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
         Build-Native $name
     }
 } else {
-    if ($ExpectedSignerSha256 -notmatch '^[a-fA-F0-9]{64}$') {
+    if ($ReleaseStage -ne 'RuntimePayloads' -and $ExpectedSignerSha256 -notmatch '^[a-fA-F0-9]{64}$') {
         throw 'Release stages require an explicit approved ExpectedSignerSha256.'
     }
     $pin = $ExpectedSignerSha256.ToLowerInvariant()
@@ -83,7 +83,7 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
         if (!$certificate.HasPrivateKey) { throw 'Explicit signing certificate has no private key.' }
         if ((Get-CertificatePin $certificate) -ne $pin) { throw 'Explicit signer does not match the approved protected-policy pin.' }
     }
-    Write-Utf8 "$generated\signer.sha256" $pin
+    if ($ReleaseStage -ne 'RuntimePayloads') { Write-Utf8 "$generated\signer.sha256" $pin }
     function Sign-File([string]$Path) {
         if (!$Package) {
             Write-Host "Awaiting external Authenticode signature: $Path"
@@ -114,7 +114,7 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
         }
     }
     $msi = "$stage\PowerToys.ProtectedStorage.Carrier.msi"
-    if ($Package -or $ReleaseStage -eq 'Payloads') {
+    if ($Package -or $ReleaseStage -in @('Payloads', 'RuntimePayloads')) {
         foreach ($name in @('Bootstrap', 'Runtime')) {
             Build-Native $name
             Copy-Item "$output\$name.exe" "$stage\$name.exe" -Force
@@ -123,6 +123,8 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
             }
             Sign-File "$stage\$name.exe"
         }
+    }
+    if ($Package -or $ReleaseStage -in @('Payloads', 'Action')) {
         # Compile/sign the action BEFORE catalog generation. No self-hash cycle:
         # payloads and caller catalog are separate MSI Binary streams.
         Write-Utf8 "$generated\MsiAction.rc" (Resource 110 "$generated\signer.sha256")
@@ -147,8 +149,11 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
             if ([IO.Path]::GetFileName($path) -in $reservedImages) {
                 throw 'Lifecycle and maintenance executables cannot be supplied as data clients; this would violate the acyclic release graph.'
             }
-            # CmdPal has its own version train. The signed catalog binds its exact bytes.
-            Assert-ReleaseSignature -Path $path -ExpectedSignerSha256 $pin
+            # Client certificates may differ (including cached core signatures).
+            # Authority comes from the pinned CMS over the final image hashes.
+            if ((Get-AuthenticodeSignature -LiteralPath $path).Status -ne 'Valid') {
+                throw "Client is not release-signed: $path"
+            }
             $clients += [ordered]@{ image = [IO.Path]::GetFileName($path); sha256 = (Hash-File $path); role = $entry.role }
         }
         if (!$clients.Count) { throw 'A production catalog must contain release clients.' }

@@ -18,8 +18,10 @@ $pipeline = Get-Content "$templates\steps-build-protected-storage.yml" -Raw
 $previous = -1
 foreach ($marker in @(
     'New-ProtectedStorageClientInventory.ps1',
-    '-ReleaseStage Payloads',
-    'displayName: Sign Protected Storage payloads and MSI action',
+    '-ReleaseStage RuntimePayloads',
+    'displayName: Sign Protected Storage runtime payloads',
+    '-ReleaseStage Action',
+    'displayName: Sign Protected Storage MSI action',
     '-ReleaseStage Documents',
     'Copy-Item -LiteralPath "$package\manifest.txt" -Destination "$package\manifest.p7s"',
     'Copy-Item -LiteralPath "$package\ClientCatalog.json" -Destination "$package\ClientCatalog.p7s"',
@@ -33,6 +35,10 @@ foreach ($marker in @(
 }
 if ($pipeline -match 'SigningCertificateThumbprint|Set-AuthenticodeSignature|New-SelfSignedCertificate') {
     throw 'The remote pipeline must not use a local product-signing key.'
+}
+if (!$pipeline.Contains("Get-AuthenticodeSignature -LiteralPath '`$(ProtectedStorageStageRoot)\Package\Bootstrap.exe'") -or
+    !$pipeline.Contains('Assert-ReleaseSignature -Path ''$(ProtectedStorageStageRoot)\Package\Runtime.exe'' -ExpectedSignerSha256 $pin')) {
+    throw 'Carrier pin must come from its own signed runtime payloads, not a client certificate.'
 }
 $installer = Get-Content "$templates\steps-build-installer-vnext.yml" -Raw
 if ($installer.IndexOf('template: steps-build-protected-storage.yml') -gt $installer.IndexOf('Build VNext MSI') -or
