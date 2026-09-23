@@ -35,7 +35,27 @@ namespace Peek.FilePreviewer.Previewers.EmailPreviewer
                 message.IsBodyHtml = body.ContentType.Equals("text/html", StringComparison.OrdinalIgnoreCase);
             }
 
+            AddInlineImages(root, message);
+
             return message;
+        }
+
+        private static void AddInlineImages(EmlMimePart part, EmailMessage message)
+        {
+            string contentId = EmlMimeParser.GetHeader(part.Headers, "Content-ID").Trim().Trim('<', '>');
+            if (part.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(contentId))
+            {
+                byte[] data = EmlContentDecoder.DecodeTransferEncoding(part.Body, EmlMimeParser.GetHeader(part.Headers, "Content-Transfer-Encoding"));
+                if (data.Length > 0)
+                {
+                    message.InlineImages[contentId] = new EmailInlineImage(part.ContentType, data);
+                }
+            }
+
+            foreach (EmlMimePart child in part.Children)
+            {
+                AddInlineImages(child, message);
+            }
         }
 
         private static void AddAddresses(List<string> destination, string value)
