@@ -71,7 +71,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _I
         return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
     }
 
-    return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke);
+    return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke, activity);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)

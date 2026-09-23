@@ -17,7 +17,7 @@ namespace
         std::filesystem::path target_fullpath;
         POINT mouse_position_at_invoke;
         HMODULE module_reference;
-        context_menu_lifecycle::activity_token lifecycle_activity;
+        context_menu_lifecycle::activity_guard lifecycle_activity;
     };
 }
 
@@ -204,7 +204,7 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 }
 
-void template_item::enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke) const
+void template_item::enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke, const context_menu_lifecycle::activity_guard& activity) const
 {
     HMODULE module_reference = nullptr;
     if (!GetModuleHandleExW(
@@ -215,7 +215,7 @@ void template_item::enter_rename_mode(const std::filesystem::path target_fullpat
         return;
     }
 
-    const auto lifecycle_activity = context_menu_lifecycle::begin_activity();
+    auto lifecycle_activity = activity.continue_activity();
     if (!lifecycle_activity)
     {
         FreeLibrary(module_reference);
@@ -229,11 +229,10 @@ void template_item::enter_rename_mode(const std::filesystem::path target_fullpat
             target_fullpath,
             mouse_position_at_invoke,
             module_reference,
-            lifecycle_activity);
+            std::move(lifecycle_activity));
     }
     catch (...)
     {
-        context_menu_lifecycle::end_activity(lifecycle_activity);
         FreeLibrary(module_reference);
         return;
     }
@@ -242,8 +241,8 @@ void template_item::enter_rename_mode(const std::filesystem::path target_fullpat
     const HANDLE thread = CreateThread(nullptr, 0, rename_worker_thread_proc, context.get(), 0, nullptr);
     if (thread == nullptr)
     {
-        context_menu_lifecycle::end_activity(lifecycle_activity);
         active_rename_workers.fetch_sub(1);
+        context.reset();
         FreeLibrary(module_reference);
         return;
     }
@@ -256,11 +255,11 @@ DWORD WINAPI template_item::rename_worker_thread_proc(void* parameter)
 {
     std::unique_ptr<rename_worker_context> context(static_cast<rename_worker_context*>(parameter));
     const HMODULE module_reference = context->module_reference;
-    const auto lifecycle_activity = context->lifecycle_activity;
-
-    rename_on_other_thread_workaround(context->target_fullpath, context->mouse_position_at_invoke);
-    context.reset();
-    context_menu_lifecycle::end_activity(lifecycle_activity);
+    {
+        auto lifecycle_activity = std::move(context->lifecycle_activity);
+        rename_on_other_thread_workaround(context->target_fullpath, context->mouse_position_at_invoke);
+        context.reset();
+    }
     active_rename_workers.fetch_sub(1);
     FreeLibraryAndExitThread(module_reference, 0);
 }

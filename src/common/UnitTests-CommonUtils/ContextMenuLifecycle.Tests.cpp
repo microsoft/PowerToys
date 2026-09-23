@@ -6,6 +6,8 @@
 #include <appmodel.h>
 #include <array>
 #include <memory>
+#include <optional>
+#include <utility>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -15,6 +17,8 @@ namespace
     constexpr wchar_t test_package_prefix[] = L"PowerToys.ContextMenuLifecycle.Tests_";
     constexpr wchar_t test_window_class[] = L"PowerToys.ContextMenuLifecycle.Tests.ServicingWindow";
     constexpr DWORD test_timeout_ms = 100;
+    constexpr DWORD drain_timeout_ms = 2000;
+    constexpr DWORD shutdown_grace_ms = 5000;
     constexpr DWORD watchdog_ms = 10000;
     int module_anchor = 0;
 
@@ -28,9 +32,16 @@ namespace
     {
         winrt::handle creation_entered{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
         winrt::handle allow_creation{ CreateEventW(nullptr, TRUE, TRUE, nullptr) };
+        winrt::handle termination_called{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
         std::atomic_bool packaged = true;
         std::atomic_bool reject_creation = false;
         std::atomic<DWORD> hook_error = ERROR_SUCCESS;
+        std::atomic<HWND> window = nullptr;
+        std::atomic<HANDLE> terminated_process = nullptr;
+        std::atomic<UINT> termination_exit_code = ERROR_GEN_FAILURE;
+        std::atomic_uint32_t termination_count = 0;
+        std::atomic_uint64_t activity_at_termination = 0;
+        std::atomic<ULONGLONG> termination_tick = 0;
         std::mutex threads_lock;
         std::vector<monitor_thread_record> threads;
     };
@@ -73,6 +84,7 @@ namespace
             return CallNextHookEx(creation_hook, code, wparam, lparam);
         }
 
+        thread_control->window.store(reinterpret_cast<HWND>(wparam));
         SetEvent(thread_control->creation_entered.get());
         const DWORD wait_result = WaitForSingleObject(thread_control->allow_creation.get(), watchdog_ms);
         const bool reject = thread_control->reject_creation.load();
@@ -147,18 +159,37 @@ namespace
         }
         return thread;
     }
+
+    BOOL WINAPI test_terminate_process(HANDLE process, UINT exit_code);
 }
 
-// Only package identity and the thread entry are substituted. Window creation,
-// event signalling, waits and synchronization execute the production Win32 code.
+// Package identity, the thread entry and the final process termination are
+// substituted. Window dispatch, activity admission, the drain loop and its grace
+// deadline execute the production code. The termination shim observes the exit
+// request and stops only the monitor thread; these tests cannot prove that the
+// host process actually exits or that package servicing completes.
 #define GetCurrentPackageFamilyName test_get_package_family_name
 #define CreateThread test_create_thread
+#define TerminateProcess test_terminate_process
 #include <context_menu_lifecycle.h>
+#undef TerminateProcess
 #undef CreateThread
 #undef GetCurrentPackageFamilyName
 
 namespace
 {
+    BOOL WINAPI test_terminate_process(HANDLE process, UINT exit_code)
+    {
+        thread_control->terminated_process.store(process);
+        thread_control->termination_exit_code.store(exit_code);
+        thread_control->activity_at_termination.store(context_menu_lifecycle::details::state().activity_state.load());
+        thread_control->termination_tick.store(GetTickCount64());
+        thread_control->termination_count.fetch_add(1);
+        SetEvent(thread_control->termination_called.get());
+        PostQuitMessage(0);
+        return TRUE;
+    }
+
     class lifecycle_fixture
     {
     public:
@@ -169,6 +200,7 @@ namespace
             Assert::IsNull(current_control, L"A previous monitor thread failed to shut down.");
             Assert::IsNotNull(control->creation_entered.get());
             Assert::IsNotNull(control->allow_creation.get());
+            Assert::IsNotNull(control->termination_called.get());
             current_control = control.get();
         }
 
@@ -222,16 +254,65 @@ namespace
             return control->threads.size();
         }
 
-        HRESULT ensure(DWORD timeout_ms = test_timeout_ms)
+        HRESULT ensure(DWORD timeout_ms = test_timeout_ms, DWORD grace_ms = shutdown_grace_ms)
         {
             const context_menu_lifecycle::details::initialization_parameters parameters{
                 &module_anchor,
                 test_package_prefix,
                 test_window_class,
-                1000,
+                grace_ms,
                 nullptr
             };
             return context_menu_lifecycle::details::ensure_servicing_window(parameters, timeout_ms);
+        }
+
+        ULONGLONG request_shutdown(UINT message = WM_CLOSE)
+        {
+            const HWND window = control->window.load();
+            Assert::IsTrue(IsWindow(window) != FALSE);
+            const ULONGLONG requested_tick = GetTickCount64();
+            Assert::IsTrue(PostMessageW(window, message, TRUE, 0) != FALSE);
+            return requested_tick;
+        }
+
+        void wait_for_shutdown()
+        {
+            const ULONGLONG deadline = GetTickCount64() + watchdog_ms;
+            while ((context_menu_lifecycle::details::state().activity_state.load() & context_menu_lifecycle::details::shutdown_requested_bit) == 0 &&
+                   GetTickCount64() < deadline)
+            {
+                Sleep(1);
+            }
+            Assert::IsTrue((context_menu_lifecycle::details::state().activity_state.load() & context_menu_lifecycle::details::shutdown_requested_bit) != 0,
+                           L"The window must process the shutdown request and close admission.");
+        }
+
+        LRESULT send_message(UINT message, WPARAM wparam)
+        {
+            const HWND window = control->window.load();
+            Assert::IsTrue(IsWindow(window) != FALSE);
+            DWORD_PTR result = 0;
+            Assert::IsTrue(SendMessageTimeoutW(window, message, wparam, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, watchdog_ms, &result) != 0);
+            return static_cast<LRESULT>(result);
+        }
+
+        void assert_not_terminated()
+        {
+            Assert::AreEqual(DWORD{ WAIT_TIMEOUT }, WaitForSingleObject(control->termination_called.get(), test_timeout_ms),
+                             L"Shutdown must wait while accepted work remains within the grace period.");
+        }
+
+        ULONGLONG wait_for_termination(uint64_t remaining_activities, DWORD timeout_ms = drain_timeout_ms)
+        {
+            // Drained work must exit promptly instead of consuming the whole
+            // grace period; the forced-expiry test supplies the longer watchdog.
+            Assert::AreEqual(WAIT_OBJECT_0, WaitForSingleObject(control->termination_called.get(), timeout_ms));
+            wait_for_thread(0);
+            Assert::IsTrue(control->terminated_process.load() == GetCurrentProcess());
+            Assert::AreEqual(UINT{ ERROR_SUCCESS }, control->termination_exit_code.load());
+            Assert::AreEqual(uint32_t{ 1 }, control->termination_count.load());
+            Assert::AreEqual(context_menu_lifecycle::details::shutdown_requested_bit | remaining_activities, control->activity_at_termination.load());
+            return control->termination_tick.load();
         }
 
         void set_unpackaged()
@@ -260,8 +341,9 @@ namespace
             cleanup_succeeded = true;
             for (const auto& thread : control->threads)
             {
-                // WM_CLOSE deliberately terminates the host process. WM_QUIT
-                // exercises the monitor's normal thread/resource cleanup instead.
+                // A failed assertion may leave the monitor in its drain loop.
+                // Its bounded grace period completes before this watchdog;
+                // WM_QUIT also handles tests that never requested shutdown.
                 if (thread.handle && WaitForSingleObject(thread.handle.get(), 0) == WAIT_TIMEOUT)
                 {
                     PostThreadMessageW(thread.id, WM_QUIT, 0, 0);
@@ -303,6 +385,49 @@ namespace
         bool cleaned_up = false;
         bool cleanup_succeeded = false;
     };
+
+    void verify_continuation_drain(bool release_parent_first)
+    {
+        lifecycle_fixture fixture;
+        Assert::AreEqual(S_OK, fixture.ensure(watchdog_ms));
+
+        std::optional<context_menu_lifecycle::activity_guard> parent{ std::in_place };
+        Assert::IsTrue(static_cast<bool>(*parent));
+        fixture.request_shutdown();
+        fixture.wait_for_shutdown();
+
+        // The continuation belongs to the already accepted operation even
+        // though the window has now closed admission for unrelated operations.
+        auto continuation_source = parent->continue_activity();
+        Assert::IsTrue(static_cast<bool>(continuation_source));
+        std::optional<context_menu_lifecycle::activity_guard> continuation{ std::move(continuation_source) };
+        Assert::IsFalse(static_cast<bool>(continuation_source), L"Moving activity ownership must leave an inert source.");
+        Assert::IsFalse(static_cast<bool>(continuation_source.continue_activity()), L"A moved-from guard cannot admit work.");
+        Assert::AreEqual(context_menu_lifecycle::details::shutdown_requested_bit | uint64_t{ 2 },
+                         context_menu_lifecycle::details::state().activity_state.load());
+
+        context_menu_lifecycle::activity_guard rejected;
+        Assert::IsFalse(static_cast<bool>(rejected));
+        Assert::IsFalse(static_cast<bool>(rejected.continue_activity()), L"A rejected operation cannot acquire continuation ownership.");
+        fixture.assert_not_terminated();
+
+        if (release_parent_first)
+        {
+            parent.reset();
+        }
+        else
+        {
+            continuation.reset();
+        }
+        Assert::AreEqual(context_menu_lifecycle::details::shutdown_requested_bit | uint64_t{ 1 },
+                         context_menu_lifecycle::details::state().activity_state.load());
+        fixture.assert_not_terminated();
+
+        parent.reset();
+        continuation.reset();
+        fixture.wait_for_termination(0);
+        fixture.finish();
+    }
 }
 
 namespace UnitTestsCommonUtils
@@ -385,6 +510,98 @@ namespace UnitTestsCommonUtils
             fixture.finish();
         }
 
+        TEST_METHOD (CloseRejectsNewActivityAndWaitsForEveryAcceptedActivity)
+        {
+            lifecycle_fixture fixture;
+            Assert::AreEqual(S_OK, fixture.ensure(watchdog_ms));
+            std::optional<context_menu_lifecycle::activity_guard> first{ std::in_place };
+            std::optional<context_menu_lifecycle::activity_guard> second{ std::in_place };
+            Assert::IsTrue(static_cast<bool>(*first));
+            Assert::IsTrue(static_cast<bool>(*second));
+
+            fixture.request_shutdown();
+            fixture.wait_for_shutdown();
+            Assert::AreEqual(context_menu_lifecycle::details::shutdown_requested_bit | uint64_t{ 2 },
+                             context_menu_lifecycle::details::state().activity_state.load());
+            context_menu_lifecycle::activity_guard rejected;
+            Assert::IsFalse(static_cast<bool>(rejected), L"Shutdown must reject new operations.");
+            fixture.assert_not_terminated();
+
+            first.reset();
+            Assert::AreEqual(context_menu_lifecycle::details::shutdown_requested_bit | uint64_t{ 1 },
+                             context_menu_lifecycle::details::state().activity_state.load());
+            fixture.assert_not_terminated();
+
+            second.reset();
+            fixture.wait_for_termination(0);
+            fixture.finish();
+        }
+
+        TEST_METHOD (CloseTerminatesAtGraceDeadlineWithActivityStillRunning)
+        {
+            lifecycle_fixture fixture;
+            constexpr DWORD short_grace_ms = 250;
+            Assert::AreEqual(S_OK, fixture.ensure(watchdog_ms, short_grace_ms));
+            std::optional<context_menu_lifecycle::activity_guard> activity{ std::in_place };
+            Assert::IsTrue(static_cast<bool>(*activity));
+
+            const ULONGLONG requested_tick = fixture.request_shutdown();
+            fixture.wait_for_shutdown();
+            const ULONGLONG terminated_tick = fixture.wait_for_termination(1, watchdog_ms);
+            Assert::IsTrue(terminated_tick - requested_tick >= short_grace_ms,
+                           L"Active operations must receive the configured grace period before forced termination.");
+
+            // The termination shim allows this guard to be released. A real
+            // TerminateProcess call would end the host without draining it.
+            activity.reset();
+            fixture.finish();
+        }
+
+        TEST_METHOD (CancelledEndSessionKeepsAcceptingActivity)
+        {
+            lifecycle_fixture fixture;
+            Assert::AreEqual(S_OK, fixture.ensure(watchdog_ms));
+            Assert::AreEqual(LRESULT{ TRUE }, fixture.send_message(WM_QUERYENDSESSION, 0));
+            Assert::AreEqual(LRESULT{ 0 }, fixture.send_message(WM_ENDSESSION, FALSE));
+
+            {
+                context_menu_lifecycle::activity_guard activity;
+                Assert::IsTrue(static_cast<bool>(activity));
+                Assert::AreEqual(uint64_t{ 1 }, context_menu_lifecycle::details::state().activity_state.load());
+                fixture.assert_not_terminated();
+            }
+            Assert::AreEqual(uint64_t{ 0 }, context_menu_lifecycle::details::state().activity_state.load());
+            fixture.finish();
+        }
+
+        TEST_METHOD (ConfirmedEndSessionWaitsForAcceptedActivity)
+        {
+            lifecycle_fixture fixture;
+            Assert::AreEqual(S_OK, fixture.ensure(watchdog_ms));
+            std::optional<context_menu_lifecycle::activity_guard> activity{ std::in_place };
+            Assert::IsTrue(static_cast<bool>(*activity));
+
+            fixture.request_shutdown(WM_ENDSESSION);
+            fixture.wait_for_shutdown();
+            context_menu_lifecycle::activity_guard rejected;
+            Assert::IsFalse(static_cast<bool>(rejected));
+            fixture.assert_not_terminated();
+
+            activity.reset();
+            fixture.wait_for_termination(0);
+            fixture.finish();
+        }
+
+        TEST_METHOD (ContinuationAfterShutdownOutlivesItsParent)
+        {
+            verify_continuation_drain(true);
+        }
+
+        TEST_METHOD (ParentOutlivesItsContinuationAfterShutdown)
+        {
+            verify_continuation_drain(false);
+        }
+
         TEST_METHOD (UnpackagedHostSkipsInitialization)
         {
             lifecycle_fixture fixture;
@@ -395,6 +612,12 @@ namespace UnitTestsCommonUtils
 
             context_menu_lifecycle::activity_guard activity;
             Assert::IsTrue(static_cast<bool>(activity));
+            auto continuation_source = activity.continue_activity();
+            Assert::IsTrue(static_cast<bool>(continuation_source));
+            context_menu_lifecycle::activity_guard continuation{ std::move(continuation_source) };
+            Assert::IsTrue(static_cast<bool>(continuation));
+            Assert::IsFalse(static_cast<bool>(continuation_source));
+            Assert::IsFalse(static_cast<bool>(continuation_source.continue_activity()));
             Assert::AreEqual(uint64_t{ 0 }, context_menu_lifecycle::details::state().activity_state.load());
             fixture.finish();
         }

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cwchar>
 #include <new>
+#include <utility>
 
 // Packaged COM surrogates do not own a top-level window, so package servicing has
 // no WM_CLOSE target and eventually reports HANG_QUIESCE. This helper adds one
@@ -425,6 +426,23 @@ namespace context_menu_lifecycle
         activity_guard(const activity_guard&) = delete;
         activity_guard& operator=(const activity_guard&) = delete;
 
+        activity_guard(activity_guard&& other) noexcept :
+            token(std::exchange(other.token, activity_token{ nullptr, false }))
+        {
+        }
+
+        // A continuation belongs to this already-admitted operation, so it may
+        // outlive its parent even after shutdown closes admission. The live
+        // parent keeps the count nonzero throughout this handoff.
+        [[nodiscard]] activity_guard continue_activity() const noexcept
+        {
+            if (const auto activity = static_cast<std::atomic_uint64_t*>(token.monitor))
+            {
+                activity->fetch_add(1, std::memory_order_acq_rel);
+            }
+            return activity_guard(token);
+        }
+
         explicit operator bool() const noexcept
         {
             return static_cast<bool>(token);
@@ -436,6 +454,11 @@ namespace context_menu_lifecycle
         }
 
     private:
+        explicit activity_guard(activity_token admitted_token) noexcept :
+            token(admitted_token)
+        {
+        }
+
         activity_token token;
     };
 }
