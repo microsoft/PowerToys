@@ -91,6 +91,9 @@
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="System.ClientModel" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
