@@ -6,7 +6,7 @@ namespace AdvancedPaste.Cli;
 
 internal interface IClipboardAdapter
 {
-    string ReadText();
+    string ReadText(AdvancedPaste.Core.HeadlessTransformFormat format);
 
     void WriteText(string text);
 }

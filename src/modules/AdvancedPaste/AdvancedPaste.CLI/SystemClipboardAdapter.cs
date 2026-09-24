@@ -3,14 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Forms;
+using AdvancedPaste.Core;
 
 namespace AdvancedPaste.Cli;
 
 internal sealed class SystemClipboardAdapter : IClipboardAdapter
 {
-    public string ReadText()
+    public string ReadText(HeadlessTransformFormat format)
     {
-        if (Clipboard.ContainsText(TextDataFormat.Html))
+        if (format == HeadlessTransformFormat.Markdown && Clipboard.ContainsText(TextDataFormat.Html))
         {
             return Clipboard.GetText(TextDataFormat.Html);
         }

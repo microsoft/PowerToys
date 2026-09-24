@@ -50,7 +50,7 @@ public static class JsonConverter
         }
 
         return JsonConvert.SerializeObject(
-            text.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries),
+            SplitLines(text),
             Newtonsoft.Json.Formatting.Indented);
     }
 
@@ -87,7 +87,7 @@ public static class JsonConverter
     {
         try
         {
-            var lines = text.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries)
+            var lines = SplitLines(text)
                 .Where(line => !line.StartsWith(';'))
                 .ToArray();
             if (lines.Length < 2
@@ -139,7 +139,7 @@ public static class JsonConverter
     {
         try
         {
-            var lines = text.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+            var lines = SplitLines(text);
             GetCsvDelimiter(lines, out var delimiter, out var delimiterCount);
             var csv = new List<IEnumerable<string>>();
             foreach (var line in lines)
@@ -212,4 +212,9 @@ public static class JsonConverter
         value = CsvRemoveStartAndEndQuotationMarksRegex.Replace(value, string.Empty);
         return CsvReplaceDoubleQuotationMarksRegex.Replace(value, "\"");
     }
+
+    private static string[] SplitLines(string text)
+        => Regex.Split(text, "\r\n|\n|\r")
+            .Where(line => line.Length > 0)
+            .ToArray();
 }

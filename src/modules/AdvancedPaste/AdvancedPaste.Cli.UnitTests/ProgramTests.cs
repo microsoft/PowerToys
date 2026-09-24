@@ -53,6 +53,7 @@ public class ProgramTests
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("text", clipboard.WrittenText);
+        Assert.AreEqual(AdvancedPaste.Core.HeadlessTransformFormat.PlainText, clipboard.ReadFormat);
     }
 
     [TestMethod]
@@ -90,6 +91,7 @@ public class ProgramTests
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("invalid_arguments", document.RootElement.GetProperty("code").GetString());
+        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "PowerToys.AdvancedPaste.CLI.exe transform");
     }
 
     [TestMethod]
@@ -108,6 +110,17 @@ public class ProgramTests
 
         Assert.AreEqual(1, result.ExitCode);
         StringAssert.Contains(result.Stderr, "empty_input");
+    }
+
+    [TestMethod]
+    public async Task OversizedClipboardInput_ReturnsSpecificRuntimeError()
+    {
+        var clipboard = new TestClipboardAdapter(new string('x', (16 * 1024 * 1024) + 1));
+        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard", "--json"], clipboard: clipboard);
+
+        Assert.AreEqual(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("input_too_large", document.RootElement.GetProperty("code").GetString());
     }
 
     [TestMethod]
@@ -196,7 +209,13 @@ public class ProgramTests
 
         public string? WrittenText { get; private set; }
 
-        public string ReadText() => Text;
+        public AdvancedPaste.Core.HeadlessTransformFormat? ReadFormat { get; private set; }
+
+        public string ReadText(AdvancedPaste.Core.HeadlessTransformFormat format)
+        {
+            ReadFormat = format;
+            return Text;
+        }
 
         public void WriteText(string text) => WrittenText = text;
     }

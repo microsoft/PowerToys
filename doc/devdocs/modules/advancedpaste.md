@@ -30,7 +30,9 @@ PowerToys.AdvancedPaste.CLI.exe transform --format json --input notes.csv --json
 
 Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to stdout; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. `--clipboard` and `--output-clipboard` are explicit and never simulate paste keys. Inputs are limited to 16 MiB and raw input/output is never written to the CLI log.
 
-`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `format`, `outputPath`, `outputClipboard`, `output`) or one error envelope on stderr (`status`, `code`, `message`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, clipboard, or transformation failures, and `2` for parser/argument errors.
+`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `format`, `outputPath`, `outputClipboard`, `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, clipboard, or transformation failures, and `2` for parser/argument errors.
+
+Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
 
 ### Paste with AI Preview
 

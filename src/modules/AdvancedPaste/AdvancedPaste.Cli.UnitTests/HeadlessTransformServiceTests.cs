@@ -35,6 +35,33 @@ public class HeadlessTransformServiceTests
     }
 
     [TestMethod]
+    public void Json_ConvertsLfDelimitedCsv()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\nAda,37");
+
+        StringAssert.Contains(result, "\"Ada\"");
+        Assert.IsFalse(result.Contains("age\\nAda", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void Json_ConvertsXml()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "<note><title>Hello</title></note>");
+
+        StringAssert.Contains(result, "\"note\"");
+        StringAssert.Contains(result, "\"title\": \"Hello\"");
+    }
+
+    [TestMethod]
+    public void Json_ConvertsIni()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "[section]\nname=value");
+
+        StringAssert.Contains(result, "\"section\"");
+        StringAssert.Contains(result, "\"name\": \"value\"");
+    }
+
+    [TestMethod]
     public void Json_PreservesJson()
         => Assert.AreEqual("{\"name\":\"Ada\"}", HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "{\"name\":\"Ada\"}"));
 }

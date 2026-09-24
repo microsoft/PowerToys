@@ -23,6 +23,7 @@ public static partial class Program
     internal const int RuntimeErrorExitCode = 1;
     internal const int ArgumentErrorExitCode = 2;
     private const int MaximumInputCharacters = 16 * 1024 * 1024;
+    private const string Usage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform --format <plain-text|markdown|json> (--input <path>|--stdin|--clipboard) [--output <path>|--stdout|--output-clipboard] [--json]";
 
     private static readonly string[] InputAliases = ["--input", "-i"];
     private static readonly string[] StdinAliases = ["--stdin"];
@@ -99,12 +100,7 @@ public static partial class Program
             var message = parseResult.Errors.Count > 0
                 ? string.Join("; ", parseResult.Errors.Select(error => error.Message))
                 : "The transform command is required.";
-            WriteError(stderr, json, "invalid_arguments", message);
-            if (!json)
-            {
-                PrintUsage(stderr);
-            }
-
+            WriteError(stderr, json, "invalid_arguments", message, includeUsage: true);
             return ArgumentErrorExitCode;
         }
 
@@ -113,7 +109,7 @@ public static partial class Program
             var formatText = parseResult.GetValueForOption(options.Format);
             if (!TryParseFormat(formatText, out var format))
             {
-                WriteError(stderr, json, "unsupported_format", "Supported formats are plain-text, markdown, and json.");
+                WriteError(stderr, json, "unsupported_format", "Supported formats are plain-text, markdown, and json.", includeUsage: true);
                 return ArgumentErrorExitCode;
             }
 
@@ -122,12 +118,7 @@ public static partial class Program
             var clipboardRequested = parseResult.GetValueForOption(options.Clipboard);
             if (CountSelected(inputFile is not null, stdinRequested, clipboardRequested) != 1)
             {
-                WriteError(stderr, json, "invalid_input_mode", "Specify exactly one input mode: --input, --stdin, or --clipboard.");
-                if (!json)
-                {
-                    PrintUsage(stderr);
-                }
-
+                WriteError(stderr, json, "invalid_input_mode", "Specify exactly one input mode: --input, --stdin, or --clipboard.", includeUsage: true);
                 return ArgumentErrorExitCode;
             }
 
@@ -136,12 +127,7 @@ public static partial class Program
             var outputClipboardRequested = parseResult.GetValueForOption(options.OutputClipboard);
             if (CountSelected(outputFile is not null, stdoutRequested, outputClipboardRequested) > 1)
             {
-                WriteError(stderr, json, "invalid_output_mode", "Specify at most one output mode: --output, --stdout, or --output-clipboard.");
-                if (!json)
-                {
-                    PrintUsage(stderr);
-                }
-
+                WriteError(stderr, json, "invalid_output_mode", "Specify at most one output mode: --output, --stdout, or --output-clipboard.", includeUsage: true);
                 return ArgumentErrorExitCode;
             }
 
@@ -149,7 +135,8 @@ public static partial class Program
                 ? await ReadFileAsync(inputFile, cancellationToken)
                 : stdinRequested
                     ? await ReadBoundedAsync(stdin, cancellationToken)
-                    : clipboard.ReadText();
+                    : clipboard.ReadText(format);
+            EnsureInputSize(input);
             if (string.IsNullOrEmpty(input))
             {
                 WriteError(stderr, json, "empty_input", "The selected input source did not contain text.");
@@ -163,6 +150,7 @@ public static partial class Program
             }
             else if (outputClipboardRequested)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 clipboard.WriteText(output);
             }
 
@@ -172,7 +160,7 @@ public static partial class Program
             }
             else if (outputFile is null && !outputClipboardRequested)
             {
-                await stdout.WriteAsync(output);
+                await stdout.WriteAsync(output.AsMemory(), cancellationToken);
             }
 
             return SuccessExitCode;
@@ -182,13 +170,20 @@ public static partial class Program
             WriteError(stderr, json, "cancelled", "The transformation was cancelled.");
             return RuntimeErrorExitCode;
         }
-        catch (IOException)
+        catch (InputTooLargeException)
         {
+            WriteError(stderr, json, "input_too_large", "Input exceeds the 16 MiB limit.");
+            return RuntimeErrorExitCode;
+        }
+        catch (IOException ex)
+        {
+            Logger.LogError("Advanced Paste CLI file I/O failed.", ex);
             WriteError(stderr, json, "io_error", "The selected input or output file could not be accessed.");
             return RuntimeErrorExitCode;
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
+            Logger.LogError("Advanced Paste CLI file access was denied.", ex);
             WriteError(stderr, json, "io_error", "The selected input or output file could not be accessed.");
             return RuntimeErrorExitCode;
         }
@@ -209,7 +204,7 @@ public static partial class Program
 
         if (inputFile.Length > MaximumInputCharacters)
         {
-            throw new IOException();
+            throw new InputTooLargeException();
         }
 
         await using var stream = inputFile.OpenRead();
@@ -231,7 +226,7 @@ public static partial class Program
 
             if (builder.Length + read > MaximumInputCharacters)
             {
-                throw new IOException();
+                throw new InputTooLargeException();
             }
 
             builder.Append(buffer, 0, read);
@@ -255,6 +250,14 @@ public static partial class Program
     private static int CountSelected(params bool[] modes)
         => modes.Count(mode => mode);
 
+    private static void EnsureInputSize(string input)
+    {
+        if (input.Length > MaximumInputCharacters)
+        {
+            throw new InputTooLargeException();
+        }
+    }
+
     private static bool HasHelpToken(ParseResult parseResult)
         => parseResult.Tokens.Any(token => token.Value is "--help" or "-h" or "-?" or "/?");
 
@@ -267,18 +270,19 @@ public static partial class Program
             _ => throw new ArgumentOutOfRangeException(nameof(format)),
         };
 
-    private static void PrintUsage(TextWriter stderr)
-        => stderr.WriteLine("Usage: PowerToys.AdvancedPaste.CLI.exe transform --format <plain-text|markdown|json> (--input <path>|--stdin|--clipboard) [--output <path>|--stdout|--output-clipboard] [--json]");
-
-    private static void WriteError(TextWriter stderr, bool json, string code, string message)
+    private static void WriteError(TextWriter stderr, bool json, string code, string message, bool includeUsage = false)
     {
         if (json)
         {
-            stderr.WriteLine(JsonSerializer.Serialize(new ErrorResult("error", code, message), CliJsonContext.Default.ErrorResult));
+            stderr.WriteLine(JsonSerializer.Serialize(new ErrorResult("error", code, message, includeUsage ? Usage : null), CliJsonContext.Default.ErrorResult));
         }
         else
         {
             stderr.WriteLine($"Error: {message}");
+            if (includeUsage)
+            {
+                stderr.WriteLine(Usage);
+            }
         }
     }
 
@@ -287,7 +291,9 @@ public static partial class Program
 
     private sealed record SuccessResult(string Status, string Format, string? OutputPath, bool OutputClipboard, string Output);
 
-    private sealed record ErrorResult(string Status, string Code, string Message);
+    private sealed record ErrorResult(string Status, string Code, string Message, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Usage);
+
+    private sealed class InputTooLargeException : Exception;
 
     private sealed class CliOptions
     {
