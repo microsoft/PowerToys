@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -10,13 +11,31 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class TrayPaletteViewModel(
-    ISettingsService settingsService,
-    TopLevelCommandManager commandManager,
-    IContextMenuFactory contextMenuFactory) : ObservableObject, IDisposable
+public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
 {
+    private readonly ISettingsService _settingsService;
+    private readonly TopLevelCommandManager _commandManager;
+    private readonly IContextMenuFactory _contextMenuFactory;
+    private PinnedCommandSettings[]? _loadedPins;
+    private (CommandProviderWrapper Provider, bool IsActive)[] _loadedProviders = [];
+    private int _contentVersion;
+    private int _loadedContentVersion;
     private int _refreshVersion;
     private bool _disposed;
+
+    public TrayPaletteViewModel(
+        ISettingsService settingsService,
+        TopLevelCommandManager commandManager,
+        IContextMenuFactory contextMenuFactory)
+    {
+        _settingsService = settingsService;
+        _commandManager = commandManager;
+        _contextMenuFactory = contextMenuFactory;
+        _commandManager.TopLevelCommands.CollectionChanged += CommandsChanged;
+    }
+
+    private void CommandsChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+        Interlocked.Increment(ref _contentVersion);
 
     public ObservableCollection<TrayPaletteItemViewModel> Items { get; } = [];
 
@@ -33,7 +52,7 @@ public sealed partial class TrayPaletteViewModel(
         try
         {
             var order = Items.Select(item => item.Pin).ToArray();
-            settingsService.UpdateSettings(settings => settings with
+            _settingsService.UpdateSettings(settings => settings with
             {
                 TrayPalette = settings.TrayPalette.Reorder(order.Where(settings.TrayPalette.Commands.Contains).ToArray()),
             });
@@ -48,8 +67,20 @@ public sealed partial class TrayPaletteViewModel(
     public async Task RefreshAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        var pins = _settingsService.Settings.TrayPalette.Commands;
+        var providers = _commandManager.CommandProviders.Select(provider => (provider, provider.IsActive)).ToArray();
+        var contentVersion = Volatile.Read(ref _contentVersion);
+        if (_loadedPins is not null &&
+            !IsLoading &&
+            !HasLoadError &&
+            contentVersion == _loadedContentVersion &&
+            pins.SequenceEqual(_loadedPins) &&
+            providers.SequenceEqual(_loadedProviders))
+        {
+            return;
+        }
+
         var version = ++_refreshVersion;
-        var pins = settingsService.Settings.TrayPalette.Commands;
         IsLoading = true;
         HasLoadError = false;
         OnPropertyChanged(nameof(IsEmpty));
@@ -63,14 +94,14 @@ public sealed partial class TrayPaletteViewModel(
                 CommandItemViewModel? item = null;
                 try
                 {
-                    var provider = commandManager.LookupProvider(pin.ProviderId);
+                    var provider = _commandManager.LookupProvider(pin.ProviderId);
                     var model = provider?.ResolveCommandItem(pin.CommandId);
                     if (provider is null || model?.Command is not (IInvokableCommand or IPage))
                     {
                         continue;
                     }
 
-                    item = new(new(model), new(provider.TopLevelPageContext), contextMenuFactory);
+                    item = new(new(model), new(provider.TopLevelPageContext), _contextMenuFactory);
                     item.InitializeProperties();
                     items.Add(new(pin, item, provider));
                 }
@@ -99,6 +130,9 @@ public sealed partial class TrayPaletteViewModel(
         }
 
         HasLoadError = loaded.Failed;
+        _loadedPins = pins.ToArray();
+        _loadedProviders = providers;
+        _loadedContentVersion = contentVersion;
         IsLoading = false;
         OnPropertyChanged(nameof(IsEmpty));
     }
@@ -114,6 +148,7 @@ public sealed partial class TrayPaletteViewModel(
     public void Dispose()
     {
         _disposed = true;
+        _commandManager.TopLevelCommands.CollectionChanged -= CommandsChanged;
         ++_refreshVersion;
         Cleanup(Items);
         Items.Clear();
