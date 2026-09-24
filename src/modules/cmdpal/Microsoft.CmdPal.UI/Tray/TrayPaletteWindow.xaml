@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winui:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Tray.TrayPaletteWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:winui="using:WinUIEx">
+    <Grid x:Name="Root" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid x:Name="QuickActions" Width="360" Padding="12" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock x:Uid="TrayPalette_Heading" Margin="8,4" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <Grid Grid.Row="1">
+                <GridView
+                    x:Name="CommandsGrid"
+                    Width="336"
+                    Padding="0"
+                    AutomationProperties.AutomationId="TrayPalette_Commands"
+                    ContainerContentChanging="CommandsGrid_ContainerContentChanging"
+                    IsItemClickEnabled="True"
+                    ItemClick="CommandsGrid_ItemClick"
+                    ItemsSource="{x:Bind ViewModel.Items}"
+                    SelectionMode="None">
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid ItemHeight="100" ItemWidth="112" MaximumRowsOrColumns="3" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Padding" Value="8,4,8,8" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </GridView.ItemContainerStyle>
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TrayPaletteItemViewModel">
+                            <StackPanel Width="96" Spacing="8" ToolTipService.ToolTip="{x:Bind Item.Title, Mode=OneWay}">
+                                <Border
+                                    Height="48"
+                                    Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="12">
+                                        <controls:IconBox
+                                            Width="24"
+                                            Height="24"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            SourceKey="{x:Bind Item.Icon, Mode=OneWay}"
+                                            SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
+                                        <FontIcon FontSize="12" Glyph="&#xE76C;" Visibility="{x:Bind IsPage}" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock
+                                    Width="96"
+                                    MaxLines="1"
+                                    Text="{x:Bind Item.Title, Mode=OneWay}"
+                                    TextAlignment="Center"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+                <ProgressRing Width="24" Height="24" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                <TextBlock x:Uid="TrayPalette_Empty" Margin="8" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
+            </Grid>
+            <StackPanel Grid.Row="2" Spacing="8">
+                <TextBlock x:Uid="TrayPalette_LoadError" Foreground="{ThemeResource SystemFillColorCriticalBrush}" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.HasLoadError, Mode=OneWay}" />
+                <Button x:Uid="TrayPalette_OpenPalette" HorizontalAlignment="Stretch" AutomationProperties.AutomationId="TrayPalette_OpenPalette" Click="OpenPalette_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</winui:WindowEx>

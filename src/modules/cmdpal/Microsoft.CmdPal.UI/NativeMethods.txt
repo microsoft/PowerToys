@@ -33,6 +33,7 @@ SetWindowRgn
 CreateRectRgn
 
 Shell_NotifyIcon
+Shell_NotifyIconGetRect
 LoadIcon
 WM_USER
 WM_WINDOWPOSCHANGING
