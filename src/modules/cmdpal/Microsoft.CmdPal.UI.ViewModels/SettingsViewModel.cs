@@ -4,7 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -33,8 +35,69 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IMonitorService? _monitorService;
+    private readonly ILanguageService _languageService;
+
+    private int _languageIndex;
+    private bool _languageRestartFailed;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public List<LanguageItem> Languages { get; private set; } = [];
+
+    public bool IsPseudoLocalizationMissing => _languageService.IsPseudoLocalizationMissing;
+
+    public int LanguageIndex
+    {
+        get => _languageIndex;
+        set
+        {
+            if (_languageIndex == value || value < 0 || value >= Languages.Count)
+            {
+                return;
+            }
+
+            LanguageRestartFailed = false;
+            _languageIndex = value;
+            _settingsService.UpdateSettings(s => s with { Language = Languages[value].Tag });
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageIndex)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageChanged)));
+        }
+    }
+
+    public bool LanguageRestartFailed
+    {
+        get => _languageRestartFailed;
+        set
+        {
+            if (_languageRestartFailed == value)
+            {
+                return;
+            }
+
+            _languageRestartFailed = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageRestartFailed)));
+        }
+    }
+
+    public bool LanguageChanged
+    {
+        get
+        {
+            if (Languages.Count == 0)
+            {
+                return false;
+            }
+
+            var currentLanguage = _languageIndex >= 0 && _languageIndex < Languages.Count
+                ? Languages[_languageIndex].Tag : string.Empty;
+
+            return !string.Equals(
+                _languageService.CurrentLanguageTag,
+                _languageService.GetEffectiveLanguageTag(currentLanguage),
+                StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     public AppearanceSettingsViewModel Appearance { get; }
 
@@ -328,11 +391,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         TaskScheduler scheduler,
         IThemeService themeService,
         ISettingsService settingsService,
+        ILanguageService languageService,
         IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _monitorService = monitorService;
+        _languageService = languageService;
+
+        InitializeLanguages(languageService);
 
         Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
@@ -435,6 +502,33 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         var providerViewModel = new ProviderSettingsViewModel(provider, providerSettings, _settingsService);
         CommandProviders.Add(providerViewModel);
         return providerViewModel;
+    }
+
+    private void InitializeLanguages(ILanguageService languageService)
+    {
+        var defaultItem = new LanguageItem(string.Empty, Properties.Resources.Language_Default);
+
+        var sorted = new List<LanguageItem>();
+        foreach (var tag in languageService.AvailableLanguages)
+        {
+            try
+            {
+                var culture = new CultureInfo(tag);
+                sorted.Add(new LanguageItem(tag, culture.NativeName));
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError($"Culture '{tag}' not found", ex);
+            }
+        }
+
+        var comparer = StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: true);
+        sorted.Sort((a, b) => comparer.Compare(a.DisplayName, b.DisplayName));
+        sorted.Insert(0, defaultItem);
+        Languages = sorted;
+
+        var currentLang = _settingsService.Settings.Language ?? string.Empty;
+        _languageIndex = Math.Max(0, Languages.FindIndex(l => l.Tag.Equals(currentLang, StringComparison.OrdinalIgnoreCase)));
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

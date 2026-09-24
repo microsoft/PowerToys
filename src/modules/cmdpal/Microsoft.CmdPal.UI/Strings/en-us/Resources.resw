@@ -1647,4 +1647,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>The path has an invalid format.</value>
     <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
   </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Header" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Description" xml:space="preserve">
+    <value>Command Palette uses your Windows display language by default</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartInfo.Title" xml:space="preserve">
+    <value>A restart is needed for the language change to take effect</value>
+  </data>
+  <data name="Settings_GeneralPage_PseudoLocalizationInfo.Message" xml:space="preserve">
+    <value>Pseudolocalization (qps-PLOC) is not included in this build. Run .\Invoke-PseudoLocalization.ps1 -Path . from src\modules\cmdpal in PowerShell 7, then rebuild and deploy Command Palette.</value>
+    <comment>{Locked}Shown in development builds without pseudo resources</comment>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartButton.Content" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartFailed" xml:space="preserve">
+    <value>Command Palette couldn't restart. Try again, or close and reopen Command Palette to apply the language change.</value>
+    <comment>Shown when restarting Command Palette after a language change fails</comment>
+  </data>
 </root>

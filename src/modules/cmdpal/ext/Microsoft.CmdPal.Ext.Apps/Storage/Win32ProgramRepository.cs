@@ -83,7 +83,10 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
             // filtering the app types that we want to monitor
-            _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
+            foreach (var extension in extensionsToWatch)
+            {
+                _fileSystemWatcherHelpers[index].Filters.Add(extension);
+            }
 
             // Registering the event handlers
             _fileSystemWatcherHelpers[index].Created += OnAppCreated;

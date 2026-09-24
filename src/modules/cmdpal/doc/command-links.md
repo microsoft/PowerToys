@@ -89,7 +89,7 @@ reinterpreting an existing route.
 | Area | Stable destination IDs |
 | ---- | ---------------------- |
 | Page roots | `general`, `appearance`, `extensions`, `dock` |
-| General | `activation`, `activation-key`, `auto-go-home`, `keep-previous-query`, `highlight-search`, `app-behavior`, `system-tray-icon`, `alt-f4`, `external-links`, `external-command-links`, `about-section`, `about`, `send-feedback` |
+| General | `activation`, `activation-key`, `auto-go-home`, `keep-previous-query`, `highlight-search`, `app-behavior`, `system-tray-icon`, `alt-f4`, `language`, `external-links`, `external-command-links`, `about-section`, `about`, `send-feedback` |
 | Appearance | `appearance-visuals`, `appearance-theme`, `appearance-backdrop`, `appearance-background`, `disable-animations`, `appearance-layout`, `compact-mode`, `launch-position`, `toast-position`, `appearance-interaction`, `single-click-activation`, `show-app-details`, `backspace-goes-back`, `escape-key-behavior` |
 | Extensions | `extensions-search`, `fallback-order`, `extensions-more`, `extension-providers` |
 | Dock | `dock-enabled`, `dock-appearance`, `dock-position`, `dock-size`, `dock-theme`, `dock-backdrop`, `dock-background`, `dock-behavior`, `dock-always-on-top`, `dock-auto-hide`, `dock-monitors` |

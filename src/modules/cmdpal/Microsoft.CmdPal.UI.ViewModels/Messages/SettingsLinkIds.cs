@@ -18,6 +18,7 @@ public static class SettingsLinkIds
         public const string AppBehavior = "app-behavior";
         public const string SystemTrayIcon = "system-tray-icon";
         public const string AltF4 = "alt-f4";
+        public const string Language = "language";
         public const string ExternalLinks = "external-links";
         public const string ExternalCommandLinks = "external-command-links";
         public const string AboutSection = "about-section";

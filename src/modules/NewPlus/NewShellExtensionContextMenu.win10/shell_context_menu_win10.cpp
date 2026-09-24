@@ -255,9 +255,15 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
 
     if (is_template_item)
     {
+        context_menu_lifecycle::activity_guard activity;
+        if (!activity)
+        {
+            return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+        }
+
         // It's a template menu item
         const auto template_entry = templates->get_template_item(selected_menu_item_index);
-        return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke);
+        return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke, activity);
     }
     else
     {

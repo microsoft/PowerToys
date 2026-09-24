@@ -106,10 +106,8 @@ internal sealed partial class TrayIconService
         if (_trayIconData is not null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
-            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
-            {
-                _trayIconData = null;
-            }
+            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d);
+            _trayIconData = null;
         }
 
         if (_popupMenu is not null)

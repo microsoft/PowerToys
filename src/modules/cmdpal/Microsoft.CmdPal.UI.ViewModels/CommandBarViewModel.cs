@@ -25,11 +25,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         get;
         set
         {
-            // TODO: verify if we can safely return early
-            // if (ReferenceEquals(field, value))
-            // {
-            //     return;
-            // }
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
             if (field is not null)
             {
                 field.PropertyChanged -= SelectedItemPropertyChanged;
@@ -39,12 +39,7 @@ public sealed partial class CommandBarViewModel : ObservableObject,
 
             if (field is not null)
             {
-                PrimaryCommand = field.PrimaryCommand;
                 field.PropertyChanged += SelectedItemPropertyChanged;
-            }
-            else
-            {
-                PrimaryCommand = null;
             }
 
             UpdateContextItems();
@@ -56,8 +51,6 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     [NotifyPropertyChangedFor(nameof(HasPrimaryCommand))]
     public partial CommandItemViewModel? PrimaryCommand { get; set; }
 
-    // TODO: PrimaryCommand.ShouldBeVisible is not observed, if it changes the bar won't refresh;
-    //       but at this moment CommandItemViewModel won't raise INPC for ShouldBeVisible anyway.
     public bool HasPrimaryCommand => PrimaryCommand is not null && PrimaryCommand.ShouldBeVisible;
 
     [ObservableProperty]
@@ -66,8 +59,27 @@ public sealed partial class CommandBarViewModel : ObservableObject,
 
     public bool HasSecondaryCommand => SecondaryCommand is not null;
 
+    /// <summary>
+    /// Gets or sets whether the command bar shows the More button.
+    /// </summary>
+    /// <remarks>
+    /// The secondary command already has its own button. The selected context reports
+    /// <see cref="ICommandBarContext.HasOverflowCommands"/> when other visible commands remain.
+    /// The menu must also be openable. Use <see cref="CanOpenContextMenu"/> to decide whether
+    /// input can open the menu, independently of this button's visibility.
+    /// </remarks>
     [ObservableProperty]
-    public partial bool ShouldShowContextMenu { get; set; } = false;
+    public partial bool ShouldShowMoreCommandsButton { get; set; } = false;
+
+    /// <summary>
+    /// Gets whether the selected context has a visible command and can open its context menu.
+    /// </summary>
+    /// <remarks>
+    /// Used by the menu and keyboard handlers. Ctrl+K can open the menu even when
+    /// <see cref="ShouldShowMoreCommandsButton"/> is false.
+    /// This value is read from <see cref="SelectedItem"/> on demand and does not raise change notifications.
+    /// </remarks>
+    public bool CanOpenContextMenu => SelectedItem?.CanOpenContextMenu ?? false;
 
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
@@ -105,7 +117,10 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         switch (e.PropertyName)
         {
+            case nameof(SelectedItem.HasOverflowCommands):
             case nameof(SelectedItem.CanOpenContextMenu):
+            case nameof(SelectedItem.PrimaryCommand):
+            case nameof(SelectedItem.AllCommands):
             case nameof(SelectedItem.SecondaryCommand):
                 UpdateContextItems();
                 break;
@@ -116,17 +131,18 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         if (SelectedItem is null)
         {
+            PrimaryCommand = null;
             SecondaryCommand = null;
-            ShouldShowContextMenu = false;
+            ShouldShowMoreCommandsButton = false;
             return;
         }
 
+        PrimaryCommand = SelectedItem.PrimaryCommand;
         SecondaryCommand = SelectedItem.SecondaryCommand;
-        ShouldShowContextMenu = SelectedItem.CanOpenContextMenu;
+        ShouldShowMoreCommandsButton = SelectedItem.HasOverflowCommands && SelectedItem.CanOpenContextMenu;
 
-        OnPropertyChanged(nameof(HasSecondaryCommand));
-        OnPropertyChanged(nameof(SecondaryCommand));
-        OnPropertyChanged(nameof(ShouldShowContextMenu));
+        // The primary command can change visibility without being replaced.
+        OnPropertyChanged(nameof(HasPrimaryCommand));
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
@@ -171,7 +187,7 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         }
 
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
-        if (command.HasMoreCommands)
+        if (command.HasSubmenu)
         {
             return ContextKeybindingResult.KeepOpen;
         }

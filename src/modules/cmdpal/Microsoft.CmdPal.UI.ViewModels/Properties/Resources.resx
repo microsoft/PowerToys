@@ -608,4 +608,7 @@
   <data name="list_page_requested_filter_unavailable" xml:space="preserve">
     <value>The requested filter is no longer available.</value>
   </data>
+  <data name="Language_Default" xml:space="preserve">
+    <value>Windows display language</value>
+  </data>
 </root>

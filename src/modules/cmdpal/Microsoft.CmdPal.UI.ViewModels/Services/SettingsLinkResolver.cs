@@ -21,6 +21,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.General.AppBehavior, SettingsPageTags.General, "behavior-section"),
         CreateTarget(SettingsLinkIds.General.SystemTrayIcon, SettingsPageTags.General, "system-tray-icon"),
         CreateTarget(SettingsLinkIds.General.AltF4, SettingsPageTags.General, "alt-f4"),
+        CreateTarget(SettingsLinkIds.General.Language, SettingsPageTags.General, "language"),
         CreateTarget(SettingsLinkIds.General.ExternalLinks, SettingsPageTags.General, "external-links-section"),
         CreateTarget(SettingsLinkIds.General.ExternalCommandLinks, SettingsPageTags.General, "external-command-links"),
         CreateTarget(SettingsLinkIds.General.AboutSection, SettingsPageTags.General, "about-section"),

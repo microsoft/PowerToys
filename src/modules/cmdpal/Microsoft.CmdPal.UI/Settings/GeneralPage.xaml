@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:services="using:Microsoft.CmdPal.UI.ViewModels.Services"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
@@ -147,6 +148,38 @@
                         local:SettingsPageTarget.Id="alt-f4">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
                     </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_Language_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
+                        local:SettingsPageTarget.Id="language">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            ItemsSource="{x:Bind viewModel.Languages}"
+                            SelectedIndex="{x:Bind viewModel.LanguageIndex, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:LanguageItem">
+                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_PseudoLocalizationInfo"
+                        AutomationProperties.AutomationId="CmdPal_GeneralPage_PseudoLocalizationInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind viewModel.IsPseudoLocalizationMissing}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind viewModel.LanguageChanged, Mode=OneWay}"
+                        Message="{x:Bind local:GeneralPage.LanguageRestartMessage(viewModel.LanguageRestartFailed), Mode=OneWay}"
+                        Severity="{x:Bind local:GeneralPage.LanguageRestartSeverity(viewModel.LanguageRestartFailed), Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="Settings_GeneralPage_LanguageRestartButton" Click="LanguageRestartButton_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
 
                     <!--  'External links' section  -->
 
