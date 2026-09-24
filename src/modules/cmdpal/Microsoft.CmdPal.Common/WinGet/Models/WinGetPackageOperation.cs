@@ -20,6 +20,8 @@ public sealed record WinGetPackageOperation(
     DateTimeOffset UpdatedAt,
     DateTimeOffset? CompletedAt)
 {
+    public WinGetPackageOperationSource Source { get; init; } = WinGetPackageOperationSource.Unspecified;
+
     public bool IsCompleted =>
         State is WinGetPackageOperationState.Succeeded
             or WinGetPackageOperationState.Failed
