@@ -21,6 +21,9 @@
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MappingConfigurationTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="BufferValidationTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -394,6 +394,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            bool restoreExistingOnFailure = false;
             try
             {
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
@@ -413,17 +414,14 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                // If this single-key remap leaves the original key with no assignment, remember it so a
-                // non-blocking notice can be shown after the dialog closes. Saving is not interrupted.
-                _pendingOrphanedKeyName = ShouldWarnOrphanedKeys(UnifiedMappingControl.CurrentActionType, triggerKeys, out string orphanedKeyName)
-                    ? orphanedKeyName
-                    : null;
-
-                if (_isEditMode && _editingItem != null)
+                if (!_mappingService.ConfigurationLoaded || (_isEditMode && _editingItem != null && !DeleteExistingMapping()))
                 {
-                    DeleteExistingMapping();
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
+                    args.Cancel = true;
+                    return;
                 }
 
+                restoreExistingOnFailure = _isEditMode && _editingItem != null;
                 bool saved = UnifiedMappingControl.CurrentActionType switch
                 {
                     UnifiedMappingControl.ActionType.KeyOrShortcut => SaveKeyOrShortcutMapping(triggerKeys),
@@ -437,10 +435,23 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (saved)
                 {
+                    restoreExistingOnFailure = false;
+                    if (_isEditMode && _editingItem?.Item is IToggleableShortcut editedShortcut)
+                    {
+                        SettingsManager.RemoveShortcutKeyMappingFromSettings(editedShortcut.Id);
+                    }
+
+                    // Evaluate the final engine configuration: an edited row may have been the
+                    // only remaining way to produce the key that the replacement remaps away.
+                    _pendingOrphanedKeyName = ShouldWarnOrphanedKeys(UnifiedMappingControl.CurrentActionType, triggerKeys, out string orphanedKeyName)
+                        ? orphanedKeyName
+                        : null;
                     LoadAllMappings();
                 }
                 else
                 {
+                    RestoreExistingMapping();
+                    restoreExistingOnFailure = false;
                     _pendingOrphanedKeyName = null;
                     UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
@@ -448,11 +459,21 @@ namespace KeyboardManagerEditorUI.Pages
             }
             catch (NotImplementedException ex)
             {
+                if (restoreExistingOnFailure)
+                {
+                    RestoreExistingMapping();
+                }
+
                 UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_NotImplemented_Title"), ex.Message);
                 args.Cancel = true;
             }
             catch (Exception ex)
             {
+                if (restoreExistingOnFailure)
+                {
+                    RestoreExistingMapping();
+                }
+
                 Logger.LogError("Error saving mapping: " + ex.Message);
                 UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_Generic_Title"), ResourceHelper.GetString("Error_Generic_Message") + ex.Message);
                 args.Cancel = true;
@@ -463,20 +484,20 @@ namespace KeyboardManagerEditorUI.Pages
         {
             bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
             string appName = UnifiedMappingControl.GetAppName();
-            Remapping? editingRemapping = _isEditMode && _editingItem?.Item is Remapping r ? r : null;
+            string? editingMappingId = _isEditMode && _editingItem?.Item is IToggleableShortcut shortcut ? shortcut.Id : null;
 
             return actionType switch
             {
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(
-                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, editingMappingId),
                 UnifiedMappingControl.ActionType.Text => ValidationHelper.ValidateTextMapping(
-                    triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, editingMappingId),
                 UnifiedMappingControl.ActionType.OpenUrl => ValidationHelper.ValidateUrlMapping(
-                    triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, editingMappingId),
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
-                    triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, editingMappingId),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
-                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                    triggerKeys, isAppSpecific, appName, _mappingService!, editingMappingId),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -507,29 +528,29 @@ namespace KeyboardManagerEditorUI.Pages
             return false;
         }
 
-        private void DeleteExistingMapping()
+        private bool DeleteExistingMapping()
         {
             if (_editingItem == null || _mappingService == null)
             {
-                return;
+                return false;
             }
 
             try
             {
+                if (_editingItem.Item is IToggleableShortcut { IsActive: false })
+                {
+                    return true;
+                }
+
                 switch (_editingItem.Type)
                 {
                     case EditingItem.ItemType.Remapping when _editingItem.Item is Remapping remapping:
-                        RemappingHelper.DeleteRemapping(_mappingService, remapping);
-                        break;
+                        return RemappingHelper.DeleteRemapping(_mappingService, remapping, deleteFromSettings: false, saveSettings: false);
 
                     default:
-                        if (_editingItem.Item is IToggleableShortcut shortcut)
+                        if (_editingItem.Item is IToggleableShortcut)
                         {
-                            DeleteShortcutMapping(_editingItem.OriginalTriggerKeys, _editingItem.AppName ?? string.Empty);
-                            if (!string.IsNullOrEmpty(shortcut.Id))
-                            {
-                                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
-                            }
+                            return DeleteShortcutMapping(_editingItem.OriginalTriggerKeys, _editingItem.AppName ?? string.Empty);
                         }
 
                         break;
@@ -539,18 +560,40 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError("Error deleting existing mapping: " + ex.Message);
             }
+
+            return false;
         }
 
-        private void DeleteShortcutMapping(List<string> originalKeys, string targetApp = "")
+        private void RestoreExistingMapping()
+        {
+            if (!_isEditMode || _editingItem?.Item is not IToggleableShortcut { IsActive: true } shortcut || _mappingService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                ShortcutKeyMapping mapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                bool restored = RemappingHelper.RestoreMapping(_mappingService, mapping);
+
+                if (!restored || !_mappingService.SaveSettings())
+                {
+                    Logger.LogError("Failed to restore the original mapping after an unsuccessful edit");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error restoring the original mapping after an unsuccessful edit: " + ex.Message);
+            }
+        }
+
+        private bool DeleteShortcutMapping(List<string> originalKeys, string targetApp = "")
         {
             bool deleted = originalKeys.Count == 1
                 ? DeleteSingleKeyToTextMapping(originalKeys[0])
                 : DeleteMultiKeyMapping(originalKeys, targetApp);
 
-            if (deleted)
-            {
-                _mappingService!.SaveSettings();
-            }
+            return deleted;
         }
 
         private bool DeleteMultiKeyMapping(List<string> originalKeys, string targetApp = "")
@@ -590,10 +633,11 @@ namespace KeyboardManagerEditorUI.Pages
                 OperationType = ShortcutOperationType.RemapShortcut,
                 OriginalKeys = originalKeysString,
                 TargetKeys = VkDisabledString,
-                TargetApp = isAppSpecific ? appName : string.Empty,
+                TargetApp = triggerKeys.Count > 1 && isAppSpecific ? appName : string.Empty,
                 ExactMatch = UnifiedMappingControl.GetExactMatch(),
             };
 
+            bool added;
             if (triggerKeys.Count == 1)
             {
                 int originalKey = _mappingService!.GetKeyCodeFromName(triggerKeys[0]);
@@ -603,19 +647,18 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 shortcutKeyMapping.OriginalKeys = originalKey.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                added = _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
             }
             else
             {
-                _mappingService!.AddShortcutMapping(
+                added = _mappingService!.AddShortcutMapping(
                     originalKeysString,
                     VkDisabledString,
                     isAppSpecific ? appName : string.Empty,
                     exactMatch: shortcutKeyMapping.ExactMatch);
             }
 
-            SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-            return _mappingService.SaveSettings();
+            return RemappingHelper.CompleteSave(_mappingService, shortcutKeyMapping, added);
         }
 
         private bool SaveTextMapping(List<string> triggerKeys)
@@ -630,11 +673,11 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             return triggerKeys.Count == 1
-                ? SaveSingleKeyToTextMapping(triggerKeys[0], textContent, isAppSpecific, appName)
+                ? SaveSingleKeyToTextMapping(triggerKeys[0], textContent)
                 : SaveShortcutToTextMapping(triggerKeys, textContent, isAppSpecific, appName);
         }
 
-        private bool SaveSingleKeyToTextMapping(string keyName, string textContent, bool isAppSpecific, string appName)
+        private bool SaveSingleKeyToTextMapping(string keyName, string textContent)
         {
             int originalKey = _mappingService!.GetKeyCodeFromName(keyName);
             if (originalKey == 0)
@@ -648,17 +691,10 @@ namespace KeyboardManagerEditorUI.Pages
                 OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
                 TargetKeys = textContent,
                 TargetText = textContent,
-                TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
             bool saved = _mappingService.AddSingleKeyToTextMapping(originalKey, textContent);
-            if (saved)
-            {
-                _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-            }
-
-            return saved;
+            return RemappingHelper.CompleteSave(_mappingService, shortcutKeyMapping, saved);
         }
 
         private bool SaveShortcutToTextMapping(List<string> triggerKeys, string textContent, bool isAppSpecific, string appName)
@@ -680,13 +716,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ? _mappingService!.AddShortcutMapping(originalKeysString, textContent, appName, ShortcutOperationType.RemapText, exactMatch)
                 : _mappingService!.AddShortcutMapping(originalKeysString, textContent, operationType: ShortcutOperationType.RemapText, exactMatch: exactMatch);
 
-            if (saved)
-            {
-                _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-            }
-
-            return saved;
+            return RemappingHelper.CompleteSave(_mappingService, shortcutKeyMapping, saved);
         }
 
         private bool SaveUrlMapping(List<string> triggerKeys)
@@ -710,13 +740,7 @@ namespace KeyboardManagerEditorUI.Pages
             };
 
             bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
-            if (saved)
-            {
-                _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-            }
-
-            return saved;
+            return RemappingHelper.CompleteSave(_mappingService, shortcutKeyMapping, saved);
         }
 
         private bool SaveProgramMapping(List<string> triggerKeys)
@@ -745,13 +769,7 @@ namespace KeyboardManagerEditorUI.Pages
             };
 
             bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
-            if (saved)
-            {
-                _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-            }
-
-            return saved;
+            return RemappingHelper.CompleteSave(_mappingService, shortcutKeyMapping, saved);
         }
 
         #endregion
@@ -772,22 +790,26 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
+                bool deleted = false;
                 switch (menuFlyoutItem.Tag)
                 {
                     case Remapping remapping:
-                        HandleRemappingDelete(remapping);
+                        deleted = HandleRemappingDelete(remapping);
                         UpdateHasAnyMappings();
                         break;
 
                     case IToggleableShortcut shortcut:
-                        HandleShortcutDelete(shortcut);
+                        deleted = HandleShortcutDelete(shortcut);
                         LoadAllMappings();
                         break;
                 }
 
                 // The row that had focus is gone and the flyout closed with it, so without this a
                 // screen-reader user gets no confirmation that anything happened.
-                AnnounceToScreenReader(ResourceHelper.GetString("Announcement_MappingDeleted"));
+                if (deleted)
+                {
+                    AnnounceToScreenReader(ResourceHelper.GetString("Announcement_MappingDeleted"));
+                }
             }
             catch (Exception ex)
             {
@@ -819,35 +841,45 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void HandleRemappingDelete(Remapping remapping)
+        private bool HandleRemappingDelete(Remapping remapping)
         {
             if (!remapping.IsActive)
             {
                 SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                 LoadRemappings();
+                return true;
             }
             else if (RemappingHelper.DeleteRemapping(_mappingService!, remapping))
             {
                 LoadRemappings();
+                return true;
             }
             else
             {
                 Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.Shortcut)}");
+                return false;
             }
         }
 
-        private void HandleShortcutDelete(IToggleableShortcut shortcut)
+        private bool HandleShortcutDelete(IToggleableShortcut shortcut)
         {
+            if (!shortcut.IsActive)
+            {
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                return true;
+            }
+
             bool deleted = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0]) // Remapping has its own handler, single key will always be text mapping
                 : DeleteMultiKeyShortcut(shortcut);
 
-            if (deleted)
+            if (RemappingHelper.CompleteDelete(_mappingService!, shortcut.Id, deleted))
             {
-                _mappingService!.SaveSettings();
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                return true;
             }
 
-            SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+            return false;
         }
 
         private bool DeleteMultiKeyShortcut(IToggleableShortcut shortcut)
@@ -862,7 +894,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (sender is not ToggleSwitch toggleSwitch || toggleSwitch.DataContext is not IToggleableShortcut shortcut || _mappingService == null)
+            if (sender is not ToggleSwitch toggleSwitch || toggleSwitch.DataContext is not IToggleableShortcut shortcut || _mappingService == null || toggleSwitch.IsOn == shortcut.IsActive)
             {
                 return;
             }
@@ -882,24 +914,34 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError("Error toggling shortcut active state: " + ex.Message);
             }
+            finally
+            {
+                // Failed native updates must leave both the row and its switch in their old state.
+                toggleSwitch.IsOn = shortcut.IsActive;
+            }
         }
 
         private void EnableShortcut(IToggleableShortcut shortcut)
         {
             if (shortcut is Remapping remapping)
             {
+                bool remappingSaved;
                 if (remapping.RemappedKeys == null || remapping.RemappedKeys.Count == 0)
                 {
                     // Disabled mapping — re-enable by adding back the VK_DISABLED target
-                    EnableDisabledMapping(remapping);
+                    remappingSaved = EnableDisabledMapping(remapping);
                 }
                 else
                 {
-                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, exactMatch: remapping.ExactMatch, saveToSettings: false);
+                    remappingSaved = RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, exactMatch: remapping.ExactMatch, saveToSettings: false);
                 }
 
-                shortcut.IsActive = true;
-                SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                if (remappingSaved)
+                {
+                    shortcut.IsActive = true;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                }
+
                 return;
             }
 
@@ -907,14 +949,13 @@ namespace KeyboardManagerEditorUI.Pages
             bool saved = shortcut.Shortcut.Count == 1
                 ? _mappingService!.AddSingleKeyToTextMapping(_mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]), shortcutKeyMapping.TargetText)
                 : shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText
-                    ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText, exactMatch: shortcutKeyMapping.ExactMatch)
+                    ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, shortcutKeyMapping.TargetApp, operationType: ShortcutOperationType.RemapText, exactMatch: shortcutKeyMapping.ExactMatch)
                     : _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
-            if (saved)
+            if (RemappingHelper.CompleteSave(_mappingService!, shortcutKeyMapping, saved, saveToSettings: false))
             {
                 shortcut.IsActive = true;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
-                _mappingService.SaveSettings();
             }
         }
 
@@ -922,9 +963,12 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (shortcut is Remapping remapping)
             {
-                shortcut.IsActive = false;
-                RemappingHelper.DeleteRemapping(_mappingService!, remapping, false);
-                SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                if (RemappingHelper.DeleteRemapping(_mappingService!, remapping, deleteFromSettings: false))
+                {
+                    shortcut.IsActive = false;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                }
+
                 return;
             }
 
@@ -932,38 +976,36 @@ namespace KeyboardManagerEditorUI.Pages
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0])
                 : DeleteMultiKeyMapping(shortcut.Shortcut, shortcut.AppName);
 
-            if (deleted)
+            if (RemappingHelper.CompleteDelete(_mappingService!, shortcut.Id, deleted))
             {
                 shortcut.IsActive = false;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
-                _mappingService!.SaveSettings();
             }
         }
 
-        private void EnableDisabledMapping(Remapping remapping)
+        private bool EnableDisabledMapping(Remapping remapping)
         {
             string originalKeysString = string.Join(
                 ";",
                 remapping.Shortcut.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
+            bool added;
             if (remapping.Shortcut.Count == 1)
             {
                 int originalKey = _mappingService!.GetKeyCodeFromName(remapping.Shortcut[0]);
-                if (originalKey != 0)
-                {
-                    _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
-                }
+                added = originalKey != 0 && _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
             }
             else
             {
-                _mappingService!.AddShortcutMapping(
+                added = _mappingService!.AddShortcutMapping(
                     originalKeysString,
                     VkDisabledString,
                     !remapping.IsAllApps ? remapping.AppName : string.Empty,
                     exactMatch: remapping.ExactMatch);
             }
 
-            _mappingService!.SaveSettings();
+            ShortcutKeyMapping mapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[remapping.Id].Shortcut;
+            return RemappingHelper.CompleteSave(_mappingService!, mapping, added, saveToSettings: false);
         }
 
         private bool DeleteSingleKeyToTextMapping(string keyName)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -33,8 +33,8 @@ namespace KeyboardManagerEditorUI.Settings
         internal static bool IsNativeServiceAvailable => _mappingService is not null;
 
         /// <summary>
-        /// Gets a value indicating whether the engine configuration was read successfully. When it
-        /// was not, this store must not be seeded or reconciled from the (empty) service view.
+        /// Gets a value indicating whether the engine configuration was read successfully or does
+        /// not exist yet. A failed read must not seed or reconcile this store from an empty view.
         /// </summary>
         internal static bool EngineConfigurationLoaded => _mappingService?.ConfigurationLoaded == true;
 
@@ -61,9 +61,8 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 if (!File.Exists(_settingsFilePath))
                 {
-                    // Only seed from the service when it actually read the engine configuration:
-                    // seeding from an empty view would write an empty store and, on the next save,
-                    // present it as the user's whole configuration.
+                    // Only seed from a successfully read configuration or a new configuration.
+                    // An empty service view following a failed read must not replace user data.
                     if (_mappingService is not null && _mappingService.ConfigurationLoaded)
                     {
                         EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
@@ -110,29 +109,9 @@ namespace KeyboardManagerEditorUI.Settings
                 AddShortcutMapping(settings, mapping);
             }
 
-            // Process single key to key mappings
-            foreach (var mapping in _mappingService!.GetSingleKeyMappings())
+            foreach (var mapping in GetSingleKeyMappingsForImport(settings, _mappingService!.GetSingleKeyMappings(), _mappingService.GetKeyToTextMappings()))
             {
-                var shortcutMapping = new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapShortcut,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetKey,
-                };
-                AddShortcutMapping(settings, shortcutMapping);
-            }
-
-            // Process single key to text mappings
-            foreach (var mapping in _mappingService!.GetKeyToTextMappings())
-            {
-                var shortcutMapping = new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapText,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetText,
-                    TargetText = mapping.TargetText,
-                };
-                AddShortcutMapping(settings, shortcutMapping);
+                AddShortcutMapping(settings, mapping);
             }
 
             return settings;
@@ -154,9 +133,12 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             bool shortcutSettingsChanged = false;
+            var singleKeyMappings = service.GetSingleKeyMappings();
+            var keyToTextMappings = service.GetKeyToTextMappings();
+            var shortcutKeyMappings = service.GetShortcutMappings();
 
             // Process all shortcut mappings
-            foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
+            foreach (ShortcutKeyMapping mapping in shortcutKeyMappings)
             {
                 ShortcutSettings? existing = FindByOrigin(mapping);
                 if (existing is null)
@@ -170,46 +152,16 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
-            // Process single key to key mappings
-            foreach (var mapping in service.GetSingleKeyMappings())
+            foreach (var mapping in GetSingleKeyMappingsForImport(EditorSettings, singleKeyMappings, keyToTextMappings))
             {
-                var shortcutMapping = new ShortcutKeyMapping
+                if (!SingleKeyMappingExists(mapping, keyToTextMappings, singleKeyMappings))
                 {
-                    OperationType = ShortcutOperationType.RemapShortcut,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetKey,
-                };
-
-                if (!MappingExists(shortcutMapping))
-                {
-                    AddShortcutMapping(EditorSettings, shortcutMapping);
-                    shortcutSettingsChanged = true;
-                }
-            }
-
-            // Process single key to text mappings
-            foreach (var mapping in service.GetKeyToTextMappings())
-            {
-                var shortcutMapping = new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapText,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetText,
-                    TargetText = mapping.TargetText,
-                };
-
-                if (!ShortcutMappingExists(shortcutMapping))
-                {
-                    AddShortcutMapping(EditorSettings, shortcutMapping);
+                    AddShortcutMapping(EditorSettings, mapping);
                     shortcutSettingsChanged = true;
                 }
             }
 
             // Mark inactive mappings
-            var singleKeyMappings = service.GetSingleKeyMappings();
-            var keyToTextMappings = service.GetKeyToTextMappings();
-            var shortcutKeyMappings = service.GetShortcutMappings();
-
             foreach (ShortcutSettings shortcutSettings in EditorSettings.ShortcutSettingsDictionary.Values.ToList())
             {
                 bool foundInService = IsMappingActiveInService(
@@ -218,10 +170,20 @@ namespace KeyboardManagerEditorUI.Settings
                     singleKeyMappings,
                     shortcutKeyMappings);
 
-                if (!foundInService)
+                if (!foundInService && shortcutSettings.IsActive)
                 {
                     shortcutSettingsChanged = true;
                     shortcutSettings.IsActive = false;
+                }
+
+                // Single-key remaps are always global in the engine. Clear unsupported app
+                // scope retained by earlier editor versions when this is an active engine row.
+                if (foundInService && shortcutSettings.IsActive &&
+                    !string.IsNullOrEmpty(shortcutSettings.Shortcut.TargetApp) &&
+                    int.TryParse(shortcutSettings.Shortcut.OriginalKeys, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                {
+                    shortcutSettings.Shortcut.TargetApp = string.Empty;
+                    shortcutSettingsChanged = true;
                 }
             }
 
@@ -280,12 +242,85 @@ namespace KeyboardManagerEditorUI.Settings
             value.Add(guid);
         }
 
-        private static bool MappingExists(ShortcutKeyMapping mapping)
+        private static List<ShortcutKeyMapping> GetSingleKeyMappingsForImport(
+            EditorSettings settings,
+            List<KeyMapping> singleKeyMappings,
+            List<KeyToTextMapping> keyToTextMappings)
         {
-            return EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
-                s.Shortcut.OperationType == mapping.OperationType &&
-                s.Shortcut.OriginalKeys == mapping.OriginalKeys &&
-                s.Shortcut.TargetKeys == mapping.TargetKeys);
+            var mappings = singleKeyMappings.Select(mapping => new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapShortcut,
+                OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                TargetKeys = mapping.TargetKey,
+            }).Concat(keyToTextMappings.Select(mapping => new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapText,
+                OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                TargetKeys = mapping.TargetText,
+                TargetText = mapping.TargetText,
+            })).ToList();
+
+            foreach (var (combined, left, right) in KeyboardMappingService.CombinedModifierKeys)
+            {
+                string combinedKey = combined.ToString(CultureInfo.InvariantCulture);
+                string leftKey = left.ToString(CultureInfo.InvariantCulture);
+                string rightKey = right.ToString(CultureInfo.InvariantCulture);
+
+                // Collapse only newly imported rows. Authored side rows may have different IDs,
+                // profile memberships or activation states, even when their targets are equal.
+                if (settings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == leftKey || s.Shortcut.OriginalKeys == rightKey))
+                {
+                    continue;
+                }
+
+                foreach (var operation in new[] { ShortcutOperationType.RemapShortcut, ShortcutOperationType.RemapText })
+                {
+                    var leftMapping = mappings.Find(m => m.OperationType == operation && m.OriginalKeys == leftKey);
+                    var rightMapping = mappings.Find(m => m.OperationType == operation && m.OriginalKeys == rightKey);
+                    if (leftMapping is null || rightMapping is null ||
+                        leftMapping.TargetKeys != rightMapping.TargetKeys ||
+                        mappings.Any(m => m.OperationType == operation && m.OriginalKeys == combinedKey))
+                    {
+                        continue;
+                    }
+
+                    // A physical pair targeting its own combined key must not become Ctrl->Ctrl.
+                    if (operation == ShortcutOperationType.RemapShortcut && leftMapping.TargetKeys == combinedKey)
+                    {
+                        continue;
+                    }
+
+                    leftMapping.OriginalKeys = combinedKey;
+                    mappings.Remove(rightMapping);
+                }
+            }
+
+            return mappings;
+        }
+
+        private static bool SingleKeyMappingExists(
+            ShortcutKeyMapping mapping,
+            List<KeyToTextMapping> keyToTextMappings,
+            List<KeyMapping> singleKeyMappings)
+        {
+            int keyCode = int.Parse(mapping.OriginalKeys, CultureInfo.InvariantCulture);
+            return EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
+            {
+                ShortcutKeyMapping stored = settings.Shortcut;
+                if (stored.OperationType != mapping.OperationType ||
+                    (mapping.OperationType == ShortcutOperationType.RemapText ? stored.TargetText != mapping.TargetText : stored.TargetKeys != mapping.TargetKeys) ||
+                    !int.TryParse(stored.OriginalKeys, NumberStyles.Integer, CultureInfo.InvariantCulture, out int storedKey))
+                {
+                    return false;
+                }
+
+                // Keep separately authored left/right rows separate. An existing combined row
+                // owns the physical pair only while its complete mapping is still in the engine.
+                return storedKey == keyCode ||
+                       (KeyboardMappingService.ExpandCombinedModifier(storedKey).Contains(keyCode) &&
+                        !ContainsSingleKeyOrigin(stored.OperationType, storedKey, keyToTextMappings, singleKeyMappings) &&
+                        IsSingleKeyMappingActiveInService(stored, storedKey, keyToTextMappings, singleKeyMappings));
+            });
         }
 
         /// <summary>
@@ -293,11 +328,6 @@ namespace KeyboardManagerEditorUI.Settings
         /// OS-level and app-specific remaps in separate tables and allows the same origin in both,
         /// so matching on the origin alone would hide one of them from the editor.
         /// </summary>
-        private static bool ShortcutMappingExists(ShortcutKeyMapping mapping)
-        {
-            return FindByOrigin(mapping) is not null;
-        }
-
         private static ShortcutSettings? FindByOrigin(ShortcutKeyMapping mapping)
         {
             return EditorSettings.ShortcutSettingsDictionary.Values.FirstOrDefault(s => IsSameOrigin(s.Shortcut, mapping));
@@ -363,25 +393,46 @@ namespace KeyboardManagerEditorUI.Settings
                 return false;
             }
 
-            bool isSingleKey = shortcutSettings.Shortcut.OriginalKeys.Split(';').Length == 1;
-
-            if (isSingleKey && int.TryParse(shortcutSettings.Shortcut.OriginalKeys, out int keyCode))
+            if (int.TryParse(shortcutSettings.Shortcut.OriginalKeys, NumberStyles.Integer, CultureInfo.InvariantCulture, out int keyCode))
             {
-                if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapText)
-                {
-                    return keyToTextMappings.Any(m =>
-                        m.OriginalKey == keyCode &&
-                        m.TargetText == shortcutSettings.Shortcut.TargetText);
-                }
-                else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapShortcut)
-                {
-                    return singleKeyMappings.Any(m =>
-                        m.OriginalKey == keyCode &&
-                        m.TargetKey == shortcutSettings.Shortcut.TargetKeys);
-                }
+                return IsSingleKeyMappingActiveInService(shortcutSettings.Shortcut, keyCode, keyToTextMappings, singleKeyMappings);
             }
 
             return shortcutKeyMappings.Any(m => IsSameOrigin(m, shortcutSettings.Shortcut));
+        }
+
+        private static bool IsSingleKeyMappingActiveInService(
+            ShortcutKeyMapping mapping,
+            int keyCode,
+            List<KeyToTextMapping> keyToTextMappings,
+            List<KeyMapping> singleKeyMappings)
+        {
+            bool HasMapping(int origin) => mapping.OperationType switch
+            {
+                ShortcutOperationType.RemapText => keyToTextMappings.Any(m => m.OriginalKey == origin && m.TargetText == mapping.TargetText),
+                ShortcutOperationType.RemapShortcut => singleKeyMappings.Any(m => m.OriginalKey == origin && m.TargetKey == mapping.TargetKeys),
+                _ => false,
+            };
+
+            // A legacy raw combined code has its own identity; it must not claim physical rows
+            // which may coexist with it. New combined rows require BOTH physical targets.
+            return ContainsSingleKeyOrigin(mapping.OperationType, keyCode, keyToTextMappings, singleKeyMappings)
+                ? HasMapping(keyCode)
+                : KeyboardMappingService.ExpandCombinedModifier(keyCode).All(HasMapping);
+        }
+
+        private static bool ContainsSingleKeyOrigin(
+            ShortcutOperationType operation,
+            int keyCode,
+            List<KeyToTextMapping> keyToTextMappings,
+            List<KeyMapping> singleKeyMappings)
+        {
+            return operation switch
+            {
+                ShortcutOperationType.RemapText => keyToTextMappings.Any(m => m.OriginalKey == keyCode),
+                ShortcutOperationType.RemapShortcut => singleKeyMappings.Any(m => m.OriginalKey == keyCode),
+                _ => false,
+            };
         }
     }
 }

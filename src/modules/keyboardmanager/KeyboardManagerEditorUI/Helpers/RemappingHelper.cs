@@ -32,37 +32,31 @@ namespace KeyboardManagerEditorUI.Helpers
                     return false;
                 }
 
+                ShortcutKeyMapping shortcutKeyMapping;
+                bool added;
                 if (originalKeys.Count == 1)
                 {
                     int originalKey = mappingService.GetKeyCodeFromName(originalKeys[0]);
-
-                    if (originalKey != 0)
+                    if (originalKey == 0)
                     {
-                        string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-                        ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
-                        {
-                            OperationType = ShortcutOperationType.RemapShortcut,
-                            OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
-                            TargetKeys = targetKeysString,
-                            TargetApp = isAppSpecific ? appName : string.Empty,
-                        };
-                        if (remappedKeys.Count == 1)
-                        {
-                            int targetKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
-                            if (targetKey != 0)
-                            {
-                                mappingService.AddSingleKeyMapping(originalKey, targetKey);
-                            }
-                        }
-                        else
-                        {
-                            mappingService.AddSingleKeyMapping(originalKey, targetKeysString);
-                        }
+                        return false;
+                    }
 
-                        if (saveToSettings)
-                        {
-                            SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-                        }
+                    string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                    shortcutKeyMapping = new ShortcutKeyMapping()
+                    {
+                        OperationType = ShortcutOperationType.RemapShortcut,
+                        OriginalKeys = originalKey.ToString(CultureInfo.InvariantCulture),
+                        TargetKeys = targetKeysString,
+                    };
+                    if (remappedKeys.Count == 1)
+                    {
+                        int targetKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
+                        added = targetKey != 0 && mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                    }
+                    else
+                    {
+                        added = mappingService.AddSingleKeyMapping(originalKey, targetKeysString);
                     }
                 }
                 else
@@ -70,7 +64,7 @@ namespace KeyboardManagerEditorUI.Helpers
                     string originalKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
                     string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
-                    ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
+                    shortcutKeyMapping = new ShortcutKeyMapping()
                     {
                         OperationType = ShortcutOperationType.RemapShortcut,
                         OriginalKeys = originalKeysString,
@@ -79,22 +73,10 @@ namespace KeyboardManagerEditorUI.Helpers
                         ExactMatch = exactMatch,
                     };
 
-                    if (isAppSpecific && !string.IsNullOrEmpty(appName))
-                    {
-                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName, exactMatch: exactMatch);
-                    }
-                    else
-                    {
-                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, exactMatch: exactMatch);
-                    }
-
-                    if (saveToSettings)
-                    {
-                        SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
-                    }
+                    added = mappingService.AddShortcutMapping(originalKeysString, targetKeysString, shortcutKeyMapping.TargetApp, exactMatch: exactMatch);
                 }
 
-                return mappingService.SaveSettings();
+                return CompleteSave(mappingService, shortcutKeyMapping, added, saveToSettings);
             }
             catch (Exception ex)
             {
@@ -103,7 +85,84 @@ namespace KeyboardManagerEditorUI.Helpers
             }
         }
 
-        public static bool DeleteRemapping(KeyboardMappingService mappingService, Remapping remapping, bool deleteFromSettings = true)
+        /// <summary>
+        /// Publishes an editor row only after both the native add and configuration save succeed.
+        /// Failed saves remove the new in-memory mapping so a later save cannot persist a phantom row.
+        /// </summary>
+        public static bool CompleteSave(KeyboardMappingService mappingService, ShortcutKeyMapping mapping, bool added, bool saveToSettings = true)
+        {
+            if (!added)
+            {
+                return false;
+            }
+
+            if (!mappingService.SaveSettings())
+            {
+                if (int.TryParse(mapping.OriginalKeys, out int originalKey))
+                {
+                    if (mapping.OperationType == ShortcutOperationType.RemapText)
+                    {
+                        mappingService.DeleteSingleKeyToTextMapping(originalKey);
+                    }
+                    else
+                    {
+                        mappingService.DeleteSingleKeyMapping(originalKey);
+                    }
+                }
+                else
+                {
+                    mappingService.DeleteShortcutMapping(mapping.OriginalKeys, mapping.TargetApp);
+                }
+
+                return false;
+            }
+
+            if (saveToSettings)
+            {
+                SettingsManager.AddShortcutKeyMappingToSettings(mapping);
+            }
+
+            return true;
+        }
+
+        public static bool RestoreMapping(KeyboardMappingService mappingService, ShortcutKeyMapping mapping)
+        {
+            if (int.TryParse(mapping.OriginalKeys, out int originalKey))
+            {
+                return mapping.OperationType == ShortcutOperationType.RemapText
+                    ? mappingService.AddSingleKeyToTextMapping(originalKey, mapping.TargetText)
+                    : mappingService.AddSingleKeyMapping(originalKey, mapping.TargetKeys);
+            }
+
+            return mapping.OperationType == ShortcutOperationType.RemapText
+                ? mappingService.AddShortcutMapping(mapping.OriginalKeys, mapping.TargetText, mapping.TargetApp, ShortcutOperationType.RemapText, mapping.ExactMatch)
+                : mappingService.AddShortcutMapping(mapping);
+        }
+
+        public static bool CompleteDelete(KeyboardMappingService mappingService, string mappingId, bool deleted)
+        {
+            if (!deleted)
+            {
+                return false;
+            }
+
+            if (mappingService.SaveSettings())
+            {
+                return true;
+            }
+
+            // The file still represents the old row. Restore the service's in-memory view so a
+            // retry, or a later save of another row, cannot silently drop this mapping.
+            if (SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(mappingId, out ShortcutSettings? settings) &&
+                !RestoreMapping(mappingService, settings.Shortcut))
+            {
+                Logger.LogError("Failed to restore the mapping after an unsuccessful delete");
+            }
+
+            return false;
+        }
+
+        public static bool DeleteRemapping(KeyboardMappingService mappingService, Remapping remapping, bool deleteFromSettings = true, bool saveSettings = true)
         {
             if (mappingService == null)
             {
@@ -118,14 +177,15 @@ namespace KeyboardManagerEditorUI.Helpers
                     int originalKey = mappingService.GetKeyCodeFromName(remapping.Shortcut[0]);
                     if (originalKey != 0)
                     {
-                        if (mappingService.DeleteSingleKeyMapping(originalKey))
+                        bool deleted = mappingService.DeleteSingleKeyMapping(originalKey);
+                        if (saveSettings ? CompleteDelete(mappingService, remapping.Id, deleted) : deleted)
                         {
                             if (deleteFromSettings)
                             {
                                 SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                             }
 
-                            return mappingService.SaveSettings();
+                            return true;
                         }
                     }
                 }
@@ -146,12 +206,17 @@ namespace KeyboardManagerEditorUI.Helpers
                         deleteResult = mappingService.DeleteShortcutMapping(originalKeysString);
                     }
 
-                    if (deleteResult && deleteFromSettings)
+                    if (!(saveSettings ? CompleteDelete(mappingService, remapping.Id, deleteResult) : deleteResult))
+                    {
+                        return false;
+                    }
+
+                    if (deleteFromSettings)
                     {
                         SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                     }
 
-                    return deleteResult ? mappingService.SaveSettings() : false;
+                    return true;
                 }
 
                 return false;

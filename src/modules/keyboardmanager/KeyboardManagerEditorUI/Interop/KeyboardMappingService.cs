@@ -1,14 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
@@ -24,10 +20,11 @@ namespace KeyboardManagerEditorUI.Interop
         /// side-specific code - it is never VK_CONTROL/VK_MENU/VK_SHIFT, and VK_WIN_BOTH is not a
         /// real virtual key at all. The key dropdown still offers the combined keys, so a remap
         /// stored under one of them would never fire. The classic editor works around this by
-        /// expanding on save (<c>LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings</c>) and
-        /// collapsing on load (<c>PreProcessRemapTable</c>); we do the same here.
+        /// expanding on save (<c>LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings</c>).
+        /// Reads retain physical keys so reconciliation can preserve the identities and profile
+        /// memberships of existing left/right rows as well as combined rows.
         /// </remarks>
-        private static readonly (int Combined, int Left, int Right)[] CombinedModifierKeys =
+        internal static readonly (int Combined, int Left, int Right)[] CombinedModifierKeys =
         {
             (0x11, 0xA2, 0xA3),   // VK_CONTROL -> VK_LCONTROL, VK_RCONTROL
             (0x12, 0xA4, 0xA5),   // VK_MENU    -> VK_LMENU,    VK_RMENU
@@ -51,7 +48,8 @@ namespace KeyboardManagerEditorUI.Interop
         }
 
         /// <summary>
-        /// Gets a value indicating whether the engine configuration was read successfully.
+        /// Gets a value indicating whether the engine configuration was read successfully or a
+        /// new configuration can safely be created.
         /// </summary>
         /// <remarks>
         /// When it was not, the in-memory configuration is empty but says nothing about the file on
@@ -63,7 +61,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         private bool LoadWithRetry()
         {
-            if (KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            if (KeyboardManagerInterop.LoadMappingSettingsForEditor(_configHandle) is MappingConfigurationLoadResult.Loaded or MappingConfigurationLoadResult.NewConfiguration)
             {
                 return true;
             }
@@ -73,7 +71,7 @@ namespace KeyboardManagerEditorUI.Interop
             Logger.LogWarning("Failed to load the Keyboard Manager configuration, retrying once");
             System.Threading.Thread.Sleep(500);
 
-            if (KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            if (KeyboardManagerInterop.LoadMappingSettingsForEditor(_configHandle) is MappingConfigurationLoadResult.Loaded or MappingConfigurationLoadResult.NewConfiguration)
             {
                 return true;
             }
@@ -101,12 +99,7 @@ namespace KeyboardManagerEditorUI.Interop
                 }
             }
 
-            return CollapseCombinedModifiers(
-                result,
-                m => m.OriginalKey,
-                (m, key) => m.OriginalKey = key,
-                (left, right) => left.IsShortcut == right.IsShortcut && left.TargetKey == right.TargetKey,
-                (m, combined) => !m.IsShortcut && m.TargetKey == combined.ToString(CultureInfo.InvariantCulture));
+            return result;
         }
 
         public List<ShortcutKeyMapping> GetShortcutMappings()
@@ -128,6 +121,10 @@ namespace KeyboardManagerEditorUI.Interop
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
+                        StartInDirectory = KeyboardManagerInterop.GetStringAndFree(mapping.StartInDirectory),
+                        Elevation = (ShortcutKeyMapping.ElevationLevel)mapping.Elevation,
+                        IfRunningAction = (ShortcutKeyMapping.ProgramAlreadyRunningAction)mapping.IfRunningAction,
+                        Visibility = (ShortcutKeyMapping.StartWindowType)mapping.Visibility,
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
                         ExactMatch = mapping.ExactMatch != 0,
                     });
@@ -156,6 +153,10 @@ namespace KeyboardManagerEditorUI.Interop
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
+                        StartInDirectory = KeyboardManagerInterop.GetStringAndFree(mapping.StartInDirectory),
+                        Elevation = (ShortcutKeyMapping.ElevationLevel)mapping.Elevation,
+                        IfRunningAction = (ShortcutKeyMapping.ProgramAlreadyRunningAction)mapping.IfRunningAction,
+                        Visibility = (ShortcutKeyMapping.StartWindowType)mapping.Visibility,
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
                         ExactMatch = mapping.ExactMatch != 0,
                     });
@@ -183,12 +184,7 @@ namespace KeyboardManagerEditorUI.Interop
                 }
             }
 
-            return CollapseCombinedModifiers(
-                result,
-                m => m.OriginalKey,
-                (m, key) => m.OriginalKey = key,
-                (left, right) => left.TargetText == right.TargetText,
-                (m, combined) => false);
+            return result;
         }
 
         public string GetKeyDisplayName(int keyCode)
@@ -267,7 +263,15 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool AddShortcutMapping(ShortcutKeyMapping shortcutKeyMapping)
         {
-            if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys) || string.IsNullOrEmpty(shortcutKeyMapping.TargetKeys))
+            if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys))
+            {
+                return false;
+            }
+
+            // Program and URI mappings have no key target after a native configuration reload.
+            // Their payload is carried in ProgramPath/UriToOpen instead.
+            if ((shortcutKeyMapping.OperationType is ShortcutOperationType.RemapShortcut or ShortcutOperationType.RemapText) &&
+                string.IsNullOrEmpty(shortcutKeyMapping.TargetKeys))
             {
                 return false;
             }
@@ -360,7 +364,7 @@ namespace KeyboardManagerEditorUI.Interop
         /// Returns the key codes the engine actually has to be told about for a given origin key:
         /// the left/right pair for a combined modifier, the key itself for anything else.
         /// </summary>
-        private static int[] ExpandCombinedModifier(int keyCode)
+        internal static int[] ExpandCombinedModifier(int keyCode)
         {
             foreach (var (combined, left, right) in CombinedModifierKeys)
             {
@@ -371,42 +375,6 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return new[] { keyCode };
-        }
-
-        /// <summary>
-        /// Collapses a left/right pair that shares the same target back into its combined key, so
-        /// the editor shows (and matches) one "Ctrl" row rather than "LCtrl" plus "RCtrl".
-        /// </summary>
-        private static List<T> CollapseCombinedModifiers<T>(
-            List<T> mappings,
-            Func<T, int> getKey,
-            Action<T, int> setKey,
-            Func<T, T, bool> haveSameTarget,
-            Func<T, int, bool> targetsCombinedKey)
-            where T : class
-        {
-            foreach (var (combined, left, right) in CombinedModifierKeys)
-            {
-                int leftIndex = mappings.FindIndex(m => getKey(m) == left);
-                int rightIndex = mappings.FindIndex(m => getKey(m) == right);
-
-                if (leftIndex < 0 || rightIndex < 0 || !haveSameTarget(mappings[leftIndex], mappings[rightIndex]))
-                {
-                    continue;
-                }
-
-                // Collapsing "LCtrl -> Ctrl" + "RCtrl -> Ctrl" would produce "Ctrl -> Ctrl".
-                // The classic editor skips that case too (CombineRemappings).
-                if (targetsCombinedKey(mappings[leftIndex], combined))
-                {
-                    continue;
-                }
-
-                setKey(mappings[leftIndex], combined);
-                mappings.RemoveAt(rightIndex);
-            }
-
-            return mappings;
         }
 
         /// <summary>
@@ -450,15 +418,24 @@ namespace KeyboardManagerEditorUI.Interop
         }
 
         /// <summary>
-        /// Applies <paramref name="delete"/> to every expanded origin key. Succeeds if any side was
-        /// present, so remaps written before the expansion existed can still be removed.
+        /// Deletes the original key when it exists, including combined virtual keys written by
+        /// earlier editor versions. Otherwise deletes the expanded pair used by newer versions.
+        /// A legacy combined row must not remove separately stored physical-key rows.
         /// </summary>
         private bool DeleteExpanded(int originalKey, Func<int, bool> delete)
         {
+            if (delete(originalKey))
+            {
+                return true;
+            }
+
             bool deletedAny = false;
             foreach (int key in ExpandCombinedModifier(originalKey))
             {
-                deletedAny |= delete(key);
+                if (key != originalKey)
+                {
+                    deletedAny |= delete(key);
+                }
             }
 
             return deletedAny;

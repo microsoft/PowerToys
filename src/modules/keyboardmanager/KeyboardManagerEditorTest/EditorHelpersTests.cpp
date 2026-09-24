@@ -297,5 +297,83 @@ namespace EditorHelpersTests
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnNoError_OnPassingOppositeModifierSidesWithAnotherCommonModifier)
+        {
+            const std::vector<std::pair<Shortcut, Shortcut>> testCases = {
+                { Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_LSHIFT, 0x41 }), Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_RSHIFT, 0x41 }) },
+                { Shortcut(std::vector<int32_t>{ VK_SHIFT, VK_LCONTROL, 0x41 }), Shortcut(std::vector<int32_t>{ VK_SHIFT, VK_RCONTROL, 0x41 }) },
+                { Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_LMENU, 0x41 }), Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_RMENU, 0x41 }) },
+                { Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_LWIN, 0x41 }), Shortcut(std::vector<int32_t>{ VK_CONTROL, VK_RWIN, 0x41 }) },
+            };
+
+            for (const auto& [first, second] : testCases)
+            {
+                Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::NoError);
+                Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::NoError);
+            }
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnConflictingModifierShortcut_OnPassingIntersectingModifierCombinations)
+        {
+            // Both shortcuts include left Ctrl + left Shift + A, even though neither
+            // shortcut includes all of the other shortcut's modifier combinations.
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, VK_LSHIFT, 0x41 });
+            Shortcut second(std::vector<int32_t>{ VK_LCONTROL, VK_SHIFT, 0x41 });
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::ConflictingModifierShortcut);
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnNoError_OnPassingDifferentModifierSetsWithCommonModifiers)
+        {
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, 0x41 });
+            Shortcut second(std::vector<int32_t>{ VK_CONTROL, VK_SHIFT, 0x41 });
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::NoError);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::NoError);
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnNoError_OnPassingChordsWithDifferentSecondKeys)
+        {
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, 0x4B, 0x43 });
+            Shortcut second(std::vector<int32_t>{ VK_CONTROL, 0x4B, 0x44 });
+            Shortcut sidedSecond(std::vector<int32_t>{ VK_LCONTROL, 0x4B, 0x44 });
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::NoError);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::NoError);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, sidedSecond) == ShortcutErrorType::NoError);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(sidedSecond, first) == ShortcutErrorType::NoError);
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnSameShortcutPreviouslyMapped_OnPassingIdenticalChords)
+        {
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, 0x4B, 0x43 });
+            Shortcut second = first;
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::SameShortcutPreviouslyMapped);
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnConflictingModifierShortcut_OnPassingChordsWithSameSecondKeyAndOverlappingModifiers)
+        {
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, 0x4B, 0x43 });
+            Shortcut second(std::vector<int32_t>{ VK_LCONTROL, 0x4B, 0x43 });
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::ConflictingModifierShortcut);
+        }
+
+        TEST_METHOD (DoShortcutsOverlap_ShouldReturnConflictingModifierShortcut_OnPassingShortcutAndChordWithSamePrefix)
+        {
+            Shortcut first(std::vector<int32_t>{ VK_CONTROL, 0x4B });
+            Shortcut second(std::vector<int32_t>{ VK_CONTROL, 0x4B, 0x43 });
+            Shortcut sidedFirst(std::vector<int32_t>{ VK_LCONTROL, 0x4B });
+            Shortcut sidedSecond(std::vector<int32_t>{ VK_LCONTROL, 0x4B, 0x43 });
+
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(first, second) == ShortcutErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(second, first) == ShortcutErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(sidedFirst, sidedSecond) == ShortcutErrorType::ConflictingModifierShortcut);
+            Assert::IsTrue(EditorHelpers::DoShortcutsOverlap(sidedSecond, sidedFirst) == ShortcutErrorType::ConflictingModifierShortcut);
+        }
     };
 }

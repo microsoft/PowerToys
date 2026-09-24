@@ -25,6 +25,9 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool LoadMappingSettings(IntPtr config);
 
         [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern MappingConfigurationLoadResult LoadMappingSettingsForEditor(IntPtr config);
+
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SaveMappingSettings(IntPtr config);
 
@@ -154,6 +157,13 @@ namespace KeyboardManagerEditorUI.Interop
         }
     }
 
+    internal enum MappingConfigurationLoadResult
+    {
+        Failed = 0,
+        Loaded = 1,
+        NewConfiguration = 2,
+    }
+
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SingleKeyMapping
     {
@@ -182,6 +192,10 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
         public int ExactMatch;
+        public IntPtr StartInDirectory;
+        public int Elevation;
+        public int IfRunningAction;
+        public int Visibility;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

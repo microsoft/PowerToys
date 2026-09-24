@@ -1,7 +1,8 @@
 ﻿#include "pch.h"
 #include "MappingConfiguration.h"
 
-#include <common/SettingsAPI/settings_objects.h>
+#include <filesystem>
+
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
 
@@ -412,42 +413,121 @@ bool MappingConfiguration::LoadSettings()
     Logger::trace(L"SettingsHelper::LoadSettings()");
     try
     {
-        PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
-        auto current_config = settings.get_string_value(KeyboardManagerConstants::ActiveConfigurationSettingName);
-
-        if (!current_config)
+        MappingConfiguration loadedConfig;
+        if (loadedConfig.LoadSettingsFromFolder(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName)) != MappingConfigurationLoadResult::Loaded)
         {
             return false;
         }
 
-        currentConfig = *current_config;
+        *this = std::move(loadedConfig);
+        return true;
+    }
+    catch (...)
+    {
+        Logger::error(L"SettingsHelper::LoadSettings() failed");
+        return false;
+    }
+}
 
-        // Read the config file and load the remaps.
-        auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
-        if (!configFile)
+MappingConfigurationLoadResult MappingConfiguration::LoadSettingsFromFolder(const std::wstring& settingsFolder)
+{
+    try
+    {
+        // Keep failed or partial reads out of the active configuration. Missing module settings
+        // select the default profile for both the editor and engine, including after first save.
+        MappingConfiguration loadedConfig;
+        std::error_code error;
+        const auto settingsPath = std::filesystem::path(settingsFolder) / L"settings.json";
+        const bool settingsExist = std::filesystem::exists(settingsPath, error);
+        if (error)
         {
-            return false;
+            return MappingConfigurationLoadResult::Failed;
         }
 
-        bool result = LoadSingleKeyRemaps(*configFile);
-        ClearOSLevelShortcuts();
-        ClearAppSpecificShortcuts();
-        result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
-        result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
-        result = LoadSingleKeyToTextRemaps(*configFile) && result;
+        if (settingsExist)
+        {
+            const auto settings = json::from_file(settingsPath.wstring());
+            if (!settings)
+            {
+                return MappingConfigurationLoadResult::Failed;
+            }
+
+            const auto configName = settings->GetNamedObject(L"properties")
+                                        .GetNamedObject(KeyboardManagerConstants::ActiveConfigurationSettingName)
+                                        .GetNamedString(L"value");
+            if (configName.empty())
+            {
+                return MappingConfigurationLoadResult::Failed;
+            }
+
+            loadedConfig.currentConfig = configName.c_str();
+        }
+
+        const auto profilePath = std::filesystem::path(settingsFolder + L"\\" + loadedConfig.currentConfig + L".json");
+        const bool profileExists = std::filesystem::exists(profilePath, error);
+        if (error)
+        {
+            return MappingConfigurationLoadResult::Failed;
+        }
+
+        if (profileExists)
+        {
+            const auto configFile = json::from_file(profilePath.wstring());
+            if (!configFile)
+            {
+                return MappingConfigurationLoadResult::Failed;
+            }
+
+            bool result = loadedConfig.LoadSingleKeyRemaps(*configFile);
+            result = loadedConfig.LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
+            result = loadedConfig.LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
+            result = loadedConfig.LoadSingleKeyToTextRemaps(*configFile) && result;
+            if (!result)
+            {
+                return MappingConfigurationLoadResult::Failed;
+            }
+        }
+
+        *this = std::move(loadedConfig);
+        return profileExists ? MappingConfigurationLoadResult::Loaded : MappingConfigurationLoadResult::NewConfiguration;
+    }
+    catch (...)
+    {
+        Logger::error(L"SettingsHelper::LoadSettingsFromFolder() failed");
+        return MappingConfigurationLoadResult::Failed;
+    }
+}
+
+// Save the updated configuration.
+bool MappingConfiguration::SaveSettingsToFile()
+{
+    try
+    {
+        const bool result = SaveSettingsToFolder(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName));
+        if (result)
+        {
+            auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
+            if (hEvent)
+            {
+                SetEvent(hEvent);
+                Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
+            }
+            else
+            {
+                Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
+            }
+        }
 
         return result;
     }
     catch (...)
     {
-        Logger::error(L"SettingsHelper::LoadSettings() failed");
+        Logger::error(L"Failed to save the settings");
+        return false;
     }
-
-    return false;
 }
 
-// Save the updated configuration.
-bool MappingConfiguration::SaveSettingsToFile()
+bool MappingConfiguration::SaveSettingsToFolder(const std::wstring& settingsFolder)
 {
     bool result = true;
     json::JsonObject configJson;
@@ -639,26 +719,12 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     try
     {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
+        json::to_file(settingsFolder + L"\\" + currentConfig + L".json", configJson);
     }
     catch (...)
     {
         result = false;
         Logger::error(L"Failed to save the settings");
-    }
-
-    if (result)
-    {
-        auto hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
-        if (hEvent)
-        {
-            SetEvent(hEvent);
-            Logger::trace(L"Signaled {} event", KeyboardManagerConstants::SettingsEventName);
-        }
-        else
-        {
-            Logger::error(L"Failed to signal {} event", KeyboardManagerConstants::SettingsEventName);
-        }
     }
 
     return result;

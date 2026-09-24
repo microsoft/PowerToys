@@ -11,6 +11,13 @@ using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 
+enum class MappingConfigurationLoadResult : int
+{
+    Failed = 0,
+    Loaded = 1,
+    NewConfiguration = 2,
+};
+
 class MappingConfiguration
 {
 public:
@@ -19,8 +26,14 @@ public:
     // Load the configuration.
     bool LoadSettings();
 
+    // Load from a module settings folder, distinguishing a new profile from a failed read.
+    MappingConfigurationLoadResult LoadSettingsFromFolder(const std::wstring& settingsFolder);
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
+
+    // Save the profile to a module settings folder without signaling the running engine.
+    bool SaveSettingsToFolder(const std::wstring& settingsFolder);
 
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include <common/utils/logger_helper.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 #include <common/interop/keyboard_layout.h>
@@ -27,6 +28,25 @@ extern "C"
     bool LoadMappingSettings(void* config)
     {
         return static_cast<MappingConfiguration*>(config)->LoadSettings();
+    }
+
+    MappingConfigurationLoadResult LoadMappingSettingsForEditor(void* config)
+    {
+        if (!config)
+        {
+            return MappingConfigurationLoadResult::Failed;
+        }
+
+        try
+        {
+            return static_cast<MappingConfiguration*>(config)->LoadSettingsFromFolder(
+                PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName));
+        }
+        catch (...)
+        {
+            Logger::error(L"Failed to load the Keyboard Manager editor configuration");
+            return MappingConfigurationLoadResult::Failed;
+        }
     }
 
     bool SaveMappingSettings(void* config)
@@ -324,6 +344,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         const auto& [origShortcut, targetShortcutUnion, app] = filteredMappings[index];
 
+        *mapping = {};
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
         mapping->targetApp = AllocateAndCopyString(app);
@@ -345,6 +366,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
 
             mapping->operationType = static_cast<int>(targetShortcut.operationType);
+            mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+            mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+            mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+            mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
 
             switch (targetShortcut.operationType)
             {
@@ -433,6 +458,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         const auto& [origShortcut, targetShortcutUnion, app] = allMappings[index];
 
+        *mapping = {};
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
 
@@ -455,6 +481,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
 
             mapping->operationType = static_cast<int>(targetShortcut.operationType);
+            mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+            mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+            mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+            mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {

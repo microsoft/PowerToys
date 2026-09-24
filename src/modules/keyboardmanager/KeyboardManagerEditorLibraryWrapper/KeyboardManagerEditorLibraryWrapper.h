@@ -34,6 +34,10 @@ struct ShortcutMapping
     wchar_t* programArgs;
     wchar_t* uriToOpen;
     int exactMatch;
+    wchar_t* startInDirectory;
+    int elevation;
+    int ifRunningAction;
+    int visibility;
 };
 
 extern "C"
@@ -41,6 +45,7 @@ extern "C"
     __declspec(dllexport) void* CreateMappingConfiguration();
     __declspec(dllexport) void DestroyMappingConfiguration(void* config);
     __declspec(dllexport) bool LoadMappingSettings(void* config);
+    __declspec(dllexport) MappingConfigurationLoadResult LoadMappingSettingsForEditor(void* config);
     __declspec(dllexport) bool SaveMappingSettings(void* config);
 
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);
