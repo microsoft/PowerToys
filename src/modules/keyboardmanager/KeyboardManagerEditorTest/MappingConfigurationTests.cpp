@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -23,6 +24,13 @@ namespace RemappingUITests
             file << contents;
             file.close();
             Assert::IsTrue(file.good());
+        }
+
+        std::string ReadFile(const std::wstring& name)
+        {
+            std::ifstream file(settingsFolder / name, std::ios::binary);
+            Assert::IsTrue(file.is_open());
+            return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
         }
 
     public:
@@ -65,6 +73,8 @@ namespace RemappingUITests
 
         TEST_METHOD (SelectedMissingProfile_CanBeSavedAndReopened)
         {
+            const std::string defaultProfile = R"({"remapKeys":{"inProcess":[{"originalKeys":"67","newRemapKeys":"68"}]},"remapShortcuts":{"global":[],"appSpecific":[]}})";
+            WriteFile(L"default.json", defaultProfile);
             WriteFile(L"settings.json", R"({"properties":{"activeConfiguration":{"value":"custom"}}})");
 
             MappingConfiguration firstSession;
@@ -72,12 +82,71 @@ namespace RemappingUITests
             Assert::AreEqual(std::wstring(L"custom"), firstSession.currentConfig);
             Assert::IsTrue(firstSession.AddSingleKeyToTextRemap(0x41, L"sample text"));
             Assert::IsTrue(firstSession.SaveSettingsToFolder(settingsFolder.wstring()));
-            Assert::IsFalse(std::filesystem::exists(settingsFolder / L"default.json"));
+            Assert::IsTrue(std::filesystem::exists(settingsFolder / L"custom.json"));
+            Assert::AreEqual(defaultProfile, ReadFile(L"default.json"));
 
             MappingConfiguration nextSession;
             Assert::IsTrue(nextSession.LoadSettingsFromFolder(settingsFolder.wstring()) == MappingConfigurationLoadResult::Loaded);
             Assert::AreEqual(std::wstring(L"custom"), nextSession.currentConfig);
             Assert::AreEqual(std::wstring(L"sample text"), std::get<std::wstring>(nextSession.singleKeyToTextReMap.at(0x41)));
+        }
+
+        TEST_METHOD (LegacyProfileWithoutTextSections_LoadsKeyAndShortcutMappings)
+        {
+            // Format used by the v0.22.0 backwards-compatibility fixture.
+            WriteFile(L"default.json", R"({
+                "remapKeys":{"inProcess":[{"originalKeys":"65","newRemapKeys":"69"}]},
+                "remapShortcuts":{"global":[{"originalKeys":"160;68","newRemapKeys":"9"}],"appSpecific":[]}})");
+
+            MappingConfiguration loadedConfig;
+            Assert::IsTrue(loadedConfig.AddSingleKeyToTextRemap(0x42, L"previous text"));
+            Assert::IsTrue(loadedConfig.LoadSettingsFromFolder(settingsFolder.wstring()) == MappingConfigurationLoadResult::Loaded);
+            Assert::AreEqual(static_cast<size_t>(1), loadedConfig.singleKeyReMap.size());
+            Assert::AreEqual(static_cast<DWORD>(0x45), std::get<DWORD>(loadedConfig.singleKeyReMap.at(0x41)));
+            Assert::AreEqual(static_cast<size_t>(1), loadedConfig.osLevelShortcutReMap.size());
+            Assert::AreEqual(static_cast<DWORD>(VK_TAB), std::get<DWORD>(loadedConfig.osLevelShortcutReMap.at(Shortcut(L"160;68")).targetShortcut));
+            Assert::IsTrue(loadedConfig.singleKeyToTextReMap.empty());
+        }
+
+        TEST_METHOD (LegacyProfileWithoutAppSpecificArray_LoadsGlobalMappings)
+        {
+            // Format used by the v0.19.2 backwards-compatibility fixture.
+            WriteFile(L"default.json", R"({
+                "remapKeys":{"inProcess":[{"originalKeys":"68","newRemapKeys":"65"}]},
+                "remapShortcuts":{"global":[{"originalKeys":"160;20","newRemapKeys":"160;9"}]}})");
+
+            MappingConfiguration loadedConfig;
+            Assert::IsTrue(loadedConfig.LoadSettingsFromFolder(settingsFolder.wstring()) == MappingConfigurationLoadResult::Loaded);
+            Assert::AreEqual(static_cast<DWORD>(0x41), std::get<DWORD>(loadedConfig.singleKeyReMap.at(0x44)));
+            Assert::IsTrue(std::get<Shortcut>(loadedConfig.osLevelShortcutReMap.at(Shortcut(L"160;20")).targetShortcut) == Shortcut(L"160;9"));
+            Assert::IsTrue(loadedConfig.appSpecificShortcutReMap.empty());
+        }
+
+        TEST_METHOD (MalformedOptionalSections_DoNotReplaceExistingMappings)
+        {
+            const std::string malformedSections[] = {
+                R"("remapKeysToText":null)",
+                R"("remapKeysToText":{})",
+                R"("remapKeysToText":{"inProcess":{}})",
+                R"("remapShortcutsToText":null)",
+                R"("remapShortcutsToText":{})",
+                R"("remapShortcutsToText":{"global":null,"appSpecific":[]})",
+                R"("remapShortcutsToText":{"global":[],"appSpecific":null})",
+            };
+            for (const auto& section : malformedSections)
+            {
+                WriteFile(L"default.json", std::string(R"({
+                    "remapKeys":{"inProcess":[{"originalKeys":"65","newRemapKeys":"66"}]},
+                    "remapShortcuts":{"global":[],"appSpecific":[]},)") + section + "}");
+
+                MappingConfiguration loadedConfig;
+                loadedConfig.currentConfig = L"previous";
+                Assert::IsTrue(loadedConfig.AddSingleKeyRemap(0x43, static_cast<DWORD>(0x44)));
+                Assert::IsTrue(loadedConfig.LoadSettingsFromFolder(settingsFolder.wstring()) == MappingConfigurationLoadResult::Failed);
+                Assert::AreEqual(std::wstring(L"previous"), loadedConfig.currentConfig);
+                Assert::AreEqual(static_cast<size_t>(1), loadedConfig.singleKeyReMap.size());
+                Assert::AreEqual(static_cast<DWORD>(0x44), std::get<DWORD>(loadedConfig.singleKeyReMap.at(0x43)));
+            }
         }
 
         TEST_METHOD (InvalidModuleSettings_DoNotFallBackToDefaultProfile)

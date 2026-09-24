@@ -175,6 +175,14 @@ bool MappingConfiguration::LoadSingleKeyToTextRemaps(const json::JsonObject& jso
 
     try
     {
+        // Profiles written before text remapping was introduced omit this section.
+        // A present but malformed section must still fail the transactional load.
+        if (!jsonData.HasKey(KeyboardManagerConstants::RemapKeysToTextSettingName))
+        {
+            ClearSingleKeyToTextRemaps();
+            return true;
+        }
+
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysToTextSettingName);
         ClearSingleKeyToTextRemaps();
 
@@ -221,6 +229,12 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
 
     try
     {
+        // Early profiles contain only global shortcut mappings.
+        if (!remapShortcutsData.HasKey(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName))
+        {
+            return true;
+        }
+
         auto appSpecificRemapShortcuts = remapShortcutsData.GetNamedArray(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName);
         for (const auto& it : appSpecificRemapShortcuts)
         {
@@ -311,6 +325,11 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
 
     try
     {
+        if (objectName == KeyboardManagerConstants::RemapShortcutsToTextSettingName && !jsonData.HasKey(objectName))
+        {
+            return true;
+        }
+
         auto remapShortcutsData = jsonData.GetNamedObject(objectName);
         if (remapShortcutsData)
         {
@@ -413,14 +432,9 @@ bool MappingConfiguration::LoadSettings()
     Logger::trace(L"SettingsHelper::LoadSettings()");
     try
     {
-        MappingConfiguration loadedConfig;
-        if (loadedConfig.LoadSettingsFromFolder(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName)) != MappingConfigurationLoadResult::Loaded)
-        {
-            return false;
-        }
-
-        *this = std::move(loadedConfig);
-        return true;
+        // A new profile still supplies the selected name for the classic editor's first save.
+        // The folder loader already preserves the active configuration on failure.
+        return LoadSettingsFromFolder(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName)) != MappingConfigurationLoadResult::Failed;
     }
     catch (...)
     {

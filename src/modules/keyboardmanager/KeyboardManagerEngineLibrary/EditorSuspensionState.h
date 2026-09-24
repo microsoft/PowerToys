@@ -39,8 +39,13 @@ public:
                extraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_REPLAY_FLAG;
     }
 
-    bool ShouldSkipRemapping(const LowlevelKeyboardEvent& event, bool suspensionRequested) noexcept
+    bool ShouldSkipRemapping(const LowlevelKeyboardEvent& event, bool suspensionRequested, bool* skipSingleKeyRemapping = nullptr) noexcept
     {
+        if (skipSingleKeyRemapping)
+        {
+            *skipSingleKeyRemapping = false;
+        }
+
         const auto& key = *event.lParam;
         if (!IsSourceEvent(event))
         {
@@ -49,7 +54,7 @@ public:
             return suspended;
         }
 
-        if (pressedKeys.none())
+        if (IsIdle())
         {
             suspended = suspensionRequested;
         }
@@ -63,12 +68,27 @@ public:
 
         if (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN)
         {
+            initiallyPressedModifiers.reset(key.vkCode & 0xff);
             pressedKeys.set(keyId);
         }
         else if (event.wParam == WM_KEYUP || event.wParam == WM_SYSKEYUP)
         {
             const bool hadKeyDown = pressedKeys.test(keyId);
             pressedKeys.reset(keyId);
+            const bool initiallyPressed = initiallyPressedModifiers.test(key.vkCode & 0xff);
+            initiallyPressedModifiers.reset(key.vkCode & 0xff);
+            if (initiallyPressed && !hadKeyDown)
+            {
+                // This modifier could participate in a shortcut after the hook started,
+                // but its own single-key remap never received a down to pair with this up.
+                if (skipSingleKeyRemapping)
+                {
+                    *skipSingleKeyRemapping = true;
+                }
+
+                return suspended;
+            }
+
             if (!hadKeyDown)
             {
                 // The hook may have started while this key was already held.
@@ -86,17 +106,24 @@ public:
 
     bool IsIdle() const noexcept
     {
-        return pressedKeys.none();
+        return pressedKeys.none() && initiallyPressedModifiers.none();
     }
 
-    void Reset() noexcept
+    void AddInitiallyPressedModifier(DWORD keyCode) noexcept
+    {
+        initiallyPressedModifiers.set(keyCode & 0xff);
+    }
+
+    void Reset(bool suspensionRequested = false) noexcept
     {
         pressedKeys.reset();
-        suspended = false;
+        initiallyPressedModifiers.reset();
+        suspended = suspensionRequested;
     }
 
 private:
     std::bitset<768> pressedKeys;
+    std::bitset<256> initiallyPressedModifiers;
     bool suspended = false;
 };
 

@@ -30,6 +30,7 @@ KeyboardManager::KeyboardManager()
 
     // Load the initial settings.
     LoadSettings();
+    hasRegisteredRemappings = HasRegisteredRemappingsUnchecked();
 
     // Set the static pointer to the newest object of the class
     keyboardManagerObjectPtr = this;
@@ -47,6 +48,7 @@ KeyboardManager::KeyboardManager()
         try
         {
             LoadSettings();
+            hasRegisteredRemappings = HasRegisteredRemappingsUnchecked();
             loadedSuccessfully = true;
         }
         catch (...)
@@ -59,14 +61,9 @@ KeyboardManager::KeyboardManager()
         if (!loadedSuccessfully)
             return;
 
-        const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-        // We didn't have any bindings before and we have now
-        if (newHasRemappings && !hookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-
-        // All bindings were removed
-        if (!newHasRemappings && hookHandle)
-            StopLowlevelKeyboardHook();
+        // Serialize both start and stop with hook callbacks. Unhooking from this
+        // worker could let an outstanding callback overwrite capture readiness.
+        PostThreadMessageW(mainThreadId, UpdateHookMessageID, 0, 0);
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
@@ -152,11 +149,10 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     if (!hookHandle)
     {
         // Releases while the hook was stopped could not be observed.
-        editorSuspensionState.Reset();
-        if (editorCaptureReadyEvent)
-        {
-            SetEvent(editorCaptureReadyEvent);
-        }
+        const bool editorOpen =
+            (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0) ||
+            IsEditorMutexOwned(editorLifetimeMutex);
+        editorSuspensionState.Reset(editorOpen);
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;
         if (!hookHandle)
@@ -165,6 +161,30 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
+        }
+        else
+        {
+            // Sample after installation so releases cannot fall into a gap before
+            // the hook exists. These modifiers can already participate in shortcuts.
+            for (const DWORD key : { VK_LCONTROL, VK_RCONTROL, VK_LMENU, VK_RMENU, VK_LSHIFT, VK_RSHIFT, VK_LWIN, VK_RWIN })
+            {
+                if (inputHandler.GetVirtualKeyState(key))
+                {
+                    editorSuspensionState.AddInitiallyPressedModifier(key);
+                }
+            }
+        }
+
+        if (editorCaptureReadyEvent)
+        {
+            if (editorSuspensionState.IsIdle())
+            {
+                SetEvent(editorCaptureReadyEvent);
+            }
+            else
+            {
+                ResetEvent(editorCaptureReadyEvent);
+            }
         }
     }
 }
@@ -182,25 +202,18 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     }
 }
 
-bool KeyboardManager::HasRegisteredRemappings() const
+void KeyboardManager::UpdateLowlevelKeyboardHook()
 {
-    constexpr int MaxAttempts = 5;
-
-    if (loadingSettings)
+    // Queued updates use the latest completed configuration. Reading this published
+    // value never blocks the hook thread or races a reload of the mapping tables.
+    if (hasRegisteredRemappings)
     {
-        for (int currentAttempt = 0; currentAttempt < MaxAttempts; ++currentAttempt)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            if (!loadingSettings)
-                break;
-        }
+        StartLowlevelKeyboardHook();
     }
-
-    // Assume that we have registered remappings to be on the safe side if we couldn't check
-    if (loadingSettings)
-        return true;
-
-    return HasRegisteredRemappingsUnchecked();
+    else
+    {
+        StopLowlevelKeyboardHook();
+    }
 }
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
@@ -214,7 +227,8 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0) ||
         IsEditorMutexOwned(editorLifetimeMutex);
     const bool wasSuspended = editorSuspensionState.IsSuspended();
-    const bool skipRemapping = editorSuspensionState.ShouldSkipRemapping(*data, suspensionRequested);
+    bool skipSingleKeyRemapping = false;
+    const bool skipRemapping = editorSuspensionState.ShouldSkipRemapping(*data, suspensionRequested, &skipSingleKeyRemapping);
 
     // Keep tracking source releases even while settings are loading.
     if (loadingSettings)
@@ -243,11 +257,9 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 0;
     }
 
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
+    // A modifier held before hook startup has no single-key remap to release,
+    // but its up must still finish any shortcut invoked since startup.
+    if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state) == 1)
     {
         return 1;
     }

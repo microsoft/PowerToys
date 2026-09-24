@@ -818,15 +818,17 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         /// <summary>
-        /// Raises a live-region notification on the page so assistive technology reports an action
+        /// Raises an automation notification so assistive technology reports an action
         /// whose only visible effect is that something disappeared.
         /// </summary>
         private void AnnounceToScreenReader(string message)
         {
             try
             {
-                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(this);
-                peer ??= Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(this);
+                // Page has no default automation peer. This button remains in the visual tree
+                // after deleting a row, including when the mapping list becomes empty.
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(NewRemappingBtn);
+                peer ??= Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(NewRemappingBtn);
 
                 peer?.RaiseNotificationEvent(
                     Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ItemRemoved,

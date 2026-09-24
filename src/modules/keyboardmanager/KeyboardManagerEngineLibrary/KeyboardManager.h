@@ -8,7 +8,7 @@
 class KeyboardManager
 {
 public:
-    static const inline DWORD StartHookMessageID = WM_APP + 1;
+    static const inline DWORD UpdateHookMessageID = WM_APP + 1;
 
     // Constructor
     KeyboardManager();
@@ -33,8 +33,7 @@ public:
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
-
-    bool HasRegisteredRemappings() const;
+    void UpdateLowlevelKeyboardHook();
 
 private:
     // Returns whether there are any remappings available without waiting for settings to load
@@ -63,6 +62,10 @@ private:
     EventWaiter settingsEventWaiter;
 
     std::atomic_bool loadingSettings = false;
+
+    // Published by the settings loader; hook lifecycle updates must not wait for a
+    // configuration reload or read its mutable mapping tables on the hook thread.
+    std::atomic_bool hasRegisteredRemappings = false;
 
     HANDLE editorIsRunningEvent = nullptr;
 

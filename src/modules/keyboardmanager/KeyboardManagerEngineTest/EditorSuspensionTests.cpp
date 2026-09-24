@@ -32,6 +32,51 @@ namespace RemappingLogicTests
             input.SendVirtualInput({ { .type = INPUT_KEYBOARD, .ki = { .wVk = key, .dwFlags = keyUp ? KEYEVENTF_KEYUP : 0UL } } });
         }
 
+        void HoldModifierBeforeHook(WORD key)
+        {
+            input.SetKeyboardState(key, true);
+            input.SetKeyboardState(Helpers::GetCombinedKey(key), true);
+            suspension.AddInitiallyPressedModifier(key);
+        }
+
+        void VerifyInitiallyHeldShortcut(bool appSpecific, bool openEditor)
+        {
+            Shortcut source(L"17;65");
+            Shortcut target(L"18;86");
+            if (appSpecific)
+            {
+                state.AddAppSpecificShortcut(L"notepad.exe", source, target);
+                input.SetForegroundProcess(L"notepad.exe");
+            }
+            else
+            {
+                state.AddOSLevelShortcut(source, target);
+            }
+
+            HoldModifierBeforeHook(VK_LCONTROL);
+            SendKey('A');
+            Assert::IsTrue(input.GetVirtualKeyState(VK_MENU));
+            Assert::IsTrue(input.GetVirtualKeyState('V'));
+
+            SendKey('A', true);
+            Assert::IsFalse(input.GetVirtualKeyState('V'));
+            Assert::IsTrue(input.GetVirtualKeyState(VK_MENU));
+            Assert::IsFalse(suspension.IsIdle());
+
+            editorOpen = openEditor;
+            SendKey(VK_LCONTROL, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_MENU));
+            Assert::IsFalse(input.GetVirtualKeyState(VK_CONTROL));
+            Assert::IsTrue(suspension.IsIdle());
+            Assert::IsFalse(state.CheckShortcutRemapInvoked(appSpecific ? std::optional<std::wstring>(L"notepad.exe") : std::nullopt));
+
+            if (openEditor)
+            {
+                SendKey('B');
+                Assert::IsTrue(suspension.IsSuspended());
+            }
+        }
+
         bool SkipKey(DWORD key, WPARAM message, bool requested, DWORD scanCode = 0, DWORD flags = 0, ULONG_PTR extraInfo = 0)
         {
             KBDLLHOOKSTRUCT keyData{};
@@ -52,7 +97,8 @@ namespace RemappingLogicTests
             suspension.Reset();
             editorOpen = false;
             input.SetHookProc([this](LowlevelKeyboardEvent* event) -> intptr_t {
-                const bool skip = suspension.ShouldSkipRemapping(*event, editorOpen);
+                bool skipSingleKeyRemapping = false;
+                const bool skip = suspension.ShouldSkipRemapping(*event, editorOpen, &skipSingleKeyRemapping);
                 if (event->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
                 {
                     return 1;
@@ -63,7 +109,12 @@ namespace RemappingLogicTests
                     return 0;
                 }
 
-                if (KeyboardEventHandlers::HandleSingleKeyRemapEvent(input, event, state) == 1)
+                if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyRemapEvent(input, event, state) == 1)
+                {
+                    return 1;
+                }
+
+                if (KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(input, event, state) == 1)
                 {
                     return 1;
                 }
@@ -189,6 +240,71 @@ namespace RemappingLogicTests
             suspension.Reset();
             Assert::IsTrue(SkipKey(VK_F8, WM_KEYUP, false));
             Assert::IsTrue(SkipKey('A', WM_KEYDOWN, true));
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_ReleasesGlobalShortcutTarget)
+        {
+            VerifyInitiallyHeldShortcut(false, false);
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_ReleasesAppSpecificShortcutTarget)
+        {
+            VerifyInitiallyHeldShortcut(true, false);
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_FinishesShortcutBeforeEditorSuspends)
+        {
+            VerifyInitiallyHeldShortcut(false, true);
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_DoesNotReleaseAnUnrelatedSingleKeyTarget)
+        {
+            state.AddSingleKeyRemap(VK_LCONTROL, static_cast<DWORD>(VK_F8));
+            HoldModifierBeforeHook(VK_LCONTROL);
+            input.SetKeyboardState(VK_F8, true);
+
+            SendKey(VK_LCONTROL, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_CONTROL));
+            Assert::IsTrue(input.GetVirtualKeyState(VK_F8));
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_NewDownStartsANormalSingleKeyRemap)
+        {
+            state.AddSingleKeyRemap(VK_LCONTROL, static_cast<DWORD>(VK_F8));
+            HoldModifierBeforeHook(VK_LCONTROL);
+
+            SendKey(VK_LCONTROL);
+            Assert::IsTrue(input.GetVirtualKeyState(VK_F8));
+            SendKey(VK_LCONTROL, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_F8));
+            Assert::IsTrue(suspension.IsIdle());
+        }
+
+        TEST_METHOD (InitiallyHeldModifiers_DrainBothSidesBeforeSuspension)
+        {
+            suspension.AddInitiallyPressedModifier(VK_LCONTROL);
+            suspension.AddInitiallyPressedModifier(VK_RCONTROL);
+
+            Assert::IsFalse(SkipKey(VK_LCONTROL, WM_KEYUP, true, 0x1d));
+            Assert::IsFalse(suspension.IsIdle());
+            Assert::IsFalse(SkipKey(VK_RCONTROL, WM_KEYUP, true, 0x1d, LLKHF_EXTENDED));
+            Assert::IsTrue(suspension.IsIdle());
+            Assert::IsTrue(SkipKey('A', WM_KEYDOWN, true));
+        }
+
+        TEST_METHOD (InitiallyHeldModifier_AlreadyOpenEditorDoesNotStartRemapping)
+        {
+            state.AddOSLevelShortcut(Shortcut(L"17;65"), Shortcut(L"18;86"));
+            editorOpen = true;
+            suspension.Reset(true);
+            HoldModifierBeforeHook(VK_LCONTROL);
+
+            SendKey('A');
+            SendKey('A', true);
+            SendKey(VK_LCONTROL, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_MENU));
+            Assert::IsFalse(input.GetVirtualKeyState('V'));
+            Assert::IsTrue(suspension.IsIdle());
         }
 
         TEST_METHOD (CaptureReadiness_AllowsDownstreamRecorderToCaptureTheFirstKeyDown)
