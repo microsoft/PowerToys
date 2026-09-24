@@ -19,18 +19,50 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 public sealed class BookmarkPlaceholderPageTests
 {
     [TestMethod]
-    public void ResetPlaceholderValues_ClearsAllUniquePlaceholderValues()
+    public void LaunchWithCurrentValues_SuccessfulLaunch_ClearsPlaceholderValuesAndSubtitle()
     {
-        var bookmark = new BookmarkData("Test bookmark", "https://example.com/{id}/{project}/{id}");
-        var resolver = new StubBookmarkResolver();
-        var iconLocator = new StubBookmarkIconLocator();
+        using var page = CreatePage(_ => true);
+        var parameters = PopulatePlaceholderValues(page);
+        Assert.AreEqual("https://example.com/42/PowerToys/42", page.Command.Subtitle);
 
-        using var page = new BookmarkPlaceholderPage(
-            bookmark,
-            iconLocator,
-            resolver,
-            new PlaceholderParser());
+        var result = InvokeLaunch(page);
 
+        Assert.AreEqual(CommandResultKind.Dismiss, result.Kind);
+        CollectionAssert.AreEqual(
+            new[] { string.Empty, string.Empty },
+            parameters.Select(parameter => parameter.Text).ToArray());
+        Assert.AreEqual(string.Empty, page.Command.Subtitle);
+    }
+
+    [TestMethod]
+    public void LaunchWithCurrentValues_FailedLaunch_PreservesPlaceholderValuesAndSubtitle()
+    {
+        using var page = CreatePage(_ => false);
+        var parameters = PopulatePlaceholderValues(page);
+        const string expectedSubtitle = "https://example.com/42/PowerToys/42";
+        Assert.AreEqual(expectedSubtitle, page.Command.Subtitle);
+
+        var result = InvokeLaunch(page);
+
+        Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
+        CollectionAssert.AreEqual(
+            new[] { "42", "PowerToys" },
+            parameters.Select(parameter => parameter.Text).ToArray());
+        Assert.AreEqual(expectedSubtitle, page.Command.Subtitle);
+    }
+
+    private static BookmarkPlaceholderPage CreatePage(Func<Classification, bool> launch)
+    {
+        return new BookmarkPlaceholderPage(
+            new BookmarkData("Test bookmark", "https://example.com/{id}/{project}/{id}"),
+            new StubBookmarkIconLocator(),
+            new StubBookmarkResolver(),
+            new PlaceholderParser(),
+            launch);
+    }
+
+    private static StringParameterRun[] PopulatePlaceholderValues(BookmarkPlaceholderPage page)
+    {
         var parameterOccurrences = page.Parameters.OfType<StringParameterRun>().ToArray();
         Assert.AreEqual(3, parameterOccurrences.Length);
         Assert.AreSame(parameterOccurrences[0], parameterOccurrences[2]);
@@ -39,12 +71,14 @@ public sealed class BookmarkPlaceholderPageTests
         Assert.AreEqual(2, parameters.Length);
         parameters[0].Text = "42";
         parameters[1].Text = "PowerToys";
+        return parameters;
+    }
 
-        page.ResetPlaceholderValues();
-
-        CollectionAssert.AreEqual(
-            new[] { string.Empty, string.Empty },
-            parameters.Select(parameter => parameter.Text).ToArray());
+    private static CommandResult InvokeLaunch(BookmarkPlaceholderPage page)
+    {
+        Assert.IsInstanceOfType(page.Command.Command, typeof(IInvokableCommand));
+        var command = (IInvokableCommand)page.Command.Command!;
+        return (CommandResult)command.Invoke();
     }
 
     private sealed class StubBookmarkResolver : IBookmarkResolver
