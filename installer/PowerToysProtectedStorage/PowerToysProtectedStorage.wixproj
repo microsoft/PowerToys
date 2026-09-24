@@ -7,6 +7,7 @@
     <OutputPath>$(ProtectedStorageStage)\</OutputPath>
     <IntermediateOutputPath>obj\Carrier\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>ProductVersion=$(ProtectedStorageVersion);ProductCode=$(ProtectedStorageProductCode);BuildDir=$(ProtectedStorageStage)</DefineConstants>
+    <TreatSpecificWarningsAsErrors Condition="'$(CIBuild)' == 'true'">$(TreatSpecificWarningsAsErrors);1105</TreatSpecificWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup><Compile Include="Product.wxs" /></ItemGroup>
   <Target Name="RequireFinalizedCarrierInputs" BeforeTargets="Compile">

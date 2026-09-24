@@ -2,6 +2,7 @@
   <Package Name="PowerToys Protected Storage" Manufacturer="Microsoft Corporation"
            Version="$(var.ProductVersion)" ProductCode="$(var.ProductCode)"
            UpgradeCode="{9A6A81D4-D538-4D8A-9B30-602C38B1BA23}" Scope="perUser" Language="1033">
+    <Media Id="1" />
     <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer PowerToys Protected Storage release is installed." />
     <Launch Condition="NOT ALLUSERS AND NOT TRANSFORMS" Message="This carrier requires the original ordinary-owner per-user package without transforms." />
     <Launch Condition="NOT RollbackDisabled" Message="Windows Installer rollback must be enabled." />
@@ -9,6 +10,7 @@
       <Directory Id="INSTALLFOLDER" Name="PowerToysProtectedStorage">
         <Component Id="OwnerProduct" Guid="{4142ED1D-18F8-471F-AD9A-BA1B6EB6D69E}">
           <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys\ProtectedStorage" Name="CarrierVersion" Value="[ProductVersion]" Type="string" KeyPath="yes" />
+          <RemoveFolder Id="RemoveOwnerCarrierFolder" Directory="INSTALLFOLDER" On="uninstall" />
         </Component>
       </Directory>
     </StandardDirectory>

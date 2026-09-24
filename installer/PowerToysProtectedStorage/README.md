@@ -95,6 +95,11 @@ build wrapper. Carrier intermediates are project-local under
 to the release stage. ICE validation remains enabled. Windows Installer service
 state and recent installer events are retained to distinguish an agent service
 failure from an actual ICE authoring finding; neither is reported as success.
+CI treats WIX1105 (validation prevented by system policy) as an error. Local
+authoring tests inspect the compiled RemoveFile and Media tables and explicitly
+report if the host prevented ICE execution; compile success alone is not an ICE
+pass. The profile directory uses uninstall-only empty-directory cleanup (never
+recursive data deletion), and the binary-only carrier has an empty Media row.
 
 The signed ADO pipeline runs these stages after final client signing and before
 either main MSI. It reuses the existing ESRP signing identity and `CP-230012`.

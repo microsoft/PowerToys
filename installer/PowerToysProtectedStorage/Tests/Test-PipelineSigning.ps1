@@ -63,6 +63,9 @@ if (($pipeline + $carrierProject) -match 'SuppressValidation[=>]|<SuppressIces>|
     !$carrierProject.Contains('<IntermediateOutputPath>obj\Carrier\$(Platform)\$(Configuration)\</IntermediateOutputPath>')) {
     throw 'Carrier ICE validation must remain enabled with isolated project-local intermediates.'
 }
+if (!$carrierProject.Contains('<TreatSpecificWarningsAsErrors Condition="''$(CIBuild)'' == ''true''">$(TreatSpecificWarningsAsErrors);1105</TreatSpecificWarningsAsErrors>')) {
+    throw 'CI must reject WIX1105 rather than treat system-policy-skipped ICE validation as success.'
+}
 $installer = Get-Content "$templates\steps-build-installer-vnext.yml" -Raw
 if ($installer.IndexOf('template: steps-build-protected-storage.yml') -gt $installer.IndexOf('Build VNext MSI') -or
     ([regex]::Matches($installer, '/p:ProtectedStorageTrustPolicy=microsoft-production-v1')).Count -ne 4) {
