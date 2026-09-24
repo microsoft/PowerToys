@@ -28,9 +28,14 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string DevicePath { get; set; } = string.Empty;
 
-        public IReadOnlyList<string> Profiles { get; set; } = new List<string>();
+        public IReadOnlyList<ProfileChoice> Profiles { get; set; } = new List<ProfileChoice>();
 
-        public string SelectedProfile { get; set; } = string.Empty;
+        /// <summary>
+        /// Stable id of the assigned profile, or <see langword="null"/> when unassigned. Bound to the
+        /// ComboBox via SelectedValuePath="Id", so the unassigned sentinel is matched by its null id
+        /// rather than by comparing against a localized label.
+        /// </summary>
+        public string? SelectedProfileId { get; set; }
 
         /// <summary>True while this keyboard is the one currently being typed on (for a highlight).</summary>
         public bool IsTyping

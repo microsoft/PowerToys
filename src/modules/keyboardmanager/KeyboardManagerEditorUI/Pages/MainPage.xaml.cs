@@ -48,7 +48,7 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _suppressProfileSelection;
         private RawInputWatcher? _autoSwitchWatcher;
         private ObservableCollection<KeyboardAssignmentRow>? _keyboardRows;
-        private List<string> _autoSwitchProfiles = new();
+        private List<ProfileChoice> _autoSwitchChoices = new();
         private string _notAssignedLabel = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -526,9 +526,13 @@ namespace KeyboardManagerEditorUI.Pages
         {
             _notAssignedLabel = ResourceHelper.GetString("AutoSwitch_NotAssigned");
 
-            // Available choices per keyboard: "(not assigned)" + existing profiles.
-            _autoSwitchProfiles = new List<string> { _notAssignedLabel };
-            _autoSwitchProfiles.AddRange(ProfileManager.GetProfiles());
+            // Available choices per keyboard: the unassigned sentinel (null id) + existing profiles by
+            // id. The sentinel is identified by its null id, not its label, so a profile that happens
+            // to be named like the "(not assigned)" text is still selectable and saveable.
+            IReadOnlyList<string> profileIds = ProfileManager.GetProfiles();
+            _autoSwitchChoices = new List<ProfileChoice> { new ProfileChoice(null, _notAssignedLabel) };
+            _autoSwitchChoices.AddRange(profileIds.Select(id => new ProfileChoice(id, id)));
+            var validProfileIds = new HashSet<string>(profileIds, StringComparer.Ordinal);
 
             // Start from previously-saved assignments only; live typing identifies/adds the rest.
             // (Enumeration is not used: it surfaces virtual/synthetic keyboards the user never types
@@ -540,8 +544,8 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     DevicePath = saved.Device,
                     DisplayName = string.IsNullOrEmpty(saved.Name) ? saved.Device : saved.Name,
-                    Profiles = _autoSwitchProfiles,
-                    SelectedProfile = _autoSwitchProfiles.Contains(saved.Profile) ? saved.Profile : _notAssignedLabel,
+                    Profiles = _autoSwitchChoices,
+                    SelectedProfileId = validProfileIds.Contains(saved.Profile) ? saved.Profile : null,
                 });
             }
 
@@ -570,8 +574,8 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             var toSave = _keyboardRows
-                .Where(r => !string.Equals(r.SelectedProfile, _notAssignedLabel, StringComparison.Ordinal))
-                .Select(r => new DeviceAssignment { Device = r.DevicePath, Profile = r.SelectedProfile, Name = r.DisplayName });
+                .Where(r => r.SelectedProfileId != null)
+                .Select(r => new DeviceAssignment { Device = r.DevicePath, Profile = r.SelectedProfileId!, Name = r.DisplayName });
 
             DeviceProfileManager.Save(AutoSwitchToggle.IsOn, toSave);
         }
@@ -607,8 +611,8 @@ namespace KeyboardManagerEditorUI.Pages
                     {
                         DevicePath = keyboard.DevicePath,
                         DisplayName = keyboard.DisplayName,
-                        Profiles = _autoSwitchProfiles,
-                        SelectedProfile = _notAssignedLabel,
+                        Profiles = _autoSwitchChoices,
+                        SelectedProfileId = null,
                         IsTyping = true,
                     });
                 }
@@ -956,7 +960,7 @@ namespace KeyboardManagerEditorUI.Pages
                     return false;
                 }
 
-                if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId))
+                if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId, candidateService.ConfigurationName))
                 {
                     RestoreOriginalMappingSettings(originalService);
                     return false;

@@ -217,29 +217,46 @@ namespace KeyboardManagerEditorUI.Settings
         /// that profile. Mappings carrying no profile at all are left alone — an untagged mapping
         /// predates profiles and is treated as belonging everywhere, so a deletion must not adopt it.
         /// </summary>
-        public static void RemoveProfileMembership(string profileName)
+        public static bool RemoveProfileMembership(string profileName)
         {
             if (string.IsNullOrWhiteSpace(profileName))
             {
-                return;
+                return false;
             }
 
             try
             {
+                // Run under the same transaction lock + in-lock reload as ordinary mapping edits
+                // (add / delete / toggle). Without it, cloning the process-local EditorSettings and
+                // replacing the whole file would clobber a concurrent editor process's in-flight
+                // change — e.g. a mapping just added and turned off in another window — because this
+                // write never saw it. Reloading inside the lock makes the removal a read-modify-write
+                // against the latest on-disk state.
+                using FileStream? transactionLock = TryAcquireMappingTransactionLock();
+                if (transactionLock == null || !TryReloadSettings())
+                {
+                    ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): could not acquire the transaction lock or reload the latest settings.");
+                    return false;
+                }
+
                 EditorSettings updatedSettings = CloneSettings();
                 if (!ApplyProfileMembershipRemoval(updatedSettings, profileName))
                 {
-                    return;
+                    return true; // nothing referenced the profile; a no-op is still success
                 }
 
-                if (WriteSettings(updatedSettings))
+                if (!WriteSettings(updatedSettings))
                 {
-                    EditorSettings = updatedSettings;
+                    return false;
                 }
+
+                EditorSettings = updatedSettings;
+                return true;
             }
             catch (Exception exception)
             {
                 ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): {exception.Message}");
+                return false;
             }
         }
 
@@ -502,13 +519,18 @@ namespace KeyboardManagerEditorUI.Settings
             return shortcutSettingsChanged;
         }
 
-        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId)
+        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, string? profileName = null)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
 
-                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, CurrentProfileName))
+                // Attribute the mapping to the profile the caller captured when it built the edit
+                // (candidateService.ConfigurationName), not the live global: the native save happens
+                // first, and if the engine auto-switches in between, re-reading CurrentProfileName here
+                // would record the mapping under the newly-active profile even though it landed in the
+                // original profile's config. Fall back to the global only when no id was captured.
+                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, profileName ?? CurrentProfileName))
                 {
                     return false;
                 }

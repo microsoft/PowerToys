@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -22,6 +23,13 @@ public:
 
     ~KeyboardManager()
     {
+        // Stop the settings-changed listener first and wait for any in-flight LoadSettings callback
+        // to finish (it has a 500 ms retry). It is declared before the profile members below, so
+        // without this join it would still be listening while those members — the maps, mutexes,
+        // active/requested profile strings and hotkey/tracker pointers it reads — are destroyed in
+        // reverse declaration order, letting a resuming callback touch freed state.
+        settingsEventWaiter.stop();
+
         // Stop the worker threads first so they can't call back into a half-destroyed object.
         if (rawInputTracker)
         {
@@ -125,6 +133,25 @@ private:
     // Tracker-thread-only auto-switch hysteresis state.
     std::wstring pendingTarget;
     int pendingCount = 0;
+
+    // Physical keys currently held down (VK -> time of last key-down), maintained from raw input on
+    // the tracker thread. An auto-switch is deferred while this is non-empty so the active profile
+    // never changes mid-hold: the low-level hook resolves each key-up under whatever profile is
+    // active at up-time, so switching while a key is down would inject the new profile's mapping for
+    // a key whose down the app already saw under the old one (a stuck key / spurious remap).
+    // Deliberately device-agnostic (keyed by VK, not by keyboard): remapping is global — the hook
+    // applies the active profile to every keyboard's keys — so a key held on *any* keyboard is
+    // vulnerable to that mismatch, and all physical keys must be released before it is safe to switch.
+    std::unordered_map<USHORT, std::chrono::steady_clock::time_point> heldKeys;
+
+    // A profile switch requested while keys were held, fired once heldKeys empties. Tracker-thread-only.
+    std::wstring deferredSwitchTarget;
+
+    // How long a held key may receive no further event before its key-up is presumed lost (secure
+    // desktop / lock / sleep / session switch / device unplug) and the key is dropped from heldKeys,
+    // so a missed up can't pin auto-switch indefinitely. A genuinely held key keeps auto-repeating
+    // (refreshing its timestamp) and so is never pruned; only an event-less key ages out.
+    static constexpr std::chrono::seconds HeldKeyStaleTimeout{ 3 };
 
     // The profile a switch was last requested for, while waiting for the reload to apply it
     // (dedupes repeated SwitchActiveProfile calls during the async reload window). Guarded by

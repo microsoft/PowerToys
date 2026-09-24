@@ -326,12 +326,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
 
                             // we needed a new "CustomRestoreSettings" for now, to overwrite because some settings don't merge well (like KBM shortcuts)
-                            var overwrite = false;
-                            if (backupRestoreSettings["CustomRestoreSettings"] != null && backupRestoreSettings["CustomRestoreSettings"][currentFile.Key] != null)
-                            {
-                                var customRestoreSettings = backupRestoreSettings["CustomRestoreSettings"][currentFile.Key];
-                                overwrite = customRestoreSettings["overwrite"] != null && (bool)customRestoreSettings["overwrite"];
-                            }
+                            var overwrite = ShouldOverwriteOnRestore(backupRestoreSettings["CustomRestoreSettings"], currentFile.Key);
 
                             if (overwrite)
                             {
@@ -823,6 +818,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private static string WildCardToRegular(string value)
         {
             return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
+        }
+
+        /// <summary>
+        /// Decides whether the file at <paramref name="fileKey"/> should be overwritten wholesale on
+        /// restore (versus JSON-merged), per the CustomRestoreSettings policy. An exact key match wins;
+        /// otherwise a wildcard key (one containing '*') is matched against the file key. This lets
+        /// stores whose members have user-defined names — Keyboard Manager profile files, say — declare
+        /// a single policy like "\Keyboard Manager\*.json" for all of them, while a specific file can
+        /// still opt out with an exact key (e.g. the module settings.json keeping its merge behavior).
+        /// </summary>
+        public static bool ShouldOverwriteOnRestore(JsonNode customRestoreSettings, string fileKey)
+        {
+            if (customRestoreSettings == null)
+            {
+                return false;
+            }
+
+            JsonNode entry = customRestoreSettings[fileKey];
+
+            if (entry == null)
+            {
+                foreach (var candidate in customRestoreSettings.AsObject())
+                {
+                    if (candidate.Key.Contains('*') && Regex.IsMatch(fileKey, WildCardToRegular(candidate.Key)))
+                    {
+                        entry = candidate.Value;
+                        break;
+                    }
+                }
+            }
+
+            return entry != null && entry["overwrite"] != null && (bool)entry["overwrite"];
         }
 
         /// <summary>

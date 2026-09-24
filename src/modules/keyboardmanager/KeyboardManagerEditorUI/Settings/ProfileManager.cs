@@ -47,6 +47,28 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static string ConfigPath(string profile) => Path.Combine(_settingsDirectory, profile + ".json");
 
+        /// <summary>
+        /// Creates an empty default.json only when it is missing; never overwrites an existing one
+        /// (its mappings must be preserved). "default" is the engine's fallback profile, but on a
+        /// fresh setup its file need not exist yet, so any code path that points activeConfiguration
+        /// at "default" must first make sure the file is there for the engine to load.
+        /// </summary>
+        private static void EnsureDefaultProfileExists()
+        {
+            try
+            {
+                string path = ConfigPath(DefaultProfile);
+                if (!File.Exists(path))
+                {
+                    File.WriteAllText(path, EmptyConfigJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"ProfileManager.EnsureDefaultProfileExists: {ex.Message}");
+            }
+        }
+
         // Files that live in the save folder but are NOT remap-profile configs and must never
         // be surfaced as selectable profiles: the module settings, the editor's per-profile
         // caches ("editorSettings*"), the device->profile auto-switch map ("deviceProfiles"),
@@ -282,7 +304,14 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
-                SettingsManager.RemoveProfileMembership(profile);
+                if (!SettingsManager.RemoveProfileMembership(profile))
+                {
+                    // The config file is already deleted, so we can't cleanly abort; log and continue
+                    // the remaining cleanup. A failure here means a concurrent editor held the lock or
+                    // the write failed, leaving stale editor membership metadata for a profile whose
+                    // file is gone — harmless to the engine, and reconciled away on the next load.
+                    Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): editor membership cleanup did not complete.");
+                }
 
                 // Drop any keyboard->profile assignments for the deleted profile so auto-switch
                 // never targets a profile that no longer exists.
@@ -297,6 +326,12 @@ namespace KeyboardManagerEditorUI.Settings
                 RemoveFromConfigurationList(properties, profile);
                 if (wasActive)
                 {
+                    // Guarantee the fallback target exists before we point activeConfiguration at it.
+                    // The engine resolves activeConfiguration by opening {name}.json and, on a failed
+                    // read, keeps its previous in-memory mappings — so falling back to "default" with
+                    // no default.json would leave the just-deleted profile's remaps live while the
+                    // editor shows an empty default.
+                    EnsureDefaultProfileExists();
                     SetValueProperty(properties, "activeConfiguration", DefaultProfile);
                 }
 

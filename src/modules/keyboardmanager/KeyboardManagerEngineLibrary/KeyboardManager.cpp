@@ -13,6 +13,7 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include <ctime>
+#include <filesystem>
 
 #include "KeyboardEventHandlers.h"
 #include "trace.h"
@@ -130,8 +131,61 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& keyEvent)
 {
-    // Ignore injected input (hDevice == NULL, incl. KBM's own remap output) and key-ups.
-    if (keyEvent.injected || !keyEvent.keyDown)
+    // Injected input (hDevice == NULL, incl. KBM's own remap output) is not physical: it neither
+    // moves the held-key set nor triggers a switch.
+    if (keyEvent.injected)
+    {
+        return;
+    }
+
+    // --- Physical held-key tracking, so an auto-switch can be deferred until no key is down. ---
+    const auto now = std::chrono::steady_clock::now();
+    if (keyEvent.keyDown)
+    {
+        heldKeys[keyEvent.vkey] = now; // idempotent; auto-repeat just refreshes the timestamp
+    }
+    else
+    {
+        heldKeys.erase(keyEvent.vkey);
+    }
+
+    // Recover from a lost key-up (see HeldKeyStaleTimeout): drop any key that has received no event
+    // within the stale window. Because this runs on every event, continued typing self-heals a
+    // phantom hold within HeldKeyStaleTimeout; a truly-held key keeps repeating and is not pruned.
+    for (auto it = heldKeys.begin(); it != heldKeys.end();)
+    {
+        it = (now - it->second > HeldKeyStaleTimeout) ? heldKeys.erase(it) : std::next(it);
+    }
+
+    // A switch was deferred until the keys were released; fire it now that nothing is held, so a
+    // key-down and its matching key-up are always resolved under the same profile.
+    if (!deferredSwitchTarget.empty() && heldKeys.empty())
+    {
+        const std::wstring target = deferredSwitchTarget;
+        deferredSwitchTarget.clear();
+
+        bool alreadyActive = false;
+        {
+            std::lock_guard<std::mutex> lock(activeProfileMutex);
+            if (activeProfileName == target)
+            {
+                alreadyActive = true;
+            }
+            else
+            {
+                requestedProfile = target;
+            }
+        }
+
+        if (!alreadyActive)
+        {
+            Logger::trace(L"Auto-switch: held keys released -> switching to profile '{}'", target);
+            SwitchActiveProfile(target);
+        }
+    }
+
+    // The remaining auto-switch hysteresis is driven by key-downs only.
+    if (!keyEvent.keyDown)
     {
         return;
     }
@@ -200,9 +254,11 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
 
     if (target == current)
     {
-        // Already on the right profile; reset any pending switch.
+        // Already on the right profile; reset any pending or deferred switch (the user is back on the
+        // current profile's keyboard, so a switch away that hasn't fired yet is now stale).
         pendingTarget.clear();
         pendingCount = 0;
+        deferredSwitchTarget.clear();
         {
             std::lock_guard<std::mutex> lock(activeProfileMutex);
             requestedProfile.clear();
@@ -235,12 +291,12 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     pendingCount = 0;
-    {
-        std::lock_guard<std::mutex> lock(activeProfileMutex);
-        requestedProfile = target;
-    }
-    Logger::trace(L"Auto-switch: keyboard {} -> profile '{}'", keyEvent.devicePath, target);
-    SwitchActiveProfile(target);
+
+    // Defer the switch until every physical key is released (handled at the top of this function),
+    // so the active profile never changes mid-hold. The triggering keystroke is itself still held
+    // here, so in the common case the switch fires on that key's own key-up a few milliseconds later.
+    deferredSwitchTarget = target;
+    Logger::trace(L"Auto-switch: keyboard {} -> deferring switch to profile '{}' until keys released", keyEvent.devicePath, target);
 }
 
 void KeyboardManager::LoadDeviceProfiles()
@@ -375,6 +431,28 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     // Tracker thread and hotkey thread can both land here; serialize the read-modify-write.
     std::lock_guard<std::mutex> lock(switchProfileMutex);
 
+    // Refuse to activate a profile whose config file is gone. A tracker or hotkey callback can hold a
+    // stale target (e.g. captured from the device map just before the profile was deleted), and
+    // writing that as activeConfiguration would leave a deleted profile active — its file missing, the
+    // engine unable to load it, its old mappings stranded. Validate at commit time and drop the stale
+    // request instead. "default" is exempt: it is the protected fallback (never deletable) and is
+    // created on demand by the editor, so it must always be switchable to.
+    if (profile != KeyboardManagerConstants::DefaultConfiguration)
+    {
+        const auto configPath = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\" + profile + L".json";
+        std::error_code ec;
+        if (!std::filesystem::exists(configPath, ec))
+        {
+            Logger::error(L"Switch: refusing to activate profile '{}' — its config file is missing", profile);
+            std::lock_guard<std::mutex> activeLock(activeProfileMutex);
+            if (requestedProfile == profile)
+            {
+                requestedProfile.clear();
+            }
+            return;
+        }
+    }
+
     try
     {
         const auto path = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\settings.json";
@@ -386,6 +464,14 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
             // keyboardConfigurations). Abort and leave the file untouched, matching
             // CycleActiveProfile. The next keystroke retries the switch.
             Logger::error(L"Auto-switch: settings.json unreadable; leaving it untouched");
+
+            // Clear the request so the next keystroke on this keyboard can retry: HandleAutoSwitch
+            // sets requestedProfile before calling us, and otherwise its target == requested guard
+            // would filter out all further input from that keyboard and wedge the switch.
+            {
+                std::lock_guard<std::mutex> lock(activeProfileMutex);
+                requestedProfile.clear();
+            }
             return;
         }
 
@@ -402,6 +488,10 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     catch (...)
     {
         Logger::error(L"Failed to write activeConfiguration for auto-switch");
+        {
+            std::lock_guard<std::mutex> lock(activeProfileMutex);
+            requestedProfile.clear();
+        }
         return;
     }
 

@@ -974,8 +974,10 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             MinWidth="150"
+                                            DisplayMemberPath="Display"
                                             ItemsSource="{x:Bind Profiles}"
-                                            SelectedItem="{x:Bind SelectedProfile, Mode=TwoWay}" />
+                                            SelectedValue="{x:Bind SelectedProfileId, Mode=TwoWay}"
+                                            SelectedValuePath="Id" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
