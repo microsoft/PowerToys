@@ -4,11 +4,13 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Windowing;
@@ -17,6 +19,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
 using Windows.Win32;
@@ -25,11 +28,13 @@ using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Tray;
 
-public sealed partial class TrayPaletteWindow : WindowEx
+public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShowPaletteAtMessage>, IDisposable
 {
     private readonly IThemeService _themeService;
     private readonly ISettingsService _settingsService;
     private readonly HiddenOwnerWindowBehavior _hiddenOwner = new();
+    private readonly TrayDockPageHost _pageHost;
+    private readonly DockPageFlyoutController _pageController;
     private RECT _anchor;
     private bool _closed;
     private bool _visible;
@@ -43,6 +48,21 @@ public sealed partial class TrayPaletteWindow : WindowEx
         _themeService = services.GetRequiredService<IThemeService>();
         ViewModel = new(_settingsService, services.GetRequiredService<TopLevelCommandManager>(), services.GetRequiredService<IContextMenuFactory>());
         InitializeComponent();
+        _pageHost = new(PageHost);
+        _pageController = new(
+            _pageHost,
+            DispatcherQueue,
+            TaskScheduler.FromCurrentSynchronizationContext(),
+            services.GetRequiredService<IPageViewModelFactoryService>(),
+            services.GetRequiredService<IAppHostService>(),
+            () => this.GetWindowHwnd(),
+            () => DockSide.Bottom,
+            () => false,
+            () => { },
+            ShowQuickActions);
+        _pageHost.Opened += PageHost_Opened;
+        _pageController.Closed += PageController_Closed;
+        WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         Title = ResourceLoaderInstance.GetString("TrayPalette_Title");
         SystemBackdrop = new DesktopAcrylicBackdrop();
         _hiddenOwner.ShowInTaskbar(this, false);
@@ -72,6 +92,8 @@ public sealed partial class TrayPaletteWindow : WindowEx
 
         _anchor = anchor;
         _visible = true;
+        QuickActions.Visibility = Visibility.Visible;
+        _pageController.Activate();
         PositionWindow();
         Activate();
         PInvoke.SetForegroundWindow(this.GetWindowHwnd());
@@ -85,8 +107,11 @@ public sealed partial class TrayPaletteWindow : WindowEx
             await ViewModel.RefreshAsync();
             if (!_closed && _visible)
             {
-                PositionWindow();
-                CommandsGrid.Focus(FocusState.Programmatic);
+                if (!_pageHost.IsOpen)
+                {
+                    PositionWindow();
+                    CommandsGrid.Focus(FocusState.Programmatic);
+                }
             }
         }
         catch (Exception ex)
@@ -101,8 +126,8 @@ public sealed partial class TrayPaletteWindow : WindowEx
         var scale = FlyoutWindowHelper.GetDpiScale(display);
         var work = display.WorkArea;
         var rows = Math.Max(1, (ViewModel.Items.Count + 2) / 3);
-        var heightDip = Math.Min((rows * 100) + 104, FlyoutWindowHelper.ScaleToDip(work.Height, scale) - 16);
-        var width = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(360, scale), work.Width);
+        var heightDip = Math.Min(_pageHost.IsOpen ? 560 : (rows * 100) + 104, FlyoutWindowHelper.ScaleToDip(work.Height, scale) - 16);
+        var width = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(_pageHost.IsOpen ? 500 : 360, scale), work.Width);
         var height = FlyoutWindowHelper.ScaleToPhysicalPixels(heightDip, scale);
         var gap = FlyoutWindowHelper.ScaleToPhysicalPixels(8, scale);
         var x = Math.Clamp(_anchor.right - width, work.X, work.X + work.Width - width);
@@ -121,6 +146,21 @@ public sealed partial class TrayPaletteWindow : WindowEx
         }
 
         var message = item.CreateMessage();
+        if (item.IsPage)
+        {
+            var result = _pageController.Open(message, Root, new Point(0, 0));
+            if (result == DockPageFlyoutController.RequestResult.Deferred)
+            {
+                return;
+            }
+
+            if (result == DockPageFlyoutController.RequestResult.Started)
+            {
+                WeakReferenceMessenger.Default.Send(message);
+                return;
+            }
+        }
+
         message.ShowWindowIfPage = true;
         message.OnBeforeShowConfirmation = ShowPalette;
         Dismiss();
@@ -147,7 +187,7 @@ public sealed partial class TrayPaletteWindow : WindowEx
 
     private void Root_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Escape)
+        if (e.Key == VirtualKey.Escape && !_pageHost.IsOpen)
         {
             Dismiss();
             e.Handled = true;
@@ -165,7 +205,43 @@ public sealed partial class TrayPaletteWindow : WindowEx
     private void Dismiss()
     {
         _visible = false;
+        _pageController.Deactivate();
         AppWindow.Hide();
+    }
+
+    private void PageHost_Opened(object? sender, EventArgs e)
+    {
+        QuickActions.Visibility = Visibility.Collapsed;
+        PositionWindow();
+    }
+
+    private void PageController_Closed(object? sender, EventArgs e)
+    {
+        if (_visible && QuickActions.Visibility != Visibility.Visible)
+        {
+            Dismiss();
+        }
+    }
+
+    private void ShowQuickActions()
+    {
+        QuickActions.Visibility = Visibility.Visible;
+        PositionWindow();
+        CommandsGrid.Focus(FocusState.Programmatic);
+    }
+
+    void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
+    {
+        if (message.OwnerHwnd != (nint)this.GetWindowHwnd())
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Dismiss();
+            WeakReferenceMessenger.Default.Send(new ShowPaletteAtMessage(new(_anchor.right, _anchor.top), AnchorPoint.BottomRight));
+        });
     }
 
     private void ThemeChanged(object? sender, ThemeChangedEventArgs e) =>
@@ -180,12 +256,22 @@ public sealed partial class TrayPaletteWindow : WindowEx
             }
         });
 
-    private void Window_Closed(object sender, WindowEventArgs args)
+    private void Window_Closed(object sender, WindowEventArgs args) => Dispose();
+
+    public void Dispose()
     {
+        if (_closed)
+        {
+            return;
+        }
+
         _closed = true;
         _visible = false;
         _themeService.ThemeChanged -= ThemeChanged;
         _settingsService.SettingsChanged -= SettingsChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        _pageController.Dispose();
         ViewModel.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

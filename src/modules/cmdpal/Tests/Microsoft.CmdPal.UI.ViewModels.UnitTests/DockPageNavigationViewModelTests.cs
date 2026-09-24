@@ -89,6 +89,29 @@ public sealed partial class DockPageNavigationViewModelTests
     }
 
     [TestMethod]
+    public async Task TrayRootHasBackButtonWithoutAddingAPageToTheStack()
+    {
+        var route = new DockCommandRoute((nint)42, Guid.NewGuid());
+        using var navigation = CreateNavigation(route, hasExternalBackTarget: true);
+        var host = new TestAppExtensionHost();
+        var context = new TestProviderContext("tray-provider");
+
+        Assert.IsTrue(await navigation.NavigateAsync(CreateMessage(new ListPage(), route, host, context)));
+        Assert.IsTrue(navigation.HasBackButton);
+        Assert.IsTrue(navigation.CurrentPage!.HasBackButton);
+        Assert.IsFalse(navigation.CurrentPage.IsRootPage);
+        Assert.IsFalse(navigation.CanGoBack);
+        Assert.IsFalse(await navigation.GoBackAsync());
+
+        Assert.IsTrue(await navigation.NavigateAsync(CreateMessage(new TestContentPage(), route, host, context)));
+        Assert.IsTrue(navigation.CanGoBack);
+        Assert.IsTrue(await navigation.GoBackAsync());
+        Assert.IsTrue(navigation.HasBackButton);
+        Assert.IsFalse(navigation.CanGoBack);
+        Assert.AreEqual(0, navigation.BackStackDepth);
+    }
+
+    [TestMethod]
     public async Task NavigateAsync_KeepsSupportedPagesInOneRoute()
     {
         var route = new DockCommandRoute((nint)42, Guid.NewGuid());
@@ -100,6 +123,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await navigation.NavigateAsync(list));
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsTrue(navigation.CurrentPage.IsRootPage);
+        Assert.IsFalse(navigation.HasBackButton);
         Assert.AreEqual(route, navigation.CurrentPage.DockRoute);
         Assert.AreSame(host, navigation.CurrentPage.ExtensionHost);
         Assert.AreSame(providerContext, navigation.CurrentPage.ProviderContext);
@@ -297,12 +321,13 @@ public sealed partial class DockPageNavigationViewModelTests
         }
     }
 
-    private static DockPageNavigationViewModel CreateNavigation(DockCommandRoute route) =>
+    private static DockPageNavigationViewModel CreateNavigation(DockCommandRoute route, bool hasExternalBackTarget = false) =>
         new(
             route,
             TaskScheduler.Default,
             new CommandPalettePageViewModelFactory(TaskScheduler.Default, DefaultContextMenuFactory.Instance),
-            new TestAppHostService());
+            new TestAppHostService(),
+            hasExternalBackTarget);
 
     private static PerformCommandMessage CreateMessage(
         IPage page,

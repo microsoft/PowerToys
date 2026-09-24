@@ -32,12 +32,17 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             if (SetProperty(ref _currentPage, value))
             {
                 OnPropertyChanged(nameof(CanGoBack));
+                OnPropertyChanged(nameof(HasBackButton));
                 OnPropertyChanged(nameof(BackStackDepth));
             }
         }
     }
 
     public bool CanGoBack => _pages.Count > 1;
+
+    public bool HasExternalBackTarget { get; }
+
+    public bool HasBackButton => CanGoBack || HasExternalBackTarget;
 
     public int BackStackDepth => Math.Max(0, _pages.Count - 1);
 
@@ -48,12 +53,14 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         DockCommandRoute route,
         TaskScheduler scheduler,
         IPageViewModelFactoryService pageFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        bool hasExternalBackTarget = false)
     {
         Route = route;
         _scheduler = scheduler;
         _pageFactory = pageFactory;
         _appHostService = appHostService;
+        HasExternalBackTarget = hasExternalBackTarget;
     }
 
     public async Task<bool> NavigateAsync(PerformCommandMessage message, CancellationToken cancellationToken = default)
@@ -89,8 +96,8 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             }
 
             pageViewModel.DockRoute = Route;
-            pageViewModel.IsRootPage = !nested;
-            pageViewModel.HasBackButton = nested;
+            pageViewModel.IsRootPage = !nested && !HasExternalBackTarget;
+            pageViewModel.HasBackButton = nested || HasExternalBackTarget;
 
             try
             {

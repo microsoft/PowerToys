@@ -150,7 +150,7 @@
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Visibility="{x:Bind Navigation.CanGoBack, Mode=OneWay}">
+                        Visibility="{x:Bind Navigation.HasBackButton, Mode=OneWay}">
                         <Button.RenderTransform>
                             <CompositeTransform x:Name="BackButtonTransform" />
                         </Button.RenderTransform>
@@ -166,7 +166,7 @@
                         AutomationProperties.AccessibilityView="Raw"
                         SourceKey="{x:Bind Navigation.CurrentPage.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
-                        Visibility="{x:Bind Navigation.CanGoBack, Mode=OneWay}">
+                        Visibility="{x:Bind Navigation.HasBackButton, Mode=OneWay}">
                         <controls:IconBox.RenderTransform>
                             <CompositeTransform x:Name="PageIconTransform" />
                         </controls:IconBox.RenderTransform>

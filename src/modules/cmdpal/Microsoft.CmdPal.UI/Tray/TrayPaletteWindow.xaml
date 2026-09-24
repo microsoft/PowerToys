@@ -74,5 +74,10 @@
                 <Button x:Uid="TrayPalette_OpenPalette" HorizontalAlignment="Stretch" AutomationProperties.AutomationId="TrayPalette_OpenPalette" Click="OpenPalette_Click" />
             </StackPanel>
         </Grid>
+        <ContentControl
+            x:Name="PageHost"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            Visibility="Collapsed" />
     </Grid>
 </winui:WindowEx>
