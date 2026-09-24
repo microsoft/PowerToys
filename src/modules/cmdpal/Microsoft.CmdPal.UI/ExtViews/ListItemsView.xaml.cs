@@ -83,6 +83,10 @@ public sealed partial class ListItemsView : UserControl,
     public ListItemsView()
     {
         this.InitializeComponent();
+
+        // Item containers can handle pointer presses before they reach the list or grid.
+        ItemsList.AddHandler(PointerPressedEvent, new PointerEventHandler(TrackPointerInput), handledEventsToo: true);
+        ItemsGrid.AddHandler(PointerPressedEvent, new PointerEventHandler(TrackPointerInput), handledEventsToo: true);
         GridItems.Invalidated += GridItems_Invalidated;
 
         this.Loaded += OnLoaded;
@@ -100,6 +104,7 @@ public sealed partial class ListItemsView : UserControl,
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
+        _lastInputSource = InputSource.None;
 
         // Release before the native panel tears down. A reattached grid rebuilds
         // its groups from the source, which is what it does after any teardown.
@@ -822,6 +827,7 @@ public sealed partial class ListItemsView : UserControl,
     {
         if (d is ListItemsView @this)
         {
+            @this._lastInputSource = InputSource.None;
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
@@ -1164,7 +1170,10 @@ public sealed partial class ListItemsView : UserControl,
         _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 
-    private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
+    private void TrackPointerInput(object sender, PointerRoutedEventArgs e)
+    {
+        _lastInputSource = InputSource.Pointer;
+    }
 
     private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
