@@ -10,8 +10,11 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class TrayPaletteItemViewModel(
     PinnedCommandSettings pin,
     CommandItemViewModel item,
-    CommandProviderWrapper provider)
+    CommandProviderWrapper provider,
+    TrayPaletteItemPageContext pageContext)
 {
+    public TrayPaletteItemPageContext PageContext { get; } = pageContext;
+
     public PinnedCommandSettings Pin { get; } = pin;
 
     public CommandItemViewModel Item { get; } = item;

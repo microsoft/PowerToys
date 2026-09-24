@@ -101,9 +101,10 @@ public sealed partial class TrayPaletteViewModel : ObservableObject, IDisposable
                         continue;
                     }
 
-                    item = new(new(model), new(provider.TopLevelPageContext), _contextMenuFactory);
+                    var context = new TrayPaletteItemPageContext(pin, provider);
+                    item = new(new(model), new(context), _contextMenuFactory);
                     item.InitializeProperties();
-                    items.Add(new(pin, item, provider));
+                    items.Add(new(pin, item, provider, context));
                 }
                 catch (Exception ex)
                 {
