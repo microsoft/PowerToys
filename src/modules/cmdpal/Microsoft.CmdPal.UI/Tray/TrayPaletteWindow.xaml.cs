@@ -11,12 +11,14 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
@@ -41,6 +43,8 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
     private bool _visible;
     private bool _isDragging;
     private bool _refreshPending;
+    private TrayPaletteItemViewModel? _contextItem;
+    private int _contextRequestVersion;
 
     public TrayPaletteViewModel ViewModel { get; }
 
@@ -51,6 +55,9 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         _themeService = services.GetRequiredService<IThemeService>();
         ViewModel = new(_settingsService, services.GetRequiredService<TopLevelCommandManager>(), services.GetRequiredService<IContextMenuFactory>());
         InitializeComponent();
+        ContextControl.CloseRequested += ContextControl_CloseRequested;
+        ContextControl.FocusSearchRequested += ContextControl_CloseRequested;
+        ContextControl.ViewModel.CommandInvoking += ContextCommandInvoking;
         _pageHost = new(PageHost);
         _pageController = new(
             _pageHost,
@@ -158,25 +165,106 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         }
 
         var message = item.CreateMessage();
-        if (item.IsPage)
+        if (PrepareCommand(message))
+        {
+            WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    private bool PrepareCommand(PerformCommandMessage message)
+    {
+        if (message.Command.Unsafe is IPage)
         {
             var result = _pageController.Open(message, Root, new Point(0, 0));
             if (result == DockPageFlyoutController.RequestResult.Deferred)
             {
-                return;
+                return false;
             }
 
             if (result == DockPageFlyoutController.RequestResult.Started)
             {
-                WeakReferenceMessenger.Default.Send(message);
-                return;
+                return true;
             }
         }
 
         message.ShowWindowIfPage = true;
         message.OnBeforeShowConfirmation = ShowPalette;
         Dismiss();
-        WeakReferenceMessenger.Default.Send(message);
+        return true;
+    }
+
+    private async void CommandsGrid_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        var (item, element) = e.OriginalSource switch
+        {
+            SelectorItem container => (CommandsGrid.ItemFromContainer(container) as TrayPaletteItemViewModel, container),
+            FrameworkElement { DataContext: TrayPaletteItemViewModel model } target => (model, target),
+            _ => (null, null),
+        };
+        if (item is null || element is null || _isDragging)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        var position = e.TryGetPosition(element, out var point) ? point : new Point(0, element.ActualHeight);
+        var version = ++_contextRequestVersion;
+        try
+        {
+            await Task.Run(item.Item.SlowInitializeProperties);
+            if (_closed || !_visible || version != _contextRequestVersion || !ViewModel.Items.Contains(item))
+            {
+                return;
+            }
+
+            _contextItem = item;
+            ContextControl.SetCommandContext(item.Item);
+            ContextControl.PrepareForOpen(ContextMenuFilterLocation.Top);
+            ItemContextMenu.XamlRoot = element.XamlRoot;
+            ItemContextMenu.ShowAt(element, new FlyoutShowOptions { ShowMode = FlyoutShowMode.Standard, Position = position });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open a Tray Palette context menu.", ex);
+            item.PageContext.ShowException(ex);
+        }
+    }
+
+    private void ContextCommandInvoking(object? sender, PerformCommandMessage message)
+    {
+        if (_contextItem is not { } item)
+        {
+            message.CancelSend();
+            return;
+        }
+
+        var source = item.CreateMessage();
+        message.SourceExtensionHost = source.SourceExtensionHost;
+        message.SourceProviderContext = source.SourceProviderContext;
+        ItemContextMenu.Hide();
+        if (!PrepareCommand(message))
+        {
+            message.CancelSend();
+        }
+    }
+
+    private void ItemContextMenu_Opened(object sender, object e)
+    {
+        ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
+    }
+
+    private void ContextControl_CloseRequested(object? sender, EventArgs e) => ItemContextMenu.Hide();
+
+    private void ItemContextMenu_Closed(object sender, object e)
+    {
+        _contextItem = null;
+        ContextControl.SetCommandContext(null);
+        if (_refreshPending && !_isDragging && !_closed && _visible)
+        {
+            _refreshPending = false;
+            _ = RefreshAsync();
+        }
     }
 
     private void CommandsGrid_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
@@ -237,7 +325,9 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
     private void Dismiss()
     {
+        ++_contextRequestVersion;
         _visible = false;
+        ItemContextMenu.Hide();
         _pageController.Deactivate();
         AppWindow.Hide();
     }
@@ -285,7 +375,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         {
             if (!_closed && _visible)
             {
-                if (_isDragging)
+                if (_isDragging || ItemContextMenu.IsOpen)
                 {
                     _refreshPending = true;
                 }
@@ -310,6 +400,10 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         _themeService.ThemeChanged -= ThemeChanged;
         _settingsService.SettingsChanged -= SettingsChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        ItemContextMenu.Hide();
+        ContextControl.CloseRequested -= ContextControl_CloseRequested;
+        ContextControl.FocusSearchRequested -= ContextControl_CloseRequested;
+        ContextControl.ViewModel.CommandInvoking -= ContextCommandInvoking;
         _pageController.Dispose();
         ViewModel.Dispose();
         GC.SuppressFinalize(this);

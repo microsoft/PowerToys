@@ -53,6 +53,20 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return results;
         }
 
+        if (page is TrayPaletteItemPageContext trayContext)
+        {
+            // Use the saved identity, including generated top-level IDs and packaged-app aliases.
+            var pin = trayContext.Pin;
+            List<IContextItem> trayCommands = [
+                new Separator(),
+                new PinToContextItem(
+                    new PinToCommand(pin.CommandId, pin.ProviderId, false, PinLocation.Tray, _settingsService, _topLevelCommandManager),
+                    commandItem),
+            ];
+            results.AddRange(DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(trayCommands.ToArray(), commandItem));
+            return results;
+        }
+
         var isTopLevelItem = page is TopLevelItemPageContext;
         if (isTopLevelItem)
         {

@@ -8,6 +8,22 @@
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winui="using:WinUIEx">
     <Grid x:Name="Root" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid.Resources>
+            <Style x:Key="TrayContextMenuFlyoutStyle" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Style>
+            <Flyout
+                x:Name="ItemContextMenu"
+                Closed="ItemContextMenu_Closed"
+                FlyoutPresenterStyle="{StaticResource TrayContextMenuFlyoutStyle}"
+                Opened="ItemContextMenu_Opened"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
+                <controls:ContextMenu x:Name="ContextControl" />
+            </Flyout>
+        </Grid.Resources>
         <Grid x:Name="QuickActions" Width="360" Padding="12" RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -25,6 +41,7 @@
                     CanDragItems="True"
                     CanReorderItems="True"
                     ContainerContentChanging="CommandsGrid_ContainerContentChanging"
+                    ContextRequested="CommandsGrid_ContextRequested"
                     DragItemsCompleted="CommandsGrid_DragItemsCompleted"
                     DragItemsStarting="CommandsGrid_DragItemsStarting"
                     IsItemClickEnabled="True"

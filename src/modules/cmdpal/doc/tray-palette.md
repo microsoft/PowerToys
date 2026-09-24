@@ -27,7 +27,10 @@ Nested pages use the same navigation and command handling as dock pages.
 
 Drag buttons to change their order.
 The new order is saved when you drop a button.
-To remove a pin, find the command in Command Palette and select **Unpin from tray menu**.
+Right-click a quick-action button to open its command context menu.
+With a button focused, you can also press Shift+F10 or the context menu key.
+Select **Unpin from tray menu** to remove it from quick actions.
+The same unpin action remains available in Command Palette.
 
 ## Default pins and persistence
 
@@ -63,3 +66,4 @@ It preserves the saved positions of unavailable commands.
 7. Remove every pin and confirm that defaults do not return after restart.
 8. Switch the tray icon action to **Open command palette** and confirm the previous behavior.
 9. Check light dismissal, Escape, keyboard activation, and work-area positioning on each monitor.
+10. Open a tile's context menu with the mouse and keyboard, then invoke a command or remove its pin.

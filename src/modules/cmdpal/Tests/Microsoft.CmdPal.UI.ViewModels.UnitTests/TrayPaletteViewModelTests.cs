@@ -60,6 +60,9 @@ public partial class TrayPaletteViewModelTests
         Assert.HasCount(2, model.Items);
         Assert.AreEqual("second", model.Items[0].Pin.ProviderId);
         Assert.AreSame(second.Item, model.Items[0].Item.Model.Unsafe);
+        Assert.AreEqual(model.Items[0].Pin, model.Items[0].PageContext.Pin);
+        Assert.IsTrue(model.Items[0].Item.PageContext.TryGetTarget(out var context));
+        Assert.AreSame(model.Items[0].PageContext, context);
         Assert.AreSame(first.Item, model.Items[1].Item.Model.Unsafe);
         Assert.AreEqual("second", model.Items[0].CreateMessage().SourceProviderContext?.ProviderId);
         Assert.IsNotNull(model.Items[0].CreateMessage().SourceExtensionHost);
