@@ -104,6 +104,30 @@ public class AllAppsCommandProviderTests : AppsTestBase
     }
 
     [TestMethod]
+    public async Task PackagedAppCanBeResolvedByStableUserModelId()
+    {
+        var app = TestDataHelper.CreateTestUWPApplication("Localized Snipping Tool");
+        MockCache.AddUWPApplication(app);
+        var provider = new AllAppsCommandProvider(Page);
+        await WaitForPageInitializationAsync();
+
+        var result = provider.GetCommandItem(AllAppsCommandProvider.AppUserModelIdPrefix + app.UserModelId.ToUpperInvariant());
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Localized Snipping Tool", result.Title);
+        Assert.AreSame(result, provider.GetCommandItem(result.Command.Id));
+    }
+
+    [TestMethod]
+    public async Task MissingPackagedAppDoesNotResolve()
+    {
+        var provider = new AllAppsCommandProvider(Page);
+        await WaitForPageInitializationAsync();
+
+        Assert.IsNull(provider.GetCommandItem("aumid:Microsoft.ScreenSketch_8wekyb3d8bbwe!App"));
+    }
+
+    [TestMethod]
     public void ProviderWithMockData_TopLevelCommands_IncludesListItem()
     {
         // Arrange

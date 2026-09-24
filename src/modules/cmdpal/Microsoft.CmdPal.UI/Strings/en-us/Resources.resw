@@ -2159,7 +2159,7 @@ Home: highest position. End: lowest position.</value>
     <value>Pin commands from Command Palette to add quick actions here.</value>
   </data>
   <data name="TrayPalette_LoadError.Text" xml:space="preserve">
-    <value>Some quick actions could not load. Try opening Tray Palette again.</value>
+    <value>Some quick actions could not be loaded or saved. Try opening Tray Palette again.</value>
   </data>
   <data name="TrayPalette_OpenPalette.Content" xml:space="preserve">
     <value>Open command palette</value>
