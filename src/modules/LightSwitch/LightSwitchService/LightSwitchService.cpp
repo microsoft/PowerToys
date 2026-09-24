@@ -191,7 +191,6 @@ static DWORD RunServiceWorker(LPVOID lpParam)
         }
         else if (!needed && nightLightWatcher)
         {
-            nightLightWatcher->Stop();
             nightLightWatcher.reset();
         }
     };
@@ -355,11 +354,7 @@ static DWORD RunServiceWorker(LPVOID lpParam)
     SetEvent(g_ServiceStopEvent);
     scheduleCommands.Stop();
     cliServer.Stop();
-    if (nightLightWatcher)
-    {
-        nightLightWatcher->Stop();
-        nightLightWatcher.reset();
-    }
+    nightLightWatcher.reset();
     Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
     return 0;
 }

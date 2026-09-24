@@ -266,7 +266,6 @@ LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig&
     {
         _state.isManualOverride = !_state.isManualOverride;
     }
-    RecordThemeObservationsLocked(snapshot);
     NotifyAppliedThemeLocked(config, snapshot);
     return EvaluateAndApplyIfNeededLocked(config, now, &snapshot);
 }
