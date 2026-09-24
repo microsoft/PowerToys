@@ -71,11 +71,15 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         _hiddenOwner.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter presenter)
         {
-            presenter.SetBorderAndTitleBar(false, false);
             presenter.IsResizable = false;
             presenter.IsMinimizable = false;
             presenter.IsMaximizable = false;
+
+            presenter.SetBorderAndTitleBar(false, false);
         }
+
+        // The non-resizable presenter retains WS_DLGFRAME even with its border hidden.
+        HwndExtensions.ToggleWindowStyle(this.GetWindowHwnd(), false, WindowStyle.TiledWindow);
 
         Root.RequestedTheme = _themeService.Current.Theme;
         Root.KeyDown += Root_KeyDown;
