@@ -3,6 +3,7 @@
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
 #include "State.h"
+#include "EditorSuspensionState.h"
 
 class KeyboardManager
 {
@@ -17,6 +18,16 @@ public:
         if (editorIsRunningEvent)
         {
             CloseHandle(editorIsRunningEvent);
+        }
+
+        if (editorLifetimeMutex)
+        {
+            CloseHandle(editorLifetimeMutex);
+        }
+
+        if (editorCaptureReadyEvent)
+        {
+            CloseHandle(editorCaptureReadyEvent);
         }
     }
 
@@ -54,6 +65,12 @@ private:
     std::atomic_bool loadingSettings = false;
 
     HANDLE editorIsRunningEvent = nullptr;
+
+    HANDLE editorLifetimeMutex = nullptr;
+
+    HANDLE editorCaptureReadyEvent = nullptr;
+
+    EditorSuspensionState editorSuspensionState;
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);

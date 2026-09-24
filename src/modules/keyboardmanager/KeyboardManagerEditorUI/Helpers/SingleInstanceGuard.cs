@@ -31,6 +31,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private const string EditorProcessName = "PowerToys.KeyboardManagerEditorUI";
 
+        private const string ClassicEditorProcessName = "PowerToys.KeyboardManagerEditor";
+
         /// <summary>Win32 <c>SW_RESTORE</c>.</summary>
         private const int SwRestore = 9;
 
@@ -71,28 +73,33 @@ namespace KeyboardManagerEditorUI.Helpers
             try
             {
                 int currentProcessId = Environment.ProcessId;
-                foreach (Process process in Process.GetProcessesByName(EditorProcessName))
+                foreach (string processName in new[] { EditorProcessName, ClassicEditorProcessName })
                 {
-                    using (process)
+                    foreach (Process process in Process.GetProcessesByName(processName))
                     {
-                        if (process.Id == currentProcessId)
+                        using (process)
                         {
-                            continue;
-                        }
+                            if (process.Id == currentProcessId)
+                            {
+                                continue;
+                            }
 
-                        IntPtr hwnd = process.MainWindowHandle;
-                        if (hwnd == IntPtr.Zero)
-                        {
-                            continue;
-                        }
+                            IntPtr hwnd = process.MainWindowHandle;
+                            if (hwnd == IntPtr.Zero)
+                            {
+                                continue;
+                            }
 
-                        if (IsIconic(hwnd))
-                        {
-                            ShowWindow(hwnd, SwRestore);
-                        }
+                            if (IsIconic(hwnd))
+                            {
+                                ShowWindow(hwnd, SwRestore);
+                            }
 
-                        SetForegroundWindow(hwnd);
-                        return;
+                            if (SetForegroundWindow(hwnd))
+                            {
+                                return;
+                            }
+                        }
                     }
                 }
             }

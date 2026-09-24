@@ -69,12 +69,8 @@ namespace KeyboardManagerEditorUI
 
             // Stop the engine from applying the existing remappings while the editor is open, so
             // recording a trigger captures the physical key rather than what it is remapped to.
-            // Released in MainWindow_Closed. The classic editor does the same via EventLocker.
-            EditorWindowEventLock.Acquire();
-
-            // Backstop for exit paths that do not go through MainWindow_Closed: the event is
-            // manual-reset and outlives this process, so leaving it set would disable the engine.
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => EditorWindowEventLock.Release();
+            // Released in MainWindow_Closed, or abandoned by Windows if the process terminates.
+            EditorWindowLifetime.Acquire();
 
             SettingsManager.CorrelateServiceAndEditorMappings();
         }
@@ -100,8 +96,7 @@ namespace KeyboardManagerEditorUI
 
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
 
-            // Close with whichever launcher started us, so an orphaned editor cannot hold the
-            // engine-suspend event set for the rest of the session.
+            // Close with whichever launcher started us.
             ParentProcessWatcher.CloseWhenParentExits(
                 () => MainWindow.DispatcherQueue.TryEnqueue(() => MainWindow.Close()));
         }
@@ -113,9 +108,8 @@ namespace KeyboardManagerEditorUI
         {
             Logger.LogError("Unhandled exception", e.Exception);
 
-            // This handler leaves e.Handled false, so the process is about to go down. Leaving the
-            // suspend event set would keep the engine disabled until it is restarted.
-            EditorWindowEventLock.Release();
+            // This handler leaves e.Handled false, so the process is about to go down.
+            EditorWindowLifetime.Release();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;

@@ -70,6 +70,13 @@ KeyboardManager::KeyboardManager()
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
+    editorLifetimeMutex = CreateMutex(nullptr, false, KeyboardManagerConstants::EditorWindowMutexName.c_str());
+    editorCaptureReadyEvent = CreateEvent(nullptr, true, true, KeyboardManagerConstants::EditorCaptureReadyEventName.c_str());
+    if (editorCaptureReadyEvent)
+    {
+        SetEvent(editorCaptureReadyEvent);
+    }
+
     settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
@@ -105,22 +112,29 @@ void KeyboardManager::LoadSettings()
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
 {
-    LowlevelKeyboardEvent event{};
-    if (nCode == HC_ACTION)
+    if (nCode != HC_ACTION)
     {
-        event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-        event.wParam = wParam;
-        event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+        return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
+    }
 
-        if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
+    LowlevelKeyboardEvent event{};
+    event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    event.wParam = wParam;
+    event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
+
+    EditorCaptureReadyScope publishCaptureReady(
+        keyboardManagerObjectPtr->editorSuspensionState,
+        keyboardManagerObjectPtr->editorCaptureReadyEvent,
+        EditorSuspensionState::IsSourceEvent(event));
+
+    if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
+    {
+        // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
+        if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
         {
-            // Reset Num Lock whenever a NumLock key down event is suppressed since Num Lock key state change occurs before it is intercepted by low level hooks
-            if (event.lParam->vkCode == VK_NUMLOCK && (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) && event.lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-            {
-                KeyboardEventHandlers::SetNumLockToPreviousState(keyboardManagerObjectPtr->inputHandler);
-            }
-            return 1;
+            KeyboardEventHandlers::SetNumLockToPreviousState(keyboardManagerObjectPtr->inputHandler);
         }
+        return 1;
     }
 
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
@@ -137,6 +151,12 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
     if (!hookHandle)
     {
+        // Releases while the hook was stopped could not be observed.
+        editorSuspensionState.Reset();
+        if (editorCaptureReadyEvent)
+        {
+            SetEvent(editorCaptureReadyEvent);
+        }
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;
         if (!hookHandle)
@@ -155,6 +175,10 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     {
         UnhookWindowsHookEx(hookHandle);
         hookHandle = nullptr;
+        if (editorCaptureReadyEvent)
+        {
+            SetEvent(editorCaptureReadyEvent);
+        }
     }
 }
 
@@ -186,21 +210,37 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
+    const bool suspensionRequested =
+        (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0) ||
+        IsEditorMutexOwned(editorLifetimeMutex);
+    const bool wasSuspended = editorSuspensionState.IsSuspended();
+    const bool skipRemapping = editorSuspensionState.ShouldSkipRemapping(*data, suspensionRequested);
+
+    // Keep tracking source releases even while settings are loading.
     if (loadingSettings)
     {
         return 0;
     }
 
-    // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
+    if (!wasSuspended && editorSuspensionState.IsSuspended())
     {
-        return 0;
+        // A chord prefix must not survive a trip through the editor.
+        KeyboardEventHandlers::ResetAllStartedChords(state, std::nullopt);
+        for (auto& app : state.appSpecificShortcutReMapSortedKeys)
+        {
+            KeyboardEventHandlers::ResetAllStartedChords(state, app.first);
+        }
     }
 
     // If key has suppress flag, then suppress it
     if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
     {
         return 1;
+    }
+
+    if (skipRemapping)
+    {
+        return 0;
     }
 
     // Remap a key
