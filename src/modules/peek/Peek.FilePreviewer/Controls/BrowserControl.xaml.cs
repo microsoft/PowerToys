@@ -98,6 +98,18 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
+        public static readonly DependencyProperty AllowExternalImagesProperty = DependencyProperty.Register(
+            nameof(AllowExternalImages),
+            typeof(bool),
+            typeof(BrowserControl),
+            new PropertyMetadata(false));
+
+        public bool AllowExternalImages
+        {
+            get => (bool)GetValue(AllowExternalImagesProperty);
+            set => SetValue(AllowExternalImagesProperty, value);
+        }
+
         public BrowserControl()
         {
             this.InitializeComponent();
@@ -345,6 +357,15 @@ namespace Peek.FilePreviewer.Controls
             // Email previews embed MIME and MSG inline attachments as data URLs. Allow only
             // image resources from this scheme; scripts and other active data content remain blocked.
             if (requestUri.Scheme == "data" && args.ResourceContext == CoreWebView2WebResourceContext.Image)
+            {
+                return;
+            }
+
+            // Email newsletters commonly reference externally hosted images. Permit only image
+            // requests for email previews; every other external resource context stays blocked.
+            if (AllowExternalImages &&
+                args.ResourceContext == CoreWebView2WebResourceContext.Image &&
+                (requestUri.Scheme == Uri.UriSchemeHttps || requestUri.Scheme == Uri.UriSchemeHttp))
             {
                 return;
             }
