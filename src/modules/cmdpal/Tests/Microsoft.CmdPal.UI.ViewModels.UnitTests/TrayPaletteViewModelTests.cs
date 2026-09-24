@@ -67,11 +67,29 @@ public partial class TrayPaletteViewModelTests
         Assert.IsFalse(model.IsEmpty);
         Assert.IsFalse(model.IsLoading);
 
+        var original = model.Items[0];
+        var changes = 0;
+        model.Items.CollectionChanged += (_, _) => changes++;
+        await model.RefreshAsync();
+        Assert.AreSame(original, model.Items[0]);
+        Assert.AreEqual(0, changes, "Reopening must not reset the grid or recreate its tiles.");
+
+        manager.TopLevelCommands.Clear();
+        await model.RefreshAsync();
+        Assert.AreNotSame(original, model.Items[0], "Provider command changes must invalidate cached tiles.");
+
         model.Items.Move(1, 0);
         model.SaveOrder();
         Assert.AreEqual("first", settings.TrayPalette.Commands[0].ProviderId);
         Assert.AreEqual("missing", settings.TrayPalette.Commands[1].ProviderId);
         Assert.AreEqual("second", settings.TrayPalette.Commands[3].ProviderId);
+
+        await model.RefreshAsync();
+        Assert.AreEqual("first", model.Items[0].Pin.ProviderId);
+        settings = settings with { TrayPalette = settings.TrayPalette.Unpin(model.Items[0].Pin) };
+        await model.RefreshAsync();
+        Assert.HasCount(1, model.Items);
+        Assert.AreEqual("second", model.Items[0].Pin.ProviderId);
     }
 
     [TestMethod]

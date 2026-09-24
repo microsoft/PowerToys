@@ -31,6 +31,9 @@
                     ItemClick="CommandsGrid_ItemClick"
                     ItemsSource="{x:Bind ViewModel.Items}"
                     SelectionMode="None">
+                    <GridView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </GridView.ItemContainerTransitions>
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsWrapGrid ItemHeight="100" ItemWidth="112" MaximumRowsOrColumns="3" Orientation="Horizontal" />
