@@ -141,6 +141,46 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void AwakeSettingsMissingCustomTrayTimesKeepsDefaultAndCanClone()
+        {
+            const string json = """
+                {
+                  "name": "Awake",
+                  "properties": {
+                    "mode": 1,
+                    "keepDisplayOn": true
+                  }
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.AwakeSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.Properties.CustomTrayTimes);
+
+            var clone = (AwakeSettings)settings.Clone();
+            Assert.IsEmpty(clone.Properties.CustomTrayTimes);
+        }
+
+        [TestMethod]
+        public void AwakeSettingsNullCustomTrayTimesNormalizesToEmpty()
+        {
+            const string json = """
+                {
+                  "name": "Awake",
+                  "properties": {
+                    "customTrayTimes": null
+                  }
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.AwakeSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.Properties.CustomTrayTimes);
+        }
+
+        [TestMethod]
         public void HotkeyConflictCollectionsDeserializeInitOnlyProperties()
         {
             var allConflicts = JsonSerializer.Deserialize<AllHotkeyConflictsData>("""
