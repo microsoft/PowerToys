@@ -18,7 +18,9 @@ internal static class Program
         var rootCommand = new RootCommand("PowerToys Settings CLI - Command line interface for PowerToys Settings");
 
         rootCommand.AddCommand(new ListCommand());
-        rootCommand.AddCommand(new ToggleCommand());
+        rootCommand.AddCommand(new StatusCommand());
+        rootCommand.AddCommand(new EnableCommand());
+        rootCommand.AddCommand(new DisableCommand());
 
         return rootCommand;
     }

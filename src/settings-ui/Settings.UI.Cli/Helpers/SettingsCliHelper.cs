@@ -52,6 +52,17 @@ internal static class SettingsCliHelper
         return result;
     }
 
+    public static ModuleStatus GetModuleStatus(string moduleName, SettingsUtils? settingsUtils = null)
+    {
+        var moduleEntry = GetModuleEntry(moduleName, settingsUtils);
+        var gpoRule = GetModuleGpoRule(moduleEntry.ModuleName);
+
+        return new ModuleStatus(
+            moduleEntry.ModuleName,
+            moduleEntry.Enabled,
+            gpoRule is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled ? gpoRule.ToString() : null);
+    }
+
     public static GpoRuleConfigured GetModuleGpoRule(string moduleName)
     {
         return moduleName.ToLowerInvariant() switch
@@ -93,29 +104,32 @@ internal static class SettingsCliHelper
         };
     }
 
-    public static bool ToggleModule(string moduleName, bool? targetState, SettingsUtils? settingsUtils = null)
+    public static ModuleStatus SetModuleEnabled(string moduleName, bool enabled, SettingsUtils? settingsUtils = null)
     {
         settingsUtils ??= SettingsUtils.Default;
-        var modules = GetModulesAndStatus(settingsUtils);
+        var moduleEntry = GetModuleEntry(moduleName, settingsUtils);
 
+        CheckModuleGpoLock(moduleEntry.ModuleName);
+
+        SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{moduleEntry.ModuleName}", enabled.ToString().ToLowerInvariant(), settingsUtils);
+        return GetModuleStatus(moduleEntry.ModuleName, settingsUtils);
+    }
+
+    public static string SerializeToJson<T>(T obj)
+    {
+        return JsonSerializer.Serialize(obj, JsonOptions);
+    }
+
+    private static ModuleEntry GetModuleEntry(string moduleName, SettingsUtils? settingsUtils)
+    {
+        var modules = GetModulesAndStatus(settingsUtils);
         var matchedKey = modules.Keys.FirstOrDefault(k => string.Equals(k, moduleName, StringComparison.OrdinalIgnoreCase));
         if (matchedKey == null)
         {
             throw new ArgumentException($"Module '{moduleName}' was not found.");
         }
 
-        CheckModuleGpoLock(matchedKey);
-
-        var currentState = modules[matchedKey];
-        var newState = targetState ?? !currentState;
-
-        SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{matchedKey}", newState.ToString().ToLowerInvariant(), settingsUtils);
-        return newState;
-    }
-
-    public static string SerializeToJson<T>(T obj)
-    {
-        return JsonSerializer.Serialize(obj, JsonOptions);
+        return new ModuleEntry(matchedKey, modules[matchedKey]);
     }
 
     private static void CheckModuleGpoLock(string moduleName)
@@ -131,4 +145,8 @@ internal static class SettingsCliHelper
             throw new InvalidOperationException($"Module '{moduleName}' is force-enabled by Group Policy and cannot be modified.");
         }
     }
+
+    private sealed record ModuleEntry(string ModuleName, bool Enabled);
+
+    public sealed record ModuleStatus(string ModuleName, bool Enabled, string? GroupPolicy);
 }

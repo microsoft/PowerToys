@@ -36,20 +36,25 @@ public class SettingsCliTests
     }
 
     [TestMethod]
-    public void TestToggleModule()
+    public void TestGetModuleStatus()
     {
-        var modulesBefore = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
-        var initialFancyZonesStatus = modulesBefore["FancyZones"];
+        var status = SettingsCliHelper.GetModuleStatus("fancyzones", settingsUtils);
 
-        var toggledState = SettingsCliHelper.ToggleModule("FancyZones", targetState: null, settingsUtils);
-        Assert.AreEqual(!initialFancyZonesStatus, toggledState);
+        Assert.AreEqual("FancyZones", status.ModuleName);
+        Assert.IsNull(status.GroupPolicy);
+    }
 
-        var modulesAfter = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
-        Assert.AreEqual(!initialFancyZonesStatus, modulesAfter["FancyZones"]);
+    [TestMethod]
+    public void TestSetModuleEnabled()
+    {
+        var disabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: false, settingsUtils);
+        Assert.IsFalse(disabledState.Enabled);
 
-        // Explicit enable
-        var enabledState = SettingsCliHelper.ToggleModule("FancyZones", targetState: true, settingsUtils);
-        Assert.IsTrue(enabledState);
+        var modulesAfterDisable = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
+        Assert.IsFalse(modulesAfterDisable["FancyZones"]);
+
+        var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils);
+        Assert.IsTrue(enabledState.Enabled);
     }
 
     [TestMethod]
@@ -57,7 +62,7 @@ public class SettingsCliTests
     {
         var parser = new Parser(Program.CreateRootCommand());
 
-        var parseResult = parser.Parse(["toggle"]);
+        var parseResult = parser.Parse(["enable"]);
 
         Assert.IsTrue(parseResult.Errors.Count > 0);
     }
