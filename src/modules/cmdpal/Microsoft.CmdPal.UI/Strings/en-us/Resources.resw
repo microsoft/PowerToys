@@ -1506,4 +1506,34 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_TrayIconClickAction_CommandPalette.Content" xml:space="preserve">
     <value>Open command palette</value>
   </data>
+  <data name="PinTo_Menu" xml:space="preserve">
+    <value>Pin to...</value>
+  </data>
+  <data name="PinTo_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="PinTo_Dock" xml:space="preserve">
+    <value>Dock</value>
+  </data>
+  <data name="PinTo_Tray" xml:space="preserve">
+    <value>Tray menu</value>
+  </data>
+  <data name="TrayPalette_Unpin" xml:space="preserve">
+    <value>Unpin from tray menu</value>
+  </data>
+  <data name="TrayPalette_Title" xml:space="preserve">
+    <value>Tray Palette</value>
+  </data>
+  <data name="TrayPalette_Heading.Text" xml:space="preserve">
+    <value>Quick actions</value>
+  </data>
+  <data name="TrayPalette_Empty.Text" xml:space="preserve">
+    <value>Pin commands from Command Palette to add quick actions here.</value>
+  </data>
+  <data name="TrayPalette_LoadError.Text" xml:space="preserve">
+    <value>Some quick actions could not load. Try opening Tray Palette again.</value>
+  </data>
+  <data name="TrayPalette_OpenPalette.Content" xml:space="preserve">
+    <value>Open command palette</value>
+  </data>
 </root>
