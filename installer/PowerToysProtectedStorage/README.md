@@ -13,6 +13,8 @@ Run from a PowerShell 7 developer terminal at the repository root:
 .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 -Platform x64 -Configuration Debug -RunTests
 .\installer\PowerToysProtectedStorage\Tests\Test-Authoring.ps1 -Compile
 .\installer\PowerToysProtectedStorage\Tests\Test-ReleasePublication.ps1
+.\installer\PowerToysProtectedStorage\Tests\Test-PipelineSigning.ps1
+.\installer\PowerToysProtectedStorage\Tests\Test-ReleaseTools.ps1 -LiveTimestamp
 ```
 
 The build invokes the repository `tools\build\build.ps1` wrapper. Native outputs:
@@ -38,9 +40,20 @@ Finalize a release with `Build-Carrier.ps1 -Package`, providing all of:
 
 * `-Version <major.minor.build[.0]>` (MSI bounds; a nonzero fourth component is rejected);
 * `-SigningCertificateThumbprint <existing CurrentUser\My certificate>`;
-* `-ExpectedSignerSha256 <approved SHA-256 of that certificate's DER bytes>`;
-* `-TimestampServer <release timestamp URL>`;
+* `-TimestampServer <approved Microsoft RFC3161 timestamp URL>`;
 * `-ClientCatalogInput <JSON release-client inventory>`.
+
+The certificate parameter selects a local signing key only, never a trust
+authority. All resulting signatures must independently pass the fixed
+`microsoft-production-v1` native policy. No developer certificate is generated
+or accepted. Use the same compatible Microsoft timestamp server for PE and CMS
+signing: `http://timestamp.acs.microsoft.com` or the approved corporate endpoint
+`http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer`.
+Local PE/MSI signing uses the Windows SDK SignTool with `/fd SHA256 /tr ... /td SHA256`,
+then `verify /pa /all /tw` and the shared native verifier. It does not use
+PowerShell's legacy Authenticode timestamp request. Missing timestamps and
+SignTool warnings/errors stop packaging; the native policy also requires a
+verified Authenticode timestamp before accepting release files.
 
 Native projects receive `ProtectedStorageVersion=a.b.c.0` and matching component
 properties; the separate WiX carrier build receives the three-part MSI version.
@@ -50,15 +63,12 @@ For example, pipeline version `0.101.3000.0` produces carrier MSI version
 ### External signing stages
 
 `-ReleaseStage` runs one assembly stage without requiring a local private key.
-Supply platform, configuration, and version on every invocation, plus
-`-ExpectedSignerSha256` for every stage after `RuntimePayloads`. The stages are:
+Supply platform, configuration, and version on every invocation. The stages are:
 
 | Stage | Output requiring external signing before the next stage |
 |---|---|
-| `RuntimePayloads` | `Bootstrap.exe`, `Runtime.exe` (Authenticode; no policy embedded yet) |
-| `Action` | `PowerToys.ProtectedStorageMsiAction.exe` (Authenticode; embeds the explicit carrier signer pin) |
-| `Payloads` | Combined runtime/action stage for callers that already have the approved pin |
-| `Documents` | `ClientCatalog.json`, `manifest.txt` (detached CMS, SHA256, one signer) |
+| `Payloads` | `Bootstrap.exe`, `Runtime.exe`, `PowerToys.ProtectedStorageMsiAction.exe` (Authenticode) |
+| `Documents` | `ClientCatalog.json`, `manifest.txt` (detached CMS, SHA256, one signer, bound RFC3161 timestamp) |
 | `Lifecycle` | `PowerToys.ProtectedStorageLifecycle.exe` (Authenticode) |
 | `Carrier` | `PowerToys.ProtectedStorage.Carrier.msi` (Authenticode) |
 | `Broker` | `PowerToys.ProtectedStorageProvisionBroker.exe` (Authenticode) |
@@ -86,30 +96,77 @@ demonstrated by Microsoft's [MCP signing pipeline](https://github.com/microsoft/
 The pipeline submits copies named `manifest.p7s` and `ClientCatalog.p7s`;
 ESRP replaces their contents with DER signatures, leaving the originals intact.
 
-For `RuntimePayloads` only, no pin is required: neither runtime embeds the seed
-policy. After signing, the pipeline derives the pin from Bootstrap and verifies
-Runtime matches before building the pin-bearing MSI action.
-The exact DER pin is taken from this job's final ESRP-signed Bootstrap, then
-required for every carrier artifact and CMS signer. The signing identity must
-be authorized for both operations and return the same certificate. Permission
-denials, certificate changes, or unexpected output stop packaging. No permission
-is granted automatically, and the task's Key Vault request-authentication
-certificates are never used as product-signing keys. Certificate rotation still
-requires the explicit protected-policy maintenance described in the design.
-Before embedding signatures, the pipeline checks both `SignedCms` and the
-native runtime's `CryptVerifyDetachedMessageSignature` API, plus one-signer,
-SHA256, exact pin, version, and payload-hash requirements.
-Client Authenticode certificates are not the carrier's update authority and need
-not equal its pin. CI verifies the clients' final signatures and the pinned CMS
-binds their exact hashes and roles. Reusing an older cached client signature must
-not select the trust root for newly signed service/installer payloads. This does
-not relax the native exact-pin checks for carrier files, manifests, or updates.
-All four installer helpers carry PE version resources, including the embedded
-MSI action, Lifecycle and Broker; the authoring compile test checks them.
+No timestamp parameters are invented for ESRP. After detached signing,
+`Add-DetachedTimestamp.ps1` uses .NET
+`Rfc3161TimestampRequest.CreateFromSignerInfo`, `ProcessResponse`, and
+`SignerInfo.AddUnsignedAttribute`. The request hashes the **actual signer
+signature value**, includes a random nonce, and sends only the timestamp request,
+not document contents. The response must match the request and cryptographically
+bind the signer. There is one RFC3161 unsigned attribute/value: an existing valid
+one is preserved; malformed, copied, or duplicate timestamps are rejected.
+HTTP requests have a 30-second timeout, a 1-MiB response bound, at most three
+attempts for transient failures, and no redirects or arbitrary provider scripts.
+Missing/untrusted timestamps fail before any signed resources are embedded.
+The original `.p7s` is replaced atomically only after native production
+verification accepts the timestamped candidate.
 
-`Tests\Test-ReleaseTools.ps1` exercises version normalization and real in-memory
-CMS verification, including altered data, wrong pins, multiple signers, SHA1,
-and malformed signatures. It never installs its short-lived test certificate.
+### Fixed production trust
+
+Every PE, helper, MSI, client, and detached document is independently verified
+by the shared native Common trust engine: verified Microsoft publisher,
+machine certificate chain, and Windows Microsoft application-root policy.
+There are no leaf pins, certificate hash allowlists, certificate enrollment from
+build outputs, or same-certificate requirements. Different valid Microsoft
+certificates can sign different artifacts. Certificate hashes in diagnostics
+are observations only, not trust inputs.
+
+The verification-only CLI links that same Common library:
+
+```text
+x64\<Configuration>\ProtectedStorage\ProtectedStorage.TrustVerifier.exe verify-file <absolute path>
+x64\<Configuration>\ProtectedStorage\ProtectedStorage.TrustVerifier.exe verify-detached <absolute document> <absolute p7s>
+```
+
+It has no development or alternate-policy mode and returns nonzero on failure.
+CI explicitly builds it for the **x64 host before verification**, including ARM64
+release jobs; local `-Package` builds it too. External stage callers must build
+the x64 tool first. It is never signed/published/harvested as a product helper,
+embedded, or authorized in the client catalog. Its raw output stays under
+`x64\<Configuration>\ProtectedStorage\`, not the public BinDir.
+
+Detached verification binds the exact original document bytes, requires one
+SHA256 signer, and validates a genuine trusted RFC3161 timestamp over that
+signer's signature. A `signingTime` attribute is not timestamp evidence and
+there is no uncertified expiration bypass. Timestamp mechanics alone do not
+grant publisher trust; the native verifier is the final authority.
+The catalog and manifest still bind exact final signed-file hashes, release
+identity, roles, and normalized version. Resource 110 contains exactly the ASCII
+bytes `microsoft-production-v1`, with no newline, from `Generated\signer.policy`.
+The seed `policy.txt` has these exact ASCII/LF bytes, including the final LF:
+
+```text
+format=2
+app=PowerToysProtectedStorage
+signer_policy=microsoft-production-v1
+minimum_version=a.b.c.0
+```
+
+All four installer helpers carry matching PE version resources, including the
+embedded MSI action, Lifecycle and Broker; the authoring compile test checks them.
+
+`Tests\Test-ReleaseTools.ps1` exercises version normalization, fail-closed policy,
+real in-memory CMS/RFC3161 mechanics, zero/multiple signers, SHA1, altered data,
+malformed responses, nonce and actual-signature binding, wrong timestamp EKU,
+response bounds, and missing/copied/duplicate timestamps. It never installs
+its short-lived certificates. `-LiveTimestamp` checks the public Microsoft
+endpoint with only an ephemeral signature digest and preserves original bytes.
+`-TrustVerifierPath <absolute x64 verifier>` additionally requires native
+production rejection of the self-signed fixture, even when Microsoft timestamped.
+`Tests\Test-PipelineSigning.ps1` checks the stage order, host architecture,
+unchanged ESRP contract, timestamp/native gates, and both installer scopes.
+The process-scoped publication mock tests exact final Setup identity and bytes,
+every native gate, final payload hashes, policy/version, and BOM/line-ending
+rejection. It never supplies a product trust bypass.
 `Tests\Test-ProjectEvaluation.ps1` checks native version properties without VC
 imports, reproducing the SDK-only evaluation used by CI's `dotnet restore`.
 Both native property sheets load the repository version explicitly when that
@@ -120,31 +177,19 @@ SettingsAPI dependencies, not just its direct DLL projects. The installer
 contract test checks that complete project-reference closure so static-graph
 builds retain the requested configuration and architecture.
 
-### Release qualification blocker (2026-09-24)
+### Release qualification status (2026-09-24)
 
-The signed pipeline is wired, but release `0.101.3000.0` has **not** produced
-an installable main package. [ADO run 158436898](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158436898)
-on commit `eebf8c1e8e961188041e5087ac4ba75a94a8af5f` completed with failures:
-
-* ARM64: Bootstrap and Runtime returned different valid Authenticode signer
-  certificates from the same ESRP signing task (failure log 205).
-* x64: the manifest's detached CMS signer differed from the pinned
-  Authenticode signer (failure log 298).
-
-The observed DER SHA256 identities were
-`c30b441672c82883d92eddac6d24cb57e9960bda4486c7fb5865e74157f35850` and
-`d33927e4dda9b91def9f8ed282549a49217ed8cacf54577a690963cbc5eff3ed`.
-These are diagnostic observations, **not an approved trust allowlist**.
-Matching publisher and issuer names do not make the certificates identical.
-The selection mechanism (including any rotation or caching) is unconfirmed.
-
-Therefore the single-DER-certificate requirement is not established by merely
-using the same ESRP key code. An ESRP-supported immutable-certificate contract,
-or an explicitly approved bounded signer-policy redesign, is required before
-claiming release readiness. No exact-pin check has been disabled, no unknown
-certificate is automatically enrolled, and no unsupported signing parameter is
-used. Blind retries or restricting the build to x64 do not resolve this issue.
-Failure artifacts preserve signature/CMS metadata and native build logs.
+The earlier [ADO run 158436898](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158436898)
+failed because ESRP returned different valid leaf certificates for different
+artifacts. The approved publisher/root policy replaces that single-leaf design;
+it does not replace chain validation with publisher-name string matching.
+The public Microsoft RFC3161 endpoint has been exercised successfully using an
+in-memory ephemeral CMS, with verified response/signature binding. That isolated
+test is not proof of release publisher trust or an installable signed package.
+The integrated native verifier/builds and a newly signed pipeline release still
+require qualification; no new ADO run or installable release is claimed here.
+Failure artifacts preserve diagnostic signature/CMS metadata and build logs.
+The raw-MSI alternative (Q10) remains future work, not this signing topology.
 
 The inventory has a `clients` array of `{ "path": "...", "role": "..." }`.
 Supported client roles are `workspaces.writer`, `workspaces.reader`,
@@ -181,7 +226,7 @@ dependency, not a service/update payload. The outer installer must harvest it
 beside `PowerToys.WorkspacesCsharpLibrary.dll`; do not exclude every file merely
 because its name begins with `PowerToys.ProtectedStorage`. Caller catalogs name
 the actual consumer executable, not this shared library.
-`release.json` records ProductCode, architecture, version, signer, MSI and Setup
+`release.json` records ProductCode, architecture, version, `trustPolicy`, MSI and Setup
 hashes. ProductCode is deterministic for release and architecture and is
 identical for all owners. Never republish different bytes under one release.
 
@@ -193,9 +238,11 @@ compiling, and package `$(ProtectedStorageSetupPath)` next to `PowerToys.exe`.
 when defined, otherwise the platform/configuration root). The public
 `ProtectedStorageSetupPath` points there; `ProtectedStorageStagedSetupPath`
 identifies its verified staged source.
-`ProtectedStorageExpectedSignerSha256` is a required explicit release trust input.
-The validation target checks signed Setup/MSI, recorded hashes, version, and
-architecture, and exact equality of the public Setup bytes; it never substitutes
+`ProtectedStorageTrustPolicy=microsoft-production-v1` is the required explicit
+release gate property. It has no default that silently enables packaging.
+The validation target uses the x64 native verifier to check every staged signed
+helper/MSI/document, recorded hashes, version, architecture, and exact equality
+of the public Setup bytes; it never substitutes
 an unsigned native compilation output.
 The updater's dedicated Setup identity gate may require exact version-resource
 values `CompanyName=Microsoft Corporation`,
@@ -207,7 +254,7 @@ four-part carrier PE release version; resource strings alone are not trust.
 Build order deliberately avoids self-hash cycles:
 
 1. Build/sign Bootstrap and Runtime.
-2. Build/sign MsiAction (identity and signer pin only).
+2. Build/sign MsiAction (identity and fixed trust policy only; combined with step 1).
 3. Finalize/sign caller catalog, including MsiAction's hash; sign manifest.
 4. Build/sign Lifecycle with those exact seed resources.
 5. Build/sign MSI containing separate Binary streams for every payload.
@@ -356,8 +403,8 @@ a claim that a Windows restart is required.
 The parent installer may embed **`$(ProtectedStorageLifecyclePath)`** directly
 as an MSI Binary. This is the signed
 `Package\PowerToys.ProtectedStorageLifecycle.exe`, not a VA Code file or an
-unsigned native output. `RequireProtectedStorageRelease` verifies its pinned
-signature and `release.json` hash alongside Setup/MSI.
+unsigned native output. `RequireProtectedStorageRelease` verifies its production
+publisher/root signature policy and `release.json` hash alongside Setup/MSI.
 
 The exact fixed backend command is:
 

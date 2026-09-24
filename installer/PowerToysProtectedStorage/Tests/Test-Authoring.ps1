@@ -28,7 +28,7 @@ foreach ($name in @('Provisioner', 'MsiAction', 'Bootstrap', 'Runtime', 'Manifes
 $build = Get-Content "$installer\Build-Carrier.ps1" -Raw
 $actionResource = ($build -split "`r?`n" | Where-Object { $_ -match 'Write-Utf8.+\\MsiAction\.rc' })
 if (@($actionResource).Count -ne 1 -or $actionResource -notmatch 'Resource 110 ' -or $actionResource -match 'ClientCatalog|manifest') {
-    throw 'MsiAction must contain only its signer pin, never a catalog containing its own final hash.'
+    throw 'MsiAction must contain only its fixed trust policy, never a catalog containing its own final hash.'
 }
 $orderedSteps = @(
     'Sign-File "$stage\PowerToys.ProtectedStorageMsiAction.exe"',

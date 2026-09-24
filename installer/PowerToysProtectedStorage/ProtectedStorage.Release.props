@@ -9,5 +9,6 @@
     <ProtectedStorageLifecyclePath>$(ProtectedStoragePackageRoot)\PowerToys.ProtectedStorageLifecycle.exe</ProtectedStorageLifecyclePath>
     <ProtectedStorageReleaseManifestPath>$(ProtectedStoragePackageRoot)\release.json</ProtectedStorageReleaseManifestPath>
     <ProtectedStorageReleaseVersion Condition="'$(ProtectedStorageReleaseVersion)' == ''">$(Version)</ProtectedStorageReleaseVersion>
+    <ProtectedStorageTrustVerifierPath>$(RepoRoot)x64\$(Configuration)\ProtectedStorage\ProtectedStorage.TrustVerifier.exe</ProtectedStorageTrustVerifierPath>
   </PropertyGroup>
 </Project>

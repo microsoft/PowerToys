@@ -57,7 +57,12 @@ Use separate actual interactive accounts A and B. A Session-0 synthetic token ru
 | SEC-03 | Server impersonation | Client rejects an incorrect VA/server image or PID-reused server |
 | SEC-04 | Filesystem redirection | Reparse points, hardlink substitution and source replacement do not redirect privileged writes or execution |
 | SEC-05 | Maintenance boundary | VA cannot change its SCM configuration; SYSTEM never executes VA-writable live code |
-| SEC-06 | Trust failure | Unsigned/missing/invalid release or caller catalog fails closed; no silent development pin or trust-store import |
+| SEC-06 | Trust failure | Unsigned/missing/invalid release or caller catalog fails closed; no development-root fallback or trust-store import |
+| SEC-07 | Different production leaf certificates | Independent Microsoft production signatures from different valid leaves are accepted; no cross-file leaf equality or manually maintained leaf list |
+| SEC-08 | User-root/publisher spoofing | A self-signed Microsoft-looking certificate, a caller CurrentUser root, wrong publisher/EKU or test root cannot authorize code or a catalog |
+| SEC-09 | CMS timestamp binding | Missing, malformed, substituted or duplicate timestamp proofs fail; self-asserted signingTime is not a trusted timestamp |
+| SEC-10 | Certificate lifetime and offline operation | A genuine timestamp preserves a valid release past code-signer expiry; known revocation rejects, offline revocation unknown remains distinct from invalid trust |
+| SEC-11 | Shared release verifier | CI and production use the same native trust engine; local keys/mocks cannot enable a weaker packaged policy, and legacy/unknown policy formats fail explicitly |
 
 ## Workspaces migration and business paths
 

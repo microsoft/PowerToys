@@ -1,5 +1,6 @@
 #include "../ProtectedStorage.Runtime/BlobStore.h"
 #include "../ProtectedStorage.Common/Authentication.h"
+#include "../ProtectedStorage.Common/SignatureTrust.h"
 #include "../ProtectedStorage.Client/ProtectedStoreClient.h"
 #include "../ProtectedStorage.Client/ClientProtocol.h"
 #include "../ProtectedStorage.Bootstrap/ServiceHealth.h"
@@ -516,7 +517,6 @@ namespace
             bytes.resize(size);
             return bytes;
         };
-        const auto certificate = decode(CatalogCertificateBase64);
         const auto signature = decode(CatalogSignatureBase64);
         Value catalog = Value::Object{ { "format", uint64_t{ 1 } }, { "app", "PowerToysProtectedStorage" }, { "version", "1.0.0.0" }, { "clients", Value::Array{ Value::Object{ { "image", "test.exe" }, { "sha256", std::string(64, 'a') }, { "role", "workspaces.writer" } } } } };
         const auto text = catalog.Stringify();
@@ -525,11 +525,20 @@ namespace
         WriteNew(catalogPath.wstring(), text);
         WriteNew((fixture.path / L"ClientCatalog.p7s").wstring(),
                  std::string_view(reinterpret_cast<const char*>(signature.data()), signature.size()));
-        Policy policy{ HashBytes(certificate.data(), static_cast<DWORD>(certificate.size())), 0 };
-        Expect(VerifyClientCatalog(fixture.path.wstring(), policy, ParseVersion("1.0.0.0")).At("clients").Items().size() == 1, "signed pinned catalog");
+        Policy policy{ ReleaseTrustPolicy, 0 };
         const auto proof = ReadSignedClientCatalog(fixture.path.wstring());
-        Expect(VerifySignedClientCatalog(proof, policy).At("version").Text() == "1.0.0.0", "portable signed peer proof");
-        Policy raisedFloor{ policy.signer, ParseVersion("2.0.0.0") };
+        CRYPT_VERIFY_MESSAGE_PARA verify{ sizeof(verify), X509_ASN_ENCODING | PKCS_7_ASN_ENCODING };
+        const BYTE* content = proof.document.data();
+        DWORD contentSize = static_cast<DWORD>(proof.document.size());
+        Expect(CryptVerifyDetachedMessageSignature(&verify, 0, proof.signature.data(), static_cast<DWORD>(proof.signature.size()),
+                                                  1, &content, &contentSize, nullptr) != FALSE,
+               "self-signed fixture has a mathematically valid signature");
+        Reject([&] { VerifyClientCatalog(fixture.path.wstring(), policy, ParseVersion("1.0.0.0")); });
+        Reject([&] { VerifySignedClientCatalog(proof, policy); });
+        Expect(ParseClientCatalogDocument(proof.document, policy).At("version").Text() == "1.0.0.0", "catalog schema independent of signature trust");
+        Policy raisedFloor{ policy.signerPolicy, ParseVersion("2.0.0.0") };
+        Reject([&] { ParseClientCatalogDocument(proof.document, raisedFloor); });
+        Reject([&] { ParseClientCatalogDocument(proof.document, policy, ParseVersion("2.0.0.0")); });
         Reject([&] { VerifySignedClientCatalog(proof, raisedFloor); });
         auto tamperedProof = proof;
         tamperedProof.document.push_back(' ');
@@ -539,7 +548,8 @@ namespace
         auto receivedProof = DecodeFrame(EncodeFrame(proofFrame));
         const auto separator = receivedProof.bytes.begin() + static_cast<size_t>(receivedProof.metadata.At("catalogLength").Number());
         SignedClientCatalog received{ { receivedProof.bytes.begin(), separator }, { separator, receivedProof.bytes.end() } };
-        Expect(VerifySignedClientCatalog(received, policy).At("clients").Items().size() == 1, "signed peer proof wire round trip");
+        Expect(received.document == proof.document && received.signature == proof.signature, "signed peer proof bytes survive wire round trip");
+        Reject([&] { VerifySignedClientCatalog(received, policy); });
         const auto ownerStage = fixture.path / L"owner-stage";
         const auto protectedTransaction = fixture.path / L"transaction";
         MakeDirectory(ownerStage.wstring());
@@ -552,13 +562,26 @@ namespace
             CopyHeld(staged.get(), (protectedTransaction / name).wstring());
         }
         std::filesystem::remove_all(ownerStage);
-        Expect(VerifyClientCatalog(protectedTransaction.wstring(), policy, ParseVersion("1.0.0.0")).At("clients").Items().size() == 1,
-               "transaction catalog proof survives missing owner stage");
+        const auto retained = ReadSignedClientCatalog(protectedTransaction.wstring());
+        Expect(retained.document == proof.document && retained.signature == proof.signature,
+               "transaction retains exact catalog proof after owner stage disappears");
         Policy incorrect{ std::string(64, 'b'), 0 };
         Reject([&] { VerifyClientCatalog(fixture.path.wstring(), incorrect, ParseVersion("1.0.0.0")); });
+        Reject([&] { ParseClientCatalogDocument(proof.document, incorrect); });
         Reject([&] { VerifyClientCatalog(fixture.path.wstring(), policy, ParseVersion("2.0.0.0")); });
         ReplaceText(catalogPath.wstring(), text + " ");
         Reject([&] { VerifyClientCatalog(fixture.path.wstring(), policy, ParseVersion("1.0.0.0")); });
+    }
+    void SigningPolicyTests()
+    {
+        const std::string policy = "format=2\napp=PowerToysProtectedStorage\nsigner_policy=microsoft-production-v1\nminimum_version=1.2.3.0\n";
+        const auto parsed = ParsePolicy(policy);
+        Expect(parsed.signerPolicy == ReleaseTrustPolicy && parsed.minimum == ParseVersion("1.2.3.0"),
+               "fixed publisher policy replaces caller-selected certificate pins");
+        Reject([&] { ParsePolicy("format=1\napp=PowerToysProtectedStorage\nsigner_sha256=" + std::string(64, 'a') + "\nminimum_version=1.2.3.0\n"); });
+        Reject([&] { ParsePolicy("format=2\napp=PowerToysProtectedStorage\nsigner_policy=any-trusted-publisher\nminimum_version=1.2.3.0\n"); });
+        Reject([&] { ParsePolicy("format=2\napp=OtherProduct\nsigner_policy=microsoft-production-v1\nminimum_version=1.2.3.0\n"); });
+        Reject([&] { ParsePolicy(policy + "signer_policy=microsoft-production-v1\n"); });
     }
 }
 int main()
@@ -575,6 +598,7 @@ int main()
         PublicationFaultTests();
         PurgeTests();
         CatalogTests();
+        SigningPolicyTests();
         std::cout << "PASS " << passed << " assertions; 20000 deterministic framing mutations; isolated local fixtures\n";
         return 0;
     }

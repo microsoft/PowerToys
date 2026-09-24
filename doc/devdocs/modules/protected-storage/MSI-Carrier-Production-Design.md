@@ -1,6 +1,6 @@
 # PowerToys Protected Storage：MSI Carrier 生产设计
 
-日期：2026-09-23
+日期：2026-09-23；签名策略更新：2026-09-24
 状态：**生产实现设计草案，基于已通过核心 E2E 的独立原型；不是已落地产品的代码说明。**
 
 ## 0. 阅读约定与适用范围
@@ -11,6 +11,10 @@
 - 文中的 C++ / C# 签名是接口设计；类型名、命名空间与项目名在实现时统一定稿，不是当前可调用 API。
 - 首期只接入 **Workspaces**；底层为可复用的 per-owner protected storage，不包含 Workspaces 业务 schema。
 - 本文取代旧文档中与“当前 MSI-carrier 方案”冲突的架构描述，旧方案保留为历史记录。
+- **2026-09-24 已批准的签名策略调整**：取消跨产物单一叶子证书 pin，不维护 A/B 证书列表；
+  保留已提取文件集合路径，采用机器上下文的完整代码签名链、经验证的 Microsoft 发布者和
+  Windows Microsoft 正式应用根策略。CMS 必须验证内容及绑定签名值的可信 RFC3161 时间戳；
+  不以证书名称、任意有效签名或自报 signingTime 代替这些检查。Q10 原始 MSI 路径仍仅为独立验证候选。
 
 相关资料：
 
@@ -882,9 +886,10 @@ sealed record OperationFailure(
 构建顺序：
 
 ```text
-Common / Client / Bootstrap / Runtime
-→ 正式签名 PE + 生成 payload manifest/catalog
-→ Lifecycle / MsiAction（嵌入精确 release 资源）
+Common / Client / Bootstrap / Runtime / MsiAction（仅版本与固定信任策略）
+→ 正式签名 PE + 按最终 PE hash 生成 payload manifest/catalog
+→ 签名 manifest/catalog + 添加并验证 RFC3161 时间戳
+→ Lifecycle（嵌入精确 release 资源，正式签名）
 → carrier MSI（正式签名）
 → ProvisionBroker（嵌入相同 MSI，正式签名）
 → Setup（嵌入 broker 与同一 MSI，正式签名）
@@ -892,7 +897,13 @@ Common / Client / Bootstrap / Runtime
 ```
 
 签名嵌套资源后再编译其宿主，避免最后一轮签名改变 MSI 内外对比的 PE 字节。
-release key 不下发到客户端，测试开发 key 不能成为正式 policy pin。
+release key 不下发到客户端，测试开发 key/测试根不能成为正式信任来源。
+生产策略标识为 `microsoft-production-v1`，不是证书 hash；受保护 policy 使用 format 2。
+每份签名独立满足相同发布信任策略，允许不同有效 Microsoft 叶子证书，不比较它们彼此是否相同。
+CI 使用与服务/安装辅助程序相同的 native TrustVerifier，避免“只放宽构建，运行时仍拒绝”。
+已验证 TSA 时间用于评估代码签名证书有效期；缺失/错误时间戳拒绝，不能因已安装证书自然过期而
+直接使正确时间戳保护的发布失效。吊销检查区分明确吊销与离线未知：前者拒绝，后者按 consumer
+离线策略明确诊断；未知不能掩盖其他签名、发布者、用途或根信任错误。
 
 ### 14.2 必需测试
 
@@ -903,6 +914,7 @@ release key 不下发到客户端，测试开发 key 不能成为正式 policy p
 | 迁移 | 完整有效源、任意坏条目整体失败、module 拒绝敏感行为、源在校验后变化、commit ACK 丢失、删除失败、重装不重导 |
 | Temp/preview | 捕获、Editor 编辑后预览、Launcher/arranger 使用同一快照、跨 owner 访问拒绝、进程异常时有界回收 |
 | 更新 | v1→v2、同版 repair、坏 candidate 回滚、签名/hash/catalog 不匹配、旧 client 兼容、busy 1618、取消、维护期间保存 |
+| 发布信任 | 不同有效 Microsoft 叶子证书通过；自建/用户根、假 Microsoft 名称、错误 EKU/根、丢失/移植时间戳拒绝；证书到期与离线吊销语义 |
 | 恢复 | 在 MSI action、PE 发布、record/journal 更新、确认响应等边界终止进程/重启；不把 unknown 当成功 |
 | 卸载 | A/B 独立；KeepData 重装；PurgeData；全机 best-effort；离线注册残留；profile busy；helper 残留归属 |
 | 平台与 UX | Windows 支持矩阵、x64/ARM64、Windows Installer/WDAC/AppLocker 策略、无管理员场景、Q02 文案、Retry 与取消 |
@@ -928,7 +940,7 @@ release key 不下发到客户端，测试开发 key 不能成为正式 policy p
 | 原型源位置 / 实际符号 | 可抽取到生产类 | 不可直接当作已经完成的部分 |
 |---|---|---|
 | `Runtime\Common.h`：`Paths`、`Policy`、`Bundle`、`MsiCall`、`Transaction` | StoragePaths、ReleaseVerifier、MaintenanceClient、UpdateTransactionManager | 数据 protocol、caller roles、生产 catalog 尚无 |
-| `Runtime\Common.cpp:476`：`Paths::Paths`；`:530`：`ValidateBundle` | StoragePaths、ReleaseVerifier | 正式名称/manifest 需版本化；开发 pin 不能下发 |
+| `Runtime\Common.cpp:476`：`Paths::Paths`；`:530`：`ValidateBundle` | StoragePaths、ReleaseVerifier | 正式名称/manifest 需版本化；原型开发 pin 必须替换为正式发布者信任策略 |
 | `Runtime\Common.cpp:645`：`PipeCaller`；`:661`：`Call` | CallerAuthenticator、ServerIdentityVerifier | 原型 owner 比较不是完整 production caller identity 验证 |
 | `Runtime\Common.cpp:953`：`DecideOperation`；`:1016`：`RunUpdate` | UpdateTransactionManager | 不能声称解决 post-commit MSI/VA 分歧和任意断电恢复 |
 | `Runtime\Bootstrap.cpp:130`：`Worker`；`:181`：`VerifyReady` | RuntimeSupervisor | 真实 BlobStore 恢复/数据 readiness 与 drain 待新增 |

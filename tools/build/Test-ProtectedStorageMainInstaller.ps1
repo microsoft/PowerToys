@@ -74,7 +74,7 @@ if (!$callback.Contains('ShouldRemoveOwnerCarrier') -or !$callback.Contains('Rem
 }
 $solution = [xml](Get-Content -LiteralPath (Join-Path $repo 'PowerToys.slnx') -Raw)
 $newProjects = @($solution.SelectNodes('//Project') | Where-Object { $_.Path -like '*ProtectedStorage/*' })
-if ($newProjects.Count -ne 11) { throw "Expected 11 native/managed protected-storage projects in main solution, got $($newProjects.Count)." }
+if ($newProjects.Count -ne 13) { throw "Expected 13 native/managed protected-storage projects in main solution, got $($newProjects.Count)." }
 foreach ($projectNode in $newProjects) {
     if (!(Test-Path -LiteralPath (Join-Path $repo $projectNode.Path))) { throw "Missing solution project: $($projectNode.Path)" }
 }

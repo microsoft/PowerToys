@@ -54,13 +54,13 @@ acceptance machine before release.
 
 ## Release packaging is a separate, authenticated step
 
-**CI qualification is blocked:** ADO run `158436898` for `0.101.3000.0`
-completed with certificate-pin mismatches on both x64 and ARM64 and produced no
-main installers. ESRP returned different leaf certificates within the signed
-artifact graph, including two files in one signing task. The carrier README
-records exact evidence and the required signing-contract/policy decision.
-The current implementation continues to fail closed; its single-pin trust
-model has not been broadened to accommodate these outputs.
+**Prior CI qualification:** ADO run `158436898` for `0.101.3000.0` failed
+under the former single-leaf policy and produced no main installers. The user
+approved replacing that policy on 2026-09-24, without a manual leaf list.
+The replacement is `microsoft-production-v1`: machine-context code-signing
+trust, verified Microsoft publisher/application-root policy and authenticated
+timestamps. This source change does not itself establish a successful signed
+pipeline or deployed acceptance; record the subsequent build result separately.
 
 The local Setup/Broker/Lifecycle/MsiAction compilation outputs deliberately do
 not contain finalized release resources and must not be treated as installers.
@@ -78,20 +78,21 @@ create the inventory without authorizing arbitrary executables:
 
 Then follow `installer\PowerToysProtectedStorage\README.md` to run
 `Build-Carrier.ps1 -Package` with an approved existing signing certificate,
-its expected DER SHA-256 pin, timestamp URL, release version and client inventory.
+timestamp URL, release version and client inventory.
 The release build verifies and publishes only the finalized self-contained
 `PowerToys.ProtectedStorageSetup.exe` beside the main PowerToys executable.
 It does not publish loose Bootstrap/Runtime update payloads.
 
 The signed ADO release pipeline instead uses the same builder's external
 `ReleaseStage` sequence, interleaving ESRP Authenticode and `Pkcs7DetachedSign`
-operations. It needs no local product private key. The exact signer DER pin
-comes from that job's final signed Bootstrap; all returned carrier signatures must
-match it. Detached signatures are checked by both managed CMS verification and
-the runtime's native CryptoAPI before embedding. The complete contract and
-stage ordering are in the carrier README.
+operations. It needs no local product private key and does not derive trust
+from whichever certificate happened to sign Bootstrap. Every returned signature
+must satisfy the fixed production policy. Detached CMS also carries a verified
+RFC3161 timestamp, not a self-asserted signing time. The host-native, non-shipping
+TrustVerifier uses the same implementation as the runtime before resources are
+embedded. The complete contract and stage ordering are in the carrier README.
 
-Main installer packaging requires `ProtectedStorageExpectedSignerSha256` and
+Main installer packaging requires `ProtectedStorageTrustPolicy` and
 the verified published release. There is no unsigned bypass or automatic test
 certificate fallback. The main MSI embeds the signed Lifecycle resource for
 machine-only final-uninstall cleanup; it never runs a helper selected from a

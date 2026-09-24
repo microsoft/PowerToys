@@ -78,12 +78,41 @@ runtime_sha256=<lowercase SHA256>
 catalog_sha256=<lowercase SHA256 of ClientCatalog.json>
 ```
 
-Policy has `format=1`, `app=PowerToysProtectedStorage`,
-`signer_sha256=<SHA256 of DER signing certificate>`, and
-`minimum_version=a.b.c.d`, one key per line. Detached CMS must have exactly one
-signer, SHA256 digest, and the exact policy-pinned signer. This is explicit
-certificate pinning, not an online revocation/expiration service. Trust-root
-rotation remains a SYSTEM-authorized policy operation.
+Policy has exactly these keys:
+
+```text
+format=2
+app=PowerToysProtectedStorage
+signer_policy=microsoft-production-v1
+minimum_version=a.b.c.d
+```
+
+The policy selects a fixed production verifier, not a certificate fingerprint
+or a caller-supplied list of trusted certificates. Unknown policies and legacy
+format-1 development policies fail closed; they are not automatically treated
+as the new trust policy. Policy remains SYSTEM-controlled.
+
+`SignatureTrust` is shared by Runtime, Bootstrap, installer helpers and the
+non-shipping `ProtectedStorage.TrustVerifier` release tool. CMS verification
+requires the exact content, one SHA256 signer, a machine-context code-signing
+chain, the verified Microsoft organization and the Windows Microsoft application
+root policy, with test roots disabled. The Microsoft-root policy supplements,
+not replaces, base chain validity and EKU checks. User-controlled CurrentUser
+roots cannot authorize a release. Different valid leaf certificates are allowed;
+neither leaf nor intermediate certificate hashes are maintained as an allowlist.
+
+Detached signatures require an RFC3161 timestamp bound to the signer's actual
+signature value. The timestamp's signature, machine-trusted TSA chain and
+timestamp EKU are verified before its time is used to validate the code signer.
+An unsigned `signingTime` is never a substitute. Missing, forged or mismatched
+timestamps fail. Certificate expiry after a valid timestamp does not by itself
+invalidate an installed release. Authenticode requires one validated timestamp
+and the same publisher/root policy on the actual verified signer.
+
+Revocation checks use cached evidence: a definitively revoked chain is rejected;
+unavailable offline revocation information is diagnosed as unknown and permitted
+by the consumer-app policy. No other chain/publisher/EKU/signature failure is
+waived. This does not promise immediate revocation discovery while offline.
 
 Catalog JSON:
 
@@ -114,7 +143,7 @@ The implemented production CA is an executable that reads these separate Binary
 streams from the matching signed MSI. The build graph is therefore:
 
 ```text
-data clients + Bootstrap/Runtime + MsiAction (version/signing pin only)
+data clients + Bootstrap/Runtime + MsiAction (version/fixed trust-policy identifier only)
   -> signed ClientCatalog containing final MsiAction hash
   -> signed manifest containing catalog hash
   -> Lifecycle / carrier MSI
@@ -216,7 +245,7 @@ void AllowPeerIdentityQuery(const std::wstring& peerSid);
 ```
 
 `VerifyPeerImage` opens only the fixed SYSTEM-owned Policy for the original
-owner, validates its protected ancestors/ACLs, checks the pinned CMS signer and
+owner, validates its protected ancestors/ACLs, checks the production CMS signing policy and
 minimum release, then verifies the actual mapped process image, expected path,
 exact catalog hash and role. Its result retains process/image/ancestor handles.
 The original owner must be an actual endpoint's TokenUser, not an unrelated
@@ -419,5 +448,5 @@ another owner and an unsigned same-owner image, real randomized CA loading, the
 supported Windows image-binding API matrix, catalog rollover across real releases,
 power interruption at publication boundaries, busy maintenance during saves,
 prepared/commit/rollback crashes, keep-data reinstall, and no UAC/reboot on ordinary
-updates. Certificate pin rotation/revocation policy and release signing must be
+updates. Publisher trust, timestamp/expiry/revocation policy and release signing must be
 validated by the production packaging/release infrastructure.

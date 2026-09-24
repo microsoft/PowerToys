@@ -1,4 +1,5 @@
 #include "Authentication.h"
+#include "SignatureTrust.h"
 #include <algorithm>
 #include <memory>
 #include <winternl.h>
@@ -82,28 +83,15 @@ namespace PowerToys::ProtectedStorage
     {
         Check(!bytes.empty() && bytes.size() <= MaxMetadata && !signedBytes.empty() && signedBytes.size() <= 1024 * 1024,
               ErrorCode::QuotaExceeded);
-        CRYPT_VERIFY_MESSAGE_PARA parameters{};
-        parameters.cbSize = sizeof(parameters);
-        parameters.dwMsgAndCertEncodingType = X509_ASN_ENCODING | PKCS_7_ASN_ENCODING;
-        const BYTE* input = bytes.data();
-        DWORD size = static_cast<DWORD>(bytes.size());
-        PCCERT_CONTEXT signer = nullptr;
-        Check(CryptVerifyDetachedMessageSignature(&parameters, 0, signedBytes.data(), static_cast<DWORD>(signedBytes.size()), 1, &input, &size, &signer) != FALSE, ErrorCode::Unauthorized, GetLastError());
-        std::unique_ptr<const CERT_CONTEXT, decltype(&CertFreeCertificateContext)> signerGuard(signer, CertFreeCertificateContext);
-        Check(signer && HashBytes(signer->pbCertEncoded, signer->cbCertEncoded) == policy.signer, ErrorCode::Unauthorized);
-        HCRYPTMSG raw = CryptMsgOpenToDecode(parameters.dwMsgAndCertEncodingType, CMSG_DETACHED_FLAG, 0, 0, nullptr, nullptr);
-        Check(raw != nullptr, ErrorCode::Unauthorized, GetLastError());
-        std::unique_ptr<void, decltype(&CryptMsgClose)> message(raw, CryptMsgClose);
-        Check(CryptMsgUpdate(raw, signedBytes.data(), static_cast<DWORD>(signedBytes.size()), TRUE) != FALSE, ErrorCode::Unauthorized);
-        DWORD count = 0;
-        size = sizeof(count);
-        Check(CryptMsgGetParam(raw, CMSG_SIGNER_COUNT_PARAM, 0, &count, &size) && count == 1, ErrorCode::Unauthorized);
-        size = 0;
-        Check(CryptMsgGetParam(raw, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &size) && size && size <= 1024 * 1024, ErrorCode::Unauthorized);
-        std::vector<BYTE> info(size);
-        Check(CryptMsgGetParam(raw, CMSG_SIGNER_INFO_PARAM, 0, info.data(), &size) != FALSE, ErrorCode::Unauthorized);
-        auto signerInfo = reinterpret_cast<CMSG_SIGNER_INFO*>(info.data());
-        Check(signerInfo->HashAlgorithm.pszObjId && std::string_view(signerInfo->HashAlgorithm.pszObjId) == szOID_NIST_sha256, ErrorCode::Unauthorized);
+        Check(policy.signerPolicy == ReleaseTrustPolicy, ErrorCode::Unauthorized);
+        try
+        {
+            VerifyDetachedReleaseSignature(bytes, signedBytes);
+        }
+        catch (const Error& error)
+        {
+            throw StorageError(ErrorCode::Unauthorized, error.code);
+        }
     }
     void VerifyDetached(HANDLE content, HANDLE signature, const Policy& policy)
     {
@@ -119,7 +107,12 @@ namespace PowerToys::ProtectedStorage
     Value VerifySignedClientCatalog(const SignedClientCatalog& proof, const Policy& policy, std::optional<uint64_t> release)
     {
         VerifyDetachedBytes(proof.document, proof.signature, policy);
-        Value catalog = Value::Parse(std::string_view(reinterpret_cast<const char*>(proof.document.data()), proof.document.size()));
+        return ParseClientCatalogDocument(proof.document, policy, release);
+    }
+    Value ParseClientCatalogDocument(const std::vector<BYTE>& document, const Policy& policy, std::optional<uint64_t> release)
+    {
+        Check(!document.empty() && document.size() <= MaxMetadata && policy.signerPolicy == ReleaseTrustPolicy, ErrorCode::Unauthorized);
+        Value catalog = Value::Parse(std::string_view(reinterpret_cast<const char*>(document.data()), document.size()));
         const auto version = ParseVersion(catalog.At("version").Text());
         Check(catalog.At("format").Number() == 1 && catalog.At("app").Text() == Utf8(App) &&
                   version >= policy.minimum && (!release || version == *release),

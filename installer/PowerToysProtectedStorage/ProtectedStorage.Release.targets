@@ -1,7 +1,8 @@
 <Project>
   <Target Name="RequireProtectedStorageRelease">
-    <Error Condition="'$(ProtectedStorageExpectedSignerSha256)' == ''" Text="ProtectedStorageExpectedSignerSha256 must be explicitly supplied by release signing configuration." />
+    <Error Condition="'$(ProtectedStorageTrustPolicy)' != 'microsoft-production-v1'" Text="ProtectedStorageTrustPolicy=microsoft-production-v1 must be explicitly supplied by release signing configuration." />
+    <Error Condition="!Exists('$(ProtectedStorageTrustVerifierPath)')" Text="Build the x64 host ProtectedStorage.TrustVerifier before release packaging, including for ARM64 releases." />
     <Error Condition="!Exists('$(ProtectedStorageSetupPath)') Or !Exists('$(ProtectedStorageStagedSetupPath)') Or !Exists('$(ProtectedStorageCarrierPath)') Or !Exists('$(ProtectedStorageLifecyclePath)') Or !Exists('$(ProtectedStorageReleaseManifestPath)')" Text="Finalize and publish the signed protected-storage release with Build-Carrier.ps1 -Package or the externally signed release stages through -ReleaseStage Publish before packaging the main installer." />
-    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)Verify-Release.ps1&quot; -PackageRoot &quot;$(ProtectedStoragePackageRoot)&quot; -ExpectedSignerSha256 &quot;$(ProtectedStorageExpectedSignerSha256)&quot; -Version &quot;$(ProtectedStorageReleaseVersion)&quot; -Platform &quot;$(Platform)&quot; -PublishedSetupPath &quot;$(ProtectedStorageSetupPath)&quot;" />
+    <Exec Command="pwsh.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)Verify-Release.ps1&quot; -PackageRoot &quot;$(ProtectedStoragePackageRoot)&quot; -TrustPolicy &quot;$(ProtectedStorageTrustPolicy)&quot; -TrustVerifierPath &quot;$(ProtectedStorageTrustVerifierPath)&quot; -Version &quot;$(ProtectedStorageReleaseVersion)&quot; -Platform &quot;$(Platform)&quot; -PublishedSetupPath &quot;$(ProtectedStorageSetupPath)&quot;" />
   </Target>
 </Project>

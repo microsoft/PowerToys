@@ -81,7 +81,9 @@
     <Project Path="src/common/ProtectedStorage/ProtectedStorage.ProvisionBroker/ProtectedStorage.ProvisionBroker.vcxproj" />
     <Project Path="src/common/ProtectedStorage/ProtectedStorage.Lifecycle/ProtectedStorage.Lifecycle.vcxproj" />
     <Project Path="src/common/ProtectedStorage/ProtectedStorage.MsiAction/ProtectedStorage.MsiAction.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.TrustVerifier/ProtectedStorage.TrustVerifier.vcxproj" />
     <Project Path="src/common/ProtectedStorage/ProtectedStorage.UnitTests/ProtectedStorage.UnitTests.vcxproj" />
+    <Project Path="src/common/ProtectedStorage/ProtectedStorage.UnitTests/ProtectedStorage.SignatureTrustTests.vcxproj" />
     <Project Path="src/common/ProtectedStorage/tests/ProtectedStorage.Client.Managed.UnitTests/ProtectedStorage.Client.Managed.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

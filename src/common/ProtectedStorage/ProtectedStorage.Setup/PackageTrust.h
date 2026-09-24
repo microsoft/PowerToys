@@ -3,6 +3,7 @@
 #pragma once
 #include "Product.h"
 #include "..\ProtectedStorage.Common\Authentication.h"
+#include "..\ProtectedStorage.Common\SignatureTrust.h"
 #include <wincrypt.h>
 #include <wintrust.h>
 #include <softpub.h>
@@ -45,39 +46,22 @@ namespace PowerToysProtectedStorage::Maintenance
         // There is deliberately no local/developer trust fallback.
         if (!product::has_resource(110))
             throw failure("release signing policy is not embedded", ERROR_TRUST_FAILURE);
-        const auto pinBytes = product::resource(110);
-        const std::string pin(pinBytes.begin(), pinBytes.end());
-        if (pin.size() != 64 || pin.find_first_not_of("0123456789abcdef") != std::string::npos)
-            throw failure("invalid release certificate pin", ERROR_TRUST_FAILURE);
+        const auto policyBytes = product::resource(110);
+        const std::string policy(policyBytes.begin(), policyBytes.end());
+        if (policy != PowerToys::ProtectedStorage::ReleaseTrustPolicy)
+            throw failure("unsupported release signing policy", ERROR_TRUST_FAILURE);
         handle locked(CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
                                   FILE_FLAG_OPEN_REPARSE_POINT, nullptr));
         check(locked.value != INVALID_HANDLE_VALUE, "hold signed package");
         (void)ReadLocked(locked.value);
-        WINTRUST_FILE_INFO file{ sizeof(file) };
-        file.pcwszFilePath = path.c_str();
-        file.hFile = locked.value;
-        WINTRUST_DATA data{ sizeof(data) };
-        data.dwUIChoice = WTD_UI_NONE;
-        data.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
-        data.dwUnionChoice = WTD_CHOICE_FILE;
-        data.pFile = &file;
-        data.dwStateAction = WTD_STATEACTION_VERIFY;
-        data.dwProvFlags = WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
-        GUID policy = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-        const auto status = WinVerifyTrust(nullptr, &policy, &data);
-        const auto provider = WTHelperProvDataFromStateData(data.hWVTStateData);
-        const auto signer = provider ? WTHelperGetProvSignerFromChain(provider, 0, FALSE, 0) : nullptr;
-        const auto certificate = signer ? WTHelperGetProvCertFromChain(signer, 0) : nullptr;
-        bool pinned = false;
-        if (status == ERROR_SUCCESS && certificate && certificate->pCert)
+        try
         {
-            const auto context = certificate->pCert;
-            pinned = Hash({ context->pbCertEncoded, context->pbCertEncoded + context->cbCertEncoded }) == pin;
+            PowerToys::ProtectedStorage::VerifyAuthenticodeReleaseSignature(locked.value, path.wstring());
         }
-        data.dwStateAction = WTD_STATEACTION_CLOSE;
-        WinVerifyTrust(nullptr, &policy, &data);
-        if (status != ERROR_SUCCESS || !pinned)
-            throw failure("release Authenticode/pinned signer rejected", status ? static_cast<DWORD>(status) : ERROR_TRUST_FAILURE);
+        catch (const PowerToys::ProtectedStorage::Error& error)
+        {
+            throw failure(error.what(), error.code);
+        }
     }
 
     inline void VerifyMappedImage(HANDLE process, HANDLE executable)

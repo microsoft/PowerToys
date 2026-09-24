@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Authentication.h"
+#include "SignatureTrust.h"
 
 // Static-library consumers do not inherit this project's MSBuild linker settings.
 #pragma comment(lib, "advapi32.lib")
@@ -671,17 +672,19 @@ namespace PowerToys::ProtectedStorage
             throw StorageError(ErrorCode::RecoveryRequired, error.code);
         }
     }
+    Policy ParsePolicy(std::string_view text)
+    {
+        const auto keys = ParseKeys(text, { "format", "app", "signer_policy", "minimum_version" });
+        if (keys.at("format") != "2" || keys.at("app") != Utf8(App) || keys.at("signer_policy") != ReleaseTrustPolicy)
+            Fail("unsupported protected-storage signing policy; authorized repair required", ERROR_REVISION_MISMATCH);
+        return { keys.at("signer_policy"), ParseVersion(keys.at("minimum_version")) };
+    }
     Policy LoadPolicy(const Paths& paths)
     {
         auto file = OpenRead(paths.policy, MaxText);
         CheckAcl(file.get(), paths.va, false);
         auto bytes = ReadAll(file.get(), MaxText);
-        auto keys = ParseKeys(std::string(bytes.begin(), bytes.end()), { "format", "app", "signer_sha256", "minimum_version" });
-        Require(keys.at("format") == "1" && keys.at("app") == Utf8(App), "policy identity/format");
-        Require(IsHash(keys.at("signer_sha256")), "invalid signer pin");
-        Policy result{ keys.at("signer_sha256"), ParseVersion(keys.at("minimum_version")) };
-        std::transform(result.signer.begin(), result.signer.end(), result.signer.begin(), [](unsigned char c) { return static_cast<char>(tolower(c)); });
-        return result;
+        return ParsePolicy(std::string_view(reinterpret_cast<const char*>(bytes.data()), bytes.size()));
     }
     Bundle ValidateBundle(const std::wstring& directory, const Policy& policy, uint64_t current)
     {
@@ -718,34 +721,8 @@ namespace PowerToys::ProtectedStorage
         result.catalogSignature = OpenRead(directory + L"\\ClientCatalog.p7s", 1024 * 1024);
         auto manifest = ReadAll(result.manifest.get(), MaxText);
         auto signature = ReadAll(result.signature.get(), 1024 * 1024);
-        CRYPT_VERIFY_MESSAGE_PARA parameters{ sizeof(parameters), X509_ASN_ENCODING | PKCS_7_ASN_ENCODING };
-        const BYTE* content = manifest.data();
-        DWORD contentSize = static_cast<DWORD>(manifest.size());
-        PCCERT_CONTEXT signer = nullptr;
-        if (!CryptVerifyDetachedMessageSignature(&parameters, 0, signature.data(), static_cast<DWORD>(signature.size()), 1, &content, &contentSize, &signer))
-            Fail("detached CMS signature verification");
-        std::unique_ptr<const CERT_CONTEXT, decltype(&CertFreeCertificateContext)> signerGuard(signer, CertFreeCertificateContext);
-        Require(signer && HashBytes(signer->pbCertEncoded, signer->cbCertEncoded) == policy.signer, "bundle signer pin mismatch");
-        HCRYPTMSG message = CryptMsgOpenToDecode(parameters.dwMsgAndCertEncodingType, CMSG_DETACHED_FLAG, 0, 0, nullptr, nullptr);
-        if (!message)
-            Fail("CMS decode open");
-        auto messageGuard = std::unique_ptr<void, decltype(&CryptMsgClose)>(message, CryptMsgClose);
-        if (!CryptMsgUpdate(message, signature.data(), static_cast<DWORD>(signature.size()), TRUE))
-            Fail("CMS decode");
-        DWORD count = 0, size = sizeof(count);
-        if (!CryptMsgGetParam(message, CMSG_SIGNER_COUNT_PARAM, 0, &count, &size))
-            Fail("CMS signer count");
-        Require(count == 1, "exactly one CMS signer required");
-        size = 0;
-        if (!CryptMsgGetParam(message, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &size))
-            Fail("CMS signer info size");
-        Require(size && size <= 1024 * 1024, "CMS signer info bound");
-        std::vector<BYTE> signerBytes(size);
-        if (!CryptMsgGetParam(message, CMSG_SIGNER_INFO_PARAM, 0, signerBytes.data(), &size))
-            Fail("CMS signer info");
-        auto signerInfo = reinterpret_cast<CMSG_SIGNER_INFO*>(signerBytes.data());
-        Require(signerInfo->HashAlgorithm.pszObjId && std::string_view(signerInfo->HashAlgorithm.pszObjId) == szOID_NIST_sha256,
-                "CMS manifest digest must be SHA256");
+        Require(policy.signerPolicy == ReleaseTrustPolicy, "unsupported release signing policy");
+        VerifyDetachedReleaseSignature(manifest, signature);
         auto keys = ParseKeys(std::string(manifest.begin(), manifest.end()), { "format", "app", "version", "bootstrap_sha256", "runtime_sha256", "catalog_sha256" });
         Require(keys.at("format") == "1" && keys.at("app") == Utf8(App), "bundle identity/format");
         result.version = ParseVersion(keys.at("version"));

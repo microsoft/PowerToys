@@ -4,6 +4,8 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
+  - name: trustVerifierPath
+    type: string
 
 steps:
   # ESRP replaces these payload copies with DER signatures. Never submit the
@@ -35,3 +37,19 @@ steps:
               }
             }
           ]
+
+  # CP-230012's verified detached contract has no timestamp parameters. Attach
+  # RFC3161 evidence afterward, then run the exact native production verifier.
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      foreach ($document in @(
+        @{ Name = 'manifest.txt'; Signature = 'manifest.p7s' },
+        @{ Name = 'ClientCatalog.json'; Signature = 'ClientCatalog.p7s' }
+      )) {
+        & .\installer\PowerToysProtectedStorage\Add-DetachedTimestamp.ps1 `
+          -Path (Join-Path '${{ parameters.folder }}' $document.Name) `
+          -SignaturePath (Join-Path '${{ parameters.folder }}' $document.Signature) `
+          -TrustVerifierPath '${{ parameters.trustVerifierPath }}' `
+          -TimestampServer 'http://timestamp.acs.microsoft.com'
+      }
+    displayName: Timestamp and production-verify Protected Storage detached CMS

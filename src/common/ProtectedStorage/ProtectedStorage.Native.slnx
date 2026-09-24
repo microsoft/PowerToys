@@ -7,5 +7,7 @@
   <Project Path="ProtectedStorage.Client\ProtectedStorage.Client.vcxproj" />
   <Project Path="ProtectedStorage.Bootstrap\ProtectedStorage.Bootstrap.vcxproj" />
   <Project Path="ProtectedStorage.Runtime\ProtectedStorage.Runtime.vcxproj" />
+  <Project Path="ProtectedStorage.TrustVerifier\ProtectedStorage.TrustVerifier.vcxproj" />
   <Project Path="ProtectedStorage.UnitTests\ProtectedStorage.UnitTests.vcxproj" />
+  <Project Path="ProtectedStorage.UnitTests\ProtectedStorage.SignatureTrustTests.vcxproj" />
 </Solution>

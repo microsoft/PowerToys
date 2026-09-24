@@ -153,9 +153,10 @@ namespace PowerToys::ProtectedStorage
 
     struct Policy
     {
-        std::string signer;
+        std::string signerPolicy;
         uint64_t minimum = 0;
     };
+    Policy ParsePolicy(std::string_view text);
     Policy LoadPolicy(const Paths& paths);
     struct Bundle
     {

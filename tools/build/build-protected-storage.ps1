@@ -39,6 +39,8 @@ Push-Location $repoRoot
 try {
     & (Join-Path $output 'ProtectedStorage\ProtectedStorage.UnitTests.exe')
     if ($LASTEXITCODE) { throw "Native protected-storage tests failed with $LASTEXITCODE." }
+    & (Join-Path $output 'ProtectedStorage\ProtectedStorage.SignatureTrustTests.exe')
+    if ($LASTEXITCODE) { throw "Native signature-trust tests failed with $LASTEXITCODE." }
     & (Join-Path $output 'ProtectedStorageTests\ProtectedStorage.Client.Managed.UnitTests.exe') --results-directory $results --report-trx
     if ($LASTEXITCODE) { throw "Managed protected-storage tests failed with $LASTEXITCODE." }
     $vstest = Join-Path $env:VSINSTALLDIR 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe'
@@ -50,7 +52,8 @@ try {
 finally { Pop-Location }
 
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-Authoring.ps1') -Platform $Platform -Configuration $Configuration -Compile
-& (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ReleaseTools.ps1')
+& (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ReleaseTools.ps1') `
+    -TrustVerifierPath (Join-Path $output 'ProtectedStorage\ProtectedStorage.TrustVerifier.exe')
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-PipelineSigning.ps1')
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ProjectEvaluation.ps1')
 & (Join-Path $repoRoot 'installer\PowerToysProtectedStorage\Tests\Test-ReleasePublication.ps1')

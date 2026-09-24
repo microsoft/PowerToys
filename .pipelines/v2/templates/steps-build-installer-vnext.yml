@@ -86,7 +86,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
-        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -103,7 +103,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
-        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -156,7 +156,7 @@ steps:
         -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
-        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -173,7 +173,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
-        /p:ProtectedStorageExpectedSignerSha256=$(ProtectedStorageExpectedSignerSha256)
+        /p:ProtectedStorageTrustPolicy=microsoft-production-v1
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
