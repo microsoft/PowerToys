@@ -39,7 +39,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly VcpFeatureProbeService _probeService;
         private readonly ContinuousVcpInitializer _continuousInitializer;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
-        private readonly Func<string, byte, int, bool>? _isVcpValueBlocked;
+        private readonly Func<string, byte, int, bool>? _isVcpValueBlockedByUser;
         private readonly Func<IntPtr, byte, uint, bool> _writeVcpFeature;
 
         private bool _disposed;
@@ -62,11 +62,11 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
-            Func<string, byte, int, bool> isVcpValueBlocked)
+            Func<string, byte, int, bool> isVcpValueBlockedByUser)
             : this(
                 knownGoodStore,
                 new NativeVcpFeatureReader(),
-                isVcpValueBlocked: isVcpValueBlocked)
+                isVcpValueBlockedByUser: isVcpValueBlockedByUser)
         {
         }
 
@@ -76,19 +76,19 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
         /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
         /// </param>
-        /// <param name="isVcpValueBlocked">Optional user restriction lookup for raw VCP writes.</param>
+        /// <param name="isVcpValueBlockedByUser">Optional user restriction lookup for raw VCP writes. Hardware restrictions are always checked by this controller.</param>
         /// <param name="writeVcpFeature">Optional native writer replacement for hardware-free tests.</param>
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
             IVcpFeatureReader reader,
             Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-            Func<string, byte, int, bool>? isVcpValueBlocked = null,
+            Func<string, byte, int, bool>? isVcpValueBlockedByUser = null,
             Func<IntPtr, byte, uint, bool>? writeVcpFeature = null)
         {
             _knownGoodStore = knownGoodStore;
             _vcpReader = reader;
             _delayAsync = delayAsync ?? Task.Delay;
-            _isVcpValueBlocked = isVcpValueBlocked;
+            _isVcpValueBlockedByUser = isVcpValueBlockedByUser;
             _writeVcpFeature = writeVcpFeature ?? SetVCPFeature;
             _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore);
@@ -921,7 +921,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 () =>
                 {
                     if (VcpValueRestrictions.IsBlockedByHardware(monitor.Id, vcpCode, value) ||
-                        _isVcpValueBlocked?.Invoke(monitor.Id, vcpCode, value) == true)
+                        _isVcpValueBlockedByUser?.Invoke(monitor.Id, vcpCode, value) == true)
                     {
                         return MonitorOperationResult.Failure($"VCP 0x{vcpCode:X2} value 0x{value:X2} is disabled for this monitor");
                     }

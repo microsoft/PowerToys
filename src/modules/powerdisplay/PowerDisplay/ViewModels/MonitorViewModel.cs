@@ -695,9 +695,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CurrentInputSourceName));
         _availableInputSources = null;  // Force rebuild with new custom names
         OnPropertyChanged(nameof(AvailableInputSources));
-
-        _availablePowerStates = null;
-        OnPropertyChanged(nameof(AvailablePowerStates));
     }
 
     /// <summary>

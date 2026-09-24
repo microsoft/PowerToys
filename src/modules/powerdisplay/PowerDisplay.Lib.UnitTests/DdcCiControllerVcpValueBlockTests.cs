@@ -222,7 +222,7 @@ public sealed class DdcCiControllerVcpValueBlockTests
         new(
             new RecordingKnownGoodStore(),
             reader ?? new RecordingVcpReader(),
-            isVcpValueBlocked: isBlocked,
+            isVcpValueBlockedByUser: isBlocked,
             writeVcpFeature: writer.Write);
 
     private static Monitor NewMonitor(string id = MonitorId) => new()

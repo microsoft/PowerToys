@@ -49,12 +49,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     bool isUserDisabled = _originalBlocks.TryGetValue(vcpCode, out var blockedValues) && blockedValues.Contains(value);
+                    var hardwareBlockReason = VcpValueRestrictions.GetHardwareBlockReason(monitor.Id, vcpCode, value);
                     values.Add(new VcpValueBlockItem(
                         value,
                         valueInfo.Name,
                         isUserDisabled,
-                        VcpValueRestrictions.IsBlockedByHardware(monitor.Id, vcpCode, value),
-                        VcpValueRestrictions.GetHardwareBlockReason(monitor.Id, vcpCode, value)));
+                        hardwareBlockReason != null,
+                        hardwareBlockReason));
                 }
 
                 if (values.Count > 0)

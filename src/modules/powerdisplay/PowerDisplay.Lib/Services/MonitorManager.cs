@@ -61,7 +61,7 @@ namespace PowerDisplay.Common.Services
             try
             {
                 // DDC/CI controller (external monitors)
-                _ddcController = new DdcCiController(knownGoodStore, IsVcpValueBlocked);
+                _ddcController = new DdcCiController(knownGoodStore, IsVcpValueBlockedByUser);
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace PowerDisplay.Common.Services
                     .Select(block => new VcpValueBlock
                     {
                         VcpCode = block.VcpCode,
-                        Values = block.Values?.ToList() ?? new List<int>(),
+                        Values = block.Values.ToList(),
                     })
                     .ToList() ?? new List<VcpValueBlock>();
             }
@@ -128,9 +128,15 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         public bool IsVcpValueBlocked(string monitorId, byte vcpCode, int value)
         {
+            return VcpValueRestrictions.IsBlockedByHardware(monitorId, vcpCode, value)
+                || IsVcpValueBlockedByUser(monitorId, vcpCode, value);
+        }
+
+        private bool IsVcpValueBlockedByUser(string monitorId, byte vcpCode, int value)
+        {
             var snapshot = Volatile.Read(ref _disabledVcpValues);
-            snapshot.TryGetValue(monitorId, out var userBlocks);
-            return VcpValueRestrictions.IsBlocked(monitorId, vcpCode, value, userBlocks);
+            return snapshot.TryGetValue(monitorId, out var userBlocks)
+                && userBlocks.Any(block => block.VcpCode == vcpCode && block.Values.Contains(value));
         }
 
         /// <summary>
