@@ -22,5 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="BuiltInMonitorBlacklist.json" />
+    <EmbeddedResource Include="BuiltInVcpValueBlacklist.json" />
   </ItemGroup>
 </Project>

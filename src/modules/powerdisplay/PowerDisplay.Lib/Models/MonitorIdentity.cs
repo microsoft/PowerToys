@@ -87,21 +87,7 @@ public static class MonitorIdentity
     /// <param name="monitorId">A Monitor.Id (no trailing <c>#{guid}</c>) or a raw DevicePath (with trailing <c>#{guid}</c>).</param>
     /// <returns>EdidId segment (e.g. <c>"DELD1A8"</c>), or empty string if the input is not a recognized form.</returns>
     public static string EdidIdFromMonitorId(string? monitorId)
-    {
-        if (string.IsNullOrEmpty(monitorId))
-        {
-            return string.Empty;
-        }
-
-        // Split: ["\\?\DISPLAY", "DELD1A8", "5&abc&0&UID12345"]
-        var parts = monitorId.Split('#');
-        if (parts.Length < 3 || string.IsNullOrEmpty(parts[1]))
-        {
-            return string.Empty;
-        }
-
-        return parts[1];
-    }
+        => PowerDisplay.Models.MonitorHardwareId.EdidIdFromMonitorId(monitorId);
 
     /// <summary>
     /// Return true if <paramref name="monitorId"/> matches the legacy

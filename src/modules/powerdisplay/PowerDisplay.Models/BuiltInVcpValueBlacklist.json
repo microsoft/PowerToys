@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "edidId": "SAM105C",
+      "vcpCode": 214,
+      "values": [5],
+      "comments": "Off (Hard) can leave the monitor unresponsive. See https://github.com/microsoft/PowerToys/issues/50449"
+    }
+  ]
+}

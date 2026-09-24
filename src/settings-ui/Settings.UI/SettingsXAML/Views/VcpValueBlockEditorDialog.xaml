@@ -1,0 +1,68 @@
+<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.VcpValueBlockEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.HasOptions}"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    mc:Ignorable="d">
+
+    <StackPanel MinWidth="350" Spacing="16">
+        <TextBlock
+            FontWeight="SemiBold"
+            Text="{x:Bind ViewModel.MonitorName}"
+            TextWrapping="Wrap" />
+        <TextBlock
+            x:Uid="PowerDisplay_DisabledOptionsEditor_Description"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind ViewModel.HasOptions, Converter={StaticResource BoolToVisibilityConverter}}" />
+        <TextBlock
+            x:Uid="PowerDisplay_DisabledOptionsEditor_Empty"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind ViewModel.HasOptions, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+        <ComboBox
+            x:Uid="PowerDisplay_DisabledOptionsEditor_VcpCode"
+            HorizontalAlignment="Stretch"
+            DisplayMemberPath="Title"
+            ItemsSource="{x:Bind ViewModel.AvailableCodes}"
+            SelectedItem="{x:Bind ViewModel.SelectedCode, Mode=TwoWay}"
+            Visibility="{x:Bind ViewModel.HasOptions, Converter={StaticResource BoolToVisibilityConverter}}" />
+        <InfoBar
+            x:Uid="PowerDisplay_DisabledOptionsEditor_Hardware"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasHardwareBlocks, Mode=OneWay}"
+            Severity="Informational" />
+        <ScrollViewer
+            MaxHeight="320"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.AvailableValues, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:VcpValueBlockItem">
+                        <StackPanel Margin="0,0,0,8" Spacing="4">
+                            <CheckBox
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind DisplayName}"
+                                IsChecked="{x:Bind IsDisabled, Mode=TwoWay}"
+                                IsEnabled="{x:Bind IsHardwareBlocked, Converter={StaticResource BoolNegationConverter}}">
+                                <TextBlock Text="{x:Bind DisplayName}" TextWrapping="Wrap" />
+                            </CheckBox>
+                            <TextBlock
+                                Margin="32,0,0,0"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind HardwareBlockReason}"
+                                TextWrapping="Wrap"
+                                Visibility="{x:Bind IsHardwareBlocked, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </StackPanel>
+</ContentDialog>

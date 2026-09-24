@@ -33,6 +33,8 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
+            ApplyVcpValueRestrictions(settings);
+
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
 
@@ -123,6 +125,8 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
+            ApplyVcpValueRestrictions(settings);
+
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
 
             _dispatcherQueue.TryEnqueue(() =>
@@ -156,6 +160,8 @@ public partial class MainViewModel
         // Load settings to check for hidden monitors
         var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
         var hiddenMonitorIds = GetHiddenMonitorIds(settings);
+
+        ApplyVcpValueRestrictions(settings);
 
         foreach (var monitor in monitors)
         {

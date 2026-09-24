@@ -6105,7 +6105,7 @@ The break timer font matches the text font.</value>
     <value>Select what monitors and settings to include for this profile</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_PreservedSettings.Message" xml:space="preserve">
-    <value>Saved settings for unavailable monitors or features are kept. Uncheck a setting to remove it. Applying the profile still respects monitor capabilities.</value>
+    <value>Saved settings for unavailable monitors or features are kept. Uncheck a setting to remove it. Applying the profile still respects monitor capabilities and disabled options.</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
     <value>Brightness</value>
@@ -6166,6 +6166,33 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_Monitor_CapabilitiesWarning.Message" xml:space="preserve">
     <value>This monitor did not report DDC/CI capabilities. Advanced controls may be limited.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_DisabledOptions.Header" xml:space="preserve">
+    <value>Disabled monitor options</value>
+  </data>
+  <data name="PowerDisplay_Monitor_DisabledOptions.Description" xml:space="preserve">
+    <value>Choose which supported options Power Display must not apply to this monitor</value>
+  </data>
+  <data name="PowerDisplay_Monitor_DisabledOptions_EditButton.Content" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_Monitor_DisabledOptions_EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit disabled monitor options</value>
+  </data>
+  <data name="PowerDisplay_DisabledOptionsEditor_Title" xml:space="preserve">
+    <value>Disabled monitor options</value>
+  </data>
+  <data name="PowerDisplay_DisabledOptionsEditor_Description.Text" xml:space="preserve">
+    <value>Select a monitor setting, then check the options to disable. Disabled options are hidden from controls and cannot be applied by Power Display.</value>
+  </data>
+  <data name="PowerDisplay_DisabledOptionsEditor_Empty.Text" xml:space="preserve">
+    <value>This monitor has not reported any supported options that can be disabled.</value>
+  </data>
+  <data name="PowerDisplay_DisabledOptionsEditor_VcpCode.Header" xml:space="preserve">
+    <value>Monitor setting</value>
+  </data>
+  <data name="PowerDisplay_DisabledOptionsEditor_Hardware.Message" xml:space="preserve">
+    <value>Some options are disabled automatically because they can cause problems with this monitor. These options cannot be enabled.</value>
   </data>
   <data name="PowerDisplay_Monitor_VcpCapabilities.Header" xml:space="preserve">
     <value>VCP capabilities</value>

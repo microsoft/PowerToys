@@ -52,6 +52,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
+        private async void EditDisabledOptions_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
+            var dialog = new VcpValueBlockEditorDialog(monitor) { XamlRoot = XamlRoot };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary && dialog.ResultBlocks != null)
+            {
+                monitor.DisabledVcpValues = dialog.ResultBlocks;
+            }
+        }
+
         private void CopyVcpCodes_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is MonitorInfo monitor)
