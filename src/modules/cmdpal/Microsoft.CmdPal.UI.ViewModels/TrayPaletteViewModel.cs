@@ -28,6 +28,23 @@ public sealed partial class TrayPaletteViewModel(
 
     public bool IsEmpty => !IsLoading && Items.Count == 0;
 
+    public void SaveOrder()
+    {
+        try
+        {
+            var order = Items.Select(item => item.Pin).ToArray();
+            settingsService.UpdateSettings(settings => settings with
+            {
+                TrayPalette = settings.TrayPalette.Reorder(order.Where(settings.TrayPalette.Commands.Contains).ToArray()),
+            });
+        }
+        catch (Exception ex)
+        {
+            HasLoadError = true;
+            Logger.LogError("Failed to save Tray Palette order.", ex);
+        }
+    }
+
     public async Task RefreshAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

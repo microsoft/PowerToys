@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
@@ -38,6 +39,8 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
     private RECT _anchor;
     private bool _closed;
     private bool _visible;
+    private bool _isDragging;
+    private bool _refreshPending;
 
     public TrayPaletteViewModel ViewModel { get; }
 
@@ -126,9 +129,14 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         var scale = FlyoutWindowHelper.GetDpiScale(display);
         var work = display.WorkArea;
         var rows = Math.Max(1, (ViewModel.Items.Count + 2) / 3);
-        var heightDip = Math.Min(_pageHost.IsOpen ? 560 : (rows * 100) + 104, FlyoutWindowHelper.ScaleToDip(work.Height, scale) - 16);
-        var width = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(_pageHost.IsOpen ? 500 : 360, scale), work.Width);
-        var height = FlyoutWindowHelper.ScaleToPhysicalPixels(heightDip, scale);
+        var heightDip = _pageHost.IsOpen ? 560 : (rows * 100) + 104;
+
+        // Leave the full tile grid in the client area, including on a different-DPI monitor.
+        var currentScale = Root.XamlRoot?.RasterizationScale ?? scale;
+        var borderWidth = (int)Math.Ceiling((AppWindow.Size.Width - AppWindow.ClientSize.Width) * scale / currentScale);
+        var borderHeight = (int)Math.Ceiling((AppWindow.Size.Height - AppWindow.ClientSize.Height) * scale / currentScale);
+        var width = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(_pageHost.IsOpen ? 500 : 360, scale) + borderWidth, work.Width);
+        var height = Math.Min(FlyoutWindowHelper.ScaleToPhysicalPixels(heightDip, scale) + borderHeight, work.Height - FlyoutWindowHelper.ScaleToPhysicalPixels(16, scale));
         var gap = FlyoutWindowHelper.ScaleToPhysicalPixels(8, scale);
         var x = Math.Clamp(_anchor.right - width, work.X, work.X + work.Width - width);
         var y = _anchor.top >= work.Y + (work.Height / 2)
@@ -140,7 +148,7 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
 
     private void CommandsGrid_ItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is not TrayPaletteItemViewModel item)
+        if (_isDragging || e.ClickedItem is not TrayPaletteItemViewModel item)
         {
             return;
         }
@@ -173,6 +181,27 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         {
             AutomationProperties.SetName(args.ItemContainer, item.Item.Title);
             AutomationProperties.SetAutomationId(args.ItemContainer, $"TrayPalette_{item.Pin.ProviderId}_{item.Pin.CommandId}");
+        }
+    }
+
+    private void CommandsGrid_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+    {
+        e.Cancel = ViewModel.IsLoading;
+        _isDragging = !e.Cancel;
+    }
+
+    private void CommandsGrid_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+    {
+        _isDragging = false;
+        if (args.DropResult == DataPackageOperation.Move)
+        {
+            ViewModel.SaveOrder();
+        }
+
+        if (_refreshPending)
+        {
+            _refreshPending = false;
+            _ = RefreshAsync();
         }
     }
 
@@ -252,7 +281,14 @@ public sealed partial class TrayPaletteWindow : WindowEx, IRecipient<RequestShow
         {
             if (!_closed && _visible)
             {
-                _ = RefreshAsync();
+                if (_isDragging)
+                {
+                    _refreshPending = true;
+                }
+                else
+                {
+                    _ = RefreshAsync();
+                }
             }
         });
 

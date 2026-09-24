@@ -383,8 +383,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly PinLocation _pinLocation;
         private readonly CommandItemViewModel? _commandItemViewModel;
 
-        private bool IsPinToDock => _pinLocation == PinLocation.Dock;
-
         public bool IsPin => _pin;
 
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
