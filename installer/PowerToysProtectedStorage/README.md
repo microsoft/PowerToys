@@ -191,7 +191,7 @@ SettingsAPI dependencies, not just its direct DLL projects. The installer
 contract test checks that complete project-reference closure so static-graph
 builds retain the requested configuration and architecture.
 
-### Release qualification status (2026-09-24)
+### Release qualification status (2026-09-25)
 
 The earlier [ADO run 158436898](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158436898)
 failed because ESRP returned different valid leaf certificates for different
@@ -200,8 +200,20 @@ it does not replace chain validation with publisher-name string matching.
 The public Microsoft RFC3161 endpoint has been exercised successfully using an
 in-memory ephemeral CMS, with verified response/signature binding. That isolated
 test is not proof of release publisher trust or an installable signed package.
-The integrated native verifier/builds and a newly signed pipeline release still
-require qualification; no new ADO run or installable release is claimed here.
+The signed [ADO run 158510076](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158510076)
+completed successfully for version `0.101.3000.0`, source commit
+`331f6d8ca5e45ec45453f5e01d21679b3e4f7a24`, on both x64 and ARM64.
+The production CMS/RFC3161 gates, carrier build/signing, both main installer
+scopes, and final bundle signing passed. Carrier ICE validation actually ran
+and reported zero warnings/errors; WIX1105 remained fatal in CI.
+Both published carrier packages were downloaded and independently reverified
+with the shared native policy. All four final installers passed publisher/
+timestamp verification and matched their published SHA256 files.
+Artifacts are `build-x64-Release` and `build-arm64-Release`, containing
+`PowerToysUserSetup-0.101.3000.0-<arch>.exe` and
+`PowerToysSetup-0.101.3000.0-<arch>.exe`.
+This qualifies build/signing/publication, not installed A/B, OTS, migration,
+update or removal behavior; those still require the acceptance matrix.
 Failure artifacts preserve diagnostic signature/CMS metadata and build logs.
 The raw-MSI alternative (Q10) remains future work, not this signing topology.
 

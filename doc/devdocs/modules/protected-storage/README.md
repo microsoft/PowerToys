@@ -59,8 +59,14 @@ under the former single-leaf policy and produced no main installers. The user
 approved replacing that policy on 2026-09-24, without a manual leaf list.
 The replacement is `microsoft-production-v1`: machine-context code-signing
 trust, verified Microsoft publisher/application-root policy and authenticated
-timestamps. This source change does not itself establish a successful signed
-pipeline or deployed acceptance; record the subsequent build result separately.
+timestamps. [ADO run 158510076](https://microsoft.visualstudio.com/Dart/_build/results?buildId=158510076)
+subsequently succeeded for `0.101.3000.0` on source
+`331f6d8ca5e45ec45453f5e01d21679b3e4f7a24`, producing signed per-user and
+per-machine installers for x64 and ARM64. Both carrier releases and all four
+installer hashes/signatures were independently reverified after download.
+Full carrier ICE ran in CI with zero warnings/errors. Local WIX1105 means ICE
+was not executed, not a pass; CI treats that condition as an error.
+Installed acceptance remains separate and has not been established by this build.
 
 The local Setup/Broker/Lifecycle/MsiAction compilation outputs deliberately do
 not contain finalized release resources and must not be treated as installers.
