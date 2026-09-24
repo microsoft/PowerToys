@@ -44,6 +44,7 @@ namespace Peek.FilePreviewer.Previewers.EmailPreviewer
             }
 
             MsgRecipientReader.Read(storage, message);
+            MsgInlineImageReader.Read(storage, message);
             return message;
         }
 
