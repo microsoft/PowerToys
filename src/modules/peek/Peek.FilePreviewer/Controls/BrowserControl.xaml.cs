@@ -342,6 +342,13 @@ namespace Peek.FilePreviewer.Controls
                 return;
             }
 
+            // Email previews embed MIME and MSG inline attachments as data URLs. Allow only
+            // image resources from this scheme; scripts and other active data content remain blocked.
+            if (requestUri.Scheme == "data" && args.ResourceContext == CoreWebView2WebResourceContext.Image)
+            {
+                return;
+            }
+
             // For local file:// resources, allow same directory and subdirectories
             if (requestUri.Scheme == "file" && _currentSourceUri.Scheme == "file")
             {
