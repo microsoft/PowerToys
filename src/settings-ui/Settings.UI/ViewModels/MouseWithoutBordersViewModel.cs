@@ -585,17 +585,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            using (await _ipcSemaphore.EnterAsync())
+            try
             {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (await _ipcSemaphore.EnterAsync())
                 {
-                    syncHelper?.Endpoint?.RestoreSecurityKey(previousKey);
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    using (var syncHelper = await GetSettingsSyncHelperAsync())
                     {
-                        await task;
+                        syncHelper?.Endpoint?.RestoreSecurityKey(previousKey);
+                        var task = syncHelper?.Stream.FlushAsync();
+                        if (task != null)
+                        {
+                            await task;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                // This is invoked fire-and-forget from CheckPendingConnectStatus, so make sure a failure
+                // here (e.g. the pipe breaking mid-flush) is logged instead of becoming an unobserved
+                // task exception.
+                Logger.LogError($"Couldn't restore the previous security key after a failed connect attempt: {ex}");
             }
         }
 
