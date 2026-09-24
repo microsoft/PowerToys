@@ -83,9 +83,10 @@
                 </ToolTipService.ToolTip>
             </TextBlock>
 
+            <!--  The shortcut target and the link that previews it form their own block so the link
+                  sits on the line below the target path instead of trailing it.  -->
             <StackPanel
-                Orientation="Horizontal"
-                Spacing="8"
+                Spacing="4"
                 Visibility="{x:Bind conv:VisibilityConverter.Convert(Source.HasShortcutTarget), Mode=OneWay}">
                 <TextBlock
                     VerticalAlignment="Center"
@@ -96,6 +97,8 @@
                     </ToolTipService.ToolTip>
                 </TextBlock>
                 <HyperlinkButton
+                    Padding="0"
+                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Command="{x:Bind Source.PeekShortcutTargetCommand, Mode=OneWay}"
                     CommandParameter="{x:Bind Source.ShortcutTarget, Mode=OneWay}"
