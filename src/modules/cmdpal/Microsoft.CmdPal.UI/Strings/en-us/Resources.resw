@@ -2122,4 +2122,16 @@ Home: highest position. End: lowest position.</value>
     <value>browse discover download install extensions plugins plug-ins addons add-ons store marketplace</value>
     <comment>Search aliases for finding new extensions in the gallery.</comment>
   </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Header" xml:space="preserve">
+    <value>Tray icon click action</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Description" xml:space="preserve">
+    <value>Choose what opens when you click the Command Palette tray icon.</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_QuickActions.Content" xml:space="preserve">
+    <value>Open quick actions</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_CommandPalette.Content" xml:space="preserve">
+    <value>Open command palette</value>
+  </data>
 </root>
