@@ -11,7 +11,7 @@ param(
     [string]$TimestampServer,
     [string]$ClientCatalogInput,
     [string]$PublishDirectory,
-    [ValidateSet('Compile', 'Payloads', 'Documents', 'Lifecycle', 'Carrier', 'Broker', 'Setup', 'Publish')]
+    [ValidateSet('Compile', 'Payloads', 'Documents', 'Lifecycle', 'CarrierInputs', 'Carrier', 'Broker', 'Setup', 'Publish')]
     [string]$ReleaseStage = 'Compile',
     [string[]]$AdditionalBuildArguments = @(),
     [switch]$RunTests
@@ -180,6 +180,12 @@ if (!$Package -and $ReleaseStage -eq 'Compile') {
         Build-Native 'Lifecycle'
         Copy-Item "$output\PowerToys.ProtectedStorageLifecycle.exe" $stage -Force
         Sign-File "$stage\PowerToys.ProtectedStorageLifecycle.exe"
+    }
+    if ($ReleaseStage -eq 'CarrierInputs') {
+        Require-SignedFile "$stage\PowerToys.ProtectedStorageLifecycle.exe"
+        Assert-ReleaseDocuments -PackageRoot $stage -Version $Version -TrustVerifierPath $trustVerifier
+        Write-Host "##vso[task.setvariable variable=ProtectedStorageCarrierProductCode;isReadOnly=true]$productCode"
+        Write-Host "##vso[task.setvariable variable=ProtectedStorageCarrierVersion;isReadOnly=true]$Version"
     }
     if ($Package -or $ReleaseStage -eq 'Carrier') {
         Require-SignedFile "$stage\PowerToys.ProtectedStorageLifecycle.exe"

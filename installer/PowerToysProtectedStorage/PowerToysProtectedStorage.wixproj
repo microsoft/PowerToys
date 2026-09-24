@@ -5,7 +5,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <ProtectedStorageStage Condition="'$(ProtectedStorageStage)' == ''">$(RepoRoot)artifacts\ProtectedStorage\$(Platform)\$(Configuration)\Package</ProtectedStorageStage>
     <OutputPath>$(ProtectedStorageStage)\</OutputPath>
-    <IntermediateOutputPath>$(ProtectedStorageStage)\obj\</IntermediateOutputPath>
+    <IntermediateOutputPath>obj\Carrier\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>ProductVersion=$(ProtectedStorageVersion);ProductCode=$(ProtectedStorageProductCode);BuildDir=$(ProtectedStorageStage)</DefineConstants>
   </PropertyGroup>
   <ItemGroup><Compile Include="Product.wxs" /></ItemGroup>

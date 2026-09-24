@@ -72,12 +72,48 @@ steps:
       trustVerifierPath: '$(ProtectedStorageTrustVerifierPath)'
 
   - ${{ each phase in split('Lifecycle,Carrier,Broker,Setup', ',') }}:
-    - pwsh: |-
-        & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
-          -ReleaseStage '${{ phase }}' -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
-          -Version '${{ parameters.versionNumber }}' `
-          -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile=$(Build.SourcesDirectory)\.pipelines\release-nuget.config'
-      displayName: Build Protected Storage ${{ phase }}
+    - ${{ if ne(phase, 'Carrier') }}:
+      - pwsh: |-
+          & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+            -ReleaseStage '${{ phase }}' -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+            -Version '${{ parameters.versionNumber }}' `
+            -AdditionalBuildArguments '/p:CIBuild=true', '/p:BuildProjectReferences=false', '/p:RestoreConfigFile=$(Build.SourcesDirectory)\.pipelines\release-nuget.config'
+        displayName: Build Protected Storage ${{ phase }}
+
+    - ${{ if eq(phase, 'Carrier') }}:
+      - pwsh: |-
+          $ErrorActionPreference = 'Stop'
+          & .\installer\PowerToysProtectedStorage\Build-Carrier.ps1 `
+            -ReleaseStage CarrierInputs -Platform '$(BuildPlatform)' -Configuration '$(BuildConfiguration)' `
+            -Version '${{ parameters.versionNumber }}'
+          $service = Get-Service -Name msiserver
+          Write-Host "Windows Installer before MSI validation: status=$($service.Status); startType=$($service.StartType)"
+          Write-Host "Agent process: $([Security.Principal.WindowsIdentity]::GetCurrent().Name); TEMP=$env:TEMP"
+          if ($service.StartType -eq 'Disabled') { throw 'Windows Installer is disabled on this agent; ICE validation cannot run.' }
+        displayName: Verify carrier inputs and inspect Windows Installer availability
+
+      # Use the same VSBuild task and fresh MSBuild process as the main MSIs.
+      # Do not suppress ICEs or publish a carrier that could not be validated.
+      - task: VSBuild@1
+        displayName: Build Protected Storage Carrier
+        timeoutInMinutes: 15
+        inputs:
+          solution: 'installer\PowerToysProtectedStorage\PowerToysProtectedStorage.wixproj'
+          vsVersion: 18.0
+          msbuildArgs: >-
+            -restore
+            /p:RestorePackagesConfig=true;CIBuild=true;BuildProjectReferences=false
+            /p:ProtectedStorageStage="$(ProtectedStorageStageRoot)\Package"
+            /p:ProtectedStorageProductCode=$(ProtectedStorageCarrierProductCode)
+            /p:ProtectedStorageVersion=$(ProtectedStorageCarrierVersion)
+            /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+            /bl:$(LogOutputDirectory)\protected-storage-carrier.binlog
+            /flp:LogFile=$(LogOutputDirectory)\protected-storage-carrier.log;Verbosity=normal
+          platform: $(BuildPlatform)
+          configuration: $(BuildConfiguration)
+          clean: false
+          msbuildArchitecture: x64
+          maximumCpuCount: true
 
     - template: steps-esrp-sign-files-authenticode.yml
       parameters:
@@ -174,6 +210,16 @@ steps:
           New-Item -ItemType Directory -Path $destination -Force | Out-Null
           $logs | Copy-Item -Destination $destination
         }
+      }
+      try {
+        $service = Get-CimInstance -ClassName Win32_Service -Filter "Name='msiserver'"
+        $service | Select-Object Name, State, StartMode, StartName, ExitCode, ProcessId |
+          ConvertTo-Json | Set-Content -LiteralPath '$(LogOutputDirectory)\windows-installer-service.json' -Encoding utf8
+        $events = @(Get-WinEvent -FilterHashtable @{ LogName = 'Application'; ProviderName = 'MsiInstaller'; StartTime = (Get-Date).AddHours(-4) } -MaxEvents 30 -ErrorAction Stop)
+        $events | Select-Object TimeCreated, Id, LevelDisplayName, Message |
+          ConvertTo-Json -Depth 3 | Set-Content -LiteralPath '$(LogOutputDirectory)\windows-installer-events.json' -Encoding utf8
+      } catch {
+        Write-Warning "Windows Installer event diagnostics unavailable: $($_.Exception.Message)"
       }
     displayName: Record Protected Storage signature and version diagnostics
     condition: always()

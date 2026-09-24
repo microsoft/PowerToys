@@ -72,9 +72,12 @@ if ($Compile) {
         foreach ($name in @('manifest.txt', 'manifest.p7s', 'ClientCatalog.json', 'ClientCatalog.p7s')) {
             [IO.File]::WriteAllText("$scratch\$name", 'non-installable-authoring-test')
         }
-        & "$repo\tools\build\build.ps1" -Path $installer -Platform $Platform -Configuration $Configuration `
-            -ExtraArgs "/p:ProtectedStorageStage=$scratch", "/p:ProtectedStorageProductCode={$([guid]::NewGuid())}", '/p:ProtectedStorageVersion=0.0.1'
-        if ($LASTEXITCODE) { throw "WiX authoring compile failed ($LASTEXITCODE)." }
+        . "$repo\tools\build\build-common.ps1"
+        Set-Variable -Name RepoRoot -Value $repo -Scope Script
+        if (!(Ensure-VsDevEnvironment)) { throw 'Visual Studio developer environment is unavailable.' }
+        RestoreThenBuild "$installer\PowerToysProtectedStorage.wixproj" `
+            "/nr:false /p:ProtectedStorageStage=$scratch /p:ProtectedStorageProductCode={$([guid]::NewGuid())} /p:ProtectedStorageVersion=0.0.1" `
+            $Platform $Configuration
         if (!(Test-Path "$scratch\PowerToys.ProtectedStorage.Carrier.msi")) { throw 'No compile artifact produced.' }
     } finally {
         Remove-Item -LiteralPath $scratch -Recurse -Force

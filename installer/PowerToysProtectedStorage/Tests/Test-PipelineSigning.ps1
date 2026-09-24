@@ -42,7 +42,7 @@ foreach ($marker in @(
 if ($pipeline -match 'SigningCertificateThumbprint|Set-AuthenticodeSignature|New-SelfSignedCertificate|ExpectedSignerSha256|signer_sha256|Get-CertificatePin') {
     throw 'The remote pipeline must not use a local product-signing key.'
 }
-if ($pipeline.Contains('/p:RestoreConfigFile="')) {
+if ($pipeline -match '(?m)^\s*-AdditionalBuildArguments[^\r\n]*/p:RestoreConfigFile="') {
     throw 'PowerShell argument-array values must not contain literal quotes in RestoreConfigFile.'
 }
 if (!$pipeline.Contains("-Platform x64 -Configuration '`$(BuildConfiguration)'") -or
@@ -50,6 +50,18 @@ if (!$pipeline.Contains("-Platform x64 -Configuration '`$(BuildConfiguration)'")
     !$pipeline.Contains('x64\$(BuildConfiguration)\ProtectedStorage\ProtectedStorage.TrustVerifier.exe') -or
     !$pipeline.Contains('Assert-ReleaseSignature -Path $editor -TrustVerifierPath')) {
     throw 'Build and use the host x64 native verifier, including when the release payloads are ARM64.'
+}
+if (!$pipeline.Contains('-ReleaseStage CarrierInputs') -or
+    !$pipeline.Contains("solution: 'installer\PowerToysProtectedStorage\PowerToysProtectedStorage.wixproj'") -or
+    !$pipeline.Contains('/p:ProtectedStorageProductCode=$(ProtectedStorageCarrierProductCode)') -or
+    !$pipeline.Contains('msbuildArchitecture: x64') -or
+    !$pipeline.Contains('Get-Service -Name msiserver')) {
+    throw 'CI carrier packaging must use the main installer VSBuild execution path with validated inputs and service diagnostics.'
+}
+$carrierProject = Get-Content "$repo\installer\PowerToysProtectedStorage\PowerToysProtectedStorage.wixproj" -Raw
+if (($pipeline + $carrierProject) -match 'SuppressValidation[=>]|<SuppressIces>|/p:Ices=' -or
+    !$carrierProject.Contains('<IntermediateOutputPath>obj\Carrier\$(Platform)\$(Configuration)\</IntermediateOutputPath>')) {
+    throw 'Carrier ICE validation must remain enabled with isolated project-local intermediates.'
 }
 $installer = Get-Content "$templates\steps-build-installer-vnext.yml" -Raw
 if ($installer.IndexOf('template: steps-build-protected-storage.yml') -gt $installer.IndexOf('Build VNext MSI') -or

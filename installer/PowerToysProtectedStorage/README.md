@@ -87,6 +87,15 @@ The same stages back local `-Package` signing. `Compile` remains the default,
 non-deployable local build. External signing does not create developer keys,
 export keys, change trust stores, or waive the release verification gate.
 
+CI uses `CarrierInputs` to validate the signed inputs and derive the same
+version/ProductCode, then compiles the carrier with `VSBuild@1`, matching the
+main MSI execution path. Local `Carrier`/`-Package` builds still use the repository
+build wrapper. Carrier intermediates are project-local under
+`obj\Carrier\<Platform>\<Configuration>`; only the completed carrier is written
+to the release stage. ICE validation remains enabled. Windows Installer service
+state and recent installer events are retained to distinguish an agent service
+failure from an actual ICE authoring finding; neither is reported as success.
+
 The signed ADO pipeline runs these stages after final client signing and before
 either main MSI. It reuses the existing ESRP signing identity and `CP-230012`.
 Authenticode uses `SigntoolSign`; documents use `Pkcs7DetachedSign` with
