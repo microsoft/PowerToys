@@ -52,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private DateTime _pendingConnectStartTimeUtc;
 
+        private string _pendingConnectPreviousSecurityKey;
+
         private bool _disposed;
 
         public event EventHandler ConnectionSucceeded;
@@ -367,6 +369,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             void ConnectToMachine(string machineName, string securityKey);
 
+            void RestoreSecurityKey(string previousSecurityKey);
+
             Task<MachineSocketState[]> RequestMachineSocketStateAsync();
         }
 
@@ -526,6 +530,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _pendingConnectMachineName = pcName;
                 _pendingConnectStartTimeUtc = DateTime.UtcNow;
+                _pendingConnectPreviousSecurityKey = SecurityKey;
             }
 
             using (await _ipcSemaphore.EnterAsync())
@@ -535,6 +540,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (syncHelper == null)
                     {
                         ClearPendingConnect();
+                        lock (_connectPendingLock)
+                        {
+                            // ConnectToMachine was never invoked, so the local key was never touched.
+                            _pendingConnectPreviousSecurityKey = null;
+                        }
+
                         _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                         {
                             IsConnecting = false;
@@ -557,6 +568,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             lock (_connectPendingLock)
             {
                 _pendingConnectMachineName = null;
+            }
+        }
+
+        private async Task RestorePreviousSecurityKeyIfNeededAsync()
+        {
+            string previousKey;
+            lock (_connectPendingLock)
+            {
+                previousKey = _pendingConnectPreviousSecurityKey;
+                _pendingConnectPreviousSecurityKey = null;
+            }
+
+            if (string.IsNullOrEmpty(previousKey))
+            {
+                return;
+            }
+
+            using (await _ipcSemaphore.EnterAsync())
+            {
+                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                {
+                    syncHelper?.Endpoint?.RestoreSecurityKey(previousKey);
+                    var task = syncHelper?.Stream.FlushAsync();
+                    if (task != null)
+                    {
+                        await task;
+                    }
+                }
             }
         }
 
@@ -701,6 +740,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (pendingStatus == SocketStatus.Connected)
             {
                 ClearPendingConnect();
+                lock (_connectPendingLock)
+                {
+                    _pendingConnectPreviousSecurityKey = null;
+                }
+
                 _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                 {
                     IsConnecting = false;
@@ -713,6 +757,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var failedStatus = pendingStatus.Value;
                 ClearPendingConnect();
+                _ = RestorePreviousSecurityKeyIfNeededAsync();
                 _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                 {
                     IsConnecting = false;
@@ -726,6 +771,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else if (DateTime.UtcNow - pendingStartTimeUtc > TimeSpan.FromSeconds(8))
             {
                 ClearPendingConnect();
+                _ = RestorePreviousSecurityKeyIfNeededAsync();
                 _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                 {
                     IsConnecting = false;
