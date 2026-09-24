@@ -1494,4 +1494,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>The path has an invalid format.</value>
     <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
   </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Header" xml:space="preserve">
+    <value>Tray icon click action</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction.Description" xml:space="preserve">
+    <value>Choose what opens when you click the Command Palette tray icon.</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_QuickActions.Content" xml:space="preserve">
+    <value>Open quick actions</value>
+  </data>
+  <data name="Settings_GeneralPage_TrayIconClickAction_CommandPalette.Content" xml:space="preserve">
+    <value>Open command palette</value>
+  </data>
 </root>

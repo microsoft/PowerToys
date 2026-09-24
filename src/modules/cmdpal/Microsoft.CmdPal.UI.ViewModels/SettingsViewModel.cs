@@ -163,6 +163,18 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public int TrayIconClickActionIndex
+    {
+        get => (int)_settingsService.Settings.TrayIconClickAction;
+        set
+        {
+            if (Enum.IsDefined(typeof(TrayIconClickAction), value))
+            {
+                _settingsService.UpdateSettings(s => s with { TrayIconClickAction = (TrayIconClickAction)value });
+            }
+        }
+    }
+
     public double CompactCenterHeightPercentage
     {
         get => _settingsService.Settings.CompactCenterHeightPercentage;

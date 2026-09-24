@@ -35,6 +35,16 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public TrayIconClickAction TrayIconClickAction { get; init; } = TrayIconClickAction.OpenQuickActions;
+
+    private TrayPaletteSettings? _trayPalette = new();
+
+    public TrayPaletteSettings TrayPalette
+    {
+        get => _trayPalette ?? new();
+        init => _trayPalette = value;
+    }
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }

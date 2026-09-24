@@ -113,6 +113,12 @@
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_TrayIconClickAction" HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
+                        <ComboBox AutomationProperties.AutomationId="CmdPal_GeneralPage_TrayIconClickAction" SelectedIndex="{x:Bind viewModel.TrayIconClickActionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_TrayIconClickAction_QuickActions" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_TrayIconClickAction_CommandPalette" />
+                        </ComboBox>
+                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowAltF4_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_AllowAltF4" IsOn="{x:Bind viewModel.AllowAltF4, Mode=TwoWay}" />
