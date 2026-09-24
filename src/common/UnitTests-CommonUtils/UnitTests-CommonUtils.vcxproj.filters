@@ -60,6 +60,9 @@
     <ClCompile Include="Threading.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
+    <ClCompile Include="ContextMenuLifecycle.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
     <ClCompile Include="AppMutex.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
@@ -118,6 +121,9 @@
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
     <ClCompile Include="UnhandledException.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="TwoWayPipeMessageIPC.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
   </ItemGroup>

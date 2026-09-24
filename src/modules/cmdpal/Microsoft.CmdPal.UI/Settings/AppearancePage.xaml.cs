@@ -34,7 +34,8 @@ public sealed partial class AppearancePage : Page
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -88,6 +89,12 @@ public sealed partial class AppearancePage : Page
                 Logger.LogError("Failed to open Windows Settings", ex);
             }
         });
+    }
+
+    private void OpenSystemSettings_Click(object sender, RoutedEventArgs e)
+    {
+        // Hyperlink with NavigateUri won't work for this URI, so we have to do it manually.
+        _ = global::Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:notifications"));
     }
 
     private void OpenCommandPalette_Click(object sender, RoutedEventArgs e)

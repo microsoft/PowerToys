@@ -22,7 +22,7 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.base.h">
+    <ClInclude Include="Generated Files/resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,9 +63,15 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="FileLocksmithContextMenu.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="FileLocksmithContextMenu.base.rc">
+    <ResourceCompile Include="Generated Files/FileLocksmithContextMenu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

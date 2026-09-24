@@ -10,18 +10,18 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed class IconSourceProvider : IIconSourceProvider
 {
-    private readonly IconLoaderService _loader;
+    private readonly IIconLoaderService _loader;
     private readonly Size _iconSize;
     private readonly bool _isPriority;
 
-    public IconSourceProvider(IconLoaderService loader, Size iconSize, bool isPriority = false)
+    public IconSourceProvider(IIconLoaderService loader, Size iconSize, bool isPriority = false)
     {
         _loader = loader;
         _iconSize = iconSize;
         _isPriority = isPriority;
     }
 
-    public IconSourceProvider(IconLoaderService loader, int iconSize, bool isPriority = false)
+    public IconSourceProvider(IIconLoaderService loader, int iconSize, bool isPriority = false)
         : this(loader, new Size(iconSize, iconSize), isPriority)
     {
     }
@@ -30,14 +30,24 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        _loader.EnqueueLoad(
-            icon.Icon,
-            icon.FontFamily,
-            icon.Data?.Unsafe,
-            _iconSize,
-            scale,
-            tcs,
-            _isPriority ? IconLoadPriority.High : IconLoadPriority.Low);
+        try
+        {
+            if (!_loader.TryEnqueueLoad(
+                    icon.Icon,
+                    icon.FontFamily,
+                    icon.Data?.Unsafe,
+                    _iconSize,
+                    scale,
+                    tcs,
+                    _isPriority ? IconLoadPriority.High : IconLoadPriority.Low))
+            {
+                tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
+            }
+        }
+        catch (Exception ex)
+        {
+            tcs.TrySetException(ex);
+        }
 
         return tcs.Task;
     }

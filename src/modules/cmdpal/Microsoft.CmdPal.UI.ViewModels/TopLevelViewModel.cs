@@ -27,6 +27,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private int _contextItemsVersion;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -219,6 +220,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
+        _contextItemsVersion = item.ContextItemsVersion;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
 
@@ -260,7 +262,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
-            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+            var propertyName = e.PropertyName;
+            if (propertyName == nameof(CommandItemViewModel.AllCommands))
+            {
+                // Keep batched background delivery, but invalidate the SDK list only when its entries changed.
+                var version = _commandItemViewModel.ContextItemsVersion;
+                if (_contextItemsVersion == version)
+                {
+                    return;
+                }
+
+                _contextItemsVersion = version;
+                propertyName = nameof(ICommandItem.MoreCommands);
+            }
+
+            PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName));
 
             if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
             {
@@ -433,12 +449,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         // RPC to check type
         if (model is IFallbackCommandItem fallback)
         {
-            var wasEmpty = string.IsNullOrEmpty(Title);
+            var oldTitle = Title;
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
-            var isEmpty = string.IsNullOrEmpty(Title);
-            return wasEmpty != isEmpty;
+            var newTitle = Title;
+
+            // Report any title change, not just an empty <-> non-empty flip: the render path
+            // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
+            // must still trigger a refresh or the fallback keeps its stale score and position.
+            return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
         }
 
         return false;
@@ -456,10 +476,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public IDictionary<string, object?> GetProperties()
     {
-        return new Dictionary<string, object?>
-        {
-            [WellKnownExtensionAttributes.DataPackage] = _commandItemViewModel?.DataPackage,
-        };
+        return _commandItemViewModel.GetExtendedAttributes()
+               ?? new Dictionary<string, object?>();
     }
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
@@ -484,17 +502,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         List<IContextItem?> contextItems = new();
 
-        foreach (var item in _commandItemViewModel.MoreCommands)
-        {
-            if (item is ISeparatorContextItem)
-            {
-                contextItems.Add(item as IContextItem);
-            }
-            else if (item is CommandContextItemViewModel commandItem)
-            {
-                contextItems.Add(commandItem.Model.Unsafe);
-            }
-        }
+        _commandItemViewModel.CopySdkContextItemsTo(contextItems);
 
         _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
 
@@ -506,6 +514,18 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         var item = new PinnedDockItem(item: this, id: Id);
 
         return item;
+    }
+
+    /// <summary>
+    /// Unsubscribes from the underlying <see cref="CommandItemViewModel"/> event
+    /// and cleans up its resources so the TopLevelViewModel can be garbage
+    /// collected after it is removed from the owning collections.
+    /// </summary>
+    internal void Cleanup()
+    {
+        _commandItemViewModel.PropertyChangedBackground -= Item_PropertyChanged;
+        _commandItemViewModel.SafeCleanup();
+        _initialIcon = null;
     }
 }
 

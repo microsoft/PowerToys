@@ -18,16 +18,25 @@ Most of these commands are using the [Microsoft GitHub Policy Service](https://g
 
 ## Other automated tasks
 
-### Automatic labeling
+### AI-assisted issue triage
 
-The bot can automatically apply the correct `product-...` label for any opened issue.
+New and updated issues are processed by a GitHub Agentic Workflow that combines
+deterministic checks with a bounded GitHub Copilot pass. It maintains one
+triage comment, adds a matching primary `Product-*` label and version label,
+requests blocking author information, recommends updating older PowerToys
+versions, surfaces likely duplicates, and analyzes a sanitized subset of
+attached PowerToys diagnostic reports.
 
-> [!NOTE]
-> This feature is currently only available for the Workspaces module as a test.
+Duplicate closure is submitted as a native GitHub suggestion. A maintainer must
+accept or decline it. Accepting the suggestion closes the issue as a duplicate
+and links it to the selected canonical issue.
 
 ### The `Needs-Author-Feedback` label
 
-If an issue has this label and had no activity for 5 days, the bot will post a comment reminding the author to provide the needed information. It also adds the `Status-No recent activity` label. If no further activity occurs for another 5 days, the bot will close the issue.
+If an issue or pull request retains this label without activity for 7 days, the
+bot closes it. An author comment removes the label from issues and pull
+requests, and an author push removes it from pull requests. Removing the label
+manually also disables scheduled closure.
 
 ### Filtering users that want to contribute
 

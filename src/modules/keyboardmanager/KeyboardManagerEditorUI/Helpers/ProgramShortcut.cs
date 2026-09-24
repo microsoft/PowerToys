@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -36,5 +36,9 @@ namespace KeyboardManagerEditorUI.Helpers
         public string Visibility { get; set; } = string.Empty;
 
         public bool ExactMatch { get; set; }
+
+        public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
+
+        public string SearchableText { get; set; } = string.Empty;
     }
 }

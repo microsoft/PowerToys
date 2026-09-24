@@ -21,13 +21,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly IContextMenuFactory? _contextMenuFactory;
 
-    private readonly Lock _moreCommandsLock = new();
-    private readonly List<IContextItemViewModel> _moreCommands = [];
-    private volatile CommandContextItemViewModel? _secondaryMoreCommand;
-    private volatile IContextItemViewModel[] _moreCommandsSnapshot = [];
-    private volatile IContextItemViewModel[] _allCommandsSnapshot = [];
+    private readonly Lock _contextItemsLock = new();
+    private readonly List<IContextItemViewModel> _contextItems = [];
+    private volatile int _contextItemsVersion;
+    private volatile CommandContextSnapshot _snapshot = CommandContextSnapshot.Empty;
 
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
+
+    public string? DockCommandId { get; private set; }
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
@@ -67,33 +68,49 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public IconInfoViewModel Icon => _icon.IsSet ? _icon : Command.Icon;
 
-    public CommandViewModel Command { get; private set; }
+    /// <summary>
+    /// The command and whether we own it, held as a single immutable pair.
+    /// </summary>
+    private CommandOwnership _commandState;
 
-    // Reuse a cached read-only snapshot so repeated reads don't allocate.
-    public IReadOnlyList<IContextItemViewModel> MoreCommands => _moreCommandsSnapshot;
+    /// <summary>
+    /// Gets the command backing this item.
+    /// </summary>
+    /// <remarks>
+    /// Read-only on purpose. Assigning it directly would silently drop the  previous view-model without unsubscribing it,
+    /// which strands it and its extension command across the process boundary for good.
+    /// Mutate it through <see cref="ReplaceCommand"/> when this item owns the command,
+    /// or <see cref="BorrowCommand"/> when it is holding one owned elsewhere.
+    /// </remarks>
+    public CommandViewModel Command => _commandState.Command;
 
-    IReadOnlyList<IContextItemViewModel> IContextMenuContext.MoreCommands => _moreCommandsSnapshot;
+    protected Lock ContextItemsLock => _contextItemsLock;
 
-    protected Lock MoreCommandsLock => _moreCommandsLock;
+    protected List<IContextItemViewModel> UnsafeContextItems => _contextItems;
 
-    protected List<IContextItemViewModel> UnsafeMoreCommands => _moreCommands;
+    /// <summary>
+    /// Identifies child-entry rebuilds for SDK adapters. Synthetic-primary and visibility
+    /// changes leave this value unchanged.
+    /// </summary>
+    internal int ContextItemsVersion => _contextItemsVersion;
 
-    public bool HasMoreCommands => _secondaryMoreCommand is not null;
+    /// <summary>
+    /// Gets whether this command has child actions and opens a submenu, even while their names are empty.
+    /// A synthetic entry for the command itself does not make it a submenu.
+    /// </summary>
+    public bool HasSubmenu => _snapshot.HasSubmenu;
 
-    public string SecondaryCommandName => _secondaryMoreCommand?.Name ?? string.Empty;
+    public bool HasOverflowCommands => _snapshot.HasOverflowCommands;
+
+    public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand => _secondaryMoreCommand;
+    public CommandItemViewModel? SecondaryCommand => _snapshot.SecondaryCommand;
 
+    // Fast initialization publishes the synthetic primary entry before SDK child actions are loaded.
     public bool CanOpenContextMenu =>
-
-        // BEAR LOADING: A visible synthetic primary command makes the item
-        // context-openable immediately, even if out-of-proc MoreCommands are still
-        // hydrating. Without this fast path, the first open request can race slow
-        // menu initialization and get dropped.
-        _defaultCommandContextItemViewModel?.ShouldBeVisible == true ||
-        _moreCommandsSnapshot.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+        _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
@@ -105,7 +122,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public DataPackageView? DataPackage { get; private set; }
 
-    public IReadOnlyList<IContextItemViewModel> AllCommands => _allCommandsSnapshot;
+    public IReadOnlyList<IContextItemViewModel> AllCommands => _snapshot.AllCommands;
 
     private static readonly IconInfoViewModel _errorIcon;
 
@@ -123,7 +140,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         _commandItemModel = item;
         _contextMenuFactory = contextMenuFactory;
-        Command = new(null, errorContext);
+        _commandState = new(new CommandViewModel(null, errorContext), Owned: true);
     }
 
     public void FastInitializeProperties()
@@ -140,7 +157,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var command = model.Command;
-        Command = new(command, PageContext);
+        ReplaceCommand(command);
         Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
@@ -197,8 +214,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         if (model is IExtendedAttributesProvider extendedAttributesProvider)
         {
             ExtendedAttributesProvider = new ExtensionObject<IExtendedAttributesProvider>(extendedAttributesProvider);
-            var properties = extendedAttributesProvider.GetProperties();
-            UpdateDataPackage(properties);
+            UpdateExtendedAttributes(GetExtendedAttributes());
         }
 
         Initialized |= InitializedState.Initialized;
@@ -222,20 +238,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        BuildAndInitMoreCommands();
+        BuildAndInitContextMenu();
 
         TryCreateDefaultCommandContextItem(model.Command);
 
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe();
         }
 
         Initialized |= InitializedState.SelectionInitialized;
-        UpdateProperty(nameof(MoreCommands));
-        UpdateProperty(nameof(AllCommands));
-        UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
-        UpdateProperty(nameof(CanOpenContextMenu));
+        NotifyContextMenuChanged();
         UpdateProperty(nameof(IsSelectedInitialized));
     }
 
@@ -249,10 +262,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             CoreLogger.LogError("error fast initializing CommandItemViewModel", ex);
-            Command = new(null, PageContext);
+            ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            ClearMoreCommands();
+            ClearContextMenu();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -288,10 +301,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             CoreLogger.LogError("error initializing CommandItemViewModel", ex);
-            Command = new(null, PageContext);
+            ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            ClearMoreCommands();
+            ClearContextMenu();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -324,9 +337,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                Command.PropertyChanged -= Command_PropertyChanged;
                 var command = model.Command;
-                Command = new(command, PageContext);
+
+                // ReplaceCommand detaches this item's handler from the command it
+                // displaces, so there is no manual unsubscribe to remember here.
+                ReplaceCommand(command);
+
                 Command.InitializeProperties();
                 Command.PropertyChanged += Command_PropertyChanged;
 
@@ -336,7 +352,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 if (_defaultCommandContextItemViewModel is not null)
                 {
-                    _defaultCommandContextItemViewModel.Command = Command;
+                    _defaultCommandContextItemViewModel.BorrowCommand(Command);
                     _defaultCommandContextItemViewModel.UpdateTitle(_itemTitle);
                     UpdateDefaultContextItemIcon();
                 }
@@ -380,12 +396,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(model.MoreCommands):
-                BuildAndInitMoreCommands();
-                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands), nameof(AllCommands), nameof(CanOpenContextMenu));
-
-                break;
+                BuildAndInitContextMenu();
+                NotifyContextMenuChanged();
+                return;
             case nameof(DataPackage):
-                UpdateDataPackage(ExtendedAttributesProvider?.Unsafe?.GetProperties());
+                UpdateDataPackage(GetExtendedAttributes());
+                break;
+            case "Properties":
+                UpdateExtendedAttributes(GetExtendedAttributes());
                 break;
         }
 
@@ -446,27 +464,33 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         // We only synthesize the primary entry when the command is already
         // usable; a null/empty primary must still fall back to late
-        // MoreCommands-based opening.
+        // menu opening through child actions.
         if (string.IsNullOrEmpty(Command.Name) || commandModel is null)
         {
             return;
         }
 
-        _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
-            Command = Command,
 
             // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
             // Anything we set manually here must stay in sync with the corresponding properties on CommandItemViewModel.
         };
 
+        // The synthesized entry stands in for this item's own command, so it
+        // shares the view-model rather than building a second one for the same
+        // extension object.
+        defaultContextItem.BorrowCommand(Command);
+
+        _defaultCommandContextItemViewModel = defaultContextItem;
+
         UpdateDefaultContextItemIcon();
 
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe();
         }
 
         UpdateProperty(nameof(AllCommands));
@@ -491,6 +515,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         UpdateProperty(nameof(Icon));
     }
 
+    protected virtual void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
+    {
+        UpdateDataPackage(properties);
+        DockCommandId = properties?.TryGetValue(WellKnownExtensionAttributes.DockCommandId, out var dockCommandId) == true
+            ? dockCommandId as string
+            : null;
+    }
+
     private void UpdateDataPackage(IDictionary<string, object?>? properties)
     {
         DataPackage =
@@ -507,11 +539,59 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
 
+    /// <summary>
+    /// Replaces <see cref="Command"/> with a newly built view-model this item owns, cleaning up the one being dropped.
+    /// </summary>
+    /// <remarks>
+    /// Takes the extension command instead of a view-model - the view-model is built here so that we can guarantee ownership..
+    /// </remarks>
+    private void ReplaceCommand(ICommand? model)
+    {
+        var command = new CommandViewModel(model, PageContext);
+        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
+
+        ReleaseReplaced(replaced, command);
+    }
+
+    /// <summary>
+    /// Points <see cref="Command"/> at a view-model owned by someone else.
+    /// </summary>
+    /// <remarks>
+    /// The borrowed instance is never cleaned up here - that is its owner's job.
+    /// </remarks>
+    private void BorrowCommand(CommandViewModel command)
+    {
+        var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: false));
+
+        ReleaseReplaced(replaced, command);
+    }
+
+    /// <summary>
+    /// Cleans up a displaced command, if we owned it and it is not the one that just took its place.
+    /// </summary>
+    private void ReleaseReplaced(CommandOwnership replaced, CommandViewModel current)
+    {
+        if (ReferenceEquals(replaced.Command, current))
+        {
+            return;
+        }
+
+        // Detach regardless of ownership: this item attaches its own handler to
+        // whichever command it is showing, borrowed or not, so the handler has to
+        // come off whenever that command is swapped out.
+        replaced.Command.PropertyChanged -= Command_PropertyChanged;
+
+        if (replaced.Owned)
+        {
+            replaced.Command.SafeCleanup();
+        }
+    }
+
     /// <remarks>
     /// * Does call SlowInitializeProperties on the created items.
     /// * does NOT call UpdateProperty ; caller must do that.
     /// </remarks>
-    private void BuildAndInitMoreCommands()
+    private void BuildAndInitContextMenu()
     {
         var model = _commandItemModel.Unsafe;
         if (model is null)
@@ -524,10 +604,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
 
         List<IContextItemViewModel>? freedItems;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            ListHelpers.InPlaceUpdateList(_moreCommands, results, out freedItems);
-            RefreshMoreCommandStateUnsafe();
+            ListHelpers.InPlaceUpdateList(_contextItems, results, out freedItems);
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         freedItems.OfType<CommandContextItemViewModel>()
@@ -535,27 +615,22 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                   .ForEach(c => c.SafeCleanup());
     }
 
-    public void RefreshMoreCommands()
+    public void RefreshContextMenu()
     {
-        Task.Run(RefreshMoreCommandsSynchronous);
+        Task.Run(RefreshContextMenuSynchronous);
     }
 
-    private void RefreshMoreCommandsSynchronous()
+    private void RefreshContextMenuSynchronous()
     {
         try
         {
-            BuildAndInitMoreCommands();
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
-            UpdateProperty(nameof(SecondaryCommand));
-            UpdateProperty(nameof(SecondaryCommandName));
-            UpdateProperty(nameof(HasMoreCommands));
-            UpdateProperty(nameof(CanOpenContextMenu));
+            BuildAndInitContextMenu();
+            NotifyContextMenuChanged();
         }
         catch (Exception ex)
         {
             // Handle any exceptions that might occur during the refresh process
-            CoreLogger.LogError("Error refreshing MoreCommands in CommandItemViewModel", ex);
+            CoreLogger.LogError("Error refreshing context menu in CommandItemViewModel", ex);
             ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
     }
@@ -566,17 +641,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         List<IContextItemViewModel> freedItems;
         CommandContextItemViewModel? freedDefault;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            freedItems = [.. _moreCommands];
-            _moreCommands.Clear();
+            freedItems = [.. _contextItems];
+            _contextItems.Clear();
 
-            // Null out here so the single RefreshMoreCommandStateUnsafe call
-            // produces an _allCommandsSnapshot that excludes the default command.
+            // Null out here so the single RefreshContextMenuSnapshotUnsafe call
+            // publishes a menu that excludes the default command.
             freedDefault = _defaultCommandContextItemViewModel;
             _defaultCommandContextItemViewModel = null;
 
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         // Cleanup outside lock to avoid holding it during RPC calls
@@ -588,8 +663,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // _listItemIcon.SafeCleanup();
         _icon = new(null); // necessary?
 
-        Command.PropertyChanged -= Command_PropertyChanged;
-        Command.SafeCleanup();
+        // One read of the pair, so a replacement racing this teardown cannot
+        // leave us cleaning up a command against the wrong ownership flag.
+        var commandState = _commandState;
+        commandState.Command.PropertyChanged -= Command_PropertyChanged;
+
+        // Only tear down a command this item built. The synthesized default
+        // context item borrows its parent's, and cleaning that up from here
+        // would pull it out from under an item that is still using it.
+        if (commandState.Owned)
+        {
+            commandState.Command.SafeCleanup();
+        }
 
         var model = _commandItemModel.Unsafe;
         if (model is not null)
@@ -604,39 +689,170 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.CleanedUp;
     }
 
-    protected void RefreshMoreCommandStateUnsafe()
+    private void ContextItem_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        _moreCommandsSnapshot = [.. _moreCommands];
-
-        _secondaryMoreCommand = null;
-        foreach (var item in _moreCommands)
+        if (e.PropertyName != nameof(Name) || sender is not CommandContextItemViewModel command)
         {
-            if (item is CommandContextItemViewModel command)
+            return;
+        }
+
+        bool rolesChanged;
+        lock (_contextItemsLock)
+        {
+            // A queued notification may arrive after the entry was replaced.
+            if (!_contextItems.Contains(command))
             {
-                _secondaryMoreCommand = command;
+                return;
+            }
+
+            var previousSnapshot = _snapshot;
+            RefreshContextMenuSnapshotUnsafe();
+            rolesChanged = !ReferenceEquals(previousSnapshot, _snapshot);
+        }
+
+        if (rolesChanged)
+        {
+            NotifyContextMenuChanged();
+        }
+        else if (ReferenceEquals(command, SecondaryCommand))
+        {
+            UpdateProperty(nameof(SecondaryCommandName));
+        }
+    }
+
+    /// <summary>
+    /// Updates the cached menu while <see cref="ContextItemsLock"/> is held.
+    /// </summary>
+    /// <param name="contextItemsChanged">
+    /// Must be <see langword="true"/> after any change to <see cref="UnsafeContextItems"/>,
+    /// including replacements or reordering that leave its count unchanged. This rebuilds
+    /// the entry snapshot and updates subscriptions and the SDK adapter version.
+    /// </param>
+    protected void RefreshContextMenuSnapshotUnsafe(bool contextItemsChanged = false)
+    {
+        if (contextItemsChanged)
+        {
+            foreach (var command in _snapshot.AllCommands.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground -= ContextItem_PropertyChanged;
+            }
+
+            foreach (var command in _contextItems.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground += ContextItem_PropertyChanged;
+            }
+
+            _contextItemsVersion++;
+        }
+
+        CommandContextItemViewModel? secondary = null;
+        var hasSubmenu = false;
+        var hasOverflowCommands = false;
+        foreach (var item in _contextItems)
+        {
+            if (item is not CommandContextItemViewModel command)
+            {
+                continue;
+            }
+
+            hasSubmenu = true;
+            if (!command.ShouldBeVisible)
+            {
+                continue;
+            }
+
+            if (secondary is null)
+            {
+                secondary = command;
+            }
+            else
+            {
+                hasOverflowCommands = true;
                 break;
             }
         }
 
-        _allCommandsSnapshot = _defaultCommandContextItemViewModel is null ?
-            _moreCommandsSnapshot :
-            [_defaultCommandContextItemViewModel, .. _moreCommandsSnapshot];
+        // Child name updates can change action roles without changing the menu entries.
+        var allCommands = _snapshot.AllCommands;
+        var entryCount = _contextItems.Count + (_defaultCommandContextItemViewModel is null ? 0 : 1);
+        if (contextItemsChanged || allCommands.Length != entryCount)
+        {
+            allCommands = _defaultCommandContextItemViewModel is null
+                ? [.. _contextItems]
+                : [_defaultCommandContextItemViewModel, .. _contextItems];
+        }
+
+        if (ReferenceEquals(allCommands, _snapshot.AllCommands) &&
+            ReferenceEquals(this, _snapshot.PrimaryCommand) &&
+            ReferenceEquals(secondary, _snapshot.SecondaryCommand) &&
+            hasOverflowCommands == _snapshot.HasOverflowCommands &&
+            hasSubmenu == _snapshot.HasSubmenu)
+        {
+            return;
+        }
+
+        _snapshot = new(allCommands, this, secondary, hasOverflowCommands, hasSubmenu);
     }
 
-    private void ClearMoreCommands()
+    protected void NotifyContextMenuChanged() =>
+        UpdateProperty(
+            nameof(AllCommands),
+            nameof(SecondaryCommand),
+            nameof(SecondaryCommandName),
+            nameof(HasSubmenu),
+            nameof(HasOverflowCommands),
+            nameof(CanOpenContextMenu));
+
+    /// <summary>
+    /// Copies cached entries back to the SDK for top-level item adapters, excluding the synthetic primary.
+    /// </summary>
+    internal void CopySdkContextItemsTo(List<IContextItem?> contextItems)
+    {
+        lock (_contextItemsLock)
+        {
+            foreach (var item in _contextItems)
+            {
+                if (item is SeparatorViewModel separator)
+                {
+                    contextItems.Add(separator);
+                }
+                else if (item is CommandContextItemViewModel command)
+                {
+                    contextItems.Add(command.Model.Unsafe);
+                }
+            }
+        }
+    }
+
+    private void ClearContextMenu()
     {
         List<IContextItemViewModel> freedItems;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            freedItems = [.. _moreCommands];
-            _moreCommands.Clear();
-            RefreshMoreCommandStateUnsafe();
+            freedItems = [.. _contextItems];
+            _contextItems.Clear();
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
     }
+
+    internal IDictionary<string, object?>? GetExtendedAttributes()
+    {
+        return ExtendedAttributesProvider?.Unsafe?.GetProperties();
+    }
+
+    /// <summary>
+    /// A command together with whether this item is responsible for cleaning it up.
+    /// </summary>
+    /// <param name="Command">The command view-model.</param>
+    /// <param name="Owned">
+    /// <see langword="true"/> when this item constructed <paramref name="Command"/>,
+    /// <see langword="false"/> when it is borrowing one owned elsewhere.
+    /// </param>
+    private sealed record CommandOwnership(CommandViewModel Command, bool Owned);
 }
 
 [Flags]

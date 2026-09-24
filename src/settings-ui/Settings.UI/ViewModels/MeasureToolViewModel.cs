@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -18,6 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class MeasureToolViewModel : PageViewModelBase
     {
+        private const int DefaultUnitsOfMeasureIndex = 0;
+        internal const int MaximumUnitsOfMeasureIndex = 4;
+
         protected override string ModuleName => MeasureToolSettings.ModuleName;
 
         private SettingsUtils SettingsUtils { get; set; }
@@ -43,6 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(measureToolSettingsRepository);
 
             Settings = measureToolSettingsRepository.SettingsConfig;
+            int normalizedUnitsOfMeasure = NormalizeUnitsOfMeasureIndex(Settings.Properties.UnitsOfMeasure.Value);
+            if (normalizedUnitsOfMeasure != Settings.Properties.UnitsOfMeasure.Value)
+            {
+                Settings.Properties.UnitsOfMeasure.Value = normalizedUnitsOfMeasure;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
+            }
 
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -177,11 +185,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                return Settings.Properties.UnitsOfMeasure.Value;
+                return NormalizeUnitsOfMeasureIndex(Settings.Properties.UnitsOfMeasure.Value);
             }
 
             set
             {
+                value = NormalizeUnitsOfMeasureIndex(value);
                 if (Settings.Properties.UnitsOfMeasure.Value != value)
                 {
                     Settings.Properties.UnitsOfMeasure.Value = value;
@@ -271,6 +280,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowContinuousCaptureWarning
         {
             get => IsEnabled && ContinuousCapture;
+        }
+
+        internal static int NormalizeUnitsOfMeasureIndex(int value)
+        {
+            return value switch
+            {
+                // Legacy enum migration (pre-ComboBox builds stored Millimetres as 8).
+                8 => 3,
+                >= DefaultUnitsOfMeasureIndex and <= MaximumUnitsOfMeasureIndex => value,
+                _ => DefaultUnitsOfMeasureIndex,
+            };
         }
 
         private Func<string, int> SendConfigMSG { get; }

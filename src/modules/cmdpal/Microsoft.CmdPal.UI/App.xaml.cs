@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
@@ -27,6 +28,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -78,11 +80,18 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var persistenceService = new PersistenceService();
+        var settingsService = new SettingsService(persistenceService, appInfoService);
+        var languageService = new LanguageService();
+        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
+        appInfoService.SetLanguageOverride(languageOverride);
+        Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
 
         IconProvider.Initialize(Services);
 
         this.InitializeComponent();
+
+        ContentFormControl.RegisterCustomElements();
 
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
@@ -119,7 +128,11 @@ public partial class App : Application, IDisposable
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private static ServiceProvider ConfigureServices(
+        IApplicationInfoService appInfoService,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService,
+        ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -139,7 +152,9 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, persistenceService, settingsService);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
@@ -235,14 +250,23 @@ public partial class App : Application, IDisposable
         }
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService)
     {
         // Models & persistence services
-        services.AddSingleton<IPersistenceService, PersistenceService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton(persistenceService);
+        services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
+        services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<ExternalCommandLinkCoordinatorFactory>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();

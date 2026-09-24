@@ -20,6 +20,7 @@ public sealed partial class DockItemControl : Control
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
+        RegisterPropertyChangedCallback(FlowDirectionProperty, OnFlowDirectionChanged);
     }
 
     public static readonly DependencyProperty ToolTipProperty =
@@ -93,6 +94,42 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IsCompactProperty, value);
     }
 
+    public static readonly DependencyProperty UseTabularDigitsProperty =
+        DependencyProperty.Register(nameof(UseTabularDigits), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTabularDigitsPropertyChanged));
+
+    public bool UseTabularDigits
+    {
+        get => (bool)GetValue(UseTabularDigitsProperty);
+        set => SetValue(UseTabularDigitsProperty, value);
+    }
+
+    private static void OnUseTabularDigitsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTabularDigitsState();
+        }
+    }
+
+    public static readonly DependencyProperty UseTrailingLabelAlignmentProperty =
+        DependencyProperty.Register(nameof(UseTrailingLabelAlignment), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTrailingLabelAlignmentPropertyChanged));
+
+    public bool UseTrailingLabelAlignment
+    {
+        get => (bool)GetValue(UseTrailingLabelAlignmentProperty);
+        set => SetValue(UseTrailingLabelAlignmentProperty, value);
+    }
+
+    private static void OnUseTrailingLabelAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTextAlignmentState();
+        }
+    }
+
+    private void OnFlowDirectionChanged(DependencyObject sender, DependencyProperty dp) => UpdateTextAlignmentState();
+
     private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DockItemControl control)
@@ -105,11 +142,26 @@ public sealed partial class DockItemControl : Control
     {
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
         UpdateSubtitleVisibilityState();
+        UpdateInnerMargin();
+        UpdateLabelWidth();
     }
 
     private const string IconPresenterName = "IconPresenter";
+    private const string BackPlateName = "PART_BackPlate";
+
+    // Gap between neighbouring items, on the axis the dock stacks them.
+    private const double HorizontalChromeSeparation = 2;
+    private const double VerticalChromeSeparation = 1;
+
+    // Mirrors the margin DockControl keeps on the dock's inner side (its Padding there
+    // is on a UserControl, which never renders it).
+    private const double DockEdgeGap = 2;
 
     private FrameworkElement? _iconPresenter;
+    private FrameworkElement? _backPlate;
+
+    // Width floor in a horizontal dock, height floor in a vertical one.
+    private double _backPlateMinSize;
     private DockControl? _parentDock;
     private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
@@ -139,11 +191,15 @@ public sealed partial class DockItemControl : Control
 
     internal bool HasText => HasTitle || HasSubtitle;
 
+    internal bool IsIconOnly => ShouldShowIcon() && (TextVisibility == Visibility.Collapsed || !HasText);
+
     private void UpdateTextVisibility()
     {
         UpdateTextVisibilityState();
         UpdateSubtitleVisibilityState();
         UpdateContentSpacingState();
+        UpdateChromeSize();
+        UpdateLabelWidth();
     }
 
     private void UpdateTextVisibilityState()
@@ -184,7 +240,37 @@ public sealed partial class DockItemControl : Control
 
         UpdateIconVisibilityState();
         UpdateContentSpacingState();
+        UpdateChromeSize();
     }
+
+    // Squares icon-only items against the height a horizontal dock hands us; a vertical
+    // dock stretches items to its width instead, so there the chrome just needs a floor.
+    private void UpdateChromeSize()
+    {
+        if (_backPlate is null)
+        {
+            return;
+        }
+
+        var vertical = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+
+        // Before the first layout pass there's no height to square against yet.
+        var square = !vertical && IsIconOnly && _backPlate.ActualHeight > 0;
+        var minWidth = square ? _backPlate.ActualHeight : _backPlateMinSize;
+        var minHeight = vertical ? _backPlateMinSize : 0;
+
+        if (Math.Abs(_backPlate.MinWidth - minWidth) > 0.5)
+        {
+            _backPlate.MinWidth = minWidth;
+        }
+
+        if (Math.Abs(_backPlate.MinHeight - minHeight) > 0.5)
+        {
+            _backPlate.MinHeight = minHeight;
+        }
+    }
+
+    private void BackPlate_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateChromeSize();
 
     private void UpdateIconVisibilityState()
     {
@@ -220,9 +306,21 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextAlignmentState()
     {
+        if (UseTrailingLabelAlignment)
+        {
+            var trailingState = FlowDirection == FlowDirection.RightToLeft ? "TextLeftAligned" : "TextRightAligned";
+            VisualStateManager.GoToState(this, trailingState, true);
+            return;
+        }
+
         var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
         var shouldCenterText = verticalDock && !ShouldShowIcon();
         VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
+    }
+
+    private void UpdateTabularDigitsState()
+    {
+        VisualStateManager.GoToState(this, UseTabularDigits ? "TabularDigits" : "DefaultNumeralAlignment", true);
     }
 
     private void UpdateAllVisibility()
@@ -231,6 +329,7 @@ public sealed partial class DockItemControl : Control
         UpdateIconVisibility();
         UpdateToolTip();
         UpdateAlignment();
+        UpdateTabularDigitsState();
         UpdateCompactState();
     }
 
@@ -276,8 +375,23 @@ public sealed partial class DockItemControl : Control
 
         IsEnabledChanged += OnIsEnabledChanged;
 
+        if (_backPlate is not null)
+        {
+            _backPlate.SizeChanged -= BackPlate_SizeChanged;
+        }
+
         // Get template children for visibility updates
         _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
+        _backPlate = GetTemplateChild(BackPlateName) as FrameworkElement;
+
+        if (_backPlate is not null)
+        {
+            // Remember the template's floor so non-square items can be put back.
+            _backPlateMinSize = _backPlate.MinWidth;
+            _backPlate.SizeChanged += BackPlate_SizeChanged;
+        }
+
+        InitializeLabelWidth();
 
         // Set initial visibility
         UpdateAllVisibility();
@@ -296,7 +410,7 @@ public sealed partial class DockItemControl : Control
         if (parent is DockControl dock)
         {
             _parentDock = dock;
-            UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateInnerMargin();
             UpdateCompactFromParent(dock);
             UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
@@ -307,6 +421,7 @@ public sealed partial class DockItemControl : Control
                 OnParentDockSizeChanged);
         }
 
+        InvalidateLabelFont();
         UpdateToolTip();
     }
 
@@ -341,13 +456,17 @@ public sealed partial class DockItemControl : Control
 
         ToolTipService.SetToolTip(this, null);
         _toolTip = null;
+        StopWatchingLabelFont();
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
     {
         if (sender is DockControl dock)
         {
+            UpdateInnerMargin();
             UpdateAlignment();
+            UpdateChromeSize();
+            UpdateLabelWidth();
         }
     }
 
@@ -364,20 +483,27 @@ public sealed partial class DockItemControl : Control
         IsCompact = dock.DockSize == DockSize.Compact;
     }
 
-    private void UpdateInnerMarginForDockSide(DockSide side)
+    // Insets the chrome from the item's bounds, which stay hit-testable so the button
+    // still reaches the screen edge (Fitts's law) without looking flush against it.
+    private void UpdateInnerMargin()
     {
-        // Push the visual (PART_RootGrid) inward on the screen-edge side so
-        // the transparent hit-test area extends all the way to the edge.
-        // The values here compensate for the margin/padding removed from the
-        // DockControl's ContentGrid on the screen-edge side.
-        InnerMargin = side switch
-        {
-            DockSide.Top => new Thickness(0, 0, 0, 0),
-            DockSide.Bottom => new Thickness(0, 0, 0, 4),
-            DockSide.Left => new Thickness(8, 0, 0, 0),
-            DockSide.Right => new Thickness(0, 0, 8, 0),
-            _ => new Thickness(0),
-        };
+        var side = _parentDock?.DockSide ?? DockSide.Top;
+        var vertical = side is DockSide.Left or DockSide.Right;
+
+        // Compact trades the gap for height.
+        var edgeGap = IsCompact ? 0 : DockEdgeGap;
+
+        InnerMargin = vertical
+            ? new Thickness(
+                side == DockSide.Left ? edgeGap : 0,
+                VerticalChromeSeparation,
+                side == DockSide.Right ? edgeGap : 0,
+                VerticalChromeSeparation)
+            : new Thickness(
+                HorizontalChromeSeparation,
+                side == DockSide.Top ? edgeGap : 0,
+                HorizontalChromeSeparation,
+                side == DockSide.Bottom ? edgeGap : 0);
     }
 
     private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -397,6 +523,23 @@ public sealed partial class DockItemControl : Control
             base.OnPointerPressed(e);
             VisualStateManager.GoToState(this, "Pressed", true);
         }
+    }
+
+    protected override void OnPointerReleased(PointerRoutedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        // Still over us on release; PointerExited takes it to Normal from there.
+        if (IsEnabled)
+        {
+            VisualStateManager.GoToState(this, "PointerOver", true);
+        }
+    }
+
+    protected override void OnPointerCanceled(PointerRoutedEventArgs e)
+    {
+        base.OnPointerCanceled(e);
+        VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
     }
 
     private void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

@@ -6,11 +6,10 @@
     "Installer Hashes" markdown table.
 
 .DESCRIPTION
-    Given an ADO Dart pipeline build id (e.g. from
-    https://microsoft.visualstudio.com/Dart/_build/results?buildId=NNN),
-    downloads the four installer EXEs and the per-arch symbol zips into a
-    single per-version folder, then writes a hashes.md alongside them with a
-    markdown table ready to paste into the GitHub release notes.
+    Given an ADO Dart pipeline build id, downloads and validates the four
+    installer EXEs, GPO archive, and per-architecture symbol zips. The script
+    validates installer signatures, ADO-published hashes, ZIP integrity, and
+    GPO contents, then writes hashes.md and assets-manifest.json.
 
     Requires: az login (Azure CLI authenticated), az devops extension.
 
@@ -22,16 +21,31 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$BuildId,
 
+    [string]$Version,
+
+    [string]$BuildMetadataPath,
+
     [string]$OutputFolder = "$env:USERPROFILE\Downloads",
+
+    [string]$DestinationFolder,
 
     [string]$Organization = "https://dev.azure.com/microsoft",
     [string]$Project = "Dart",
 
-    [string]$GitHubRepo = "microsoft/PowerToys"
+    [string]$GitHubRepo = "microsoft/PowerToys",
+
+    [ValidateRange(1, 20)]
+    [int]$DownloadMaxAttempts = 3,
+
+    [ValidateRange(0, 300)]
+    [int]$DownloadRetryDelaySeconds = 10
 )
 
 $ErrorActionPreference = "Stop"
 $env:AZURE_CORE_NO_PROMPT = "true"
+
+. (Join-Path $PSScriptRoot "web-response-content.ps1")
+. (Join-Path $PSScriptRoot "preview-release-assets.ps1")
 
 # --- Helpers -----------------------------------------------------------------
 
@@ -85,11 +99,10 @@ function Invoke-AdoDownload {
     param(
         [Parameter(Mandatory)][string]$Url,
         [Parameter(Mandatory)][string]$DestPath,
-        [Parameter(Mandatory)][string]$Token,
-        [int]$MaxAttempts = 3
+        [Parameter(Mandatory)][string]$Token
     )
     $lastError = $null
-    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+    for ($attempt = 1; $attempt -le $DownloadMaxAttempts; $attempt++) {
         $webClient = New-Object System.Net.WebClient
         $webClient.Headers.Add("Authorization", "Bearer $Token")
         try {
@@ -101,8 +114,13 @@ function Invoke-AdoDownload {
             if (Test-Path $DestPath) {
                 Remove-Item $DestPath -Force -ErrorAction SilentlyContinue
             }
-            if ($attempt -lt $MaxAttempts) {
-                $backoffSec = [int][Math]::Pow(2, $attempt)  # 2, 4, 8 ...
+            if ($attempt -lt $DownloadMaxAttempts) {
+                $backoffSec = if ($DownloadRetryDelaySeconds -gt 0) {
+                    $DownloadRetryDelaySeconds
+                }
+                else {
+                    [int][Math]::Pow(2, $attempt)
+                }
                 Write-Host "  Attempt $attempt failed: $($_.Exception.Message). Retrying in ${backoffSec}s..." -ForegroundColor Yellow
                 Start-Sleep -Seconds $backoffSec
             }
@@ -111,7 +129,31 @@ function Invoke-AdoDownload {
             $webClient.Dispose()
         }
     }
-    throw "Download failed after $MaxAttempts attempts. Last error: $($lastError.Exception.Message)`nURL: $Url"
+    throw "Download failed after $DownloadMaxAttempts attempts. Last error: $($lastError.Exception.Message)`nURL: $Url"
+}
+
+function Get-RemoteHash {
+    param(
+        [Parameter(Mandatory)]$Artifact,
+        [Parameter(Mandatory)][string]$HashFile,
+        [Parameter(Mandatory)][string]$Token
+    )
+
+    $url = Get-ArtifactDownloadUrl -BaseUrl $Artifact.resource.downloadUrl -SubPath "/$HashFile" -Format file
+    try {
+        $response = Invoke-WebRequest `
+            -Uri $url `
+            -Headers @{ Authorization = "Bearer $Token" } `
+            -TimeoutSec 30
+        $text = ConvertFrom-WebResponseContent -Content $response.Content
+        if ($text -match "[0-9a-fA-F]{64}") {
+            return $matches[0].ToUpperInvariant()
+        }
+        throw "Hash file '$HashFile' does not contain a valid SHA256 hash."
+    }
+    catch {
+        throw "Failed to load required ADO hash '$HashFile' from artifact '$($Artifact.name)'. $_"
+    }
 }
 
 # -----------------------------------------------------------------------------
@@ -158,10 +200,27 @@ if (-not $buildJson) {
 }
 $build = $buildJson | ConvertFrom-Json
 
-$versionParam = $build.templateParameters.VersionNumber
+$versionParam = $Version
+if (-not $versionParam -and $BuildMetadataPath) {
+    $versionParam = [string](Get-Content -LiteralPath $BuildMetadataPath -Raw | ConvertFrom-Json).version
+}
 if (-not $versionParam) {
-    Write-Error "Could not determine version from build $BuildId"
-    exit 1
+    $versionParam = [string]$build.templateParameters.VersionNumber
+}
+if (-not $versionParam) {
+    $metadataResolver = Join-Path $PSScriptRoot "get-release-build-metadata.ps1"
+    try {
+        $versionParam = [string](& $metadataResolver `
+            -Build $BuildId `
+            -Organization $Organization `
+            -Project $Project).version
+    }
+    catch {
+        throw "Could not determine version from build $BuildId. Pipeline metadata or an explicit -Version is required. $_"
+    }
+}
+if ($versionParam -notmatch "^\d+\.\d+\.\d+\.0$") {
+    throw "Resolved version '$versionParam' is not a valid four-component PowerToys version."
 }
 Write-Host "  Version: $versionParam" -ForegroundColor DarkGray
 
@@ -175,11 +234,22 @@ if (-not $artifactsJson) {
 $artifacts = $artifactsJson | ConvertFrom-Json
 
 # --- Step 3: Prepare destination folder ---
-$destFolder = Join-Path $OutputFolder "PowerToys-v$versionParam"
+$destFolder = if ($DestinationFolder) {
+    $DestinationFolder
+}
+else {
+    Join-Path $OutputFolder "PowerToys-v$versionParam"
+}
 if (-not (Test-Path $destFolder)) {
     New-Item -ItemType Directory -Path $destFolder -Force | Out-Null
 }
 Write-Host "  Destination: $destFolder" -ForegroundColor DarkGray
+
+$buildMarkerPath = Join-Path $destFolder ".buildinfo.json"
+$sameBuild = Test-PreviewReleaseAssetBuildMarker `
+    -MarkerPath $buildMarkerPath `
+    -BuildId $BuildId `
+    -Version $versionParam
 
 # --- Step 4: Get an ADO access token once ---
 $token = Invoke-Az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv
@@ -190,26 +260,32 @@ if (-not $token) {
 
 # --- Step 5: Define the four installers to download ---
 $targets = @(
-    [pscustomobject]@{ Description = "Per user - x64";       Scope = "perUser";    Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysUserSetup-$versionParam-x64.exe" }
-    [pscustomobject]@{ Description = "Per user - ARM64";     Scope = "perUser";    Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysUserSetup-$versionParam-arm64.exe" }
-    [pscustomobject]@{ Description = "Machine wide - x64";   Scope = "perMachine"; Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysSetup-$versionParam-x64.exe" }
-    [pscustomobject]@{ Description = "Machine wide - ARM64"; Scope = "perMachine"; Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysSetup-$versionParam-arm64.exe" }
+    [pscustomobject]@{ Description = "Per user - x64";       Scope = "perUser";    Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysUserSetup-$versionParam-x64.exe";   Ref = "ptUserX64";    HashFile = "hash_user_x64.txt" }
+    [pscustomobject]@{ Description = "Per user - ARM64";     Scope = "perUser";    Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysUserSetup-$versionParam-arm64.exe"; Ref = "ptUserArm64";  HashFile = "hash_user_arm64.txt" }
+    [pscustomobject]@{ Description = "Machine wide - x64";   Scope = "perMachine"; Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysSetup-$versionParam-x64.exe";       Ref = "ptMachineX64"; HashFile = "hash_machine_x64.txt" }
+    [pscustomobject]@{ Description = "Machine wide - ARM64"; Scope = "perMachine"; Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysSetup-$versionParam-arm64.exe";     Ref = "ptMachineArm64"; HashFile = "hash_machine_arm64.txt" }
 )
 
 # --- Step 6: Download each installer (skip if already present) ---
 foreach ($t in $targets) {
     $destPath = Join-Path $destFolder $t.FileName
 
-    if (Test-Path $destPath) {
-        $sizeMB = [math]::Round((Get-Item $destPath).Length / 1MB, 1)
-        Write-Host "[skip] $($t.FileName) already exists ($sizeMB MB)" -ForegroundColor DarkGray
-        continue
-    }
-
     $artifact = $artifacts | Where-Object { $_.name -eq $t.Artifact }
     if (-not $artifact) {
         Write-Error "Artifact '$($t.Artifact)' not found in build $BuildId. Available: $(($artifacts | ForEach-Object name) -join ', ')"
         exit 1
+    }
+
+    if (Test-Path $destPath) {
+        $sizeMB = [math]::Round((Get-Item $destPath).Length / 1MB, 1)
+        $remoteHash = Get-RemoteHash -Artifact $artifact -HashFile $t.HashFile -Token $token
+        $localHash = (Get-FileHash -LiteralPath $destPath -Algorithm SHA256).Hash.ToUpperInvariant()
+        if ($localHash -eq $remoteHash) {
+            Write-Host "[skip] $($t.FileName) already matches build $BuildId ($sizeMB MB)" -ForegroundColor DarkGray
+            continue
+        }
+        Write-Host "[update] $($t.FileName) cannot be verified against build $BuildId" -ForegroundColor Yellow
+        Remove-Item -LiteralPath $destPath -Force
     }
 
     $fileUrl = Get-ArtifactDownloadUrl -BaseUrl $artifact.resource.downloadUrl -SubPath "/$($t.FileName)" -Format file
@@ -227,6 +303,31 @@ foreach ($t in $targets) {
     Write-Host "  Saved ($sizeMB MB)" -ForegroundColor Green
 }
 
+# --- Step 6a: Download Group Policy archive ---
+$gpoFileName = "GroupPolicyObjectFiles-$versionParam.zip"
+$gpoPath = Join-Path $destFolder $gpoFileName
+$gpoArtifact = $artifacts | Where-Object { $_.name -eq "build-x64-Release" }
+if (-not $gpoArtifact) {
+    throw "Artifact 'build-x64-Release' is required for the GPO archive."
+}
+if ((Test-Path -LiteralPath $gpoPath) -and -not $sameBuild) {
+    Remove-Item -LiteralPath $gpoPath -Force
+}
+elseif (Test-Path -LiteralPath $gpoPath) {
+    try {
+        Assert-PreviewReleaseZipReadable -Path $gpoPath | Out-Null
+    }
+    catch {
+        Write-Host "[update] $gpoFileName is corrupt and will be downloaded again" -ForegroundColor Yellow
+        Remove-Item -LiteralPath $gpoPath -Force
+    }
+}
+if (-not (Test-Path -LiteralPath $gpoPath)) {
+    $gpoUrl = Get-ArtifactDownloadUrl -BaseUrl $gpoArtifact.resource.downloadUrl -SubPath "/$gpoFileName" -Format file
+    Write-Host "Downloading $gpoFileName ..." -ForegroundColor Cyan
+    Invoke-AdoDownload -Url $gpoUrl -DestPath $gpoPath -Token $token
+}
+
 # --- Step 6b: Download symbols (one zip per arch) ---
 $symbolTargets = @(
     [pscustomobject]@{ Arch = "x64";   Artifact = "build-x64-Release";   SubPath = "/symbols-x64" }
@@ -235,6 +336,18 @@ $symbolTargets = @(
 
 foreach ($s in $symbolTargets) {
     $finalZip = Join-Path $destFolder "symbols-$($s.Arch).zip"
+    if ((Test-Path $finalZip) -and -not $sameBuild) {
+        Remove-Item -LiteralPath $finalZip -Force
+    }
+    elseif (Test-Path -LiteralPath $finalZip) {
+        try {
+            Assert-PreviewReleaseZipReadable -Path $finalZip | Out-Null
+        }
+        catch {
+            Write-Host "[update] symbols-$($s.Arch).zip is corrupt and will be downloaded again" -ForegroundColor Yellow
+            Remove-Item -LiteralPath $finalZip -Force
+        }
+    }
     if (Test-Path $finalZip) {
         $sizeMB = [math]::Round((Get-Item $finalZip).Length / 1MB, 1)
         Write-Host "[skip] symbols-$($s.Arch).zip already exists ($sizeMB MB)" -ForegroundColor DarkGray
@@ -307,9 +420,72 @@ foreach ($s in $symbolTargets) {
     }
 }
 
-# --- Step 7: Compute SHA256 and build markdown ---
-Write-Host "`nComputing SHA256 hashes..." -ForegroundColor Cyan
+# --- Step 7: Validate and inventory all release assets ---
+Write-Host "`nValidating release assets..." -ForegroundColor Cyan
 
+$assetManifestItems = @()
+foreach ($t in $targets) {
+    $path = Join-Path $destFolder $t.FileName
+    $file = Get-Item -LiteralPath $path
+    if ($file.Length -le 0) {
+        throw "Installer '$($file.Name)' is empty."
+    }
+
+    $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()
+    $artifact = $artifacts | Where-Object { $_.name -eq $t.Artifact }
+    $remoteHash = Get-RemoteHash -Artifact $artifact -HashFile $t.HashFile -Token $token
+    if ($hash -ne $remoteHash) {
+        throw "Installer '$($file.Name)' hash '$hash' does not match ADO-published hash '$remoteHash'."
+    }
+
+    $signature = Get-AuthenticodeSignature -LiteralPath $path
+    if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+        throw "Installer '$($file.Name)' has invalid Authenticode status '$($signature.Status)'."
+    }
+    if (-not $signature.SignerCertificate -or
+        $signature.SignerCertificate.Subject -notmatch "(^|,\s*)CN=Microsoft Corporation(,|$)") {
+        throw "Installer '$($file.Name)' is not signed by Microsoft Corporation."
+    }
+
+    $assetManifestItems += [pscustomobject]@{
+        name = $file.Name
+        size = [long]$file.Length
+        sha256 = $hash
+        adoSha256 = $remoteHash
+        signature = "valid"
+        signer = [string]$signature.SignerCertificate.Subject
+        architecture = $t.Arch
+        scope = $t.Scope
+    }
+}
+
+$gpoEntries = @(Assert-PreviewReleaseZipReadable -Path $gpoPath)
+if (-not ($gpoEntries | Where-Object { $_ -match "(^|/)PowerToys\.admx$" })) {
+    throw "GPO archive '$gpoFileName' does not contain PowerToys.admx."
+}
+if (-not ($gpoEntries | Where-Object { $_ -match "(^|/)en-US/PowerToys\.adml$" })) {
+    throw "GPO archive '$gpoFileName' does not contain en-US/PowerToys.adml."
+}
+
+foreach ($zipName in @($gpoFileName, "symbols-x64.zip", "symbols-arm64.zip")) {
+    $path = Join-Path $destFolder $zipName
+    $entries = @(Assert-PreviewReleaseZipReadable -Path $path)
+    $file = Get-Item -LiteralPath $path
+    if ($file.Length -le 0) {
+        throw "Archive '$zipName' is empty."
+    }
+    $assetManifestItems += [pscustomobject]@{
+        name = $file.Name
+        size = [long]$file.Length
+        sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()
+        signature = $null
+        entries = $entries.Count
+    }
+}
+
+# --- Step 8: Build the installer hash markdown and manifests ---
+$releaseTag = "v$versionParam"
+$releaseBaseUrl = "https://github.com/$GitHubRepo/releases/download/$releaseTag"
 $sb = [System.Text.StringBuilder]::new()
 [void]$sb.AppendLine("## Installer Hashes")
 [void]$sb.AppendLine("")
@@ -317,18 +493,43 @@ $sb = [System.Text.StringBuilder]::new()
 [void]$sb.AppendLine("| --- | --- | --- |")
 
 foreach ($t in $targets) {
-    $destPath = Join-Path $destFolder $t.FileName
-    $hash = (Get-FileHash -Path $destPath -Algorithm SHA256).Hash.ToUpper()
-    [void]$sb.AppendLine("| $($t.Description) | $($t.FileName) | $hash |")
-    Write-Host "  $($t.FileName)  $hash" -ForegroundColor DarkGray
+    $item = $assetManifestItems | Where-Object { $_.name -eq $t.FileName }
+    [void]$sb.AppendLine("| $($t.Description) | [$($t.FileName)][$($t.Ref)] | $($item.sha256) |")
+}
+[void]$sb.AppendLine("")
+foreach ($t in $targets) {
+    [void]$sb.AppendLine("[$($t.Ref)]: $releaseBaseUrl/$($t.FileName)")
 }
 
 $markdown = $sb.ToString()
 $mdPath = Join-Path $destFolder "hashes.md"
-Set-Content -Path $mdPath -Value $markdown -Encoding UTF8
+Set-Content -LiteralPath $mdPath -Value $markdown -Encoding utf8
 
-Write-Host "`nMarkdown written to: $mdPath" -ForegroundColor Green
-Write-Host "`n----- Installer Hashes -----`n" -ForegroundColor Yellow
-Write-Host $markdown
+$assetsManifestPath = Join-Path $destFolder "assets-manifest.json"
+[ordered]@{
+    schemaVersion = 1
+    buildId = $BuildId
+    version = $versionParam
+    generatedAt = (Get-Date).ToUniversalTime().ToString("o")
+    assets = $assetManifestItems
+} | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $assetsManifestPath -Encoding utf8
 
-Write-Host "Draft a new GitHub release at: https://github.com/$GitHubRepo/releases/new?tag=v$versionParam" -ForegroundColor Green
+[ordered]@{
+    schemaVersion = 1
+    buildId = $BuildId
+    version = $versionParam
+    updatedAt = (Get-Date).ToUniversalTime().ToString("o")
+} | ConvertTo-Json | Set-Content -LiteralPath $buildMarkerPath -Encoding utf8
+
+Write-Host "`nAll release assets passed validation." -ForegroundColor Green
+Write-Host "  Hashes: $mdPath" -ForegroundColor DarkGray
+Write-Host "  Manifest: $assetsManifestPath" -ForegroundColor DarkGray
+
+[pscustomobject]@{
+    buildId = $BuildId
+    version = $versionParam
+    destinationFolder = (Resolve-Path -LiteralPath $destFolder).Path
+    hashesPath = (Resolve-Path -LiteralPath $mdPath).Path
+    assetsManifestPath = (Resolve-Path -LiteralPath $assetsManifestPath).Path
+    assetCount = $assetManifestItems.Count
+}

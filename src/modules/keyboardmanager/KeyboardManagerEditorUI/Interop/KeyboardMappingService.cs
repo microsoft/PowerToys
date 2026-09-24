@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ManagedCommon;
 
@@ -45,6 +46,7 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             ConfigurationLoaded = LoadWithRetry();
+            ConfigurationName = KeyboardManagerInterop.GetStringAndFree(KeyboardManagerInterop.GetMappingConfigurationName(_configHandle));
         }
 
         /// <summary>
@@ -80,6 +82,8 @@ namespace KeyboardManagerEditorUI.Interop
             return false;
         }
 
+        internal string ConfigurationName { get; }
+
         public List<KeyMapping> GetSingleKeyMappings()
         {
             var result = new List<KeyMapping>();
@@ -95,6 +99,23 @@ namespace KeyboardManagerEditorUI.Interop
                         OriginalKey = mapping.OriginalKey,
                         TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
                         IsShortcut = mapping.IsShortcut,
+                    });
+                }
+            }
+
+            // Also surface "Alone" (dual-key) remaps, tagged so the UI can show the condition.
+            int aloneCount = KeyboardManagerInterop.GetSingleKeyAloneRemapCount(_configHandle);
+            for (int i = 0; i < aloneCount; i++)
+            {
+                var mapping = default(SingleKeyMapping);
+                if (KeyboardManagerInterop.GetSingleKeyAloneRemap(_configHandle, i, ref mapping))
+                {
+                    result.Add(new KeyMapping
+                    {
+                        OriginalKey = mapping.OriginalKey,
+                        TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
+                        IsShortcut = mapping.IsShortcut,
+                        IsAlone = true,
                     });
                 }
             }
@@ -115,9 +136,12 @@ namespace KeyboardManagerEditorUI.Interop
                     result.Add(new ShortcutKeyMapping
                     {
                         OriginalKeys = KeyboardManagerInterop.GetStringAndFree(mapping.OriginalKeys),
-                        TargetKeys = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys),
+                        TargetKeys = CanonicalizeTargetKeys(
+                            (ShortcutOperationType)mapping.OperationType,
+                            KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys)),
                         TargetApp = KeyboardManagerInterop.GetStringAndFree(mapping.TargetApp),
                         OperationType = (ShortcutOperationType)mapping.OperationType,
+                        ExactMatch = mapping.ExactMatch != 0,
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
@@ -126,7 +150,6 @@ namespace KeyboardManagerEditorUI.Interop
                         IfRunningAction = (ShortcutKeyMapping.ProgramAlreadyRunningAction)mapping.IfRunningAction,
                         Visibility = (ShortcutKeyMapping.StartWindowType)mapping.Visibility,
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
-                        ExactMatch = mapping.ExactMatch != 0,
                     });
                 }
             }
@@ -147,9 +170,12 @@ namespace KeyboardManagerEditorUI.Interop
                     result.Add(new ShortcutKeyMapping
                     {
                         OriginalKeys = KeyboardManagerInterop.GetStringAndFree(mapping.OriginalKeys),
-                        TargetKeys = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys),
+                        TargetKeys = CanonicalizeTargetKeys(
+                            (ShortcutOperationType)mapping.OperationType,
+                            KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys)),
                         TargetApp = KeyboardManagerInterop.GetStringAndFree(mapping.TargetApp),
                         OperationType = (ShortcutOperationType)mapping.OperationType,
+                        ExactMatch = mapping.ExactMatch != 0,
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
@@ -158,7 +184,6 @@ namespace KeyboardManagerEditorUI.Interop
                         IfRunningAction = (ShortcutKeyMapping.ProgramAlreadyRunningAction)mapping.IfRunningAction,
                         Visibility = (ShortcutKeyMapping.StartWindowType)mapping.Visibility,
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
-                        ExactMatch = mapping.ExactMatch != 0,
                     });
                 }
             }
@@ -223,7 +248,10 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
         {
-            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, key, targetKey), isTextRemap: false);
+            return AddExpanded(
+                originalKey,
+                key => KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, key, targetKey),
+                key => KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, key));
         }
 
         public bool AddSingleKeyMapping(int originalKey, string targetKeys)
@@ -238,7 +266,38 @@ namespace KeyboardManagerEditorUI.Interop
                 return AddSingleKeyMapping(originalKey, targetKey);
             }
 
-            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyToShortcutRemap(_configHandle, key, targetKeys), isTextRemap: false);
+            return AddExpanded(
+                originalKey,
+                key => KeyboardManagerInterop.AddSingleKeyToShortcutRemap(_configHandle, key, targetKeys),
+                key => KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, key));
+        }
+
+        public bool AddSingleKeyAloneMapping(int originalKey, int targetKey)
+        {
+            return AddExpanded(
+                originalKey,
+                key => KeyboardManagerInterop.AddSingleKeyAloneRemap(_configHandle, key, targetKey),
+                key => KeyboardManagerInterop.DeleteSingleKeyAloneRemap(_configHandle, key));
+        }
+
+        public bool AddSingleKeyAloneMapping(int originalKey, string targetKeys)
+        {
+            if (string.IsNullOrEmpty(targetKeys))
+            {
+                return false;
+            }
+
+            if (!targetKeys.Contains(';') && int.TryParse(targetKeys, out int targetKey))
+            {
+                return AddSingleKeyAloneMapping(originalKey, targetKey);
+            }
+            else
+            {
+                return AddExpanded(
+                    originalKey,
+                    key => KeyboardManagerInterop.AddSingleKeyAloneToShortcutRemap(_configHandle, key, targetKeys),
+                    key => KeyboardManagerInterop.DeleteSingleKeyAloneRemap(_configHandle, key));
+            }
         }
 
         public bool AddSingleKeyToTextMapping(int originalKey, string targetText)
@@ -248,7 +307,10 @@ namespace KeyboardManagerEditorUI.Interop
                 return false;
             }
 
-            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, key, targetText), isTextRemap: true);
+            return AddExpanded(
+                originalKey,
+                key => KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, key, targetText),
+                key => KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, key));
         }
 
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut, bool exactMatch = false)
@@ -263,15 +325,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool AddShortcutMapping(ShortcutKeyMapping shortcutKeyMapping)
         {
-            if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys))
-            {
-                return false;
-            }
-
-            // Program and URI mappings have no key target after a native configuration reload.
-            // Their payload is carried in ProgramPath/UriToOpen instead.
-            if ((shortcutKeyMapping.OperationType is ShortcutOperationType.RemapShortcut or ShortcutOperationType.RemapText) &&
-                string.IsNullOrEmpty(shortcutKeyMapping.TargetKeys))
+            if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys) || string.IsNullOrEmpty(GetNativeTargetKeys(shortcutKeyMapping)))
             {
                 return false;
             }
@@ -291,7 +345,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return KeyboardManagerInterop.AddShortcutRemap(
                     _configHandle,
                     shortcutKeyMapping.OriginalKeys,
-                    shortcutKeyMapping.TargetKeys,
+                    GetNativeTargetKeys(shortcutKeyMapping),
                     shortcutKeyMapping.TargetApp,
                     (int)shortcutKeyMapping.OperationType,
                     shortcutKeyMapping.ProgramPath,
@@ -307,7 +361,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return KeyboardManagerInterop.AddShortcutRemap(
                     _configHandle,
                     shortcutKeyMapping.OriginalKeys,
-                    shortcutKeyMapping.TargetKeys,
+                    GetNativeTargetKeys(shortcutKeyMapping),
                     shortcutKeyMapping.TargetApp,
                     (int)shortcutKeyMapping.OperationType,
                     shortcutKeyMapping.UriToOpen,
@@ -317,7 +371,7 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddShortcutRemap(
                 _configHandle,
                 shortcutKeyMapping.OriginalKeys,
-                shortcutKeyMapping.TargetKeys,
+                GetNativeTargetKeys(shortcutKeyMapping),
                 shortcutKeyMapping.TargetApp,
                 (int)shortcutKeyMapping.OperationType,
                 exactMatch: shortcutKeyMapping.ExactMatch ? 1 : 0);
@@ -335,9 +389,85 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
 
+        internal bool SaveSettingsAndVerify()
+        {
+            if (!SaveSettings())
+            {
+                return false;
+            }
+
+            try
+            {
+                using var persistedService = new KeyboardMappingService();
+                return persistedService.ConfigurationLoaded && HasSameMappings(persistedService);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to verify saved mapping settings: " + ex.Message);
+                return false;
+            }
+        }
+
+        internal bool HasSameMappings(KeyboardMappingService other) =>
+            ConfigurationLoaded && other.ConfigurationLoaded &&
+            ConfigurationName.Equals(other.ConfigurationName, StringComparison.OrdinalIgnoreCase) &&
+            MappingCollectionsEqual(
+                GetSingleKeyMappings(),
+                other.GetSingleKeyMappings(),
+                GetKeyToTextMappings(),
+                other.GetKeyToTextMappings(),
+                GetShortcutMappings(),
+                other.GetShortcutMappings());
+
+        internal static bool MappingCollectionsEqual(
+            IEnumerable<KeyMapping> firstSingleKeyMappings,
+            IEnumerable<KeyMapping> secondSingleKeyMappings,
+            IEnumerable<KeyToTextMapping> firstTextMappings,
+            IEnumerable<KeyToTextMapping> secondTextMappings,
+            IEnumerable<ShortcutKeyMapping> firstShortcutMappings,
+            IEnumerable<ShortcutKeyMapping> secondShortcutMappings)
+        {
+            var firstSingleKeys = firstSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ThenBy(mapping => mapping.IsAlone).ToList();
+            var secondSingleKeys = secondSingleKeyMappings.OrderBy(mapping => mapping.OriginalKey).ThenBy(mapping => mapping.IsAlone).ToList();
+            var firstTexts = firstTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
+            var secondTexts = secondTextMappings.OrderBy(mapping => mapping.OriginalKey).ToList();
+            var firstShortcuts = OrderShortcutMappings(firstShortcutMappings).ToList();
+            var secondShortcuts = OrderShortcutMappings(secondShortcutMappings).ToList();
+
+            return firstSingleKeys.Count == secondSingleKeys.Count &&
+                   firstSingleKeys.Zip(secondSingleKeys).All(pair =>
+                       pair.First.OriginalKey == pair.Second.OriginalKey &&
+                       string.Equals(pair.First.TargetKey, pair.Second.TargetKey, StringComparison.Ordinal) &&
+                       pair.First.IsShortcut == pair.Second.IsShortcut &&
+                       pair.First.IsAlone == pair.Second.IsAlone) &&
+                   firstTexts.Count == secondTexts.Count &&
+                   firstTexts.Zip(secondTexts).All(pair =>
+                       pair.First.OriginalKey == pair.Second.OriginalKey &&
+                       string.Equals(pair.First.TargetText, pair.Second.TargetText, StringComparison.Ordinal)) &&
+                   firstShortcuts.Count == secondShortcuts.Count &&
+                   firstShortcuts.Zip(secondShortcuts).All(pair => ShortcutMappingsEqual(pair.First, pair.Second));
+        }
+
+        internal static string CanonicalizeTargetKeys(ShortcutOperationType operationType, string targetKeys) =>
+            operationType is ShortcutOperationType.RunProgram or ShortcutOperationType.OpenUri or ShortcutOperationType.RemapText
+                ? string.Empty
+                : targetKeys;
+
+        internal static string GetNativeTargetKeys(ShortcutKeyMapping mapping) => mapping.OperationType switch
+        {
+            ShortcutOperationType.RunProgram or ShortcutOperationType.OpenUri when string.IsNullOrEmpty(mapping.TargetKeys) => mapping.OriginalKeys,
+            ShortcutOperationType.RemapText => mapping.TargetText,
+            _ => mapping.TargetKeys,
+        };
+
         public bool DeleteSingleKeyMapping(int originalKey)
         {
             return DeleteExpanded(originalKey, key => KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, key));
+        }
+
+        public bool DeleteSingleKeyAloneMapping(int originalKey)
+        {
+            return DeleteExpanded(originalKey, key => KeyboardManagerInterop.DeleteSingleKeyAloneRemap(_configHandle, key));
         }
 
         public bool DeleteSingleKeyToTextMapping(int originalKey)
@@ -357,7 +487,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return false;
             }
 
-            return KeyboardManagerInterop.DeleteShortcutRemap(_configHandle, originalKeys, targetApp ?? string.Empty);
+            return KeyboardManagerInterop.DeleteShortcutRemap(_configHandle, originalKeys, (targetApp ?? string.Empty).ToLowerInvariant());
         }
 
         /// <summary>
@@ -381,7 +511,7 @@ namespace KeyboardManagerEditorUI.Interop
         /// Applies <paramref name="add"/> to every expanded origin key, rolling back on failure so a
         /// combined modifier is never left half-mapped.
         /// </summary>
-        private bool AddExpanded(int originalKey, Func<int, bool> add, bool isTextRemap)
+        private bool AddExpanded(int originalKey, Func<int, bool> add, Func<int, bool> rollback)
         {
             int[] keys = ExpandCombinedModifier(originalKey);
             if (keys.Length == 1)
@@ -400,14 +530,7 @@ namespace KeyboardManagerEditorUI.Interop
 
                 foreach (int done in added)
                 {
-                    if (isTextRemap)
-                    {
-                        KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, done);
-                    }
-                    else
-                    {
-                        KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, done);
-                    }
+                    rollback(done);
                 }
 
                 Logger.LogWarning($"Could not remap key {key} (expanded from {originalKey}); rolled the mapping back");
@@ -440,6 +563,28 @@ namespace KeyboardManagerEditorUI.Interop
 
             return deletedAny;
         }
+
+        private static IOrderedEnumerable<ShortcutKeyMapping> OrderShortcutMappings(IEnumerable<ShortcutKeyMapping> mappings) =>
+            mappings
+                .OrderBy(mapping => mapping.OriginalKeys, StringComparer.Ordinal)
+                .ThenBy(mapping => mapping.TargetApp, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(mapping => mapping.OperationType);
+
+        private static bool ShortcutMappingsEqual(ShortcutKeyMapping first, ShortcutKeyMapping second) =>
+            string.Equals(first.OriginalKeys, second.OriginalKeys, StringComparison.Ordinal) &&
+            string.Equals(first.TargetKeys, second.TargetKeys, StringComparison.Ordinal) &&
+            string.Equals(first.TargetApp, second.TargetApp, StringComparison.OrdinalIgnoreCase) &&
+            first.OperationType == second.OperationType &&
+            first.Condition == second.Condition &&
+            first.ExactMatch == second.ExactMatch &&
+            string.Equals(first.TargetText, second.TargetText, StringComparison.Ordinal) &&
+            string.Equals(first.ProgramPath, second.ProgramPath, StringComparison.Ordinal) &&
+            string.Equals(first.ProgramArgs, second.ProgramArgs, StringComparison.Ordinal) &&
+            string.Equals(first.StartInDirectory, second.StartInDirectory, StringComparison.Ordinal) &&
+            first.Elevation == second.Elevation &&
+            first.IfRunningAction == second.IfRunningAction &&
+            first.Visibility == second.Visibility &&
+            string.Equals(first.UriToOpen, second.UriToOpen, StringComparison.Ordinal);
 
         public void Dispose()
         {

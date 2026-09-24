@@ -13,6 +13,14 @@ namespace ImageResizer.Cli.Options
         public WidthOption()
             : base(_aliases, Properties.Resources.CLI_Option_Width)
         {
+            AddValidator(result =>
+            {
+                var error = DimensionOptionValidator.Validate(result.Tokens.Count == 1 ? result.Tokens[0].Value : null);
+                if (error != null)
+                {
+                    result.ErrorMessage = error;
+                }
+            });
         }
     }
 }

@@ -118,6 +118,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 isFirst = false;
 
+                if (release.IsPrerelease)
+                {
+                    releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"**{ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseNotes_PreviewBadge")}**");
+                    releaseNotesHtmlBuilder.AppendLine();
+                }
+
                 var releaseUrl = string.Format(CultureInfo.InvariantCulture, GitHubReleaseLinkTemplate, release.TagName);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
                 string formattedDate = release.PublishedDate.ToString($"{CultureInfo.CurrentCulture.DateTimeFormat.MonthDayPattern}, yyyy", CultureInfo.CurrentCulture);

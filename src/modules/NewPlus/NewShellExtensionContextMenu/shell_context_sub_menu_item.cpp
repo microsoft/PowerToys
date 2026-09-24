@@ -4,18 +4,19 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 
+#include <common/utils/context_menu_lifecycle.h>
+
 using namespace Microsoft::WRL;
 
 // Sub context menu containing the actual list of templates
 shell_context_sub_menu_item::shell_context_sub_menu_item()
+    : template_entry(nullptr), site_of_folder(nullptr), mouse_position_at_time_of_invoke{ -1, -1 }
 {
-    this->template_entry = nullptr;
 }
 
-shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
+    : template_entry(template_entry), site_of_folder(site_of_folder), mouse_position_at_time_of_invoke(mouse_position_at_invoke)
 {
-    this->template_entry = template_entry;
-    this->site_of_folder = site_of_folder;
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title)
@@ -64,7 +65,13 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
-    return newplus::utilities::copy_template(template_entry, site_of_folder);
+    context_menu_lifecycle::activity_guard activity;
+    if (!activity)
+    {
+        return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+    }
+
+    return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke, activity);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
@@ -122,5 +129,11 @@ IFACEMETHODIMP template_folder_context_menu_item::GetIcon(_In_opt_ IShellItemArr
 
 IFACEMETHODIMP template_folder_context_menu_item::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
 {
+    context_menu_lifecycle::activity_guard activity;
+    if (!activity)
+    {
+        return HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS);
+    }
+
     return newplus::utilities::open_template_folder(shell_template_folder);
 }

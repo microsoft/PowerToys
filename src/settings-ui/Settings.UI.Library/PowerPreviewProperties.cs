@@ -81,6 +81,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableMdLocalImages;
+
+        [JsonPropertyName("md-previewer-local-images-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableMdLocalImages
+        {
+            get => enableMdLocalImages;
+            set
+            {
+                if (value != enableMdLocalImages)
+                {
+                    LogTelemetryEvent(value);
+                    enableMdLocalImages = value;
+                }
+            }
+        }
+
         private bool enableMonacoPreview = true;
 
         [JsonPropertyName("monaco-previewer-toggle-setting")]

@@ -82,9 +82,9 @@ namespace WorkspacesLauncherUI
 
             ipcmanager = new TwoWayPipeMessageIPCManaged("\\\\.\\pipe\\powertoys_workspaces_ui_", "\\\\.\\pipe\\powertoys_workspaces_launcher_ui_", (string message) =>
             {
-                if (IPCMessageReceivedCallback != null && message.Length > 0)
+                if (message.Length > 0)
                 {
-                    IPCMessageReceivedCallback(message);
+                    IPCMessageReceivedCallback?.Invoke(message);
                 }
             });
             ipcmanager.Start();
@@ -127,6 +127,7 @@ namespace WorkspacesLauncherUI
             {
                 if (disposing)
                 {
+                    _mainViewModel?.Dispose();
                     ipcmanager?.End();
                     ipcmanager?.Dispose();
 

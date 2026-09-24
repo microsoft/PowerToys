@@ -39,6 +39,14 @@ private:
     // Returns whether there are any remappings available without waiting for settings to load
     bool HasRegisteredRemappingsUnchecked() const;
 
+    // Companion low-level mouse hook, installed alongside the keyboard hook only while "Alone"
+    // (dual-key) remaps exist. It promotes a held alone key to a real modifier when a click/scroll
+    // arrives, so combinations like Ctrl+Click / Ctrl+Wheel work (the keyboard hook handles the
+    // key-combination case). Idle otherwise.
+    void StartLowlevelMouseHook();
+    void StopLowlevelMouseHook();
+    void HandleMouseHookEvent() noexcept;
+
     // Contains the non localized module name
     std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
@@ -47,6 +55,10 @@ private:
 
     // Required for Unhook in old versions of Windows
     static HHOOK hookHandleCopy;
+
+    // Companion low-level mouse hook handles (see StartLowlevelMouseHook).
+    static HHOOK mouseHookHandle;
+    static HHOOK mouseHookHandleCopy;
 
     // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     // Only global or static variables can be accessed in a hook procedure CALLBACK
@@ -66,6 +78,7 @@ private:
     // Published by the settings loader; hook lifecycle updates must not wait for a
     // configuration reload or read its mutable mapping tables on the hook thread.
     std::atomic_bool hasRegisteredRemappings = false;
+    std::atomic_bool hasAloneRemappings = false;
 
     HANDLE editorIsRunningEvent = nullptr;
 
@@ -77,6 +90,9 @@ private:
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+
+    // Mouse hook procedure definition (companion to HookProc for the "Alone" dual-key feature)
+    static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     // Load settings from the file.
     void LoadSettings();

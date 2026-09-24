@@ -76,7 +76,8 @@ namespace ImageResizer.Models
         {
             var path = Path.Combine(_directory, "Test.png");
             File.Copy("Test.png", path);
-
+            var expectedDateModified = new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Utc);
+            File.SetLastWriteTimeUtc(path, expectedDateModified);
             var originalDateModified = File.GetLastWriteTimeUtc(path);
 
             var operation = new ResizeOperation(
@@ -91,7 +92,9 @@ namespace ImageResizer.Models
 
             await operation.ExecuteAsync();
 
+            Assert.AreEqual(expectedDateModified, originalDateModified);
             Assert.AreEqual(originalDateModified, File.GetLastWriteTimeUtc(_directory.File()));
+            await AssertEx.ImageAsync(_directory.File(), decoder => Assert.AreEqual(96u, decoder.PixelWidth));
         }
 
         [TestMethod]
@@ -335,6 +338,44 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
+        public async Task TransformRejectsScaledDimensionsAboveInt32RangeBeforeWriting()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    settings =>
+                    {
+                        settings.SelectedSize.Fit = ResizeFit.Stretch;
+                        settings.SelectedSize.Width = (double)int.MaxValue + 1;
+                        settings.SelectedSize.Height = 100;
+                    }));
+
+            await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
+
+            Assert.AreEqual(0, _directory.FileNames.Count());
+        }
+
+        [TestMethod]
+        public async Task TransformRejectsNegativeFractionalDimensionsBeforeRounding()
+        {
+            var operation = new ResizeOperation(
+                "Test.png",
+                _directory,
+                Settings(
+                    settings =>
+                    {
+                        settings.SelectedSize.Fit = ResizeFit.Stretch;
+                        settings.SelectedSize.Width = -0.4;
+                        settings.SelectedSize.Height = 100;
+                    }));
+
+            await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
+
+            Assert.AreEqual(0, _directory.FileNames.Count());
+        }
+
+        [TestMethod]
         public async Task TransformHonorsUnit()
         {
             var operation = new ResizeOperation(
@@ -392,6 +433,31 @@ namespace ImageResizer.Models
                     Assert.AreEqual((byte)255, pixel.B, "First pixel B should be 255 (white)");
                     Assert.AreEqual(96u, decoder.PixelWidth);
                     Assert.AreEqual(96u, decoder.PixelHeight);
+                });
+        }
+
+        [TestMethod]
+        public async Task TransformRoundsPositiveFractionalFillDimensionsToAtLeastOnePixel()
+        {
+            var operation = new ResizeOperation(
+                "TestPortrait.png",
+                _directory,
+                Settings(
+                    settings =>
+                    {
+                        settings.SelectedSize.Fit = ResizeFit.Fill;
+                        settings.SelectedSize.Width = 0.4;
+                        settings.SelectedSize.Height = 100;
+                    }));
+
+            await operation.ExecuteAsync();
+
+            await AssertEx.ImageAsync(
+                _directory.File(),
+                decoder =>
+                {
+                    Assert.AreEqual(1u, decoder.PixelWidth);
+                    Assert.AreEqual(100u, decoder.PixelHeight);
                 });
         }
 

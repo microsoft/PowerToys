@@ -38,6 +38,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="CoordinateSystemConversion.h" />
     <ClInclude Include="Measurement.h" />
+    <ClInclude Include="MeasurementLogic.h" />
     <ClInclude Include="DxgiAPI.h" />
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.IO.Enumeration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,11 +24,6 @@ namespace Peek.FilePreviewer.Previewers
 {
     public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer
     {
-        /// <summary>
-        /// The number of files to scan between updates when calculating folder size.
-        /// </summary>
-        private const int FolderEnumerationChunkSize = 100;
-
         /// <summary>
         /// The maximum view updates per second when enumerating a folder's contents.
         /// </summary>
@@ -52,7 +47,12 @@ namespace Peek.FilePreviewer.Previewers
 
         static UnsupportedFilePreviewer()
         {
-            FolderEnumerationOptions = new() { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+            FolderEnumerationOptions = new()
+            {
+                RecurseSubdirectories = true,
+                AttributesToSkip = FileAttributes.ReparsePoint,
+                IgnoreInaccessible = true,
+            };
         }
 
         public UnsupportedFilePreviewer(IFileSystemItem file)
@@ -76,17 +76,24 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     Preview.FileName = Item.Name;
                     Preview.DateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture);
+                    Preview.IsFolder = Item is FolderItem;
 
                     State = PreviewState.Loaded;
 
                     await LoadIconPreviewAsync(cancellationToken);
                 });
 
-                var progress = new Progress<string>(update =>
+                var progress = new Progress<FolderScanProgress>(update =>
                 {
                     Dispatcher.TryEnqueue(() =>
                     {
-                        Preview.FileSize = update;
+                        Preview.FileSize = ReadableStringHelper.BytesToReadableString(update.TotalBytes);
+                        Preview.FolderContents = ReadableStringHelper.FormatFolderContents(
+                            update.FileCount,
+                            update.DirectoryCount,
+                            update.State == FolderScanState.Scanning,
+                            update.State == FolderScanState.PartialError);
+                        Preview.FolderScanState = update.State;
                     });
                 });
 
@@ -118,52 +125,77 @@ namespace Peek.FilePreviewer.Previewers
                 DefaultIcon;
         }
 
-        private async Task LoadDisplayInfoAsync(IProgress<string> sizeProgress, CancellationToken cancellationToken)
+        private async Task LoadDisplayInfoAsync(IProgress<FolderScanProgress> sizeProgress, CancellationToken cancellationToken)
         {
             string type = await Item.GetContentTypeAsync();
 
             Dispatcher.TryEnqueue(() => Preview.FileType = type);
 
-            if (Item is FolderItem folderItem)
+            if (Item is FolderItem)
             {
                 await Task.Run(() => CalculateFolderSizeWithProgress(Item.Path, sizeProgress, cancellationToken), cancellationToken);
             }
             else
             {
-                ReportProgress(sizeProgress, Item.FileSizeBytes);
+                sizeProgress.Report(new FolderScanProgress(Item.FileSizeBytes, 0, 0, FolderScanState.Completed));
             }
         }
 
-        private void CalculateFolderSizeWithProgress(string path, IProgress<string> progress, CancellationToken cancellationToken)
+        private void CalculateFolderSizeWithProgress(string path, IProgress<FolderScanProgress> progress, CancellationToken cancellationToken)
         {
             ulong folderSize = 0;
+            ulong fileCount = 0;
+            ulong directoryCount = 0;
+            bool hadError = false;
+
             TimeSpan updateInterval = TimeSpan.FromMilliseconds(1000 / MaxUpdateFps);
-            DateTime nextUpdate = DateTime.UtcNow + updateInterval;
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", FolderEnumerationOptions);
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            TimeSpan nextUpdate = updateInterval;
 
-            foreach (var chunk in files.Chunk(FolderEnumerationChunkSize))
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var enumerable = new FileSystemEnumerable<(long Length, bool IsDirectory)>(
+                    path,
+                    (ref FileSystemEntry entry) => (entry.Length, entry.IsDirectory),
+                    FolderEnumerationOptions);
 
-                if (DateTime.Now >= nextUpdate)
+                foreach (var (length, isDirectory) in enumerable)
                 {
-                    ReportProgress(progress, folderSize);
-                    nextUpdate = DateTime.UtcNow + updateInterval;
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var file in chunk)
-                {
-                    folderSize += (ulong)file.Length;
+                    if (isDirectory)
+                    {
+                        directoryCount++;
+                    }
+                    else
+                    {
+                        fileCount++;
+                        if (length > 0)
+                        {
+                            folderSize += (ulong)length;
+                        }
+                    }
+
+                    if (stopwatch.Elapsed >= nextUpdate)
+                    {
+                        progress.Report(new FolderScanProgress(folderSize, fileCount, directoryCount, FolderScanState.Scanning));
+                        nextUpdate = stopwatch.Elapsed + updateInterval;
+                    }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                hadError = true;
+                Logger.LogDebug("Error calculating folder size for directory: " + path);
+            }
 
-            ReportProgress(progress, folderSize);
-        }
-
-        private void ReportProgress(IProgress<string> progress, ulong size)
-        {
-            progress.Report(ReadableStringHelper.BytesToReadableString(size));
+            var finalState = hadError ? FolderScanState.PartialError : FolderScanState.Completed;
+            progress.Report(new FolderScanProgress(folderSize, fileCount, directoryCount, finalState));
         }
     }
 }

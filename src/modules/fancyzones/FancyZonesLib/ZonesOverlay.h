@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <optional>
 #include <vector>
 #include <wil\resource.h>
 #include <winrt/base.h>
@@ -31,6 +32,14 @@ class ZonesOverlay
         bool autoHide;
     };
 
+    enum class RotationDirection
+    {
+        None,
+        Left,
+        Right,
+        Both,
+    };
+
     enum struct RenderResult
     {
         Ok,
@@ -45,11 +54,17 @@ class ZonesOverlay
 
     std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;
+    bool m_drawBackdrop = false;
+    RotationDirection m_rotationDirection = RotationDirection::None;
+    bool m_animateRotation = false;
+    std::optional<size_t> m_monitorNumber;
+    std::optional<std::chrono::steady_clock::time_point> m_rotationPulseStart;
 
     float GetAnimationAlpha();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
+    static D2D1_RECT_F OffsetRect(D2D1_RECT_F rect, float x, float y);
     RenderResult Render();
     void RenderLoop();
 
@@ -69,4 +84,5 @@ public:
                            const ZoneIndexSet& highlightZones,
                            const Colors::ZoneColors& colors,
                            const bool showZoneText);
+    void DrawMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation);
 };

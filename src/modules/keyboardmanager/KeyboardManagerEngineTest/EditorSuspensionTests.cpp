@@ -13,6 +13,8 @@
 #include "TestHelpers.h"
 #include <keyboardmanager/KeyboardManagerEngineLibrary/EditorSuspensionState.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
+#include <keyboardmanager/common/Helpers.h>
+#include <optional>
 #include <thread>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -35,7 +37,11 @@ namespace RemappingLogicTests
         void HoldModifierBeforeHook(WORD key)
         {
             input.SetKeyboardState(key, true);
-            input.SetKeyboardState(Helpers::GetCombinedKey(key), true);
+            const DWORD combinedKey = Helpers::GetCombinedKey(key);
+            if (combinedKey < 256)
+            {
+                input.SetKeyboardState(combinedKey, true);
+            }
             suspension.AddInitiallyPressedModifier(key);
         }
 
@@ -107,6 +113,11 @@ namespace RemappingLogicTests
                 if (skip)
                 {
                     return 0;
+                }
+
+                if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(input, event, state) == 1)
+                {
+                    return 1;
                 }
 
                 if (!skipSingleKeyRemapping && KeyboardEventHandlers::HandleSingleKeyRemapEvent(input, event, state) == 1)
@@ -305,6 +316,50 @@ namespace RemappingLogicTests
             Assert::IsFalse(input.GetVirtualKeyState(VK_MENU));
             Assert::IsFalse(input.GetVirtualKeyState('V'));
             Assert::IsTrue(suspension.IsIdle());
+        }
+
+        TEST_METHOD (InitiallyHeldAloneModifier_ReleasesShortcutTarget)
+        {
+            state.AddSingleKeyAloneRemap(VK_LCONTROL, static_cast<DWORD>(VK_F8));
+            VerifyInitiallyHeldShortcut(false, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_F8));
+        }
+
+        TEST_METHOD (AloneKey_FinishesTapBeforeEditorSuspends)
+        {
+            state.AddSingleKeyAloneRemap(VK_F8, static_cast<DWORD>(VK_F9));
+            input.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* event) {
+                return event->lParam->vkCode == VK_F9 && event->wParam == WM_KEYDOWN;
+            });
+
+            SendKey(VK_F8);
+            Assert::IsTrue(state.IsAlonePending(VK_F8));
+            editorOpen = true;
+            SendKey(VK_F8, true);
+            Assert::AreEqual(1, input.GetSendVirtualInputCallCount());
+            Assert::IsFalse(state.IsAlonePending(VK_F8));
+
+            SendKey(VK_F8);
+            SendKey(VK_F8, true);
+            Assert::IsTrue(suspension.IsSuspended());
+            Assert::AreEqual(1, input.GetSendVirtualInputCallCount());
+        }
+
+        TEST_METHOD (AloneModifier_MouseCombinationFinishesBeforeEditorSuspends)
+        {
+            state.AddSingleKeyAloneRemap(VK_LCONTROL, static_cast<DWORD>(VK_F8));
+            SendKey(VK_LCONTROL);
+            editorOpen = true;
+
+            Assert::IsFalse(suspension.IsSuspended());
+            KeyboardEventHandlers::PromotePendingAloneKeysToCombination(input, state);
+            Assert::IsTrue(input.GetVirtualKeyState(VK_CONTROL));
+            SendKey(VK_LCONTROL, true);
+            Assert::IsFalse(input.GetVirtualKeyState(VK_CONTROL));
+            Assert::IsFalse(state.IsAloneCombination(VK_LCONTROL));
+
+            SendKey('A');
+            Assert::IsTrue(suspension.IsSuspended());
         }
 
         TEST_METHOD (CaptureReadiness_AllowsDownstreamRecorderToCaptureTheFirstKeyDown)

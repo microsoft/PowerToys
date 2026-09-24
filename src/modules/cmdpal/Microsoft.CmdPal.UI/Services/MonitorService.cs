@@ -30,6 +30,20 @@ public sealed class MonitorService : IMonitorService
     /// <inheritdoc/>
     public IReadOnlyList<MonitorInfo> GetMonitors()
     {
+        // Check the cache first without paying for a retry-with-sleep under the lock.
+        lock (_lock)
+        {
+            if (_cachedSnapshot is not null)
+            {
+                return _cachedSnapshot;
+            }
+        }
+
+        // BuildDisplayInfoMapWithRetry sleeps between attempts, so it runs unlocked. Another
+        // thread might race us and rebuild the map too, but that's cheaper than blocking
+        // every caller for up to 100ms.
+        var displayInfo = BuildDisplayInfoMapWithRetry();
+
         lock (_lock)
         {
             if (_cachedSnapshot is not null)
@@ -37,7 +51,7 @@ public sealed class MonitorService : IMonitorService
                 return _cachedSnapshot;
             }
 
-            _cachedMonitors = EnumerateMonitors();
+            _cachedMonitors = EnumerateMonitors(displayInfo);
             _cachedSnapshot = _cachedMonitors.AsReadOnly();
             return _cachedSnapshot;
         }
@@ -104,10 +118,17 @@ public sealed class MonitorService : IMonitorService
         MonitorsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static unsafe List<MonitorInfo> EnumerateMonitors()
+    /// <summary>
+    /// Number of immediate attempts to build the stable-ID display info map before giving up.
+    /// Right after WM_DISPLAYCHANGE, the Display Configuration API can transiently fail or
+    /// return an incomplete topology while Windows is still settling. Immediate retries
+    /// avoid blocking the UI thread while giving the API another chance to return stable data.
+    /// </summary>
+    private const int DisplayInfoMapRetryCount = 3;
+
+    private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath)> displayInfo)
     {
         var monitors = new List<MonitorInfo>();
-        var displayInfo = BuildDisplayInfoMap();
 
         PInvoke.EnumDisplayMonitors(
             HDC.Null,
@@ -174,13 +195,40 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <summary>
+    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times if it comes back
+    /// incomplete. Right after WM_DISPLAYCHANGE the API can transiently fail or only resolve
+    /// some active sources, and a partial map would leave those monitors on their volatile
+    /// GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into treating a
+    /// still-connected monitor as brand new.
+    /// </summary>
+    private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
+    {
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+
+        for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
+        {
+            map = BuildDisplayInfoMap(out var expectedSourceCount);
+            if (map.Count >= expectedSourceCount && expectedSourceCount > 0)
+            {
+                return map;
+            }
+        }
+
+        return map;
+    }
+
+    /// <summary>
     /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to display metadata
     /// (friendly name and stable device path) using the Display Configuration APIs.
     /// Returns an empty dictionary on failure so callers can fall back gracefully.
+    /// <paramref name="expectedSourceCount"/> is the number of distinct GDI source device
+    /// names among the active paths, not the raw path count: in Duplicate/clone mode several
+    /// paths share one source, so comparing against the path count would never be satisfied.
     /// </summary>
-    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap()
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint expectedSourceCount)
     {
         var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+        expectedSourceCount = 0;
 
         try
         {
@@ -209,9 +257,12 @@ public sealed class MonitorService : IMonitorService
                 return map;
             }
 
+            var expectedSources = new HashSet<(LUID AdapterId, uint Id)>();
+
             for (var i = 0; i < pathCount; i++)
             {
                 var path = paths[i];
+                expectedSources.Add((path.sourceInfo.adapterId, path.sourceInfo.id));
 
                 // Get the GDI device name from the source info
                 var sourceName = default(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
@@ -250,6 +301,8 @@ public sealed class MonitorService : IMonitorService
                     map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty));
                 }
             }
+
+            expectedSourceCount = (uint)expectedSources.Count;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

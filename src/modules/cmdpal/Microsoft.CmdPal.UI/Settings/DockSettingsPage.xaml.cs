@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
@@ -32,12 +33,19 @@ public sealed partial class DockSettingsPage : Page
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         var monitorService = App.Current.Services.GetService<IMonitorService>();
 
-        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, monitorService);
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService, monitorService);
 
         // Initialize UI state
         InitializeSettings();
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        ViewModel.PopulateMonitorConfigs();
     }
 
     private void InitializeSettings()

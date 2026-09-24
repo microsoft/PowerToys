@@ -806,7 +806,7 @@
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/Wox-launcher/Wox/" Text="Wox" />
-            <controls:PageLink Link="https://github.com/betsegaw/windowwalker/" Text="Beta Tadele's Window Walker" />
+            <controls:PageLink x:Uid="Attribution_PowerLauncher_WindowWalker" Link="https://github.com/betsegaw/windowwalker/" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

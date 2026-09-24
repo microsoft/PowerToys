@@ -25,7 +25,9 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -47,6 +49,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<GoHomeMessage>,
     IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
+    IRecipient<ExternalCommandLinkRequestedMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
@@ -69,6 +72,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private readonly ISettingsService _settingsService;
+    private readonly ShellContentDialogHost _dialogHost;
+    private readonly ExternalCommandLinkCoordinator _externalCommandLinks;
 
     // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when compact mode itself changes.
@@ -88,12 +93,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
     private bool _isDisposed;
-
-    public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     private IHostWindow? _hostWindow;
+
+    public ShellViewModel ViewModel { get; private set; }
 
     public IHostWindow? HostWindow
     {
@@ -124,13 +126,45 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // Item keybindings act on the selected item, which is hidden while collapsed — only honor them when expanded.
     private bool ItemActionsAllowed => !_compactMode || ExpandedMode;
 
-    public ShellPage()
+    // Ignore shell shortcuts while a ContentDialog is active.
+    private bool IsContentDialogActive => _dialogHost.IsDialogActive;
+
+    /// <summary>
+    /// Gets the default page animation, depending on the settings
+    /// </summary>
+    private NavigationTransitionInfo DefaultPageAnimation
     {
-        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        get
+        {
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ShellPage()
+        : this(
+            App.Current.Services.GetRequiredService<ShellViewModel>(),
+            App.Current.Services.GetRequiredService<ISettingsService>(),
+            App.Current.Services.GetRequiredService<ExternalCommandLinkCoordinatorFactory>())
+    {
+    }
+
+    internal ShellPage(
+        ShellViewModel viewModel,
+        ISettingsService settingsService,
+        ExternalCommandLinkCoordinatorFactory externalCommandLinkCoordinatorFactory)
+    {
+        ViewModel = viewModel;
+        _settingsService = settingsService;
         _compactMode = _settingsService.Settings.CompactMode;
         this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
+
+        _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
+        _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -148,6 +182,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExternalCommandLinkRequestedMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
@@ -164,6 +199,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
+        AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
 
         RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
@@ -174,18 +210,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
             _dockWindowManager?.ShowDocks();
-        }
-    }
-
-    /// <summary>
-    /// Gets the default page animation, depending on the settings
-    /// </summary>
-    private NavigationTransitionInfo DefaultPageAnimation
-    {
-        get
-        {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
         }
     }
 
@@ -261,6 +285,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
+    public void Receive(ExternalCommandLinkRequestedMessage message) => _externalCommandLinks.Enqueue(message.Route);
+
+    private void SetContentDialogMode(bool active)
+    {
+        WeakReferenceMessenger.Default.Send(new MaximizeForDialogMessage(active));
+        if (active)
+        {
+            HandleExpandCompactOnUiThread(true);
+        }
+        else
+        {
+            UpdateCompactModeForCurrentPage();
+        }
+    }
+
     public void Receive(ShowToastMessage message)
     {
         DispatcherQueue.TryEnqueue(() =>
@@ -286,37 +325,47 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
     {
-        // Ask each dock window to display a teaching tip identifying its monitor,
-        // so the user can correlate the dialog's monitor list with the physical docks.
-        WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(true));
-
-        try
+        (ContentDialogResult Result, PinToDockDialogContent Content) dialogResult;
+        using (var dialogLease = await _dialogHost.AcquireAsync(enterDialogMode: true))
         {
-            var (result, content) = await PinToDockDialogContent.ShowAsync(
-                this.XamlRoot,
-                message.Title,
-                message.Subtitle,
-                message.Icon,
-                message.DockSide,
-                message.AvailableMonitors);
-
-            if (result == ContentDialogResult.Primary)
+            if (dialogLease is null)
             {
-                var pinMessage = new PinToDockMessage(
-                    message.ProviderId,
-                    message.CommandId,
-                    Pin: true,
-                    Side: content.SelectedSide,
-                    ShowTitles: content.ShowTitles,
-                    ShowSubtitles: content.ShowSubtitles,
-                    MonitorDeviceId: content.SelectedMonitorDeviceId);
-                WeakReferenceMessenger.Default.Send(pinMessage);
+                return;
+            }
+
+            // Ask each dock window to display a teaching tip identifying its monitor,
+            // so the user can correlate the dialog's monitor list with the physical docks.
+            WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(true));
+
+            try
+            {
+                dialogResult = await PinToDockDialogContent.ShowAsync(
+                    this.XamlRoot,
+                    message.Title,
+                    message.Subtitle,
+                    message.Icon,
+                    message.DockSide,
+                    message.AvailableMonitors);
+            }
+            finally
+            {
+                // Hide the teaching tips once the dialog is saved or dismissed.
+                WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(false));
             }
         }
-        finally
+
+        if (dialogResult.Result == ContentDialogResult.Primary)
         {
-            // Hide the teaching tips once the dialog is saved or dismissed.
-            WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(false));
+            var content = dialogResult.Content;
+            var pinMessage = new PinToDockMessage(
+                message.ProviderId,
+                message.CommandId,
+                Pin: true,
+                Side: content.SelectedSide,
+                ShowTitles: content.ShowTitles,
+                ShowSubtitles: content.ShowSubtitles,
+                MonitorDeviceId: content.SelectedMonitorDeviceId);
+            WeakReferenceMessenger.Default.Send(pinMessage);
         }
     }
 
@@ -361,7 +410,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        var result = await dialog.ShowAsync();
+        // Dialog mode expands the compact card so the popup is not clipped by its HWND region.
+        ContentDialogResult result;
+        using (var dialogLease = await _dialogHost.AcquireAsync(enterDialogMode: true))
+        {
+            if (dialogLease is null)
+            {
+                return;
+            }
+
+            result = await dialog.ShowAsync();
+        }
+
         if (result == ContentDialogResult.Primary)
         {
             var performMessage = new PerformCommandMessage(vm);
@@ -384,11 +444,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag);
+            OpenSettings(message.SettingsPageTag, message.ExtensionGalleryId);
         });
     }
 
-    public void OpenSettings(string pageTag)
+    public void OpenSettings(string pageTag, string? extensionGalleryId = null)
     {
         if (_settingsWindow is null)
         {
@@ -397,7 +457,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag);
+        _settingsWindow.Navigate(pageTag, extensionGalleryId);
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -510,13 +570,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var topLevelCommand = tlcManager.LookupCommand(commandId);
                 if (topLevelCommand is not null)
                 {
-                    var command = topLevelCommand.CommandViewModel.Model.Unsafe;
-                    var isPage = command is not IInvokableCommand;
-
                     // If the bound command is an invokable command, then
                     // we don't want to open the window at all - we want to
                     // just do it.
-                    if (isPage)
+                    if (topLevelCommand.CommandViewModel.IsPage)
                     {
                         // If we're here, then the bound command was a page
                         // of some kind. Reset to root (clearing any transient dock state),
@@ -931,8 +988,33 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void ShellPage_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+    {
+        if (HostWindow?.IsVisibleToUser != true || args.NewFocusedElement is null)
+        {
+            return;
+        }
+
+        // Empty-space clicks can move focus to a window ancestor, outside both the search bar's and the shell's key-event routes.
+        // Keep the current control focused, but allow focus to move to other controls, flyouts, and dialogs.
+        // With a bit of luck this won't bite us later.
+        for (var ancestor = VisualTreeHelper.GetParent(this); ancestor is not null; ancestor = VisualTreeHelper.GetParent(ancestor))
+        {
+            if (ReferenceEquals(args.NewFocusedElement, ancestor))
+            {
+                args.TryCancel();
+                return;
+            }
+        }
+    }
+
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (((ShellPage)sender).IsContentDialogActive)
+        {
+            return;
+        }
+
         var modifiers = KeyModifiers.GetCurrent();
 
         switch (e.Key)
@@ -981,6 +1063,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (IsContentDialogActive)
+        {
+            return;
+        }
+
         if (ItemActionsAllowed && TryHandleItemAction(e))
         {
             return;
@@ -1136,6 +1223,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _isDisposed = true;
+        _externalCommandLinks.Dispose();
+        _dialogHost.Dispose();
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
 

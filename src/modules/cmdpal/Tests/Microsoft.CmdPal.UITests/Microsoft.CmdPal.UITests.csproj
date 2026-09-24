@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests\</OutputPath>
   </PropertyGroup>
 
 	<ItemGroup>

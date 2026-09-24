@@ -20,7 +20,7 @@ public struct ProjectWrapper
 
     public bool MoveExistingWindows { get; set; }
 
-    public List<MonitorConfigurationWrapper> MonitorConfiguration { get; set; }
+    public List<MonitorConfigurationWrapper> MonitorConfiguration { get; init; }
 
-    public List<ApplicationWrapper> Applications { get; set; }
+    public List<ApplicationWrapper> Applications { get; init; }
 }
