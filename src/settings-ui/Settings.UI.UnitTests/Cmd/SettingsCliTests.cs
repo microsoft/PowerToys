@@ -36,28 +36,6 @@ public class SettingsCliTests
     }
 
     [TestMethod]
-    public void TestGetModuleSettings()
-    {
-        var fancyZonesSettings = SettingsCliHelper.GetModuleSettings("FancyZones", settingsUtils);
-
-        Assert.IsNotNull(fancyZonesSettings);
-        Assert.IsTrue(fancyZonesSettings.Count > 0);
-        Assert.IsTrue(fancyZonesSettings.ContainsKey("FancyzonesShiftDrag"));
-    }
-
-    [TestMethod]
-    public void TestGetAndSetSettingValue()
-    {
-        var defaultValue = SettingsCliHelper.GetSettingValue("AlwaysOnTop.SoundEnabled", settingsUtils);
-        Assert.IsNotNull(defaultValue);
-
-        SettingsCliHelper.SetSettingValue("AlwaysOnTop.SoundEnabled", "false", settingsUtils);
-
-        var newValue = SettingsCliHelper.GetSettingValue("AlwaysOnTop.SoundEnabled", settingsUtils);
-        Assert.AreEqual(false, newValue);
-    }
-
-    [TestMethod]
     public void TestToggleModule()
     {
         var modulesBefore = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
@@ -79,7 +57,7 @@ public class SettingsCliTests
     {
         var parser = new Parser(Program.CreateRootCommand());
 
-        var parseResult = parser.Parse(["set"]);
+        var parseResult = parser.Parse(["toggle"]);
 
         Assert.IsTrue(parseResult.Errors.Count > 0);
     }

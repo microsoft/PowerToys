@@ -12,7 +12,7 @@ namespace PowerToys.Settings.Cli.Commands;
 internal sealed class ToggleCommand : Command
 {
     public ToggleCommand()
-        : base("toggle", "Toggle a module's enabled status")
+        : base("toggle", "Toggle or explicitly change a module's enabled status")
     {
         var moduleArg = new Argument<string>("module", "Module name (e.g. AlwaysOnTop, FancyZones)");
         var enableOpt = new Option<bool>("--enable", "Explicitly enable the module");

@@ -13,75 +13,46 @@ namespace PowerToys.Settings.Cli.Commands;
 internal sealed class ListCommand : Command
 {
     public ListCommand()
-        : base("list", "List all PowerToys modules and their status, or list setting properties for a specific module")
+        : base("list", "List all PowerToys modules and their enabled status")
     {
-        var moduleArg = new Argument<string?>("module", () => null, "Optional module name (e.g. FancyZones, AlwaysOnTop)");
         var jsonOpt = new Option<bool>("--json", "Format output as JSON");
 
-        AddArgument(moduleArg);
         AddOption(jsonOpt);
 
         this.SetHandler(context =>
         {
-            var module = context.ParseResult.GetValueForArgument(moduleArg);
             var json = context.ParseResult.GetValueForOption(jsonOpt);
-            context.ExitCode = Execute(module, json);
+            context.ExitCode = Execute(json);
         });
     }
 
-    private static int Execute(string? module, bool json)
+    private static int Execute(bool json)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(module))
+            var modules = SettingsCliHelper.GetModulesAndStatus();
+            if (json)
             {
-                var modules = SettingsCliHelper.GetModulesAndStatus();
-                if (json)
-                {
-                    Console.WriteLine(SettingsCliHelper.SerializeToJson(modules));
-                }
-                else
-                {
-                    Console.WriteLine("PowerToys Modules Status:");
-                    Console.WriteLine("-----------------------");
-                    foreach (var (mod, enabled) in modules.OrderBy(x => x.Key))
-                    {
-                        var statusStr = enabled ? "Enabled" : "Disabled";
-                        var gpoRule = SettingsCliHelper.GetModuleGpoRule(mod);
-                        if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-                        {
-                            statusStr += " [GPO: Disabled]";
-                        }
-                        else if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
-                        {
-                            statusStr += " [GPO: Enabled]";
-                        }
-
-                        Console.WriteLine($"  {mod,-25}: {statusStr}");
-                    }
-                }
+                Console.WriteLine(SettingsCliHelper.SerializeToJson(modules));
             }
             else
             {
-                var settings = SettingsCliHelper.GetModuleSettings(module);
-                if (settings.Count == 0)
+                Console.WriteLine("PowerToys Modules Status:");
+                Console.WriteLine("-----------------------");
+                foreach (var (mod, enabled) in modules.OrderBy(x => x.Key))
                 {
-                    Console.Error.WriteLine($"Module '{module}' was not found or has no exposed settings.");
-                    return 1;
-                }
-
-                if (json)
-                {
-                    Console.WriteLine(SettingsCliHelper.SerializeToJson(settings));
-                }
-                else
-                {
-                    Console.WriteLine($"Settings for module '{module}':");
-                    Console.WriteLine("-----------------------------");
-                    foreach (var (prop, val) in settings.OrderBy(x => x.Key))
+                    var statusStr = enabled ? "Enabled" : "Disabled";
+                    var gpoRule = SettingsCliHelper.GetModuleGpoRule(mod);
+                    if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
                     {
-                        Console.WriteLine($"  {prop,-35}: {val}");
+                        statusStr += " [GPO: Disabled]";
                     }
+                    else if (gpoRule == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
+                    {
+                        statusStr += " [GPO: Enabled]";
+                    }
+
+                    Console.WriteLine($"  {mod,-25}: {statusStr}");
                 }
             }
 
