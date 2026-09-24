@@ -409,6 +409,18 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return null;
     }
 
+    public ICommandItem? ResolveCommandItem(string commandId)
+    {
+        if (!IsActive)
+        {
+            return null;
+        }
+
+        // Top-level commands also support host-generated IDs, without ICommandProvider4.
+        return LookupTopLevelCommand(commandId)?.ItemViewModel.Model.Unsafe
+            ?? (_commandProvider.Unsafe as ICommandProvider4)?.GetCommandItem(commandId);
+    }
+
     private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, SettingsModel settings)
     {
         var pinnedItems = new List<ICommandItem>();

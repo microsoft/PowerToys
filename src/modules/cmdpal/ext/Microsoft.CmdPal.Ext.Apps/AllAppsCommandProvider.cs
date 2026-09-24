@@ -15,6 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
+    public const string AppUserModelIdPrefix = "aumid:";
     internal const int DefaultResultLimit = 10;
 
     public static readonly AllAppsPage Page = new();
@@ -166,6 +167,13 @@ public partial class AllAppsCommandProvider : CommandProvider
         var items = _page.GetItems();
         foreach (var item in items)
         {
+            if (id.StartsWith(AppUserModelIdPrefix, StringComparison.Ordinal) &&
+                item is AppListItem appItem &&
+                string.Equals(appItem.App.UserModelId, id[AppUserModelIdPrefix.Length..], StringComparison.OrdinalIgnoreCase))
+            {
+                return item;
+            }
+
             if (item.Command.Id == id)
             {
                 return item;

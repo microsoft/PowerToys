@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -69,4 +70,10 @@ public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
     }
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
+
+    public override ICommandItem GetCommandItem(string id)
+    {
+        var entry = _windowsSettings?.Settings.FirstOrDefault(setting => setting.Command == id);
+        return entry is null ? null : ResultHelper.GetResultList([entry]).FirstOrDefault();
+    }
 }
