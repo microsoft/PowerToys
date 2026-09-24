@@ -46,7 +46,97 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly Lock _machineMatrixStringLock = new();
 
+        private readonly Lock _connectPendingLock = new();
+
+        private string _pendingConnectMachineName;
+
+        private DateTime _pendingConnectStartTimeUtc;
+
         private bool _disposed;
+
+        public event EventHandler ConnectionSucceeded;
+
+        public event EventHandler<ConnectFailedEventArgs> ConnectionFailed;
+
+        private bool _showConnectionError;
+
+        public bool ShowConnectionError
+        {
+            get => _showConnectionError;
+
+            set
+            {
+                if (_showConnectionError != value)
+                {
+                    _showConnectionError = value;
+                    OnPropertyChanged(nameof(ShowConnectionError));
+                }
+            }
+        }
+
+        private string _connectionErrorMessage;
+
+        public string ConnectionErrorMessage
+        {
+            get => _connectionErrorMessage;
+
+            set
+            {
+                if (_connectionErrorMessage != value)
+                {
+                    _connectionErrorMessage = value;
+                    OnPropertyChanged(nameof(ConnectionErrorMessage));
+                }
+            }
+        }
+
+        private bool _isConnecting;
+
+        public bool IsConnecting
+        {
+            get => _isConnecting;
+
+            set
+            {
+                if (_isConnecting != value)
+                {
+                    _isConnecting = value;
+                    OnPropertyChanged(nameof(IsConnecting));
+                }
+            }
+        }
+
+        private int _connectingProgressPercent;
+
+        public int ConnectingProgressPercent
+        {
+            get => _connectingProgressPercent;
+
+            set
+            {
+                if (_connectingProgressPercent != value)
+                {
+                    _connectingProgressPercent = value;
+                    OnPropertyChanged(nameof(ConnectingProgressPercent));
+                }
+            }
+        }
+
+        private string _connectingStatusText;
+
+        public string ConnectingStatusText
+        {
+            get => _connectingStatusText;
+
+            set
+            {
+                if (_connectingStatusText != value)
+                {
+                    _connectingStatusText = value;
+                    OnPropertyChanged(nameof(ConnectingStatusText));
+                }
+            }
+        }
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
         {
@@ -60,6 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.Timeout, new SolidColorBrush(Colors.Pink) },
             { SocketStatus.SendError, new SolidColorBrush(Colors.Maroon) },
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
+            { SocketStatus.HostNotFound, new SolidColorBrush(Colors.DarkRed) },
         };
 
         private bool _connectFieldsVisible;
@@ -250,6 +341,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Timeout = 7,
             SendError = 8,
             Connected = 9,
+            HostNotFound = 10,
         }
 
         private interface ISettingsSyncHelper
@@ -422,18 +514,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task SubmitConnectionRequestAsync(string pcName, string securityKey)
         {
+            _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+            {
+                ShowConnectionError = false;
+                IsConnecting = true;
+                ConnectingProgressPercent = 0;
+                ConnectingStatusText = GetConnectingStatusText(null);
+            });
+
+            lock (_connectPendingLock)
+            {
+                _pendingConnectMachineName = pcName;
+                _pendingConnectStartTimeUtc = DateTime.UtcNow;
+            }
+
             using (await _ipcSemaphore.EnterAsync())
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
-                    var task = syncHelper?.Stream.FlushAsync();
-                    if (task != null)
+                    if (syncHelper == null)
                     {
-                        await task;
+                        ClearPendingConnect();
+                        _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                        {
+                            IsConnecting = false;
+                            var message = ResourceLoaderInstance.ResourceLoader.GetString("MouseWithoutBorders_ConnectErrorModuleUnreachable");
+                            ConnectionErrorMessage = message;
+                            ShowConnectionError = true;
+                            ConnectionFailed?.Invoke(this, new ConnectFailedEventArgs(ConnectFailureTarget.PcName, message));
+                        });
+                        return;
                     }
+
+                    syncHelper.Endpoint?.ConnectToMachine(pcName, securityKey);
+                    await syncHelper.Stream.FlushAsync();
                 }
             }
+        }
+
+        private void ClearPendingConnect()
+        {
+            lock (_connectPendingLock)
+            {
+                _pendingConnectMachineName = null;
+            }
+        }
+
+        private static string GetConnectionErrorMessage(SocketStatus status)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            return status switch
+            {
+                SocketStatus.InvalidKey => resourceLoader.GetString("MouseWithoutBorders_ConnectErrorInvalidKey"),
+                SocketStatus.HostNotFound => resourceLoader.GetString("MouseWithoutBorders_ConnectErrorHostNotFound"),
+                SocketStatus.Timeout => resourceLoader.GetString("MouseWithoutBorders_ConnectErrorTimeout"),
+                _ => resourceLoader.GetString("MouseWithoutBorders_ConnectErrorGeneric"),
+            };
         }
 
         private async Task<ISettingsSyncHelper.MachineSocketState[]> PollMachineSocketStateAsync()
@@ -532,10 +668,96 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             }
                         }
 
+                        CheckPendingConnectStatus(states);
+
                         Thread.Sleep(500);
                     }
                 },
                 _cancellationTokenSource.Token);
+        }
+
+        private void CheckPendingConnectStatus(Dictionary<string, ISettingsSyncHelper.MachineSocketState> states)
+        {
+            string pendingName;
+            DateTime pendingStartTimeUtc;
+
+            lock (_connectPendingLock)
+            {
+                pendingName = _pendingConnectMachineName;
+                pendingStartTimeUtc = _pendingConnectStartTimeUtc;
+            }
+
+            if (string.IsNullOrEmpty(pendingName))
+            {
+                return;
+            }
+
+            SocketStatus? pendingStatus = null;
+            if (states != null && states.TryGetValue(pendingName, out var pendingState))
+            {
+                pendingStatus = pendingState.Status;
+            }
+
+            if (pendingStatus == SocketStatus.Connected)
+            {
+                ClearPendingConnect();
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    IsConnecting = false;
+                    ConnectingProgressPercent = 100;
+                    ShowConnectionError = false;
+                    ConnectionSucceeded?.Invoke(this, EventArgs.Empty);
+                });
+            }
+            else if (pendingStatus is SocketStatus.Error or SocketStatus.ForceClosed or SocketStatus.InvalidKey or SocketStatus.Timeout or SocketStatus.SendError or SocketStatus.HostNotFound)
+            {
+                var failedStatus = pendingStatus.Value;
+                ClearPendingConnect();
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    IsConnecting = false;
+                    var message = GetConnectionErrorMessage(failedStatus);
+                    ConnectionErrorMessage = message;
+                    ShowConnectionError = true;
+                    var target = failedStatus == SocketStatus.InvalidKey ? ConnectFailureTarget.SecurityKey : ConnectFailureTarget.PcName;
+                    ConnectionFailed?.Invoke(this, new ConnectFailedEventArgs(target, message));
+                });
+            }
+            else if (DateTime.UtcNow - pendingStartTimeUtc > TimeSpan.FromSeconds(8))
+            {
+                ClearPendingConnect();
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    IsConnecting = false;
+                    var message = GetConnectionErrorMessage(SocketStatus.Timeout);
+                    ConnectionErrorMessage = message;
+                    ShowConnectionError = true;
+                    ConnectionFailed?.Invoke(this, new ConnectFailedEventArgs(ConnectFailureTarget.PcName, message));
+                });
+            }
+            else
+            {
+                var elapsedRatio = (DateTime.UtcNow - pendingStartTimeUtc).TotalMilliseconds / 8000.0;
+                var estimatedPercent = (int)Math.Min(90, Math.Max(10, elapsedRatio * 90));
+                var statusText = GetConnectingStatusText(pendingStatus);
+                _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    ConnectingProgressPercent = estimatedPercent;
+                    ConnectingStatusText = statusText;
+                });
+            }
+        }
+
+        private static string GetConnectingStatusText(SocketStatus? status)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            return status switch
+            {
+                SocketStatus.Resolving => resourceLoader.GetString("MouseWithoutBorders_ConnectingStatusResolving"),
+                SocketStatus.Connecting => resourceLoader.GetString("MouseWithoutBorders_ConnectingStatusConnecting"),
+                SocketStatus.Handshaking => resourceLoader.GetString("MouseWithoutBorders_ConnectingStatusHandshaking"),
+                _ => resourceLoader.GetString("MouseWithoutBorders_ConnectingStatusDefault"),
+            };
         }
 
         private void InitializeEnabledValue()
@@ -1354,6 +1576,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var data = new DataPackage();
             data.SetText(Dns.GetHostName());
+            Clipboard.SetContent(data);
+        }
+
+        public void CopySecurityKeyToClipboard()
+        {
+            var data = new DataPackage();
+            data.SetText(SecurityKey);
             Clipboard.SetContent(data);
         }
 
