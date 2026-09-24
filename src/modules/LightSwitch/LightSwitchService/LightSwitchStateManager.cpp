@@ -555,14 +555,31 @@ ThemeCommandResult LightSwitchStateManager::ToggleTheme()
     }
     auto after = GetStatusSnapshotLocked(config);
     RecordThemeObservationsLocked(after);
-    if ((config.changeSystem && after.systemLight != std::optional<bool>(!*before.systemLight)) ||
-        (config.changeApps && after.appsLight != std::optional<bool>(!*before.appsLight)))
+    const bool targetsMatch = (!config.changeSystem || after.systemLight == std::optional<bool>(!*before.systemLight)) &&
+                              (!config.changeApps || after.appsLight == std::optional<bool>(!*before.appsLight));
+    if (!targetsMatch)
     {
         if (result == ERROR_SUCCESS)
             result = ERROR_WRITE_FAULT;
     }
     if (result == ERROR_SUCCESS)
         result = OnManualOverrideLocked(config, _dependencies.localTime(), after);
+    else if (!_pendingThemeNotification)
+    {
+        // As for an explicit set, a later successful command can confirm these
+        // writes without changing the registry again. Preserve an earlier pending
+        // scheduled notification until the scheduler or a successful command resolves it.
+        const bool unreadableTarget = (config.changeSystem && !after.systemLight) || (config.changeApps && !after.appsLight);
+        const bool observedChange = (config.changeSystem && after.systemLight && after.systemLight != before.systemLight) ||
+                                    (config.changeApps && after.appsLight && after.appsLight != before.appsLight);
+        if (unreadableTarget || observedChange)
+        {
+            // A partial toggle can leave initially mixed targets at one theme.
+            // Reconcile that verified result, even when the other write failed.
+            const auto theme = config.changeSystem ? after.systemLight : after.appsLight;
+            _pendingThemeNotification = theme.value_or(config.changeSystem ? !*before.systemLight : !*before.appsLight);
+        }
+    }
     return result == ERROR_SUCCESS ? CompleteCommandLocked(std::move(after)) : CompleteCommandLocked(std::move(after), L"THEME_WRITE_FAILED", ThemeError(result));
 }
 

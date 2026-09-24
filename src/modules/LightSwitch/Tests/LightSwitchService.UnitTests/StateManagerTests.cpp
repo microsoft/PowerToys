@@ -395,6 +395,128 @@ namespace LightSwitchServiceUnitTests
             }
         }
 
+        TEST_METHOD (SuccessfulSetConfirmsAnUnverifiedToggleWithoutRewritingTheTheme)
+        {
+            for (const int targets : { 1, 2, 3 })
+            {
+                for (const bool light : { false, true })
+                {
+                    Environment environment;
+                    environment.config.scheduleMode = ScheduleMode::Off;
+                    environment.config.changeSystem = (targets & 1) != 0;
+                    environment.config.changeApps = (targets & 2) != 0;
+                    environment.system = environment.apps = !light;
+                    LightSwitchStateManager manager(environment.Dependencies());
+                    manager.SyncInitialThemeState();
+                    environment.afterWrite = [&](bool system) {
+                        if (!system || !environment.config.changeApps)
+                        {
+                            // With both targets selected, System remains readable:
+                            // recording that observation must not lose the notification.
+                            if (environment.config.changeApps)
+                                environment.failAppsRead = true;
+                            else
+                                environment.failSystemRead = true;
+                        }
+                    };
+
+                    const auto failed = manager.ToggleTheme();
+                    Assert::IsFalse(failed.success);
+                    Assert::AreEqual(L"THEME_WRITE_FAILED", failed.errorCode.c_str());
+                    Assert::IsFalse(failed.status.manualOverride);
+                    Assert::IsTrue(environment.notifications.empty());
+                    if (environment.config.changeSystem)
+                        Assert::AreEqual(light, *environment.system);
+                    if (environment.config.changeApps)
+                        Assert::AreEqual(light, *environment.apps);
+                    if (targets == 3)
+                    {
+                        Assert::IsTrue(failed.status.systemLight.has_value());
+                        Assert::AreEqual(light, *failed.status.systemLight);
+                        Assert::IsFalse(failed.status.appsLight.has_value());
+                    }
+                    const auto writes = environment.writes;
+
+                    environment.afterWrite = nullptr;
+                    environment.failSystemRead = environment.failAppsRead = false;
+                    const auto confirmed = manager.SetTheme(light);
+                    Assert::IsTrue(confirmed.success);
+                    Assert::IsFalse(confirmed.status.manualOverride);
+                    Assert::AreEqual(writes, environment.writes);
+                    Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                    Assert::AreEqual(light, static_cast<bool>(environment.notifications.front()));
+                    Assert::IsTrue(manager.SetTheme(light).success);
+                    manager.OnTick();
+                    Assert::AreEqual(writes, environment.writes);
+                    Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                }
+            }
+        }
+
+        TEST_METHOD (FailedMixedToggleNotifiesTheVerifiedThemeWhenConfirmed)
+        {
+            for (const bool light : { false, true })
+            {
+                for (const bool failSystem : { false, true })
+                {
+                    for (const bool scheduleConfirms : { false, true })
+                    {
+                        Environment environment;
+                        environment.config.scheduleMode = scheduleConfirms ? ScheduleMode::FollowNightLight : ScheduleMode::Off;
+                        environment.nightLight = !light;
+                        environment.system = environment.apps = light;
+                        LightSwitchStateManager manager(environment.Dependencies());
+                        manager.SyncInitialThemeState();
+                        // Only the target starting at the opposite theme can change.
+                        // The failed target already has the eventual common theme.
+                        (failSystem ? environment.apps : environment.system) = !light;
+                        environment.failSystemWrite = failSystem;
+                        environment.failAppsWrite = !failSystem;
+
+                        const auto failed = manager.ToggleTheme();
+                        Assert::IsFalse(failed.success);
+                        Assert::IsFalse(failed.status.manualOverride);
+                        Assert::IsTrue(failed.status.systemLight.has_value());
+                        Assert::IsTrue(failed.status.appsLight.has_value());
+                        Assert::AreEqual(light, *failed.status.systemLight);
+                        Assert::AreEqual(light, *failed.status.appsLight);
+                        Assert::IsTrue(environment.notifications.empty());
+                        environment.failSystemWrite = environment.failAppsWrite = false;
+
+                        if (scheduleConfirms)
+                            manager.OnTick();
+                        else
+                            Assert::IsTrue(manager.SetTheme(light).success);
+                        Assert::AreEqual(2, environment.writes);
+                        Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                        Assert::AreEqual(light, static_cast<bool>(environment.notifications.front()));
+                        Assert::IsTrue(manager.SetTheme(light).success);
+                        manager.OnTick();
+                        Assert::AreEqual(2, environment.writes);
+                        Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                    }
+                }
+            }
+        }
+
+        TEST_METHOD (FailedToggleDoesNotNotifyAnUnchangedTheme)
+        {
+            for (const bool light : { false, true })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::Off;
+                environment.system = environment.apps = light;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                environment.failSystemWrite = environment.failAppsWrite = true;
+                Assert::IsFalse(manager.ToggleTheme().success);
+                environment.failSystemWrite = environment.failAppsWrite = false;
+                Assert::IsTrue(manager.SetTheme(light).success);
+                Assert::AreEqual(2, environment.writes);
+                Assert::IsTrue(environment.notifications.empty());
+            }
+        }
+
         TEST_METHOD (SettingTheScheduledThemeDoesNotCancelTheNextToggle)
         {
             Environment environment;
@@ -1553,6 +1675,49 @@ namespace LightSwitchServiceUnitTests
                 manager.OnTick();
                 Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
             }
+        }
+
+        TEST_METHOD (UnverifiedFailedTogglePreservesAnEarlierScheduledNotification)
+        {
+            Environment environment;
+            environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+            bool failToggleReadback = false;
+            auto dependencies = environment.Dependencies();
+            const auto writeTheme = dependencies.writeTheme;
+            dependencies.writeTheme = [&](bool system, bool light) -> LSTATUS {
+                const auto result = writeTheme(system, light);
+                if (failToggleReadback && !system)
+                    environment.failSystemRead = environment.failAppsRead = true;
+                return result;
+            };
+            LightSwitchStateManager manager(std::move(dependencies));
+            manager.SyncInitialThemeState();
+            environment.afterWrite = [&](bool system) {
+                if (!system)
+                    environment.failSystemRead = environment.failAppsRead = true;
+            };
+            environment.nightLight = true;
+            manager.OnNightLightChange();
+            Assert::IsTrue(environment.notifications.empty());
+            environment.afterWrite = nullptr;
+            environment.failSystemRead = environment.failAppsRead = false;
+
+            // This failed toggle requests light but leaves the previously applied
+            // dark theme intact. Its unreadable result must preserve the pending notification.
+            environment.failSystemWrite = environment.failAppsWrite = true;
+            failToggleReadback = true;
+            Assert::IsFalse(manager.ToggleTheme().success);
+            Assert::IsTrue(environment.notifications.empty());
+            failToggleReadback = false;
+            environment.failSystemRead = environment.failAppsRead = false;
+            environment.failSystemWrite = environment.failAppsWrite = false;
+
+            manager.OnTick();
+            Assert::AreEqual(4, environment.writes);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsFalse(environment.notifications.front());
+            manager.OnTick();
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
         }
 
         TEST_METHOD (ThemeCommandsReturnTheVerifiedSnapshot)

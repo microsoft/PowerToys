@@ -107,16 +107,15 @@ public sealed class CliPipeClientTests
         string name = NewPipeName();
         using var server = CreateServer(name);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var serverTask = Task.Run(async () =>
-        {
-            await server.WaitForConnectionAsync(cancellation.Token);
-            await WaitForClientCloseAsync(server, cancellation.Token);
-        });
+
+        // Accept before the rejected client can connect and immediately close.
+        Task connected = server.WaitForConnectionAsync(cancellation.Token);
 
         var client = new CliPipeClient(name, static _ => false, TimeSpan.FromSeconds(2));
         var error = await Assert.ThrowsExceptionAsync<CliException>(() => client.SendAsync(Request, cancellation.Token));
         Assert.AreEqual("SERVICE_UNAVAILABLE", error.Code);
-        await serverTask;
+        await connected;
+        await WaitForClientCloseAsync(server, cancellation.Token);
     }
 
     [TestMethod]

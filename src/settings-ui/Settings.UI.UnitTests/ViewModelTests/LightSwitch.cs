@@ -276,6 +276,45 @@ public class LightSwitch
     }
 
     [TestMethod]
+    [DataRow(599, 1200, -600, 0, 1439, 1200)]
+    [DataRow(600, 1201, 0, 239, 600, 0)]
+    [DataRow(600, 1201, 0, 240, 600, 1)]
+    [DataRow(600, 1200, -30, 30, 570, 1230)]
+    [DataRow(600, 1200, int.MaxValue, int.MinValue, 727, 1072)]
+    public void ModuleSettingsRefreshDisplaysNormalizedSolarBoundariesWithoutSaving(
+        int lightMinutes, int darkMinutes, int sunriseOffset, int sunsetOffset, int expectedLightMinutes, int expectedDarkMinutes)
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(new LightSwitchSettings(), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        int pageSaves = 0;
+        viewModel.PropertyChanged += (_, _) =>
+        {
+            if (!viewModel.IsRefreshingModuleSettings)
+            {
+                ++pageSaves;
+            }
+        };
+        var settings = CreateSunSettings(lightMinutes, darkMinutes, sunriseOffset, sunsetOffset);
+        string savedSettings = settings.ToJsonString();
+
+        viewModel.ModuleSettings = settings;
+
+        Assert.AreEqual(TimeSpan.FromMinutes(expectedLightMinutes), viewModel.LightTimeTimeSpan);
+        Assert.AreEqual(TimeSpan.FromMinutes(expectedDarkMinutes), viewModel.DarkTimeTimeSpan);
+        Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(lightMinutes), viewModel.SunriseTimeSpan);
+        Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(darkMinutes), viewModel.SunsetTimeSpan);
+        Assert.AreEqual(sunriseOffset, viewModel.SunriseOffset);
+        Assert.AreEqual(sunsetOffset, viewModel.SunsetOffset);
+        Assert.AreEqual(savedSettings, settings.ToJsonString());
+        Assert.AreEqual(0, pageSaves);
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
     public void InitialSunSchedulePreviewKeepsOffsetsOutsideTodaysRangeVisibleWithoutSaving()
     {
         var today = DateTime.Now;
@@ -307,6 +346,10 @@ public class LightSwitch
 
         Assert.AreEqual(-lightMinutes - 1, controls.SunriseValue);
         Assert.AreEqual(1440 - darkMinutes, controls.SunsetValue);
+        Assert.AreEqual(TimeSpan.FromMinutes(1439), viewModel.LightTimeTimeSpan);
+        Assert.AreEqual(TimeSpan.Zero, viewModel.DarkTimeTimeSpan);
+        Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(lightMinutes), viewModel.SunriseTimeSpan);
+        Assert.AreEqual<TimeSpan?>(TimeSpan.FromMinutes(darkMinutes), viewModel.SunsetTimeSpan);
         Assert.AreEqual(savedSettings, settings.ToJsonString());
         Assert.AreEqual(0, pageSaves);
         Assert.AreEqual(0, messages.Count);

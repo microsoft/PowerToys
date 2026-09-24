@@ -344,13 +344,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ? (int)SunsetTimeSpan.Value.TotalMinutes
             : DarkTime;
 
+        private static TimeSpan ToSolarDisplayTime(int minutes, int offset)
+        {
+            const int MinutesPerDay = 24 * 60;
+            long adjustedMinutes = (long)minutes + offset;
+
+            // Retained offsets can cross midnight as sun times change. Match the
+            // service's daily boundaries without changing offsets or sun markers.
+            return TimeSpan.FromMinutes(((adjustedMinutes % MinutesPerDay) + MinutesPerDay) % MinutesPerDay);
+        }
+
         public TimeSpan LightTimeTimeSpan
         {
             get
             {
                 if (ScheduleMode == "SunsetToSunrise")
                 {
-                    return TimeSpan.FromMinutes(DisplayLightMinutes + SunriseOffset);
+                    return ToSolarDisplayTime(DisplayLightMinutes, SunriseOffset);
                 }
                 else
                 {
@@ -365,7 +375,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (ScheduleMode == "SunsetToSunrise")
                 {
-                    return TimeSpan.FromMinutes(DisplayDarkMinutes + SunsetOffset);
+                    return ToSolarDisplayTime(DisplayDarkMinutes, SunsetOffset);
                 }
                 else
                 {
