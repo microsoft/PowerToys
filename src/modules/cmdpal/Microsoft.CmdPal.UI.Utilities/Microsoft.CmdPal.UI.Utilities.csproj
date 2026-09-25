@@ -26,4 +26,8 @@
     <AdditionalFiles Include="NativeMethods.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.CmdPal.Common.UnitTests" />
+  </ItemGroup>
+
 </Project>

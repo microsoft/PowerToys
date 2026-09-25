@@ -44,13 +44,16 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
     private readonly DispatcherQueueTimer _autoHidePollTimer;
+    private readonly DispatcherQueueTimer _taskbarChangeTimer;
 
-    private TaskbarWatcher _taskbarWatcher;
+    private TaskbarWatcher? _taskbarWatcher;
 
     private double _lastContentSpace;
     private int _clipVersion;
     private bool _clipSuspended;
     private bool _disposed;
+    private bool _clipRunning;
+    private bool _clipRequested;
     private TaskbarEdge _lastKnownEdge;
     private RECT _lastPollTaskbarRect;
 
@@ -75,14 +78,13 @@ public sealed partial class TaskbarWindow : WindowEx,
         // released so nothing fires against the destroyed window.
         Closed += TaskbarWindow_Closed;
 
-        UpdateFrame();
-
         MainContent.Content = _bandsControl;
 
         wMTASKBARRESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         _hwnd = new HWND(WindowNative.GetWindowHandle(this));
         _bandsControl.OwnerHwnd = (nint)_hwnd;
+        UpdateFrame();
 
         // Hide from alt-tab. Must be set early, before WinUI manages
         // the window, to avoid fighting with the framework.
@@ -95,7 +97,9 @@ public sealed partial class TaskbarWindow : WindowEx,
         _autoHidePollTimer.Interval = TimeSpan.FromMilliseconds(100);
         _autoHidePollTimer.Tick += AutoHidePollTick;
 
-        MainContent.SizeChanged += MainContent_SizeChanged;
+        _taskbarChangeTimer = DispatcherQueue.CreateTimer();
+        _taskbarChangeTimer.Interval = TimeSpan.FromMilliseconds(100);
+        _taskbarChangeTimer.Tick += TaskbarChangeTick;
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
@@ -104,29 +108,37 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         _taskbarMetrics = metrics;
 
-        // Event-driven: re-measure when taskbar buttons change instead
-        // of polling. The WinEventHook callback is delivered via the
-        // WinUI message pump on this thread.
-        _taskbarWatcher = new TaskbarWatcher();
-        _taskbarWatcher.Changed += OnTaskbarChanged;
-
-        // LOAD BEARING: The delegate must be stored in a member field.
-        // A local variable would be collected, leaving a dangling function pointer.
-        _customWndProc = CustomWndProc;
-        var procPointer = Marshal.GetFunctionPointerForDelegate(_customWndProc);
-        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(
-            PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, procPointer));
-
-        ExtendsContentIntoTitleBar = true;
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-
-        if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+        try
         {
-            overlappedPresenter.SetBorderAndTitleBar(false, false);
-            overlappedPresenter.IsResizable = false;
-        }
+            // Native callbacks only mark pending changes. Consume them outside
+            // the callback so window operations cannot reenter the hook.
+            _taskbarWatcher = new TaskbarWatcher();
+            _taskbarChangeTimer.Start();
 
-        MoveToTaskbar();
+            // LOAD BEARING: The delegate must be stored in a member field.
+            // A local variable would be collected, leaving a dangling function pointer.
+            _customWndProc = CustomWndProc;
+            var procPointer = Marshal.GetFunctionPointerForDelegate(_customWndProc);
+            _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(
+                PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, procPointer));
+
+            ExtendsContentIntoTitleBar = true;
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+
+            if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+            {
+                overlappedPresenter.SetBorderAndTitleBar(false, false);
+                overlappedPresenter.IsResizable = false;
+            }
+
+            MoveToTaskbar();
+        }
+        catch
+        {
+            Dispose();
+            Close();
+            throw;
+        }
     }
 
     private void TaskbarWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -155,15 +167,31 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (_clipSuspended)
+        if (_disposed || _clipSuspended || _updateLayoutDebouncer is null)
         {
             return;
         }
 
         _updateLayoutDebouncer.Debounce(
-            () => ClipWindow().ConfigureAwait(false),
+            RequestClip,
             interval: TimeSpan.FromMilliseconds(100),
             immediate: false);
+    }
+
+    private void TaskbarChangeTick(DispatcherQueueTimer sender, object args)
+    {
+        if (!_disposed && _taskbarWatcher?.ConsumeChanges() == true)
+        {
+            try
+            {
+                OnTaskbarChanged();
+            }
+            catch (Exception ex)
+            {
+                sender.Stop();
+                Logger.LogError("Failed to process taskbar changes.", ex);
+            }
+        }
     }
 
     private void OnTaskbarChanged()
@@ -231,7 +259,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         }
 
         _updateLayoutDebouncer.Debounce(
-            () => ClipWindow().ConfigureAwait(false),
+            RequestClip,
             interval: TimeSpan.FromMilliseconds(250),
             immediate: false);
     }
@@ -369,13 +397,25 @@ public sealed partial class TaskbarWindow : WindowEx,
     /// </summary>
     private void ReconnectAfterExplorerRestart()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         // Dispose the old watcher — its hooks target the old explorer PID.
-        _taskbarWatcher.Changed -= OnTaskbarChanged;
-        _taskbarWatcher.Dispose();
+        _taskbarWatcher?.Dispose();
 
         // Create a fresh watcher scoped to the new explorer.exe PID.
-        _taskbarWatcher = new TaskbarWatcher();
-        _taskbarWatcher.Changed += OnTaskbarChanged;
+        try
+        {
+            _taskbarWatcher = new TaskbarWatcher();
+            _taskbarChangeTimer.Start();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to reconnect to the taskbar.", ex);
+            return;
+        }
 
         // Reset layout state so MoveToTaskbar does a full recalculation.
         _lastContentSpace = 0;
@@ -386,7 +426,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MoveToTaskbar()
     {
-        if (AppWindow is null)
+        if (_disposed || AppWindow is null)
         {
             Logger.LogDebug("TaskbarWindow: AppWindow was null");
             return;
@@ -540,7 +580,7 @@ public sealed partial class TaskbarWindow : WindowEx,
             }
         }
 
-        ClipWindow().ConfigureAwait(false);
+        RequestClip();
         _lastKnownEdge = _taskbarMetrics.Edge;
     }
 
@@ -551,14 +591,23 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         // Run UIA enumeration on a background thread.
         var changed = await _taskbarMetrics.UpdateAsync();
+        if (_disposed)
+        {
+            return false;
+        }
 
         // On the very first call _lastContentSpace is 0 and the grid
         // columns haven't been set yet. Always apply layout in that case,
         // even if the metrics didn't change (they were pre-loaded).
         if (!changed && _lastContentSpace != 0)
         {
-            dispatcher.TryEnqueue(() =>
+            await dispatcher.EnqueueAsync(() =>
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _bandsControl.SetMaxAvailableWidth(_lastContentSpace);
                 ApplyCompactMode();
             });
@@ -569,63 +618,99 @@ public sealed partial class TaskbarWindow : WindowEx,
         var buttonsPixels = _taskbarMetrics.ButtonsWidthInPixels;
         var trayPixels = _taskbarMetrics.TrayWidthInPixels;
 
-        var tcs = new TaskCompletionSource<bool>();
-        dispatcher.TryEnqueue(() =>
+        return await dispatcher.EnqueueAsync(() =>
         {
-            try
+            if (_disposed)
             {
-                var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
-                var isHorizontal = _taskbarMetrics.IsHorizontal;
+                return false;
+            }
 
-                double buttonsInDips = buttonsPixels / scaleFactor;
-                var trayInDips = trayPixels / scaleFactor;
+            var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var isHorizontal = _taskbarMetrics.IsHorizontal;
 
-                PInvoke.GetWindowRect(_hwnd, out var winRect);
+            double buttonsInDips = buttonsPixels / scaleFactor;
+            var trayInDips = trayPixels / scaleFactor;
 
-                double forContent;
-                if (isHorizontal)
+            PInvoke.GetWindowRect(_hwnd, out var winRect);
+
+            double forContent;
+            if (isHorizontal)
+            {
+                var available = winRect.Width / (double)scaleFactor;
+
+                // If buttons + tray exceed available (UIA over-reports),
+                // the button measurement is unreliable. Set the buttons
+                // column to 0 so content fills all non-tray space.
+                if (buttonsInDips + trayInDips > available)
                 {
-                    var available = winRect.Width / (double)scaleFactor;
-
-                    // If buttons + tray exceed available (UIA over-reports),
-                    // the button measurement is unreliable. Set the buttons
-                    // column to 0 so content fills all non-tray space.
-                    if (buttonsInDips + trayInDips > available)
-                    {
-                        buttonsInDips = 0;
-                    }
-
-                    forContent = available - buttonsInDips - trayInDips;
-                }
-                else
-                {
-                    forContent = winRect.Width / (double)scaleFactor;
+                    buttonsInDips = 0;
                 }
 
-                if (_lastContentSpace == forContent)
-                {
-                    // Even if content space didn't change, ensure the
-                    // grid layout matches the current orientation.
-                    ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
-                    ApplyCompactMode();
-                    tcs.TrySetResult(false);
-                    return;
-                }
+                forContent = available - buttonsInDips - trayInDips;
+            }
+            else
+            {
+                forContent = winRect.Width / (double)scaleFactor;
+            }
 
+            if (_lastContentSpace == forContent)
+            {
+                // Even if content space didn't change, ensure the
+                // grid layout matches the current orientation.
                 ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
-
-                // Reapply compact mode — metrics may have changed.
                 ApplyCompactMode();
+                return false;
+            }
 
-                tcs.TrySetResult(true);
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
-            }
+            ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
+
+            // Reapply compact mode — metrics may have changed.
+            ApplyCompactMode();
+
+            return true;
         });
+    }
 
-        return await tcs.Task;
+    private void RequestClip()
+    {
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            DispatcherQueue.TryEnqueue(RequestClip);
+            return;
+        }
+
+        if (_disposed)
+        {
+            return;
+        }
+
+        _clipRequested = true;
+        Interlocked.Increment(ref _clipVersion);
+        if (!_clipRunning)
+        {
+            _ = ProcessClipRequestsAsync();
+        }
+    }
+
+    private async Task ProcessClipRequestsAsync()
+    {
+        _clipRunning = true;
+        try
+        {
+            while (_clipRequested && !_disposed)
+            {
+                _clipRequested = false;
+                await ClipWindow();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update taskbar layout.", ex);
+        }
+        finally
+        {
+            _clipRunning = false;
+        }
     }
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
@@ -636,7 +721,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         var dispatcher = DispatcherQueue;
 
         var taskbarChanged = await UpdateTaskbarButtonsAsync();
-        if (onlyIfButtonsChanged && !taskbarChanged)
+        if (_disposed || (onlyIfButtonsChanged && !taskbarChanged))
         {
             return;
         }
@@ -645,117 +730,104 @@ public sealed partial class TaskbarWindow : WindowEx,
         await Task.Delay(100);
 
         // If another ClipWindow was started while we were waiting, bail.
-        if (Volatile.Read(ref _clipVersion) != myVersion)
+        if (_disposed || Volatile.Read(ref _clipVersion) != myVersion)
         {
             return;
         }
 
-        var tcs = new TaskCompletionSource();
-        dispatcher.TryEnqueue(() =>
+        await dispatcher.EnqueueAsync(() =>
         {
             // Check again on the UI thread.
-            if (Volatile.Read(ref _clipVersion) != myVersion)
+            if (_disposed || Volatile.Read(ref _clipVersion) != myVersion)
             {
-                tcs.TrySetResult();
                 return;
             }
 
-            try
+            var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var isHorizontal = _taskbarMetrics.IsHorizontal;
+
+            // Use GetWindowRect for the pixel dimensions — this.Bounds
+            // may not be updated yet for standalone (non-child) windows.
+            PInvoke.GetWindowRect(_hwnd, out var winRect);
+
+            Logger.LogDebug($"ClipWindow: winRect=({winRect.left},{winRect.top},{winRect.right},{winRect.bottom}) W={winRect.Width} H={winRect.Height}");
+            Logger.LogDebug($"ClipWindow: buttons={_taskbarMetrics.ButtonsWidthInPixels}px tray={_taskbarMetrics.TrayWidthInPixels}px scale={scaleFactor} edge={_taskbarMetrics.Edge}");
+
+            int clipLeft, clipTop, clipRight, clipBottom;
+
+            if (isHorizontal)
             {
-                var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
-                var isHorizontal = _taskbarMetrics.IsHorizontal;
+                // Horizontal: clip left/right to exclude buttons and tray.
+                // The window may start below the taskbar's top edge (rebar
+                // offset) and WinUI may enforce a minimum height. Clip to
+                // the actual overlap between our window and the taskbar.
+                var taskbarHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
+                PInvoke.GetWindowRect(taskbarHwnd, out var tbRect);
 
-                // Use GetWindowRect for the pixel dimensions — this.Bounds
-                // may not be updated yet for standalone (non-child) windows.
-                PInvoke.GetWindowRect(_hwnd, out var winRect);
+                // Window-relative: how much of our window overlaps the taskbar
+                var overlapTop = Math.Max(0, tbRect.top - winRect.top);
+                var overlapBottom = Math.Max(0, tbRect.bottom - winRect.top);
 
-                Logger.LogDebug($"ClipWindow: winRect=({winRect.left},{winRect.top},{winRect.right},{winRect.bottom}) W={winRect.Width} H={winRect.Height}");
-                Logger.LogDebug($"ClipWindow: buttons={_taskbarMetrics.ButtonsWidthInPixels}px tray={_taskbarMetrics.TrayWidthInPixels}px scale={scaleFactor} edge={_taskbarMetrics.Edge}");
+                clipLeft = 0;
+                clipTop = overlapTop;
+                clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
+                clipBottom = Math.Min(winRect.Height, overlapBottom);
 
-                int clipLeft, clipTop, clipRight, clipBottom;
-
-                if (isHorizontal)
+                FrameworkElement clipToElement = MainContent;
+                if (!_bandsControl.IsEditMode &&
+                    clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
                 {
-                    // Horizontal: clip left/right to exclude buttons and tray.
-                    // The window may start below the taskbar's top edge (rebar
-                    // offset) and WinUI may enforce a minimum height. Clip to
-                    // the actual overlap between our window and the taskbar.
-                    var taskbarHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
-                    PInvoke.GetWindowRect(taskbarHwnd, out var tbRect);
+                    var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
+                    var contentLeft = (int)(position.X * scaleFactor);
+                    var contentRight = (int)((position.X + clipToElement.ActualWidth) * scaleFactor);
 
-                    // Window-relative: how much of our window overlaps the taskbar
-                    var overlapTop = Math.Max(0, tbRect.top - winRect.top);
-                    var overlapBottom = Math.Max(0, tbRect.bottom - winRect.top);
+                    Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentLeft={contentLeft} contentRight={contentRight}");
 
-                    clipLeft = 0;
-                    clipTop = overlapTop;
-                    clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
-                    clipBottom = Math.Min(winRect.Height, overlapBottom);
-
-                    FrameworkElement clipToElement = MainContent;
-                    if (!_bandsControl.IsEditMode &&
-                        clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
-                    {
-                        var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
-                        var contentLeft = (int)(position.X * scaleFactor);
-                        var contentRight = (int)((position.X + clipToElement.ActualWidth) * scaleFactor);
-
-                        Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentLeft={contentLeft} contentRight={contentRight}");
-
-                        clipLeft = contentLeft;
-                        clipRight = Math.Min(clipRight, contentRight);
-                    }
-                }
-                else
-                {
-                    // Vertical: content is bottom-aligned above the tray.
-                    // WinUI enforces a minimum window width (~170px) that
-                    // can exceed the taskbar width (e.g. 60px compact).
-                    // Clip to the actual taskbar width so the excess is hidden.
-                    var taskbarCrossAxis = _taskbarMetrics.RebarThicknessInPixels;
-                    clipLeft = 0;
-                    clipTop = 0;
-                    clipRight = taskbarCrossAxis > 0 ? Math.Min(winRect.Width, taskbarCrossAxis) : winRect.Width;
-                    clipBottom = winRect.Height - _taskbarMetrics.TrayWidthInPixels;
-
-                    FrameworkElement clipToElement = MainContent;
-                    if (!_bandsControl.IsEditMode &&
-                        clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
-                    {
-                        var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
-                        var contentTop = (int)(position.Y * scaleFactor);
-                        var contentBottom = (int)((position.Y + clipToElement.ActualHeight) * scaleFactor);
-
-                        Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentTop={contentTop} contentBottom={contentBottom}");
-
-                        clipTop = Math.Max(clipTop, contentTop);
-                        clipBottom = Math.Min(clipBottom, contentBottom);
-                    }
-                }
-
-                Logger.LogDebug($"ClipWindow: FINAL clip=({clipLeft},{clipTop},{clipRight},{clipBottom}) → {(clipRight > clipLeft && clipBottom > clipTop ? "VISIBLE" : "ZERO-AREA CLIP")}");
-
-                if (clipRight <= clipLeft || clipBottom <= clipTop)
-                {
-                    // No space for content — clear the region so the
-                    // window stays visible rather than hiding entirely.
-                    _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
-                }
-                else
-                {
-                    var hrgn = PInvoke.CreateRectRgn(clipLeft, clipTop, clipRight, clipBottom);
-                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+                    clipLeft = contentLeft;
+                    clipRight = Math.Min(clipRight, contentRight);
                 }
             }
-            catch
+            else
             {
-                // Window may have been destroyed
+                // Vertical: content is bottom-aligned above the tray.
+                // WinUI enforces a minimum window width (~170px) that
+                // can exceed the taskbar width (e.g. 60px compact).
+                // Clip to the actual taskbar width so the excess is hidden.
+                var taskbarCrossAxis = _taskbarMetrics.RebarThicknessInPixels;
+                clipLeft = 0;
+                clipTop = 0;
+                clipRight = taskbarCrossAxis > 0 ? Math.Min(winRect.Width, taskbarCrossAxis) : winRect.Width;
+                clipBottom = winRect.Height - _taskbarMetrics.TrayWidthInPixels;
+
+                FrameworkElement clipToElement = MainContent;
+                if (!_bandsControl.IsEditMode &&
+                    clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
+                {
+                    var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
+                    var contentTop = (int)(position.Y * scaleFactor);
+                    var contentBottom = (int)((position.Y + clipToElement.ActualHeight) * scaleFactor);
+
+                    Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentTop={contentTop} contentBottom={contentBottom}");
+
+                    clipTop = Math.Max(clipTop, contentTop);
+                    clipBottom = Math.Min(clipBottom, contentBottom);
+                }
             }
 
-            tcs.TrySetResult();
+            Logger.LogDebug($"ClipWindow: FINAL clip=({clipLeft},{clipTop},{clipRight},{clipBottom}) → {(clipRight > clipLeft && clipBottom > clipTop ? "VISIBLE" : "ZERO-AREA CLIP")}");
+
+            if (clipRight <= clipLeft || clipBottom <= clipTop)
+            {
+                // No space for content — clear the region so the
+                // window stays visible rather than hiding entirely.
+                _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
+            }
+            else
+            {
+                var hrgn = PInvoke.CreateRectRgn(clipLeft, clipTop, clipRight, clipBottom);
+                _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+            }
         });
-
-        await tcs.Task;
     }
 
     public void Receive(QuitMessage message)
@@ -771,17 +843,27 @@ public sealed partial class TaskbarWindow : WindowEx,
         // ClipWindow checks IsEditMode and skips content-based narrowing.
         _clipSuspended = false;
         _updateLayoutDebouncer?.Stop();
-        ClipWindow().ConfigureAwait(false);
+        RequestClip();
     }
 
     public void Receive(ExitEditModeMessage message)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         // Re-apply layout and clip using cached metrics — no UIA
         // re-enumeration needed. The taskbar buttons/tray haven't
         // changed, only our content did.
         _updateLayoutDebouncer.Debounce(
             () =>
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _clipSuspended = false;
 
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
@@ -811,7 +893,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 // Delegate clip to ClipWindow which handles content-
                 // based clipping correctly. Don't duplicate the logic.
-                ClipWindow().ConfigureAwait(false);
+                RequestClip();
             },
             interval: TimeSpan.FromMilliseconds(500),
             immediate: false);
@@ -916,14 +998,27 @@ public sealed partial class TaskbarWindow : WindowEx,
     {
         if (!_disposed)
         {
+            _disposed = true;
+            Interlocked.Increment(ref _clipVersion);
             _themeService.ThemeChanged -= ThemeService_ThemeChanged;
             _updateLayoutDebouncer?.Stop();
             _autoHidePollTimer?.Stop();
-            _taskbarWatcher.Changed -= OnTaskbarChanged;
-            _taskbarWatcher.Dispose();
-            _taskbarMetrics.Dispose();
+            _taskbarChangeTimer?.Stop();
+            _taskbarWatcher?.Dispose();
+            _ = DisposeMetricsAsync();
             WeakReferenceMessenger.Default.UnregisterAll(this);
-            _disposed = true;
+        }
+    }
+
+    private async Task DisposeMetricsAsync()
+    {
+        try
+        {
+            await _taskbarMetrics.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to release taskbar UI Automation resources.", ex);
         }
     }
 

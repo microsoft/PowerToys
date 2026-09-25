@@ -26,15 +26,23 @@ public enum TaskbarEdge
 /// UI Automation with raw COM pointers (no runtime marshalling).
 /// AOT-compatible.
 /// </summary>
-public sealed unsafe class TaskbarMetrics : IDisposable
+public sealed unsafe partial class TaskbarMetrics : IDisposable, IAsyncDisposable
 {
     // CUIAutomation CLSID: {FF48DBA4-60EF-4201-AA87-54103EEF594E}
     private static readonly Guid CUIAutomationClsid =
         new(0xFF48DBA4, 0x60EF, 0x4201, 0xAA, 0x87, 0x54, 0x10, 0x3E, 0xEF, 0x59, 0x4E);
 
+    private readonly MtaWorker _worker;
+    private readonly object _gate = new();
     private IUIAutomation* _automation;
     private IUIAutomationCondition* _trueCondition;
+    private Task<bool>? _updateTask;
     private bool _disposed;
+
+    public TaskbarMetrics()
+    {
+        _worker = new MtaWorker(ReleaseAutomation);
+    }
 
     /// <summary>Width of the taskbar buttons area in physical pixels.</summary>
     public int ButtonsWidthInPixels { get; private set; }
@@ -67,12 +75,10 @@ public sealed unsafe class TaskbarMetrics : IDisposable
 
     /// <summary>
     /// Re-measures the primary taskbar. Returns true if any value changed.
-    /// Thread-safe — can be called from any thread.
+    /// Called only on the UI Automation worker.
     /// </summary>
-    public bool Update()
+    private bool Update()
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
         var taskbarHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
         if (taskbarHwnd.IsNull)
         {
@@ -110,10 +116,22 @@ public sealed unsafe class TaskbarMetrics : IDisposable
     }
 
     /// <summary>
-    /// Re-measures the primary taskbar on a background thread.
-    /// Returns true if any value changed.
+    /// Re-measures the primary taskbar on its COM worker.
+    /// Overlapping requests share one measurement.
     /// </summary>
-    public Task<bool> UpdateAsync() => Task.Run(Update);
+    public Task<bool> UpdateAsync()
+    {
+        lock (_gate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_updateTask is null || _updateTask.IsCompleted)
+            {
+                _updateTask = _worker.InvokeAsync(Update);
+            }
+
+            return _updateTask;
+        }
+    }
 
     private int MeasureButtons(HWND taskbarHwnd, out int buttonCount)
     {
@@ -363,45 +381,75 @@ public sealed unsafe class TaskbarMetrics : IDisposable
             return;
         }
 
-        IUIAutomation* automation;
+        IUIAutomation* automation = null;
         var hr = PInvoke.CoCreateInstance(
             CUIAutomationClsid,
             (IUnknown*)null,
             CLSCTX.CLSCTX_INPROC_SERVER,
             out automation);
 
-        if (hr.Failed || automation == null)
+        hr.ThrowOnFailure();
+        if (automation == null)
         {
-            return;
+            throw new InvalidOperationException("UI Automation returned no automation instance.");
         }
 
-        _automation = automation;
-
-        IUIAutomationCondition* condition;
-        hr = _automation->CreateTrueCondition(&condition);
-        if (hr.Succeeded)
+        IUIAutomationCondition* condition = null;
+        try
         {
+            automation->CreateTrueCondition(&condition).ThrowOnFailure();
+            if (condition == null)
+            {
+                throw new InvalidOperationException("UI Automation returned no search condition.");
+            }
+
+            _automation = automation;
             _trueCondition = condition;
+        }
+        catch
+        {
+            if (condition != null)
+            {
+                ((IUnknown*)condition)->Release();
+            }
+
+            ((IUnknown*)automation)->Release();
+            throw;
+        }
+    }
+
+    private void ReleaseAutomation()
+    {
+        if (_trueCondition != null)
+        {
+            ((IUnknown*)_trueCondition)->Release();
+            _trueCondition = null;
+        }
+
+        if (_automation != null)
+        {
+            ((IUnknown*)_automation)->Release();
+            _automation = null;
         }
     }
 
     public void Dispose()
     {
-        if (!_disposed)
+        lock (_gate)
         {
-            if (_trueCondition != null)
+            if (_disposed)
             {
-                ((IUnknown*)_trueCondition)->Release();
-                _trueCondition = null;
-            }
-
-            if (_automation != null)
-            {
-                ((IUnknown*)_automation)->Release();
-                _automation = null;
+                return;
             }
 
             _disposed = true;
+            _worker.Dispose();
         }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return _worker.DisposeAsync();
     }
 }

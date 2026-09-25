@@ -3,6 +3,8 @@ FindWindowEx
 GetWindowRect
 GetDpiForWindow
 CoCreateInstance
+CoInitializeEx
+CoUninitialize
 IUIAutomation
 IUIAutomationElement
 IUIAutomationElementArray
@@ -21,5 +23,7 @@ EVENT_OBJECT_NAMECHANGE
 EVENT_OBJECT_LOCATIONCHANGE
 WINEVENT_OUTOFCONTEXT
 GetWindowThreadProcessId
+IsChild
+WINEVENT_SKIPOWNPROCESS
 MonitorFromWindow
 GetMonitorInfo

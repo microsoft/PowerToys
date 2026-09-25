@@ -81,6 +81,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
     private TaskbarWindow? _taskbarWindow;
+    private bool _creatingTaskbar;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -190,46 +191,58 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private async Task CreateAndShowTaskbarAsync()
     {
+        if (_isDisposed || _creatingTaskbar)
+        {
+            return;
+        }
+
+        _creatingTaskbar = true;
+
         // Capture dispatcher before crossing to a background thread.
         var dispatcher = DispatcherQueue;
 
-        // Run the expensive first UIA measurement on a background thread.
-        var metrics = await Task.Run(() =>
+        var metrics = new TaskbarMetrics();
+        var ownsMetrics = true;
+        try
         {
-            var m = new TaskbarMetrics();
-            m.Update();
-            return m;
-        });
-
-        // Window creation + Show MUST happen on the UI thread.
-        // WinUI 3 has no SynchronizationContext, so we can't rely on
-        // await resuming on the UI thread. Explicitly dispatch.
-        dispatcher.TryEnqueue(() =>
-        {
-            // The setting may have been toggled back off while the
-            // background metrics measurement was running. Don't create
-            // an orphan window that shows while the feature is disabled.
-            var stillEnabled = App.Current.Services
-                .GetRequiredService<ISettingsService>()
-                .Settings.EnableTaskbar;
-            if (!stillEnabled)
+            await metrics.UpdateAsync();
+            await dispatcher.EnqueueAsync(() =>
             {
-                metrics.Dispose();
-                return;
-            }
+                if (_isDisposed || !_settingsService.Settings.EnableTaskbar)
+                {
+                    return;
+                }
 
-            // Guard against a concurrent creation having already run
-            // (e.g. rapid off→on→off→on) so we don't leak a window.
-            if (_taskbarWindow is not null)
-            {
-                metrics.Dispose();
+                if (_taskbarWindow is not null)
+                {
+                    _taskbarWindow.Show();
+                    return;
+                }
+
+                _taskbarWindow = new TaskbarWindow(metrics);
+                ownsMetrics = false;
                 _taskbarWindow.Show();
-                return;
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to create the taskbar window.", ex);
+        }
+        finally
+        {
+            _creatingTaskbar = false;
+            if (ownsMetrics)
+            {
+                try
+                {
+                    await metrics.DisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to release taskbar UI Automation resources.", ex);
+                }
             }
-
-            _taskbarWindow = new TaskbarWindow(metrics);
-            _taskbarWindow.Show();
-        });
+        }
     }
 
     /// <summary>
@@ -698,28 +711,30 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowHideTaskbarMessage message)
     {
-        if (message.ShowTaskbar)
+        DispatcherQueue.TryEnqueue(() =>
         {
-            if (_taskbarWindow is null)
+            if (_isDisposed)
             {
-                _ = CreateAndShowTaskbarAsync();
+                return;
+            }
+
+            if (message.ShowTaskbar)
+            {
+                if (_taskbarWindow is null)
+                {
+                    _ = CreateAndShowTaskbarAsync();
+                }
+                else
+                {
+                    _taskbarWindow.Show();
+                }
             }
             else
             {
-                DispatcherQueue.TryEnqueue(() => _taskbarWindow.Show());
+                _taskbarWindow?.Close();
+                _taskbarWindow = null;
             }
-        }
-        else
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                if (_taskbarWindow is not null)
-                {
-                    _taskbarWindow.Close();
-                    _taskbarWindow = null;
-                }
-            });
-        }
+        });
     }
 
     private void ToggleFilterFocus()
