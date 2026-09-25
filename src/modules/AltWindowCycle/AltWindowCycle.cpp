@@ -14,6 +14,7 @@
 #include <objidl.h>
 #include <gdiplus.h>
 #include <atomic>
+#include <memory>
 
 // Win11 system backdrop / corner attributes (in case SDK is older).
 #ifndef DWMWA_SYSTEMBACKDROP_TYPE
@@ -30,6 +31,9 @@
 #endif
 #ifndef DWMWCP_ROUND
 #define DWMWCP_ROUND 2
+#endif
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
@@ -82,52 +86,37 @@ namespace AltTabStyle
     }
 
     inline COLORREF AccentFallbackRef() { return RGB(0, 120, 215); }
-    constexpr COLORREF HeaderTextRef(bool light)
+    constexpr COLORREF HeaderTextRef(bool selected)
     {
-        return light ? RGB(26, 26, 26) : RGB(235, 235, 235);
+        return selected ? RGB(255, 255, 255) : RGB(207, 207, 207);
     }
 
     inline Gdiplus::Color Transparent() { return Gdiplus::Color(0, 0, 0, 0); }
-
-    // WinUI CardBackgroundFillColorDefault. Same for every tile; selection is shown
-    // only by the accent focus outline. Semi-transparent so the acrylic shows through.
-    inline Gdiplus::Color Card(bool light)
+    inline Gdiplus::Color Card(bool selected)
     {
-        return light ? Gdiplus::Color(179, 255, 255, 255)  // #B3FFFFFF
-                     : Gdiplus::Color(210, 18, 18, 18);     // dark, mostly-opaque tile
+        return selected ? Gdiplus::Color(255, 58, 58, 62)
+                        : Gdiplus::Color(255, 43, 43, 46);
     }
-    constexpr COLORREF CardRef(bool light)
+    constexpr COLORREF CardRef(bool selected)
     {
-        // Opaque approximation of the card-over-acrylic color, available for any
-        // surface that needs a solid blend background.
-        return light ? RGB(248, 248, 248) : RGB(20, 20, 20);
-    }
-    // WinUI CardStrokeColorDefault: a subtle 1px edge around each card.
-    inline Gdiplus::Color CardStroke(bool light)
-    {
-        return light ? Gdiplus::Color(15, 0, 0, 0)
-                     : Gdiplus::Color(25, 0, 0, 0);
+        return selected ? RGB(58, 58, 62) : RGB(43, 43, 46);
     }
     inline Gdiplus::Color Accent(COLORREF accent)
     {
         return Gdiplus::Color(255, GetRValue(accent), GetGValue(accent), GetBValue(accent));
     }
-    inline Gdiplus::Color SurfaceStrokeDefault(bool light)
+    inline Gdiplus::Color SurfaceStrokeDefault()
     {
-        return light ? Gdiplus::Color(24, 0, 0, 0)
-                     : Gdiplus::Color(64, 255, 255, 255);
+        return Gdiplus::Color(64, 255, 255, 255);
     }
-    inline Gdiplus::Color PreviewStroke(bool light)
+    inline Gdiplus::Color PreviewStroke(bool selected)
     {
-        return light ? Gdiplus::Color(28, 0, 0, 0)
-                     : Gdiplus::Color(60, 255, 255, 255);
+        return selected ? Gdiplus::Color(90, 255, 255, 255)
+                        : Gdiplus::Color(45, 255, 255, 255);
     }
-    inline Gdiplus::Color FocusShadow(bool light)
+    inline Gdiplus::Color FocusShadow()
     {
-        // Contrast hairline just inside the accent ring: white in light mode,
-        // black in dark mode.
-        return light ? Gdiplus::Color(120, 255, 255, 255)
-                     : Gdiplus::Color(150, 0, 0, 0);
+        return Gdiplus::Color(150, 0, 0, 0);
     }
 }
 
@@ -158,6 +147,18 @@ static bool SupportsSystemBackdrop()
 static HBRUSH g_thumbSolidBrush = nullptr;
 static bool g_thumbSolidMode = false;
 
+// Prototype: preview mode. A live DWM thumbnail is a real-time mirror of the
+// target window, but it's a plain OS-composited rectangle we have no way to
+// clip, so its corners can't be rounded to match the card. As an alternative,
+// a static-snapshot mode captures the window once (via the public PrintWindow
+// API) into a plain GDI+ bitmap that we paint and clip ourselves, at the cost
+// of live updates (the snapshot is drawn as PrintWindow captured it -- no
+// color/theme normalization is applied). Hardcoded on for now to evaluate the
+// approach; intended to become a user-facing setting (a per-user choice
+// between live vs. static previews). Windows PrintWindow can't capture still
+// fall back to a live DWM thumbnail automatically.
+constexpr bool kUseStaticSnapshotPreview = true;
+
 static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
 {
     if (msg == WM_ERASEBKGND)
@@ -170,13 +171,31 @@ static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
         }
         return 1;
     }
+    if (msg == WM_NCCALCSIZE && w)
+    {
+        // thumbHost carries WS_CAPTION solely so DWM treats it as a "framed"
+        // top-level window -- DWMWA_SYSTEMBACKDROP_TYPE (Mica/acrylic) is
+        // silently ignored on plain WS_POPUP windows with no frame at all.
+        // Returning 0 here (instead of calling DefWindowProc) collapses the
+        // non-client caption/border to nothing, so the window still looks
+        // like a plain borderless popup while DWM still applies the
+        // backdrop material to it.
+        return 0;
+    }
     return DefWindowProcW(h, msg, w, l);
 }
 
 // Apply the overlay backdrop to thumbHost. Win11 22H2+ gets public acrylic via
-// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill.
-static void ApplyBackdrop(HWND hwnd, bool light)
+// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill. The card
+// chrome is a fixed dark look regardless of the user's OS theme, so the
+// backdrop is forced dark too (DWMWA_USE_IMMERSIVE_DARK_MODE) -- otherwise
+// DWMSBT_TRANSIENTWINDOW would tint itself light on a light-mode system and
+// clash with the dark cards drawn on top of it.
+static void ApplyBackdrop(HWND hwnd)
 {
+    BOOL dark = TRUE;
+    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
+
     if (SupportsSystemBackdrop())
     {
         g_thumbSolidMode = false;
@@ -184,13 +203,26 @@ static void ApplyBackdrop(HWND hwnd, bool light)
         DwmExtendFrameIntoClientArea(hwnd, &glass);
         int backdrop = DWMSBT_TRANSIENTWINDOW;
         DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop, sizeof(backdrop));
+
+        // DWM automatically flattens Mica/acrylic backdrop material to a
+        // solid, non-blurred tint on any window it considers "inactive".
+        // thumbHost is WS_EX_NOACTIVATE (it must never steal real
+        // keyboard/foreground focus from whatever app the user is
+        // switching away from), so without this call DWM would always see
+        // it as inactive and always render the flattened/opaque fallback
+        // color -- never live blur, no matter how correctly the backdrop
+        // attribute itself is set. WM_NCACTIVATE with wParam=TRUE tells DWM
+        // to paint this window's frame/backdrop as if it were active,
+        // purely for rendering purposes; it does not change real Win32
+        // input focus or activate the window.
+        SendMessageW(hwnd, WM_NCACTIVATE, TRUE, 0);
     }
     else
     {
         g_thumbSolidMode = true;
         if (g_thumbSolidBrush)
             DeleteObject(g_thumbSolidBrush);
-        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(light));
+        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(false));
     }
 }
 
@@ -457,6 +489,13 @@ private:
     St state = St::Idle;
     std::vector<HWND> windows;
     std::vector<HTHUMBNAIL> thumbs;
+    // Static-snapshot preview mode only (kUseStaticSnapshotPreview): one
+    // captured bitmap per visible slot, already downsampled to that slot's
+    // preview-rect pixel size at capture time (see
+    // CaptureWindowSnapshotForPreview), refreshed on show/page change. A null
+    // entry means capture failed for that slot and a live DWM thumbnail was
+    // registered instead.
+    std::vector<std::unique_ptr<Gdiplus::Bitmap>> snapshots;
     std::vector<HICON> icons;
     std::vector<std::wstring> titles;
     HWND anchorWindow = nullptr;
@@ -490,9 +529,14 @@ bool Switcher::Init(HINSTANCE instance)
     hc.lpszClassName = L"AltWindowCycleThumbHost";
     RegisterClassW(&hc);
 
+    // WS_DISABLED keeps this display-only host from swallowing mouse input:
+    // WS_EX_NOACTIVATE only stops it from taking keyboard/foreground focus,
+    // it does not make the window click-through, so without WS_DISABLED
+    // clicks over the transparent portions of the layered overlay above it
+    // would land on thumbHost instead of passing through.
     thumbHost = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
-        hc.lpszClassName, L"", WS_POPUP | WS_DISABLED,
+        hc.lpszClassName, L"", WS_POPUP | WS_CAPTION | WS_DISABLED,
         0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!thumbHost)
         return false;
@@ -738,21 +782,23 @@ void Switcher::ShowOverlayWindow()
 
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
+    ApplyBackdrop(thumbHost);
+    // Let DWM itself round thumbHost's corners instead of cutting a manual
+    // SetWindowRgn. DWM's default elevation shadow is drawn to match whatever
+    // corner shape DWM is applying; a hand-cut region at a slightly different
+    // radius/metric than DWM's own rounding left a sliver of that shadow
+    // peeking out past our rounded corner. Using only DWMWA_WINDOW_CORNER_PREFERENCE
+    // keeps the corner shape and its shadow self-consistent.
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
-    HRGN rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
-                                  2 * Scaled(8), 2 * Scaled(8));
-    if (rgn != nullptr)
-    {
-        // SetWindowRgn takes ownership of the region on success; on failure the
-        // caller still owns it, so delete it to avoid leaking the HRGN.
-        if (SetWindowRgn(thumbHost, rgn, FALSE) == 0)
-        {
-            DeleteObject(rgn);
-        }
-    }
+    SetWindowRgn(thumbHost, nullptr, FALSE);
+    // DWM doesn't always repaint non-client chrome immediately after
+    // DwmSetWindowAttribute calls (backdrop type, corner preference, dark
+    // mode) on a window whose size didn't change. A no-op SWP_FRAMECHANGED
+    // forces DWM to recompute and actually apply them.
+    SetWindowPos(thumbHost, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
@@ -762,6 +808,10 @@ void Switcher::ShowOverlayWindow()
     RenderLayered();
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    // Re-assert the fake-active state after showing: some DWM paths reset
+    // a window's WM_NCACTIVATE state to inactive around SWP_SHOWWINDOW,
+    // which would flatten the Mica/acrylic backdrop right after it appears.
+    SendMessageW(thumbHost, WM_NCACTIVATE, TRUE, 0);
     SetWindowPos(overlay, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
     SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
@@ -811,13 +861,15 @@ void Switcher::SetSelection(int index)
     RenderLayered();
 }
 
-// React to a live OS Light/Dark theme switch while the overlay is visible:
-// refresh the backdrop (re-tints the solid fallback) and repaint the chrome.
+// React to a live OS Light/Dark theme switch while the overlay is visible.
+// The backdrop is forced dark regardless of system theme (to match the fixed
+// dark card chrome), so this just re-applies it defensively -- e.g. in case
+// DWM cleared window attributes across a theme transition -- and repaints.
 void Switcher::OnThemeChanged()
 {
     if (state != St::Visible)
         return;
-    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
+    ApplyBackdrop(thumbHost);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RenderLayered();
@@ -883,6 +935,108 @@ static SIZE ClientSourceSize(HWND hwnd)
     return { 0, 0 };
 }
 
+// Prototype (kUseStaticSnapshotPreview): captures a window's client area into
+// a GDI+ bitmap via the public PrintWindow API, at the window's native client
+// resolution. Unlike a live DWM thumbnail this is a one-shot snapshot (no
+// further updates until the caller re-captures), but because we own the
+// resulting pixels we can clip/round them ourselves to match the card,
+// instead of being stuck with DWM's plain rectangular thumbnail. Callers
+// should downsample the result to the preview's actual on-screen size (see
+// CaptureWindowSnapshotForPreview) rather than holding this native-resolution
+// copy, since it can be several megabytes per window (e.g. a 4K client area).
+static std::unique_ptr<Gdiplus::Bitmap> CaptureWindowSnapshot(HWND hwnd, SIZE& outSize)
+{
+    outSize = { 0, 0 };
+    SIZE clientSize = ClientSourceSize(hwnd);
+    if (clientSize.cx <= 0 || clientSize.cy <= 0)
+        return nullptr;
+
+    HDC hdcWindow = GetDC(hwnd);
+    if (!hdcWindow)
+        return nullptr;
+    HDC hdcMem = CreateCompatibleDC(hdcWindow);
+    HBITMAP hbmp = hdcMem ? CreateCompatibleBitmap(hdcWindow, clientSize.cx, clientSize.cy) : nullptr;
+    if (!hdcMem || !hbmp)
+    {
+        if (hdcMem) DeleteDC(hdcMem);
+        if (hbmp) DeleteObject(hbmp);
+        ReleaseDC(hwnd, hdcWindow);
+        return nullptr;
+    }
+
+    HGDIOBJ old = SelectObject(hdcMem, hbmp);
+    // PW_RENDERFULLCONTENT asks the window to render its full (potentially
+    // GPU/DirectComposition-backed) content; without it, many modern XAML/WinUI
+    // apps paint a blank surface into the DC.
+    BOOL ok = PrintWindow(hwnd, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
+    SelectObject(hdcMem, old);
+    ReleaseDC(hwnd, hdcWindow);
+
+    std::unique_ptr<Gdiplus::Bitmap> bmp;
+    if (ok)
+    {
+        // The Gdiplus::Bitmap(HBITMAP, HPALETTE) constructor copies the pixel
+        // data, so hbmp can be safely destroyed once it returns.
+        bmp = std::make_unique<Gdiplus::Bitmap>(hbmp, static_cast<HPALETTE>(nullptr));
+        if (bmp->GetLastStatus() != Gdiplus::Ok)
+        {
+            bmp.reset();
+        }
+        else
+        {
+            outSize = clientSize;
+        }
+    }
+    DeleteObject(hbmp);
+    DeleteDC(hdcMem);
+    return bmp;
+}
+
+// Captures `hwnd` at native resolution (CaptureWindowSnapshot above), then
+// immediately crops/scales that capture down to the exact pixel size of
+// `dest` and discards the native-resolution bitmap. One page can contain
+// several slots, and each native capture can be a full 4K+ window client
+// area, so retaining all of them (rather than just the small on-screen
+// preview each one is downsampled to) for the overlay's lifetime would waste
+// hundreds of MB. Returns null if capture fails or `dest` is empty.
+static std::unique_ptr<Gdiplus::Bitmap> CaptureWindowSnapshotForPreview(HWND hwnd, const RECT& dest, SIZE& outSize)
+{
+    outSize = { 0, 0 };
+    const int dw = dest.right - dest.left;
+    const int dh = dest.bottom - dest.top;
+    if (dw <= 0 || dh <= 0)
+        return nullptr;
+
+    SIZE fullSize = {};
+    auto full = CaptureWindowSnapshot(hwnd, fullSize);
+    if (!full)
+        return nullptr;
+
+    RECT avail = { 0, 0, fullSize.cx, fullSize.cy };
+    RECT rcSrc = AltWindowCycleLogic::CoverSource(dest, avail);
+    Gdiplus::REAL srcLeft = static_cast<Gdiplus::REAL>(rcSrc.left);
+    Gdiplus::REAL srcTop = static_cast<Gdiplus::REAL>(rcSrc.top);
+    Gdiplus::REAL srcW = static_cast<Gdiplus::REAL>(rcSrc.right - rcSrc.left);
+    Gdiplus::REAL srcH = static_cast<Gdiplus::REAL>(rcSrc.bottom - rcSrc.top);
+
+    auto scaled = std::make_unique<Gdiplus::Bitmap>(dw, dh, PixelFormat32bppPARGB);
+    {
+        Gdiplus::Graphics tg(scaled.get());
+        tg.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
+        tg.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
+        tg.DrawImage(full.get(), Gdiplus::RectF(0.0f, 0.0f, static_cast<Gdiplus::REAL>(dw), static_cast<Gdiplus::REAL>(dh)),
+                     srcLeft, srcTop, srcW, srcH, Gdiplus::UnitPixel);
+    }
+    // `full` (the native-resolution capture) is freed here; only the
+    // downsampled `scaled` bitmap is retained by the caller.
+
+    if (scaled->GetLastStatus() != Gdiplus::Ok)
+        return nullptr;
+
+    outSize = { dw, dh };
+    return scaled;
+}
+
 void Switcher::RegisterThumbnails()
 {
     UnregisterThumbnails();
@@ -893,6 +1047,24 @@ void Switcher::RegisterThumbnails()
     for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
     {
         RECT dest = PreviewRect(TileRect(slot));
+
+        if (kUseStaticSnapshotPreview)
+        {
+            SIZE srcSize = {};
+            if (auto snap = CaptureWindowSnapshotForPreview(windows[windowIndex], dest, srcSize))
+            {
+                snapshots.push_back(std::move(snap));
+                thumbs.push_back(nullptr);
+                continue;
+            }
+            // PrintWindow legitimately fails for some windows (e.g. certain
+            // GPU-exclusive or protected-content surfaces); keep the
+            // per-slot vectors aligned with an empty entry and fall through
+            // to registering a live DWM thumbnail instead, so the slot still
+            // shows something rather than an empty acrylic hole.
+            snapshots.push_back(nullptr);
+        }
+
         HTHUMBNAIL th = nullptr;
         if (FAILED(DwmRegisterThumbnail(thumbHost, windows[windowIndex], &th)) || !th)
         {
@@ -935,6 +1107,7 @@ void Switcher::UnregisterThumbnails()
         if (th)
             DwmUnregisterThumbnail(th);
     thumbs.clear();
+    snapshots.clear();
 }
 
 void Switcher::EnsureFont()
@@ -946,7 +1119,7 @@ void Switcher::EnsureFont()
         DeleteObject(font);
         font = nullptr;
     }
-    int height = -Scaled(14);
+    int height = -Scaled(15);
     font = CreateFontW(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                        CLEARTYPE_NATURAL_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
@@ -971,8 +1144,10 @@ static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r,
     path.CloseFigure();
 }
 
-// Square top edge, rounded bottom corners. Used for the live preview viewport so
-// the full-bleed DWM thumbnail reads as rounded at the bottom of the card.
+// Same as BuildRoundRect but only rounds the bottom-left/bottom-right corners,
+// leaving the top edge a hard cut. Used for the preview image, which now sits
+// flush under the header row (no gap to round away) but still needs to match
+// the card's rounded bottom corners where it meets the card edge.
 static void BuildBottomRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
 {
     path.Reset();
@@ -983,7 +1158,6 @@ static void BuildBottomRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::Rec
         return;
     }
     path.AddLine(r.X, r.Y, r.GetRight(), r.Y);
-    path.AddLine(r.GetRight(), r.Y, r.GetRight(), r.GetBottom() - rad);
     path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
     path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
     path.CloseFigure();
@@ -1139,8 +1313,8 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
 
 static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandle,
                            const RECT& rc, const std::wstring& text,
-                           COLORREF textColor,
-                           UINT alignFlag = DT_LEFT)
+                           COLORREF textColor, COLORREF backgroundColor,
+                           UINT alignFlag = DT_LEFT, bool opaqueBackground = true)
 {
     if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !fontHandle)
         return;
@@ -1173,15 +1347,20 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
     HGDIOBJ oldBmp = SelectObject(textDC, scratch);
     HGDIOBJ oldFont = SelectObject(textDC, fontHandle);
     RECT fill = { 0, 0, w, h };
-    // Render white text on a black scratch; the luminance doubles as a coverage
-    // mask so the glyphs can be composited onto the translucent card without
-    // painting an opaque background box behind them.
-    HBRUSH bg = CreateSolidBrush(RGB(0, 0, 0));
+
+    // Opaque mode (tile headers, drawn over an opaque card): fill with the
+    // real background color and draw the real text color directly -- the
+    // whole rect is just copied to dest below. Transparent mode (e.g. the
+    // page indicator, drawn over the translucent/acrylic panel background):
+    // render white text on black instead, so the resulting luminance doubles
+    // as a glyph coverage mask that gets alpha-composited onto whatever is
+    // already there, without painting an opaque box behind the glyphs.
+    HBRUSH bg = CreateSolidBrush(opaqueBackground ? backgroundColor : RGB(0, 0, 0));
     FillRect(textDC, &fill, bg);
     DeleteObject(bg);
 
     int oldBk = SetBkMode(textDC, TRANSPARENT);
-    COLORREF oldColor = SetTextColor(textDC, RGB(255, 255, 255));
+    COLORREF oldColor = SetTextColor(textDC, opaqueBackground ? textColor : RGB(255, 255, 255));
 
     RECT textRc = fill;
     DrawTextW(textDC, text.c_str(), static_cast<int>(text.size()), &textRc,
@@ -1194,6 +1373,7 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
     const int tb = GetBValue(textColor);
     const int tg = GetGValue(textColor);
     const int tr = GetRValue(textColor);
+
     const BYTE* src = static_cast<const BYTE*>(scratchBits);
     for (int y = 0; y < h; ++y)
     {
@@ -1207,18 +1387,28 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
                 continue;
 
             const BYTE* s = src + (static_cast<size_t>(y) * w + x) * 4;
-            int a = (s[0] + s[1] + s[2] + 1) / 3; // glyph coverage 0..255
-            if (a == 0)
-                continue;
-
-            // Source-over onto premultiplied-alpha dest (BGRA). The text is opaque,
-            // so its premultiplied contribution is colour * coverage.
             BYTE* d = destBits + (static_cast<size_t>(dy) * destW + dx) * 4;
-            int inv = 255 - a;
-            d[0] = static_cast<BYTE>((tb * a + 127) / 255 + (d[0] * inv + 127) / 255);
-            d[1] = static_cast<BYTE>((tg * a + 127) / 255 + (d[1] * inv + 127) / 255);
-            d[2] = static_cast<BYTE>((tr * a + 127) / 255 + (d[2] * inv + 127) / 255);
-            d[3] = static_cast<BYTE>(a + (d[3] * inv + 127) / 255);
+            if (opaqueBackground)
+            {
+                d[0] = s[0];
+                d[1] = s[1];
+                d[2] = s[2];
+                d[3] = 255;
+            }
+            else
+            {
+                // Glyph coverage 0..255 (white-on-black luminance). Source-over
+                // onto premultiplied-alpha dest (BGRA): the text is opaque, so
+                // its premultiplied contribution is textColor * coverage.
+                int a = (s[0] + s[1] + s[2] + 1) / 3;
+                if (a == 0)
+                    continue;
+                int inv = 255 - a;
+                d[0] = static_cast<BYTE>((tb * a + 127) / 255 + (d[0] * inv + 127) / 255);
+                d[1] = static_cast<BYTE>((tg * a + 127) / 255 + (d[1] * inv + 127) / 255);
+                d[2] = static_cast<BYTE>((tr * a + 127) / 255 + (d[2] * inv + 127) / 255);
+                d[3] = static_cast<BYTE>(a + (d[3] * inv + 127) / 255);
+            }
         }
     }
 
@@ -1285,7 +1475,6 @@ void Switcher::RenderLayered()
         g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
 
         // Leave the panel background transparent; acrylic lives on thumbHost.
-        bool light = AltTabStyle::IsLightTheme();
         Gdiplus::REAL panelRadius = static_cast<Gdiplus::REAL>(Scaled(8));
         RECT panelRect = { 0, 0, w, h };
         Gdiplus::GraphicsPath panel;
@@ -1294,7 +1483,7 @@ void Switcher::RenderLayered()
         g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
         g.FillPath(&panelBrush, &panel);
         g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-        Gdiplus::Pen panelStroke(AltTabStyle::SurfaceStrokeDefault(light),
+        Gdiplus::Pen panelStroke(AltTabStyle::SurfaceStrokeDefault(),
                                  static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
         g.DrawPath(&panelStroke, &panel);
 
@@ -1314,51 +1503,51 @@ void Switcher::RenderLayered()
             // viewport inside it, which avoids fighting public DWM's square thumbnail.
             Gdiplus::GraphicsPath cardPath;
             BuildRoundRect(cardPath, InflateF(tile, 0), static_cast<Gdiplus::REAL>(radius));
-            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(light));
+            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(sel));
             g.FillPath(&cardBrush, &cardPath);
-
-            g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-            Gdiplus::Pen cardPen(AltTabStyle::CardStroke(light),
-                                 static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
-            g.DrawPath(&cardPen, &cardPath);
 
             int pw = pv.right - pv.left;
             int ph = pv.bottom - pv.top;
             if (pw > 0 && ph > 0)
             {
-                Gdiplus::RectF pvF(
-                    static_cast<Gdiplus::REAL>(pv.left),
-                    static_cast<Gdiplus::REAL>(pv.top),
-                    static_cast<Gdiplus::REAL>(pw),
-                    static_cast<Gdiplus::REAL>(ph));
+                Gdiplus::Bitmap* snap = (kUseStaticSnapshotPreview && slot < static_cast<int>(snapshots.size()))
+                                             ? snapshots[slot].get()
+                                             : nullptr;
+                if (snap)
+                {
+                    // CaptureWindowSnapshotForPreview already cropped/scaled this
+                    // bitmap down to exactly the preview rect's pixel size at
+                    // capture time (see RegisterThumbnails), so it can be used
+                    // directly as an identity-scale texture brush -- no further
+                    // DrawImage pass or intermediate offscreen bitmap needed here.
+                    Gdiplus::TextureBrush brush(snap, Gdiplus::WrapModeClamp);
+                    Gdiplus::Matrix xform(1.0f, 0.0f, 0.0f, 1.0f,
+                                          static_cast<Gdiplus::REAL>(pv.left),
+                                          static_cast<Gdiplus::REAL>(pv.top));
+                    brush.SetTransform(&xform);
 
-                // Bottom-rounded viewport for the DWM thumbnail (square top, rounded
-                // bottom corners matching the card radius).
-                Gdiplus::GraphicsPath pvHole;
-                BuildBottomRoundRect(pvHole, pvF, static_cast<Gdiplus::REAL>(radius));
-
-                // The DWM thumbnail is a square rectangle that lives on the acrylic
-                // host behind this layer. Lay an OPAQUE card backing across the whole
-                // preview (clipped to the rounded card so it can't spill past the
-                // card's corners), then punch the rounded-bottom hole. The thumbnail
-                // only shows through the rounded viewport; its square bottom corners
-                // stay hidden behind the opaque backing. (A translucent card alone
-                // would let those square corners bleed through.)
-                COLORREF cardSolid = AltTabStyle::CardRef(light);
-                Gdiplus::SolidBrush previewBacking(Gdiplus::Color(
-                    255, GetRValue(cardSolid), GetGValue(cardSolid), GetBValue(cardSolid)));
-                g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-                g.SetClip(&cardPath, Gdiplus::CombineModeReplace);
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                g.FillRectangle(&previewBacking, pvF);
-
-                // Punch the rounded-bottom transparent hole; the acrylic host with the
-                // live thumbnail composites behind it.
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-                Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
-                g.FillPath(&previewBrush, &pvHole);
-                g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                g.ResetClip();
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.FillPath(&brush, &previewPath);
+                }
+                else
+                {
+                    Gdiplus::GraphicsPath previewPath;
+                    BuildBottomRoundRect(previewPath, InflateF(pv, 0), static_cast<Gdiplus::REAL>(radius));
+                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
+                    Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
+                    g.FillPath(&previewBrush, &previewPath);
+                    g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
+                    // The subtle semi-transparent white stroke below is meant to catch
+                    // light against the blurred/transparent DWM punch above; it was
+                    // designed for that see-through case, not for an opaque snapshot
+                    // (where it reads as a harsh white border), so only draw it here.
+                    Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
+                                             static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                    g.DrawPath(&previewPen, &previewPath);
+                }
             }
 
             // Header tab: app icon + window title.
@@ -1379,27 +1568,19 @@ void Switcher::RenderLayered()
                 g.Flush();
                 RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
                 DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, *text,
-                               AltTabStyle::HeaderTextRef(light));
+                               AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
             }
 
-            // Two-ring accent focus ring around the selected tile.
+            // Single accent focus ring hugging the selected tile.
             if (sel)
             {
-                int gPad = Scaled(6);
-                int gOut = gPad + Scaled(2);
-                int outerRadius = Scaled(18);
-                int innerRadius = outerRadius - Scaled(2);
-                Gdiplus::GraphicsPath innerRing, out;
-                BuildRoundRect(innerRing, InflateF(tile, gPad),
-                               static_cast<Gdiplus::REAL>(innerRadius));
-                BuildRoundRect(out, InflateF(tile, gOut),
-                               static_cast<Gdiplus::REAL>(outerRadius));
-                Gdiplus::Pen darkPen(AltTabStyle::FocusShadow(light),
-                                     static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                int gPad = Scaled(10);
+                Gdiplus::GraphicsPath ring;
+                BuildRoundRect(ring, InflateF(tile, gPad),
+                               static_cast<Gdiplus::REAL>(radius + gPad));
                 Gdiplus::Pen accentPen(accentClr,
-                                       static_cast<Gdiplus::REAL>((std::max)(2, Scaled(4))));
-                g.DrawPath(&darkPen, &innerRing);
-                g.DrawPath(&accentPen, &out);
+                                       static_cast<Gdiplus::REAL>((std::max)(2, Scaled(3))));
+                g.DrawPath(&accentPen, &ring);
             }
         }
 
@@ -1414,7 +1595,8 @@ void Switcher::RenderLayered()
                 std::to_wstring(currentPage) + L" / " + std::to_wstring(totalPages);
             RECT pageRc = { pad, h - pad, w - pad, h };
             DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,
-                           AltTabStyle::HeaderTextRef(light), DT_CENTER);
+                           AltTabStyle::HeaderTextRef(false), AltTabStyle::CardRef(false), DT_CENTER,
+                           /*opaqueBackground=*/false);
         }
 
         g.Flush();

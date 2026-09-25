@@ -85,6 +85,11 @@ jobs:
         -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
     displayName: Remove stale UI-test signing certificates
 
+  - pwsh: |
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      Restore-LightSwitchLocation -StatePath "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
+    displayName: Restore interrupted Light Switch location setup
+
   - ${{ if eq(parameters.useLatestWebView2, true) }}:
     - powershell: |
         $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
@@ -215,9 +220,37 @@ jobs:
       }
       $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
+      $newPlusModules = @(
+        'NewPlus.UITests',
+        'NewPlus.UITests.Next'
+      )
+      # Match exact project stems so unrelated names cannot opt into companion signing.
+      $authenticatedSettingsIpcModules = @(
+        'AdvancedPaste-UITests',
+        'AdvancedPaste.UITests.Next',
+        'ColorPicker.UITests',
+        'CropAndLock.UITests',
+        'HostsEditor.UITests',
+        'Hosts.UITests.Next',
+        'LightSwitch.UITests.Next',
+        'MouseUtils.UITests',
+        'MouseUtils.UITests.Next',
+        'PowerAccent.UITests',
+        'PowerRename.UITests',
+        'PowerRename.UITests.Next',
+        'RegistryPreview.UITests',
+        'Workspaces.UITests.Next',
+        'ZoomIt.UITests'
+      ) + $newPlusModules
+
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresAuthenticatedSettingsIpc = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename|MouseUtils|PowerAccent|ColorPicker|Hosts|RegistryPreview' }).Count -gt 0
+      $requiresNewPlus = $allModules -or @(
+        $selectedModules | Where-Object { $_ -in $newPlusModules }
+      ).Count -gt 0
+      $requiresAuthenticatedSettingsIpc = $allModules -or @(
+        $selectedModules | Where-Object { $_ -in $authenticatedSettingsIpcModules }
+      ).Count -gt 0
       $requiredPackages = @()
       $requiredAuthenticodeFiles = @()
       $certificateMarkerPath = "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
@@ -228,6 +261,19 @@ jobs:
 
       if ($requiresModernContextMenu -and $requiresPowerRename) {
         $requiredPackages += 'PowerRenameContextMenuPackage.msix'
+      }
+
+      if ($requiresModernContextMenu -and $requiresNewPlus) {
+        $requiredPackages += 'NewPlusPackage.msix'
+      }
+
+      if ($allModules -or @($selectedModules | Where-Object { $_ -match 'CropAndLock' }).Count -gt 0) {
+        $requiredPackages += 'CropAndLock.TestApp.msix'
+      }
+
+      if ($allModules -or $selectedModules -contains 'Workspaces.UITests.Next') {
+        $requiredPackages += 'Workspaces.TestApp.msix'
+        $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe'
       }
 
       if ($requiresAuthenticatedSettingsIpc) {
@@ -340,16 +386,35 @@ jobs:
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 
+      $nonElevatedSuites = @('CropAndLock.UITests', 'Workspaces.UITests.Next')
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
       foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
         $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
         $dir = $rc.DirectoryName
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
+        $suiteFailed = $false
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
-          if (Test-Path $exe) {
+          if ($base -eq 'LightSwitch.UITests.Next') {
+            try {
+              Enable-LightSwitchLocation -StatePath $locationStatePath
+            } catch {
+              Write-Host "##vso[task.logissue type=error]Location setup failed for ${base}: $($_.Exception.Message)"
+              $suiteFailed = $true
+              continue
+            }
+          }
+          if ($nonElevatedSuites -contains $base) {
+            if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+              throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
+            }
+            & "$(build.sourcesdirectory)\.pipelines\runUiTestAsUser.ps1" `
+              -TestExecutable $exe -ResultsDirectory $resultsDir
+          } elseif (Test-Path $exe) {
             & $exe --report-trx --results-directory $resultsDir
           } elseif (Test-Path $dll) {
             & dotnet $dll --report-trx --results-directory $resultsDir
@@ -358,11 +423,25 @@ jobs:
           }
           if ($LASTEXITCODE -ne 0) {
             Write-Warning "UI tests reported failures for $base (exit $LASTEXITCODE)"
-            $failed++
+            $suiteFailed = $true
           }
         } finally {
-          Pop-Location
-          Write-Host "##[endgroup]"
+          try {
+            if ($base -eq 'LightSwitch.UITests.Next') {
+              try {
+                Restore-LightSwitchLocation -StatePath $locationStatePath
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Location cleanup failed for ${base}: $($_.Exception.Message)"
+                $suiteFailed = $true
+              }
+            }
+          } finally {
+            if ($suiteFailed) {
+              $failed++
+            }
+            Pop-Location
+            Write-Host "##[endgroup]"
+          }
         }
       }
 
@@ -387,6 +466,12 @@ jobs:
       testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
       mergeTestResults: true
       failTaskOnFailedTests: ${{ parameters.autoSelectUiTests }}
+
+  - pwsh: |
+      . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
+      Restore-LightSwitchLocation -StatePath "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
+    displayName: Restore Light Switch location prerequisites
+    condition: always()
 
   # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
   # self-hosted agent between jobs. Best-effort and always runs.

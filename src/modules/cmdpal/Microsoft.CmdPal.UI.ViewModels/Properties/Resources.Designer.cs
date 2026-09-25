@@ -1184,7 +1184,16 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("home_sections_pinned_title", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to The requested filter is no longer available..
+        /// </summary>
+        public static string list_page_requested_filter_unavailable {
+            get {
+                return ResourceManager.GetString("list_page_requested_filter_unavailable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Pinned.
         /// </summary>
@@ -1200,6 +1209,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string results {
             get {
                 return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Windows display language.
+        /// </summary>
+        public static string Language_Default {
+            get {
+                return ResourceManager.GetString("Language_Default", resourceCulture);
             }
         }
 

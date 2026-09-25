@@ -4,11 +4,13 @@
 #include <common/utils/json.h>
 
 #include <workspaces-common/MonitorUtils.h>
+#include <workspaces-common/GuidUtils.h>
 
 #include <WorkspacesLib/trace.h>
 
 #include <AppLauncher.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/LauncherUiMessage.h>
 
 Launcher::Launcher(const WorkspacesData::WorkspacesProject& project, 
     std::vector<WorkspacesData::WorkspacesProject>& workspaces,
@@ -24,8 +26,14 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
-    m_uiHelper->LaunchUI();
-    m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+    if (m_uiHelper->LaunchUI())
+    {
+        m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
+    }
+    else
+    {
+        Logger::error(L"Workspaces UI is unavailable; unverified elevated applications will not launch");
+    }
 
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
     m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool
@@ -52,6 +60,17 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
 
 Launcher::~Launcher()
 {
+    m_approval.Cancel();
+    {
+        std::lock_guard lock(m_launchThreadMutex);
+        if (m_launchThread.joinable())
+        {
+            m_launchThread.join();
+        }
+    }
+    // Stop callbacks while all launch state and synchronization objects are still alive.
+    m_windowArrangerHelper.reset();
+    m_uiHelper.reset();
     // main thread, will wait until arranger is finished
     Logger::trace(L"Finalizing launch");
 
@@ -97,6 +116,16 @@ Launcher::~Launcher()
 
 void Launcher::Launch() // Launching thread
 {
+    const HRESULT initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(initialized))
+    {
+        Logger::error(L"Unable to initialize the Workspaces launch thread: {:#010x}", static_cast<uint32_t>(initialized));
+        m_approval.Cancel();
+        m_launchingStatus.Cancel();
+        return;
+    }
+    auto uninitialize = wil::scope_exit([] { CoUninitialize(); });
+
     const long maxWaitTimeMs = 3000;
     const long ms = 100;
 
@@ -128,15 +157,40 @@ void Launcher::Launch() // Launching thread
             Logger::info(L"Waiting time for launching next {} instance expired", app.name);
         }
 
-        bool launched{ false };
+        AppLauncher::LaunchResult result;
         {
+            std::mutex heartbeatMutex;
+            std::condition_variable_any heartbeatChanged;
+            std::jthread heartbeat;
+            if (app.isElevated)
+            {
+                heartbeat = std::jthread([&](std::stop_token stop) {
+                    std::unique_lock heartbeatLock(heartbeatMutex);
+                    while (!stop.stop_requested())
+                    {
+                        {
+                            std::lock_guard lock(m_windowArrangerHelperMutex);
+                            m_windowArrangerHelper->KeepLaunchingAlive();
+                        }
+                        heartbeatChanged.wait_for(heartbeatLock, stop, std::chrono::seconds(1), [] { return false; });
+                    }
+                });
+            }
             std::lock_guard lock(m_launchErrorsMutex);
-            launched = AppLauncher::Launch(app, m_launchErrors);
+            result = AppLauncher::Launch(app, m_launchErrors, [&](const auto& path, const auto& arguments, const auto& verification) { return requestApproval(app.name, path, arguments, verification); }, [&] { return m_approval.IsCanceled(); });
         }
 
-        if (launched)
+        if (result == AppLauncher::LaunchResult::Launched)
         {
             m_launchingStatus.Update(app, LaunchingState::Launched);
+        }
+        else if (result == AppLauncher::LaunchResult::Canceled)
+        {
+            m_launchingStatus.Update(app, LaunchingState::Canceled);
+        }
+        else if (result == AppLauncher::LaunchResult::Skipped)
+        {
+            m_launchingStatus.Update(app, LaunchingState::Skipped);
         }
         else
         {
@@ -165,7 +219,11 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
 {
     if (msg == L"ready")
     {
-        std::thread([&]() { Launch(); }).detach();
+        std::lock_guard lock(m_launchThreadMutex);
+        if (!m_approval.IsCanceled() && !m_launchStarted.exchange(true))
+        {
+            m_launchThread = std::thread([&]() { Launch(); });
+        }
     }
     else
     {
@@ -195,8 +253,66 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
 
 void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
 {
-    if (msg == L"cancel")
+    const auto message = LauncherUiMessage::Parse(msg);
+    if (!message)
     {
+        Logger::error(L"Invalid Workspaces UI message");
+        m_approval.Fail(LaunchDecision::InvalidResponse);
+        return;
+    }
+    if (message->type == LauncherUiMessage::Type::Cancel)
+    {
+        m_approval.Cancel();
         m_launchingStatus.Cancel();
+        return;
+    }
+    const bool accepted = message->type == LauncherUiMessage::Type::WarningShown ?
+                              m_approval.Acknowledge(message->requestId) :
+                              m_approval.Complete(message->requestId, message->decision);
+    if (!accepted)
+    {
+        Logger::warn(L"Ignoring a stale, early, or duplicate elevation confirmation message");
+    }
+}
+
+LaunchDecision Launcher::requestApproval(const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result)
+{
+    if (m_approval.IsCanceled())
+    {
+        return LaunchDecision::Canceled;
+    }
+    if (!m_uiHelper->IsRunning())
+    {
+        Logger::error(L"Cannot request elevation confirmation: Workspaces UI is unavailable");
+        return LaunchDecision::UiUnavailable;
+    }
+    const std::wstring requestId = CreateGuidString();
+    if (!m_approval.Begin(requestId))
+    {
+        Logger::error(L"Unable to create an elevation confirmation request");
+        return m_approval.IsCanceled() ? LaunchDecision::Canceled : LaunchDecision::InvalidResponse;
+    }
+    auto finish = wil::scope_exit([&] {
+        m_approval.End();
+        std::lock_guard lock(m_uiHelperMutex);
+        m_uiHelper->DismissApproval(requestId);
+    });
+    {
+        std::lock_guard lock(m_uiHelperMutex);
+        if (!m_uiHelper->RequestApproval(requestId, name, path, arguments, result))
+        {
+            m_approval.Fail(LaunchDecision::UiUnavailable);
+        }
+    }
+    for (;;)
+    {
+        if (const auto decision = m_approval.WaitFor(std::chrono::milliseconds(250)); decision.has_value())
+        {
+            return decision.value();
+        }
+        if (!m_uiHelper->IsRunning())
+        {
+            m_approval.Fail(LaunchDecision::UiUnavailable);
+        }
     }
 }

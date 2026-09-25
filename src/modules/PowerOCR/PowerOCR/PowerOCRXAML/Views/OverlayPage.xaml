@@ -1,0 +1,227 @@
+﻿<UserControl
+    x:Class="PowerOCR.Views.OverlayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:PowerOCR.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:globalization="using:Windows.Globalization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    AutomationProperties.AutomationId="TextExtractorWindow"
+    KeyboardAcceleratorPlacementMode="Hidden"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <Style x:Key="SubtleToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+    </UserControl.Resources>
+
+    <UserControl.KeyboardAccelerators>
+        <KeyboardAccelerator Key="Escape" Invoked="EscapeKeyboardAccelerator_Invoked" />
+    </UserControl.KeyboardAccelerators>
+
+    <Grid
+        x:Name="RootGrid"
+        Background="Transparent"
+        ContextRequested="RootGrid_ContextRequested"
+        KeyDown="RootGrid_KeyDown">
+
+        <!--  Full-window screenshot  -->
+        <Image
+            x:Name="BackgroundImage"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Stretch="Fill" />
+
+        <!--  Four mask rectangles around the selection  -->
+        <Rectangle
+            x:Name="TopMask"
+            Height="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.4" />
+        <Rectangle
+            x:Name="BottomMask"
+            Height="0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.4" />
+        <Rectangle
+            x:Name="LeftMask"
+            Width="0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.4" />
+        <Rectangle
+            x:Name="RightMask"
+            Width="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.4" />
+
+        <!--  Selection border  -->
+        <Border
+            x:Name="SelectionBorder"
+            Width="0"
+            Height="0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+            BorderThickness="2"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+
+        <!--  Canvas for pointer events  -->
+        <controls:SelectionCanvas
+            x:Name="RegionClickCanvas"
+            Background="Transparent"
+            PointerCanceled="Canvas_PointerCanceled"
+            PointerCaptureLost="Canvas_PointerCaptureLost"
+            PointerMoved="Canvas_PointerMoved"
+            PointerPressed="Canvas_PointerPressed"
+            PointerReleased="Canvas_PointerReleased">
+            <controls:SelectionCanvas.ContextFlyout>
+                <MenuFlyout x:Name="ContextMenuFlyout" Opening="ContextMenuFlyout_Opening">
+                    <MenuFlyoutSeparator x:Name="LanguageSeparator" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="SingleLineMenuItem"
+                        x:Uid="SingleLineMenuItem"
+                        AutomationProperties.AutomationId="SingleLineMenuItem"
+                        IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="TableMenuItem"
+                        x:Uid="TableMenuItem"
+                        AutomationProperties.AutomationId="TableMenuItem"
+                        IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem
+                        x:Name="SettingsMenuItem"
+                        x:Uid="SettingsMenuItem"
+                        AutomationProperties.AutomationId="SettingsMenuItem"
+                        Click="SettingsMenuItem_Click" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem
+                        x:Name="CancelMenuItem"
+                        x:Uid="CancelMenuItem"
+                        AutomationProperties.AutomationId="CancelMenuItem"
+                        Click="CancelMenuItem_Click" />
+                </MenuFlyout>
+            </controls:SelectionCanvas.ContextFlyout>
+        </controls:SelectionCanvas>
+
+        <!--  Processing indicator  -->
+        <ProgressRing
+            x:Name="ProcessingRing"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}"
+            IsHitTestVisible="False" />
+
+        <!--  Toolbar and error message share measured layout to avoid overlapping.  -->
+        <Grid
+            Margin="12"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border
+                x:Name="Toolbar"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Border.Shadow>
+                    <ThemeShadow />
+                </Border.Shadow>
+                <Grid>
+                    <SystemBackdropElement CornerRadius="8">
+                        <SystemBackdropElement.SystemBackdrop>
+                            <DesktopAcrylicBackdrop />
+                        </SystemBackdropElement.SystemBackdrop>
+                    </SystemBackdropElement>
+                    <StackPanel
+                        Margin="4,8"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                        <ComboBox
+                            x:Name="LanguagesComboBox"
+                            x:Uid="LanguagesComboBox"
+                            MinWidth="120"
+                            AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
+                            ItemsSource="{x:Bind ViewModel.Languages}"
+                            SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="globalization:Language">
+                                    <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <ToggleButton
+                            x:Name="SingleLineToggleButton"
+                            x:Uid="SingleLineToggleButton"
+                            AutomationProperties.AutomationId="SingleLineToggleButton"
+                            IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
+                            Style="{StaticResource SubtleToggleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xF16E;" />
+                        </ToggleButton>
+
+                        <ToggleButton
+                            x:Name="TableToggleButton"
+                            x:Uid="TableToggleButton"
+                            AutomationProperties.AutomationId="TableToggleButton"
+                            IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
+                            Style="{StaticResource SubtleToggleButtonStyle}">
+                            <FontIcon FontSize="16" Glyph="&#xE80A;" />
+                        </ToggleButton>
+
+                        <Button
+                            x:Name="SettingsButton"
+                            x:Uid="SettingsButton"
+                            AutomationProperties.AutomationId="SettingsButton"
+                            Click="SettingsButton_Click">
+                            <FontIcon FontSize="16" Glyph="&#xE713;" />
+                        </Button>
+
+                        <Button
+                            x:Name="CancelButton"
+                            x:Uid="CancelButton"
+                            AutomationProperties.AutomationId="CancelButton"
+                            Click="CancelButton_Click">
+                            <FontIcon FontSize="16" Glyph="&#xE711;" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <InfoBar
+                x:Name="ErrorInfoBar"
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                AutomationProperties.AutomationId="ErrorInfoBar"
+                IsClosable="True"
+                IsOpen="{x:Bind ViewModel.HasError, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                Severity="Error" />
+        </Grid>
+    </Grid>
+</UserControl>

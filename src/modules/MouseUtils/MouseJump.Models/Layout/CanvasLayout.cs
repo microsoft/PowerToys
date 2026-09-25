@@ -38,7 +38,7 @@ public sealed class CanvasLayout
         public List<DeviceLayout.Builder>? DeviceLayouts
         {
             get;
-            set;
+            init;
         }
 
         public CanvasLayout Build()

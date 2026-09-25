@@ -15,11 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             WriteIndented = true,
         };
 
-        // Suppressing this warning because removing the setter breaks
-        // deserialization with System.Text.Json. This affects the UI display.
-        // See: https://github.com/dotnet/runtime/issues/30258
         [JsonPropertyName("value")]
-        public ObservableCollection<ImageSize> Value { get; set; }
+        public ObservableCollection<ImageSize> Value { get; init; }
 
         public ImageResizerSizes()
         {

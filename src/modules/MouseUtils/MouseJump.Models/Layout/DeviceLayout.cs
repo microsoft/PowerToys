@@ -46,7 +46,7 @@ public sealed class DeviceLayout
         public List<ScreenLayout.Builder>? ScreenLayouts
         {
             get;
-            set;
+            init;
         }
 
         public DeviceLayout Build()

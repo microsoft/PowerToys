@@ -7,4 +7,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 public record ShowToastMessage(
     string Message,
     IconInfoViewModel? Icon = null,
-    CommandViewModel? Command = null);
+    CommandViewModel? Command = null)
+{
+    public TimeSpan? Duration { get; init; }
+
+    public TimeSpan VisibleDuration => Duration ?? TimeSpan.FromMilliseconds(Command is not null ? 5000 : 2500);
+}

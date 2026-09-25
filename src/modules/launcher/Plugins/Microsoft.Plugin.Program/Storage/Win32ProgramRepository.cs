@@ -77,7 +77,10 @@ namespace Microsoft.Plugin.Program.Storage
                 _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
                 // filtering the app types that we want to monitor
-                _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
+                foreach (string extension in extensionsToWatch)
+                {
+                    _fileSystemWatcherHelpers[index].Filters.Add(extension);
+                }
 
                 // Registering the event handlers
                 _fileSystemWatcherHelpers[index].Created += OnAppCreated;
