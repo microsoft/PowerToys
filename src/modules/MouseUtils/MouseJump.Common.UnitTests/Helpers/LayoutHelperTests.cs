@@ -112,13 +112,14 @@ public static class LayoutHelperTests
     {
         public sealed class TestCase
         {
-            public TestCase(string testName, PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation, FormViewModel expectedResult)
+            public TestCase(string testName, PreviewStyle previewStyle, DisplayInfo displayInfo, ScreenInfo activatedScreen, PointInfo activatedLocation, RectangleInfo expectedFormBounds, FormViewModel expectedResult)
             {
                 this.TestName = testName;
                 this.PreviewStyle = previewStyle;
                 this.DisplayInfo = displayInfo;
                 this.ActivatedLocation = activatedLocation;
                 this.ActivatedScreen = activatedScreen;
+                this.ExpectedFormBounds = expectedFormBounds;
                 this.ExpectedResult = expectedResult;
             }
 
@@ -131,6 +132,8 @@ public static class LayoutHelperTests
             public ScreenInfo ActivatedScreen { get; }
 
             public PointInfo ActivatedLocation { get; }
+
+            public RectangleInfo ExpectedFormBounds { get; }
 
             public FormViewModel ExpectedResult { get; }
         }
@@ -184,8 +187,8 @@ public static class LayoutHelperTests
                 });
             var activatedScreen = displayInfo.Devices[0].Screens[0];
             var activatedLocation = activatedScreen.DisplayArea.Midpoint;
+            var expectedFormBounds = new RectangleInfo(250, 186, 524, 396);
             var expectedResult = new FormViewModel(
-                formBounds: new(250, 186, 524, 396),
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 524, 396),
@@ -211,7 +214,7 @@ public static class LayoutHelperTests
                         ),
                     }
                 ));
-            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedResult) };
+            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedFormBounds, expectedResult) };
 
             // happy path - single device with screen and 50% scaling,
             // *no* preview borders but *has* screenshot borders
@@ -259,8 +262,8 @@ public static class LayoutHelperTests
                 });
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
+            expectedFormBounds = new RectangleInfo(256, 192, 512, 384);
             expectedResult = new FormViewModel(
-                formBounds: new(256, 192, 512, 384),
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 512, 384),
@@ -286,7 +289,7 @@ public static class LayoutHelperTests
                         ),
                     }
                 ));
-            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedResult) };
+            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedFormBounds, expectedResult) };
 
             // rounding error check - single screen with 33% scaling,
             // no borders, check to make sure form scales to exactly
@@ -330,8 +333,8 @@ public static class LayoutHelperTests
                 });
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
+            expectedFormBounds = new RectangleInfo(300, 66.5m, 300, 67);
             expectedResult = new FormViewModel(
-                formBounds: new(300, 66.5m, 300, 67),
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 300, 67),
@@ -357,7 +360,7 @@ public static class LayoutHelperTests
                         ),
                     }
                 ));
-            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedResult) };
+            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedFormBounds, expectedResult) };
 
             // primary monitor not topmost / leftmost - if there are screens
             // that are further left or higher up than the primary monitor
@@ -426,8 +429,8 @@ public static class LayoutHelperTests
                 });
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
+            expectedFormBounds = new RectangleInfo(-1318, -42, 716, 204);
             expectedResult = new FormViewModel(
-                formBounds: new(-1318, -42, 716, 204),
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 716, 204),
@@ -459,7 +462,7 @@ public static class LayoutHelperTests
                         ),
                     }
                 ));
-            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedResult) };
+            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedFormBounds, expectedResult) };
 
             // two devices side-by-side with a single screen each
             //
@@ -508,8 +511,8 @@ public static class LayoutHelperTests
                 });
             activatedScreen = displayInfo.Devices[0].Screens[0];
             activatedLocation = activatedScreen.DisplayArea.Midpoint;
+            expectedFormBounds = new RectangleInfo(1760, 607.5m, 1600, 225);
             expectedResult = new FormViewModel(
-                formBounds: new(1760, 607.5m, 1600, 225),
                 canvasLayout: new(
                     canvasBounds: BoxBounds.CreateFromOuterBounds(
                         outerBounds: new(0, 0, 1600, 225),
@@ -551,7 +554,7 @@ public static class LayoutHelperTests
                         ),
                     }
                 ));
-            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedResult) };
+            yield return new object[] { new TestCase(testName, previewStyle, displayInfo, activatedScreen, activatedLocation, expectedFormBounds, expectedResult) };
 
             // TODO: add a test to make sure the form is nudged into the bounds
             // of the screen if it's activated near an edge or corner
@@ -568,7 +571,8 @@ public static class LayoutHelperTests
             // (int)1280.000000000000 -> 1280
             // so we'll compare the raw values, *and* convert to an int-based
             // Rectangle to compare rounded values
-            var actual = LayoutHelper.GetFormLayout(data.PreviewStyle, data.DisplayInfo, data.ActivatedScreen, data.ActivatedLocation);
+            var actual = LayoutHelper.GetFormLayout(data.PreviewStyle, data.DisplayInfo, data.ActivatedScreen.DisplayArea.Size);
+            var actualFormBounds = LayoutHelper.PositionOnScreen(actual.CanvasLayout.CanvasBounds.OuterBounds, data.ActivatedScreen, data.ActivatedLocation);
             var expected = data.ExpectedResult;
             var options = new JsonSerializerOptions
             {
@@ -577,6 +581,10 @@ public static class LayoutHelperTests
             var actualJson = JsonSerializer.Serialize(actual, options);
             var expectedJson = JsonSerializer.Serialize(expected, options);
             Assert.AreEqual(expectedJson, actualJson);
+
+            var actualFormBoundsJson = JsonSerializer.Serialize(actualFormBounds, options);
+            var expectedFormBoundsJson = JsonSerializer.Serialize(data.ExpectedFormBounds, options);
+            Assert.AreEqual(expectedFormBoundsJson, actualFormBoundsJson);
         }
 
         /// <summary>
@@ -656,7 +664,8 @@ public static class LayoutHelperTests
             var timer = Stopwatch.StartNew();
             for (var i = 0; i < 10_000; i++)
             {
-                var formLayout = LayoutHelper.GetFormLayout(previewStyle, displayInfo, activatedScreen, activatedLocation);
+                var formLayout = LayoutHelper.GetFormLayout(previewStyle, displayInfo, activatedScreen.DisplayArea.Size);
+                _ = LayoutHelper.PositionOnScreen(formLayout.CanvasLayout.CanvasBounds.OuterBounds, activatedScreen, activatedLocation);
             }
 
             timer.Stop();
