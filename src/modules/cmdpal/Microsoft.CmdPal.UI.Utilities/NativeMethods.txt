@@ -27,3 +27,7 @@ IsChild
 WINEVENT_SKIPOWNPROCESS
 MonitorFromWindow
 GetMonitorInfo
+EnumWindows
+IsWindowVisible
+SetWindowPos
+HWND_TOPMOST
