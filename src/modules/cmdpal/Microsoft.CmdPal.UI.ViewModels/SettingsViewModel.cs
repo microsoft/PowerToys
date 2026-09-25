@@ -227,6 +227,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool ShowQuickAccessShelf
+    {
+        get => _settingsService.Settings.ShowQuickAccessShelf;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
+        }
+    }
+
     public double CompactCenterHeightPercentage
     {
         get => _settingsService.Settings.CompactCenterHeightPercentage;
