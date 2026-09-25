@@ -20,18 +20,13 @@ WindowArrangerHelper::~WindowArrangerHelper()
 {
     Logger::info(L"Stopping WorkspacesWindowArranger with pid {}", m_processId);
     
-    HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, false, m_processId);
-    if (process)
+    if (m_process && WaitForSingleObject(m_process.get(), 0) == WAIT_TIMEOUT)
     {
-        bool res = TerminateProcess(process, 0);
+        bool res = TerminateProcess(m_process.get(), 0);
         if (!res)
         {
             Logger::error(L"Unable to terminate PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
         }
-    }
-    else
-    {
-        Logger::error(L"Unable to find PowerToys.WorkspacesWindowArranger process: {}", get_last_error_or_default(GetLastError()));
     }
 }
 
@@ -48,29 +43,36 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
     {
         auto value = res.value();
         m_processId = GetProcessId(value.hProcess);
+        m_process.reset(value.hProcess);
         Logger::info(L"WorkspacesWindowArranger started with pid {}", m_processId);
         std::atomic_bool timeoutExpired = false;
         m_threadExecutor.submit(OnThreadExecutor::task_t{
             [&] {
-                HANDLE process = value.hProcess;
                 while (keepWaitingCallback())
                 {
-                    WaitForSingleObject(process, 100);
+                    if (WaitForSingleObject(m_process.get(), 100) != WAIT_TIMEOUT)
+                    {
+                        break;
+                    }
                 }
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");
-                CloseHandle(process);
             }}).wait();
 
         timeoutExpired = true;
     }
     else
     {
-        Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error());
+        Logger::error(L"Failed to launch PowerToys.WorkspacesWindowArranger: {}", res.error().message);
     }
 }
 
 void WindowArrangerHelper::UpdateLaunchStatus(const WorkspacesData::LaunchingAppState& appState) const
 {
     m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ appState.application, nullptr, appState.state }).ToString().c_str());
+}
+
+void WindowArrangerHelper::KeepLaunchingAlive() const
+{
+    m_ipcHelper.send(L"launching-heartbeat");
 }

@@ -11,6 +11,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.ColorPicker.UITests</RootNamespace>
     <AssemblyName>ColorPicker.UITests</AssemblyName>
+    <!-- MouseHelper uses physical winappcli bounds, so the test host must share that coordinate space. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!--
       Microsoft.Testing.Platform: same modern runner Directory.Build.props enables for the rest

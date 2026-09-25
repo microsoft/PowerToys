@@ -29,20 +29,15 @@ namespace Microsoft.CmdPal.UI;
 /// surface supplies the acrylic, border, corners, shadow, and the fade/slide
 /// animation, driven automatically off the window's show/hide events. This class
 /// adds only the bits bespoke to CmdPal toasts: a bound message <c>TextBlock</c>,
-/// a 2.5 s auto-dismiss timer, settings-driven positioning (bottom center by
+/// a per-toast auto-dismiss timer (2.5 s by default), settings-driven positioning (bottom center by
 /// default), and <see cref="QuitMessage"/> handling.
 /// </summary>
 public sealed partial class ToastWindow : TransparentWindow,
     IRecipient<QuitMessage>
 {
-    private static readonly TimeSpan VisibleDuration = TimeSpan.FromMilliseconds(2500);
-
-    // Toasts carrying an action button stay up longer so there's time to click it.
-    private static readonly TimeSpan VisibleDurationWithCommand = TimeSpan.FromMilliseconds(5000);
-
     private readonly DispatcherQueueTimer _autoHideTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
-    private TimeSpan _visibleDuration = VisibleDuration;
+    private TimeSpan _visibleDuration;
 
     public ToastViewModel ViewModel { get; } = new();
 
@@ -71,7 +66,7 @@ public sealed partial class ToastWindow : TransparentWindow,
         ViewModel.Icon = toast.Icon;
         ViewModel.Command = toast.Command;
 
-        _visibleDuration = toast.Command is not null ? VisibleDurationWithCommand : VisibleDuration;
+        _visibleDuration = toast.VisibleDuration;
 
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,

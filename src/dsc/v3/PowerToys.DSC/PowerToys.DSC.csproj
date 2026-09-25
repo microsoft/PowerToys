@@ -48,5 +48,8 @@
     
     <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' == 'true'" />
     <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' != 'true'" />
+
+    <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; manifest --resource profile --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' == 'true'" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource profile --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' != 'true'" />
   </Target>
 </Project>

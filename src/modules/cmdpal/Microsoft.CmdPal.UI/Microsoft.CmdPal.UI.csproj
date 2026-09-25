@@ -146,10 +146,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Actions\Microsoft.CmdPal.Ext.Actions.csproj" />
@@ -336,7 +332,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <!-- </AdaptiveCardsWorkaround> -->
 
   <!-- Build information  -->
   <PropertyGroup Condition=" '$(PublishAot)' == 'true' ">

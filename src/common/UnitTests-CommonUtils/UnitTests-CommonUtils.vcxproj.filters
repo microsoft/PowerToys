@@ -60,6 +60,9 @@
     <ClCompile Include="Threading.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
+    <ClCompile Include="ContextMenuLifecycle.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
     <ClCompile Include="AppMutex.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>

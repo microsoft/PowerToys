@@ -247,6 +247,9 @@
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
     <value>Extra units of measurement</value>
   </data>
+  <data name="MeasureTool_UnitsOfMeasure.Description" xml:space="preserve">
+    <value>Display-independent pixels adjust for Windows display scaling</value>
+  </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
     <value>Show only pixels</value>
   </data>
@@ -258,6 +261,9 @@
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
     <value>Millimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_DIP.Content" xml:space="preserve">
+    <value>Display-independent pixels (DIP)</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -2775,6 +2781,42 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Enable_AutoHideCursor.Header" xml:space="preserve">
+    <value>Auto Hide Cursor</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor.Header" xml:space="preserve">
+    <value>Auto Hide Cursor</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor.Description" xml:space="preserve">
+    <value>Hide the pointer globally after keyboard input, pointer inactivity, or both</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_Behavior.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_Behavior.Description" xml:space="preserve">
+    <value>Choose one or both ways to hide the pointer</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnTyping.Header" xml:space="preserve">
+    <value>Hide after keyboard input</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnTyping.Description" xml:space="preserve">
+    <value>Modifier keys and software-generated input are ignored</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnIdle.Header" xml:space="preserve">
+    <value>Hide after pointer inactivity</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_HideOnIdle.Description" xml:space="preserve">
+    <value>The pointer reappears after intentional movement, a mouse button, or the wheel</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelay.Header" xml:space="preserve">
+    <value>Idle delay (seconds)</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelay.Description" xml:space="preserve">
+    <value>Choose a delay from 1 to 60 seconds</value>
+  </data>
+  <data name="MouseUtils_AutoHideCursor_IdleDelayInput.AutomationProperties.Name" xml:space="preserve">
+    <value>Idle delay in seconds</value>
+  </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>CursorWrap</value>
   </data>
@@ -4955,7 +4997,7 @@ Press **Shift + a color key** for a translucent highlighter, **X** for blur, or 
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
 **Screen**
-Press **K** or **W** for a black or white sketch pad.
+Press **Ctrl + K** or **Ctrl + W** for a black or white sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
@@ -5947,6 +5989,27 @@ The break timer font matches the text font.</value>
     <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
+  <data name="PowerDisplay_ProfileList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PowerDisplay_ProfileList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.HelpText" xml:space="preserve">
+    <value>Drag profiles to change their order, or use Move up and Move down in the More menu.</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragHandle.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Drag to reorder</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragDisabledByElevation.Title" xml:space="preserve">
+    <value>Drag to reorder is unavailable as administrator</value>
+  </data>
+  <data name="PowerDisplay_Profile_DragDisabledByElevation.Message" xml:space="preserve">
+    <value>Use Move up or Move down in each profile's More menu to change the order.</value>
+  </data>
+  <data name="PowerDisplay_Profile_ReorderError.Title" xml:space="preserve">
+    <value>Couldn't update the profile list</value>
+  </data>
+  <data name="PowerDisplay_Profile_ReorderError.Message" xml:space="preserve">
+    <value>Try again.</value>
+  </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
   </data>
@@ -6097,6 +6160,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
     <value>Select what monitors and settings to include for this profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_PreservedSettings.Message" xml:space="preserve">
+    <value>Saved settings for unavailable monitors or features are kept. Uncheck a setting to remove it. Applying the profile still respects monitor capabilities.</value>
   </data>
   <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
     <value>Brightness</value>
@@ -6506,6 +6572,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Description" xml:space="preserve">
     <value>Fast access to quick actions and module toggles</value>
+    <comment>Simplified Chinese: translate the full string as "快速操作和模块切换", not "快速访问快速作和模块切换".</comment>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -6638,5 +6705,15 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Header" xml:space="preserve">
+    <value>Excluded apps (for modifier)</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier.Description" xml:space="preserve">
+    <value>Prevents Grab And Move from processing the modifier key while an excluded application is in the foreground - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeAppsForModifier_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: game.exe</value>
+    <comment>{Locked="game.exe"}</comment>
   </data>
 </root>

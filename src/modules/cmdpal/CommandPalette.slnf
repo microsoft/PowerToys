@@ -35,6 +35,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.TimeDate.UnitTests\\Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.UnitTestsBase\\Microsoft.CmdPal.Ext.UnitTestBase.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WinGet.UnitTests\\Microsoft.CmdPal.Ext.WinGet.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.UnitTests\\Microsoft.CmdPal.UI.UnitTests.csproj",

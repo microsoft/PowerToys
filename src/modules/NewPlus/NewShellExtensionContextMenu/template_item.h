@@ -8,6 +8,11 @@
 
 using namespace Microsoft::WRL;
 
+namespace context_menu_lifecycle
+{
+    class activity_guard;
+}
+
 namespace newplus
 {
     class template_item
@@ -27,7 +32,7 @@ namespace newplus
 
         void refresh_target(const std::filesystem::path target_final_fullpath) const;
 
-        void enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke) const;
+        void enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke, const context_menu_lifecycle::activity_guard& activity) const;
 
         std::filesystem::path path;
 

@@ -9,8 +9,8 @@ using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
@@ -25,8 +25,14 @@ namespace EnvironmentVariables
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Environment Variables";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
 
             var loader = ResourceLoaderInstance.ResourceLoader;
@@ -40,7 +46,7 @@ namespace EnvironmentVariables
             // window title populated.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Environment Variables";
+                title = fallbackTitle;
             }
 
             Title = title;
@@ -78,7 +84,7 @@ namespace EnvironmentVariables
             {
                 case NativeMethods.WindowMessage.WM_SETTINGSCHANGED:
                     {
-                        var lParamStr = Marshal.PtrToStringUTF8(lParam);
+                        var lParamStr = Marshal.PtrToStringUni(lParam);
                         if (lParamStr == "Environment")
                         {
                             // Do not react on self - not nice, re-check this

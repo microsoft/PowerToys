@@ -174,4 +174,10 @@ public partial class CommandItem : BaseObservable, ICommandItem
     {
         return _extendedAttributes;
     }
+
+    internal void NotifyDockLabelWidthChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelWidthPropertyName);
+
+    internal void NotifyDockLabelTabularDigitsChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelTabularDigitsPropertyName);
+
+    internal void NotifyDockLabelTrailingAlignmentChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelTrailingAlignmentPropertyName);
 }

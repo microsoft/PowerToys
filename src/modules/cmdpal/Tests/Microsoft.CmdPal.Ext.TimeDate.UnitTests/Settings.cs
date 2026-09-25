@@ -9,43 +9,29 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
 public class Settings : ISettingsInterface
 {
-    private readonly int firstWeekOfYear;
-    private readonly int firstDayOfWeek;
-    private readonly bool enableFallbackItems;
-    private readonly bool timeWithSecond;
-    private readonly bool dockClockWithSecond;
-    private readonly bool dateWithWeekday;
-    private readonly List<string> customFormats;
-
     public Settings(
         int firstWeekOfYear = -1,
         int firstDayOfWeek = -1,
-        bool enableFallbackItems = true,
         bool timeWithSecond = false,
-        bool dockClockWithSecond = false,
         bool dateWithWeekday = false,
         List<string>? customFormats = null)
     {
-        this.firstWeekOfYear = firstWeekOfYear;
-        this.firstDayOfWeek = firstDayOfWeek;
-        this.enableFallbackItems = enableFallbackItems;
-        this.timeWithSecond = timeWithSecond;
-        this.dockClockWithSecond = dockClockWithSecond;
-        this.dateWithWeekday = dateWithWeekday;
-        this.customFormats = customFormats ?? new List<string>();
+        FirstWeekOfYear = firstWeekOfYear;
+        FirstDayOfWeek = firstDayOfWeek;
+        TimeWithSecond = timeWithSecond;
+        DateWithWeekday = dateWithWeekday;
+        CustomFormats = customFormats ?? new List<string>();
     }
 
-    public int FirstWeekOfYear => firstWeekOfYear;
+    // Settable so tests can change a value after construction and exercise the
+    // settings-changed update paths.
+    public int FirstWeekOfYear { get; set; }
 
-    public int FirstDayOfWeek => firstDayOfWeek;
+    public int FirstDayOfWeek { get; set; }
 
-    public bool EnableFallbackItems => enableFallbackItems;
+    public bool TimeWithSecond { get; set; }
 
-    public bool TimeWithSecond => timeWithSecond;
+    public bool DateWithWeekday { get; set; }
 
-    public bool DockClockWithSecond => dockClockWithSecond;
-
-    public bool DateWithWeekday => dateWithWeekday;
-
-    public List<string> CustomFormats => customFormats;
+    public List<string> CustomFormats { get; set; }
 }

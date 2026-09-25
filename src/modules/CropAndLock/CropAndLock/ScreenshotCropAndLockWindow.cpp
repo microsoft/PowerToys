@@ -105,11 +105,7 @@ void ScreenshotCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
 
     // Get full window bounds
     RECT windowRect{};
-    winrt::check_hresult(DwmGetWindowAttribute(
-        windowToCrop,
-        DWMWA_EXTENDED_FRAME_BOUNDS,
-        &windowRect,
-        sizeof(windowRect)));
+    winrt::check_bool(::GetWindowRect(windowToCrop, &windowRect));
 
     RECT clientRect = ClientAreaInScreenSpace(windowToCrop);
     auto offsetX = clientRect.left - windowRect.left;

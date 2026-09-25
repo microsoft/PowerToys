@@ -1,5 +1,7 @@
 # What is it
 
+> **Note:** This document describes the legacy PowerShell-based `PowerToysConfigure` DSC resource. PowerToys also ships a DSC v3 implementation, `PowerToys.DSC.exe` (`src\dsc\v3\PowerToys.DSC`), which exposes a `settings` resource for whole-module settings and a `profile` resource for the Keyboard Manager remapping profile. See `doc\dsc\overview.md` and `doc\dsc\profile-resource.md`.
+
 We would like to enable our users to use [`winget configure`](https://learn.microsoft.com/en-us/windows/package-manager/winget/configure) command to install PowerToys and configure its settings with a [WinGet configuration file](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create). For example:
 
 ```yaml

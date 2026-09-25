@@ -123,9 +123,9 @@ void ThumbnailCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     DisconnectTarget();
     m_currentTarget = windowToCrop;
 
-    // Adjust the crop rect to be in the window space as reported by the DWM
+    // Adjust the crop rect to be in the window space as reported by the GetWindowRect
     RECT windowRect = {};
-    winrt::check_hresult(DwmGetWindowAttribute(m_currentTarget, DWMWA_EXTENDED_FRAME_BOUNDS, reinterpret_cast<void*>(&windowRect), sizeof(windowRect)));
+    winrt::check_bool(::GetWindowRect(m_currentTarget, &windowRect));
     auto clientRect = ClientAreaInScreenSpace(m_currentTarget);
     auto diffX = clientRect.left - windowRect.left;
     auto diffY = clientRect.top - windowRect.top;

@@ -10,11 +10,12 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- type: input
+- id: version
+  type: input
   attributes:
-    label: Microsoft PowerToys version
-    placeholder: 0.70.0
-    description: Hover over the system tray icon or look at Settings
+    label: Microsoft PowerToys version and release channel
+    placeholder: 0.100.2 - Stable or 0.101.2211.0 - Preview (Insider)
+    description: Find the version and update channel in PowerToys Settings > General.
   validations:
     required: true
 - type: dropdown
