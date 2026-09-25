@@ -48,8 +48,9 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
+        // SendInput marks low-level keyboard events as injected.
         lParam.vkCode = input.ki.wVk;
+        lParam.flags = LLKHF_INJECTED;
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
