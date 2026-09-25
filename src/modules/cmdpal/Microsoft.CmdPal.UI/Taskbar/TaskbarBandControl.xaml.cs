@@ -702,7 +702,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             return;
         }
 
-        DispatcherQueue.TryEnqueue(() => _viewModel.RemoveBandById(message.BandId));
+        DispatcherQueue.TryEnqueue(() => _viewModel.RemoveBandById(message.BandId, taskbarOnly: true));
     }
 
     private void RootPanel_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
@@ -746,7 +746,7 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     private void AddBandButton_Click(object sender, RoutedEventArgs e)
     {
-        var availableBands = _viewModel.GetAvailableBandsToAdd().ToList();
+        var availableBands = _viewModel.GetAvailableBandsToAdd(taskbarOnly: true).ToList();
         AddBandListView.ItemsSource = availableBands;
 
         var hasAvailableBands = availableBands.Count > 0;

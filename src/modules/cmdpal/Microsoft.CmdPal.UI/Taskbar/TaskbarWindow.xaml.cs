@@ -190,17 +190,27 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void TaskbarChangeTick(DispatcherQueueTimer sender, object args)
     {
-        if (!_disposed && _taskbarWatcher?.ConsumeChanges() == true)
+        if (_disposed)
         {
-            try
+            return;
+        }
+
+        try
+        {
+            // Explorer can raise the taskbar without a layout WinEvent, including
+            // when it is already foreground. Keep this independent of clipping
+            // and edit mode, which must not suspend z-order maintenance.
+            TaskbarZOrder.EnsureAboveTaskbar((nint)_hwnd, (nint)PInvoke.FindWindow("Shell_TrayWnd", null));
+
+            if (_taskbarWatcher?.ConsumeChanges() == true)
             {
                 OnTaskbarChanged();
             }
-            catch (Exception ex)
-            {
-                sender.Stop();
-                Logger.LogError("Failed to process taskbar changes.", ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            sender.Stop();
+            Logger.LogError("Failed to process taskbar changes.", ex);
         }
     }
 
@@ -254,18 +264,6 @@ public sealed partial class TaskbarWindow : WindowEx,
                 MoveToTaskbar();
                 return;
             }
-
-            // Re-assert topmost so we stay above the taskbar even after
-            // the user clicks on it (both windows are HWND_TOPMOST;
-            // whichever is activated last goes on top within that band).
-            PInvoke.SetWindowPos(
-                _hwnd,
-                HWND.HWND_TOPMOST,
-                0,
-                0,
-                0,
-                0,
-                SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
         }
 
         _updateLayoutDebouncer.Debounce(
@@ -446,7 +444,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         var reBarWindow = PInvoke.FindWindowEx(taskbarWindow, HWND.Null, "ReBarWindow32", null);
 
         // No parent/child/owner relationship — fully independent window.
-        // IsAlwaysOnTop (WS_EX_TOPMOST) keeps us above the taskbar.
+        // TaskbarChangeTick maintains our position above the topmost taskbar.
         // Auto-hide sync via TaskbarWatcher + EVENT_OBJECT_LOCATIONCHANGE.
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
