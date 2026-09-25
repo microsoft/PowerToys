@@ -45,6 +45,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener = new();
 
     private readonly NavigationViewItem? _internalNavItem;
+    private IDisposable? _currentPage;
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
@@ -139,7 +140,10 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    internal void Navigate(string page, string? extensionGalleryId = null)
+    internal void Navigate(
+        string page,
+        string? extensionGalleryId = null,
+        string? settingsPageElementTag = null)
     {
         Type? pageType;
         switch (page)
@@ -185,16 +189,14 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        if (NavFrame.Content?.GetType() == pageType)
+        if (NavFrame.Content?.GetType() != pageType)
         {
-            return;
-        }
+            NavFrame.Navigate(pageType);
 
-        NavFrame.Navigate(pageType);
-
-        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
-        {
-            galleryPage.OpenExtension(extensionGalleryId!);
+            if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
+            {
+                galleryPage.OpenExtension(extensionGalleryId!);
+            }
         }
 
         // Now, make sure to actually select the correct menu item too
@@ -203,6 +205,20 @@ public sealed partial class SettingsWindow : WindowEx,
             if (obj is NavigationViewItem item && item.Tag is string s && s == page)
             {
                 NavView.SelectedItem = item;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(settingsPageElementTag))
+        {
+            var navigatedToSettingsElement = NavFrame.Content switch
+            {
+                AppearancePage appearancePage => appearancePage.TryNavigateToSettingsElement(settingsPageElementTag),
+                GeneralPage generalPage => generalPage.TryNavigateToSettingsElement(settingsPageElementTag),
+                _ => false,
+            };
+            if (!navigatedToSettingsElement)
+            {
+                Logger.LogError($"Unknown settings element tag '{settingsPageElementTag}' for page '{page}'");
             }
         }
     }
@@ -245,7 +261,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Navigate(ProviderSettingsViewModel extension)
     {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        NavFrame.Navigate(typeof(ExtensionPage), extension.Provider);
     }
 
     private void PositionCentered()
@@ -440,6 +456,8 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        _currentPage?.Dispose();
+        _currentPage = null;
         CloseScreenshotViewer();
         WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
@@ -447,6 +465,10 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
+        // Settings pages are not cached and can be navigated away from before they load.
+        _currentPage?.Dispose();
+        _currentPage = e.Content as IDisposable;
+
         BreadCrumbs.Clear();
         ShowBreadcrumb();
 
@@ -483,11 +505,11 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = DockSettingsPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), PageTags.Dock));
         }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is CommandProviderWrapper provider)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
-            BreadCrumbs.Add(new(vm.DisplayName, vm));
+            BreadCrumbs.Add(new(provider.DisplayName, provider));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {

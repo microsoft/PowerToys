@@ -20,12 +20,15 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class GeneralPage : Page, INotifyPropertyChanged
+public sealed partial class GeneralPage : Page, INotifyPropertyChanged, IDisposable
 {
+    internal const string RecentItemsSettingsElementTag = "RecentItems";
+
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
+    private readonly IAppStateService _appStateService;
     private readonly ISettingsService _settingsService;
     private readonly IExternalCommandPermissionStore _externalCommandPermissionStore;
     private readonly DispatcherTimer _notificationStateTimer;
@@ -33,6 +36,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     private bool _hasExternalCommandPermissions;
     private bool _isPageLoaded;
     private bool _isNotificationStateSuppressing;
+    private bool _recentItemsNavigationPending;
     private string _notificationStateMessage = string.Empty;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -48,6 +52,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _externalCommandPermissionStore = App.Current.Services.GetRequiredService<IExternalCommandPermissionStore>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
+        _appStateService = App.Current.Services.GetRequiredService<IAppStateService>();
         var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService);
 
@@ -55,7 +60,6 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         _notificationStateTimer.Tick += NotificationStateTimer_Tick;
 
         Loaded += GeneralPage_Loaded;
-        Unloaded += GeneralPage_Unloaded;
     }
 
     public bool HasExternalCommandPermissions
@@ -137,6 +141,20 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         }
     }
 
+    private void ClearRecentCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var current = _appStateService.State.RecentCommands;
+        if (current.IsEmpty)
+        {
+            return;
+        }
+
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.ClearHistory(),
+        });
+    }
+
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
     {
         _isPageLoaded = true;
@@ -145,14 +163,18 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         UpdateNotificationState();
         _notificationStateTimer.Start();
         _ = RefreshExternalCommandPermissionsAsync();
+        NavigateToPendingSettingsElement();
     }
 
-    private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+    public void Dispose()
     {
         _isPageLoaded = false;
+        Loaded -= GeneralPage_Loaded;
         _notificationStateTimer.Stop();
+        _notificationStateTimer.Tick -= NotificationStateTimer_Tick;
         _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         _externalCommandPermissionStore.PermissionsChanged -= ExternalCommandPermissionStore_PermissionsChanged;
+        viewModel?.Dispose();
     }
 
     private void ExternalCommandPermissionStore_PermissionsChanged(object? sender, EventArgs e) =>
@@ -228,6 +250,34 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         {
             Logger.LogError("Failed to clear external command link permissions.", ex);
         }
+    }
+
+    internal bool TryNavigateToSettingsElement(string elementTag)
+    {
+        if (!string.Equals(elementTag, RecentItemsSettingsElementTag, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        _recentItemsNavigationPending = true;
+        NavigateToPendingSettingsElement();
+        return true;
+    }
+
+    private void NavigateToPendingSettingsElement()
+    {
+        if (!_recentItemsNavigationPending || !IsLoaded)
+        {
+            return;
+        }
+
+        _recentItemsNavigationPending = false;
+        HomeRecentCommandsSettingsCard.StartBringIntoView(new BringIntoViewOptions
+        {
+            AnimationDesired = true,
+            VerticalOffset = -20,
+        });
+        _ = HomeRecentCommandsComboBox.Focus(FocusState.Programmatic);
     }
 
     private void NotificationStateTimer_Tick(object? sender, object e)

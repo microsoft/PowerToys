@@ -18,7 +18,7 @@ public record SettingsModel
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
-    internal const int MaxQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
     internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
     internal const int MinRecentCommandsDisplayLimit = 1;
     internal const int MaxRecentCommandsDisplayLimit = 10;
