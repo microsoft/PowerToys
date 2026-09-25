@@ -586,6 +586,8 @@ public sealed partial class TaskbarBandControl : UserControl,
             // taskbar sentinel as the source identifier.
             e.Data.Properties["DockBandId"] = band.Id;
             e.Data.Properties["SourceMonitorDeviceId"] = CrossMonitorBandDropMessage.TaskbarSourceId;
+            e.Data.Properties["DockBandShowTitles"] = band.ShowTitles;
+            e.Data.Properties["DockBandShowSubtitles"] = band.ShowSubtitles;
         }
     }
 
@@ -648,7 +650,11 @@ public sealed partial class TaskbarBandControl : UserControl,
         if (e.DataView.Properties.TryGetValue("DockBandId", out var bandIdObj) &&
             e.DataView.Properties.TryGetValue("SourceMonitorDeviceId", out var sourceObj) &&
             bandIdObj is string bandId &&
-            sourceObj is string sourceMonitorDeviceId)
+            sourceObj is string sourceMonitorDeviceId &&
+            e.DataView.Properties.TryGetValue("DockBandShowTitles", out var showTitlesObj) &&
+            e.DataView.Properties.TryGetValue("DockBandShowSubtitles", out var showSubtitlesObj) &&
+            showTitlesObj is bool showTitles &&
+            showSubtitlesObj is bool showSubtitles)
         {
             // Drags that started in the taskbar itself are handled by the local
             // path above; ignore them here.
@@ -658,7 +664,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             }
 
             var dropIndex = GetDropIndex(BandsListView, e, _viewModel.TaskbarItems.Count);
-            _viewModel.AcceptBandFromMonitor(bandId, DockPinSide.Taskbar, dropIndex);
+            _viewModel.AcceptBandFromMonitor(bandId, DockPinSide.Taskbar, dropIndex, showTitles, showSubtitles);
 
             // Tell the source dock to remove the band from its own list.
             WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));

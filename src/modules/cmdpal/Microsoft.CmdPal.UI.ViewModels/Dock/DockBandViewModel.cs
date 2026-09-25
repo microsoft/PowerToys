@@ -153,6 +153,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
                         StartBands = ReplaceBandInList(dockSettings.StartBands, commandId, newSettings),
                         CenterBands = ReplaceBandInList(dockSettings.CenterBands, commandId, newSettings),
                         EndBands = ReplaceBandInList(dockSettings.EndBands, commandId, newSettings),
+                        TaskbarBands = ReplaceBandInList(dockSettings.TaskbarBands, commandId, newSettings),
                     };
 
                     // Also update in per-monitor bands for customized monitors

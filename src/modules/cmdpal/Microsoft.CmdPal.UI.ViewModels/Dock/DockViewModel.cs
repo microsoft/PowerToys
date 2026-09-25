@@ -528,6 +528,9 @@ public sealed partial class DockViewModel : IDisposable
             band.SaveShowLabels();
         }
 
+        var taskbarChanged = _snapshotDockSettings is not null
+            && !_snapshotDockSettings.TaskbarBands.SequenceEqual(_settings.TaskbarBands);
+
         // Preserve any per-band label edits made while in edit mode. Those edits are
         // saved independently of reorder, so merge the latest band settings back into
         // the local reordered snapshot before we persist dock settings.
@@ -577,7 +580,7 @@ public sealed partial class DockViewModel : IDisposable
                                 MonitorConfigs = ReplaceMonitorConfig(configs, updatedConfig),
 
                                 // Taskbar bands are global (taskbar lives on the primary monitor only).
-                                TaskbarBands = myTaskbar,
+                                TaskbarBands = taskbarChanged ? myTaskbar : currentDock.TaskbarBands,
                             },
                         };
                     }
@@ -590,7 +593,7 @@ public sealed partial class DockViewModel : IDisposable
                         StartBands = myStart,
                         CenterBands = myCenter,
                         EndBands = myEnd,
-                        TaskbarBands = myTaskbar,
+                        TaskbarBands = taskbarChanged ? myTaskbar : currentDock.TaskbarBands,
                     },
                 };
             },
@@ -962,9 +965,10 @@ public sealed partial class DockViewModel : IDisposable
     /// Creates the band ViewModel and inserts it at the specified position.
     /// Does not save — save happens when exiting edit mode.
     /// </summary>
-    public void AcceptBandFromMonitor(string bandId, DockPinSide targetSide, int targetIndex)
+    public void AcceptBandFromMonitor(string bandId, DockPinSide targetSide, int targetIndex, bool showTitles, bool showSubtitles)
     {
-        if (FindBandById(bandId) != null)
+        if ((targetSide == DockPinSide.Taskbar && TaskbarItems.Any(b => b.Id == bandId)) ||
+            (targetSide != DockPinSide.Taskbar && StartItems.Concat(CenterItems).Concat(EndItems).Any(b => b.Id == bandId)))
         {
             Logger.LogWarning($"AcceptBandFromMonitor: band {bandId} already in this dock");
             return;
@@ -979,7 +983,20 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
+        // A separate DockViewModel can still have a copy of this band in the
+        // other location. Remove that copy before accepting the drop.
+        if (FindBandById(bandId) is DockBandViewModel existingBand)
+        {
+            UnpinBand(existingBand);
+        }
+
+        var bandSettings = new DockBandSettings
+        {
+            ProviderId = topLevel.CommandProviderId,
+            CommandId = bandId,
+            ShowTitles = showTitles,
+            ShowSubtitles = showSubtitles,
+        };
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);
 
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
@@ -1026,7 +1043,8 @@ public sealed partial class DockViewModel : IDisposable
 
         _settings = WithActiveBands(activeStart, activeCenter, activeEnd) with { TaskbarBands = newTaskbar };
 
-        bandVm.SnapshotShowLabels();
+        // A transferred band needs its preview labels saved even if they are
+        // unchanged after the drop; the persisted source may still have older values.
         Task.Run(() =>
         {
             bandVm.SafeInitializePropertiesSynchronous();
