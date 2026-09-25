@@ -86,7 +86,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         }
         else
         {
-            FilteredItems.Clear();
+            ListHelpers.InPlaceUpdateList(FilteredItems, []);
         }
     }
 
