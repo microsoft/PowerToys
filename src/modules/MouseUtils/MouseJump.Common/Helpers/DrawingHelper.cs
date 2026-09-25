@@ -10,8 +10,8 @@ using System.Drawing.Imaging;
 using MouseJump.Common.Imaging;
 using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
+using MouseJump.Models.Layout;
 using MouseJump.Models.Styles;
-using MouseJump.Models.ViewModel;
 
 namespace MouseJump.Common.Helpers;
 
@@ -39,7 +39,7 @@ public static class DrawingHelper
     /// A preview image of the canvas layout.
     /// </returns>
     public static async Task<Bitmap> RenderPreviewAsync(
-        CanvasViewModel canvasLayout,
+        CanvasLayout canvasLayout,
         ScreenInfo activatedScreen,
         List<IImageRegionCopyService> imageRegionCopyServices,
         Func<Bitmap, Task>? previewImageCreatedCallback = null,
