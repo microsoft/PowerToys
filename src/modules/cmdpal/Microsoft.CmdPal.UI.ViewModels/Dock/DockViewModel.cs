@@ -389,21 +389,26 @@ public sealed partial class DockViewModel : IDisposable
         var bandId = band.Id;
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
 
-        var bandSettings = activeStart.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? activeCenter.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? activeEnd.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? _settings.TaskbarBands.FirstOrDefault(b => b.CommandId == bandId);
+        var targetBands = targetSide switch
+        {
+            DockPinSide.Start => activeStart,
+            DockPinSide.Center => activeCenter,
+            DockPinSide.End => activeEnd,
+            DockPinSide.Taskbar => _settings.TaskbarBands,
+            _ => throw new ArgumentOutOfRangeException(nameof(targetSide), targetSide, null),
+        };
+        var bandSettings = targetBands.FirstOrDefault(b => b.CommandId == bandId);
 
         if (bandSettings == null)
         {
             return;
         }
 
-        // Remove from all active band lists (and the global taskbar list)
-        var newStart = activeStart.RemoveAll(b => b.CommandId == bandId);
-        var newCenter = activeCenter.RemoveAll(b => b.CommandId == bandId);
-        var newEnd = activeEnd.RemoveAll(b => b.CommandId == bandId);
-        var newTaskbar = _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId);
+        // A same-list reorder must preserve pins in other locations.
+        var newStart = targetSide == DockPinSide.Start ? activeStart.RemoveAll(b => b.CommandId == bandId) : activeStart;
+        var newCenter = targetSide == DockPinSide.Center ? activeCenter.RemoveAll(b => b.CommandId == bandId) : activeCenter;
+        var newEnd = targetSide == DockPinSide.End ? activeEnd.RemoveAll(b => b.CommandId == bandId) : activeEnd;
+        var newTaskbar = targetSide == DockPinSide.Taskbar ? _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId) : _settings.TaskbarBands;
 
         // Add to target list at the correct index
         var targetList = targetSide switch
@@ -443,11 +448,21 @@ public sealed partial class DockViewModel : IDisposable
     {
         var bandId = band.Id;
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
+        var isTaskbar = TaskbarItems.Contains(band);
+        var targetBands = targetSide == DockPinSide.Taskbar
+            ? TaskbarItems
+            : StartItems.Concat(CenterItems).Concat(EndItems);
+        if (targetBands.Any(b => b.Id == bandId && b != band))
+        {
+            Logger.LogWarning($"Band {bandId} is already pinned at the drop destination");
+            return;
+        }
 
-        var bandSettings = activeStart.FirstOrDefault(b => b.CommandId == bandId)
+        var bandSettings = isTaskbar
+            ? _settings.TaskbarBands.FirstOrDefault(b => b.CommandId == bandId)
+            : activeStart.FirstOrDefault(b => b.CommandId == bandId)
                         ?? activeCenter.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? activeEnd.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? _settings.TaskbarBands.FirstOrDefault(b => b.CommandId == bandId);
+                        ?? activeEnd.FirstOrDefault(b => b.CommandId == bandId);
 
         if (bandSettings == null)
         {
@@ -455,11 +470,10 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
-        // Remove from all sides (settings) — including the global taskbar list
-        var newStart = activeStart.RemoveAll(b => b.CommandId == bandId);
-        var newCenter = activeCenter.RemoveAll(b => b.CommandId == bandId);
-        var newEnd = activeEnd.RemoveAll(b => b.CommandId == bandId);
-        var newTaskbar = _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId);
+        var newStart = isTaskbar ? activeStart : activeStart.RemoveAll(b => b.CommandId == bandId);
+        var newCenter = isTaskbar ? activeCenter : activeCenter.RemoveAll(b => b.CommandId == bandId);
+        var newEnd = isTaskbar ? activeEnd : activeEnd.RemoveAll(b => b.CommandId == bandId);
+        var newTaskbar = isTaskbar ? _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId) : _settings.TaskbarBands;
 
         // Remove from UI collections
         StartItems.Remove(band);
@@ -658,7 +672,7 @@ public sealed partial class DockViewModel : IDisposable
     }
 
     private DockSettings? _snapshotDockSettings;
-    private Dictionary<string, DockBandViewModel>? _snapshotBandViewModels;
+    private Dictionary<(string Id, bool IsTaskbar), DockBandViewModel>? _snapshotBandViewModels;
 
     /// <summary>
     /// Takes a snapshot of the current band order and label settings before editing.
@@ -676,12 +690,12 @@ public sealed partial class DockViewModel : IDisposable
         var snapshotTaskbarBandsCount = dockSettings.TaskbarBands.Count;
 
         // Snapshot band ViewModels so we can restore unpinned bands
-        // Use a dictionary but handle potential duplicates gracefully
+        // Dock and taskbar pins have separate ViewModels even when they share an ID.
         _snapshotDockSettings = dockSettings;
-        _snapshotBandViewModels = new Dictionary<string, DockBandViewModel>();
+        _snapshotBandViewModels = new Dictionary<(string Id, bool IsTaskbar), DockBandViewModel>();
         foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems).Concat(TaskbarItems))
         {
-            _snapshotBandViewModels.TryAdd(band.Id, band);
+            _snapshotBandViewModels.TryAdd((band.Id, TaskbarItems.Contains(band)), band);
         }
 
         // Snapshot ShowLabels for all bands
@@ -739,7 +753,7 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSettings in activeStart)
         {
-            if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
+            if (_snapshotBandViewModels.TryGetValue((bandSettings.CommandId, false), out var bandVM))
             {
                 StartItems.Add(bandVM);
             }
@@ -747,7 +761,7 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSettings in activeCenter)
         {
-            if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
+            if (_snapshotBandViewModels.TryGetValue((bandSettings.CommandId, false), out var bandVM))
             {
                 CenterItems.Add(bandVM);
             }
@@ -755,7 +769,7 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSettings in activeEnd)
         {
-            if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
+            if (_snapshotBandViewModels.TryGetValue((bandSettings.CommandId, false), out var bandVM))
             {
                 EndItems.Add(bandVM);
             }
@@ -763,7 +777,7 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSettings in _settings.TaskbarBands)
         {
-            if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
+            if (_snapshotBandViewModels.TryGetValue((bandSettings.CommandId, true), out var bandVM))
             {
                 TaskbarItems.Add(bandVM);
             }
@@ -775,7 +789,8 @@ public sealed partial class DockViewModel : IDisposable
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
 
         // Create a lookup of all current band ViewModels
-        var allBands = StartItems.Concat(CenterItems).Concat(EndItems).Concat(TaskbarItems).ToDictionary(b => b.Id);
+        var allBands = StartItems.Concat(CenterItems).Concat(EndItems).ToDictionary(b => b.Id);
+        var taskbarBands = TaskbarItems.ToDictionary(b => b.Id);
 
         StartItems.Clear();
         CenterItems.Clear();
@@ -808,7 +823,7 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSettings in _settings.TaskbarBands)
         {
-            if (allBands.TryGetValue(bandSettings.CommandId, out var bandVM))
+            if (taskbarBands.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
                 TaskbarItems.Add(bandVM);
             }
@@ -816,31 +831,14 @@ public sealed partial class DockViewModel : IDisposable
     }
 
     /// <summary>
-    /// Gets the list of dock bands that are not currently pinned to any section.
+    /// Gets unpinned bands. Taskbar queries ignore pins in dock sections.
     /// </summary>
-    public IEnumerable<TopLevelViewModel> GetAvailableBandsToAdd()
+    public IEnumerable<TopLevelViewModel> GetAvailableBandsToAdd(bool taskbarOnly = false)
     {
-        // Get IDs of all bands currently in the dock
-        var pinnedBandIds = new HashSet<string>();
-        foreach (var band in StartItems)
-        {
-            pinnedBandIds.Add(band.Id);
-        }
-
-        foreach (var band in CenterItems)
-        {
-            pinnedBandIds.Add(band.Id);
-        }
-
-        foreach (var band in EndItems)
-        {
-            pinnedBandIds.Add(band.Id);
-        }
-
-        foreach (var band in TaskbarItems)
-        {
-            pinnedBandIds.Add(band.Id);
-        }
+        var pinnedBands = taskbarOnly
+            ? TaskbarItems
+            : StartItems.Concat(CenterItems).Concat(EndItems).Concat(TaskbarItems);
+        var pinnedBandIds = pinnedBands.Select(b => b.Id).ToHashSet();
 
         // Return all dock bands that are not already pinned
         return AllItems.Where(tlc => !pinnedBandIds.Contains(tlc.Id));
@@ -854,8 +852,10 @@ public sealed partial class DockViewModel : IDisposable
     {
         var bandId = topLevel.Id;
 
-        // Check if already in the dock
-        if (FindBandById(bandId) != null)
+        var alreadyPinned = targetSide == DockPinSide.Taskbar
+            ? TaskbarItems.Any(b => b.Id == bandId)
+            : FindBandById(bandId) != null;
+        if (alreadyPinned)
         {
             Logger.LogWarning($"Band {bandId} is already in the dock");
             return;
@@ -901,7 +901,7 @@ public sealed partial class DockViewModel : IDisposable
     }
 
     /// <summary>
-    /// Unpins a band from the dock, removing it from whichever section it's in.
+    /// Unpins a band from its current location, preserving pins in other locations.
     /// Does not save to disk - call SaveBandOrder() when done editing.
     /// </summary>
     public void UnpinBand(DockBandViewModel band)
@@ -909,13 +909,13 @@ public sealed partial class DockViewModel : IDisposable
         var bandId = band.Id;
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
 
-        // Remove from settings (including the global taskbar list)
+        var isTaskbar = TaskbarItems.Contains(band);
         _settings = WithActiveBands(
-            activeStart.RemoveAll(b => b.CommandId == bandId),
-            activeCenter.RemoveAll(b => b.CommandId == bandId),
-            activeEnd.RemoveAll(b => b.CommandId == bandId)) with
+            isTaskbar ? activeStart : activeStart.RemoveAll(b => b.CommandId == bandId),
+            isTaskbar ? activeCenter : activeCenter.RemoveAll(b => b.CommandId == bandId),
+            isTaskbar ? activeEnd : activeEnd.RemoveAll(b => b.CommandId == bandId)) with
         {
-            TaskbarBands = _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId),
+            TaskbarBands = isTaskbar ? _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId) : _settings.TaskbarBands,
         };
 
         // Remove from UI collections
@@ -928,34 +928,26 @@ public sealed partial class DockViewModel : IDisposable
     }
 
     /// <summary>
-    /// Removes a band from this dock by its ID. Used when a band is dragged to
+    /// Removes a band from this dock or the taskbar by its ID. Used when a band is dragged to
     /// another monitor's dock. Does not save — save happens when exiting edit mode.
     /// </summary>
-    public void RemoveBandById(string bandId)
+    public void RemoveBandById(string bandId, bool taskbarOnly = false)
     {
-        if (FindBandById(bandId) == null)
+        var bands = taskbarOnly
+            ? TaskbarItems
+            : StartItems.Concat(CenterItems).Concat(EndItems);
+        var band = bands.FirstOrDefault(b => b.Id == bandId);
+        if (band is null)
         {
             return;
         }
 
-        EnsureMonitorForked();
-
-        var (activeStart, activeCenter, activeEnd) = GetActiveBands();
-
-        _settings = WithActiveBands(
-            activeStart.RemoveAll(b => b.CommandId == bandId),
-            activeCenter.RemoveAll(b => b.CommandId == bandId),
-            activeEnd.RemoveAll(b => b.CommandId == bandId)) with
+        if (!taskbarOnly)
         {
-            // The taskbar is a single global list (only the primary display has a
-            // taskbar), so remove from it here too when this dock owns it.
-            TaskbarBands = _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId),
-        };
+            EnsureMonitorForked();
+        }
 
-        RemoveBandFromCollection(StartItems, bandId);
-        RemoveBandFromCollection(CenterItems, bandId);
-        RemoveBandFromCollection(EndItems, bandId);
-        RemoveBandFromCollection(TaskbarItems, bandId);
+        UnpinBand(band);
 
         Logger.LogDebug($"Removed band {bandId} from monitor {_monitorDeviceId} (cross-monitor drag)");
     }
@@ -1051,17 +1043,6 @@ public sealed partial class DockViewModel : IDisposable
         });
 
         Logger.LogDebug($"Accepted band {bandId} at {targetSide}[{targetIndex}] on monitor {_monitorDeviceId}");
-    }
-
-    private static void RemoveBandFromCollection(ObservableCollection<DockBandViewModel> collection, string bandId)
-    {
-        for (var i = collection.Count - 1; i >= 0; i--)
-        {
-            if (collection[i].Id == bandId)
-            {
-                collection.RemoveAt(i);
-            }
-        }
     }
 
     private void DoOnUiThread(Action action)
