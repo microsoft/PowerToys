@@ -62,6 +62,7 @@
         Padding="16,5,8,5"
         VerticalAlignment="Center"
         HorizontalContentAlignment="Left"
+        AccessKey="F"
         PreviewKeyDown="FilterDropDownButton_PreviewKeyDown"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <DropDownButton.Content>

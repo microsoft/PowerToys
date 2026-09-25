@@ -55,6 +55,7 @@
             Opacity="0.3">
             <Button
                 Padding="0"
+                AccessKey="D"
                 CornerRadius="0,0,8,8"
                 FontSize="11"
                 PointerEntered="DevRibbonButton_PointerEntered"
