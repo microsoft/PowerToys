@@ -627,6 +627,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
             {
                 e.Data.Properties["DockBandId"] = band.Id;
                 e.Data.Properties["SourceMonitorDeviceId"] = ViewModel.MonitorDeviceId;
+                e.Data.Properties["DockBandShowTitles"] = band.ShowTitles;
+                e.Data.Properties["DockBandShowSubtitles"] = band.ShowSubtitles;
             }
         }
     }
@@ -710,9 +712,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         if (e.DataView.Properties.TryGetValue("DockBandId", out var bandIdObj) &&
             e.DataView.Properties.TryGetValue("SourceMonitorDeviceId", out var sourceMonitorObj) &&
             bandIdObj is string bandId &&
-            sourceMonitorObj is string sourceMonitorDeviceId)
+            sourceMonitorObj is string sourceMonitorDeviceId &&
+            e.DataView.Properties.TryGetValue("DockBandShowTitles", out var showTitlesObj) &&
+            e.DataView.Properties.TryGetValue("DockBandShowSubtitles", out var showSubtitlesObj) &&
+            showTitlesObj is bool showTitles &&
+            showSubtitlesObj is bool showSubtitles)
         {
-            HandleCrossMonitorDrop(bandId, sourceMonitorDeviceId, targetSide, e);
+            HandleCrossMonitorDrop(bandId, sourceMonitorDeviceId, targetSide, showTitles, showSubtitles, e);
         }
     }
 
@@ -776,7 +782,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
         }
     }
 
-    private void HandleCrossMonitorDrop(string bandId, string sourceMonitorDeviceId, DockPinSide targetSide, DragEventArgs e)
+    private void HandleCrossMonitorDrop(string bandId, string sourceMonitorDeviceId, DockPinSide targetSide, bool showTitles, bool showSubtitles, DragEventArgs e)
     {
         var targetListView = targetSide switch
         {
@@ -793,7 +799,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterEditModeM
 
         var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
-        ViewModel.AcceptBandFromMonitor(bandId, targetSide, dropIndex);
+        ViewModel.AcceptBandFromMonitor(bandId, targetSide, dropIndex, showTitles, showSubtitles);
 
         if (!string.IsNullOrEmpty(sourceMonitorDeviceId))
         {

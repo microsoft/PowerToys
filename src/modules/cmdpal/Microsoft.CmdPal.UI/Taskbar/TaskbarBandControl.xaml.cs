@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using WinRT;
 
 namespace Microsoft.CmdPal.UI.Taskbar;
 
@@ -198,14 +199,14 @@ public sealed partial class TaskbarBandControl : UserControl,
         RootPanel.Orientation = orientation;
 
         // Swap the BandsListView items panel template and container style.
-        BandsListView.ItemsPanel = (ItemsPanelTemplate)Resources[
-            isVertical ? "VerticalBandsPanel" : "HorizontalBandsPanel"];
-        BandsListView.ItemContainerStyle = (Style)Resources[
-            isVertical ? "VerticalBandListViewItemStyle" : "HorizontalBandListViewItemStyle"];
+        BandsListView.ItemsPanel = GetResource<ItemsPanelTemplate>(
+            isVertical ? "VerticalBandsPanel" : "HorizontalBandsPanel");
+        BandsListView.ItemContainerStyle = GetResource<Style>(
+            isVertical ? "VerticalBandListViewItemStyle" : "HorizontalBandListViewItemStyle");
 
         // Swap the Layout on every band's inner ItemsRepeater.
-        var layout = (Microsoft.UI.Xaml.Controls.Layout)Resources[
-            isVertical ? "VerticalItemsLayout" : "HorizontalItemsLayout"];
+        var layout = GetResource<StackLayout>(
+            isVertical ? "VerticalItemsLayout" : "HorizontalItemsLayout");
         foreach (var item in _viewModel.TaskbarItems)
         {
             if (BandsListView.ContainerFromItem(item) is ListViewItem container)
@@ -234,6 +235,28 @@ public sealed partial class TaskbarBandControl : UserControl,
         // Reapply compact mode after orientation change since containers
         // may have been re-realized.
         ApplyCompactModeToAllItems();
+    }
+
+    private T GetResource<T>(string key)
+        where T : class
+    {
+        var resource = Resources[key];
+        if (resource is T typedResource)
+        {
+            return typedResource;
+        }
+
+        // AOT can return a base WinRT wrapper from the untyped resource lookup.
+        // Request the concrete projection instead of downcasting that wrapper.
+        var marshaler = MarshalInspectable<object>.CreateMarshaler2(resource);
+        try
+        {
+            return MarshalInspectable<T>.FromAbi(marshaler.GetAbi());
+        }
+        finally
+        {
+            marshaler.Dispose();
+        }
     }
 
     private static T? FindDescendant<T>(DependencyObject parent)
@@ -328,7 +351,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             layoutKey = isVertical ? "VerticalItemsLayout" : "HorizontalItemsLayout";
         }
 
-        var layout = (Microsoft.UI.Xaml.Controls.Layout)Resources[layoutKey];
+        var layout = GetResource<StackLayout>(layoutKey);
         foreach (var band in _viewModel.TaskbarItems)
         {
             if (BandsListView.ContainerFromItem(band) is ListViewItem container)
@@ -756,6 +779,8 @@ public sealed partial class TaskbarBandControl : UserControl,
             // taskbar sentinel as the source identifier.
             e.Data.Properties["DockBandId"] = band.Id;
             e.Data.Properties["SourceMonitorDeviceId"] = CrossMonitorBandDropMessage.TaskbarSourceId;
+            e.Data.Properties["DockBandShowTitles"] = band.ShowTitles;
+            e.Data.Properties["DockBandShowSubtitles"] = band.ShowSubtitles;
         }
     }
 
@@ -818,7 +843,11 @@ public sealed partial class TaskbarBandControl : UserControl,
         if (e.DataView.Properties.TryGetValue("DockBandId", out var bandIdObj) &&
             e.DataView.Properties.TryGetValue("SourceMonitorDeviceId", out var sourceObj) &&
             bandIdObj is string bandId &&
-            sourceObj is string sourceMonitorDeviceId)
+            sourceObj is string sourceMonitorDeviceId &&
+            e.DataView.Properties.TryGetValue("DockBandShowTitles", out var showTitlesObj) &&
+            e.DataView.Properties.TryGetValue("DockBandShowSubtitles", out var showSubtitlesObj) &&
+            showTitlesObj is bool showTitles &&
+            showSubtitlesObj is bool showSubtitles)
         {
             // Drags that started in the taskbar itself are handled by the local
             // path above; ignore them here.
@@ -828,7 +857,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             }
 
             var dropIndex = GetDropIndex(BandsListView, e, _viewModel.TaskbarItems.Count);
-            _viewModel.AcceptBandFromMonitor(bandId, DockPinSide.Taskbar, dropIndex);
+            _viewModel.AcceptBandFromMonitor(bandId, DockPinSide.Taskbar, dropIndex, showTitles, showSubtitles);
 
             // Tell the source dock to remove the band from its own list.
             WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));

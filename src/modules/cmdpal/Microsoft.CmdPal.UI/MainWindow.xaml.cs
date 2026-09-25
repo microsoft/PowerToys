@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -68,6 +69,8 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueueController _keyboardDispatcher;
+    private readonly Task _keyboardStartTask;
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly ICmdPalProtocolActivation _protocolActivation;
@@ -77,6 +80,8 @@ public sealed partial class MainWindow : WindowEx,
     private readonly List<long> _breakthroughTimestamps = [];
     private readonly ShellViewModel _shellViewModel;
 
+    private Task? _keyboardStopTask;
+    private bool _keyboardStopped;
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
     private bool _allowBreakthroughShortcut;
@@ -169,9 +174,19 @@ public sealed partial class MainWindow : WindowEx,
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
         _keyboardListener = new KeyboardListener();
-        _keyboardListener.Start();
-
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        var uiDispatcher = DispatcherQueue;
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(commandId =>
+        {
+            uiDispatcher.TryEnqueue(() =>
+            {
+                if (!_keyboardStopped)
+                {
+                    HandleSummon(commandId);
+                }
+            });
+        }));
+        _keyboardDispatcher = Microsoft.UI.Dispatching.DispatcherQueueController.CreateOnDedicatedThread();
+        _keyboardStartTask = StartKeyboardListenerAsync();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -229,6 +244,33 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+    }
+
+    private async Task StartKeyboardListenerAsync()
+    {
+        try
+        {
+            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Start);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to start the global keyboard listener.", ex);
+        }
+    }
+
+    private async Task StopKeyboardListenerAsync()
+    {
+        _keyboardStopped = true;
+        try
+        {
+            await _keyboardStartTask;
+            await _keyboardDispatcher.DispatcherQueue.EnqueueAsync(_keyboardListener.Stop);
+            await _keyboardDispatcher.ShutdownQueueAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to stop the global keyboard listener.", ex);
+        }
     }
 
     private void OnAutoGoHomeTimerOnTick(object? s, object e)
@@ -1925,6 +1967,7 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
+        _keyboardStopTask ??= StopKeyboardListenerAsync();
     }
 
     void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);
