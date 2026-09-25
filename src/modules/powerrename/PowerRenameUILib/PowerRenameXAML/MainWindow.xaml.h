@@ -22,6 +22,7 @@
 #include <PowerRenameMRU.h>
 #include <MetadataTypes.h>
 #include <MetadataPatternExtractor.h>
+#include <NumericRenameMapping.h>
 
 namespace winrt::PowerRenameUI::implementation
 {
@@ -151,6 +152,8 @@ namespace winrt::PowerRenameUI::implementation
         void UpdateMetadataShortcuts(PowerRenameLib::MetadataType metadataType);
         std::wstring ConvertPatternToResourceKey(const std::wstring& pattern);
         void UpdateMetadataSourceFlags(int selectedIndex);
+        void ApplyNumericMapping();
+        void ClearNumericMapping();
 
         Shared::Trace::ETWTrace m_etwTrace{};
 
@@ -170,6 +173,7 @@ namespace winrt::PowerRenameUI::implementation
 
 
         bool m_flagValidationInProgress = false;
+        PowerRenameLib::NumericRenameMapping m_numericRenameNames;
 
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
@@ -179,6 +183,8 @@ namespace winrt::PowerRenameUI::implementation
         void button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const& sender, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const& args);
         void MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OpenDocs(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        winrt::fire_and_forget SelectNumericMapping(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ClearNumericMappingClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 
