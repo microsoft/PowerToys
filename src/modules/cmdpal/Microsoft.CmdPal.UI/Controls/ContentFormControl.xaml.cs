@@ -11,6 +11,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
@@ -213,7 +214,7 @@ public sealed partial class ContentFormControl : UserControl
     /// rendered by the Adaptive Cards library (AdaptiveCards.Rendering.WinUI3 v2.x).
     /// Without this fix, Narrator announces "space, checkbox, checked" instead of the
     /// actual setting label. This method walks the tree, finds CheckBox/ToggleSwitch
-    /// controls missing an automation name, and sets it from the adjacent label TextBlock.
+    /// controls missing an automation name, and binds it to the adjacent label TextBlock.
     /// </summary>
     private static void FixToggleAccessibilityNames(DependencyObject root)
     {
@@ -222,30 +223,23 @@ public sealed partial class ContentFormControl : UserControl
         {
             var child = VisualTreeHelper.GetChild(root, i);
 
-            if (child is CheckBox checkBox)
+            if (child is CheckBox or ToggleSwitch && child is FrameworkElement toggle)
             {
-                var existingName = AutomationProperties.GetName(checkBox);
+                var existingName = AutomationProperties.GetName(toggle);
                 if (string.IsNullOrEmpty(existingName))
                 {
                     // In Adaptive Cards, the label TextBlock is a sibling to the CheckBox's
                     // container within a shared Grid parent. Walk up to find that Grid, then
                     // search for a TextBlock with actual text content.
-                    var labelText = FindAdjacentLabel(checkBox);
-                    if (!string.IsNullOrEmpty(labelText))
+                    var label = FindAdjacentLabel(toggle);
+                    if (label is not null)
                     {
-                        AutomationProperties.SetName(checkBox, labelText);
-                    }
-                }
-            }
-            else if (child is ToggleSwitch toggleSwitch)
-            {
-                var existingName = AutomationProperties.GetName(toggleSwitch);
-                if (string.IsNullOrEmpty(existingName))
-                {
-                    var labelText = FindAdjacentLabel(toggleSwitch);
-                    if (!string.IsNullOrEmpty(labelText))
-                    {
-                        AutomationProperties.SetName(toggleSwitch, labelText);
+                        toggle.SetBinding(AutomationProperties.NameProperty, new Binding
+                        {
+                            Source = label,
+                            Path = new PropertyPath(nameof(TextBlock.Text)),
+                            Mode = BindingMode.OneWay,
+                        });
                     }
                 }
             }
@@ -261,7 +255,7 @@ public sealed partial class ContentFormControl : UserControl
     /// This handles the Adaptive Cards layout where the label TextBlock is a sibling
     /// of the CheckBox's container within a shared Grid row.
     /// </summary>
-    private static string? FindAdjacentLabel(FrameworkElement control)
+    private static TextBlock? FindAdjacentLabel(FrameworkElement control)
     {
         // Walk up the tree to find the nearest Grid ancestor (the row container)
         DependencyObject? current = control;
@@ -289,7 +283,7 @@ public sealed partial class ContentFormControl : UserControl
         return FindFirstNonEmptyTextBlock(parentGrid);
     }
 
-    private static string? FindFirstNonEmptyTextBlock(DependencyObject root)
+    private static TextBlock? FindFirstNonEmptyTextBlock(DependencyObject root)
     {
         var childCount = VisualTreeHelper.GetChildrenCount(root);
         for (var i = 0; i < childCount; i++)
@@ -298,7 +292,7 @@ public sealed partial class ContentFormControl : UserControl
 
             if (child is TextBlock tb && !string.IsNullOrWhiteSpace(tb.Text))
             {
-                return tb.Text;
+                return tb;
             }
 
             var result = FindFirstNonEmptyTextBlock(child);

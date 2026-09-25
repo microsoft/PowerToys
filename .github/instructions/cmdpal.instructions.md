@@ -1,5 +1,6 @@
 ---
-description: "Command Palette guidance for fast incremental builds, x64/ARM64 selection, loose package deployment, testing, launching, and debugging."
+description: 'Command Palette guidance for fast incremental builds, x64/ARM64 selection, loose package deployment, testing, launching, and debugging.'
+applyTo: 'src/modules/cmdpal/**'
 ---
 
 # Command Palette Build And Deploy

@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using AdaptiveCards.Templating;
@@ -117,13 +120,13 @@ public sealed partial class IncrementalAdaptiveCardUpdater
                 "Adaptive Card rendering did not produce a framework element.");
         }
 
-        var candidateJson = card.ToJson().Stringify();
-        var candidateSnapshot = IncrementalAdaptiveCardVisualTree.Build(
+        var candidateSnapshot = TryCreateSnapshot(() => IncrementalAdaptiveCardVisualTree.Build(
             candidateRoot,
-            candidateJson);
+            card.ToJson().Stringify()));
 
         if (RenderedCard?.FrameworkElement is FrameworkElement currentRoot
-            && _snapshot is not null)
+            && _snapshot is not null
+            && candidateSnapshot is not null)
         {
             var plan = IncrementalTreeDiffer.CreatePlan(_snapshot, candidateSnapshot);
             if (plan.Disposition != IncrementalPlanDisposition.ReplaceRoot
@@ -143,6 +146,19 @@ public sealed partial class IncrementalAdaptiveCardUpdater
         Card = card;
         _snapshot = candidateSnapshot;
         _host.Child = candidateRoot;
+    }
+
+    internal static IncrementalTreeSnapshot? TryCreateSnapshot(Func<IncrementalTreeSnapshot> createSnapshot)
+    {
+        try
+        {
+            return createSnapshot();
+        }
+        catch (Exception ex) when (ex is JsonException or COMException)
+        {
+            Trace.TraceWarning($"Failed to create an Adaptive Card snapshot. Replacing the rendered card: {ex}");
+            return null;
+        }
     }
 
     private void ResetCore()
