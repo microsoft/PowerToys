@@ -12,7 +12,7 @@ internal static class QuickAccessShelfResolver
     {
         return index switch
         {
-            >= 0 and <= 8 => (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            >= 0 and < QuickAccessShelfShortcuts.NumberedShortcutCount => (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
             _ => string.Empty,
         };
     }
