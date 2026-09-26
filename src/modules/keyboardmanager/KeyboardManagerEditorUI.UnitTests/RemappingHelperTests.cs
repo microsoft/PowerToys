@@ -553,6 +553,67 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEqual(new List<string> { "legacy-id" }, settings.ProfileDictionary["default"]);
         }
 
+        [TestMethod]
+        public void ApplyProfileMembershipRemoval_ShouldDeleteOwnMappingKeepSharedAndLeaveUntagged()
+        {
+            var ownMapping = CreateMapping(ShortcutOperationType.RemapShortcut, "65", "66");
+            var sharedMapping = CreateMapping(ShortcutOperationType.RemapShortcut, "67", "68");
+            var legacyMapping = CreateMapping(ShortcutOperationType.RemapText, "69", "legacy");
+            var settings = CreateEditorSettings(
+                ("own-id", ownMapping, true),
+                ("shared-id", sharedMapping, true),
+                ("legacy-id", legacyMapping, true));
+
+            // "own-id" belongs only to the deleted profile; "shared-id" is in two profiles;
+            // "legacy-id" carries no profile at all (predates profiles).
+            settings.ShortcutSettingsDictionary["own-id"].Profiles.Add("gone");
+            settings.ShortcutSettingsDictionary["shared-id"].Profiles.AddRange(new List<string> { "gone", "keep" });
+            settings.ProfileDictionary["gone"] = new List<string> { "own-id", "shared-id" };
+            settings.ProfileDictionary["keep"] = new List<string> { "shared-id" };
+            settings.ActiveProfile = "gone";
+
+            Assert.IsTrue(SettingsManager.ApplyProfileMembershipRemoval(settings, "gone"));
+
+            // The profile-only mapping is gone from both indexes.
+            Assert.IsFalse(settings.ShortcutSettingsDictionary.ContainsKey("own-id"));
+            CollectionAssert.AreEqual(
+                new List<string> { "shared-id" },
+                settings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut]);
+
+            // The shared mapping stays, keeping only its remaining membership.
+            Assert.IsTrue(settings.ShortcutSettingsDictionary.ContainsKey("shared-id"));
+            CollectionAssert.AreEqual(new List<string> { "keep" }, settings.ShortcutSettingsDictionary["shared-id"].Profiles);
+
+            // The untagged legacy mapping is untouched.
+            Assert.IsTrue(settings.ShortcutSettingsDictionary.ContainsKey("legacy-id"));
+            Assert.AreEqual(0, settings.ShortcutSettingsDictionary["legacy-id"].Profiles.Count);
+            CollectionAssert.AreEqual(
+                new List<string> { "legacy-id" },
+                settings.ShortcutsByOperationType[ShortcutOperationType.RemapText]);
+
+            // The deleted profile is gone from the rebuilt index; the survivor is intact.
+            Assert.IsFalse(settings.ProfileDictionary.ContainsKey("gone"));
+            CollectionAssert.AreEqual(new List<string> { "shared-id" }, settings.ProfileDictionary["keep"]);
+
+            // The active profile pointed at the deleted one, so it is cleared.
+            Assert.AreEqual(string.Empty, settings.ActiveProfile);
+        }
+
+        [TestMethod]
+        public void ApplyProfileMembershipRemoval_ShouldReportNoChangeWhenProfileAbsent()
+        {
+            var mapping = CreateMapping(ShortcutOperationType.RemapShortcut, "65", "66");
+            var settings = CreateEditorSettings(("mapping-id", mapping, true));
+            settings.ShortcutSettingsDictionary["mapping-id"].Profiles.Add("keep");
+            settings.ProfileDictionary["keep"] = new List<string> { "mapping-id" };
+            settings.ActiveProfile = "keep";
+
+            Assert.IsFalse(SettingsManager.ApplyProfileMembershipRemoval(settings, "never-existed"));
+            Assert.IsTrue(settings.ShortcutSettingsDictionary.ContainsKey("mapping-id"));
+            CollectionAssert.AreEqual(new List<string> { "keep" }, settings.ShortcutSettingsDictionary["mapping-id"].Profiles);
+            Assert.AreEqual("keep", settings.ActiveProfile);
+        }
+
         private static EditorSettings CreateEditorSettings(string mappingId, ShortcutOperationType operationType, string originalKeys, string targetKeys) =>
             CreateEditorSettings(mappingId, CreateMapping(operationType, originalKeys, targetKeys));
 

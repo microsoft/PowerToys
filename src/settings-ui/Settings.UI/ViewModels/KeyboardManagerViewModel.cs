@@ -225,6 +225,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
+            RefreshEngineOwnedProfileFields();
+
             // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
                    string.Format(
@@ -232,6 +234,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ModuleName,
                        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+        }
+
+        /// <summary>
+        /// Re-reads the profile fields the engine and editor own — <c>activeConfiguration</c> and
+        /// <c>keyboardConfigurations</c> — from the current settings.json into this page's cached
+        /// <see cref="Settings"/> object. This page keeps a copy loaded at construction, but the editor
+        /// and the engine (device auto-switch, cycle hotkey) write those two fields directly while the
+        /// page is open. Without this refresh, serializing the stale cached copy back over the file when
+        /// the user changes an unrelated option here (editor shortcut, UseNewEditor) would revert them —
+        /// dropping cycle entries or resurrecting a deleted profile as active. A failed read leaves the
+        /// cached values untouched rather than overwriting them with defaults.
+        /// </summary>
+        private void RefreshEngineOwnedProfileFields()
+        {
+            try
+            {
+                KeyboardManagerSettings latest = _settingsUtils.GetSettings<KeyboardManagerSettings>(ModuleName);
+                Settings.Properties.ActiveConfiguration = latest.Properties.ActiveConfiguration;
+                Settings.Properties.KeyboardConfigurations = latest.Properties.KeyboardConfigurations;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Could not refresh Keyboard Manager profile fields before saving; leaving the cached values as-is.", ex);
+            }
         }
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
