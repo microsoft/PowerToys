@@ -63,6 +63,7 @@ namespace MouseWithoutBorders.Class
         Timeout = 7,
         SendError = 8,
         Connected = 9,
+        HostNotFound = 10,
     }
 
     internal class TcpSk : IDisposable
@@ -953,14 +954,21 @@ namespace MouseWithoutBorders.Class
                 {
                     host = null;
 
-                    UpdateTcpSockets(dummyTcp, SocketStatus.Timeout);
+                    UpdateTcpSockets(dummyTcp, SocketStatus.HostNotFound);
 
                     Common.ShowToolTip(e.Message + ": " + machineName, 10000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
 
                     Logger.Log($"{nameof(StartNewTcpClient)}.{nameof(Dns.GetHostEntry)}: {e.Message}");
                 }
 
-                UpdateTcpSockets(dummyTcp, SocketStatus.NA);
+                if (host != null)
+                {
+                    // Only clear the placeholder status on a successful resolve. On failure, UpdateTcpSockets
+                    // sweeps and removes any socket already in a terminal status (including the Timeout status
+                    // just set above) before applying the new one, so calling it again here unconditionally
+                    // would erase the failure status before Settings' polling has a chance to observe it.
+                    UpdateTcpSockets(dummyTcp, SocketStatus.NA);
+                }
 
                 if (!MachineStuff.InMachineMatrix(machineName))
                 {
@@ -2013,7 +2021,8 @@ namespace MouseWithoutBorders.Class
                                 // SocketStatus.InvalidKey or
                                 SocketStatus.NA or
                                 SocketStatus.Timeout or
-                                SocketStatus.SendError)
+                                SocketStatus.SendError or
+                                SocketStatus.HostNotFound)
                             {
                                 try
                                 {
