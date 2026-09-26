@@ -124,6 +124,31 @@ FancyZones is divided into several projects:
 - FancyZones: Read/write handlers in FancyZonesLib project
 - Data synchronization: Editor sends update events, FancyZones refreshes memory data
 
+### Default zone for windows with no zone history
+
+`LayoutData::defaultZoneIndexSet` (an optional `ZoneIndexSet`) is a per-layout fallback zone or
+zone range for a newly created window that has no recorded zone history. It is read from an
+optional `default-zone-set` array in `layout-templates.json` (per template type) and
+`custom-layouts.json` (per custom layout uuid); its absence just means the feature is off for that
+layout, so there is no migration. It is configured from the Settings app's FancyZones page, not the
+Editor.
+
+At runtime (`FancyZones::WindowCreated` in `FancyZones.cpp`), the priority is:
+
+1. If "Move newly created windows to their last known zone" is on and the app has recorded history
+   for the active layout instance, use that (unchanged from before this feature).
+2. Otherwise, if the active layout instance has a valid `defaultZoneIndexSet` for the monitor's
+   actual resolved zone count, use that (`WorkArea::GetDefaultZoneIndexSet`, validated in
+   `Layout::ValidatedDefaultZoneIndexSet`).
+3. Otherwise, do nothing, same as before this feature.
+
+This runs even when the "last known zone" setting is off entirely, since the point of the feature
+is windows that have no history at all. The Settings-page validation checks a value against the
+template's own default zone count; a built-in template's per-monitor zone count override is only
+known at apply time, so `ValidatedDefaultZoneIndexSet` re-checks against the real resolved zone
+count on that specific work area and silently skips a value that no longer fits, rather than
+persisting monitor-specific validation into the settings UI.
+
 ## Window Management
 
 ### Monitor Detection and DPI Scaling

@@ -152,6 +152,16 @@ namespace JsonUtils
                     return std::nullopt;
                 }
 
+                if (json.HasKey(NonLocalizable::CustomLayoutsIds::DefaultZoneIndexSetID))
+                {
+                    ZoneIndexSet defaultZoneIndexSet{};
+                    for (const auto& value : json.GetNamedArray(NonLocalizable::CustomLayoutsIds::DefaultZoneIndexSetID))
+                    {
+                        defaultZoneIndexSet.push_back(static_cast<ZoneIndex>(value.GetNumber()));
+                    }
+                    result.data.defaultZoneIndexSet = std::move(defaultZoneIndexSet);
+                }
+
                 return result;
             }
             catch (const winrt::hresult_error&)
@@ -229,6 +239,7 @@ std::optional<LayoutData> CustomLayouts::GetLayout(const GUID& id) const noexcep
         .uuid = id,
         .type = FancyZonesDataTypes::ZoneSetLayoutType::Custom
     };
+    layout.defaultZoneIndexSet = customLayout.defaultZoneIndexSet;
 
     if (customLayout.type == FancyZonesDataTypes::CustomLayoutType::Grid)
     {

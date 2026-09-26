@@ -326,6 +326,7 @@ private:
     void UpdateHotkey(int hotkeyId, const PowerToysSettings::HotkeyObject& hotkeyObject, bool enable) noexcept;
     
     bool MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept;
+    bool MoveToDefaultZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept;
 
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
@@ -577,15 +578,36 @@ bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVi
     return false;
 }
 
+bool FancyZones::MoveToDefaultZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept
+{
+    const auto& workAreas = m_workAreaConfiguration.GetAllWorkAreas();
+    if (!workAreas.contains(monitor))
+    {
+        return false;
+    }
+
+    WorkArea* workArea = workAreas.at(monitor).get();
+    if (!workArea || workArea->UniqueId().virtualDesktopId != currentVirtualDesktop)
+    {
+        return false;
+    }
+
+    auto indexes = workArea->GetDefaultZoneIndexSet();
+    if (!indexes.has_value())
+    {
+        return false;
+    }
+
+    Trace::FancyZones::SnapNewWindowIntoZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+    workArea->Snap(window, indexes.value());
+
+    return true;
+}
+
 void FancyZones::WindowCreated(HWND window) noexcept
 {
     const bool moveToAppLastZone = FancyZonesSettings::settings().appLastZone_moveWindows;
     const bool openOnActiveMonitor = FancyZonesSettings::settings().openWindowOnActiveMonitor;
-    if (!moveToAppLastZone && !openOnActiveMonitor)
-    {
-        // Nothing to do here then.
-        return;
-    }
 
     if (!FancyZonesWindowProcessing::IsProcessableAutomatically(window))
     {
@@ -634,7 +656,13 @@ void FancyZones::WindowCreated(HWND window) noexcept
             }
         }
     }
-    
+
+    if (!windowMovedToZone)
+    {
+        // No last-known zone to fall back to (either there is none, or the setting above is off):
+        // try this layout's configured default zone on the active monitor instead.
+        windowMovedToZone = MoveToDefaultZone(window, active, currentVirtualDesktop);
+    }
 
     // Open on active monitor if window wasn't zoned
     if (openOnActiveMonitor && !windowMovedToZone)
