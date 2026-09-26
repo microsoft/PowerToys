@@ -396,6 +396,54 @@ namespace AltWindowCycleUnitTests
             AssertRectEqual({ 32, 276, 332, 494 }, AltWindowCycleLogic::TileRect(layout, 5));
         }
 
+        TEST_METHOD(HitTestTileReturnsIndexForPointInsideTile)
+        {
+            const RECT work = { 0, 0, 1920, 1080 };
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 1.0);
+
+            // Tile 0 is { 32, 32, 332, 250 }; tile 1 starts at x=358.
+            Assert::AreEqual(0, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 32, 32));
+            Assert::AreEqual(0, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 100, 100));
+            Assert::AreEqual(0, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 331, 249));
+            Assert::AreEqual(1, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 358, 32));
+
+            const RECT tile3 = AltWindowCycleLogic::TileRect(layout, 3);
+            Assert::AreEqual(3, AltWindowCycleLogic::HitTestTile(layout, 0, 4, tile3.left + 10, tile3.top + 10));
+        }
+
+        TEST_METHOD(HitTestTileIgnoresPaddingAndGaps)
+        {
+            const RECT work = { 0, 0, 1920, 1080 };
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 1.0);
+
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 0, 0));
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 31, 32));
+            // Gap between tile 0 (right=332) and tile 1 (left=358).
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 340, 40));
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 0, 4, 332, 32));
+        }
+
+        TEST_METHOD(HitTestTileRespectsCurrentPage)
+        {
+            const RECT work = { 0, 0, 1920, 1080 };
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 13, 1.5);
+
+            Assert::AreEqual(6, layout.pageSize);
+            Assert::AreEqual(0, AltWindowCycleLogic::HitTestTile(layout, 0, 13, layout.pad + 1, layout.pad + 1));
+            Assert::AreEqual(6, AltWindowCycleLogic::HitTestTile(layout, 6, 13, layout.pad + 1, layout.pad + 1));
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 12, 13, layout.pad + layout.tileW + layout.gap + 1, layout.pad + 1));
+        }
+
+        TEST_METHOD(HitTestTileReturnsNegativeForEmptyOrInvalidInput)
+        {
+            const RECT work = { 0, 0, 1920, 1080 };
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 1.0);
+
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 0, 0, 100, 100));
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, 4, 4, 100, 100));
+            Assert::AreEqual(-1, AltWindowCycleLogic::HitTestTile(layout, -1, 4, 100, 100));
+        }
+
         TEST_METHOD(WrapIndexNormalizesNegativeAndOversizedIndices)
         {
             Assert::AreEqual(2, AltWindowCycleLogic::WrapIndex(-4, 3));
