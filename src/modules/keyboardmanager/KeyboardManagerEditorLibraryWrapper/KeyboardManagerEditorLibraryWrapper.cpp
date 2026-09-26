@@ -2,12 +2,14 @@
 #include "KeyboardManagerEditorLibraryWrapper.h"
 #include <algorithm>
 #include <cstring>
+#include <cwctype>
 #include <filesystem>
 #include <vector>
 #include <string>
 #include <memory>
 
 #include <common/utils/logger_helper.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 #include <common/interop/keyboard_layout.h>
@@ -27,6 +29,25 @@ extern "C"
     bool LoadMappingSettings(void* config)
     {
         return static_cast<MappingConfiguration*>(config)->LoadSettings();
+    }
+
+    MappingConfigurationLoadResult LoadMappingSettingsForEditor(void* config)
+    {
+        if (!config)
+        {
+            return MappingConfigurationLoadResult::Failed;
+        }
+
+        try
+        {
+            return static_cast<MappingConfiguration*>(config)->LoadSettingsFromFolder(
+                PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName));
+        }
+        catch (...)
+        {
+            Logger::error(L"Failed to load the Keyboard Manager editor configuration");
+            return MappingConfigurationLoadResult::Failed;
+        }
     }
 
     bool MappingSettingsFileExists(void* config)
@@ -389,14 +410,11 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         const auto& [origShortcut, targetShortcutUnion, app] = filteredMappings[index];
 
+        *mapping = {};
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
         mapping->targetApp = AllocateAndCopyString(app);
         mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
-        mapping->startInDirectory = nullptr;
-        mapping->elevation = 0;
-        mapping->ifRunningAction = 0;
-        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -414,6 +432,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
 
             mapping->operationType = static_cast<int>(targetShortcut.operationType);
+            mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+            mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+            mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+            mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
 
             switch (targetShortcut.operationType)
             {
@@ -422,10 +444,6 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
-                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
-                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
-                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
-                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
                 break;
 
@@ -448,6 +466,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         }
         else if (targetShortcutUnion.index() == 2)
         {
+            // A text target lives in a different slot of the union than the RunProgram/OpenURI
+            // targets, so it has no Shortcut::operationType to read. Report RemapText (3) - the
+            // same value GetShortcutRemapCountByType already filters on - rather than 0, which
+            // made the managed side file every shortcut-to-text remap under key remappings with
+            // an empty target. The payload is carried by targetText, while targetKeys stays
+            // empty to preserve the canonical editor representation for non-key operations.
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
             mapping->operationType = 3;
@@ -500,15 +524,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         const auto& [origShortcut, targetShortcutUnion, app] = allMappings[index];
 
+        *mapping = {};
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
 
         mapping->targetApp = AllocateAndCopyString(app);
         mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
-        mapping->startInDirectory = nullptr;
-        mapping->elevation = 0;
-        mapping->ifRunningAction = 0;
-        mapping->visibility = 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -526,6 +547,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
 
             mapping->operationType = static_cast<int>(targetShortcut.operationType);
+            mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+            mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+            mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+            mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
 
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
@@ -533,10 +558,6 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
-                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
-                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
-                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
-                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
@@ -558,6 +579,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         }
         else if (targetShortcutUnion.index() == 2)
         {
+            // A text target lives in a different slot of the union than the RunProgram/OpenURI
+            // targets, so it has no Shortcut::operationType to read. Report RemapText (3) - the
+            // same value GetShortcutRemapCountByType already filters on - rather than 0, which
+            // made the managed side file every shortcut-to-text remap under key remappings with
+            // an empty target. The payload is carried by targetText, while targetKeys stays
+            // empty to preserve the canonical editor representation for non-key operations.
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
             mapping->operationType = 3;
@@ -643,7 +670,17 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         Shortcut originalShortcut(originalKeys);
-        originalShortcut.exactMatch = exactMatch != 0;
+        originalShortcut.exactMatch = (exactMatch != 0);
+
+        // AddOSLevelShortcut/AddAppSpecificShortcut only reject duplicates, so without this an
+        // origin the engine can never match - a "shortcut" with no modifier, for instance - would
+        // be written to default.json and silently do nothing. The classic editor gates on the same
+        // predicate in LoadingAndSavingRemappingHelper::ApplyShortcutRemappings.
+        if (!EditorHelpers::IsValidShortcut(originalShortcut))
+        {
+            Logger::warn(L"Refusing to add a remap for an invalid origin shortcut: {0}", originalKeys ? originalKeys : L"null");
+            return false;
+        }
 
         KeyShortcutTextUnion targetShortcut;
 
@@ -756,6 +793,29 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return lhs == rhs;
     }
 
+    int DoKeysOverlap(int first, int second)
+    {
+        return static_cast<int>(EditorHelpers::DoKeysOverlap(static_cast<DWORD>(first), static_cast<DWORD>(second)));
+    }
+
+    int DoShortcutsOverlap(const wchar_t* first, const wchar_t* second)
+    {
+        if (!first || !second)
+        {
+            return static_cast<int>(ShortcutErrorType::NoError);
+        }
+
+        Shortcut lhs(first);
+        Shortcut rhs(second);
+
+        return static_cast<int>(EditorHelpers::DoShortcutsOverlap(lhs, rhs));
+    }
+
+    int GetCombinedKey(int keyCode)
+    {
+        return static_cast<int>(Helpers::GetCombinedKey(static_cast<DWORD>(keyCode)));
+    }
+
     // Function to delete a single key remapping
     bool DeleteSingleKeyRemap(void* config, int originalKey)
     {
@@ -810,6 +870,14 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         std::wstring appName = targetApp ? targetApp : L"";
         Shortcut shortcut(originalKeys);
+
+        // appSpecificShortcutReMap is keyed on the lower-cased process name - AddAppSpecificShortcut
+        // normalises on the way in, and the engine lower-cases the foreground process name before
+        // it looks the table up. The editor stores whatever the user typed, so without this the
+        // lookup misses for any app name containing an uppercase letter: the delete silently fails
+        // while the row is still removed from editorSettings.json, leaving a live remap that is no
+        // longer visible anywhere in the editor.
+        std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
 
         // Determine the type of remapping to delete based on the app name
         if (appName.empty())

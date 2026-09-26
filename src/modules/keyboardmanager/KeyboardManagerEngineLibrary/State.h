@@ -23,6 +23,9 @@ private:
     std::unordered_set<DWORD> aloneCombinationKeys;  // real key-down injected (combination started)
 
 public:
+    // Runtime key state must survive replacement of the persisted mapping configuration.
+    std::unordered_map<DWORD, bool> numpadKeyPressed;
+
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
 

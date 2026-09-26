@@ -7,6 +7,12 @@ namespace KeyboardManagerConstants
 
     inline const std::wstring EditorWindowEventName = L"PowerToys_KeyboardManager_Event_EditorWindow";
 
+    // The WinUI editor owns this mutex so a terminated editor cannot leave remapping suspended.
+    inline const std::wstring EditorWindowMutexName = L"Local\\PowerToys_KeyboardManager_Mutex_EditorWindow";
+
+    // Recording must allow an already-started remapping gesture to finish first.
+    inline const std::wstring EditorCaptureReadyEventName = L"Local\\PowerToys_KeyboardManager_Event_CaptureReady";
+
     // Name of the powertoy module.
     inline const std::wstring ModuleName = L"Keyboard Manager";
 
@@ -94,6 +100,8 @@ namespace KeyboardManagerConstants
     inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SUPPRESS_FLAG = 0x111; // Key events which must be suppressed
+    // Replayed source keys must still be remapped, so the injected flag (bit 0) is unset.
+    inline const ULONG_PTR KEYBOARDMANAGER_REPLAY_FLAG = 0x200;
 
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;

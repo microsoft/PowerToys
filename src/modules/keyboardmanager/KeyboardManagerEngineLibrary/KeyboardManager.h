@@ -3,11 +3,12 @@
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
 #include "State.h"
+#include "EditorSuspensionState.h"
 
 class KeyboardManager
 {
 public:
-    static const inline DWORD StartHookMessageID = WM_APP + 1;
+    static const inline DWORD UpdateHookMessageID = WM_APP + 1;
 
     // Constructor
     KeyboardManager();
@@ -18,12 +19,21 @@ public:
         {
             CloseHandle(editorIsRunningEvent);
         }
+
+        if (editorLifetimeMutex)
+        {
+            CloseHandle(editorLifetimeMutex);
+        }
+
+        if (editorCaptureReadyEvent)
+        {
+            CloseHandle(editorCaptureReadyEvent);
+        }
     }
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
-
-    bool HasRegisteredRemappings() const;
+    void UpdateLowlevelKeyboardHook();
 
 private:
     // Returns whether there are any remappings available without waiting for settings to load
@@ -65,7 +75,18 @@ private:
 
     std::atomic_bool loadingSettings = false;
 
+    // Published by the settings loader; hook lifecycle updates must not wait for a
+    // configuration reload or read its mutable mapping tables on the hook thread.
+    std::atomic_bool hasRegisteredRemappings = false;
+    std::atomic_bool hasAloneRemappings = false;
+
     HANDLE editorIsRunningEvent = nullptr;
+
+    HANDLE editorLifetimeMutex = nullptr;
+
+    HANDLE editorCaptureReadyEvent = nullptr;
+
+    EditorSuspensionState editorSuspensionState;
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);

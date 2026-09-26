@@ -39,7 +39,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BufferValidationTests.cpp" />
+    <ClCompile Include="EditorCaptureStateTests.cpp" />
     <ClCompile Include="LoadingAndSavingRemappingTests.cpp" />
+    <ClCompile Include="MappingConfigurationTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>

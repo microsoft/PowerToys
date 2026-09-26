@@ -83,23 +83,25 @@ namespace EditorHelpers
             {
                 return ShortcutErrorType::SameShortcutPreviouslyMapped;
             }
-            // action keys match
-            else if (first.actionKey == second.actionKey)
+            // Different chord endings can share a prefix. A shortcut without a chord still
+            // conflicts with that prefix, since it is invoked before a second key is pressed.
+            else if (first.actionKey == second.actionKey &&
+                     (!first.HasChord() || !second.HasChord() || first.secondKey == second.secondKey))
             {
-                // corresponding modifiers are either both disabled or both not disabled - this ensures that both match in types of modifiers i.e. Ctrl(l/r/c) Shift (l/r/c) A matches Ctrl(l/r/c) Shift (l/r/c) A
-                if (((first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled) || (first.winKey == ModifierKey::Disabled && second.winKey == ModifierKey::Disabled)) &&
-                    ((first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled) || (first.ctrlKey == ModifierKey::Disabled && second.ctrlKey == ModifierKey::Disabled)) &&
-                    ((first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled) || (first.altKey == ModifierKey::Disabled && second.altKey == ModifierKey::Disabled)) &&
-                    ((first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled) || (first.shiftKey == ModifierKey::Disabled && second.shiftKey == ModifierKey::Disabled)))
+                const auto modifiersOverlap = [](ModifierKey firstModifier, ModifierKey secondModifier) {
+                    return firstModifier == secondModifier ||
+                           (firstModifier != ModifierKey::Disabled && secondModifier != ModifierKey::Disabled &&
+                            (firstModifier == ModifierKey::Both || secondModifier == ModifierKey::Both));
+                };
+
+                // Every modifier must overlap. A common Ctrl does not make left Shift and
+                // right Shift conflict, and different sets of modifier types remain valid.
+                if (modifiersOverlap(first.winKey, second.winKey) &&
+                    modifiersOverlap(first.ctrlKey, second.ctrlKey) &&
+                    modifiersOverlap(first.altKey, second.altKey) &&
+                    modifiersOverlap(first.shiftKey, second.shiftKey))
                 {
-                    // If one of the modifier is common
-                    if ((first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both) ||
-                        (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both) ||
-                        (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both) ||
-                        (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
-                    {
-                        return ShortcutErrorType::ConflictingModifierShortcut;
-                    }
+                    return ShortcutErrorType::ConflictingModifierShortcut;
                 }
             }
         }

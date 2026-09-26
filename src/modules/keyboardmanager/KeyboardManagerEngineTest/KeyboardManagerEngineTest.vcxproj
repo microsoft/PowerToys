@@ -40,6 +40,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppSpecificShortcutRemappingTests.cpp" />
+    <ClCompile Include="EditorSuspensionTests.cpp" />
+    <ClCompile Include="MappingReloadTests.cpp" />
     <ClCompile Include="MockedInputSanityTests.cpp" />
     <ClCompile Include="SetKeyEventTests.cpp" />
     <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />

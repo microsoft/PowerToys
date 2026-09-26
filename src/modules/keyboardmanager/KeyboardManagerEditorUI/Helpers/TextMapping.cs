@@ -20,6 +20,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string AppName { get; set; } = string.Empty;
 
+        public bool ExactMatch { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public string Id { get; set; } = string.Empty;
