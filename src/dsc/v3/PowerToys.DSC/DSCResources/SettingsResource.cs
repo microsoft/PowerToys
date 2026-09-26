@@ -61,7 +61,8 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.ShortcutGuide),             CreateModuleFunctionData<ShortcutGuideSettings> },
             { nameof(ModuleType.PowerOCR),                  CreateModuleFunctionData<PowerOcrSettings> },
             { nameof(ModuleType.Workspaces),                CreateModuleFunctionData<WorkspacesSettings> },
-            { nameof(ModuleType.ZoomIt),                    CreateModuleFunctionData<ZoomItSettings> },
+            // ZoomIt stores its settings in the registry rather than in settings.json
+            { nameof(ModuleType.ZoomIt),                    input => new ZoomItSettingsFunctionData(input) },
 
             // The following modules are not currently supported:
             // - MouseWithoutBorders    Contains sensitive configuration values, making export/import potentially insecure.
