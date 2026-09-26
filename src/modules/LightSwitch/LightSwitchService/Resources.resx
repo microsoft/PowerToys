@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="REQUEST_ENVELOPE_INVALID" xml:space="preserve">
+    <value>The request must be a nonempty, BOM-less JSON object of at most 32768 characters.</value>
+    <comment>BOM means byte-order mark. Keep JSON and the limit 32768 unchanged.</comment>
+  </data>
+  <data name="REQUEST_ENCODING_INVALID" xml:space="preserve">
+    <value>The request contains invalid UTF-16 data.</value>
+    <comment>Keep UTF-16 unchanged.</comment>
+  </data>
+  <data name="REQUEST_PROPERTIES_PRIMITIVE" xml:space="preserve">
+    <value>Request properties must be primitive JSON values.</value>
+    <comment>Keep JSON unchanged.</comment>
+  </data>
+  <data name="REQUEST_DUPLICATE_PROPERTIES" xml:space="preserve">
+    <value>Duplicate request properties are not allowed.</value>
+  </data>
+  <data name="REQUEST_JSON_INVALID" xml:space="preserve">
+    <value>The request must be a valid JSON object.</value>
+    <comment>Keep JSON unchanged.</comment>
+  </data>
+  <data name="REQUEST_PROPERTY_UNSUPPORTED" xml:space="preserve">
+    <value>The request contains an unsupported property.</value>
+  </data>
+  <data name="REQUEST_VERSION_INVALID" xml:space="preserve">
+    <value>The request must specify protocol version 1.</value>
+    <comment>Keep the protocol version number 1 unchanged.</comment>
+  </data>
+  <data name="REQUEST_COMMAND_REQUIRED" xml:space="preserve">
+    <value>The request must specify a command string.</value>
+  </data>
+  <data name="REQUEST_COMMAND_UNSUPPORTED" xml:space="preserve">
+    <value>The request specifies an unsupported command.</value>
+  </data>
+  <data name="REQUEST_MODE_NOT_ALLOWED" xml:space="preserve">
+    <value>Only schedule-enable accepts a mode string.</value>
+    <comment>schedule-enable is a protocol command and must not be translated.</comment>
+  </data>
+  <data name="REQUEST_MODE_UNSUPPORTED" xml:space="preserve">
+    <value>Mode must be FixedHours, SunsetToSunrise, or FollowNightLight.</value>
+    <comment>FixedHours, SunsetToSunrise, and FollowNightLight are protocol values and must not be translated.</comment>
+  </data>
+  <data name="REQUEST_READ_TIMEOUT" xml:space="preserve">
+    <value>Timed out waiting for a complete request.</value>
+  </data>
+  <data name="SERVICE_STOPPING" xml:space="preserve">
+    <value>Light Switch is stopping.</value>
+  </data>
+  <data name="REQUEST_NEWLINE_REQUIRED" xml:space="preserve">
+    <value>The UTF-16LE request must end with a newline.</value>
+    <comment>Keep UTF-16LE unchanged.</comment>
+  </data>
+  <data name="REQUEST_SINGLE_REQUIRED" xml:space="preserve">
+    <value>Only one request is allowed per connection.</value>
+  </data>
+  <data name="REQUEST_TOO_LONG" xml:space="preserve">
+    <value>The request exceeds the 32768-character limit.</value>
+    <comment>Keep the limit 32768 unchanged.</comment>
+  </data>
+  <data name="RESPONSE_TOO_LONG" xml:space="preserve">
+    <value>The response exceeds the 32768-character limit.</value>
+    <comment>Keep the limit 32768 unchanged.</comment>
+  </data>
+  <data name="CLIENT_LOGON_MISMATCH" xml:space="preserve">
+    <value>The client is not in the Light Switch user's logon session.</value>
+  </data>
+  <data name="RESPONSE_MISSING" xml:space="preserve">
+    <value>Light Switch did not return a response.</value>
+  </data>
+  <data name="COMMAND_FAILED" xml:space="preserve">
+    <value>Light Switch could not process the command.</value>
+  </data>
+  <data name="REQUEST_FAILED" xml:space="preserve">
+    <value>Light Switch could not complete the request.</value>
+  </data>
+  <data name="SCHEDULE_MODE_REQUIRED" xml:space="preserve">
+    <value>The schedule is off. Specify --mode fixed-hours, sunset-to-sunrise, or follow-night-light.</value>
+    <comment>--mode, fixed-hours, sunset-to-sunrise, and follow-night-light are command-line tokens and must not be translated.</comment>
+  </data>
+  <data name="SCHEDULE_CHANGED" xml:space="preserve">
+    <value>The schedule was changed by another settings update. Query status and try again.</value>
+    <comment>status is a command and must not be translated.</comment>
+  </data>
+  <data name="SETTINGS_NOT_LOADED" xml:space="preserve">
+    <value>Light Switch settings have not been loaded successfully.</value>
+  </data>
+  <data name="THEME_READ_FAILED" xml:space="preserve">
+    <value>Windows theme state could not be read.</value>
+  </data>
+  <data name="COMMAND_UNKNOWN" xml:space="preserve">
+    <value>Unknown Light Switch command.</value>
+  </data>
+  <data name="SETTINGS_READ_ERROR" xml:space="preserve">
+    <value>Light Switch settings could not be read (error {0}).</value>
+    <comment>{0} is a numeric Windows error code. Preserve the numbered placeholder.</comment>
+  </data>
+  <data name="SETTINGS_JSON_INVALID" xml:space="preserve">
+    <value>Light Switch settings contain invalid JSON.</value>
+    <comment>Keep JSON unchanged.</comment>
+  </data>
+  <data name="SETTINGS_TEMPORARY_FILE_FAILED" xml:space="preserve">
+    <value>A temporary settings file could not be created (error {0}).</value>
+    <comment>{0} is a numeric Windows error code. Preserve the numbered placeholder.</comment>
+  </data>
+  <data name="SETTINGS_WRITE_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be written.</value>
+  </data>
+  <data name="SETTINGS_UPDATE_READ_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be read during the update.</value>
+  </data>
+  <data name="SETTINGS_UPDATE_SUPERSEDED" xml:space="preserve">
+    <value>Light Switch settings changed during the update. Try the command again.</value>
+  </data>
+  <data name="SETTINGS_REPLACE_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be replaced (error {0}).</value>
+    <comment>{0} is a numeric Windows error code. Preserve the numbered placeholder.</comment>
+  </data>
+  <data name="SETTINGS_MODE_UNSUPPORTED" xml:space="preserve">
+    <value>The configured scheduleMode is not supported.</value>
+    <comment>scheduleMode is a JSON property name and must not be translated.</comment>
+  </data>
+  <data name="SETTINGS_PROPERTIES_INVALID" xml:space="preserve">
+    <value>Light Switch settings contain missing or invalid properties.</value>
+  </data>
+  <data name="SETTINGS_RUNTIME_FAILED" xml:space="preserve">
+    <value>The settings JSON runtime could not be initialized.</value>
+    <comment>Keep JSON unchanged.</comment>
+  </data>
+  <data name="SETTINGS_OPEN_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be opened (error {0}).</value>
+    <comment>{0} is a numeric Windows error code. Preserve the numbered placeholder.</comment>
+  </data>
+  <data name="SETTINGS_OPEN_AFTER_INITIALIZATION_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be opened after initialization (open error {0}, publish error {1}).</value>
+    <comment>{0} is the numeric Windows open error code; {1} is the numeric Windows publish error code. Preserve the numbered placeholders.</comment>
+  </data>
+  <data name="SETTINGS_INITIALIZATION_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be initialized.</value>
+  </data>
+  <data name="SCHEDULE_MODE_UNSUPPORTED" xml:space="preserve">
+    <value>The requested schedule mode is not supported.</value>
+  </data>
+  <data name="SETTINGS_READ_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be read.</value>
+  </data>
+  <data name="SETTINGS_UPDATE_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be updated.</value>
+  </data>
+  <data name="SUN_TIMES_SAVE_FAILED" xml:space="preserve">
+    <value>Light Switch sun times could not be saved.</value>
+  </data>
+  <data name="SETTINGS_READ_OR_JSON_FAILED" xml:space="preserve">
+    <value>Light Switch settings could not be read or contain invalid JSON.</value>
+    <comment>Keep JSON unchanged.</comment>
+  </data>
+  <data name="THEME_WRITE_FAILED" xml:space="preserve">
+    <value>The requested theme could not be applied or verified (Windows error {0}).</value>
+    <comment>{0} is a numeric Windows error code. Preserve the numbered placeholder.</comment>
+  </data>
+  <data name="NIGHT_LIGHT_READ_FAILED" xml:space="preserve">
+    <value>The Windows Night Light state could not be read.</value>
+    <comment>Night Light is the Windows feature name.</comment>
+  </data>
+  <data name="THEME_TARGETS_DISABLED" xml:space="preserve">
+    <value>No theme targets are enabled in Light Switch settings.</value>
+  </data>
+  <data name="THEME_TOGGLE_READ_FAILED" xml:space="preserve">
+    <value>The current theme could not be read. No themes were changed.</value>
+  </data>
+  <data name="WORKER_NOTIFY_FAILED" xml:space="preserve">
+    <value>Could not notify the Light Switch worker.</value>
+  </data>
+  <data name="SCHEDULE_STARTED_TIMEOUT" xml:space="preserve">
+    <value>Light Switch did not finish in time. The schedule may have changed; query status before retrying.</value>
+    <comment>status is a command and must not be translated.</comment>
+  </data>
+  <data name="SCHEDULE_QUEUED_TIMEOUT" xml:space="preserve">
+    <value>The schedule request timed out before it could be executed.</value>
+  </data>
+  <data name="SCHEDULE_APPLY_FAILED" xml:space="preserve">
+    <value>Light Switch could not apply the schedule.</value>
+  </data>
+</root>

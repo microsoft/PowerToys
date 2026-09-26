@@ -18,6 +18,15 @@
     <ClCompile Include="LightSwitchService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CliPipeServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CliIdentity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CliProtocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ThemeScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LightSwitchSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SettingsConstants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinHookEventIDs.cpp">
@@ -47,16 +53,31 @@
     <ClInclude Include="ThemeScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CliPipeServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CliIdentity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CliProtocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalizedStrings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScheduleCommandQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ThemeHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LightSwitchSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinHookEventIDs.h">
@@ -79,8 +100,16 @@
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="LightSwitchService.rc">
+    <ResourceCompile Include="Generated Files\LightSwitchService.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LightSwitchService.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
