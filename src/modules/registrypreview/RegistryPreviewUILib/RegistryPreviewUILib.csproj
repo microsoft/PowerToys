@@ -79,4 +79,5 @@
     <Folder Include="Controls\MonacoEditor\" />
     <Folder Include="Controls\HexBox\" />
   </ItemGroup>
+
 </Project>
