@@ -26,5 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI\PowerToys.Settings.csproj" />
+    <ProjectReference Include="..\Settings.UI.Cli\PowerToys.Settings.Cli.csproj" />
   </ItemGroup>
 </Project>
