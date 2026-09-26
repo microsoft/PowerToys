@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -147,7 +147,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var providerSettings = GetProviderSettings(settingsService.Settings);
 
-        // Persist the connected provider settings (fallback commands, etc.)
+        // Persist the connected provider settings. The fallbacks aren't loaded yet, so their
+        // defaults are persisted separately once they are (see PersistFallbackDefaults).
         settingsService.UpdateSettings(
             s =>
             {
@@ -233,6 +234,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
             InitializeCommands(objects, serviceProvider, four);
+            PersistFallbackDefaults(settingsService);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -245,6 +247,28 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 RecallFromCache();
             }
         }
+    }
+
+    /// <summary>
+    /// Records default settings for fallbacks that don't have any yet. The main page reads which
+    /// fallbacks are included in global results from the persisted settings, so without this a new
+    /// built-in fallback stays out of global results until the settings page is opened.
+    /// </summary>
+    private void PersistFallbackDefaults(ISettingsService settingsService)
+    {
+        if (FallbackItems.Length == 0)
+        {
+            return;
+        }
+
+        // UpdateSettings always writes the file, so skip it when every fallback is already known.
+        var current = settingsService.Settings;
+        if (ReferenceEquals(current.GetProviderSettings(this).Model, current))
+        {
+            return;
+        }
+
+        settingsService.UpdateSettings(s => s.GetProviderSettings(this).Model, hotReload: false);
     }
 
     private void RecallFromCache()
