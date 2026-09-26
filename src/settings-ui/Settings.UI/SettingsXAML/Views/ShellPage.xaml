@@ -288,6 +288,12 @@
                             AutomationProperties.AutomationId="GrabAndMoveNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}" />
                         <NavigationViewItem
+                            x:Name="DEPiPNavigationItem"
+                            x:Uid="Shell_DEPiP"
+                            helpers:NavHelper.NavigateTo="views:DEPiPPage"
+                            AutomationProperties.AutomationId="DEPiPNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/DEPiP.png}" />
+                        <NavigationViewItem
                             x:Name="AltWindowCycleNavigationItem"
                             x:Uid="Shell_AltWindowCycle"
                             helpers:NavHelper.NavigateTo="views:AltWindowCyclePage"

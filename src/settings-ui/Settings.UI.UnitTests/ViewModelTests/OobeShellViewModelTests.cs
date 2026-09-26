@@ -25,5 +25,16 @@ namespace ViewModelTests
             Assert.IsTrue(altWindowCycleIndex >= 0);
             Assert.AreEqual(altWindowCycleIndex + 1, workspacesIndex);
         }
+
+        [TestMethod]
+        public void ModulesIncludesDEPiPAsNew()
+        {
+            var viewModel = new OobeShellViewModel();
+
+            var depip = viewModel.GetModule(PowerToysModules.DEPiP);
+
+            Assert.AreEqual(PowerToysModules.DEPiP.ToString(), depip.ModuleName);
+            Assert.IsTrue(depip.IsNew);
+        }
     }
 }

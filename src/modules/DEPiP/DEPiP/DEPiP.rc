@@ -1,0 +1,15 @@
+#include "resource.h"
+
+IDI_APP_ICON ICON "Assets\\DEPiP.ico"
+
+STRINGTABLE
+BEGIN
+    IDS_APP_TITLE "DEPiP"
+    IDS_DISPLAY_SELECTOR_TITLE "DEPiP: Display Extended PiP"
+    IDS_DISPLAY_SELECTOR_INSTRUCTION "Choose the display to mirror"
+    IDS_DISPLAY_SELECTOR_DESCRIPTION "DEPiP can mirror any connected display, including your primary display."
+    IDS_PRIMARY_DISPLAY "Primary"
+    IDS_CAPTURE_ERROR "DEPiP could not start display capture."
+    IDS_DISPLAY_LABEL "Display"
+    IDS_CANCEL "Cancel"
+END
