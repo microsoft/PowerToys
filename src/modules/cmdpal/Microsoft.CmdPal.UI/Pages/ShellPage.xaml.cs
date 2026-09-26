@@ -444,20 +444,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag, message.ExtensionGalleryId);
+            OpenSettings(message);
         });
     }
 
-    public void OpenSettings(string pageTag, string? extensionGalleryId = null)
+    public void OpenSettings(OpenSettingsMessage message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         if (_settingsWindow is null)
         {
-            _settingsWindow = new SettingsWindow();
+            _settingsWindow = new SettingsWindow(
+                App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
+                App.Current.Services.GetRequiredService<ISettingsLinkResolver>(),
+                App.Current.Services.GetRequiredService<SettingsLinkContextMenuService>(),
+                _settingsService);
         }
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag, extensionGalleryId);
+        _settingsWindow.Navigate(message);
     }
 
     public void Receive(ShowDetailsMessage message)

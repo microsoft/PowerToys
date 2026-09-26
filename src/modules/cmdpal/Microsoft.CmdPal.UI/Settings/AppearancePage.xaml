@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.AppearancePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,6 +6,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -22,7 +23,10 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <TextBlock x:Uid="Settings_AppearancePage_AppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_AppearanceSettingsHeader"
+                        local:SettingsPageTarget.Id="visuals-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <StackPanel
                         Margin="0,0,0,16"
                         HorizontalAlignment="Left"
@@ -70,7 +74,10 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_AppTheme_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE793;}"
+                        local:SettingsPageTarget.Id="theme">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_AppearancePage_Theme"
@@ -103,7 +110,8 @@
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_BackdropStyle_SettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
-                        IsExpanded="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}">
+                        IsExpanded="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}"
+                        local:SettingsPageTarget.Id="backdrop">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_AppearancePage_BackdropStyle"
@@ -148,7 +156,8 @@
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsEnabled="{x:Bind ViewModel.Appearance.IsBackgroundSettingsEnabled, Mode=OneWay}"
-                        IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
+                        IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}"
+                        local:SettingsPageTarget.Id="background">
                         <Grid>
                             <ComboBox
                                 x:Uid="Settings_GeneralPage_ColorizationMode"
@@ -284,12 +293,21 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE945;}"
+                        local:SettingsPageTarget.Id="disable-animations">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_DisableAnimations" IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <TextBlock x:Uid="Settings_AppearancePage_LayoutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_LayoutSettingsHeader"
+                        local:SettingsPageTarget.Id="layout-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_CompactMode_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}"
+                        local:SettingsPageTarget.Id="compact-mode">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind ViewModel.CompactMode, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
@@ -307,7 +325,10 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                    <controls:SettingsCard
+                        x:Uid="Run_PositionHeader"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}"
+                        local:SettingsPageTarget.Id="launch-position">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_MonitorPosition"
@@ -320,7 +341,10 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}"
+                        local:SettingsPageTarget.Id="toast-position">
                         <controls:SettingsCard.Description>
                             <HyperlinkButton
                                 x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
@@ -340,20 +364,35 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <TextBlock x:Uid="Settings_AppearancePage_InteractionSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                    <TextBlock
+                        x:Uid="Settings_AppearancePage_InteractionSettingsHeader"
+                        local:SettingsPageTarget.Id="interaction-section"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        local:SettingsPageTarget.Id="single-click-activation">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}"
+                        local:SettingsPageTarget.Id="show-app-details">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_ShowAppDetails" IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE750;}"
+                        local:SettingsPageTarget.Id="backspace-goes-back">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_BackspaceGoesBack" IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE845;}"
+                        local:SettingsPageTarget.Id="escape-key-behavior">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_AppearancePage_EscapeKeyBehavior"

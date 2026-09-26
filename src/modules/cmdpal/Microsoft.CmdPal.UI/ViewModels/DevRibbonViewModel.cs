@@ -104,7 +104,7 @@ internal sealed partial class DevRibbonViewModel : ObservableObject
     [RelayCommand]
     private void OpenInternalTools()
     {
-        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Internal"));
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(SettingsPageTags.Internal));
     }
 
     [RelayCommand]
