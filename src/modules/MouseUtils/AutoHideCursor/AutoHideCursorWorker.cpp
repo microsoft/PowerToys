@@ -288,26 +288,23 @@ namespace
             if (code >= 0 && s_instance)
             {
                 const auto* mouse = reinterpret_cast<const MSLLHOOKSTRUCT*>(data);
-                if ((mouse->flags & (LLMHF_INJECTED | LLMHF_LOWER_IL_INJECTED)) == 0)
+                auto inputKind = auto_hide_cursor::MouseInputKind::ButtonOrWheel;
+                if (message == WM_MOUSEMOVE)
                 {
-                    auto inputKind = auto_hide_cursor::MouseInputKind::ButtonOrWheel;
-                    if (message == WM_MOUSEMOVE)
-                    {
-                        inputKind = auto_hide_cursor::MouseInputKind::Move;
-                    }
-                    else if (message != WM_LBUTTONDOWN && message != WM_LBUTTONUP &&
-                             message != WM_RBUTTONDOWN && message != WM_RBUTTONUP &&
-                             message != WM_MBUTTONDOWN && message != WM_MBUTTONUP &&
-                             message != WM_XBUTTONDOWN && message != WM_XBUTTONUP &&
-                             message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL)
-                    {
-                        return CallNextHookEx(nullptr, code, message, data);
-                    }
-
-                    const auto point = auto_hide_cursor::Point{ mouse->pt.x, mouse->pt.y };
-                    s_instance->QueueAction(
-                        s_instance->m_state.OnMouseInput(GetTickCount64(), point, inputKind));
+                    inputKind = auto_hide_cursor::MouseInputKind::Move;
                 }
+                else if (message != WM_LBUTTONDOWN && message != WM_LBUTTONUP &&
+                         message != WM_RBUTTONDOWN && message != WM_RBUTTONUP &&
+                         message != WM_MBUTTONDOWN && message != WM_MBUTTONUP &&
+                         message != WM_XBUTTONDOWN && message != WM_XBUTTONUP &&
+                         message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL)
+                {
+                    return CallNextHookEx(nullptr, code, message, data);
+                }
+
+                const auto point = auto_hide_cursor::Point{ mouse->pt.x, mouse->pt.y };
+                s_instance->QueueAction(
+                    s_instance->m_state.OnMouseInput(GetTickCount64(), point, inputKind));
             }
 
             return CallNextHookEx(nullptr, code, message, data);
