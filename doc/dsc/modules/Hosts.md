@@ -76,12 +76,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Hosts --input $config
 
 This example enables administrator launch and configures line positioning.
 
-```bash
-dsc config set --file hosts-config.dsc.yaml
-```
+Save the following configuration as `hosts-config.dsc.config.yaml`:
 
 ```yaml
-# hosts-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Hosts File Editor
@@ -95,17 +93,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file hosts-config.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures the Hosts editor for admin
 launch.
 
-```bash
-winget configure winget-hosts.yaml
-```
+Save the following configuration as `hosts.dsc.config.winget`:
 
 ```yaml
-# winget-hosts.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -128,16 +130,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure hosts.dsc.config.winget
+```
+
 ### Example 4 - Development configuration
 
 This example configures for development use with new entries at the bottom.
 
-```bash
-dsc config set --file hosts-development.dsc.yaml
-```
+Save the following configuration as `hosts-development.dsc.config.yaml`:
 
 ```yaml
-# hosts-development.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Development hosts configuration
@@ -149,6 +155,12 @@ resources:
           AdditionalLinesPosition: 1
         name: Hosts
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file hosts-development.dsc.config.yaml
 ```
 
 ## Use cases
