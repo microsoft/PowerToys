@@ -110,7 +110,7 @@
                                 x:Name="DevicesItemsControl"
                                 HorizontalAlignment="Center"
                                 IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                                ItemsSource="{Binding MachineMatrixString, Mode=TwoWay}">
+                                ItemsSource="{Binding MachineMatrixString, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapGrid MaximumRowsOrColumns="{Binding MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToNumberOfRowsConverter}}" Orientation="Horizontal" />

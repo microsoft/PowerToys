@@ -583,18 +583,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // PowerDisplay Integration Properties and Methods
-        public ObservableCollection<PowerDisplayProfile> AvailableProfiles
-        {
-            get => _availableProfiles;
-            set
-            {
-                if (_availableProfiles != value)
-                {
-                    _availableProfiles = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+        public ObservableCollection<PowerDisplayProfile> AvailableProfiles { get; } = new ObservableCollection<PowerDisplayProfile>();
 
         public bool IsPowerDisplayEnabled
         {
@@ -886,7 +875,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private TimeSpan? _sunsetTimeSpan;
 
         // PowerDisplay integration
-        private ObservableCollection<PowerDisplayProfile> _availableProfiles = new ObservableCollection<PowerDisplayProfile>();
         private bool _isPowerDisplayEnabled;
         private PowerDisplayProfile? _selectedDarkModeProfile;
         private PowerDisplayProfile? _selectedLightModeProfile;

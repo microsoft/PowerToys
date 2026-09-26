@@ -128,9 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var targetDeviceIndex = GetDeviceIndex((Border)e.OriginalSource);
 
             ViewModel.MachineMatrixString.Swap(draggedDeviceIndex, targetDeviceIndex);
-            var itemsControl = (ItemsControl)FindName("DevicesItemsControl");
-            var binding = itemsControl.GetBindingExpression(ItemsControl.ItemsSourceProperty);
-            binding.UpdateSource();
+            ViewModel.SaveMachineMatrix();
         }
 
         private void Device_DragOver(object sender, DragEventArgs e)
