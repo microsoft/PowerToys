@@ -77,7 +77,6 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
         var editorParams = ReadEditorParametersWithRefresh();
         var appliedLayouts = FancyZonesDataIO.ReadAppliedLayouts();
-        appliedLayouts.AppliedLayouts ??= new List<AppliedLayouts.AppliedLayoutWrapper>();
 
         List<int> monitorsToUpdate = GetMonitorsToUpdate(editorParams, monitor, all);
         List<AppliedLayouts.AppliedLayoutWrapper> newLayouts = BuildNewLayouts(editorParams, monitorsToUpdate, targetCustomLayout, targetTemplate);

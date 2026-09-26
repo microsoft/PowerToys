@@ -386,8 +386,8 @@ namespace FancyZonesEditor
                 GridLayoutModel gridModel = new GridLayoutModel(LayoutNameText.Text, LayoutType.Custom)
                 {
                     Rows = 1,
-                    RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
                 };
+                gridModel.RowPercents.Add(GridLayoutModel.GridMultiplier);
                 selectedLayoutModel = gridModel;
             }
             else
