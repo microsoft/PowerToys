@@ -21,6 +21,7 @@ enum class ScheduleMode
     FixedHours,
     SunsetToSunrise,
     FollowNightLight,
+    FollowBrightness,
     // Add more in the future
 };
 
@@ -34,6 +35,8 @@ inline std::wstring ToString(ScheduleMode mode)
         return L"SunsetToSunrise";
     case ScheduleMode::FollowNightLight:
         return L"FollowNightLight";
+    case ScheduleMode::FollowBrightness:
+        return L"FollowBrightness";
     default:
         return L"Off";
     }
@@ -47,6 +50,8 @@ inline ScheduleMode FromString(const std::wstring& str)
         return ScheduleMode::FixedHours;
     if (str == L"FollowNightLight")
         return ScheduleMode::FollowNightLight;
+    if (str == L"FollowBrightness")
+        return ScheduleMode::FollowBrightness;
     else
         return ScheduleMode::Off;
 }
@@ -67,6 +72,10 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
+
+    // Brightness threshold (0-100). When display brightness reaches or exceeds this value,
+    // light mode is activated; when it drops below, dark mode is activated.
+    int brightnessThreshold = 90;
 };
 
 class LightSwitchSettings
