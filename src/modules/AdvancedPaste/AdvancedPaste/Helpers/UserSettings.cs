@@ -153,6 +153,16 @@ namespace AdvancedPaste.Settings
                                     (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
                                     (PasteFormats.TranscodeToMp3, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp3]),
                                     (PasteFormats.TranscodeToMp4, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp4]),
+                                    (PasteFormats.LowerCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.LowerCase]),
+                                    (PasteFormats.UpperCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.UpperCase]),
+                                    (PasteFormats.TitleCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.TitleCase]),
+                                    (PasteFormats.SentenceCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.SentenceCase]),
+                                    (PasteFormats.ToggleCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.ToggleCase]),
+                                    (PasteFormats.CamelCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.CamelCase]),
+                                    (PasteFormats.PascalCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.PascalCase]),
+                                    (PasteFormats.SnakeCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.SnakeCase]),
+                                    (PasteFormats.ScreamingSnakeCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.ScreamingSnakeCase]),
+                                    (PasteFormats.KebabCase, [sourceAdditionalActions.TextCase, sourceAdditionalActions.TextCase.KebabCase]),
                                 ];
 
                                 _additionalActions.Clear();

@@ -2153,6 +2153,39 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
     <value>Paste as JSON directly</value>
   </data>
+  <data name="TextCase.Header" xml:space="preserve">
+    <value>Text case</value>
+  </data>
+  <data name="LowerCase.Header" xml:space="preserve">
+    <value>Lower case</value>
+  </data>
+  <data name="UpperCase.Header" xml:space="preserve">
+    <value>UPPER CASE</value>
+  </data>
+  <data name="TitleCase.Header" xml:space="preserve">
+    <value>Title Case</value>
+  </data>
+  <data name="SentenceCase.Header" xml:space="preserve">
+    <value>Sentence case</value>
+  </data>
+  <data name="ToggleCase.Header" xml:space="preserve">
+    <value>Toggle case</value>
+  </data>
+  <data name="CamelCase.Header" xml:space="preserve">
+    <value>camelCase</value>
+  </data>
+  <data name="PascalCase.Header" xml:space="preserve">
+    <value>PascalCase</value>
+  </data>
+  <data name="SnakeCase.Header" xml:space="preserve">
+    <value>snake_case</value>
+  </data>
+  <data name="ScreamingSnakeCase.Header" xml:space="preserve">
+    <value>SCREAMING_SNAKE_CASE</value>
+  </data>
+  <data name="KebabCase.Header" xml:space="preserve">
+    <value>kebab-case</value>
+  </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
   </data>
