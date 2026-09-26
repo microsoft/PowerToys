@@ -310,8 +310,7 @@ namespace ShortcutGuide
                         Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
                         OverlayWindow.ShowOverlay();
-                        OverlayWindow.UpdateTaskbarPaneLayout();
-                        OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
+                        OverlayWindow.ShowTaskbarIndicators();
                         break;
 
                     case ShortcutGuideActivationAction.ShowFullGuide:
@@ -334,6 +333,7 @@ namespace ShortcutGuide
                         }
 
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+                        OverlayWindow.HideTaskbarIndicators();
                         OverlayWindow.ShowOverlay();
                         await OverlayWindow.MainPaneControl.Open();
                         if ((ShortcutGuideActivationSource)Volatile.Read(ref _activeSource) != activationSource ||
@@ -342,6 +342,7 @@ namespace ShortcutGuide
                             return;
                         }
 
+                        OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Collapsed;
                         OverlayWindow.UpdateTaskbarPaneLayout();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
                         OverlayWindow.MainPaneControl.FocusSearch();

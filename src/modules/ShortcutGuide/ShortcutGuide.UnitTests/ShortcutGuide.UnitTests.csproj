@@ -21,4 +21,8 @@
     <ProjectReference Include="..\ShortcutGuide.Ui\ShortcutGuide.Ui.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ShortcutGuide.UnitTests" />
+  </ItemGroup>
+
 </Project>

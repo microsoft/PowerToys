@@ -45,13 +45,14 @@ namespace ShortcutGuide.Controls
         /// <param name="overlayPhysicalOriginY">The overlay window's physical top in screen coordinates.</param>
         /// <param name="dpi">DPI scale factor of the host overlay window.</param>
         /// <param name="edge">The screen edge the taskbar is docked to.</param>
+        /// <param name="monitor">The monitor whose taskbar buttons should be queried.</param>
         internal TaskbarPaneLayout? UpdateTasklistButtons(
-            int overlayPhysicalOriginX, int overlayPhysicalOriginY, float dpi, TaskbarEdge edge)
+            int overlayPhysicalOriginX, int overlayPhysicalOriginY, float dpi, TaskbarEdge edge, bool playEntrance, IntPtr monitor)
         {
             TasklistButton[] buttons = [];
             try
             {
-                buttons = TasklistPositions.GetButtons();
+                buttons = TasklistPositions.GetButtons(monitor);
             }
             catch (Exception ex)
             {
@@ -75,9 +76,6 @@ namespace ShortcutGuide.Controls
             // and the indicators shrink with them. We use the smallest slot along
             // the taskbar so neighbouring bubbles never overlap, clamped to a
             // readable range.
-            const double MaxBodyDip = 40;
-            const double MinBodyDip = 28;
-            const double IndicatorGapDip = 4;
             const double TriangleTailDip = 6;
             const double EdgeMarginDip = 8;
 
@@ -89,7 +87,7 @@ namespace ShortcutGuide.Controls
                 minSlotPhysical = Math.Min(minSlotPhysical, horizontal ? b.Width : b.Height);
             }
 
-            double indicatorBodyDip = Math.Clamp((minSlotPhysical / dpi) - IndicatorGapDip, MinBodyDip, MaxBodyDip);
+            double indicatorBodyDip = IndicatorLayoutPolicy.GetBodySizeDip(minSlotPhysical, dpi);
             double indicatorThicknessDip = indicatorBodyDip + TriangleTailDip;
 
             IndicatorTailDirection tail = edge switch
@@ -131,7 +129,10 @@ namespace ShortcutGuide.Controls
                     double indicatorLeftDip = ((buttonCenterPhysical - leftmostPhysicalX) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetLeft(indicator, indicatorLeftDip);
                     Canvas.SetTop(indicator, 0);
-                    indicator.PlayEntrance();
+                    if (playEntrance)
+                    {
+                        indicator.PlayEntrance();
+                    }
                 }
 
                 // Anchor the strip adjacent to the taskbar buttons.
@@ -170,7 +171,10 @@ namespace ShortcutGuide.Controls
                     double indicatorTopDip = ((buttonCenterPhysical - topmostPhysicalY) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetTop(indicator, indicatorTopDip);
                     Canvas.SetLeft(indicator, 0);
-                    indicator.PlayEntrance();
+                    if (playEntrance)
+                    {
+                        indicator.PlayEntrance();
+                    }
                 }
 
                 // Anchor the strip adjacent to the taskbar buttons rather than

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,13 @@ namespace ShortcutGuide.Helpers
         {
             var targetMonitor = NativeMethods.MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
             return GetScreenDPIForMonitor(targetMonitor, ref dpi);
+        }
+
+        internal static float GetDPIScaleForMonitor(nint targetMonitor)
+        {
+            int dpi = DEFAULT_DPI;
+            GetScreenDPIForMonitor(targetMonitor, ref dpi);
+            return (float)dpi / DEFAULT_DPI;
         }
 
         private static long GetScreenDPIForMonitor(nint targetMonitor, ref int dpi)
