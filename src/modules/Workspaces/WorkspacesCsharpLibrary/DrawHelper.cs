@@ -14,7 +14,7 @@ namespace WorkspacesCsharpLibrary
         public static void SaveBitmap(Bitmap bitmap, MemoryStream memory)
         {
             ImageCodecInfo imageCodecInfo = ImageCodecInfo.GetImageEncoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Png.Guid);
-            EncoderParameters encoderParameters = new(1);
+            using EncoderParameters encoderParameters = new(1);
             encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 50);
 
             bitmap.Save(memory, imageCodecInfo, encoderParameters);
