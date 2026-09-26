@@ -51,7 +51,7 @@ public sealed partial class CommandBar : UserControl,
             new FlyoutShowOptions()
             {
                 ShowMode = FlyoutShowMode.Standard,
-                Placement = message.FlyoutPlacementMode ?? FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                Placement = message.FlyoutPlacementMode ?? FlyoutPlacementMode.TopEdgeAlignedRight, // This placement is one exception, More button is in the right-bottom corner
                 Position = message.Point,
             },
             message.InitialSubmenu);
