@@ -352,7 +352,6 @@ namespace ShortcutGuide
                 overlayPhysicalOriginX: this.AppWindow.Position.X,
                 overlayPhysicalOriginY: this.AppWindow.Position.Y,
                 dpi: dpi,
-                workAreaPhysical: workArea,
                 edge: _taskbarEdge);
 
             if (layout is null)
