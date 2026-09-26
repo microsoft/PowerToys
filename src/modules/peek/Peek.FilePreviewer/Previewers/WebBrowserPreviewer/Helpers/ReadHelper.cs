@@ -46,7 +46,8 @@ namespace Peek.FilePreviewer.Previewers
             // Check if the detected encoding is not null; otherwise, default to UTF-8
             Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
 
-            // Rewind and stream the decode so the whole file is never held in memory at once.
+            // Rewind and decode incrementally so the raw bytes are never buffered in full. The decoded text is still accumulated
+            // into a single string, so peak memory scales with the file size, bounded by maxReadableFileSizeBytes.
             // StreamReader strips a byte order mark rather than surface it as a leading U+FEFF character; the per-chunk
             // length check catches a file being appended to that would otherwise grow the preview past the limit.
             fs.Position = 0;
