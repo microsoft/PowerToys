@@ -165,6 +165,9 @@
     <value>Folder windows do not run in separate processes. (Click to open Explorer properties.)</value>
     <comment>Explorer is here the program File Explorer</comment>
   </data>
+  <data name="windowwalker_fallback_title" xml:space="preserve">
+    <value>Switch to an open window</value>
+  </data>
   <data name="windowwalker_ExplorerInfoTitle" xml:space="preserve">
     <value>Info: Ending the Explorer process isn't possible.</value>
     <comment>Explorer is here the program File Explorer</comment>

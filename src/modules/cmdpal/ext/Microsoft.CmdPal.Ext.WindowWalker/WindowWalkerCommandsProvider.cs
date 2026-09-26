@@ -10,6 +10,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker;
 public partial class WindowWalkerCommandsProvider : CommandProvider
 {
     private readonly CommandItem _windowWalkerPageItem;
+    private readonly FallbackWindowWalkerItem _fallbackItem = new();
 
     internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new();
 
@@ -30,4 +31,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_windowWalkerPageItem];
+
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallbackItem];
 }
