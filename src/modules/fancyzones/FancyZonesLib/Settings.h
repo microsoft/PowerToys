@@ -20,6 +20,18 @@ enum struct OverlappingZonesAlgorithm : int
     EnumElements = 4, // number of elements in the enum, not counting this
 };
 
+enum struct LayoutNameLabelPlacement : int
+{
+    TopLeft = 0,
+    TopCenter = 1,
+    TopRight = 2,
+    Center = 3,
+    BottomLeft = 4,
+    BottomCenter = 5,
+    BottomRight = 6,
+    EnumElements = 7, // number of elements in the enum, not counting this
+};
+
 // in reality, this file needs to be kept in sync currently with src/settings-ui/Settings.UI.Library/FZConfigProperties.cs
 struct Settings
 {
@@ -27,6 +39,7 @@ struct Settings
     bool shiftDrag = true;
     bool mouseSwitch = false;
     bool mouseMiddleClickSpanningMultipleZones = false;
+    bool mouseWheelLayoutSwitch = false;
     bool displayOrWorkAreaChange_moveWindows = true;
     bool zoneSetChange_flashZones = false;
     bool zoneSetChange_moveWindows = false;
@@ -51,6 +64,13 @@ struct Settings
     std::wstring zoneHighlightColor = L"#008CFF";
     std::wstring zoneNumberColor = L"#000000";
     int zoneHighlightOpacity = 50;
+    bool layoutNameLabelEnabled = true;
+    LayoutNameLabelPlacement layoutNameLabelPlacement = LayoutNameLabelPlacement::TopCenter;
+    std::wstring layoutNameLabelTextColor = L"#FFFFFF";
+    std::wstring layoutNameLabelBackgroundColor = L"#262626";
+    int layoutNameLabelFontSize = 36;
+    int layoutNameLabelPadding = 12;
+    int layoutNameLabelDuration = 1500; // milliseconds
     OverlappingZonesAlgorithm overlappingZonesAlgorithm = OverlappingZonesAlgorithm::Smallest;
     PowerToysSettings::HotkeyObject editorHotkey = PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, VK_OEM_3);
     bool windowSwitching = true;
