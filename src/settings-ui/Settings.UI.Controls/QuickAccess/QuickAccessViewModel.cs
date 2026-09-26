@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -11,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.ApplicationModel.Resources;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -75,6 +77,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
+            AddFlyoutMenuItem(ModuleType.LaserPointer, LaserPointerActions.ShareWindow);
+            AddFlyoutMenuItem(ModuleType.LaserPointer, LaserPointerActions.StopSharing);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
             AddFlyoutMenuItem(ModuleType.MousePointerCrosshairs);
             AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
@@ -87,7 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.Workspaces);
         }
 
-        private void AddFlyoutMenuItem(ModuleType moduleType)
+        private void AddFlyoutMenuItem(ModuleType moduleType, string? action = null)
         {
             if (_isModuleGpoDisabled(moduleType))
             {
@@ -96,12 +100,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             Items.Add(new QuickAccessItem
             {
-                Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Title = GetItemTitle(moduleType, action),
                 Tag = moduleType,
-                Visible = GetItemVisibility(moduleType),
+                CommandParameter = action,
+                Visible = GetItemVisibility(moduleType, action),
                 Description = GetModuleToolTip(moduleType),
-                Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                Command = new RelayCommand(() => _launcher.Launch(moduleType)),
+                Icon = GetItemIcon(moduleType, action),
+                Command = new RelayCommand(() => _launcher.Launch(moduleType, action)),
             });
         }
 
@@ -124,9 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (item.Tag is ModuleType moduleType)
                 {
-                    bool visible = GetItemVisibility(moduleType);
-
-                    item.Visible = visible;
+                    item.Visible = GetItemVisibility(moduleType, item.CommandParameter as string);
                 }
             }
         }
@@ -142,7 +145,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        private bool GetItemVisibility(ModuleType moduleType)
+        private bool GetItemVisibility(ModuleType moduleType, string? action = null)
         {
             // Generally, if gpo is enabled or if module enabled, then quick access item is visible.
             bool visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
@@ -153,7 +156,75 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 visible = visible && _kbmSettingsRepository.SettingsConfig.Properties.UseNewEditor;
             }
 
+            // Nothing to stop when nothing is being shared, so that entry only appears
+            // once there is something for it to act on.
+            if (moduleType == ModuleType.LaserPointer && action == LaserPointerActions.StopSharing)
+            {
+                visible = visible && IsSharableWindowOn();
+            }
+
             return visible;
+        }
+
+        // Items are normally just the module's name, because activating one launches that
+        // module. Laser Pointer is the exception: its entry toggles the sharable window
+        // rather than the laser, so it says what it does - and, because it is a toggle,
+        // which way it will go.
+        private string GetItemTitle(ModuleType moduleType, string? action = null)
+        {
+            string resourceName = moduleType switch
+            {
+                ModuleType.LaserPointer => action == LaserPointerActions.StopSharing
+                    ? "QuickAccess_LaserPointer_StopSharing/Title"
+                    : "QuickAccess_LaserPointer_ShareWindow/Title",
+                _ => Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType),
+            };
+
+            return _resourceLoader.GetString(resourceName);
+        }
+
+        private string GetItemIcon(ModuleType moduleType, string? action = null)
+        {
+            if (moduleType == ModuleType.LaserPointer)
+            {
+                // A window with a laser on it rather than the module's own icon, because
+                // these entries are about the sharable window. Sharing shows the laser
+                // striking a live window; stopping shows it greyed with a stop badge.
+                return action == LaserPointerActions.StopSharing
+                    ? "ms-appx:///Assets/Settings/Icons/LaserPointerStopSharing.png"
+                    : "ms-appx:///Assets/Settings/Icons/LaserPointerShareWindow.png";
+            }
+
+            return Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+        }
+
+        // The window belongs to the Laser Pointer module, which lives in the runner
+        // process, so its state arrives through a named event it keeps signalled while the
+        // window is up. The handle is not held on to: if the module goes away the name
+        // does too, and a stale open handle would keep reporting the last state forever.
+        private static bool IsSharableWindowOn()
+        {
+            try
+            {
+                using var state = EventWaitHandle.OpenExisting(Constants.LaserPointerPresenterActiveEvent());
+                return state.WaitOne(0);
+            }
+            catch (WaitHandleCannotBeOpenedException)
+            {
+                // No event means the module is not running, which is off either way.
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        // Called when the flyout is about to be shown: anything whose label depends on
+        // live state has to be re-read, because the items themselves are built once.
+        public void RefreshDynamicItems()
+        {
+            RefreshItemsVisibility();
         }
 
         private string GetModuleToolTip(ModuleType moduleType)
@@ -164,6 +235,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                 ModuleType.PowerDisplay => SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.KeyboardManager => SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.DefaultEditorShortcut.ToString(),
+                ModuleType.LaserPointer => SettingsRepository<LaserPointerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PresenterActivationShortcut.ToString(),
                 ModuleType.LightSwitch => SettingsRepository<LightSwitchSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ToggleThemeHotkey.Value.ToString(),
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),

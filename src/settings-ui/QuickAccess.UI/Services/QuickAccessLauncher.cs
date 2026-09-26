@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -22,9 +22,9 @@ namespace Microsoft.PowerToys.QuickAccess.Services
             _coordinator = coordinator;
         }
 
-        public override bool Launch(ModuleType moduleType)
+        public override bool Launch(ModuleType moduleType, string? action)
         {
-            bool moduleRun = base.Launch(moduleType);
+            bool moduleRun = base.Launch(moduleType, action);
 
             if (moduleRun)
             {
