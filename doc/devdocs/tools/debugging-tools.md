@@ -86,12 +86,17 @@ msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\Styles
 
 ### Clean Up Tool
 
-- Location: `/tools/CleanUp/`
-- Purpose: Clean up PowerToys installation artifacts
+- Location: [`/tools/CleanUp/`](../../../tools/CleanUp/)
+- Purpose: Remove PowerToys installations and clean up installation artifacts
 - Functionality:
-  - Removes registry entries
-  - Deletes settings files
-  - Helps with clean reinstallation
+  - Removes current-user and machine-wide MSI installations
+  - Recovers systems where per-user and per-machine installers block each other
+  - Removes cached WiX bundle registrations
+  - Preserves settings by default; `-RemoveSettings` deletes current-user settings
+
+Run `Uninstall-PowerToys.ps1` from an elevated PowerShell window. Start with
+`-WhatIf` to review the installations it detects. See the
+[cleanup tool README](../../../tools/CleanUp/README.md) for usage and limitations.
 
 ### Using Debugging Tools
 
