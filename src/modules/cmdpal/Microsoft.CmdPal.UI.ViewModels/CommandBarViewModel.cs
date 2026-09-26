@@ -6,8 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 
@@ -19,6 +17,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     private readonly DispatcherQueueTimer _debounceTimer;
 
     private volatile ICommandBarContext? _pendingSelectedItem;
+
+    public ICommandBarContext? CurrentContext => _pendingSelectedItem;
 
     public ICommandBarContext? SelectedItem
     {
@@ -65,21 +65,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     /// <remarks>
     /// The secondary command already has its own button. The selected context reports
     /// <see cref="ICommandBarContext.HasOverflowCommands"/> when other visible commands remain.
-    /// The menu must also be openable. Use <see cref="CanOpenContextMenu"/> to decide whether
-    /// input can open the menu, independently of this button's visibility.
+    /// The menu must also be openable. Input uses the current context's
+    /// <see cref="IContextMenuContext.CanOpenContextMenu"/>, independently of this button's visibility.
     /// </remarks>
     [ObservableProperty]
     public partial bool ShouldShowMoreCommandsButton { get; set; } = false;
-
-    /// <summary>
-    /// Gets whether the selected context has a visible command and can open its context menu.
-    /// </summary>
-    /// <remarks>
-    /// Used by the menu and keyboard handlers. Ctrl+K can open the menu even when
-    /// <see cref="ShouldShowMoreCommandsButton"/> is false.
-    /// This value is read from <see cref="SelectedItem"/> on demand and does not raise change notifications.
-    /// </remarks>
-    public bool CanOpenContextMenu => SelectedItem?.CanOpenContextMenu ?? false;
 
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
@@ -100,7 +90,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         _pendingSelectedItem = message.ViewModel;
 
-        // immediate: false is intentional — the timer tick always fires on the
+        // Debounce visual updates so the commands do not jump while browsing the list.
+        // immediate: false is intentional. The timer tick always fires on the
         // dispatcher queue thread, which guarantees ApplyPendingSelectedItem
         // runs on the UI thread even if Receive is called from a background
         // thread. Using immediate: true would invoke the delegate synchronously
@@ -145,12 +136,6 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         OnPropertyChanged(nameof(HasPrimaryCommand));
     }
 
-    // InvokeItemCommand is what this will be in Xaml due to source generator
-    // this comes in when an item in the list is tapped
-    // [RelayCommand]
-    public ContextKeybindingResult InvokeItem(CommandContextItemViewModel item) =>
-        PerformCommand(item);
-
     // this comes in when the primary button is tapped
     public void InvokePrimaryCommand()
     {
@@ -163,44 +148,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         PerformCommand(SecondaryCommand);
     }
 
-    public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    private void PerformCommand(CommandItemViewModel? command)
     {
-        var keybindings = SelectedItem?.Keybindings();
-        if (keybindings is not null)
+        if (command is not null)
         {
-            // Does the pressed key match any of the keybindings?
-            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-            if (keybindings.TryGetValue(pressedKeyChord, out var matchedItem))
-            {
-                return matchedItem is not null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
-            }
-        }
-
-        return ContextKeybindingResult.Unhandled;
-    }
-
-    private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
-    {
-        if (command is null)
-        {
-            return ContextKeybindingResult.Unhandled;
-        }
-
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
-        if (command.HasSubmenu)
-        {
-            return ContextKeybindingResult.KeepOpen;
-        }
-        else
-        {
-            return ContextKeybindingResult.Hide;
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
         }
     }
-}
-
-public enum ContextKeybindingResult
-{
-    Unhandled,
-    Hide,
-    KeepOpen,
 }

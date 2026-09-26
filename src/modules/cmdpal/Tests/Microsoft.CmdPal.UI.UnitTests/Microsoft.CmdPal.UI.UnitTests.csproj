@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconLoadPriority.cs" Link="Helpers\Icons\IconLoadPriority.cs" />

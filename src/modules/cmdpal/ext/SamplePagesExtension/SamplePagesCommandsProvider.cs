@@ -6,6 +6,7 @@ using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages.IssueSpecificPages;
+using Windows.System;
 
 namespace SamplePagesExtension;
 
@@ -26,6 +27,25 @@ public partial class SamplePagesCommandsProvider : CommandProvider
        {
            Title = "Sample Pages",
            Subtitle = "View example commands",
+           MoreCommands = [
+               new CommandContextItem(new SampleListPage())
+               {
+                   Title = "Open list sample with shortcut",
+                   RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+               },
+               new CommandContextItem(new NoOpCommand { Name = "Shortcut submenu" })
+               {
+                   Title = "Shortcut submenu",
+                   RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
+                   MoreCommands = [
+                       new CommandContextItem(new SampleListPageWithDetails())
+                       {
+                           Title = "Open nested list sample",
+                           RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+                       },
+                   ],
+               },
+           ],
        },
     ];
 

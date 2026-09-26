@@ -377,6 +377,37 @@ public partial class ShellViewModelTests
         }
     }
 
+    [TestMethod]
+    public void CommandContext_FollowsSelectionImmediatelyWithoutACommandBar()
+    {
+        using var viewModel = CreateViewModel();
+        var first = Mock.Of<ICommandBarContext>();
+        var second = Mock.Of<ICommandBarContext>();
+
+        try
+        {
+            Assert.IsNull(viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            Assert.AreSame(first, viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
+            Assert.AreSame(second, viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(null));
+            Assert.IsNull(viewModel.CurrentCommandContext);
+
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            viewModel.Dispose();
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
+            Assert.IsNull(viewModel.CurrentCommandContext);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(viewModel);
+        }
+    }
+
     private static ShellViewModel CreateViewModel()
     {
         var host = new TestAppExtensionHost();

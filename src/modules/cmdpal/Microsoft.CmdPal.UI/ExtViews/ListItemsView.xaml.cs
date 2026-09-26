@@ -1419,7 +1419,8 @@ public sealed partial class ListItemsView : UserControl,
                         element,
                         FlyoutPlacementMode.BottomEdgeAlignedLeft,
                         pos,
-                        ContextMenuFilterLocation.Top));
+                        ContextMenuFilterLocation.Top,
+                        item));
             });
 
         return true;

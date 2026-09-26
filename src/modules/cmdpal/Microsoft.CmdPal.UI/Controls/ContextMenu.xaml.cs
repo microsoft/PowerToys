@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -19,40 +20,26 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class ContextMenu : UserControl,
-    IRecipient<UpdateCommandBarMessage>,
-    IRecipient<TryCommandKeybindingMessage>
+public sealed partial class ContextMenu : UserControl
 {
     public static readonly DependencyProperty ShowFilterBoxProperty =
         DependencyProperty.Register(nameof(ShowFilterBox), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true));
-
-    public static readonly DependencyProperty SubscribeToCommandBarProperty =
-        DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
 
     private static readonly CompositeFormat _contextMenuOpenedFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
 
     /// <summary>
-    /// True while the context menu is transitioning from PrepareForOpen to AnnounceOpened.
-    /// Prevents ViewModel_PropertyChanged from triggering UIA-visible selection changes.
+    /// Suppresses intermediate UI updates while synchronously replacing the menu context.
     /// </summary>
-    private bool _isOpening;
+    private bool _isPreparing;
+    private bool _hasAnnouncedOpen;
+    private int _openVersion;
+    private Func<bool>? _isFlyoutOpen;
 
     public bool ShowFilterBox
     {
         get => (bool)GetValue(ShowFilterBoxProperty);
         set => SetValue(ShowFilterBoxProperty, value);
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this control listens to the command bar's
-    /// selection and keybinding messages. Set to false for standalone usage (e.g. dock)
-    /// where the caller manages selection and opening directly.
-    /// </summary>
-    public bool SubscribeToCommandBar
-    {
-        get => (bool)GetValue(SubscribeToCommandBarProperty);
-        set => SetValue(SubscribeToCommandBarProperty, value);
     }
 
     public ContextMenuViewModel ViewModel { get; }
@@ -63,77 +50,44 @@ public sealed partial class ContextMenu : UserControl,
 
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-        if (SubscribeToCommandBar)
-        {
-            HookCommandBar();
-        }
     }
 
-    private static void OnSubscribeToCommandBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    internal void PrepareForOpen(IContextMenuContext context, ContextMenuFilterLocation filterLocation, CommandContextItemViewModel? initialSubmenu = null)
     {
-        if (d is ContextMenu control)
+        _openVersion++;
+        _hasAnnouncedOpen = false;
+        _isPreparing = true;
+        try
         {
-            if (e.NewValue is true)
-            {
-                control.HookCommandBar();
-            }
-            else
-            {
-                control.UnhookCommandBar();
-            }
+            ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
+            ViewModel.PrepareForOpen(context, initialSubmenu);
+
+            UpdateUiForStackChange();
         }
-    }
-
-    private void HookCommandBar()
-    {
-        var messenger = WeakReferenceMessenger.Default;
-
-        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
+        finally
         {
-            messenger.Register<UpdateCommandBarMessage>(this);
+            _isPreparing = false;
         }
-
-        if (!messenger.IsRegistered<TryCommandKeybindingMessage>(this))
-        {
-            messenger.Register<TryCommandKeybindingMessage>(this);
-        }
-
-        ViewModel.HookCommandBar();
-    }
-
-    private void UnhookCommandBar()
-    {
-        var messenger = WeakReferenceMessenger.Default;
-
-        messenger.Unregister<UpdateCommandBarMessage>(this);
-        messenger.Unregister<TryCommandKeybindingMessage>(this);
-
-        ViewModel.UnhookCommandBar();
-    }
-
-    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
-    {
-        _isOpening = true;
-
-        ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
-        ViewModel.ResetContextMenu();
-
-        UpdateUiForStackChange();
     }
 
     /// <summary>
     /// Fires a single consolidated Narrator announcement.
     /// Call this after the flyout is opened and focus has been set.
     /// </summary>
-    internal void AnnounceOpened()
+    internal void AnnounceOpened(Func<bool> isFlyoutOpen)
     {
+        _isFlyoutOpen = isFlyoutOpen;
+
         // Defer the announcement to the next dispatcher cycle. This ensures
         // any pending FilteredItems updates have completed and the flyout
         // content is fully materialized in the UIA tree.
+        var openVersion = _openVersion;
         DispatcherQueue.TryEnqueue(() =>
         {
-            _isOpening = false;
+            if (openVersion != _openVersion || !isFlyoutOpen() || ViewModel.SelectedItem is null)
+            {
+                return;
+            }
 
             var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
             var itemCount = commandItems.Count;
@@ -152,96 +106,89 @@ public sealed partial class ContextMenu : UserControl,
                 AutomationNotificationKind.ActionCompleted,
                 announcement,
                 "ContextMenuOpened");
+
+            _hasAnnouncedOpen = true;
         });
-    }
-
-    public void Receive(UpdateCommandBarMessage message)
-    {
-        UpdateUiForStackChange();
-    }
-
-    public void Receive(TryCommandKeybindingMessage msg)
-    {
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
-
-        if (result == ContextKeybindingResult.Hide)
-        {
-            msg.Handled = true;
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-            UpdateUiForStackChange();
-        }
-        else if (result == ContextKeybindingResult.KeepOpen)
-        {
-            UpdateUiForStackChange();
-            msg.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            msg.Handled = false;
-        }
     }
 
     private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem is CommandContextItemViewModel item)
         {
-            if (InvokeCommand(item) == ContextKeybindingResult.Hide)
-            {
-                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-            }
-
-            UpdateUiForStackChange();
+            InvokeCommand(item);
         }
     }
 
-    private void CommandsDropdown_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void HandleShortcut(KeyRoutedEventArgs e)
     {
-        if (e.Handled)
+        var mods = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key, 0);
+        var item = ViewModel.FindKeybinding(chord);
+        if (item is null)
         {
             return;
         }
 
-        var mods = KeyModifiers.GetCurrent();
-
-        var result = ViewModel?.CheckKeybinding(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key);
-
-        if (result == ContextKeybindingResult.Hide)
-        {
-            e.Handled = true;
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-            UpdateUiForStackChange();
-        }
-        else if (result == ContextKeybindingResult.KeepOpen)
-        {
-            e.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            e.Handled = false;
-        }
+        e.Handled = true;
+        InvokeCommand(item);
     }
 
     /// <summary>
-    /// Handles Escape to close the context menu. The flyout restores the previous focus.
+    /// Handles menu shortcuts before the focused filter or list processes the key.
     /// </summary>
     private void UserControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Escape)
         {
+            // TODO: Use NavigateBackOrClose() so Escape pops a submenu before closing at the root.
             // Let the flyout restore the previously focused element, even when More is hidden.
-            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
-
             e.Handled = true;
+            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+            return;
+        }
+
+        if (ContextFilterBox.FocusState != FocusState.Unfocused && e.Key is VirtualKey.Up or VirtualKey.Down)
+        {
+            e.Handled = true;
+            if (e.Key == VirtualKey.Up)
+            {
+                NavigateUp();
+            }
+            else
+            {
+                NavigateDown();
+            }
+
+            AnnounceSelectedItem();
+            return;
+        }
+
+        HandleShortcut(e);
+        if (!e.Handled && e.Key == VirtualKey.Enter && KeyModifiers.GetCurrent().OnlyCtrl)
+        {
+            e.Handled = true;
+            if (ViewModel.SecondaryCommand is { } secondary)
+            {
+                // Match the command bar: activate the secondary action even when it has a submenu.
+                InvokeCommand(secondary, navigateSubmenus: false);
+            }
         }
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var prop = e.PropertyName;
+        if (_isPreparing)
+        {
+            return;
+        }
 
-        if (prop == nameof(ContextMenuViewModel.FilteredItems) && !_isOpening)
+        if (e.PropertyName == nameof(ContextMenuViewModel.CurrentContext))
         {
             UpdateUiForStackChange();
+        }
+        else if (e.PropertyName == nameof(ContextMenuViewModel.FilteredItems))
+        {
+            ResetSelection();
         }
     }
 
@@ -249,10 +196,7 @@ public sealed partial class ContextMenu : UserControl,
     {
         ViewModel?.SetSearchText(ContextFilterBox.Text);
 
-        if (CommandsDropdown.SelectedIndex == -1)
-        {
-            CommandsDropdown.SelectedIndex = 0;
-        }
+        ResetSelection();
     }
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -263,53 +207,28 @@ public sealed partial class ContextMenu : UserControl,
         {
             if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
             {
-                if (InvokeCommand(item) == ContextKeybindingResult.Hide)
-                {
-                    WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-                }
-
-                UpdateUiForStackChange();
-
                 e.Handled = true;
+                InvokeCommand(item);
             }
         }
-        else if (e.Key == VirtualKey.Escape ||
-            (e.Key == VirtualKey.Left && modifiers.Alt))
+        else if (e.Key == VirtualKey.Left && modifiers.Alt)
         {
-            if (ViewModel.CanPopContextStack())
-            {
-                ViewModel.PopContextStack();
-                UpdateUiForStackChange();
-            }
-            else
-            {
-                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
-                UpdateUiForStackChange();
-            }
-
             e.Handled = true;
+            NavigateBackOrClose();
         }
     }
 
-    private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void NavigateBackOrClose()
     {
-        if (e.Key == VirtualKey.Up)
+        if (ViewModel.CanPopContextStack())
         {
-            NavigateUp();
-            AnnounceSelectedItem();
-
-            e.Handled = true;
+            ViewModel.PopContextStack();
         }
-        else if (e.Key == VirtualKey.Down)
+        else
         {
-            NavigateDown();
-            AnnounceSelectedItem();
-
-            e.Handled = true;
+            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
         }
-
-        CommandsDropdown_PreviewKeyDown(sender, e);
     }
 
     private void NavigateUp()
@@ -393,7 +312,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void AnnounceSelectedItem()
     {
-        if (CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
+        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
         {
             return;
         }
@@ -435,7 +354,16 @@ public sealed partial class ContextMenu : UserControl,
     {
         ContextFilterBox.Text = string.Empty;
         ViewModel?.SetSearchText(string.Empty);
-        CommandsDropdown.SelectedIndex = 0;
+        ResetSelection(force: true);
+    }
+
+    private void ResetSelection(bool force = false)
+    {
+        // Selection must stay current independently of deferred Narrator announcements.
+        if (force || CommandsDropdown.SelectedIndex == -1)
+        {
+            CommandsDropdown.SelectedIndex = 0;
+        }
     }
 
     /// <summary>
@@ -447,5 +375,12 @@ public sealed partial class ContextMenu : UserControl,
         ContextFilterBox.Focus(FocusState.Programmatic);
     }
 
-    private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => ViewModel.InvokeCommand(command);
+    private void InvokeCommand(CommandItemViewModel command, bool navigateSubmenus = true)
+    {
+        var result = ViewModel.InvokeCommand(command, navigateSubmenus);
+        if (result == ContextKeybindingResult.Hide)
+        {
+            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+        }
+    }
 }

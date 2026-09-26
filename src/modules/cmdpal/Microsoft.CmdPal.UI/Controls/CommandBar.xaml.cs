@@ -10,14 +10,11 @@ using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
-    IRecipient<CloseContextMenuMessage>,
-    IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware
 {
     public CommandBarViewModel ViewModel { get; } = new();
@@ -38,89 +35,26 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
     }
 
     public void Receive(OpenContextMenuMessage message)
     {
-        if (message.Element is null)
-        {
-            // Ctrl+K can open the menu even when the More button is hidden.
-            if (!ViewModel.CanOpenContextMenu)
+        var context = message.Context;
+
+        // Callers validate their context on the UI thread before sending the request.
+        var anchor = message.Element ??
+            (MoreCommandsButton.Visibility == Visibility.Visible && ReferenceEquals(context, ViewModel.SelectedItem) ? MoreCommandsButton : this);
+        ContextMenuFlyout.ShowAt(
+            anchor,
+            context,
+            message.ContextMenuFilterLocation,
+            new FlyoutShowOptions()
             {
-                return;
-            }
-
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
-
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    ContextMenuFlyout.ShowAt(
-                        ViewModel.ShouldShowMoreCommandsButton ? MoreCommandsButton : this,
-                        new FlyoutShowOptions()
-                        {
-                            ShowMode = FlyoutShowMode.Standard,
-                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                        });
-                });
-        }
-        else
-        {
-            // This is invoked from a specific element
-            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
-            {
-                return;
-            }
-
-            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
-
-            _ = DispatcherQueue.TryEnqueue(
-            () =>
-            {
-                ContextMenuFlyout.ShowAt(
-                    message.Element!,
-                    new FlyoutShowOptions()
-                    {
-                        ShowMode = FlyoutShowMode.Standard,
-                        Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
-                        Position = message.Point,
-                    });
-            });
-        }
-    }
-
-    public void Receive(CloseContextMenuMessage message)
-    {
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
-        }
-    }
-
-    public void Receive(TryCommandKeybindingMessage msg)
-    {
-        if (!ViewModel.CanOpenContextMenu)
-        {
-            return;
-        }
-
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
-
-        if (result == ContextKeybindingResult.Hide)
-        {
-            msg.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.KeepOpen)
-        {
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-            msg.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            msg.Handled = false;
-        }
+                ShowMode = FlyoutShowMode.Standard,
+                Placement = message.FlyoutPlacementMode ?? FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                Position = message.Point,
+            },
+            message.InitialSubmenu);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -142,14 +76,15 @@ public sealed partial class CommandBar : UserControl,
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-    }
-
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        // Focus the filter box so the flyout captures keyboard input,
-        // then fire a single consolidated Narrator announcement.
-        ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened();
+        if (ViewModel.CurrentContext is { } context)
+        {
+            WeakReferenceMessenger.Default.Send(
+                new OpenContextMenuMessage(
+                    null,
+                    null,
+                    null,
+                    ContextMenuFilterLocation.Bottom,
+                    context));
+        }
     }
 }

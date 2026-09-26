@@ -29,6 +29,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Pages;
@@ -196,7 +197,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // for the next navigation or search-text change.
         _settingsService.SettingsChanged += OnSettingsChanged;
 
-        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
+        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), false);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
         AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
@@ -1048,16 +1049,39 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
             default:
                 {
-                    // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
+                    // Skip item shortcuts while collapsed so a chord cannot hit the hidden selection.
                     if (((ShellPage)sender).ItemActionsAllowed)
                     {
-                        TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                        WeakReferenceMessenger.Default.Send(msg);
-                        e.Handled = msg.Handled;
+                        ((ShellPage)sender).HandleItemShortcut(e, modifiers);
                     }
 
                     break;
                 }
+        }
+    }
+
+    private void HandleItemShortcut(KeyRoutedEventArgs e, KeyModifiers modifiers)
+    {
+        var context = ViewModel.CurrentCommandContext;
+        if (context?.CanOpenContextMenu != true)
+        {
+            return;
+        }
+
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
+        if (context.FindKeybinding(chord) is not { } command)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        if (command.HasSubmenu)
+        {
+            OpenContextMenuAfterKeyEvent(context, command);
+        }
+        else
+        {
+            WeakReferenceMessenger.Default.Send(new PerformCommandMessage(command.Command.Model, command.Model));
         }
     }
 
@@ -1080,7 +1104,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private static bool TryHandleItemAction(KeyRoutedEventArgs e)
+    private void OpenContextMenuAfterKeyEvent(ICommandBarContext context, CommandContextItemViewModel? initialSubmenu = null)
+    {
+        // Finish routing the triggering key before moving focus into the flyout.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!IsLoaded || !ItemActionsAllowed || IsContentDialogActive || !ReferenceEquals(context, ViewModel.CurrentCommandContext))
+            {
+                return;
+            }
+
+            WeakReferenceMessenger.Default.Send(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom, context)
+            {
+                InitialSubmenu = initialSubmenu,
+            });
+        });
+    }
+
+    private bool TryHandleItemAction(KeyRoutedEventArgs e)
     {
         var mods = KeyModifiers.GetCurrent();
         switch (e.Key)
@@ -1097,7 +1138,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             // Ctrl+K
             case VirtualKey.K when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new(null, null, null, ContextMenuFilterLocation.Bottom));
+                if (ViewModel.CurrentCommandContext is { } context)
+                {
+                    OpenContextMenuAfterKeyEvent(context);
+                }
+
                 break;
             default:
                 return false;

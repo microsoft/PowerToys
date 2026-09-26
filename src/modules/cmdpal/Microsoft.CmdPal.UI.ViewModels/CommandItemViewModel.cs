@@ -106,6 +106,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? PrimaryCommand => this;
 
+    // Nested menus do not inherit the root primary action's Enter hint.
+    internal CommandContextItemViewModel? PrimaryMenuItem => IsContextMenuItem ? null : _defaultCommandContextItemViewModel;
+
     public CommandItemViewModel? SecondaryCommand => _snapshot.SecondaryCommand;
 
     // Fast initialization publishes the synthetic primary entry before SDK child actions are loaded.
@@ -158,7 +161,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         var command = model.Command;
         ReplaceCommand(command);
-        Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
         Subtitle = model.Subtitle;
@@ -548,6 +550,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private void ReplaceCommand(ICommand? model)
     {
         var command = new CommandViewModel(model, PageContext);
+
+        // Publish only after the command's cached identity and type flags are ready.
+        command.FastInitializeProperties();
         var replaced = Interlocked.Exchange(ref _commandState, new CommandOwnership(command, Owned: true));
 
         ReleaseReplaced(replaced, command);

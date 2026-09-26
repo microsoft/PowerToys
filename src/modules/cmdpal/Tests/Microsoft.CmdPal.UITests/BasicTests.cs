@@ -17,6 +17,115 @@ public class BasicTests : CommandPaletteTestBase
     }
 
     [TestMethod]
+    [TestCategory("SamplePagesExtension")]
+    [DataRow("closed", true)]
+    [DataRow("filter", false)]
+    [DataRow("list", false)]
+    public void ContextShortcut_NavigatesOnce(string menuFocus, bool useEscape)
+    {
+        SetSearchBox("Sample Pages");
+        if (!this.HasOne<NavigationViewItem>("Sample Pages"))
+        {
+            Assert.Inconclusive("Register and enable SamplePagesExtension to run this test.");
+        }
+
+        if (menuFocus != "closed")
+        {
+            SendKeys(Key.Ctrl, Key.K);
+            Assert.IsNotNull(this.Find<NavigationViewItem>("Open list sample with shortcut"));
+
+            if (menuFocus == "list")
+            {
+                SendKeys(Key.Shift, Key.Tab);
+                Assert.IsFalse(bool.Parse(this.Find<TextBox>(By.AccessibilityId("ContextFilterBox")).GetAttribute("HasKeyboardFocus")));
+            }
+        }
+
+        SendKeys(Key.Ctrl, Key.Num1);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("This is a basic item in the list"));
+
+        if (useEscape)
+        {
+            SendKeys(Key.Esc);
+        }
+        else
+        {
+            this.Find<Button>("Back").Click();
+        }
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Sample Pages"), "One Back or Escape must return to the root page.");
+    }
+
+    [TestMethod]
+    [TestCategory("SamplePagesExtension")]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ContextShortcut_OpensSubmenuBeforeInvokingChild(bool openContextMenu)
+    {
+        SetSearchBox("Sample Pages");
+        if (!this.HasOne<NavigationViewItem>("Sample Pages"))
+        {
+            Assert.Inconclusive("Register and enable SamplePagesExtension to run this test.");
+        }
+
+        if (openContextMenu)
+        {
+            SendKeys(Key.Ctrl, Key.K);
+            Assert.IsNotNull(this.Find<NavigationViewItem>("Shortcut submenu"));
+        }
+
+        SendKeys(Key.Ctrl, Key.Num2);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Open nested list sample"));
+        SendKeys(Key.Ctrl, Key.Num1);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Details with rich content (Small)"));
+        this.Find<Button>("Back").Click();
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Sample Pages"));
+    }
+
+    [TestMethod]
+    [TestCategory("SamplePagesExtension")]
+    public void ContextSubmenuEscape_ClosesFlyoutAndRestoresFocus()
+    {
+        SetSearchBox("Sample Pages");
+        if (!this.HasOne<NavigationViewItem>("Sample Pages"))
+        {
+            Assert.Inconclusive("Register and enable SamplePagesExtension to run this test.");
+        }
+
+        SendKeys(Key.Ctrl, Key.Num2);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Open nested list sample"));
+        SendKeys(Key.Esc);
+        Assert.IsFalse(this.HasOne<NavigationViewItem>("Open nested list sample"));
+        Assert.IsTrue(bool.Parse(this.Find<TextBox>(By.AccessibilityId("MainSearchBox")).GetAttribute("HasKeyboardFocus")));
+    }
+
+    [TestMethod]
+    [TestCategory("SamplePagesExtension")]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ContextSecondaryShortcut_InvokesSecondaryInsteadOfHighlightedPrimary(bool focusList)
+    {
+        SetSearchBox("Sample Pages");
+        if (!this.HasOne<NavigationViewItem>("Sample Pages"))
+        {
+            Assert.Inconclusive("Register and enable SamplePagesExtension to run this test.");
+        }
+
+        SendKeys(Key.Ctrl, Key.K);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Open list sample with shortcut"));
+        if (focusList)
+        {
+            SendKeys(Key.Shift, Key.Tab);
+            Assert.IsFalse(bool.Parse(this.Find<TextBox>(By.AccessibilityId("ContextFilterBox")).GetAttribute("HasKeyboardFocus")));
+        }
+
+        SendKeys(Key.Ctrl, Key.Enter);
+        Assert.IsNotNull(this.Find<NavigationViewItem>("This is a basic item in the list"));
+        this.Find<Button>("Back").Click();
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Sample Pages"));
+    }
+
+    [TestMethod]
     public void BasicFileSearchTest()
     {
         SetSearchBox("files");

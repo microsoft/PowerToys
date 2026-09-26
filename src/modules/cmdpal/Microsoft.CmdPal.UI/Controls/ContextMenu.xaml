@@ -71,7 +71,7 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind DisplayShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
@@ -120,7 +120,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind DisplayShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
@@ -160,7 +160,6 @@
             ItemClick="CommandsDropdown_ItemClick"
             ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-            PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
             SelectionMode="Single">
             <ListView.Resources>
                 <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
@@ -187,7 +186,6 @@
             CornerRadius="8, 8, 0, 0"
             IsTextScaleFactorEnabled="True"
             KeyDown="ContextFilterBox_KeyDown"
-            PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             Style="{StaticResource SearchTextBoxStyle}"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
