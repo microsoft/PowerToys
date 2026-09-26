@@ -122,7 +122,16 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
                 return ResourceManager.GetString("windowwalker_ExplorerInfoSubTitle", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Switch to an open window.
+        /// </summary>
+        public static string windowwalker_fallback_title {
+            get {
+                return ResourceManager.GetString("windowwalker_fallback_title", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Info: Ending the Explorer process isn&apos;t possible..
         /// </summary>
