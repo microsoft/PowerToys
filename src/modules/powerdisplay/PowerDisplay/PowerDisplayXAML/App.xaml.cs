@@ -363,11 +363,8 @@ namespace PowerDisplay
         {
             void OnMessage(string message) => _mainWindow?.DispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
-            Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(
-                pipeName,
-                connectTimeout: TimeSpan.FromSeconds(10),
-                OnMessage,
-                CancellationToken.None));
+            TwoWayPipeMessageIPCManaged ipc = new(@"\\.\pipe\" + pipeName, string.Empty, (m) => OnMessage(m));
+            ipc.Start();
         }
 
         /// <summary>
