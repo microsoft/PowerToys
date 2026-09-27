@@ -28,12 +28,11 @@ public sealed partial class DockWindowManager : IDisposable
     private int _syncing;
 
     /// <summary>
-    /// Debounces rapid-fire monitor-change notifications (several WM_DISPLAYCHANGE messages
-    /// during a Win+P switch or dock/undock). Without it, each intermediate topology
-    /// snapshot gets reconciled and persisted, which can permanently corrupt dock configs
-    /// even though things settle fine on their own a moment later.
+    /// Windows can briefly report a monitor as absent while the graphics stack re-enumerates
+    /// it during a display switch or Modern Standby resume. Waiting for the topology to settle
+    /// keeps us from disposing a dock that is about to come back.
     /// </summary>
-    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromSeconds(3);
     private readonly DispatcherQueueTimer _monitorsChangedDebounceTimer;
 
     private bool? _lastSyncedEnableDock;
