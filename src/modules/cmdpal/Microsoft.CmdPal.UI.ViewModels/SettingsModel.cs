@@ -20,10 +20,11 @@ public record SettingsModel
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
     /// <summary>
-    /// Gets the default shortcut that focuses the dock: win+alt+D. It shares the
+    /// Gets the default shortcut that focuses the dock: win+alt+J. It shares the
     /// activation shortcut's modifiers so the two sit next to each other in muscle memory.
+    /// Win+Alt+D would read better, but Windows 11 already owns it for the taskbar clock.
     /// </summary>
-    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x44); // win+alt+D
+    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
 
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 

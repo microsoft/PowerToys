@@ -96,7 +96,7 @@ public class DockFocusShortcutTests
     }
 
     [TestMethod]
-    public void DefaultDockFocusShortcut_IsWinAltD()
+    public void DefaultDockFocusShortcut_IsWinAltJ()
     {
         var shortcut = SettingsModel.DefaultDockFocusShortcut;
 
@@ -104,11 +104,11 @@ public class DockFocusShortcutTests
         Assert.IsTrue(shortcut.Alt);
         Assert.IsFalse(shortcut.Ctrl);
         Assert.IsFalse(shortcut.Shift);
-        Assert.AreEqual(0x44, shortcut.Code);
+        Assert.AreEqual(0x4A, shortcut.Code);
     }
 
     [TestMethod]
-    public void DockFocusHotkey_DefaultsToWinAltD()
+    public void DockFocusHotkey_DefaultsToWinAltJ()
     {
         var settings = new SettingsModel();
 
@@ -120,7 +120,7 @@ public class DockFocusShortcutTests
     {
         var settings = new SettingsModel
         {
-            DockFocusHotkey = new HotkeySettings(false, true, true, false, 0x4A),
+            DockFocusHotkey = new HotkeySettings(false, true, true, false, 0x4B),
         };
 
         var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.SettingsModel);

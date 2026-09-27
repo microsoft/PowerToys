@@ -1666,6 +1666,11 @@ public sealed partial class MainWindow : WindowEx,
         {
             _hotkeys.Add(new(key, commandId));
         }
+        else
+        {
+            // Usually means another app (or Windows itself) already owns this combo.
+            Logger.LogWarning($"Failed to register hotkey {key} for '{commandId}'. Error: {Marshal.GetLastWin32Error()}.");
+        }
     }
 
     private void HandleSummon(string commandId)

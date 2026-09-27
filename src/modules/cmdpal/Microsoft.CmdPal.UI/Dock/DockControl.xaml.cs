@@ -350,7 +350,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         foreach (var listView in listViews)
         {
             var item = listView.FindDescendant<DockItemControl>();
-            if (item is not null && item.Focus(FocusState.Programmatic))
+
+            // Keyboard, not Programmatic. Programmatic focus draws no focus rect, so on a
+            // pinned dock the shortcut would work and look like it did nothing.
+            if (item is not null && item.Focus(FocusState.Keyboard))
             {
                 return true;
             }
