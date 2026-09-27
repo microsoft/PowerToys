@@ -1011,10 +1011,17 @@ internal static class MachineStuff
 
         if (id != ID.NONE)
         {
+            ID oldDesMachineID = desMachineID;
+
             // Ask current machine to hide the Mouse cursor
             if (desMachineID != Common.MachineID)
             {
                 Common.SendPackage(desMachineID, PackageType.HideMouse);
+            }
+            else if (id != Common.MachineID)
+            {
+                // Same as leaving this machine by mouse (see Event.MouseEvent).
+                Clipboard.HasSwitchedMachineSinceLastCopy = true;
             }
 
             NewDesMachineID = Common.DesMachineID = id;
@@ -1024,6 +1031,12 @@ internal static class MachineStuff
             Common.UpdateMultipleModeIconAndMenu();
             Common.HideMouseCursor(false);
             _ = Common.EvSwitch.Set();
+
+            // Hand off the clipboard as a mouse switch does (see Event.PrepareToSwitchToMachine).
+            if (oldDesMachineID != id)
+            {
+                Event.GetClipboardDataAfterSwitch(nameof(SwitchToMachine));
+            }
         }
     }
 
