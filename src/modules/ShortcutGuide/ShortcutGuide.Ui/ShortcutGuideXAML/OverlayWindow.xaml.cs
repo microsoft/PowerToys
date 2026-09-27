@@ -418,7 +418,7 @@ namespace ShortcutGuide
 
             RepositionToCursorMonitor();
 
-            this.ApplyTransparentChrome();
+            this.ApplyFullBleedHardening();
             this.AppWindow.Show();
 
             var hwnd = WindowNative.GetWindowHandle(this);
@@ -594,10 +594,7 @@ namespace ShortcutGuide
                 _suppressDpiChange = false;
             }
 
-            // Cross-monitor moves can trigger WM_DPICHANGED, and Windows may
-            // reset some of our DWM attributes (border color, corner pref)
-            // during that transition. Re-apply the baseline transparent chrome.
-            this.ApplyTransparentChrome();
+            this.ApplyFullBleedHardening();
             if (this.TaskbarPane.Visibility == Visibility.Visible)
             {
                 UpdateTaskbarPaneLayoutCore(playEntrance: false);

@@ -65,9 +65,17 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExAppWindow = 0x00040000;
+    private const int WsExDlgModalFrame = 0x00000001;
+    private const int WsExWindowEdge = 0x00000100;
+    private const int WsExClientEdge = 0x00000200;
 
     private const int SwHide = 0;
     private const int SwShowNa = 8;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
+    private const uint SwpFrameChanged = 0x0020;
 
     private readonly nint _hwnd;
 
@@ -118,6 +126,31 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         }
 
         ApplyExStyleBit(WsExToolWindow, true);
+    }
+
+    /// <summary>
+    /// Removes extended edge styles and refreshes the frame for edge-to-edge
+    /// transparent overlays where even a one-pixel frame seam would be visible.
+    /// </summary>
+    protected void ApplyFullBleedHardening()
+    {
+        if (_hwnd == 0)
+        {
+            return;
+        }
+
+        ApplyExStyleBit(WsExWindowEdge, false);
+        ApplyExStyleBit(WsExClientEdge, false);
+        ApplyExStyleBit(WsExDlgModalFrame, false);
+
+        _ = SetWindowPos(
+            _hwnd,
+            0,
+            0,
+            0,
+            0,
+            0,
+            SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
     }
 
     /// <summary>
@@ -417,6 +450,10 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint hWnd, int nCmdShow);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
     [LibraryImport("dwmapi.dll")]
     private static unsafe partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
