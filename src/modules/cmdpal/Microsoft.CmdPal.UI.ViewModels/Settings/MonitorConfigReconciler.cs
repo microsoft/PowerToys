@@ -34,22 +34,10 @@ public static class MonitorConfigReconciler
         ImmutableList<DockMonitorConfig>? existingConfigs,
         IReadOnlyList<MonitorInfo> currentMonitors)
     {
-        return Reconcile(existingConfigs, currentMonitors, new DockSettings());
-    }
-
-    /// <summary>
-    /// Reconciles monitor configs using the current global dock bands as the fallback
-    /// when a newly detected secondary monitor has no primary config to copy.
-    /// </summary>
-    public static ImmutableList<DockMonitorConfig> Reconcile(
-        ImmutableList<DockMonitorConfig>? existingConfigs,
-        IReadOnlyList<MonitorInfo> currentMonitors,
-        DockSettings dockSettings)
-    {
         // Use Date (day granularity) so the value stabilizes across multiple reconciliations
         // within the same day. This prevents infinite loops: SettingsChanged → SyncDocks →
         // Reconcile → SettingsChanged when LastSeen changes by milliseconds each call.
-        return Reconcile(existingConfigs, currentMonitors, dockSettings, DateTime.UtcNow.Date);
+        return Reconcile(existingConfigs, currentMonitors, DateTime.UtcNow.Date);
     }
 
     /// <summary>
@@ -58,18 +46,6 @@ public static class MonitorConfigReconciler
     internal static ImmutableList<DockMonitorConfig> Reconcile(
         ImmutableList<DockMonitorConfig>? existingConfigs,
         IReadOnlyList<MonitorInfo> currentMonitors,
-        DateTime utcNow)
-    {
-        return Reconcile(existingConfigs, currentMonitors, new DockSettings(), utcNow);
-    }
-
-    /// <summary>
-    /// Overload accepting an explicit <paramref name="utcNow"/> for testability.
-    /// </summary>
-    internal static ImmutableList<DockMonitorConfig> Reconcile(
-        ImmutableList<DockMonitorConfig>? existingConfigs,
-        IReadOnlyList<MonitorInfo> currentMonitors,
-        DockSettings dockSettings,
         DateTime utcNow)
     {
         existingConfigs ??= ImmutableList<DockMonitorConfig>.Empty;
@@ -162,24 +138,11 @@ public static class MonitorConfigReconciler
             }
         }
 
-        DockMonitorConfig? primaryConfig = null;
-        for (var i = 0; i < result.Count; i++)
-        {
-            if (result[i].IsPrimary)
-            {
-                primaryConfig = result[i];
-                break;
-            }
-        }
-
-        var primaryStartBands = primaryConfig?.ResolveStartBands(dockSettings.StartBands) ?? dockSettings.StartBands;
-        var primaryCenterBands = primaryConfig?.ResolveCenterBands(dockSettings.CenterBands) ?? dockSettings.CenterBands;
-        var primaryEndBands = primaryConfig?.ResolveEndBands(dockSettings.EndBands) ?? dockSettings.EndBands;
-
         // Create defaults for new monitors with no matching config.
         // Primary monitors inherit global bands (IsCustomized = false) for a seamless
-        // upgrade path. Secondary monitors start disabled with a copy of the primary
-        // monitor's effective bands so they are ready when enabled.
+        // upgrade path. Secondary monitors start disabled without a layout. We copy the
+        // primary layout when the user first enables them, so they get the current setup
+        // instead of whatever the primary looked like when the monitor was first seen.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
@@ -205,10 +168,6 @@ public static class MonitorConfigReconciler
                     MonitorDeviceId = monitor.StableId,
                     Enabled = false,
                     IsPrimary = false,
-                    IsCustomized = true,
-                    StartBands = ImmutableList.CreateRange(primaryStartBands),
-                    CenterBands = ImmutableList.CreateRange(primaryCenterBands),
-                    EndBands = ImmutableList.CreateRange(primaryEndBands),
                     LastSeen = utcNow,
                 });
             }

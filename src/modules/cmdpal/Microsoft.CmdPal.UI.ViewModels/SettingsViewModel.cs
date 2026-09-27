@@ -523,7 +523,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         var monitors = _monitorService.GetMonitors();
         var currentSettings = _settingsService.Settings.DockSettings;
 
-        var reconciled = MonitorConfigReconciler.Reconcile(currentSettings.MonitorConfigs, monitors, currentSettings);
+        var reconciled = MonitorConfigReconciler.Reconcile(currentSettings.MonitorConfigs, monitors);
         var currentMonitorConfigs = currentSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
 
         if (!reconciled.SequenceEqual(currentMonitorConfigs))

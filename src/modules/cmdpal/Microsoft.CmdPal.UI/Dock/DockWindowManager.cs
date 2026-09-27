@@ -116,7 +116,7 @@ public sealed partial class DockWindowManager : IDisposable
         // Reconcile stale monitor device IDs with currently connected monitors
         var monitors = _monitorService.GetMonitors();
         var currentConfigs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
-        var reconciled = MonitorConfigReconciler.Reconcile(currentConfigs, monitors, dockSettings);
+        var reconciled = MonitorConfigReconciler.Reconcile(currentConfigs, monitors);
         if (reconciled != currentConfigs)
         {
             _settingsService.UpdateSettings(s => s with
