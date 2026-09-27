@@ -60,6 +60,7 @@ namespace ShortcutGuide
             set
             {
                 _isTaskbarPaneRequested = value;
+                ApplyMainPaneMargins(_currentScreenLayout);
                 if (value)
                 {
                     if (UpdateTaskbarPaneLayout())
@@ -616,8 +617,7 @@ namespace ShortcutGuide
                 ? HorizontalAlignment.Right
                 : HorizontalAlignment.Left;
 
-            MainPaneMargins margins = MainPaneLayoutPolicy.GetMargins(layout.TaskbarEdge, isRight);
-            this.MainPane.Margin = new Thickness(margins.Left, margins.Top, margins.Right, margins.Bottom);
+            ApplyMainPaneMargins(layout);
 
             // Slide direction matches the pane's edge: left-aligned slides
             // from the left, right-aligned slides from the right — same as
@@ -647,6 +647,15 @@ namespace ShortcutGuide
                 EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
             });
             Implicit.SetHideAnimations(this.MainPane, hideAnimations);
+        }
+
+        private void ApplyMainPaneMargins(ScreenLayout layout)
+        {
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+            bool isRight = windowPosition == ShortcutGuideWindowPosition.Right;
+            bool reserveBottomForIndicators = _isTaskbarPaneRequested && layout.IsTaskbarVisible;
+            MainPaneMargins margins = MainPaneLayoutPolicy.GetMargins(layout.TaskbarEdge, isRight, reserveBottomForIndicators);
+            this.MainPane.Margin = new Thickness(margins.Left, margins.Top, margins.Right, margins.Bottom);
         }
     }
 }

@@ -11,26 +11,31 @@ namespace ShortcutGuide.UnitTests.DisplayTests;
 public sealed class MainPaneLayoutPolicyTests
 {
     [TestMethod]
-    [DataRow(0, false, 70.0, 16.0, 16.0)]
-    [DataRow(0, true, 16.0, 16.0, 16.0)]
-    [DataRow(1, false, 16.0, 70.0, 16.0)]
-    [DataRow(1, true, 16.0, 70.0, 16.0)]
-    [DataRow(2, false, 16.0, 16.0, 16.0)]
-    [DataRow(2, true, 16.0, 16.0, 70.0)]
-    [DataRow(3, false, 16.0, 16.0, 16.0)]
-    [DataRow(3, true, 16.0, 16.0, 16.0)]
+    [DataRow(0, false, false, 70.0, 16.0, 16.0, 16.0)]
+    [DataRow(0, true, false, 16.0, 16.0, 16.0, 16.0)]
+    [DataRow(1, false, false, 16.0, 62.0, 16.0, 16.0)]
+    [DataRow(1, true, false, 16.0, 62.0, 16.0, 16.0)]
+    [DataRow(2, false, false, 16.0, 16.0, 16.0, 16.0)]
+    [DataRow(2, true, false, 16.0, 16.0, 70.0, 16.0)]
+    [DataRow(3, false, false, 16.0, 16.0, 16.0, 16.0)]
+    [DataRow(3, true, false, 16.0, 16.0, 16.0, 16.0)]
+    [DataRow(3, false, true, 16.0, 16.0, 16.0, 62.0)]
+    [DataRow(3, true, true, 16.0, 16.0, 16.0, 62.0)]
     public void GetMargins_ReservesIndicatorSpaceForTaskbarEdge(
         int edgeValue,
         bool isRightAligned,
+        bool reserveBottomForIndicators,
         double expectedLeft,
         double expectedTop,
-        double expectedRight)
+        double expectedRight,
+        double expectedBottom)
     {
-        MainPaneMargins margins = MainPaneLayoutPolicy.GetMargins((TaskbarEdge)edgeValue, isRightAligned);
+        MainPaneMargins margins = MainPaneLayoutPolicy.GetMargins(
+            (TaskbarEdge)edgeValue, isRightAligned, reserveBottomForIndicators);
 
         Assert.AreEqual(expectedLeft, margins.Left);
         Assert.AreEqual(expectedTop, margins.Top);
         Assert.AreEqual(expectedRight, margins.Right);
-        Assert.AreEqual(16.0, margins.Bottom);
+        Assert.AreEqual(expectedBottom, margins.Bottom);
     }
 }
