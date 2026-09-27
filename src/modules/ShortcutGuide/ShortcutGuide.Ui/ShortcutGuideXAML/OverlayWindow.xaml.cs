@@ -418,7 +418,11 @@ namespace ShortcutGuide
 
             RepositionToCursorMonitor();
 
-            this.ApplyFullBleedHardening();
+            if (OSVersionHelper.IsWindows11())
+            {
+                this.ApplyFullBleedHardening();
+            }
+
             this.AppWindow.Show();
 
             var hwnd = WindowNative.GetWindowHandle(this);
@@ -594,7 +598,11 @@ namespace ShortcutGuide
                 _suppressDpiChange = false;
             }
 
-            this.ApplyFullBleedHardening();
+            if (OSVersionHelper.IsWindows11())
+            {
+                this.ApplyFullBleedHardening();
+            }
+
             if (this.TaskbarPane.Visibility == Visibility.Visible)
             {
                 UpdateTaskbarPaneLayoutCore(playEntrance: false);

@@ -56,8 +56,10 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
     private const int DwmwaCloak = 13;
+    private const int DwmwaNcRenderingPolicy = 2;
     private const int DwmwaWindowCornerPreference = 33;
     private const int DwmwaBorderColor = 34;
+    private const int DwmncrpDisabled = 2;
     private const int DwmwcpDoNotRound = 1;
 
     private const int GwlpHwndParent = -8;
@@ -143,6 +145,14 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         ApplyExStyleBit(WsExClientEdge, false);
         ApplyExStyleBit(WsExDlgModalFrame, false);
 
+        unsafe
+        {
+            int renderingPolicy = DwmncrpDisabled;
+            _ = DwmSetWindowAttribute(_hwnd, DwmwaNcRenderingPolicy, &renderingPolicy, sizeof(int));
+        }
+
+        var margins = new Margins { CxLeftWidth = -1, CxRightWidth = -1, CyTopHeight = -1, CyBottomHeight = -1 };
+        _ = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
         _ = SetWindowPos(
             _hwnd,
             0,
@@ -455,6 +465,18 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
+
     [LibraryImport("dwmapi.dll")]
     private static unsafe partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Margins
+    {
+        public int CxLeftWidth;
+        public int CxRightWidth;
+        public int CyTopHeight;
+        public int CyBottomHeight;
+    }
 }
