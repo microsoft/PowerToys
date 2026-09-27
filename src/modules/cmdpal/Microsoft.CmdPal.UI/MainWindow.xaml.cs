@@ -86,6 +86,7 @@ public sealed partial class MainWindow : WindowEx,
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
     private bool _isRestarting;
+    private bool _isShuttingDown;
 
     // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
     // hot-reloads when a SettingsChanged notification touches settings this window doesn't
@@ -186,6 +187,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
+        AppWindow.Closing += MainWindow_Closing;
         RestoreWindowPositionFromSavedSettings();
         UpdateWindowPositionInMemory();
 
@@ -1006,8 +1008,8 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(QuitMessage message)
     {
         // Always defer, even on the UI thread. This can be sent from the window procedure and
-        // is broadcast to multiple windows. MainWindow_Closed exits the process, so closing
-        // inline could terminate while the window procedure or message broadcast is still active.
+        // is broadcast to multiple windows. Closing inline could terminate while the window
+        // procedure or message broadcast is still active.
         DispatcherQueue.TryEnqueue(() => Close());
     }
 
@@ -1169,26 +1171,34 @@ public sealed partial class MainWindow : WindowEx,
         IsVisibleToUserChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    internal void MainWindow_Closed(object sender, WindowEventArgs args)
+    private void MainWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
     {
-        SaveWindowPosition();
-
-        var extensionServices = App.Current.Services.GetServices<IExtensionService>();
-        foreach (var extensionService in extensionServices)
+        if (_isShuttingDown)
         {
-            extensionService.SignalStopAsync();
+            return;
         }
 
-        App.Current.Services.GetService<TrayIconService>()!.Destroy();
+        args.Cancel = true;
+        _ = App.Current.ShutdownAsync();
+    }
 
-        // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
-        // Workaround by turning it off before shutdown.
+    internal void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        if (!_isShuttingDown)
+        {
+            _ = App.Current.ShutdownAsync();
+        }
+    }
+
+    internal void PrepareForShutdown()
+    {
+        _isShuttingDown = true;
+        SaveWindowPosition();
+
+        // WinUI can crash on shutdown with FailFastOnErrors enabled (#51773592).
         App.Current.DebugSettings.FailFastOnErrors = false;
-        _localKeyboardListener.Dispose();
-        DisposeAcrylic();
-
         _keyboardListener.Stop();
-        Environment.Exit(0);
+        Dispose();
     }
 
     internal async Task<AppRestartFailureReason> RestartAsync()

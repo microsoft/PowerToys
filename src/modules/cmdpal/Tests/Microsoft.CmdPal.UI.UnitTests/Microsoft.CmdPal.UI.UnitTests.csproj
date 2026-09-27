@@ -56,5 +56,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\PowerToysRootPageService.cs" Link="PowerToysRootPageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\BuildInfo.cs" Link="Helpers\BuildInfo.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\ShutdownCoordinator.cs" Link="ShutdownCoordinator.cs" />
   </ItemGroup>
 </Project>

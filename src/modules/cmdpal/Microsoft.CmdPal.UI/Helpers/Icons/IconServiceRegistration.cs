@@ -13,7 +13,7 @@ internal static class IconServiceRegistration
     {
         // Single shared loader
         var loader = new IconLoaderService(dispatcherQueue);
-        services.AddSingleton<IIconLoaderService>(loader);
+        services.AddSingleton<IIconLoaderService>(_ => loader);
 
         // Keyed providers by size
         services.AddKeyedSingleton<IIconSourceProvider>(

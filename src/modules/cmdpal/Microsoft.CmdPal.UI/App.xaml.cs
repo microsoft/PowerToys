@@ -50,9 +50,12 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application, IDisposable
+public partial class App : Application, IAsyncDisposable
 {
+    private static readonly TimeSpan ExtensionStopTimeout = TimeSpan.FromSeconds(5);
     private readonly GlobalErrorHandler _globalErrorHandler = new();
+    private readonly ShutdownCoordinator _shutdownCoordinator;
+    private bool _disposed;
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -87,6 +90,13 @@ public partial class App : Application, IDisposable
         var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
         appInfoService.SetLanguageOverride(languageOverride);
         Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
+        _shutdownCoordinator = new(
+            () => Task.Run(() => Task.WhenAll(Services.GetServices<IExtensionService>().Select(service => service.SignalStopAsync()))),
+            CleanupForShutdownAsync,
+            () => Environment.Exit(0),
+            ex => Logger.LogError($"Failed to stop extensions within {ExtensionStopTimeout} before shutting down Command Palette", ex),
+            ex => Logger.LogError("Failed to clean up Command Palette before exit", ex),
+            ExtensionStopTimeout);
 
         IconProvider.Initialize(Services);
 
@@ -100,9 +110,7 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
-                EtwTrace?.Dispose();
-                AppWindow?.Close();
-                Environment.Exit(0);
+                _ = ShutdownAsync();
             });
 
         // Connect the PT logging to the core project's logging.
@@ -325,11 +333,70 @@ public partial class App : Application, IDisposable
                 Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));
     }
 
-    public void Dispose()
+    internal Task ShutdownAsync()
     {
-        (Services as IDisposable)?.Dispose();
-        _globalErrorHandler.Dispose();
-        EtwTrace.Dispose();
-        GC.SuppressFinalize(this);
+        return _shutdownCoordinator.RunAsync();
+    }
+
+    private async Task CleanupForShutdownAsync()
+    {
+        try
+        {
+            if (AppWindow is MainWindow mainWindow)
+            {
+                mainWindow.PrepareForShutdown();
+            }
+        }
+        finally
+        {
+            try
+            {
+                Services.GetRequiredService<TrayIconService>().Destroy();
+            }
+            finally
+            {
+                try
+                {
+                    await DisposeAsync();
+                }
+                finally
+                {
+                    AppWindow?.Close();
+                }
+            }
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        try
+        {
+            if (Services is IAsyncDisposable asyncServices)
+            {
+                await asyncServices.DisposeAsync();
+            }
+            else
+            {
+                (Services as IDisposable)?.Dispose();
+            }
+        }
+        finally
+        {
+            try
+            {
+                _globalErrorHandler.Dispose();
+            }
+            finally
+            {
+                EtwTrace.Dispose();
+                GC.SuppressFinalize(this);
+            }
+        }
     }
 }
