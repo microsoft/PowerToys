@@ -62,7 +62,10 @@ namespace ShortcutGuide
                 _isTaskbarPaneRequested = value;
                 if (value)
                 {
-                    UpdateTaskbarPaneLayout();
+                    if (UpdateTaskbarPaneLayout())
+                    {
+                        this.TaskbarPane.Visibility = Visibility.Visible;
+                    }
                 }
                 else
                 {
@@ -352,18 +355,19 @@ namespace ShortcutGuide
         /// <summary>
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
+        /// Returns <see langword="false"/> if no buttons were found.
         /// </summary>
-        public void UpdateTaskbarPaneLayout(bool playEntrance = true)
+        public bool UpdateTaskbarPaneLayout(bool playEntrance = true)
         {
-            UpdateTaskbarPaneLayoutCore(playEntrance);
+            return UpdateTaskbarPaneLayoutCore(playEntrance);
         }
 
-        private void UpdateTaskbarPaneLayoutCore(bool playEntrance)
+        private bool UpdateTaskbarPaneLayoutCore(bool playEntrance)
         {
             if ((_currentScreenLayout.IsTaskbarAutoHide && !IsTaskbarLayoutStable) || !_currentScreenLayout.IsTaskbarVisible)
             {
                 this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
+                return false;
             }
 
             var layout = this.TaskbarPane.UpdateTasklistButtons(
@@ -377,20 +381,19 @@ namespace ShortcutGuide
             if (layout is null)
             {
                 this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
+                return false;
             }
 
             this.TaskbarPane.Width = layout.Value.Width;
             this.TaskbarPane.Height = layout.Value.Height;
             Canvas.SetLeft(this.TaskbarPane, layout.Value.Left);
             Canvas.SetTop(this.TaskbarPane, layout.Value.Top);
-            this.TaskbarPane.Visibility = Visibility.Visible;
+            return true;
         }
 
         public void ShowTaskbarIndicators()
         {
-            _isTaskbarPaneRequested = true;
-            UpdateTaskbarPaneLayout();
+            IsTaskbarPaneRequested = true;
         }
 
         public void HideTaskbarIndicators()
@@ -414,6 +417,7 @@ namespace ShortcutGuide
 
             RepositionToCursorMonitor();
 
+            this.ApplyTransparentChrome();
             this.AppWindow.Show();
 
             var hwnd = WindowNative.GetWindowHandle(this);
@@ -504,7 +508,10 @@ namespace ShortcutGuide
                         // Now that the taskbar is stable, update the indicators.
                         if (_isTaskbarPaneRequested && _currentScreenLayout.IsTaskbarVisible && this.TaskbarPane.Visibility != Visibility.Visible)
                         {
-                            UpdateTaskbarPaneLayout(playEntrance: false);
+                            if (UpdateTaskbarPaneLayout(playEntrance: false))
+                            {
+                                this.TaskbarPane.Visibility = Visibility.Visible;
+                            }
                         }
                     }
                 }
@@ -549,7 +556,10 @@ namespace ShortcutGuide
 
             if (_isTaskbarPaneRequested)
             {
-                UpdateTaskbarPaneLayout(playEntrance: false);
+                if (UpdateTaskbarPaneLayout(playEntrance: false))
+                {
+                    this.TaskbarPane.Visibility = Visibility.Visible;
+                }
             }
             else
             {

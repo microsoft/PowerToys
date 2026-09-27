@@ -153,6 +153,8 @@
                                                             Width="20"
                                                             Height="20"
                                                             AutomationProperties.AccessibilityView="Raw"
+                                                            DiagnosticScope="ExtensionList"
+                                                            RequestSite="Settings"
                                                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                             SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                     </controls:Case>

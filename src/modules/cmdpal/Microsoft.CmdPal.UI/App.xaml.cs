@@ -34,6 +34,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -80,7 +81,12 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var persistenceService = new PersistenceService();
+        var settingsService = new SettingsService(persistenceService, appInfoService);
+        var languageService = new LanguageService();
+        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
+        appInfoService.SetLanguageOverride(languageOverride);
+        Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
 
         IconProvider.Initialize(Services);
 
@@ -123,7 +129,11 @@ public partial class App : Application, IDisposable
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private static ServiceProvider ConfigureServices(
+        IApplicationInfoService appInfoService,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService,
+        ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -143,7 +153,9 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, persistenceService, settingsService);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
@@ -182,6 +194,11 @@ public partial class App : Application, IDisposable
             try
             {
                 var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.NotificationRequested += static (_, message) =>
+                    WeakReferenceMessenger.Default.Send(new ShowToastMessage(message)
+                    {
+                        Duration = TimeSpan.FromSeconds(4),
+                    });
                 winget.SetAllLookup(
                     query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
                     query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
@@ -239,11 +256,15 @@ public partial class App : Application, IDisposable
         }
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService)
     {
         // Models & persistence services
-        services.AddSingleton<IPersistenceService, PersistenceService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton(persistenceService);
+        services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
         services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
         services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();

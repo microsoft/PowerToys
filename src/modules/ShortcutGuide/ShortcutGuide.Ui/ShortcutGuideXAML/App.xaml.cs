@@ -342,8 +342,6 @@ namespace ShortcutGuide
                             return;
                         }
 
-                        OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Collapsed;
-                        OverlayWindow.UpdateTaskbarPaneLayout();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
                         OverlayWindow.MainPaneControl.FocusSearch();
                         break;

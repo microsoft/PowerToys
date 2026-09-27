@@ -21,11 +21,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly IContextMenuFactory? _contextMenuFactory;
 
-    private readonly Lock _moreCommandsLock = new();
-    private readonly List<IContextItemViewModel> _moreCommands = [];
-    private volatile CommandContextItemViewModel? _secondaryMoreCommand;
-    private volatile IContextItemViewModel[] _moreCommandsSnapshot = [];
-    private volatile IContextItemViewModel[] _allCommandsSnapshot = [];
+    private readonly Lock _contextItemsLock = new();
+    private readonly List<IContextItemViewModel> _contextItems = [];
+    private volatile int _contextItemsVersion;
+    private volatile CommandContextSnapshot _snapshot = CommandContextSnapshot.Empty;
 
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
@@ -85,31 +84,33 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// </remarks>
     public CommandViewModel Command => _commandState.Command;
 
-    // Reuse a cached read-only snapshot so repeated reads don't allocate.
-    public IReadOnlyList<IContextItemViewModel> MoreCommands => _moreCommandsSnapshot;
+    protected Lock ContextItemsLock => _contextItemsLock;
 
-    IReadOnlyList<IContextItemViewModel> IContextMenuContext.MoreCommands => _moreCommandsSnapshot;
+    protected List<IContextItemViewModel> UnsafeContextItems => _contextItems;
 
-    protected Lock MoreCommandsLock => _moreCommandsLock;
+    /// <summary>
+    /// Identifies child-entry rebuilds for SDK adapters. Synthetic-primary and visibility
+    /// changes leave this value unchanged.
+    /// </summary>
+    internal int ContextItemsVersion => _contextItemsVersion;
 
-    protected List<IContextItemViewModel> UnsafeMoreCommands => _moreCommands;
+    /// <summary>
+    /// Gets whether this command has child actions and opens a submenu, even while their names are empty.
+    /// A synthetic entry for the command itself does not make it a submenu.
+    /// </summary>
+    public bool HasSubmenu => _snapshot.HasSubmenu;
 
-    public bool HasMoreCommands => _secondaryMoreCommand is not null;
+    public bool HasOverflowCommands => _snapshot.HasOverflowCommands;
 
-    public string SecondaryCommandName => _secondaryMoreCommand?.Name ?? string.Empty;
+    public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand => _secondaryMoreCommand;
+    public CommandItemViewModel? SecondaryCommand => _snapshot.SecondaryCommand;
 
+    // Fast initialization publishes the synthetic primary entry before SDK child actions are loaded.
     public bool CanOpenContextMenu =>
-
-        // BEAR LOADING: A visible synthetic primary command makes the item
-        // context-openable immediately, even if out-of-proc MoreCommands are still
-        // hydrating. Without this fast path, the first open request can race slow
-        // menu initialization and get dropped.
-        _defaultCommandContextItemViewModel?.ShouldBeVisible == true ||
-        _moreCommandsSnapshot.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+        _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
@@ -121,7 +122,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public DataPackageView? DataPackage { get; private set; }
 
-    public IReadOnlyList<IContextItemViewModel> AllCommands => _allCommandsSnapshot;
+    public IReadOnlyList<IContextItemViewModel> AllCommands => _snapshot.AllCommands;
 
     private static readonly IconInfoViewModel _errorIcon;
 
@@ -237,20 +238,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        BuildAndInitMoreCommands();
+        BuildAndInitContextMenu();
 
         TryCreateDefaultCommandContextItem(model.Command);
 
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe();
         }
 
         Initialized |= InitializedState.SelectionInitialized;
-        UpdateProperty(nameof(MoreCommands));
-        UpdateProperty(nameof(AllCommands));
-        UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
-        UpdateProperty(nameof(CanOpenContextMenu));
+        NotifyContextMenuChanged();
         UpdateProperty(nameof(IsSelectedInitialized));
     }
 
@@ -267,7 +265,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            ClearMoreCommands();
+            ClearContextMenu();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -306,7 +304,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             ReplaceCommand(null);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            ClearMoreCommands();
+            ClearContextMenu();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -398,10 +396,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(model.MoreCommands):
-                BuildAndInitMoreCommands();
-                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands), nameof(AllCommands), nameof(CanOpenContextMenu));
-
-                break;
+                BuildAndInitContextMenu();
+                NotifyContextMenuChanged();
+                return;
             case nameof(DataPackage):
                 UpdateDataPackage(GetExtendedAttributes());
                 break;
@@ -467,7 +464,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         // We only synthesize the primary entry when the command is already
         // usable; a null/empty primary must still fall back to late
-        // MoreCommands-based opening.
+        // menu opening through child actions.
         if (string.IsNullOrEmpty(Command.Name) || commandModel is null)
         {
             return;
@@ -491,9 +488,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         UpdateDefaultContextItemIcon();
 
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe();
         }
 
         UpdateProperty(nameof(AllCommands));
@@ -594,7 +591,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// * Does call SlowInitializeProperties on the created items.
     /// * does NOT call UpdateProperty ; caller must do that.
     /// </remarks>
-    private void BuildAndInitMoreCommands()
+    private void BuildAndInitContextMenu()
     {
         var model = _commandItemModel.Unsafe;
         if (model is null)
@@ -607,10 +604,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
 
         List<IContextItemViewModel>? freedItems;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            ListHelpers.InPlaceUpdateList(_moreCommands, results, out freedItems);
-            RefreshMoreCommandStateUnsafe();
+            ListHelpers.InPlaceUpdateList(_contextItems, results, out freedItems);
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         freedItems.OfType<CommandContextItemViewModel>()
@@ -618,27 +615,22 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                   .ForEach(c => c.SafeCleanup());
     }
 
-    public void RefreshMoreCommands()
+    public void RefreshContextMenu()
     {
-        Task.Run(RefreshMoreCommandsSynchronous);
+        Task.Run(RefreshContextMenuSynchronous);
     }
 
-    private void RefreshMoreCommandsSynchronous()
+    private void RefreshContextMenuSynchronous()
     {
         try
         {
-            BuildAndInitMoreCommands();
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
-            UpdateProperty(nameof(SecondaryCommand));
-            UpdateProperty(nameof(SecondaryCommandName));
-            UpdateProperty(nameof(HasMoreCommands));
-            UpdateProperty(nameof(CanOpenContextMenu));
+            BuildAndInitContextMenu();
+            NotifyContextMenuChanged();
         }
         catch (Exception ex)
         {
             // Handle any exceptions that might occur during the refresh process
-            CoreLogger.LogError("Error refreshing MoreCommands in CommandItemViewModel", ex);
+            CoreLogger.LogError("Error refreshing context menu in CommandItemViewModel", ex);
             ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
     }
@@ -649,17 +641,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         List<IContextItemViewModel> freedItems;
         CommandContextItemViewModel? freedDefault;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            freedItems = [.. _moreCommands];
-            _moreCommands.Clear();
+            freedItems = [.. _contextItems];
+            _contextItems.Clear();
 
-            // Null out here so the single RefreshMoreCommandStateUnsafe call
-            // produces an _allCommandsSnapshot that excludes the default command.
+            // Null out here so the single RefreshContextMenuSnapshotUnsafe call
+            // publishes a menu that excludes the default command.
             freedDefault = _defaultCommandContextItemViewModel;
             _defaultCommandContextItemViewModel = null;
 
-            RefreshMoreCommandStateUnsafe();
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         // Cleanup outside lock to avoid holding it during RPC calls
@@ -697,33 +689,149 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.CleanedUp;
     }
 
-    protected void RefreshMoreCommandStateUnsafe()
+    private void ContextItem_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        _moreCommandsSnapshot = [.. _moreCommands];
-
-        _secondaryMoreCommand = null;
-        foreach (var item in _moreCommands)
+        if (e.PropertyName != nameof(Name) || sender is not CommandContextItemViewModel command)
         {
-            if (item is CommandContextItemViewModel command)
+            return;
+        }
+
+        bool rolesChanged;
+        lock (_contextItemsLock)
+        {
+            // A queued notification may arrive after the entry was replaced.
+            if (!_contextItems.Contains(command))
             {
-                _secondaryMoreCommand = command;
+                return;
+            }
+
+            var previousSnapshot = _snapshot;
+            RefreshContextMenuSnapshotUnsafe();
+            rolesChanged = !ReferenceEquals(previousSnapshot, _snapshot);
+        }
+
+        if (rolesChanged)
+        {
+            NotifyContextMenuChanged();
+        }
+        else if (ReferenceEquals(command, SecondaryCommand))
+        {
+            UpdateProperty(nameof(SecondaryCommandName));
+        }
+    }
+
+    /// <summary>
+    /// Updates the cached menu while <see cref="ContextItemsLock"/> is held.
+    /// </summary>
+    /// <param name="contextItemsChanged">
+    /// Must be <see langword="true"/> after any change to <see cref="UnsafeContextItems"/>,
+    /// including replacements or reordering that leave its count unchanged. This rebuilds
+    /// the entry snapshot and updates subscriptions and the SDK adapter version.
+    /// </param>
+    protected void RefreshContextMenuSnapshotUnsafe(bool contextItemsChanged = false)
+    {
+        if (contextItemsChanged)
+        {
+            foreach (var command in _snapshot.AllCommands.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground -= ContextItem_PropertyChanged;
+            }
+
+            foreach (var command in _contextItems.OfType<CommandContextItemViewModel>())
+            {
+                command.PropertyChangedBackground += ContextItem_PropertyChanged;
+            }
+
+            _contextItemsVersion++;
+        }
+
+        CommandContextItemViewModel? secondary = null;
+        var hasSubmenu = false;
+        var hasOverflowCommands = false;
+        foreach (var item in _contextItems)
+        {
+            if (item is not CommandContextItemViewModel command)
+            {
+                continue;
+            }
+
+            hasSubmenu = true;
+            if (!command.ShouldBeVisible)
+            {
+                continue;
+            }
+
+            if (secondary is null)
+            {
+                secondary = command;
+            }
+            else
+            {
+                hasOverflowCommands = true;
                 break;
             }
         }
 
-        _allCommandsSnapshot = _defaultCommandContextItemViewModel is null ?
-            _moreCommandsSnapshot :
-            [_defaultCommandContextItemViewModel, .. _moreCommandsSnapshot];
+        // Child name updates can change action roles without changing the menu entries.
+        var allCommands = _snapshot.AllCommands;
+        var entryCount = _contextItems.Count + (_defaultCommandContextItemViewModel is null ? 0 : 1);
+        if (contextItemsChanged || allCommands.Length != entryCount)
+        {
+            allCommands = _defaultCommandContextItemViewModel is null
+                ? [.. _contextItems]
+                : [_defaultCommandContextItemViewModel, .. _contextItems];
+        }
+
+        if (ReferenceEquals(allCommands, _snapshot.AllCommands) &&
+            ReferenceEquals(this, _snapshot.PrimaryCommand) &&
+            ReferenceEquals(secondary, _snapshot.SecondaryCommand) &&
+            hasOverflowCommands == _snapshot.HasOverflowCommands &&
+            hasSubmenu == _snapshot.HasSubmenu)
+        {
+            return;
+        }
+
+        _snapshot = new(allCommands, this, secondary, hasOverflowCommands, hasSubmenu);
     }
 
-    private void ClearMoreCommands()
+    protected void NotifyContextMenuChanged() =>
+        UpdateProperty(
+            nameof(AllCommands),
+            nameof(SecondaryCommand),
+            nameof(SecondaryCommandName),
+            nameof(HasSubmenu),
+            nameof(HasOverflowCommands),
+            nameof(CanOpenContextMenu));
+
+    /// <summary>
+    /// Copies cached entries back to the SDK for top-level item adapters, excluding the synthetic primary.
+    /// </summary>
+    internal void CopySdkContextItemsTo(List<IContextItem?> contextItems)
+    {
+        lock (_contextItemsLock)
+        {
+            foreach (var item in _contextItems)
+            {
+                if (item is SeparatorViewModel separator)
+                {
+                    contextItems.Add(separator);
+                }
+                else if (item is CommandContextItemViewModel command)
+                {
+                    contextItems.Add(command.Model.Unsafe);
+                }
+            }
+        }
+    }
+
+    private void ClearContextMenu()
     {
         List<IContextItemViewModel> freedItems;
-        lock (_moreCommandsLock)
+        lock (_contextItemsLock)
         {
-            freedItems = [.. _moreCommands];
-            _moreCommands.Clear();
-            RefreshMoreCommandStateUnsafe();
+            freedItems = [.. _contextItems];
+            _contextItems.Clear();
+            RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
         }
 
         freedItems.OfType<CommandContextItemViewModel>()

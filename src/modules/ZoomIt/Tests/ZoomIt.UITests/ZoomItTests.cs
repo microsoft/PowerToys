@@ -244,7 +244,9 @@ public sealed partial class ZoomItTests : UITestBase
         desktop = new DesktopFixture();
         ui.Activate(shortcut);
         var bounds = WaitForTimerPixels();
-        Assert.IsTrue(Math.Abs(((bounds.Left + bounds.Right) / 2) - desktop.Center.X) < 30, $"Timer was not centered: {bounds}.");
+        Assert.IsTrue(
+            ZoomItGeometry.IsTimerCentered(bounds, desktop.ScreenSize),
+            $"Timer ink bounds were not centered within the padded text layout: {bounds}, display {desktop.ScreenSize}.");
         SaveDesktop("break-timer");
         ui.Exit();
     }

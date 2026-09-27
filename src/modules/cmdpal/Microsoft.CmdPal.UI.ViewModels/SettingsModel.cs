@@ -35,6 +35,8 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public string Language { get; init; } = string.Empty;
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }

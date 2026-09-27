@@ -63,12 +63,14 @@ internal static class ZoomItCaptureHelpers
         return string.Join(" | ", captions);
     }
 
-    internal static async Task<Bitmap> DecodeVideoFrameAsync(MediaComposition composition, TimeSpan position, Size size)
+    internal static async Task<Bitmap> DecodeVideoFrameAsync(MediaComposition composition, TimeSpan position)
     {
+        // Zero leaves both thumbnail dimensions unspecified, preserving the source resolution.
+        // Passing the expected size here would rescale the frame and hide dimension regressions.
         using var stream = await composition.GetThumbnailAsync(
             position,
-            size.Width,
-            size.Height,
+            0,
+            0,
             VideoFramePrecision.NearestFrame).AsTask().WaitAsync(TimeSpan.FromSeconds(45));
         var decoder = await BitmapDecoder.CreateAsync(stream).AsTask().WaitAsync(TimeSpan.FromSeconds(30));
         var provider = await decoder.GetPixelDataAsync(

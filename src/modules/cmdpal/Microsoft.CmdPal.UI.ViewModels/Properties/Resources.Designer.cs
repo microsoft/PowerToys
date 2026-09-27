@@ -1213,6 +1213,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Windows display language.
+        /// </summary>
+        public static string Language_Default {
+            get {
+                return ResourceManager.GetString("Language_Default", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Show details.
         /// </summary>
         public static string ShowDetailsCommand {

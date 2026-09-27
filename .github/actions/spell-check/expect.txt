@@ -1483,6 +1483,7 @@ psapi
 pscid
 pscustomobject
 PSECURITY
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
