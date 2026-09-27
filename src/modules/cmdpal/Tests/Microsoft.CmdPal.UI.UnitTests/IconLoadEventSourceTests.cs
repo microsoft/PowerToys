@@ -1,0 +1,102 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Concurrent;
+using System.Diagnostics.Tracing;
+using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Microsoft.CmdPal.UI.UnitTests;
+
+[TestClass]
+[DoNotParallelize]
+public sealed class IconLoadEventSourceTests
+{
+    [TestMethod]
+    public void EventPayloadsPreserveDeclaredTypesAndOrder()
+    {
+        using var listener = new CollectingEventListener();
+        var log = IconLoadEventSource.Log;
+
+        Assert.AreEqual(new Guid("AA068BA3-1767-5F92-7A9B-8F5DA0397413"), log.Guid);
+
+        log.RequestStarted(11, 12, 13, 1.5);
+        log.ProviderResolved(11, 12, 14, 15);
+        log.RequestCompleted(11, 12, 16, 17);
+        log.LoadCreated(11, 14, 18, 19.5, 20.5, 1.25);
+        log.LoadEnqueued(11, 14, 21, 22);
+        log.LoadRejected(11, 14);
+        log.LoadStarted(11, 14, 23, 24);
+        log.LoadCompleted(11, 14, 25, 26);
+        log.BackgroundPreparationCompleted(11, 14, 27);
+        log.DispatcherWaitCompleted(11, 14, 28);
+        log.DispatcherWorkCompleted(11, 14, 29);
+        log.DirectGlyphLoadCompleted(11, 14, 30, 31);
+        log.ElementUpdated(11, 32, reused: true, 33);
+        log.RequestAttributed(11, 12, 34, 35, 36);
+        log.RequestInvalidated(11, 12, 14, 37, 38);
+        log.LoadStartedWithoutRequester(11, 14, 39);
+        log.LoadCompletedWithoutRequester(11, 14, 40);
+        log.RetainedLoadCacheHit(11, 14, 41);
+        log.RequestOrigin(11, 12, 42, 43, "ListItem / SingleRow");
+        log.LoadQueueDemandChanged(11, 14, 44, 45, 46);
+        log.LoadDemandAtWorkerStart(11, 14, 1, 47, 48, 49, 4, 50);
+        log.DispatcherWaitFailed(11, 14, 51);
+        log.DispatcherUiSliceCompleted(11, 14, 52, 53, isDemanded: true, 54);
+        log.DispatcherAsyncSuspensionCompleted(11, 14, 55, isDemanded: false, 56);
+        log.UiResponsivenessProbeCompleted(11, 57);
+
+        Assert.AreEqual(25, listener.Events.Count);
+        Assert.IsFalse(listener.Events.Any(e => e.EventId == 0), listener.GetEventSourceErrors());
+
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 12L, 13, 1.5 },
+            listener.GetEvent(1).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 32, true, 33L },
+            listener.GetEvent(13).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 12L, 42L, 43, "ListItem / SingleRow" },
+            listener.GetEvent(19).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 14L, 1, 47L, 48L, 49L, 4, 50L },
+            listener.GetEvent(21).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 14L, 52, 53, true, 54L },
+            listener.GetEvent(35).Payload!.ToArray());
+        CollectionAssert.AreEqual(
+            new object?[] { 11L, 14L, 55, false, 56L },
+            listener.GetEvent(36).Payload!.ToArray());
+    }
+
+    private sealed class CollectingEventListener : EventListener
+    {
+        internal ConcurrentQueue<EventWrittenEventArgs> Events { get; } = new();
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+        {
+            if (eventSource.Name == "Microsoft.PowerToys.CmdPal.IconLoading")
+            {
+                EnableEvents(eventSource, EventLevel.Verbose, EventKeywords.All);
+            }
+        }
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            Events.Enqueue(eventData);
+        }
+
+        internal EventWrittenEventArgs GetEvent(int eventId)
+        {
+            return Events.Single(e => e.EventId == eventId);
+        }
+
+        internal string GetEventSourceErrors()
+        {
+            return string.Join(
+                Environment.NewLine,
+                Events.Where(e => e.EventId == 0).Select(e => string.Join(", ", e.Payload ?? [])));
+        }
+    }
+}
