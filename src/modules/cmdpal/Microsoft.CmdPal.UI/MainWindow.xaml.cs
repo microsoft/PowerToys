@@ -18,8 +18,10 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -600,6 +602,7 @@ public sealed partial class MainWindow : WindowEx,
                 && x.ShowHwndFrame == y.ShowHwndFrame
                 && x.CompactMode == y.CompactMode
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
+                && x.DockFocusHotkey == y.DockFocusHotkey
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -640,6 +643,7 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.ShowHwndFrame);
             hash.Add(obj.CompactMode);
             hash.Add(obj.Hotkey);
+            hash.Add(obj.DockFocusHotkey);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -1626,67 +1630,52 @@ public sealed partial class MainWindow : WindowEx,
     {
         UnregisterHotkeys();
 
-        var globalHotkey = settings.Hotkey;
-        if (globalHotkey is not null)
-        {
-            if (settings.UseLowLevelGlobalHotkey)
-            {
-                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+        RegisterHotkey(settings, settings.Hotkey, string.Empty);
 
-                _hotkeys.Add(new(globalHotkey, string.Empty));
-            }
-            else
-            {
-                var vk = globalHotkey.Code;
-                var modifiers =
-                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                                ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
-                {
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-            }
-        }
+        // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
+        // peels it back off so nothing tries to summon a command with a dock ID.
+        RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
 
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
-            var key = commandHotkey.Hotkey;
+            RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
+        }
+    }
 
-            if (key is not null)
-            {
-                if (settings.UseLowLevelGlobalHotkey)
-                {
-                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+    private void RegisterHotkey(SettingsModel settings, HotkeySettings? key, string commandId)
+    {
+        if (key is null)
+        {
+            return;
+        }
 
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-                else
-                {
-                    var vk = key.Code;
-                    var modifiers =
-                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                        ;
+        if (settings.UseLowLevelGlobalHotkey)
+        {
+            _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId);
+            _hotkeys.Add(new(key, commandId));
+            return;
+        }
 
-                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                    if (success)
-                    {
-                        _hotkeys.Add(commandHotkey);
-                    }
-                }
-            }
+        var modifiers =
+            (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+            (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+            (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+            (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0);
+
+        if (PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)key.Code))
+        {
+            _hotkeys.Add(new(key, commandId));
         }
     }
 
     private void HandleSummon(string commandId)
     {
+        if (DockHotkeyIds.IsDockHotkey(commandId))
+        {
+            WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
+            return;
+        }
+
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         if (isRootHotkey && IsPaletteVisibleToUser())
         {

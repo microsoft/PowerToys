@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.UI.Controls;
@@ -26,6 +27,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.System;
 
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -309,6 +311,15 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void BandItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        // Escape is how the user backs out of the dock after the focus shortcut put them
+        // there. Edit mode already owns Escape, so leave it alone in that case.
+        if (!IsEditMode && e.Key == VirtualKey.Escape)
+        {
+            KeyboardFocusReleaseRequested?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
+            return;
+        }
+
         if (IsEditMode || sender is not DockItemControl dockItem || dockItem.Tag is not DockItemViewModel item)
         {
             return;
@@ -321,6 +332,31 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             chord,
             command => InvokeItem(command, GetDockItemCenter(dockItem)),
             submenu => TryShowBandContextMenu(dockItem, item, submenu, afterKeyEvent: true));
+    }
+
+    /// <summary>
+    /// Raised when the user presses Escape while focus is in the dock.
+    /// </summary>
+    internal event EventHandler? KeyboardFocusReleaseRequested;
+
+    /// <summary>
+    /// Moves keyboard focus to the first dock item. Returns false when there is nothing to
+    /// focus, which tells the caller to leave the user where they were.
+    /// </summary>
+    internal bool TryFocusFirstItem()
+    {
+        ListView[] listViews = [StartListView, CenterListView, EndListView];
+
+        foreach (var listView in listViews)
+        {
+            var item = listView.FindDescendant<DockItemControl>();
+            if (item is not null && item.Focus(FocusState.Programmatic))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool TryInvokeBandItem(object sender)

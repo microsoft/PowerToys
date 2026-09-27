@@ -376,6 +376,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public HotkeySettings? Dock_FocusHotkey
+    {
+        get => _settingsService.Settings.DockFocusHotkey;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusHotkey = value ?? SettingsModel.DefaultDockFocusShortcut });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusHotkey)));
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
