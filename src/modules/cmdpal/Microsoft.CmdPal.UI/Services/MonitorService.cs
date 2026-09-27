@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 using Windows.Win32.Devices.Display;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.System.Registry;
 using Windows.Win32.UI.HiDpi;
 
 namespace Microsoft.CmdPal.UI.Services;
@@ -126,7 +128,7 @@ public sealed class MonitorService : IMonitorService
     /// </summary>
     private const int DisplayInfoMapRetryCount = 3;
 
-    private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath)> displayInfo)
+    private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> displayInfo)
     {
         var monitors = new List<MonitorInfo>();
 
@@ -154,9 +156,11 @@ public sealed class MonitorService : IMonitorService
 
                     var friendlyName = string.Empty;
                     var stableId = deviceName; // Fall back to GDI name
+                    string? hardwareId = null;
                     if (displayInfo.TryGetValue(deviceName, out var info))
                     {
                         friendlyName = info.FriendlyName;
+                        hardwareId = info.HardwareId;
                         if (!string.IsNullOrEmpty(info.DevicePath))
                         {
                             stableId = info.DevicePath;
@@ -171,6 +175,7 @@ public sealed class MonitorService : IMonitorService
                     {
                         DeviceId = deviceName,
                         StableId = stableId,
+                        HardwareId = hardwareId,
                         DisplayName = displayName,
                         Bounds = new ScreenRect(
                             rcMonitor.left,
@@ -201,9 +206,9 @@ public sealed class MonitorService : IMonitorService
     /// GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into treating a
     /// still-connected monitor as brand new.
     /// </summary>
-    private static Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMapWithRetry()
+    private static Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> BuildDisplayInfoMapWithRetry()
     {
-        var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)>(StringComparer.OrdinalIgnoreCase);
 
         for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
         {
@@ -225,9 +230,9 @@ public sealed class MonitorService : IMonitorService
     /// names among the active paths, not the raw path count: in Duplicate/clone mode several
     /// paths share one source, so comparing against the path count would never be satisfied.
     /// </summary>
-    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap(out uint expectedSourceCount)
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> BuildDisplayInfoMap(out uint expectedSourceCount)
     {
-        var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)>(StringComparer.OrdinalIgnoreCase);
         expectedSourceCount = 0;
 
         try
@@ -297,7 +302,7 @@ public sealed class MonitorService : IMonitorService
                 var devicePath = new string(targetName.monitorDevicePath.AsSpan()).TrimEnd('\0');
                 if (!string.IsNullOrEmpty(friendly) || !string.IsNullOrEmpty(devicePath))
                 {
-                    map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty));
+                    map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty, ReadHardwareId(devicePath)));
                 }
             }
 
@@ -309,6 +314,85 @@ public sealed class MonitorService : IMonitorService
         }
 
         return map;
+    }
+
+    /// <summary>
+    /// Reads the monitor's EDID from its devnode's <c>Device Parameters</c> key and turns it
+    /// into an <see cref="EdidIdentity"/> hardware ID. Returns <c>null</c> on any failure so
+    /// the monitor just falls back to device path matching.
+    /// </summary>
+    private static unsafe string? ReadHardwareId(string? devicePath)
+    {
+        var instanceId = DevicePathToInstanceId(devicePath);
+        if (instanceId is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            uint devInst;
+            fixed (char* pInstanceId = instanceId)
+            {
+                if (PInvoke.CM_Locate_DevNode(out devInst, pInstanceId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
+                {
+                    return null;
+                }
+            }
+
+            HKEY key;
+            if (PInvoke.CM_Open_DevNode_Key(devInst, (uint)REG_SAM_FLAGS.KEY_READ, 0, PInvoke.RegDisposition_OpenExisting, &key, PInvoke.CM_REGISTRY_HARDWARE) != CONFIGRET.CR_SUCCESS)
+            {
+                return null;
+            }
+
+            try
+            {
+                const int MaxEdidLength = 1024;
+                var buffer = stackalloc byte[MaxEdidLength];
+                uint size = MaxEdidLength;
+                fixed (char* pValueName = "EDID")
+                {
+                    if (PInvoke.RegQueryValueEx(key, pValueName, null, null, buffer, &size) != WIN32_ERROR.ERROR_SUCCESS)
+                    {
+                        return null;
+                    }
+                }
+
+                return EdidIdentity.TryCreate(new ReadOnlySpan<byte>(buffer, (int)size));
+            }
+            finally
+            {
+                PInvoke.RegCloseKey(key);
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Logger.LogDebug($"ReadHardwareId failed for '{devicePath}': {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Converts a monitor interface path (<c>\\?\DISPLAY#DEL41A3#5&amp;1c2f&amp;0&amp;UID4352#{guid}</c>)
+    /// into its device instance ID (<c>DISPLAY\DEL41A3\5&amp;1c2f&amp;0&amp;UID4352</c>).
+    /// </summary>
+    internal static string? DevicePathToInstanceId(string? devicePath)
+    {
+        const string prefix = @"\\?\";
+        if (string.IsNullOrEmpty(devicePath) || !devicePath.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var body = devicePath[prefix.Length..];
+        var guidStart = body.LastIndexOf("#{", StringComparison.Ordinal);
+        if (guidStart <= 0)
+        {
+            return null;
+        }
+
+        return body[..guidStart].Replace('#', '\\');
     }
 
     private static string FormatDisplayName(string deviceName, bool isPrimary, string friendlyName)

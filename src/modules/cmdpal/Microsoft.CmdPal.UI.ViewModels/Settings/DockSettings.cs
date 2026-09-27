@@ -210,9 +210,17 @@ public record DockSettings
 public sealed record DockMonitorConfig
 {
     /// <summary>
-    /// Gets the monitor device identifier (e.g. <c>\\.\DISPLAY1</c>).
+    /// Gets the monitor's stable device path (see <see cref="MonitorInfo.StableId"/>).
+    /// Older settings may still hold a legacy GDI name (e.g. <c>\\.\DISPLAY1</c>).
     /// </summary>
     public required string MonitorDeviceId { get; init; }
+
+    /// <summary>
+    /// Gets the EDID-derived identifier of the monitor (see <see cref="MonitorInfo.HardwareId"/>).
+    /// Used as a fallback match when <see cref="MonitorDeviceId"/> changes because the monitor
+    /// moved to a different port, dock, or GPU.
+    /// </summary>
+    public string? MonitorHardwareId { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the dock is enabled on this monitor. Defaults to <c>true</c>.

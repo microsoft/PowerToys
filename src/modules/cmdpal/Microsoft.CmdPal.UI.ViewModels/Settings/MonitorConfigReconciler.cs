@@ -12,8 +12,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// <summary>
 /// Reconciles persisted <see cref="DockMonitorConfig"/> entries against the
 /// set of currently connected monitors. Uses <see cref="MonitorInfo.StableId"/>
-/// (hardware device path) for persistent identification, with automatic
-/// migration from legacy GDI device names (e.g. <c>\\.\DISPLAY1</c>).
+/// (hardware device path) for persistent identification, falls back to
+/// <see cref="MonitorInfo.HardwareId"/> (EDID) when a monitor changes ports, and
+/// migrates legacy GDI device names (e.g. <c>\\.\DISPLAY1</c>).
 /// </summary>
 /// <remarks>
 /// All operations are pure: they return new immutable lists rather than
@@ -26,6 +27,8 @@ public static class MonitorConfigReconciler
     /// duration are pruned during reconciliation.
     /// </summary>
     internal static readonly TimeSpan StaleThreshold = TimeSpan.FromDays(180);
+
+    private const string GdiDevicePrefix = @"\\.\";
 
     /// <summary>
     /// Reconciles persisted monitor configs against the current set of connected monitors.
@@ -72,11 +75,22 @@ public static class MonitorConfigReconciler
             var monitor = currentMonitors[mi];
             if (configIndexById.TryGetValue(monitor.StableId, out var ci) && !matchedConfigIndices.Contains(ci))
             {
-                result.Add(existingConfigs[ci] with { IsPrimary = monitor.IsPrimary, LastSeen = utcNow });
+                result.Add(existingConfigs[ci] with
+                {
+                    IsPrimary = monitor.IsPrimary,
+                    LastSeen = utcNow,
+                    MonitorHardwareId = monitor.HardwareId ?? existingConfigs[ci].MonitorHardwareId,
+                });
                 matchedMonitorStableIds.Add(monitor.StableId);
                 matchedConfigIndices.Add(ci);
             }
         }
+
+        // Hardware match: the device path is tied to the port, so plugging a monitor into a
+        // different port, dock, or GPU gives it a new StableId. The EDID based HardwareId
+        // follows the panel instead. We only trust it when exactly one connected monitor and
+        // exactly one unmatched config share it, so twins without serials never get swapped.
+        MatchByHardwareId(existingConfigs, currentMonitors, matchedMonitorStableIds, matchedConfigIndices, result, utcNow);
 
         // Legacy migration: match configs that still have GDI-style IDs
         // (e.g. "\\.\DISPLAY1") by matching against the monitor's GDI DeviceId,
@@ -95,6 +109,7 @@ public static class MonitorConfigReconciler
                 result.Add(existingConfigs[ci] with
                 {
                     MonitorDeviceId = monitor.StableId,
+                    MonitorHardwareId = monitor.HardwareId,
                     IsPrimary = monitor.IsPrimary,
                     LastSeen = utcNow,
                 });
@@ -128,6 +143,7 @@ public static class MonitorConfigReconciler
                     result.Add(existingConfigs[ci] with
                     {
                         MonitorDeviceId = monitor.StableId,
+                        MonitorHardwareId = monitor.HardwareId,
                         IsPrimary = monitor.IsPrimary,
                         LastSeen = utcNow,
                     });
@@ -137,6 +153,12 @@ public static class MonitorConfigReconciler
                 }
             }
         }
+
+        // Orphan cleanup: older builds of the pin dialog saved configs under the GDI name
+        // even when the monitor already had a config under its StableId. Left alone, the
+        // legacy pass above would eventually hand that orphan to whichever monitor picks
+        // up the number next. Fold its bands into the monitor that owns the name today.
+        MergeGdiOrphans(existingConfigs, currentMonitors, matchedMonitorStableIds, matchedConfigIndices, result);
 
         // Create defaults for new monitors with no matching config.
         // Primary monitors inherit global bands (IsCustomized = false) for a seamless
@@ -156,6 +178,7 @@ public static class MonitorConfigReconciler
                 result.Add(new DockMonitorConfig
                 {
                     MonitorDeviceId = monitor.StableId,
+                    MonitorHardwareId = monitor.HardwareId,
                     Enabled = true,
                     IsPrimary = true,
                     LastSeen = utcNow,
@@ -166,6 +189,7 @@ public static class MonitorConfigReconciler
                 result.Add(new DockMonitorConfig
                 {
                     MonitorDeviceId = monitor.StableId,
+                    MonitorHardwareId = monitor.HardwareId,
                     Enabled = false,
                     IsPrimary = false,
                     LastSeen = utcNow,
@@ -211,5 +235,143 @@ public static class MonitorConfigReconciler
         }
 
         return ImmutableList.CreateRange(result);
+    }
+
+    private static void MatchByHardwareId(
+        ImmutableList<DockMonitorConfig> existingConfigs,
+        IReadOnlyList<MonitorInfo> currentMonitors,
+        HashSet<string> matchedMonitorStableIds,
+        HashSet<int> matchedConfigIndices,
+        List<DockMonitorConfig> result,
+        DateTime utcNow)
+    {
+        var monitorCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var monitor in currentMonitors)
+        {
+            if (monitor.HardwareId is { } id)
+            {
+                monitorCounts[id] = monitorCounts.GetValueOrDefault(id) + 1;
+            }
+        }
+
+        if (monitorCounts.Count == 0)
+        {
+            return;
+        }
+
+        var configIndexByHardwareId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var ambiguousHardwareIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (var ci = 0; ci < existingConfigs.Count; ci++)
+        {
+            if (matchedConfigIndices.Contains(ci) || existingConfigs[ci].MonitorHardwareId is not { } id)
+            {
+                continue;
+            }
+
+            if (!configIndexByHardwareId.TryAdd(id, ci))
+            {
+                ambiguousHardwareIds.Add(id);
+            }
+        }
+
+        foreach (var monitor in currentMonitors)
+        {
+            if (monitor.HardwareId is not { } id ||
+                matchedMonitorStableIds.Contains(monitor.StableId) ||
+                monitorCounts[id] != 1 ||
+                ambiguousHardwareIds.Contains(id) ||
+                !configIndexByHardwareId.TryGetValue(id, out var ci))
+            {
+                continue;
+            }
+
+            result.Add(existingConfigs[ci] with
+            {
+                MonitorDeviceId = monitor.StableId,
+                IsPrimary = monitor.IsPrimary,
+                LastSeen = utcNow,
+            });
+            matchedMonitorStableIds.Add(monitor.StableId);
+            matchedConfigIndices.Add(ci);
+        }
+    }
+
+    private static void MergeGdiOrphans(
+        ImmutableList<DockMonitorConfig> existingConfigs,
+        IReadOnlyList<MonitorInfo> currentMonitors,
+        HashSet<string> matchedMonitorStableIds,
+        HashSet<int> matchedConfigIndices,
+        List<DockMonitorConfig> result)
+    {
+        for (var ci = 0; ci < existingConfigs.Count; ci++)
+        {
+            var orphan = existingConfigs[ci];
+            if (matchedConfigIndices.Contains(ci) ||
+                !orphan.IsCustomized ||
+                !orphan.MonitorDeviceId.StartsWith(GdiDevicePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            MonitorInfo? owner = null;
+            foreach (var monitor in currentMonitors)
+            {
+                if (string.Equals(monitor.DeviceId, orphan.MonitorDeviceId, StringComparison.OrdinalIgnoreCase) &&
+                    matchedMonitorStableIds.Contains(monitor.StableId))
+                {
+                    owner = monitor;
+                    break;
+                }
+            }
+
+            var targetIndex = owner is null
+                ? -1
+                : result.FindIndex(c => string.Equals(c.MonitorDeviceId, owner.StableId, StringComparison.OrdinalIgnoreCase));
+            if (targetIndex < 0)
+            {
+                continue;
+            }
+
+            var target = result[targetIndex];
+            result[targetIndex] = target.IsCustomized
+                ? target with
+                {
+                    StartBands = MergeBands(target.StartBands, orphan.StartBands),
+                    CenterBands = MergeBands(target.CenterBands, orphan.CenterBands),
+                    EndBands = MergeBands(target.EndBands, orphan.EndBands),
+                }
+                : target with
+                {
+                    // The orphan was forked from global when it was pinned, so it's
+                    // exactly what this monitor would have become.
+                    IsCustomized = true,
+                    StartBands = orphan.StartBands ?? ImmutableList<DockBandSettings>.Empty,
+                    CenterBands = orphan.CenterBands ?? ImmutableList<DockBandSettings>.Empty,
+                    EndBands = orphan.EndBands ?? ImmutableList<DockBandSettings>.Empty,
+                };
+            matchedConfigIndices.Add(ci);
+        }
+    }
+
+    private static ImmutableList<DockBandSettings> MergeBands(
+        ImmutableList<DockBandSettings>? target,
+        ImmutableList<DockBandSettings>? source)
+    {
+        target ??= ImmutableList<DockBandSettings>.Empty;
+        if (source is null || source.Count == 0)
+        {
+            return target;
+        }
+
+        var builder = target.ToBuilder();
+        foreach (var band in source)
+        {
+            if (!builder.Exists(b => b.ProviderId == band.ProviderId && b.CommandId == band.CommandId))
+            {
+                builder.Add(band);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 }
