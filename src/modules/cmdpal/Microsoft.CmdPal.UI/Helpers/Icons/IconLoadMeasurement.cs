@@ -45,13 +45,13 @@ internal sealed class IconLoadMeasurement
         InputKind = inputKind;
     }
 
-    public void Enqueued(IconLoadPriority priority)
+    public void Enqueued(IconLoadPriority priority, int workerCount = 1)
     {
         _queuePriority = (int)priority;
         _enqueuedAt = Stopwatch.GetTimestamp();
         try
         {
-            Session.RecordLoadEnqueued(Id, priority);
+            Session.RecordLoadEnqueued(Id, priority, Math.Max(1, workerCount));
             var published = PublishEnqueueState(EnqueueState.Enqueued);
             Debug.Assert(published, "A load can only be enqueued once.");
         }
@@ -237,9 +237,18 @@ internal sealed class IconLoadMeasurement
         if (Interlocked.Exchange(ref _completed, 1) == 0)
         {
             var enqueuedAt = Volatile.Read(ref _enqueuedAt);
-            if (enqueuedAt != 0 && Volatile.Read(ref _started) != 0)
+            if (enqueuedAt == 0)
+            {
+                return;
+            }
+
+            if (Volatile.Read(ref _started) != 0)
             {
                 Session.RecordLoadCompleted(Id, InputKind, IconLoadResultKind.Failed, Stopwatch.GetTimestamp() - enqueuedAt);
+            }
+            else
+            {
+                Session.RecordLoadAbandoned(Id, (IconLoadPriority)_queuePriority);
             }
         }
     }

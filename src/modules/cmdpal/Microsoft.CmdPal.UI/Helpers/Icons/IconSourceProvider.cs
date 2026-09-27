@@ -26,7 +26,11 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     {
     }
 
-    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale, IconRequestMeasurement diagnostics = default)
+    public Task<IconSource?> GetIconSource(
+        IconDataViewModel icon,
+        double scale,
+        IconRequestMeasurement diagnostics = default,
+        IIconRequestDemand? demand = null)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
         IconLoadMeasurement? loadDiagnostics = null;
@@ -43,6 +47,16 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                 scale);
             diagnostics.RecordProviderResolution(IconProviderResolution.NewLoad, loadDiagnostics);
 
+            if (_loader.TryLoadGlyph(icon.Icon, icon.FontFamily, _iconSize, scale, out var glyph) && glyph is not null)
+            {
+                loadDiagnostics?.CompleteDirectGlyph(glyph);
+                tcs.TrySetResult(glyph);
+                return tcs.Task;
+            }
+
+            var loadDemand = new IconLoadDemand();
+            loadDemand.Attach(demand);
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
@@ -51,7 +65,8 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                     scale,
                     tcs,
                     _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
-                    loadDiagnostics))
+                    loadDiagnostics,
+                    loadDemand))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }
