@@ -1486,6 +1486,13 @@ public sealed partial class MainWindow : WindowEx,
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
+        else if (!IsVisibleToUser)
+        {
+            // Something outside of our own summon path handed us focus while we were
+            // cloaked (e.g. the shell activating us for the Copilot key). Treat that as a
+            // request to show: position, uncloak and bring the window to the foreground.
+            WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(_hwnd));
+        }
 
         if (RootElement is not null)
         {
