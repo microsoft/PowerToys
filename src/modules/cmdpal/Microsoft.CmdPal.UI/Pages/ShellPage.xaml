@@ -22,6 +22,10 @@
 
     <Page.Resources>
         <ResourceDictionary>
+            <cpcontrols:ContextMenuFlyout
+                x:Name="ItemContextMenuFlyout"
+                BackRequested="ContextMenuFlyout_BackRequested" />
+
             <converters:StringVisibilityConverter
                 x:Key="StringNotEmptyToVisibilityConverter"
                 EmptyValue="Collapsed"
@@ -610,7 +614,9 @@
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
-            <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+            <cpcontrols:CommandBar
+                CommandContext="{x:Bind ViewModel.CurrentCommandContext, Mode=OneWay}"
+                CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
         <VisualStateManager.VisualStateGroups>

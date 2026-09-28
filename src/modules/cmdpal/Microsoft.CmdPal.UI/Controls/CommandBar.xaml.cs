@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -14,9 +15,14 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
-    IRecipient<OpenContextMenuMessage>,
     ICurrentPageAware
 {
+    public static readonly DependencyProperty CommandContextProperty =
+        DependencyProperty.Register(nameof(CommandContext), typeof(ICommandBarContext), typeof(CommandBar), new PropertyMetadata(null, CommandContextChanged));
+
+    public static readonly DependencyProperty CurrentPageViewModelProperty =
+        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
+
     public CommandBarViewModel ViewModel { get; } = new();
 
     public PageViewModel? CurrentPageViewModel
@@ -25,36 +31,41 @@ public sealed partial class CommandBar : UserControl,
         set => SetValue(CurrentPageViewModelProperty, value);
     }
 
-    // Using a DependencyProperty as the backing store for CurrentPage.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty CurrentPageViewModelProperty =
-        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
+    public ICommandBarContext? CommandContext
+    {
+        get => (ICommandBarContext?)GetValue(CommandContextProperty);
+        set => SetValue(CommandContextProperty, value);
+    }
 
     public CommandBar()
     {
         this.InitializeComponent();
-
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
+        Loaded += CommandBar_Loaded;
+        Unloaded += CommandBar_Unloaded;
     }
 
-    public void Receive(OpenContextMenuMessage message)
+    private static void CommandContextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
-        var context = message.Context;
+        var bar = (CommandBar)sender;
+        if (bar.IsLoaded)
+        {
+            bar.ViewModel.SetContext((ICommandBarContext?)e.NewValue);
+        }
+    }
 
-        // Callers validate their context on the UI thread before sending the request.
-        var anchor = message.Element ??
-            (MoreCommandsButton.Visibility == Visibility.Visible && ReferenceEquals(context, ViewModel.SelectedItem) ? MoreCommandsButton : this);
-        ContextMenuFlyout.ShowAt(
-            anchor,
-            context,
-            message.ContextMenuFilterLocation,
-            new FlyoutShowOptions()
-            {
-                ShowMode = FlyoutShowMode.Standard,
-                Placement = message.FlyoutPlacementMode ?? FlyoutPlacementMode.TopEdgeAlignedRight, // This placement is one exception, More button is in the right-bottom corner
-                Position = message.Point,
-            },
-            message.InitialSubmenu);
+    private void CommandBar_Loaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SetContext(CommandContext);
+    }
+
+    private void CommandBar_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (IsLoaded)
+        {
+            return;
+        }
+
+        ViewModel.ClearContext();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -76,15 +87,18 @@ public sealed partial class CommandBar : UserControl,
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
-        if (ViewModel.CurrentContext is { } context)
+        if (CommandContext is { } context)
         {
             WeakReferenceMessenger.Default.Send(
                 new OpenContextMenuMessage(
-                    null,
-                    null,
-                    null,
-                    ContextMenuFilterLocation.Bottom,
-                    context));
+                    new ContextMenuRequest(context)
+                    {
+                        Anchor = new ContextMenuAnchor(
+                            MoreCommandsButton,
+                            null,
+                            FlyoutPlacementMode.TopEdgeAlignedRight,
+                            ContextMenuFilterLocation.Bottom),
+                    }));
         }
     }
 }

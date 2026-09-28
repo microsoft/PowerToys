@@ -85,10 +85,14 @@
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
 
-            <cpcontrols:ContextMenuFlyout x:Name="ContextMenuFlyout" />
+            <cpcontrols:ContextMenuFlyout x:Name="ItemContextMenuFlyout" />
 
             <!--  Edit mode context menu for dock bands  -->
-            <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
+            <!--  Disable the cached animation because this menu follows changes to the dock side.  -->
+            <MenuFlyout
+                x:Name="EditModeContextMenu"
+                AreOpenCloseAnimationsEnabled="False"
+                ShouldConstrainToRootBounds="False">
                 <MenuFlyoutSubItem x:Name="LabelsSubMenu" x:Uid="Dock_EditMode_Labels">
                     <MenuFlyoutSubItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />

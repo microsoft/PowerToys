@@ -1161,7 +1161,7 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>());
     }
 
     private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
@@ -1416,11 +1416,14 @@ public sealed partial class ListItemsView : UserControl,
 
                 WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
                     new OpenContextMenuMessage(
-                        element,
-                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        pos,
-                        ContextMenuFilterLocation.Top,
-                        item));
+                        new ContextMenuRequest(item)
+                        {
+                            Anchor = new ContextMenuAnchor(
+                                element,
+                                pos,
+                                FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                ContextMenuFilterLocation.Top),
+                        }));
             });
 
         return true;

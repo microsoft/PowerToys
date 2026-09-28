@@ -11,14 +11,11 @@ using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class CommandBarViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+public sealed partial class CommandBarViewModel : ObservableObject
 {
     private readonly DispatcherQueueTimer _debounceTimer;
 
-    private volatile ICommandBarContext? _pendingSelectedItem;
-
-    public ICommandBarContext? CurrentContext => _pendingSelectedItem;
+    private ICommandBarContext? _pendingSelectedItem;
 
     public ICommandBarContext? SelectedItem
     {
@@ -83,20 +80,21 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         }
 
         _debounceTimer = dispatcherQueue.CreateTimer();
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
-    public void Receive(UpdateCommandBarMessage message)
+    public void SetContext(ICommandBarContext? context)
     {
-        _pendingSelectedItem = message.ViewModel;
+        _pendingSelectedItem = context;
 
         // Debounce visual updates so the commands do not jump while browsing the list.
-        // immediate: false is intentional. The timer tick always fires on the
-        // dispatcher queue thread, which guarantees ApplyPendingSelectedItem
-        // runs on the UI thread even if Receive is called from a background
-        // thread. Using immediate: true would invoke the delegate synchronously
-        // on the calling thread, bypassing the dispatcher.
         _debounceTimer.Debounce(ApplyPendingSelectedItem, TimeSpan.FromMilliseconds(50));
+    }
+
+    public void ClearContext()
+    {
+        _debounceTimer.Stop();
+        _pendingSelectedItem = null;
+        SelectedItem = null;
     }
 
     private void ApplyPendingSelectedItem()

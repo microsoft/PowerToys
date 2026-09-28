@@ -8,8 +8,10 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -31,6 +33,8 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
+    private readonly ContextMenuHost _menuHost;
+
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
@@ -42,7 +46,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     internal IntPtr OwnerHwnd { get; set; }
 
     internal bool HasOpenTransientUi =>
-        ContextMenuFlyout.IsOpen ||
+        ItemContextMenuFlyout.IsOpen ||
         AddBandFlyout.IsOpen ||
         EditModeContextMenu.IsOpen ||
         EditButtonsTeachingTip.IsOpen;
@@ -97,6 +101,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     {
         _viewModel = viewModel;
         InitializeComponent();
+        _menuHost = new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout);
         Loaded += DockControl_Loaded;
         Unloaded += DockControl_Unloaded;
 
@@ -111,10 +116,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
 
-        ContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextMenuFlyout.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
-        ContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
-        ContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ItemContextMenuFlyout.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
@@ -129,9 +134,10 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     private void DockControl_Unloaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        _menuHost.Close();
 
-        ContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
 
@@ -139,8 +145,6 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         {
             EditButtonsTeachingTip.IsOpen = false;
         }
-
-        ContextMenuFlyout.Close();
 
         if (AddBandFlyout.IsOpen)
         {
@@ -316,21 +320,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             item,
             chord,
             command => InvokeItem(command, GetDockItemCenter(dockItem)),
-            submenu => OpenBandContextMenuAfterKeyEvent(dockItem, item, submenu));
-    }
-
-    private void OpenBandContextMenuAfterKeyEvent(DockItemControl dockItem, DockItemViewModel item, CommandContextItemViewModel? initialSubmenu = null)
-    {
-        // Finish routing the triggering key before moving focus into the flyout.
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            if (!IsLoaded || IsEditMode || !dockItem.IsLoaded || dockItem.FocusState == FocusState.Unfocused || !ReferenceEquals(dockItem.Tag, item))
-            {
-                return;
-            }
-
-            TryShowBandContextMenu(dockItem, item, initialSubmenu);
-        });
+            submenu => TryShowBandContextMenu(dockItem, item, submenu, afterKeyEvent: true));
     }
 
     private bool TryInvokeBandItem(object sender)
@@ -351,11 +341,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         return true;
     }
 
-    private ContextMenuFilterLocation GetDockContextMenuFilterLocation()
+    private ContextMenuAnchor GetDefaultContextMenuAnchor()
     {
-        return DockSide == DockSide.Bottom
-            ? ContextMenuFilterLocation.Bottom
-            : ContextMenuFilterLocation.Top;
+        return new(
+            RootGrid,
+            null,
+            FlyoutPlacementHelper.ForDockSide(DockSide),
+            DockSide == DockSide.Bottom ? ContextMenuFilterLocation.Bottom : ContextMenuFilterLocation.Top);
     }
 
     // Stores the band that was right-clicked for edit mode context menu
@@ -387,12 +379,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                         : Visibility.Visible;
 
                     UIHelper.PreparePopupForShow(EditModeContextMenu, dockItem);
+                    EditModeContextMenu.Placement = FlyoutPlacementHelper.ForDockSide(DockSide);
                     EditModeContextMenu.ShowAt(
                         dockItem,
                         new FlyoutShowOptions()
                         {
                             ShowMode = FlyoutShowMode.Standard,
-                            Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                            Placement = EditModeContextMenu.Placement,
                         });
                     e.Handled = true;
                 }
@@ -404,26 +397,40 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
-    private bool TryShowBandContextMenu(DockItemControl dockItem, DockItemViewModel item, CommandContextItemViewModel? initialSubmenu = null)
+    private bool TryShowBandContextMenu(DockItemControl dockItem, DockItemViewModel item, CommandContextItemViewModel? initialSubmenu = null, bool afterKeyEvent = false)
     {
         if (!item.CanOpenContextMenu)
         {
             return false;
         }
 
-        // Anchor page commands and confirmation dialogs to the invoking dock item.
-        _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
-        ContextMenuFlyout.ShowAt(
-            dockItem,
-            item,
-            GetDockContextMenuFilterLocation(),
-            new FlyoutShowOptions()
-            {
-                ShowMode = FlyoutShowMode.Standard,
-                Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
-            },
-            initialSubmenu);
+        if (afterKeyEvent)
+        {
+            _menuHost.ShowAfterKeyEvent(CreateRequest);
+        }
+        else if (CreateRequest() is { } request)
+        {
+            _menuHost.Show(request);
+        }
+
         return true;
+
+        ContextMenuRequest? CreateRequest()
+        {
+            if (!IsLoaded || IsEditMode || !dockItem.IsLoaded || !ReferenceEquals(dockItem.Tag, item) ||
+                (afterKeyEvent && dockItem.FocusState == FocusState.Unfocused))
+            {
+                return null;
+            }
+
+            // Anchor page commands and confirmation dialogs to the invoking dock item.
+            _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
+            return new ContextMenuRequest(item)
+            {
+                Anchor = GetDefaultContextMenuAnchor() with { Element = dockItem },
+                InitialSubmenu = initialSubmenu,
+            };
+        }
     }
 
     private void ShowTitlesMenuItem_Click(object sender, RoutedEventArgs e)
@@ -536,24 +543,21 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.CanOpenContextMenu)
         {
-            ContextMenuFlyout.ShowAt(
-                RootGrid,
-                item,
-                GetDockContextMenuFilterLocation(),
-                new FlyoutShowOptions()
+            _menuHost.Show(new ContextMenuRequest(item)
+            {
+                Anchor = GetDefaultContextMenuAnchor() with
                 {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft,
                     Position = e.TryGetPosition(RootGrid, out var pos) ? pos : null,
                 },
-                showFilterBox: false);
+                ShowFilterBox = false,
+            });
             e.Handled = true;
         }
     }
 
     private void RootGrid_ContextCanceled(UIElement sender, RoutedEventArgs e)
     {
-        ContextMenuFlyout.Close();
+        _menuHost.Close();
         EditModeContextMenu.Hide();
     }
 

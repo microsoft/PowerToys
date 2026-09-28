@@ -32,7 +32,10 @@ public class ContextMenuFlyoutSessionTests
         });
         if (closing)
         {
+            var openAtClosed = isOpen;
+            isOpen = true;
             session.Closing();
+            isOpen = openAtClosed;
         }
 
         session.Closed();
@@ -52,13 +55,15 @@ public class ContextMenuFlyoutSessionTests
     public void RequestDuringClose_WaitsUntilAfterClosed(bool requestAfterClosed)
     {
         var callbacks = new Queue<Action>();
-        var session = new ContextMenuFlyoutSession(() => false, () => { }, () => { }, callback =>
+        var isOpen = true;
+        var session = new ContextMenuFlyoutSession(() => isOpen, () => { }, () => { }, callback =>
         {
             callbacks.Enqueue(callback);
             return true;
         });
         var rows = "First";
         session.Closing();
+        isOpen = false;
         if (requestAfterClosed)
         {
             session.Closed();
@@ -87,7 +92,7 @@ public class ContextMenuFlyoutSessionTests
         var callbacks = new Queue<Action>();
         var isOpen = true;
         var releases = 0;
-        var session = new ContextMenuFlyoutSession(() => isOpen, () => isOpen = stillReportsOpen, () => releases++, callback =>
+        var session = new ContextMenuFlyoutSession(() => isOpen, () => { }, () => releases++, callback =>
         {
             callbacks.Enqueue(callback);
             return true;
@@ -97,6 +102,7 @@ public class ContextMenuFlyoutSessionTests
         Assert.AreEqual("First", rows);
 
         session.Closing();
+        isOpen = stillReportsOpen;
         session.Closed();
         Assert.AreEqual("First", rows, "WinUI must finish its Closed handler before the replacement is prepared.");
         Assert.AreEqual(0, releases);
@@ -144,7 +150,7 @@ public class ContextMenuFlyoutSessionTests
         var isOpen = true;
         var canOpen = true;
         var retainedContext = true;
-        var session = new ContextMenuFlyoutSession(() => isOpen, () => isOpen = false, () => retainedContext = false, callback =>
+        var session = new ContextMenuFlyoutSession(() => isOpen, () => { }, () => retainedContext = false, callback =>
         {
             callbacks.Enqueue(callback);
             return true;
@@ -160,6 +166,7 @@ public class ContextMenuFlyoutSessionTests
         });
 
         session.Closing();
+        isOpen = false;
         canOpen = false;
         session.Closed();
         Assert.IsTrue(retainedContext, "Release must wait until the turn after Closed.");
@@ -179,7 +186,7 @@ public class ContextMenuFlyoutSessionTests
     {
         var callbacks = new Queue<Action>();
         var isOpen = true;
-        var session = new ContextMenuFlyoutSession(() => isOpen, () => isOpen = false, () => { }, callback =>
+        var session = new ContextMenuFlyoutSession(() => isOpen, () => { }, () => { }, callback =>
         {
             callbacks.Enqueue(callback);
             return true;
@@ -188,6 +195,7 @@ public class ContextMenuFlyoutSessionTests
         var openCount = 0;
         session.Show(() => opened = "Superseded");
         session.Closing();
+        isOpen = false;
         session.Closed();
         isOpen = stillReportsOpen;
         session.Show(() =>
@@ -285,9 +293,11 @@ public class ContextMenuFlyoutSessionTests
     public void UnavailableDispatcher_DropsPendingRequestAndResetsClosing()
     {
         var releases = 0;
-        var session = new ContextMenuFlyoutSession(() => false, () => { }, () => releases++, _ => false);
+        var isOpen = true;
+        var session = new ContextMenuFlyoutSession(() => isOpen, () => { }, () => releases++, _ => false);
         var opened = string.Empty;
         session.Closing();
+        isOpen = false;
         session.Show(() => opened = "Abandoned");
         Assert.AreEqual(string.Empty, opened);
         session.Closed();
@@ -307,7 +317,6 @@ public class ContextMenuFlyoutSessionTests
             () => isOpen,
             () =>
             {
-                isOpen = false;
                 hideCount++;
             },
             () => { },
@@ -319,11 +328,49 @@ public class ContextMenuFlyoutSessionTests
         var opened = false;
         session.Show(() => opened = true);
         session.Closing();
+        isOpen = false;
         session.Closed();
         session.Hide();
         callbacks.Dequeue()();
         Assert.IsFalse(opened);
         Assert.AreEqual(1, hideCount);
         Assert.IsEmpty(callbacks);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Opening_HonorsCancellationOfNativeQueuedOpen(bool cancel)
+    {
+        var prepared = 0;
+        var hides = 0;
+        var releases = 0;
+        ContextMenuFlyoutSession? session = null;
+        session = new(
+            () => false,
+            () =>
+            {
+                hides++;
+                session!.Closing();
+            },
+            () => releases++,
+            _ => throw new AssertFailedException("Cancelling Opening must not wait for Closed."));
+
+        // ShowAt has prepared the menu, but WinUI is waiting for another flyout to close.
+        session.Show(() => prepared++);
+        if (cancel)
+        {
+            session.Hide();
+        }
+
+        session.Opening();
+        Assert.AreEqual(cancel ? 1 : 0, hides);
+        Assert.AreEqual(cancel ? 1 : 0, releases);
+
+        // WinUI never raises Closed for a cancelled Opening.
+        session.Show(() => prepared++);
+        session.Opening();
+        Assert.AreEqual(2, prepared);
+        Assert.AreEqual(cancel ? 1 : 0, hides);
     }
 }

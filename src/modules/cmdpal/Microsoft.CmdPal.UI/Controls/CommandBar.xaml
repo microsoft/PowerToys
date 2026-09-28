@@ -6,7 +6,6 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -32,8 +31,6 @@
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
                 Spacing="4" />
-
-            <cpcontrols:ContextMenuFlyout x:Name="ContextMenuFlyout" />
 
             <Style x:Key="HotkeyStyle" TargetType="Border">
                 <Style.Setters>
@@ -143,7 +140,6 @@
             <Button
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
-                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.AutomationId="PrimaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
@@ -167,7 +163,6 @@
             <Button
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
-                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.AutomationId="SecondaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Click="SecondaryButton_Clicked"

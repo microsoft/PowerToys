@@ -44,7 +44,11 @@ public partial class ShellViewModel : ObservableObject,
     public partial bool IsSearchBoxVisible { get; set; } = true;
 
     // Input follows the current context without waiting for command-bar rendering.
-    public ICommandBarContext? CurrentCommandContext { get; private set; }
+    public ICommandBarContext? CurrentCommandContext
+    {
+        get;
+        private set => SetProperty(ref field, value);
+    }
 
     private PageViewModel _currentPage;
 

@@ -634,6 +634,41 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void ShortcutLookup_SkipsHiddenCommandsWithOrWithoutAVisibleDuplicate(bool isDock, bool hasVisibleDuplicate)
+    {
+        var pageContext = new TestPageContext();
+        var key = new KeyChord(0, (int)VirtualKey.F6, 0);
+        var hidden = new CommandContextItem(new NoOpCommand()) { RequestedShortcut = key };
+        var visible = new CommandContextItem(new NoOpCommand { Name = "Visible" }) { RequestedShortcut = key };
+        var item = new CommandItem(new NoOpCommand()) { MoreCommands = hasVisibleDuplicate ? [hidden, visible] : [hidden] };
+        var viewModel = isDock
+            ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
+            : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+
+        try
+        {
+            viewModel.SlowInitializeProperties();
+            var expected = hasVisibleDuplicate ? visible : null;
+            Assert.AreEqual(hasVisibleDuplicate, viewModel.CanOpenContextMenu);
+            Assert.AreSame(expected, ((IContextMenuContext)viewModel).FindKeybinding(key)?.Model.Unsafe);
+
+            menu.PrepareForOpen(viewModel);
+            Assert.AreSame(expected, menu.FindKeybinding(key)?.Model.Unsafe);
+        }
+        finally
+        {
+            menu.Close();
+            viewModel.SafeCleanup();
+            GC.KeepAlive(pageContext);
+        }
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void SecondaryActivation_UsesCurrentMenuAndExecutesAnActionWithChildren(bool inSubmenu)
@@ -653,8 +688,6 @@ public partial class CommandItemViewModelTests
         var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
         viewModel.SlowInitializeProperties();
         var parentCommand = (CommandContextItemViewModel)viewModel.SecondaryCommand!;
-        parentCommand.SetDefaultShortcut(DefaultShortcutRole.None);
-        ((CommandContextItemViewModel)parentCommand.SecondaryCommand!).SetDefaultShortcut(DefaultShortcutRole.None);
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
         menu.PrepareForOpen(viewModel);
         var invocations = new List<PerformCommandMessage>();
@@ -807,6 +840,46 @@ public partial class CommandItemViewModelTests
             Assert.IsNull(menu.SecondaryCommand);
             Assert.AreEqual(0, menu.FilteredItems.Count);
             Assert.IsNull(parentViewModel.DisplayShortcut);
+        }
+        finally
+        {
+            menu.Close();
+            viewModel.SafeCleanup();
+            GC.KeepAlive(pageContext);
+        }
+    }
+
+    [TestMethod]
+    public void MenuReopen_ReassignsShortcutHintsOnReusedRows()
+    {
+        var pageContext = new TestPageContext();
+        var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+        {
+            MoreCommands = [new CommandContextItem(new NoOpCommand { Name = "Secondary" })],
+        };
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.SlowInitializeProperties();
+        var previousContext = new Mock<ICommandBarContext>();
+        previousContext.SetupGet(context => context.AllCommands).Returns(viewModel.AllCommands);
+        var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+
+        try
+        {
+            menu.PrepareForOpen(previousContext.Object);
+            var commands = menu.FilteredItems.OfType<CommandContextItemViewModel>().ToArray();
+            Assert.HasCount(2, commands);
+            Assert.IsTrue(commands.All(command => command.DisplayShortcut is null));
+
+            menu.PrepareForOpen(viewModel);
+            Assert.AreEqual(CommandContextItemViewModel.PrimaryShortcut, commands[0].DisplayShortcut);
+            Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, commands[1].DisplayShortcut);
+
+            menu.Close();
+            Assert.IsTrue(commands.All(command => command.DisplayShortcut is null));
+
+            menu.PrepareForOpen(viewModel);
+            Assert.AreEqual(CommandContextItemViewModel.PrimaryShortcut, commands[0].DisplayShortcut);
+            Assert.AreEqual(CommandContextItemViewModel.SecondaryShortcut, commands[1].DisplayShortcut);
         }
         finally
         {

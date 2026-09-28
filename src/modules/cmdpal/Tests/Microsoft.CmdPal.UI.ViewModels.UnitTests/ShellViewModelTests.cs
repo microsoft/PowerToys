@@ -383,6 +383,14 @@ public partial class ShellViewModelTests
         using var viewModel = CreateViewModel();
         var first = Mock.Of<ICommandBarContext>();
         var second = Mock.Of<ICommandBarContext>();
+        List<ICommandBarContext?> observedContexts = [];
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ShellViewModel.CurrentCommandContext))
+            {
+                observedContexts.Add(viewModel.CurrentCommandContext);
+            }
+        };
 
         try
         {
@@ -390,6 +398,8 @@ public partial class ShellViewModelTests
 
             WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
             Assert.AreSame(first, viewModel.CurrentCommandContext);
+            WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(first));
+            Assert.HasCount(1, observedContexts, "Repeating the same context must not restart the bar's display debounce.");
 
             WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
             Assert.AreSame(second, viewModel.CurrentCommandContext);
@@ -401,6 +411,7 @@ public partial class ShellViewModelTests
             viewModel.Dispose();
             WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(second));
             Assert.IsNull(viewModel.CurrentCommandContext);
+            CollectionAssert.AreEqual(new ICommandBarContext?[] { first, second, null, first, null }, observedContexts);
         }
         finally
         {

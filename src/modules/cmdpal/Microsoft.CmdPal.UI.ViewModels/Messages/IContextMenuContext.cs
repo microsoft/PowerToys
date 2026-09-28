@@ -30,11 +30,13 @@ public interface IContextMenuContext : INotifyPropertyChanged
     public bool CanOpenContextMenu { get; }
 
     /// <summary>
-    /// Finds the first command requesting a non-reserved shortcut, including the primary menu entry.
+    /// Finds the first visible command requesting a non-reserved shortcut, including the primary menu entry.
     /// </summary>
     public CommandContextItemViewModel? FindKeybinding(KeyChord chord) => FindKeybinding(AllCommands, chord);
 
-    // Root and nested menus share the same shortcut and duplicate-resolution policy.
+    /// <summary>
+    /// Finds the first visible command requesting the chord in a cached root or nested menu, or null if none matches.
+    /// </summary>
     internal static CommandContextItemViewModel? FindKeybinding(IReadOnlyList<IContextItemViewModel>? menu, KeyChord chord)
     {
         if (menu is null)
@@ -44,7 +46,7 @@ public interface IContextMenuContext : INotifyPropertyChanged
 
         for (var i = 0; i < menu.Count; i++)
         {
-            if (menu[i] is CommandContextItemViewModel command && command.HasRequestedShortcut && command.RequestedShortcut == chord)
+            if (menu[i] is CommandContextItemViewModel { ShouldBeVisible: true } command && command.HasRequestedShortcut && command.RequestedShortcut == chord)
             {
                 return command;
             }

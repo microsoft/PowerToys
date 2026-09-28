@@ -4,7 +4,6 @@
 
 using System.Globalization;
 using System.Text;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -27,6 +26,10 @@ public sealed partial class ContextMenu : UserControl
 
     private static readonly CompositeFormat _contextMenuOpenedFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
+
+    public event EventHandler? CloseRequested;
+
+    public event EventHandler? BackRequested;
 
     /// <summary>
     /// Suppresses intermediate UI updates while synchronously replacing the menu context.
@@ -143,7 +146,7 @@ public sealed partial class ContextMenu : UserControl
             // TODO: Use NavigateBackOrClose() so Escape pops a submenu before closing at the root.
             // Let the flyout restore the previously focused element, even when More is hidden.
             e.Handled = true;
-            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+            CloseRequested?.Invoke(this, EventArgs.Empty);
             return;
         }
 
@@ -226,8 +229,7 @@ public sealed partial class ContextMenu : UserControl
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            BackRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -380,7 +382,7 @@ public sealed partial class ContextMenu : UserControl
         var result = ViewModel.InvokeCommand(command, navigateSubmenus);
         if (result == ContextKeybindingResult.Hide)
         {
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }
