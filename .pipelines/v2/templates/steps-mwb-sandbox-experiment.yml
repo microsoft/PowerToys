@@ -30,3 +30,27 @@ steps:
     displayName: Remove owned MWB firewall prerequisite and provisioning task
     condition: always()
     timeoutInMinutes: 5
+
+  - pwsh: |
+      # The Prepare step writes this before any prerequisite throw. If Prepare never
+      # reached that point (for example, an unrelated elevation failure), still publish an
+      # explicit placeholder rather than silently omitting the diagnostic artifact.
+      $reportPath = "$(Pipeline.Workspace)\mwb-prerequisite-report.json"
+      if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
+        [ordered]@{
+          GeneratedUtc = [DateTime]::UtcNow.ToString('o')
+          Platform = "$(TestPlatform)"
+          Overall = 'REPORT_NOT_GENERATED'
+          Reason = 'The Prepare step did not reach prerequisite report generation.'
+        } | ConvertTo-Json | Set-Content -LiteralPath $reportPath -Encoding utf8
+      }
+    displayName: Ensure MWB Sandbox prerequisite report exists
+    condition: always()
+    timeoutInMinutes: 2
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish MWB Sandbox prerequisite report
+    condition: always()
+    inputs:
+      targetPath: '$(Pipeline.Workspace)\mwb-prerequisite-report.json'
+      artifactName: mwb-prerequisite-report-$(System.JobId)

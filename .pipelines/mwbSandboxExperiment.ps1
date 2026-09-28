@@ -234,6 +234,22 @@ $cleanupPath = Join-Path $runRoot 'Remove-AutonomousHost.ps1'
 $powerShell = (Get-Process -Id $PID).Path
 
 if ($Mode -eq 'Prepare') {
+    # Written first, before any prerequisite can throw and before the protected run root
+    # exists, so an admin/all-users package-registration gap is always evidenced even when
+    # this pilot never reaches the build artifact, feature or backend checks below.
+    $prerequisiteReportPath = Join-Path (Split-Path ([IO.Path]::GetFullPath($ArtifactRoot)) -Parent) 'mwb-prerequisite-report.json'
+    try {
+        $prerequisiteReport = Get-MwbSandboxPrerequisiteReport -Platform $Platform
+    }
+    catch {
+        $prerequisiteReport = [ordered]@{
+            GeneratedUtc = [DateTime]::UtcNow.ToString('o'); Platform = $Platform
+            Overall = 'REPORT_GENERATION_FAILED'; Error = $_.Exception.Message
+        }
+    }
+    $prerequisiteReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $prerequisiteReportPath -Encoding utf8
+    Write-Host "MWB Sandbox prerequisite report written to $prerequisiteReportPath."
+
     $architecture = Get-MwbCiArchitecture $Platform
     $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture
     $bundle = Get-MwbCiBundle $ArtifactRoot $SourceRevision -Platform $architecture
@@ -292,11 +308,11 @@ if ($Mode -eq 'Prepare') {
     Assert-MwbProtectedDirectory $hostProductRoot
     $previewPath = ''
     if ($backend -eq 'WinApp') {
-        $previewRoot = Join-Path $runRoot 'sandbox-preview'
+        $previewRoot = Join-Path $runRoot 'winapp-cli'
         $null = New-Item -ItemType Directory -Path $previewRoot
-        foreach ($entry in $bundle.Manifest.Preview.Files) {
+        foreach ($entry in $bundle.Manifest.WinAppCli.Files) {
             $destination = Join-Path $previewRoot $entry.Path
-            Copy-Item -LiteralPath (Join-Path $bundle.Root "preview\$($entry.Path)") -Destination $destination
+            Copy-Item -LiteralPath (Join-Path $bundle.Root "winapp-cli\$($entry.Path)") -Destination $destination
             Assert-MwbCiHash $destination $entry.Sha256
         }
         Protect-MwbCiPayloadTree $previewRoot
@@ -416,7 +432,7 @@ if ($Mode -eq 'Run') {
     $marker = Read-MwbProvisioningMarker $manifest.HostProductRoot $manifest.TestUserSid
     if ($marker.SandboxBackend -cne $manifest.SandboxBackend -or
         $marker.SandboxWinAppPath -ine $manifest.SandboxWinAppPath) {
-        throw 'The protected Sandbox backend or preview path changed after preparation.'
+        throw 'The protected Sandbox backend or CLI path changed after preparation.'
     }
     if ($marker.Status -notin @('WaitingForSandbox', 'Ready')) {
         Write-MwbProvisioningDiagnostics $runRoot

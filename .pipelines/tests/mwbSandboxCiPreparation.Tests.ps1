@@ -11,8 +11,7 @@ $buildAst = [Management.Automation.Language.Parser]::ParseFile($buildPath, [ref]
 if ($parseErrors) { throw 'MWB CI preparation contains PowerShell parse errors.' }
 # Load definitions only: no downloads, native compiler execution, OS mutation, or UI.
 foreach ($name in @('Get-MwbCiCrossgen2', 'Invoke-MwbCiBuildCommand', 'Get-MwbCiRuntimeVersion',
-    'Get-MwbCiFileVersion', 'Assert-MwbCiNativePreviewFile', 'New-MwbCiPreview', 'Get-MwbCiPreparationPaths',
-    'Get-MwbCiGitOptions', 'Get-MwbCiPreviewPublishCommand', 'Get-MwbCiPreviewRuntimeProvenance')) {
+    'Get-MwbCiFileVersion', 'Get-MwbCiPreparationPaths')) {
     $definition = $buildAst.Find({
         param($node)
         $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name
@@ -24,7 +23,7 @@ function New-CiBundleFixture {
     param([string] $Root)
 
     $bundle = Join-Path $Root 'mwb-sandbox-ci'
-    $null = New-Item -ItemType Directory -Path (Join-Path $bundle 'preview')
+    $null = New-Item -ItemType Directory -Path (Join-Path $bundle 'winapp-cli')
     $runtimeFiles = @('PowerToys.exe', 'PowerToys.MouseWithoutBorders.exe',
         'PowerToys.MouseWithoutBorders.dll', 'PowerToys.MouseWithoutBordersHelper.exe',
         'WinUI3Apps\PowerToys.Settings.exe', 'WinUI3Apps\PowerToys.QuickAccess.exe')
@@ -40,22 +39,21 @@ function New-CiBundleFixture {
     $archiveHash = (Get-FileHash -LiteralPath $archive).Hash
     @{ Sha256 = $archiveHash; FileCount = $runtimeFiles.Count; Files = $runtimeFiles } |
         ConvertTo-Json -Depth 3 | Set-Content -LiteralPath "$archive.manifest.json"
-    $pin = Get-MwbPreviewPin
-    $preview = foreach ($name in $pin.Files) {
-        $file = Join-Path $bundle "preview\$name"
-        Set-Content -LiteralPath $file -Value "nonexecutable preview fixture: $name"
+    $pin = Get-WinAppCliRelease
+    $cli = foreach ($name in $pin.Files) {
+        $file = Join-Path $bundle "winapp-cli\$name"
+        Set-Content -LiteralPath $file -Value "nonexecutable CLI fixture: $name"
         @{ Path = $name; Sha256 = (Get-FileHash -LiteralPath $file).Hash }
     }
     $manifest = @{
-        FormatVersion = 1; SourceRevision = 'a' * 40; Platform = 'x64'; Configuration = 'Debug'
+        FormatVersion = 2; SourceRevision = 'a' * 40; Platform = 'x64'; Configuration = 'Debug'
         Runtime = @{
             Sha256 = $archiveHash; ManifestSha256 = (Get-FileHash -LiteralPath "$archive.manifest.json").Hash
             ReadyToRun = $false; Files = @($entries)
         }
-        Preview = @{
-            Repository = $pin.Repository; Commit = $pin.Commit; Version = $pin.Version
-            SdkVersion = $pin.SdkVersion; RuntimeVersion = $pin.RuntimeVersion
-            PatchSha256 = $pin.PatchSha256; Files = @($preview)
+        WinAppCli = @{
+            Repository = $pin.Repository; Tag = $pin.Tag; Version = $pin.Version
+            Asset = $pin.Asset; Sha256 = $pin.Sha256; Files = @($cli)
         }
     }
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $bundle 'manifest.json')
@@ -327,7 +325,7 @@ Describe 'Explicit MWB CI test-platform architecture mapping' {
     }
 }
 
-Describe 'Native CI preparation command streams and Git audit' {
+Describe 'Native CI compiler preparation command streams' {
     BeforeEach {
         $WorkRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         $directory = Join-Path $WorkRoot 'command'
@@ -355,17 +353,6 @@ Describe 'Native CI preparation command streams and Git audit' {
         Get-Content -LiteralPath $log -Raw | Should Match 'diagnostic-only'
     }
 
-    It 'rejects an incomplete native audit even when the command exits successfully' {
-        $command = "[Console]::Out.Write('expected-file.cs'); [Console]::Error.Write('unreadable asset: Filename too long'); exit 0"
-        {
-            Invoke-MwbCiBuildCommand $powerShell @('-NoLogo', '-NoProfile', '-NonInteractive', '-Command', $command) `
-                $directory $log 30 -RequireCleanStandardError
-        } | Should Throw 'entire checkout must be readable'
-        $text = Get-Content -LiteralPath $log -Raw
-        $text | Should Match 'expected-file.cs'
-        $text | Should Match 'Filename too long'
-    }
-
     It 'retains both native streams before rejecting a nonzero exit code' {
         $command = "[Console]::Out.Write('stdout evidence'); [Console]::Error.Write('stderr evidence'); exit 37"
         {
@@ -377,71 +364,6 @@ Describe 'Native CI preparation command streams and Git audit' {
         $text | Should Match 'stderr evidence'
     }
 
-    It 'audits a real Git checkout beyond MAX_PATH instead of ignoring failed lstat diagnostics' {
-        $git = (Get-Command git.exe -ErrorAction Stop).Source
-        $options = @(Get-MwbCiGitOptions)
-        $null = Invoke-MwbCiBuildCommand $git ($options + @('init', '--quiet')) $directory (Join-Path $WorkRoot 'init.log') 30
-        $null = Invoke-MwbCiBuildCommand $git ($options + @('config', '--local', 'core.longpaths', 'true')) `
-            $directory (Join-Path $WorkRoot 'config.log') 30
-        $configured = Invoke-MwbCiBuildCommand $git @('config', '--local', '--get', 'core.longpaths') `
-            $directory (Join-Path $WorkRoot 'configured.log') 30
-        $configured | Should Be 'true'
-
-        $relative = 'src\tests\' + ('long-asset-directory-' * 3) + '\' + ('nested-asset-directory-' * 3) +
-            '\' + ('deep-asset-directory-' * 4) + '\' + ('deeper-asset-directory-' * 3) +
-            '\Square44x44Logo.targetsize-24_altform-unplated.png'
-        $asset = Join-Path $directory $relative
-        $relative.Length | Should BeGreaterThan 260
-        $asset.Length | Should BeGreaterThan 260
-        $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($asset))
-        [IO.File]::WriteAllText($asset, 'inert long-path fixture')
-        [IO.File]::WriteAllText((Join-Path $directory 'src\backend.cs'), 'inert source fixture')
-        # Populate the index and change tracked files without any commit or remote operation.
-        $null = Invoke-MwbCiBuildCommand $git ($options + @('add', '--', '.')) `
-            $directory (Join-Path $WorkRoot 'add.log') 30
-        [IO.File]::WriteAllText($asset, 'modified inert long-path fixture')
-        [IO.File]::WriteAllText((Join-Path $directory 'src\backend.cs'), 'modified inert source fixture')
-        $baselineLog = Join-Path $WorkRoot 'short-path-audit.log'
-        $baselineFailed = $false
-        try {
-            $null = Invoke-MwbCiBuildCommand $git @('-c', 'core.longpaths=false', 'diff', '--name-only') `
-                $directory $baselineLog 30 -RequireCleanStandardError
-        }
-        catch { $baselineFailed = $true }
-        if (-not $baselineFailed) {
-            throw "The long-path fixture did not reproduce the incomplete audit: $([IO.File]::ReadAllText($baselineLog))"
-        }
-        Get-Content -LiteralPath $baselineLog -Raw | Should Match 'Filename too long'
-
-        $changed = Invoke-MwbCiBuildCommand $git ($options + @('diff', '--no-ext-diff', '--no-textconv', '--name-only')) `
-            $directory (Join-Path $WorkRoot 'long-path-audit.log') 30 -RequireCleanStandardError
-        $files = @($changed -split '\r?\n')
-        $files.Count | Should Be 2
-        ($files -contains 'src/backend.cs') | Should Be $true
-        ($files -contains $relative.Replace('\', '/')) | Should Be $true
-    }
-
-    It 'applies the production long-path options to every explicit preview Git invocation' {
-        $preview = $buildAst.Find({
-            param($node)
-            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'New-MwbCiPreview'
-        }, $true)
-        $commands = @($preview.FindAll({
-            param($node)
-            $node -is [Management.Automation.Language.CommandAst] -and
-                $node.GetCommandName() -eq 'Invoke-MwbCiBuildCommand' -and
-                $node.CommandElements[1].Extent.Text -eq '$git'
-        }, $true))
-        $commands.Count | Should Be 8
-        foreach ($command in $commands) {
-            $command.CommandElements[2].Extent.Text | Should Match '^\(\$gitOptions \+'
-        }
-        (@(Get-MwbCiGitOptions) -contains 'core.longpaths=true') | Should Be $true
-        $preview.Extent.Text | Should Match "'config', '--local', 'core.longpaths', 'true'"
-        $audit = @($commands | Where-Object { $_.Extent.Text -match "'diff', '--no-ext-diff'" })
-        $audit.Count | Should Be 1
-        $audit[0].Extent.Text | Should Match '-RequireCleanStandardError'
-    }
 }
 
 Describe 'Build-only pinned SDK compiler resolution' {
@@ -538,183 +460,7 @@ Describe 'Build-only pinned SDK compiler resolution' {
     }
 }
 
-function New-CiPreviewAssetsFixture {
-    param([string] $Directory, [ValidateSet('x64', 'arm64')][string] $Platform = 'x64')
-
-    $rid = "win-$Platform"
-    $framework = 'net10.0-windows10.0.19041.0'
-    foreach ($project in @('WinApp.Cli', 'WinApp.UIAutomation', 'WinApp.UIAutomation.Recording')) {
-        $downloads = @(
-            @{ name = "Microsoft.NETCore.App.Runtime.$rid"; version = '[10.0.12, 10.0.12]' },
-            @{ name = 'Microsoft.Windows.SDK.NET.Ref'; version = '[10.0.19041.57, 10.0.19041.57]' }
-        )
-        $target = @{}
-        $libraries = @{}
-        if ($project -ceq 'WinApp.Cli') {
-            $downloads += @(
-                @{ name = "Microsoft.NETCore.App.Runtime.NativeAOT.$rid"; version = '[10.0.12, 10.0.12]' },
-                @{ name = 'runtime.win-x64.Microsoft.DotNet.ILCompiler'; version = '[10.0.12, 10.0.12]' }
-            )
-            foreach ($id in @('Microsoft.DotNet.ILCompiler', "runtime.$rid.Microsoft.DotNet.ILCompiler")) {
-                $target["$id/10.0.12"] = @{ type = 'package' }
-                $libraries["$id/10.0.12"] = @{ type = 'package'; sha512 = [Convert]::ToBase64String([byte[]](0..63)) }
-            }
-        }
-        $assets = @{
-            version = 4
-            project = @{ frameworks = @{ $framework = @{ downloadDependencies = $downloads } } }
-            targets = @{ "$framework/$rid" = $target }
-            libraries = $libraries
-        }
-        $path = Join-Path $Directory "src\winapp-CLI\$project\obj\project.assets.json"
-        $null = New-Item -ItemType Directory -Path (Split-Path $path) -Force
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $path
-    }
-}
-
-Describe 'SDK-selected preview runtime verification' {
-    BeforeEach {
-        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-        New-CiPreviewAssetsFixture $directory
-        $cliAssets = Join-Path $directory 'src\winapp-CLI\WinApp.Cli\obj\project.assets.json'
-        $framework = 'net10.0-windows10.0.19041.0'
-    }
-
-    It 'publishes with the frozen SDK/source version settings without overriding unrelated framework versions' {
-        $pin = Get-MwbPreviewPin
-        $command = Get-MwbCiPreviewPublishCommand -VcVars 'C:\fixture-vs\vcvars64.bat' `
-            -DotNet 'C:\fixture-sdk\dotnet.exe' -PublishRoot 'C:\fixture-output' -Pin $pin
-        $command | Should Match 'publish "src\\winapp-CLI\\WinApp.Cli\\WinApp.Cli.csproj" -c Release -r win-x64 --self-contained'
-        foreach ($property in @('Version', 'AssemblyVersion', 'FileVersion')) {
-            $command | Should Match ([regex]::Escape("/p:$property=$($pin.AssemblyVersion)"))
-        }
-        $command | Should Match ([regex]::Escape("/p:InformationalVersion=$($pin.Version)"))
-        $command | Should Not Match 'RuntimeFrameworkVersion|WindowsSdkPackageVersion|NoWarn|WarningsNotAsErrors|TreatWarningsAsErrors=false'
-        $buildAst.Extent.Text | Should Match 'version = \$pin.SdkVersion; rollForward = ''disable'''
-    }
-
-    It 'cross-publishes for an explicit ARM64 target RID from this x64 build agent' {
-        $pin = Get-MwbPreviewPin
-        $command = Get-MwbCiPreviewPublishCommand -VcVars 'C:\fixture-vs\vcvarsamd64_arm64.bat' `
-            -DotNet 'C:\fixture-sdk\dotnet.exe' -PublishRoot 'C:\fixture-output' -Pin $pin -RuntimeIdentifier 'win-arm64'
-        $command | Should Match 'publish "src\\winapp-CLI\\WinApp.Cli\\WinApp.Cli.csproj" -c Release -r win-arm64 --self-contained'
-        $command | Should Match ([regex]::Escape('call "C:\fixture-vs\vcvarsamd64_arm64.bat"'))
-    }
-
-    It 'records actual .NET runtime/compiler versions while leaving Windows SDK reference versions independent' {
-        $result = Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12'
-        $result.RuntimeVersion | Should Be '10.0.12'
-        $result.TargetFramework | Should Be $framework
-        $result.RuntimeIdentifier | Should Be 'win-x64'
-        $result.Projects.Count | Should Be 3
-        $result.CompilerPackages.Count | Should Be 2
-        foreach ($compiler in $result.CompilerPackages) {
-            $compiler.Version | Should Be '10.0.12'
-            $compiler.Sha512 | Should Not BeNullOrEmpty
-        }
-        foreach ($project in $result.Projects) {
-            $path = Join-Path $directory "src\winapp-CLI\$($project.Project)\obj\project.assets.json"
-            $project.AssetsSha256 | Should Be (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
-            $project.WindowsSdkReferences[0].VersionRange | Should Be '[10.0.19041.57, 10.0.19041.57]'
-        }
-    }
-
-    It 'records ARM64 target compiler provenance while separately pinning the win-x64 host executable' {
-        $armDirectory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-        New-CiPreviewAssetsFixture $armDirectory -Platform arm64
-        $result = Get-MwbCiPreviewRuntimeProvenance $armDirectory '10.0.12' -Platform arm64
-        $result.RuntimeIdentifier | Should Be 'win-arm64'
-        $result.Projects.Count | Should Be 3
-        $result.CompilerPackages.Count | Should Be 2
-        # CompilerPackages holds the target-RID library provenance (sha512-verifiable target
-        # dependencies); the actual win-x64 host executable is pinned separately below via its
-        # framework download dependency, since only that one can physically run on this agent.
-        ($result.CompilerPackages.Id -contains 'Microsoft.DotNet.ILCompiler') | Should Be $true
-        ($result.CompilerPackages.Id -contains 'runtime.win-arm64.Microsoft.DotNet.ILCompiler') | Should Be $true
-        $cliProject = $result.Projects | Where-Object Project -eq 'WinApp.Cli'
-        ($cliProject.RuntimePacks.Id -contains 'runtime.win-x64.Microsoft.DotNet.ILCompiler') | Should Be $true
-    }
-
-    It 'rejects runtime/compiler downloads that differ from the pin in any published project' -TestCases @(
-        @{ Project = 'WinApp.Cli'; Id = 'Microsoft.NETCore.App.Runtime.win-x64' }
-        @{ Project = 'WinApp.UIAutomation'; Id = 'Microsoft.NETCore.App.Runtime.win-x64' }
-        @{ Project = 'WinApp.UIAutomation.Recording'; Id = 'Microsoft.NETCore.App.Runtime.win-x64' }
-        @{ Project = 'WinApp.Cli'; Id = 'Microsoft.NETCore.App.Runtime.NativeAOT.win-x64' }
-        @{ Project = 'WinApp.Cli'; Id = 'runtime.win-x64.Microsoft.DotNet.ILCompiler' }
-    ) {
-        param($Project, $Id)
-        $path = Join-Path $directory "src\winapp-CLI\$Project\obj\project.assets.json"
-        $assets = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable
-        foreach ($entry in $assets.project.frameworks[$framework].downloadDependencies) {
-            if ($entry.name -ceq $Id) { $entry.version = '[10.0.11, 10.0.11]' }
-        }
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $path
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'does not match the pin'
-    }
-
-    It 'rejects compiler target/library versions even if download declarations still match' -TestCases @(
-        @{ Id = 'Microsoft.DotNet.ILCompiler' }; @{ Id = 'runtime.win-x64.Microsoft.DotNet.ILCompiler' }
-    ) {
-        param($Id)
-        $assets = Get-Content -LiteralPath $cliAssets -Raw | ConvertFrom-Json -AsHashtable
-        $target = $assets.targets["$framework/win-x64"]
-        $null = $target.Remove("$Id/10.0.12")
-        $target["$Id/10.0.13"] = @{ type = 'package' }
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $cliAssets
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'NativeAOT compiler does not match'
-    }
-
-    It 'rejects missing compiler package integrity metadata' {
-        $assets = Get-Content -LiteralPath $cliAssets -Raw | ConvertFrom-Json -AsHashtable
-        $assets.libraries['Microsoft.DotNet.ILCompiler/10.0.12'].sha512 = ''
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $cliAssets
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'compiler package provenance is missing'
-    }
-
-    It 'rejects floating runtime download ranges' -TestCases @(
-        @{ Range = '[10.0.12, )' }; @{ Range = '[10.0.12, 10.0.13]' }; @{ Range = '10.0.*' }
-    ) {
-        param($Range)
-        $assets = Get-Content -LiteralPath $cliAssets -Raw | ConvertFrom-Json -AsHashtable
-        $assets.project.frameworks[$framework].downloadDependencies[0].version = $Range
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $cliAssets
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'does not match the pin'
-    }
-
-    It 'rejects duplicate Windows SDK downloads instead of suppressing NU1505' {
-        $assets = Get-Content -LiteralPath $cliAssets -Raw | ConvertFrom-Json -AsHashtable
-        $assets.project.frameworks[$framework].downloadDependencies += @{
-            name = 'Microsoft.Windows.SDK.NET.Ref'; version = '[10.0.12, 10.0.12]'
-        }
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $cliAssets
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'duplicate package downloads'
-    }
-
-    It 'requires assets for every published reference project' {
-        Remove-Item -LiteralPath (Join-Path $directory 'src\winapp-CLI\WinApp.UIAutomation.Recording\obj\project.assets.json')
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'missing restored runtime provenance'
-    }
-
-    It 'requires the published Windows x64 framework target' {
-        $assets = Get-Content -LiteralPath $cliAssets -Raw | ConvertFrom-Json -AsHashtable
-        $null = $assets.targets.Remove("$framework/win-x64")
-        $assets | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $cliAssets
-        { Get-MwbCiPreviewRuntimeProvenance $directory '10.0.12' } | Should Throw 'no restored'
-    }
-
-    It 'verifies resolved runtime provenance before publishing portable files and records the observed version' {
-        $preview = $buildAst.Find({
-            param($node)
-            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'New-MwbCiPreview'
-        }, $true).Extent.Text
-        $preview.IndexOf('Get-MwbCiPreviewRuntimeProvenance') |
-            Should BeLessThan $preview.IndexOf('New-Item -ItemType Directory -Path $Destination')
-        $preview | Should Match 'RuntimeVersion = \$runtimeProvenance.RuntimeVersion'
-        $preview | Should Match 'RuntimeProvenance = \$runtimeProvenance'
-    }
-}
-
-Describe 'Portable preview native architecture validation' {
+Describe 'Portable release native architecture validation' {
     BeforeEach {
         $image = Join-Path $TestDrive 'native-fixture.bin'
         $bytes = [byte[]]::new(1024)
@@ -726,85 +472,36 @@ Describe 'Portable preview native architecture validation' {
         [IO.File]::WriteAllBytes($image, $bytes)
     }
 
-    Context 'Frozen preview source preparation fail-closed behavior' {
-        BeforeEach {
-            $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-            $destination = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-            $DotNetPath = Join-Path $TestDrive 'inert-sdk\dotnet.exe'
-            $script:ciPreviewPin = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\source.json') -Raw |
-                ConvertFrom-Json
-            Mock Get-MwbPreviewPin { $script:ciPreviewPin }
-            Mock Invoke-MwbCiBuildCommand { '' }
-        }
-
-        It 'rejects changed patch bytes before any source fetch or native execution' {
-            $script:ciPreviewPin.PatchSha256 = '0' * 64
-            Mock Get-MwbPreviewPin { $script:ciPreviewPin }
-            { New-MwbCiPreview $directory $destination } | Should Throw 'hash mismatch'
-            Assert-MockCalled Invoke-MwbCiBuildCommand -Times 0 -Exactly -Scope It
-            Test-Path -LiteralPath $directory | Should Be $false
-        }
-
-        It 'rejects a fetched SHA mismatch before checking out or executing that source' {
-            Mock Invoke-MwbCiBuildCommand {
-                param($Executable, $Arguments)
-                if ($Arguments -contains 'rev-parse') { return '0' * 40 }
-                ''
-            }
-            { New-MwbCiPreview $directory $destination } | Should Throw 'pinned public commit'
-            Assert-MockCalled Invoke-MwbCiBuildCommand -Times 1 -Exactly -Scope It -ParameterFilter {
-                $Arguments -contains 'fetch' -and $Arguments -contains '114e6ec6cfec9267a43b4b324f2eb9d20a297261'
-            }
-            Assert-MockCalled Invoke-MwbCiBuildCommand -Times 0 -Exactly -Scope It -ParameterFilter {
-                $Arguments -contains 'checkout' -or $Arguments -contains 'apply' -or $Arguments -contains '--version'
-            }
-        }
-
-        It 'refuses source modifications outside the frozen two-file patch before building' {
-            Mock Invoke-MwbCiBuildCommand {
-                param($Executable, $Arguments)
-                if ($Arguments -contains 'rev-parse') { return $script:ciPreviewPin.Commit }
-                if ($Arguments -contains 'diff') { return 'unexpected-source-file.cs' }
-                ''
-            }
-            { New-MwbCiPreview $directory $destination } | Should Throw 'performance-only scope'
-            Assert-MockCalled Invoke-MwbCiBuildCommand -Times 0 -Exactly -Scope It -ParameterFilter {
-                $Arguments -contains '--version' -or $Arguments -contains '/c'
-            }
-            Test-Path -LiteralPath $destination | Should Be $false
-        }
-    }
-
     It 'accepts only an x64 PE32+ image without a CLR directory' {
-        { Assert-MwbCiNativePreviewFile $image } | Should Not Throw
+        { Assert-WinAppCliNativeFile $image } | Should Not Throw
     }
 
     It 'rejects ARM64 output even when named winapp.exe and x64 is expected' {
         [BitConverter]::GetBytes([uint16]0xAA64).CopyTo($bytes, 132)
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativePreviewFile $image } | Should Throw 'not native x64'
+        { Assert-WinAppCliNativeFile $image } | Should Throw 'not native x64'
     }
 
     It 'rejects a managed executable rather than requiring a test-host SDK' {
         [BitConverter]::GetBytes([uint64]1).CopyTo($bytes, (128 + 24 + 112 + (14 * 8)))
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativePreviewFile $image } | Should Throw 'managed runtime'
+        { Assert-WinAppCliNativeFile $image } | Should Throw 'managed runtime'
     }
 
     It 'accepts a native ARM64 PE32+ image without a CLR directory when ARM64 is requested' {
         [BitConverter]::GetBytes([uint16]0xAA64).CopyTo($bytes, 132)
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Not Throw
+        { Assert-WinAppCliNativeFile $image -Platform arm64 } | Should Not Throw
     }
 
     It 'rejects x64 output when native ARM64 is expected' {
-        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Throw 'not native arm64'
+        { Assert-WinAppCliNativeFile $image -Platform arm64 } | Should Throw 'not native arm64'
     }
 
     It 'rejects the ARM64EC hybrid machine type when native ARM64 is expected' {
         [BitConverter]::GetBytes([uint16]0xA641).CopyTo($bytes, 132)
         [IO.File]::WriteAllBytes($image, $bytes)
-        { Assert-MwbCiNativePreviewFile $image -Architecture arm64 } | Should Throw 'not native arm64'
+        { Assert-WinAppCliNativeFile $image -Platform arm64 } | Should Throw 'not native arm64'
     }
 }
 
@@ -829,8 +526,23 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
 
     It 'accepts an explicitly requested ARM64 bundle when the manifest actually declares ARM64' {
         $fixture.Platform = 'arm64'
+        $pin = Get-WinAppCliRelease -Platform arm64
+        $fixture.WinAppCli.Asset = $pin.Asset
+        $fixture.WinAppCli.Sha256 = $pin.Sha256
         $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
         (Get-MwbCiBundle $root ('a' * 40) -Platform arm64).Manifest.Platform | Should Be 'arm64'
+    }
+
+    It 'rejects an x64 CLI asset in an otherwise ARM64 bundle' {
+        $fixture.Platform = 'arm64'
+        $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
+        { Get-MwbCiBundle $root ('a' * 40) -Platform arm64 } | Should Throw 'provenance'
+    }
+
+    It 'rejects the old private-preview bundle format' {
+        $fixture.FormatVersion = 1
+        $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
+        { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'provenance'
     }
 
     It 'rejects a Platform mismatch between the request and the actual manifest in either direction' -TestCases @(
@@ -862,27 +574,27 @@ Describe 'MWB CI bundle provenance and coherent host staging' {
         { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'provenance'
     }
 
-    It 'rejects changed source, patch, or toolchain provenance' -TestCases @(
-        @{ Field = 'Repository' }; @{ Field = 'Commit' }; @{ Field = 'PatchSha256' }
-        @{ Field = 'Version' }; @{ Field = 'SdkVersion' }; @{ Field = 'RuntimeVersion' }
+    It 'rejects changed official release provenance' -TestCases @(
+        @{ Field = 'Repository' }; @{ Field = 'Tag' }; @{ Field = 'Sha256' }
+        @{ Field = 'Version' }; @{ Field = 'Asset' }
     ) {
         param($Field)
-        $fixture.Preview[$Field] = 'changed'
+        $fixture.WinAppCli[$Field] = 'changed'
         $fixture | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath
         { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'provenance'
     }
 
     It 'rejects tampered archive, packager provenance, and portable files' -TestCases @(
         @{ File = 'runtime.zip' }; @{ File = 'runtime.zip.manifest.json' }
-        @{ File = 'preview\winapp.exe' }; @{ File = 'preview\libSkiaSharp.dll' }
+        @{ File = 'winapp-cli\winapp.exe' }; @{ File = 'winapp-cli\libSkiaSharp.dll' }
     ) {
         param($File)
         Add-Content -LiteralPath (Join-Path $bundleRoot $File) -Value 'tampered'
         { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'hash mismatch'
     }
 
-    It 'rejects unmanifested preview state or credentials' {
-        Set-Content -LiteralPath (Join-Path $bundleRoot 'preview\unexpected.json') -Value '{}'
+    It 'rejects unmanifested CLI state or credentials' {
+        Set-Content -LiteralPath (Join-Path $bundleRoot 'winapp-cli\unexpected.json') -Value '{}'
         { Get-MwbCiBundle $root ('a' * 40) } | Should Throw 'unmanifested'
     }
 
@@ -959,28 +671,25 @@ Describe 'MWB gated preparation source contracts' {
         $testJob = Get-Content -LiteralPath (Join-Path $templates 'job-test-project.yml') -Raw
     }
 
-    It 'pins the exact performance patch and preserves it across Windows checkouts' {
-        $pin = Get-MwbPreviewPin
-        $pin.Commit | Should Be '114e6ec6cfec9267a43b4b324f2eb9d20a297261'
-        Assert-MwbCiHash (Join-Path $PSScriptRoot "..\mwb-sandbox-preview\$($pin.Patch)") $pin.PatchSha256
-        Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\.gitattributes') -Raw |
-            Should Match '\*\.patch text eol=lf'
-        $build | Should Match 'fetch.*--depth'
-        $build | Should Match '\$commit -cne \$pin.Commit'
-        $build | Should Match "GIT_TERMINAL_PROMPT'\] = '0'"
-        $build | Should Match "GCM_INTERACTIVE'\] = 'Never'"
-        $build | Should Match "'apply', '--check'"
+    It 'uses the shared official dependency without private source builds or patches' {
+        $build | Should Match 'Save-WinAppCliRelease'
+        $build | Should Not Match 'git.exe|GitOptions|SdkVersion|NativeAOT|vcvars|dotnet publish|PatchSha256|preview-source'
+        Test-Path -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\source.json') | Should Be $false
+        Test-Path -LiteralPath (Join-Path $PSScriptRoot '..\mwb-sandbox-preview\firewall-query.patch') | Should Be $false
     }
 
     It 'defaults to no preparation for existing build callers' {
         $job | Should Match 'name: mwbSandboxExperiment\r?\n    type: boolean\r?\n    default: false'
-        $job | Should Match '\$\{\{ if eq\(parameters.mwbSandboxExperiment, true\) \}\}:\r?\n    - task: UseDotNet@2'
+        $job | Should Match '\$\{\{ if eq\(parameters.mwbSandboxExperiment, true\) \}\}:\r?\n    - pwsh:'
         $job | Should Match '-SourceRevision "\$\(Build.SourceVersion\)" -ReadyToRun'
-        $job | Should Match "version: '10.0.401'"
+        $job | Should Not Match '10\.0\.401|mwb-ci-tools|UseDotNet@2'
+        $job | Should Match '-DotNetPath "\$\(DOTNET_ROOT\)\\dotnet.exe"'
+        $job | Should Match "version: '10.0'"
         $buildAst.ParamBlock.Extent.Text | Should Match '\[switch\] \$ReadyToRun'
+        $buildAst.ParamBlock.Extent.Text | Should Match "ValidateSet\('x64', 'arm64'\).*Platform = 'x64'"
     }
 
-    It 'prepares compiler and preview only in BUILD and retains the ordinary artifact identity' {
+    It 'prepares the compiler and protected CLI only in BUILD and retains the ordinary artifact identity' {
         $job | Should Match 'JobOutputArtifactName: build-\$\(BuildPlatform\)-\$\(BuildConfiguration\)'
         $job | Should Match 'buildInstallers.*'
         $script | Should Not Match 'New-MwbRuntimeArchive|dotnet (restore|publish)|Invoke-WebRequest'
@@ -999,14 +708,15 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match 'Read-MwbProvisioningMarker \$manifest.HostProductRoot'
     }
 
-    It 'passes the selected backend and a separate protected preview to the initializer' {
+    It 'passes the selected backend and a separate protected official CLI to the initializer' {
         $script | Should Match "Get-MwbCiBackend \`$Platform \`$windowsBuild"
         $script | Should Match '-SandboxBackend'
         $script | Should Match '-SandboxWinAppPath'
         $script | Should Match 'SandboxBackend = \$backend'
         $script | Should Not Match '\$env:WINAPP_CLI_PATH\s*='
         $testJob | Should Match '\.pipelines\\InstallWinAppCli.ps1'
-        Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\InstallWinAppCli.ps1') -Raw | Should Match '0.3.2'
+        Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\InstallWinAppCli.ps1') -Raw | Should Match 'Save-WinAppCliRelease'
+        $script | Should Match '\$bundle.Manifest.WinAppCli.Files'
     }
 
     It 'blocks disabled features without attempting OS installation or silently accepting Enabled as modern readiness' {
@@ -1018,7 +728,7 @@ Describe 'MWB gated preparation source contracts' {
         $backend = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\WinAppSandbox.cs') -Raw
         $backend | Should Match 'FindPackagesForUser\(string.Empty, SandboxPackageFamily\)'
         $backend | Should Match '\["--version"\]'
-        $backend | Should Match 'trusted_provider_unavailable'
+        $backend | Should Match 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
     }
 
     It 'retains the existing bounded Limited desktop dispatch and recovery' {
@@ -1028,5 +738,164 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match '-MwbRecoveryJournal \$journalPath -TimeoutMinutes 4'
         $script | Should Match 'AddSeconds\(90\)'
         $script | Should Match 'New-TimeSpan -Minutes 20'
+    }
+
+    It 'writes the prerequisite report before any BLOCKED_INFRASTRUCTURE preflight throw or run-root creation' {
+        $reportIndex = $script.IndexOf('Get-MwbSandboxPrerequisiteReport')
+        $featureThrowIndex = $script.IndexOf('BLOCKED_INFRASTRUCTURE: Sandbox feature')
+        $noUserThrowIndex = $script.IndexOf('BLOCKED_INFRASTRUCTURE: no logged-on interactive desktop user')
+        $runRootIndex = $script.IndexOf('New-MwbProtectedDirectory $runRoot')
+        $reportIndex | Should BeGreaterThan -1
+        $reportIndex | Should BeLessThan $featureThrowIndex
+        $reportIndex | Should BeLessThan $noUserThrowIndex
+        $reportIndex | Should BeLessThan $runRootIndex
+        $script | Should Match 'catch \{\s*\$prerequisiteReport = \[ordered\]@\{'
+        $script | Should Match 'Set-Content -LiteralPath \$prerequisiteReportPath'
+    }
+
+    It 'always publishes the prerequisite report artifact even when Prepare never runs' {
+        $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
+        $steps | Should Match 'displayName: Ensure MWB Sandbox prerequisite report exists\r?\n\s*condition: always\(\)'
+        $steps | Should Match "REPORT_NOT_GENERATED"
+        $steps | Should Match 'task: PublishPipelineArtifact@1\r?\n\s*displayName: Publish MWB Sandbox prerequisite report\r?\n\s*condition: always\(\)'
+        $steps | Should Match "targetPath: '\`$\(Pipeline.Workspace\)\\mwb-prerequisite-report.json'"
+    }
+}
+
+Describe 'MWB Sandbox prerequisite diagnostics' {
+    BeforeEach {
+        Mock Import-MwbAppxCompat {}
+    }
+
+    It 'distinguishes a confirmed-absent all-users package inventory from a query failure' {
+        Mock Get-AppxPackage { @() }
+        $absent = Get-MwbSandboxAllUsersPackageReport
+        $absent.QueryError | Should Be $null
+        $absent.Packages.Count | Should Be 0
+
+        Mock Get-AppxPackage { throw 'Access is denied.' }
+        $failed = Get-MwbSandboxAllUsersPackageReport
+        $failed.QueryError | Should Match 'Access is denied'
+        $failed.Packages.Count | Should Be 0
+    }
+
+    It 'reports a matched all-users package only when the family name matches exactly' {
+        Mock Get-AppxPackage {
+            @(
+                [pscustomobject]@{ PackageFamilyName = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'; PackageFullName = 'Sandbox_1.0_x64'; Version = [version]'1.0.0.0'; Status = 'Ok'; Architecture = 'X64' }
+                [pscustomobject]@{ PackageFamilyName = 'Unrelated_8wekyb3d8bbwe'; PackageFullName = 'Unrelated'; Version = [version]'1.0.0.0'; Status = 'Ok'; Architecture = 'X64' }
+            )
+        }
+        $report = Get-MwbSandboxAllUsersPackageReport
+        $report.QueryError | Should Be $null
+        $report.Packages.Count | Should Be 1
+        $report.Packages[0].PackageFullName | Should Be 'Sandbox_1.0_x64'
+    }
+
+    It 'distinguishes a confirmed-absent provisioned package inventory from a query failure' {
+        Mock Get-AppxProvisionedPackage { @() }
+        $absent = Get-MwbSandboxProvisionedPackageReport
+        $absent.QueryError | Should Be $null
+        $absent.Packages.Count | Should Be 0
+
+        Mock Get-AppxProvisionedPackage { throw 'The requested operation requires elevation.' }
+        $failed = Get-MwbSandboxProvisionedPackageReport
+        $failed.QueryError | Should Match 'elevation'
+    }
+
+    It 'reports the interactive user identity, package absence, alias existence and reparse state' {
+        $realAccount = "$env:USERDOMAIN\$env:USERNAME"
+        $profileRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path (Join-Path $profileRoot 'AppData\Local\Microsoft\WindowsApps') -Force
+        Mock Get-CimInstance {
+            param($ClassName, $Filter)
+            if ($ClassName -ceq 'Win32_ComputerSystem') { return [pscustomobject]@{ UserName = $realAccount } }
+            if ($ClassName -ceq 'Win32_UserProfile') { return [pscustomobject]@{ LocalPath = $profileRoot } }
+            throw "unexpected CIM class $ClassName"
+        }
+        Mock Get-AppxPackage { @() }
+        Mock Invoke-MwbWsbVersionProbe { throw 'must not be called when the alias is absent' }
+
+        $noAlias = Get-MwbSandboxInteractiveUserReport
+        $noAlias.QueryError | Should Be $null
+        $noAlias.PackageCount | Should Be 0
+        $noAlias.PackageAbsent | Should Be $true
+        $noAlias.AliasExists | Should Be $false
+        $noAlias.WsbVersionProbe.Attempted | Should Be $false
+
+        $aliasPath = Join-Path $profileRoot 'AppData\Local\Microsoft\WindowsApps\wsb.exe'
+        Set-Content -LiteralPath $aliasPath -Value 'fixture'
+        Mock Invoke-MwbWsbVersionProbe {
+            param($ExecutablePath)
+            $ExecutablePath | Should Be $aliasPath
+            [ordered]@{ Attempted = $true; ExitCode = 0; TimedOut = $false; DurationSeconds = 0.1; VersionText = '0.7.0'; Error = $null }
+        }
+        $withAlias = Get-MwbSandboxInteractiveUserReport
+        $withAlias.AliasExists | Should Be $true
+        $withAlias.AliasIsReparsePoint | Should Be $false
+        $withAlias.WsbVersionProbe.Attempted | Should Be $true
+        $withAlias.WsbVersionProbe.VersionText | Should Be '0.7.0'
+    }
+
+    It 'reports a query error, not a false absence, when the interactive user cannot be determined' {
+        Mock Get-CimInstance { [pscustomobject]@{ UserName = $null } }
+        $report = Get-MwbSandboxInteractiveUserReport
+        $report.QueryError | Should Match 'No interactive desktop user'
+        $report.PackageCount | Should Be $null
+        $report.PackageAbsent | Should Be $null
+    }
+
+    It 'records unreached stages explicitly rather than omitting or reporting them as passing' {
+        Mock Get-CimInstance {
+            param($ClassName)
+            if ($ClassName -ceq 'Win32_OperatingSystem') { return [pscustomobject]@{ OSArchitecture = '64-bit'; BuildNumber = '26200'; Version = '10.0.26200' } }
+            [pscustomobject]@{ UserName = $null }
+        }
+        Mock Get-WindowsOptionalFeature { throw 'The requested operation requires elevation.' }
+        $report = Get-MwbSandboxPrerequisiteReport -Platform 'x64Win11'
+        $report.SandboxFeatureQueryError | Should Match 'elevation'
+        ($report.StagesNotChecked -ccontains 'SandboxFeatureState') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'InteractiveUserIdentity') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'WsbVersionProbe') | Should Be $true
+        # Round-trips without throwing, so a partially-failed report is still an exportable artifact.
+        { $report | ConvertTo-Json -Depth 8 } | Should Not Throw
+    }
+}
+
+Describe 'MWB Sandbox bounded wsb version probe' {
+    BeforeAll { $pwshPath = (Get-Process -Id $PID).Path }
+
+    It 'captures a bounded, sanitized version line from a real fast process' {
+        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath $pwshPath -Arguments @('-NoProfile', '-NoLogo', '-Command', 'Write-Output 9.8.7')
+        $probe.Attempted | Should Be $true
+        $probe.TimedOut | Should Be $false
+        $probe.ExitCode | Should Be 0
+        $probe.VersionText | Should Be '9.8.7'
+        $probe.Error | Should Be $null
+    }
+
+    It 'never waits past its bound on an unresponsive process' {
+        $stopwatch = [Diagnostics.Stopwatch]::StartNew()
+        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath $pwshPath `
+            -Arguments @('-NoProfile', '-NoLogo', '-Command', 'Start-Sleep -Seconds 30') -TimeoutMilliseconds 500
+        $stopwatch.Stop()
+        $probe.TimedOut | Should Be $true
+        $probe.ExitCode | Should Be $null
+        $stopwatch.Elapsed.TotalSeconds | Should BeLessThan 10
+    }
+
+    It 'reports a query error rather than throwing when the executable is missing' {
+        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath (Join-Path $TestDrive 'does-not-exist\wsb.exe')
+        $probe.Attempted | Should Be $true
+        $probe.Error | Should Not Be $null
+        $probe.ExitCode | Should Be $null
+    }
+
+    It 'never captures the raw command line or full process output as the version text' {
+        $definition = (Get-Command Invoke-MwbWsbVersionProbe).Definition
+        $definition | Should Not Match 'ArgumentList\s*-join'
+        $definition | Should Not Match 'Write-Host.*ArgumentList'
+        $definition | Should Match "\`$stdout -split '\\r\?\\n'"
+        $definition | Should Match "match '\^\\d\+\\\.\\d\+\\\.\\d\+"
     }
 }
