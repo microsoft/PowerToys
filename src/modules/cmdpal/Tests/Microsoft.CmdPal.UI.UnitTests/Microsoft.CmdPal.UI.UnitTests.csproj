@@ -13,7 +13,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuAnchor.cs" Link="Helpers\ContextMenuAnchor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuRequest.cs" Link="Helpers\ContextMenuRequest.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\FlyoutPlacementHelper.cs" Link="Helpers\FlyoutPlacementHelper.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Messages\OpenContextMenuMessage.cs" Link="Messages\OpenContextMenuMessage.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ContextMenuHost.cs" Link="Services\ContextMenuHost.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ItemActionController.cs" Link="Services\ItemActionController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />

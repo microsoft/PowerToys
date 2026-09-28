@@ -25,11 +25,13 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Pages;
@@ -63,6 +65,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private const double QuickAccessShelfSpacing = 4;
 
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+
+    private readonly ItemActionController _itemActions;
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
@@ -185,6 +189,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
         _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
+        _itemActions = new ItemActionController(
+            () => ViewModel.CurrentCommandContext,
+            () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
+            new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
+            WeakReferenceMessenger.Default);
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -216,7 +225,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // for the next navigation or search-text change.
         _settingsService.SettingsChanged += OnSettingsChanged;
 
-        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
+        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), false);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
         AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
@@ -740,6 +749,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         RequestTopBarFocusRestore();
     }
 
+    private void ContextMenuFlyout_BackRequested(object? sender, EventArgs e) => RequestTopBarFocusRestore();
+
     private void HostWindow_IsVisibleToUserChanged(object? sender, EventArgs e)
     {
         if (HostWindow?.IsVisibleToUser == true &&
@@ -1169,13 +1180,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
             default:
                 {
-                    // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
-                    if (shellPage.ItemActionsAllowed)
-                    {
-                        TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                        WeakReferenceMessenger.Default.Send(msg);
-                        e.Handled = msg.Handled;
-                    }
+                    var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
+                    e.Handled = shellPage._itemActions.TryHandleShortcut(chord);
 
                     break;
                 }
@@ -1189,8 +1195,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        if (ItemActionsAllowed && TryHandleItemAction(e))
+        var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
+        if (_itemActions.TryHandleKey(chord))
         {
+            e.Handled = true;
             return;
         }
 
@@ -1201,31 +1210,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private static bool TryHandleItemAction(KeyRoutedEventArgs e)
+    private ContextMenuAnchor GetDefaultContextMenuAnchor()
     {
-        var mods = KeyModifiers.GetCurrent();
-        switch (e.Key)
-        {
-            // Ctrl+Enter
-            case VirtualKey.Enter when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
-                break;
-
-            // Enter
-            case VirtualKey.Enter when mods.None:
-                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-                break;
-
-            // Ctrl+K
-            case VirtualKey.K when mods.OnlyCtrl:
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new(null, null, null, ContextMenuFilterLocation.Bottom));
-                break;
-            default:
-                return false;
-        }
-
-        e.Handled = true;
-        return true;
+        return new(
+            ContentGrid,
+            new Point(ContentGrid.ActualWidth, ContentGrid.ActualHeight),
+            FlyoutPlacementMode.TopEdgeAlignedRight,
+            ContextMenuFilterLocation.Bottom);
     }
 
     private void ShellPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1390,6 +1381,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _isDisposed = true;
+        _itemActions.Dispose();
         _externalCommandLinks.Dispose();
         _dialogHost.Dispose();
         WeakReferenceMessenger.Default.UnregisterAll(this);
