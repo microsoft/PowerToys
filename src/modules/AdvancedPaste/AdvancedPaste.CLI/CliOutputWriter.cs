@@ -33,10 +33,16 @@ internal static class CliOutputWriter
         {
             if (storageFile is not null)
             {
-                Directory.CreateDirectory(outputFile.DirectoryName!);
-                await CopyFileAsync(storageFile.Path, outputFile, cancellationToken);
-                await view.TryCleanupAfterDelayAsync(TimeSpan.Zero);
-                return new CliOutputResult("file", null, outputFile.FullName, OutputClipboard: false);
+                try
+                {
+                    Directory.CreateDirectory(outputFile.DirectoryName!);
+                    await CopyFileAsync(storageFile.Path, outputFile, cancellationToken);
+                    return new CliOutputResult("file", null, outputFile.FullName, OutputClipboard: false);
+                }
+                finally
+                {
+                    await view.TryCleanupAfterDelayAsync(TimeSpan.Zero);
+                }
             }
 
             if (string.IsNullOrEmpty(text))
@@ -52,6 +58,7 @@ internal static class CliOutputWriter
         {
             if (storageFile is not null)
             {
+                await view.TryCleanupAfterDelayAsync(TimeSpan.Zero);
                 throw new UnsupportedOutputException("File-producing actions require --output or clipboard output.");
             }
 

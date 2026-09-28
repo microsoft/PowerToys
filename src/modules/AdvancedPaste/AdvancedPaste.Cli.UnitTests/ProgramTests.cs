@@ -273,6 +273,78 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task FileOutput_CancellationCleansGeneratedSource()
+    {
+        var sourceDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var sourcePath = Path.Combine(sourceDirectory.FullName, "generated.txt");
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
+        await File.WriteAllTextAsync(sourcePath, "generated content");
+        var source = await Windows.Storage.StorageFile.GetFileFromPathAsync(sourcePath);
+        var package = new DataPackage();
+        package.SetStorageItems([source]);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        try
+        {
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+                CliOutputWriter.WriteAsync(
+                    package,
+                    new FileInfo(outputPath),
+                    stdoutRequested: false,
+                    clipboard: new TestClipboardAdapter(),
+                    stdout: TextWriter.Null,
+                    cancellationToken: cancellation.Token));
+
+            Assert.IsFalse(Directory.Exists(sourceDirectory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory.FullName))
+            {
+                Directory.Delete(sourceDirectory.FullName, recursive: true);
+            }
+
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task FileOutputToStdout_CleansGeneratedSource()
+    {
+        var sourceDirectory = AdvancedPasteTempFileManager.CreateDirectory();
+        var sourcePath = Path.Combine(sourceDirectory.FullName, "generated.txt");
+        await File.WriteAllTextAsync(sourcePath, "generated content");
+        var source = await Windows.Storage.StorageFile.GetFileFromPathAsync(sourcePath);
+        var package = new DataPackage();
+        package.SetStorageItems([source]);
+
+        try
+        {
+            await Assert.ThrowsExactlyAsync<UnsupportedOutputException>(() =>
+                CliOutputWriter.WriteAsync(
+                    package,
+                    outputFile: null,
+                    stdoutRequested: true,
+                    clipboard: new TestClipboardAdapter(),
+                    stdout: TextWriter.Null,
+                    cancellationToken: CancellationToken.None));
+
+            Assert.IsFalse(Directory.Exists(sourceDirectory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory.FullName))
+            {
+                Directory.Delete(sourceDirectory.FullName, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task TextFileOutput_CancellationKeepsExistingDestination()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
