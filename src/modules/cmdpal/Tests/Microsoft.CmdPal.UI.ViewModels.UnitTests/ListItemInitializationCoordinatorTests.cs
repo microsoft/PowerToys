@@ -761,6 +761,23 @@ public sealed partial class ListItemInitializationCoordinatorTests
 
     [TestMethod]
     [Timeout(15000)]
+    public void FailedItemNotifiesOwnerAndContinuesInitialization()
+    {
+        var order = new ConcurrentQueue<int>();
+        var (models, viewModels) = CreateItems(4, order);
+        var failedItems = new List<ListItemViewModel>();
+        models[1].OnInitializing = () => throw new InvalidOperationException("Expected extension failure");
+        var coordinator = new ListItemInitializationCoordinator(viewModels, failedItems.Add);
+
+        coordinator.Run(CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { viewModels[1] }, failedItems);
+        Assert.IsTrue(viewModels[2].InitializationWasSuccessful);
+        Assert.IsTrue(viewModels[3].InitializationWasSuccessful);
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
     public void EscapedErrorCleanupFailureDoesNotStopRemainingItems()
     {
         var order = new ConcurrentQueue<int>();

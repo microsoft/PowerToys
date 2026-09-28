@@ -9,6 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -446,6 +448,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         nextCache[item] = viewModel;
                         created++;
                     }
+                    else if (viewModel.IsInErrorState)
+                    {
+                        PruneErroredTopLevelItem(item);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -472,6 +478,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
                 item?.InitializePropertiesOnce();
+                if (item?.IsInErrorState == true)
+                {
+                    PruneErroredTopLevelItem(item.Model.Unsafe);
+                }
             }
 
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
@@ -637,7 +647,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // attach items to an older coordinator after a newer one was installed.
             var initializeItemsCts = new CancellationTokenSource();
             var initializeItemsToken = initializeItemsCts.Token;
-            var coordinator = new ListItemInitializationCoordinator(itemSnapshot);
+            var coordinator = new ListItemInitializationCoordinator(itemSnapshot, OnItemInitializationFailed);
             var previousCoordinator = Interlocked.Exchange(ref _itemInitializationCoordinator, coordinator);
             var previousCancellation = Interlocked.Exchange(ref _cancellationTokenSource, initializeItemsCts);
 
@@ -665,6 +675,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             _initializeItemsTask = new Task(() => coordinator.Run(initializeItemsToken));
             _initializeItemsTask.Start();
+        }
+    }
+
+    private void OnItemInitializationFailed(ListItemViewModel item)
+    {
+        if (item.IsInErrorState)
+        {
+            PruneErroredTopLevelItem(item.Model.Unsafe);
+        }
+    }
+
+    private void PruneErroredTopLevelItem(IListItem? item)
+    {
+        if (IsMainPage &&
+            _model.Unsafe is MainListPage mainListPage &&
+            item is TopLevelViewModel topLevelItem)
+        {
+            mainListPage.PruneErroredTopLevelItem(topLevelItem);
         }
     }
 
@@ -965,6 +993,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         if (!ct.IsCancellationRequested)
                         {
+                            if (item.IsInErrorState)
+                            {
+                                PruneErroredTopLevelItem(item.Model.Unsafe);
+                            }
+
                             WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                         }
 
@@ -976,6 +1009,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         if (ct.IsCancellationRequested)
                         {
                             return;
+                        }
+
+                        if (item.IsInErrorState)
+                        {
+                            PruneErroredTopLevelItem(item.Model.Unsafe);
                         }
 
                         WeakReferenceMessenger.Default.Send<HideDetailsMessage>();

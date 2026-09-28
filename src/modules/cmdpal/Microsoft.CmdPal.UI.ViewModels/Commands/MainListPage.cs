@@ -217,6 +217,11 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
+    internal void PruneErroredTopLevelItem(TopLevelViewModel item)
+    {
+        _tlcManager.PruneErroredTopLevelItem(item);
+    }
+
     private void RequestRefresh(bool fullRefresh, TimeSpan? interval = null)
     {
         if (fullRefresh)

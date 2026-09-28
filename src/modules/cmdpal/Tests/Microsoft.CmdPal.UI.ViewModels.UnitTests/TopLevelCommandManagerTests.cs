@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -251,9 +253,40 @@ public partial class TopLevelCommandManagerTests
         item.VerifyRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Exactly(2));
     }
 
-    private static ServiceProvider CreateServices()
+    [TestMethod]
+    public async Task PruneErroredTopLevelItem_RemovesOnlyTheItemAndPreservesPinnedSettings()
     {
-        var settings = new SettingsModel();
+        const string retainedCommandId = "retained-command";
+        var settings = new SettingsModel
+        {
+            PinnedCommands = ImmutableList.Create(new PinnedCommandSettings("test-provider", TestCommandProvider.NestedCommandId)),
+        };
+        using var services = CreateServices(settings);
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId)
+        {
+            IncludeTopLevelCommand = true,
+            AdditionalTopLevelItems =
+            [
+                new CommandItem(new NoOpCommand { Id = retainedCommandId, Name = "Retained command" }),
+            ],
+        };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        await manager.LoadExternalProvidersAsync();
+        var erroredItem = manager.TopLevelCommands.Single(item => item.Id == TestCommandProvider.NestedCommandId);
+
+        manager.PruneErroredTopLevelItem(erroredItem);
+
+        Assert.AreEqual(1, manager.TopLevelCommands.Count);
+        Assert.AreEqual(retainedCommandId, manager.TopLevelCommands[0].Id);
+        Assert.AreEqual(1, manager.PinnedCommands.Count);
+        Assert.AreEqual(TestCommandProvider.NestedCommandId, manager.PinnedCommands[0].CommandId);
+        Assert.AreEqual(TestCommandProvider.NestedCommandId, services.GetRequiredService<ISettingsService>().Settings.PinnedCommands[0].CommandId);
+    }
+
+    private static ServiceProvider CreateServices(SettingsModel? initialSettings = null)
+    {
+        var settings = initialSettings ?? new SettingsModel();
         var settingsService = new Mock<ISettingsService>();
         settingsService.SetupGet(service => service.Settings).Returns(() => settings);
         settingsService.Setup(service => service.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()))
@@ -285,6 +318,8 @@ public partial class TopLevelCommandManagerTests
 
         public bool IncludeTopLevelCommand { get; init; }
 
+        public ICommandItem[] AdditionalTopLevelItems { get; init; } = [];
+
         public Action? OnLookup { get; set; }
 
         public TestCommandProvider(string resolvedCommandId, ICommandItem? resolvedItem = null)
@@ -298,7 +333,7 @@ public partial class TopLevelCommandManagerTests
             });
         }
 
-        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [_resolvedItem] : [];
+        public override ICommandItem[] TopLevelCommands() => IncludeTopLevelCommand ? [_resolvedItem, .. AdditionalTopLevelItems] : [];
 
         public override ICommandItem? GetCommandItem(string id)
         {

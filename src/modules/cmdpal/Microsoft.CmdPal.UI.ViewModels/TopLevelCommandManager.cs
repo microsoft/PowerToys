@@ -105,6 +105,20 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
     }
 
+    internal void PruneErroredTopLevelItem(TopLevelViewModel item)
+    {
+        bool removed;
+        lock (TopLevelCommands)
+        {
+            removed = TopLevelCommands.Remove(item);
+        }
+
+        if (removed)
+        {
+            item.Cleanup();
+        }
+    }
+
     // May be called from a background thread
     private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {

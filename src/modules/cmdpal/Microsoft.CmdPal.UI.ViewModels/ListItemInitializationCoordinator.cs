@@ -10,14 +10,16 @@ internal sealed class ListItemInitializationCoordinator
 {
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Stack<ListItemInitializationDemand> _priorityRequests = new();
+    private readonly Action<ListItemViewModel>? _onInitializationFailed;
     private ListItemViewModel[] _items;
     private ListItemInitializationDemandStack _incomingRequests; // can't be readonly
     private int _accepting = 1;
     private int _runState;
 
-    internal ListItemInitializationCoordinator(ListItemViewModel[] items)
+    internal ListItemInitializationCoordinator(ListItemViewModel[] items, Action<ListItemViewModel>? onInitializationFailed = null)
     {
         _items = items;
+        _onInitializationFailed = onInitializationFailed;
         foreach (var item in items)
         {
             item.AttachInitializationCoordinator(this);
@@ -137,11 +139,15 @@ internal sealed class ListItemInitializationCoordinator
         _completion.TrySetResult();
     }
 
-    private static void InitializeItem(ListItemViewModel item)
+    private void InitializeItem(ListItemViewModel item)
     {
         try
         {
             item.InitializePropertiesOnce();
+            if (item.IsInErrorState)
+            {
+                _onInitializationFailed?.Invoke(item);
+            }
         }
         catch (Exception ex)
         {
