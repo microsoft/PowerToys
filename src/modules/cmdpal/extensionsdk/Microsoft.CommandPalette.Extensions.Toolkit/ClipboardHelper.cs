@@ -51,9 +51,16 @@ public static partial class ClipboardHelper
 
         ExecuteOnStaThread(() =>
         {
-            Clipboard.SetContent(content);
-            Clipboard.Flush();
-            return true;
+            try
+            {
+                Clipboard.SetContent(content);
+                Clipboard.Flush();
+                return true;
+            }
+            catch (COMException)
+            {
+                return false;
+            }
         });
     }
 
