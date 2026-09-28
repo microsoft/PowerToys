@@ -18,6 +18,8 @@ public class MonitorIdentityTests
     private static readonly DockBandSettings BandA = new() { ProviderId = "p", CommandId = "a" };
     private static readonly DockBandSettings BandB = new() { ProviderId = "p", CommandId = "b" };
     private static readonly string[] ExpectedMergedCommands = ["a", "b"];
+    private static readonly string[] ExpectedBandA = ["a"];
+    private static readonly string[] ExpectedBandB = ["b"];
 
     // --- EdidIdentity ---
     [TestMethod]
@@ -104,6 +106,25 @@ public class MonitorIdentityTests
         Assert.IsFalse(result.Any(c => c.MonitorDeviceId == orphan.MonitorDeviceId));
         var merged = result.Single(c => c.MonitorDeviceId == secondary.StableId);
         CollectionAssert.AreEqual(ExpectedMergedCommands, merged.StartBands!.Select(b => b.CommandId).ToArray());
+    }
+
+    [TestMethod]
+    public void Reconcile_GdiOrphan_DoesNotDuplicateBandAcrossSections()
+    {
+        var secondary = Monitor(@"\\.\DISPLAY2", @"\\?\DISPLAY#SEC5678#4&bbb&0&UID222#{g}", "SEC-5678-2", isPrimary: false);
+        var existing = Customized(secondary.StableId, secondary.HardwareId, BandA) with { Enabled = true };
+        var orphan = Customized(secondary.DeviceId, null) with
+        {
+            CenterBands = ImmutableList.Create(BandA),
+            EndBands = ImmutableList.Create(BandB),
+        };
+
+        var result = MonitorConfigReconciler.Reconcile(ImmutableList.Create(existing, orphan), [Primary(), secondary]);
+
+        var merged = result.Single(c => c.MonitorDeviceId == secondary.StableId);
+        CollectionAssert.AreEqual(ExpectedBandA, merged.StartBands!.Select(b => b.CommandId).ToArray());
+        Assert.AreEqual(0, merged.CenterBands!.Count);
+        CollectionAssert.AreEqual(ExpectedBandB, merged.EndBands!.Select(b => b.CommandId).ToArray());
     }
 
     [TestMethod]

@@ -333,29 +333,52 @@ public static class MonitorConfigReconciler
             }
 
             var target = result[targetIndex];
-            result[targetIndex] = target.IsCustomized
-                ? target with
+            var seenBands = new HashSet<(string ProviderId, string CommandId)>();
+            if (target.IsCustomized)
+            {
+                AddBandsToSet(seenBands, target.StartBands);
+                AddBandsToSet(seenBands, target.CenterBands);
+                AddBandsToSet(seenBands, target.EndBands);
+
+                result[targetIndex] = target with
                 {
-                    StartBands = MergeBands(target.StartBands, orphan.StartBands),
-                    CenterBands = MergeBands(target.CenterBands, orphan.CenterBands),
-                    EndBands = MergeBands(target.EndBands, orphan.EndBands),
-                }
-                : target with
-                {
-                    // The orphan was forked from global when it was pinned, so it's
-                    // exactly what this monitor would have become.
-                    IsCustomized = true,
-                    StartBands = orphan.StartBands ?? ImmutableList<DockBandSettings>.Empty,
-                    CenterBands = orphan.CenterBands ?? ImmutableList<DockBandSettings>.Empty,
-                    EndBands = orphan.EndBands ?? ImmutableList<DockBandSettings>.Empty,
+                    StartBands = MergeBands(target.StartBands, orphan.StartBands, seenBands),
+                    CenterBands = MergeBands(target.CenterBands, orphan.CenterBands, seenBands),
+                    EndBands = MergeBands(target.EndBands, orphan.EndBands, seenBands),
                 };
+            }
+            else
+            {
+                result[targetIndex] = target with
+                {
+                    IsCustomized = true,
+                    StartBands = MergeBands(null, orphan.StartBands, seenBands),
+                    CenterBands = MergeBands(null, orphan.CenterBands, seenBands),
+                    EndBands = MergeBands(null, orphan.EndBands, seenBands),
+                };
+            }
+
             matchedConfigIndices.Add(ci);
+        }
+    }
+
+    private static void AddBandsToSet(HashSet<(string ProviderId, string CommandId)> seenBands, ImmutableList<DockBandSettings>? bands)
+    {
+        if (bands is null)
+        {
+            return;
+        }
+
+        foreach (var band in bands)
+        {
+            seenBands.Add((band.ProviderId, band.CommandId));
         }
     }
 
     private static ImmutableList<DockBandSettings> MergeBands(
         ImmutableList<DockBandSettings>? target,
-        ImmutableList<DockBandSettings>? source)
+        ImmutableList<DockBandSettings>? source,
+        HashSet<(string ProviderId, string CommandId)> seenBands)
     {
         target ??= ImmutableList<DockBandSettings>.Empty;
         if (source is null || source.Count == 0)
@@ -366,7 +389,7 @@ public static class MonitorConfigReconciler
         var builder = target.ToBuilder();
         foreach (var band in source)
         {
-            if (!builder.Exists(b => b.ProviderId == band.ProviderId && b.CommandId == band.CommandId))
+            if (seenBands.Add((band.ProviderId, band.CommandId)))
             {
                 builder.Add(band);
             }
