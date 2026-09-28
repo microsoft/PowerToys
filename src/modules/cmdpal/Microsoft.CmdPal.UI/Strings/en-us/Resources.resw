@@ -533,6 +533,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
+  <data name="ContextMenu_Back" xml:space="preserve">
+    <value>Back from {0}</value>
+    <comment>Screen reader label for the back row in a submenu. {0} is the current submenu title.</comment>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back (Alt + Left arrow)</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Back (Alt + Left arrow)</value>
   </data>

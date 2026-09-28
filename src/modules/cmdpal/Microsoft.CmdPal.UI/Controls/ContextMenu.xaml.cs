@@ -27,6 +27,9 @@ public sealed partial class ContextMenu : UserControl
     private static readonly CompositeFormat _contextMenuOpenedFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
 
+    private static readonly CompositeFormat _contextMenuBackFormat =
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("ContextMenu_Back"));
+
     public event EventHandler? CloseRequested;
 
     public event EventHandler? BackRequested;
@@ -92,11 +95,11 @@ public sealed partial class ContextMenu : UserControl
                 return;
             }
 
-            var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
-            var itemCount = commandItems.Count;
-            var selectedItem = CommandsDropdown.SelectedItem as CommandContextItemViewModel;
-            var selectedName = selectedItem?.Title ?? string.Empty;
-            var selectedIndex = selectedItem is not null ? commandItems.IndexOf(selectedItem) + 1 : 0;
+            var menuItems = ViewModel.FilteredItems.Where(item => item is not SeparatorViewModel).ToList();
+            var itemCount = menuItems.Count;
+            var selectedItem = CommandsDropdown.SelectedItem as IContextItemViewModel;
+            var selectedName = GetItemTitle(selectedItem);
+            var selectedIndex = selectedItem is not null ? menuItems.IndexOf(selectedItem) + 1 : 0;
 
             var announcement = string.Format(
                 CultureInfo.CurrentCulture,
@@ -114,11 +117,17 @@ public sealed partial class ContextMenu : UserControl
         });
     }
 
-    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
+    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e) => InvokeItem(e.ClickedItem);
+
+    private void InvokeItem(object? item)
     {
-        if (e.ClickedItem is CommandContextItemViewModel item)
+        if (item is ContextMenuBackItemViewModel)
         {
-            InvokeCommand(item);
+            NavigateBackOrClose();
+        }
+        else if (item is CommandContextItemViewModel command)
+        {
+            InvokeCommand(command);
         }
     }
 
@@ -143,23 +152,34 @@ public sealed partial class ContextMenu : UserControl
     {
         if (e.Key == VirtualKey.Escape)
         {
-            // TODO: Use NavigateBackOrClose() so Escape pops a submenu before closing at the root.
-            // Let the flyout restore the previously focused element, even when More is hidden.
             e.Handled = true;
-            CloseRequested?.Invoke(this, EventArgs.Empty);
+            if (ViewModel.IsSubmenu)
+            {
+                NavigateBackOrClose();
+            }
+            else
+            {
+                // Let the flyout restore the previously focused element, even when More is hidden.
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+            }
+
+            return;
+        }
+
+        if (e.Key == VirtualKey.Left && KeyModifiers.GetCurrent().OnlyAlt)
+        {
+            e.Handled = true;
+            NavigateBackOrClose();
             return;
         }
 
         if (ContextFilterBox.FocusState != FocusState.Unfocused && e.Key is VirtualKey.Up or VirtualKey.Down)
         {
             e.Handled = true;
-            if (e.Key == VirtualKey.Up)
+            CommandsDropdown.SelectedIndex = ViewModel.GetNextItemIndex(CommandsDropdown.SelectedIndex, e.Key == VirtualKey.Down);
+            if (CommandsDropdown.SelectedItem is { } selected)
             {
-                NavigateUp();
-            }
-            else
-            {
-                NavigateDown();
+                (CommandsDropdown.ContainerFromItem(selected) as UIElement)?.StartBringIntoView();
             }
 
             AnnounceSelectedItem();
@@ -175,6 +195,11 @@ public sealed partial class ContextMenu : UserControl
                 // Match the command bar: activate the secondary action even when it has a submenu.
                 InvokeCommand(secondary, navigateSubmenus: false);
             }
+        }
+        else if (!e.Handled && e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            InvokeItem(CommandsDropdown.SelectedItem);
         }
     }
 
@@ -202,30 +227,12 @@ public sealed partial class ContextMenu : UserControl
         ResetSelection();
     }
 
-    private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        var modifiers = KeyModifiers.GetCurrent();
-
-        if (e.Key == VirtualKey.Enter)
-        {
-            if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
-            {
-                e.Handled = true;
-                InvokeCommand(item);
-            }
-        }
-        else if (e.Key == VirtualKey.Left && modifiers.Alt)
-        {
-            e.Handled = true;
-            NavigateBackOrClose();
-        }
-    }
-
     private void NavigateBackOrClose()
     {
         if (ViewModel.CanPopContextStack())
         {
             ViewModel.PopContextStack();
+            FocusSearchBox();
         }
         else
         {
@@ -233,96 +240,24 @@ public sealed partial class ContextMenu : UserControl
         }
     }
 
-    private void NavigateUp()
+    private string GetItemTitle(IContextItemViewModel? item) => item switch
     {
-        var newIndex = CommandsDropdown.SelectedIndex;
-
-        if (CommandsDropdown.SelectedIndex > 0)
-        {
-            newIndex--;
-
-            while (
-                newIndex >= 0 &&
-                IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex)
-            {
-                newIndex--;
-            }
-
-            if (newIndex < 0)
-            {
-                newIndex = CommandsDropdown.Items.Count - 1;
-
-                while (
-                    newIndex >= 0 &&
-                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex)
-                {
-                    newIndex--;
-                }
-            }
-        }
-        else
-        {
-            newIndex = CommandsDropdown.Items.Count - 1;
-        }
-
-        CommandsDropdown.SelectedIndex = newIndex;
-    }
-
-    private void NavigateDown()
-    {
-        var newIndex = CommandsDropdown.SelectedIndex;
-
-        if (CommandsDropdown.SelectedIndex == CommandsDropdown.Items.Count - 1)
-        {
-            newIndex = 0;
-        }
-        else
-        {
-            newIndex++;
-
-            while (
-                newIndex < CommandsDropdown.Items.Count &&
-                IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex)
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= CommandsDropdown.Items.Count)
-            {
-                newIndex = 0;
-
-                while (
-                    newIndex < CommandsDropdown.Items.Count &&
-                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex)
-                {
-                    newIndex++;
-                }
-            }
-        }
-
-        CommandsDropdown.SelectedIndex = newIndex;
-    }
-
-    private bool IsSeparator(object item)
-    {
-        return item is SeparatorViewModel;
-    }
+        CommandContextItemViewModel command => command.Title,
+        ContextMenuBackItemViewModel => string.Format(CultureInfo.CurrentCulture, _contextMenuBackFormat, ViewModel.CurrentMenuTitle),
+        _ => string.Empty,
+    };
 
     private void AnnounceSelectedItem()
     {
-        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
+        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || CommandsDropdown.SelectedItem is not IContextItemViewModel selected)
         {
             return;
         }
 
-        var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
-        var position = commandItems.IndexOf(selected) + 1;
-        var total = commandItems.Count;
-        var announcement = $"{selected.Title}, {position} of {total}";
+        var menuItems = ViewModel.FilteredItems.Where(item => item is not SeparatorViewModel).ToList();
+        var position = menuItems.IndexOf(selected) + 1;
+        var total = menuItems.Count;
+        var announcement = $"{GetItemTitle(selected)}, {position} of {total}";
 
         RaiseNarratorNotification(
             AutomationNotificationKind.ItemAdded,
@@ -364,7 +299,8 @@ public sealed partial class ContextMenu : UserControl
         // Selection must stay current independently of deferred Narrator announcements.
         if (force || CommandsDropdown.SelectedIndex == -1)
         {
-            CommandsDropdown.SelectedIndex = 0;
+            CommandsDropdown.SelectedItem = (IContextItemViewModel?)ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().FirstOrDefault()
+                ?? ViewModel.FilteredItems.OfType<ContextMenuBackItemViewModel>().FirstOrDefault();
         }
     }
 
@@ -374,7 +310,10 @@ public sealed partial class ContextMenu : UserControl
     /// </summary>
     internal void FocusSearchBox()
     {
-        ContextFilterBox.Focus(FocusState.Programmatic);
+        if (!ContextFilterBox.Focus(FocusState.Programmatic))
+        {
+            CommandsDropdown.Focus(FocusState.Programmatic);
+        }
     }
 
     private void InvokeCommand(CommandItemViewModel command, bool navigateSubmenus = true)
