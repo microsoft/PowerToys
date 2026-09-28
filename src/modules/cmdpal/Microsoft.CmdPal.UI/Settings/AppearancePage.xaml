@@ -310,6 +310,13 @@
                         local:SettingsPageTarget.Id="compact-mode">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind ViewModel.CompactMode, Mode=TwoWay}" />
                         <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_QuickAccessShelf_SettingsCard"
+                                IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
+                                <ToggleSwitch
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_QuickAccessShelf"
+                                    IsOn="{x:Bind ViewModel.ShowQuickAccessShelf, Mode=TwoWay}" />
+                            </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard" IsEnabled="{x:Bind ViewModel.CompactMode, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
