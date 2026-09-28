@@ -94,16 +94,7 @@ try {
         # Avoid repeatedly loading the CLI across redirected storage while the
         # nested VM is also loading the product. Keep the staging source read-only.
         $localTools = Join-Path $env:LOCALAPPDATA "PowerToysMwbTools\$($script:config.RunId)"
-        $null = New-Item -ItemType Directory -Path $localTools
-        foreach ($name in @('winapp.exe', 'libSkiaSharp.dll')) {
-            $source = Join-Path (Split-Path $WinApp) $name
-            $destination = Join-Path $localTools $name
-            Copy-Item -LiteralPath $source -Destination $destination
-            if ((Get-FileHash -LiteralPath $source).Hash -ne (Get-FileHash -LiteralPath $destination).Hash) {
-                throw 'The locally staged guest CLI differs from its read-only source.'
-            }
-        }
-        $WinApp = Join-Path $localTools 'winapp.exe'
+        $WinApp = Copy-EndpointWinAppTools (Split-Path $WinApp) $localTools
     }
     Write-BootstrapStage 'ToolsReady'
     $bootstrapLeaseMeasured = $false

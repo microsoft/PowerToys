@@ -1,24 +1,35 @@
 # Autonomous MWB nested-Sandbox Debug pilot
 
-**Status: the autonomous Debug Sandbox smoke is green on both local-VM guests.**
-Windows 10 (Legacy backend) and Windows 11 (WinApp/hybrid backend) each
-completed the full ordered scenario — real New key/Connect, bidirectional owned
-TCP transport, local-input isolation, remote keyboard/mouse, clipboard-off
-isolation, clipboard transfer in both directions, and owned cleanup without
-operator actions — against the same R2R guest runtime
+**Status: official winappcli v0.7.0 is validated on Windows 10, but Windows 11
+hybrid sign-off is blocked.** The September 26, 2026 unfiltered Windows 10 run
+(`localvm-20260926-130232-41e08227`) passed 4/4 tests and all eight ordered phases:
+real New key/Connect, bidirectional owned TCP transport, local-input isolation,
+remote keyboard/mouse, clipboard-off isolation, clipboard transfer both ways,
+and cleanup. Both endpoints restored settings and clipboard; both recordings
+finalized, and evidence export had no errors. The product and guest use the same
+R2R runtime
 (`mwb-guest-runtime-win10-r2r.zip`, SHA-256
 `330575082E61412C790CEB0E0CD6CBC4A2120F5E54DA052A35410B7E0F973259`) on both
-guests. The Windows 10 run additionally exercises the final integration source
-tree (the shared native click-readiness predicate together with the
-`WinappCli` execution-alias ownership fix — see
-`src/common/UITestAutomation.Next/WinappCli.cs`, `ResolveOwnerImagePath`);
-Windows 11 validated the
-click-readiness predicate and the rest of the shared harness first, and is not
-re-run for the narrow, unit-proven alias fix alone. This is the selected
-ordered smoke scenario, not full module, Release, service, secure-desktop, or
-physical-machine sign-off. Earlier text below documents the CI-agent evidence
-that established the Windows 10 baseline before local-VM validation existed;
-treat it as history, not the current gate.
+endpoints. This is the selected ordered smoke scenario, not full module,
+Release, service, secure-desktop, or physical-machine sign-off.
+
+The official Windows 11 run (`localvm-20260926-132913-04f4638e`) passed the three
+infrastructure tests, but the smoke timed out in the initial target push at the
+unchanged 15-minute bootstrap deadline (778 seconds remained after provider
+startup). The released binary wrote schema-1 state with the exact adopted run
+GUID under the private override; no default-profile target state was created.
+It never reached the authenticated bootstrap epoch or MWB worker. The live
+owned provider child was still executing the release's per-rule
+`Get-NetFirewallApplicationFilter` loop after more than ten minutes. Exact-GUID
+stop and private-state cleanup completed, with clean external recovery and
+no export errors.
+
+A cold Windows 11 retry (`localvm-20260926-135157-b16d1cb7`) instead timed out
+in `wsb start` after its existing 300-second limit, before target bootstrap.
+The harness stopped that exact GUID and marked cleanup complete. External
+recovery conservatively reports interrupted creation because creation was never
+confirmed; that guard is not weakened. The earlier private-preview Windows 11
+4/4 baseline below does **not** establish an official v0.7.0 pass.
 
 The stability fixes retain real Settings actions and the existing safety gates:
 state-changing Settings RPCs await acknowledgement before their channel closes;
@@ -28,10 +39,30 @@ native APIs rather than blocking Sandbox UIA or cold NetTCPIP/CIM queries.
 Watchdogs, scoped firewall rules and peer verification remain intact.
 
 Desktop and separate Sandbox-viewer recordings, phase evidence, transport
-snapshots and sanitized endpoint logs survive successful runs. The desktop MP4s
-finalized; the viewer MP4s are usable but retain an explicit finalization-timeout
-warning in their manifests. Win11 Sandbox enablement remains an image prerequisite
-and was outside the Win10-focused stabilization scope.
+snapshots and sanitized endpoint logs survive successful runs. Windows 11
+Sandbox enablement **and current-test-user modern client registration** remain
+separate image prerequisites; updating winappcli does not install either.
+
+The gated CI pilot's elevated `Prepare` step now always writes
+`mwb-prerequisite-report.json` (published as the `mwb-prerequisite-report-<job>`
+pipeline artifact by `steps-mwb-sandbox-experiment.yml`) before any prerequisite
+can throw and before the protected run root exists, so a registration gap is
+evidenced even when the pilot never reaches the build artifact, feature, or
+backend checks. It records: the OS architecture/build and
+`Containers-DisposableClientVM` feature state; an all-users
+`MicrosoftWindows.WindowsSandbox` package inventory and the matching
+provisioned-package inventory (elevated queries, since `Prepare` already
+requires an elevated agent); and, for the exact interactive test user
+`WinAppSandbox.cs` (`AssertPrerequisites`) runs as, its package count/PFN/version,
+its `wsb.exe` execution-alias existence and reparse-point state, and a bounded
+(15-second) `wsb --version` probe that records only a sanitized `major.minor.patch`
+line, never the raw command line or full process output. Every query
+distinguishes a confirmed-absent result (the call succeeded with zero matches)
+from a query failure (the call itself threw); a stage that could not be
+evaluated is listed under `StagesNotChecked` rather than omitted or reported as
+passing. A placeholder `REPORT_NOT_GENERATED` report is still published if
+`Prepare` never ran at all. This diagnostic report never installs, elevates,
+enables features, or reboots; it only reads what CI already runs as.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI
@@ -59,12 +90,12 @@ full module sign-off.
 
 The Windows 10 path remains `Legacy`: `WindowsSandbox.exe`, hardened `.wsb`
 configuration, mapped endpoint channels and the existing viewer recording.
-The preview CLI's local UI commands work on Win10, but `--on sandbox` returns
+The official CLI's local UI commands work on Win10, but `--on sandbox` returns
 `sandbox_unsupported`; the harness never attempts that target as a Win10 fallback.
 
 The experimental `WinApp` backend requires Windows 11 24H2+, the modern
 `MicrosoftWindows.WindowsSandbox` client registered for the standard test user,
-and a separately staged Sandbox-capable winapp preview. Enabling the Windows
+and the official winappcli **v0.7.0** runtime. Enabling the Windows
 optional feature alone is insufficient if the client/`wsb.exe` alias has not
 finished installation. The harness does not install Windows features or elevate
 its standard-user process.
@@ -74,24 +105,29 @@ clipboard/device isolation as Legacy, then checks that winapp adopted that ID.
 It uses target push for payloads, attached target exec for the existing stateful
 guest worker, and guest-native screenshot/recording. The mapped request/result
 channels, receivers, parent-bound leases, MWB firewall rules, real input/clipboard
-assertions and restoration remain unchanged. The preview also provisions its own
+assertions and restoration remain unchanged. The CLI also provisions its own
 authenticated guest-agent transport; that is separate from MWB's ports.
 
-Winapp's private target state and bootstrap material stay below the private
-control root, never test attachments. Recovery derives the provider ID from the
-protected provisioning RunId, validates the preview path/hash, and stops only
+Winapp's target state and bootstrap material stay below the private control root,
+never test attachments. Official v0.7.0 defaults to
+`%USERPROFILE%\.winapp\state\targets`, but explicitly retains the documented
+`WINAPP_TARGET_STATE_ROOT` override in `TargetStateDirectoryProvider.cs`.
+The adapter sets that override only for its child processes. It does not redirect
+`USERPROFILE`, read or delete default-profile state, or modify the released binary.
+Recovery derives the provider ID from the protected provisioning RunId,
+validates the CLI path/hash and exact private state path, and stops only
 owned processes and that exact provider instance. Missing capabilities, stale
 ownership or failed modern startup are errors, not permission to run locally or
 silently switch backends.
 
-The evaluated preview is `0.6.3-prerelease.52` at winappCli commit
-`114e6ec6cfec9267a43b4b324f2eb9d20a297261`. It has no attach-only/expected-instance
+The selected release is [v0.7.0](https://github.com/microsoft/winappCli/releases/tag/v0.7.0)
+at commit `2fdd020c5b7db093e8b3e317b22bdd8135a47e89`. It has no attach-only/expected-instance
 option: the pre/post-operation identity checks detect changes but are not an
 atomic acquisition fence. Run this experimental backend only in a dedicated
 single-Sandbox VM. An ownership mismatch preserves private recovery state and
 never authorizes stopping a different instance.
 
-The Win11 two-peer scenario is now signed off locally: an unfiltered full-suite
+The earlier private-preview Win11 two-peer scenario was signed off locally: an unfiltered full-suite
 run (4/4 tests, all 8 ordered phases) completed cleanly, including a single
 physical remote click validated by the native click-readiness predicate
 (`ReceiverObservation.cs`, `TwoEndpointFixture.cs`), with settings and
@@ -111,25 +147,24 @@ foreground and no capture before the single physical click. Neither recurred
 in the next runs. Owned cleanup completed without errors on every attempt,
 signed off or not.
 
-The preview's `AllowGuestAgentConnectionAsync` performs an application-filter
-query for every firewall rule. A cold guest had 412 rules, while reading all
-application filters in one query took about 0.3 seconds. Bulk filter enumeration
-followed by resolving only matching rules is the next upstream performance fix
-to evaluate, rather than extending MWB's endpoint watchdogs.
-
-The current local Win10 regression also has a Sandbox LogonCommand startup
-timeout (`0x800705b4`) before worker entry, including after a cold restart.
-These are not new MWB assertion passes and do not replace
-the earlier successful fresh-agent Win10 CI evidence.
+Earlier private-preview runs investigated a slow guest-firewall query and Win10
+LogonCommand startup timeout. Those experiments are historical, not dependencies
+of the official release path; no private upstream patch is built or shipped.
 
 `Initialize-AutonomousHost.ps1` defaults to Legacy for existing callers.
 Selecting `-SandboxBackend WinApp` also requires `-SandboxWinAppPath`; its hash
 is recorded in the protected marker. The local wrapper's `Auto` mode selects
 Legacy for `-Platform x64Win10` and WinApp for `-Platform x64Win11`. The stable
-host/guest UI CLI archive is not globally upgraded.
+host/guest UI CLI and modern Sandbox CLI use the same official release.
+Verify the official archive hash before selecting its three portable runtime files:
+`winapp.exe`, `libSkiaSharp.dll`, and `libHarfBuzzSharp.dll`. Do not ship the PDBs.
+The derived runtime archive has its own hash; it is not the official ZIP hash.
+Both the x64 and ARM64 release assets are native AOT, with matching native
+companions; do not infer architecture from the archive filename alone.
 
-Example after staging coherent product/test archives and a preview archive
-containing `winapp.exe` directly at its root:
+Example after staging coherent product/test archives and the official runtime
+archive containing all three runtime files directly at its root (also stage it
+as `winappcli.zip` for local UI commands):
 
 ```powershell
 .\src\modules\MouseWithoutBorders\Tests\SandboxExperiment\Invoke-AutonomousLocalVm.ps1 `
@@ -138,14 +173,14 @@ containing `winapp.exe` directly at its root:
   -CredentialPath "$env:LOCALAPPDATA\PowerToysUiTestVm\admin.win11.credential.xml" `
   -ExchangeRoot C:\PowerToysUiTestVm\shared\PowerToysUiTests\MouseWithoutBorders `
   -Platform x64Win11 -SandboxBackend WinApp `
-  -SandboxWinAppArchive winapp-sandbox-preview.zip `
+  -SandboxWinAppArchive winappcli-official-0.7.0-x64-runtime.zip `
   -ProductArchive powertoys-runtime-hybrid.zip `
   -GuestRuntimeArchive mwb-guest-runtime-hybrid.zip `
   -TestsArchive ui-tests-hybrid.zip `
   -Filter 'FullyQualifiedName~AutonomousSandboxSmoke' -ReuseStagedPayload -PlanOnly
 ```
 
-Inspect the plan, including the preview archive hash, then repeat without
+Inspect the plan, including `SandboxWinAppArchiveSha256`, then repeat without
 `-PlanOnly`. Keep separate DPAPI credential files when the two VMs have different
 administrator passwords.
 

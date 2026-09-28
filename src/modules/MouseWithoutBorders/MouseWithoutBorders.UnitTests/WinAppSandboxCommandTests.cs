@@ -73,17 +73,21 @@ public sealed class WinAppSandboxCommandTests
         Directory.CreateDirectory(root);
         var originalTelemetry = Environment.GetEnvironmentVariable("WINAPP_CLI_TELEMETRY_OPTOUT");
         var originalUpdates = Environment.GetEnvironmentVariable("WINAPP_CLI_UPDATE_CHECK");
+        var originalProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+        var originalStateRoot = Environment.GetEnvironmentVariable("WINAPP_TARGET_STATE_ROOT");
         try
         {
             var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
-            const string script = "[Console]::WriteLine($env:WINAPP_TARGET_STATE_ROOT); [Console]::WriteLine($env:WINAPP_CLI_TELEMETRY_OPTOUT); [Console]::WriteLine($env:WINAPP_CLI_UPDATE_CHECK)";
+            const string script = "[Console]::WriteLine($env:WINAPP_TARGET_STATE_ROOT); [Console]::WriteLine($env:WINAPP_CLI_TELEMETRY_OPTOUT); [Console]::WriteLine($env:WINAPP_CLI_UPDATE_CHECK); [Console]::WriteLine($env:USERPROFILE)";
             using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
             var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             Assert.AreEqual(root, output[0]);
             Assert.AreEqual("1", output[1]);
             Assert.AreEqual("0", output[2]);
+            Assert.AreEqual(originalProfile, output[3], "Target-state isolation must not redirect the user profile.");
             Assert.AreEqual(originalTelemetry, Environment.GetEnvironmentVariable("WINAPP_CLI_TELEMETRY_OPTOUT"));
             Assert.AreEqual(originalUpdates, Environment.GetEnvironmentVariable("WINAPP_CLI_UPDATE_CHECK"));
+            Assert.AreEqual(originalStateRoot, Environment.GetEnvironmentVariable("WINAPP_TARGET_STATE_ROOT"));
         }
         finally
         {

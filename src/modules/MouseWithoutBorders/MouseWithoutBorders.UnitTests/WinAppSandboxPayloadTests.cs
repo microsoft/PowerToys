@@ -24,6 +24,7 @@ public sealed class WinAppSandboxPayloadTests
             File.WriteAllText(Path.Combine(payload, "NativeSupport.cs"), "native-support");
             File.WriteAllText(Path.Combine(tools, "winapp.exe"), "stable-ui-cli");
             File.WriteAllText(Path.Combine(tools, "libSkiaSharp.dll"), "native-library");
+            File.WriteAllText(Path.Combine(tools, "libHarfBuzzSharp.dll"), "native-text-library");
             File.WriteAllText(Path.Combine(tools, "winapp.pdb"), "symbols");
             File.WriteAllText(Path.Combine(resource, "resources.mui"), "localized-resource");
             var archive = Path.Combine(root, "runtime.zip");
@@ -35,6 +36,7 @@ public sealed class WinAppSandboxPayloadTests
             Assert.AreEqual("native-support", File.ReadAllText(Path.Combine(bundle, "Payload", "NativeSupport.cs")));
             Assert.AreEqual("stable-ui-cli", File.ReadAllText(Path.Combine(bundle, "Tools", "winapp.exe")));
             Assert.AreEqual("native-library", File.ReadAllText(Path.Combine(bundle, "Tools", "libSkiaSharp.dll")));
+            Assert.AreEqual("native-text-library", File.ReadAllText(Path.Combine(bundle, "Tools", "libHarfBuzzSharp.dll")));
             Assert.AreEqual("localized-resource", File.ReadAllText(Path.Combine(bundle, "Tools", "en-US", "resources.mui")));
             Assert.IsFalse(File.Exists(Path.Combine(bundle, "Tools", "winapp.pdb")));
             CollectionAssert.AreEqual(File.ReadAllBytes(archive), File.ReadAllBytes(Path.Combine(bundle, "Runtime", "product.zip")));

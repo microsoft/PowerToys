@@ -41,7 +41,7 @@ $backend = if ($SandboxBackend -eq 'Auto') {
 if ($backend -eq 'WinApp' -and
     ([string]::IsNullOrWhiteSpace($SandboxWinAppArchive) -or
         -not (Test-Path -LiteralPath (Join-Path $ExchangeRoot $SandboxWinAppArchive) -PathType Leaf))) {
-    throw 'Stage a Sandbox-capable preview archive and pass -SandboxWinAppArchive for the WinApp backend.'
+    throw 'Stage the official winappcli runtime archive and pass -SandboxWinAppArchive for the WinApp backend.'
 }
 $parameters = @{
     VmRoot = $VmRoot; VmName = $VmName; ConfigurationPath = $ConfigurationPath
@@ -57,9 +57,9 @@ if ($PlanOnly) {
     $plan = (& $controller @parameters -PlanOnly | Out-String) | ConvertFrom-Json
     $plan | Add-Member -NotePropertyName SandboxBackend -NotePropertyValue $backend
     if ($backend -eq 'WinApp') {
-        $preview = Join-Path $ExchangeRoot $SandboxWinAppArchive
-        $plan | Add-Member -NotePropertyName SandboxPreviewArchive -NotePropertyValue $SandboxWinAppArchive
-        $plan | Add-Member -NotePropertyName SandboxPreviewArchiveSha256 -NotePropertyValue (Get-FileHash -LiteralPath $preview -Algorithm SHA256).Hash
+        $sandboxCliArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
+        $plan | Add-Member -NotePropertyName SandboxWinAppArchive -NotePropertyValue $SandboxWinAppArchive
+        $plan | Add-Member -NotePropertyName SandboxWinAppArchiveSha256 -NotePropertyValue (Get-FileHash -LiteralPath $sandboxCliArchive -Algorithm SHA256).Hash
     }
     $plan | ConvertTo-Json -Depth 10
     return
@@ -138,25 +138,27 @@ try {
     } -ArgumentList $guestArchive, $guestTools, $reuseProduct, $StandardUser
     $sandboxWinApp = ''
     if ($backend -eq 'WinApp') {
-        $previewArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
-        $previewHash = (Get-FileHash -LiteralPath $previewArchive -Algorithm SHA256).Hash
-        Copy-VMFile -Name $VmName -SourcePath $previewArchive -DestinationPath "$guestTools\sandbox-winapp.zip" `
+        $sandboxCliArchive = Join-Path $ExchangeRoot $SandboxWinAppArchive
+        $sandboxCliHash = (Get-FileHash -LiteralPath $sandboxCliArchive -Algorithm SHA256).Hash
+        Copy-VMFile -Name $VmName -SourcePath $sandboxCliArchive -DestinationPath "$guestTools\sandbox-winapp.zip" `
             -FileSource Host -CreateFullPath -Force
         $sandboxWinApp = Invoke-Command -Session $session -ScriptBlock {
             param($Tools, $ExpectedHash)
             $ErrorActionPreference = 'Stop'
             $archive = "$Tools\sandbox-winapp.zip"
             if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -cne $ExpectedHash) {
-                throw 'The protected Sandbox preview archive differs from its host source.'
+                throw 'The protected Sandbox CLI archive differs from its host source.'
             }
             $destination = "$Tools\sandbox-winapp"
             Expand-Archive -LiteralPath $archive -DestinationPath $destination
             $exe = Join-Path $destination 'winapp.exe'
-            if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
-                throw 'Sandbox preview archive must contain winapp.exe directly at its root.'
+            foreach ($name in @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll')) {
+                if (-not (Test-Path -LiteralPath (Join-Path $destination $name) -PathType Leaf)) {
+                    throw "Sandbox CLI archive must contain $name directly at its root."
+                }
             }
             $exe
-        } -ArgumentList $guestTools, $previewHash
+        } -ArgumentList $guestTools, $sandboxCliHash
     }
     foreach ($name in @('Initialize-AutonomousHost.ps1', 'Remove-AutonomousHost.ps1')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -ToSession $session -Destination $guestTools

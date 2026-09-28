@@ -172,6 +172,20 @@ public sealed class WinAppSandboxProtocolTests
     }
 
     [TestMethod]
+    public void OfficialReleaseStateRetainsExplicitAdoptedIdentityAndEpoch()
+    {
+        var state = State();
+        state["revision"] = 4;
+        state["bootNonce"] = "release-nonce";
+        state["guestAddress"] = "192.0.2.1";
+        state["clientOwnedByWinapp"] = false;
+        state["updatedUtc"] = "2026-09-26T00:00:00Z";
+        Assert.AreEqual(Epoch, WinAppSandboxProtocol.RequireAdoptedState([state.ToJsonString()], Instance, Epoch));
+        state["instanceId"] = UnrelatedInstance.ToString("D");
+        Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireAdoptedState([state.ToJsonString()], Instance, Epoch));
+    }
+
+    [TestMethod]
     public void PreviewSchemaMustIncludeTargetExecutionTransfersAndNativeMedia()
     {
         var schema = Schema();

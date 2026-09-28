@@ -715,14 +715,6 @@ jobs:
       displayName: Move entire output directory into artifacts
 
   - ${{ if eq(parameters.mwbSandboxExperiment, true) }}:
-    - task: UseDotNet@2
-      displayName: Stage isolated pinned SDK for the private MWB Sandbox preview
-      inputs:
-        packageType: sdk
-        version: '10.0.401'
-        installationPath: '$(Pipeline.Workspace)\mwb-ci-tools\dotnet'
-        performMultiLevelLookup: false
-
     - pwsh: |
         $work = "$(Pipeline.Workspace)\mwb-ci-build-$(System.JobId)"
         try {
@@ -730,11 +722,11 @@ jobs:
             -ProductRoot "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)" `
             -OutputRoot "$(JobOutputDirectory)\mwb-sandbox-ci" `
             -WorkRoot $work `
-            -DotNetPath "$(Pipeline.Workspace)\mwb-ci-tools\dotnet\dotnet.exe" `
+            -DotNetPath "$(DOTNET_ROOT)\dotnet.exe" `
             -Platform "$(BuildPlatform)" `
             -SourceRevision "$(Build.SourceVersion)" -ReadyToRun
         } finally {
-          # Preserve preparation diagnostics, never the external source tree or package cache.
+          # Preserve preparation diagnostics, never downloaded tools or the package cache.
           if (Test-Path -LiteralPath $work) {
             foreach ($log in Get-ChildItem -LiteralPath $work -Filter '*.log' -File -Recurse) {
               $destination = Join-Path "$(LogOutputDirectory)\mwb-ci" ([IO.Path]::GetRelativePath($work, $log.FullName))
@@ -743,7 +735,7 @@ jobs:
             }
           }
         }
-      displayName: Prepare coherent lean MWB runtime and pinned private Sandbox preview
+      displayName: Prepare coherent lean MWB runtime and official winapp CLI release
       timeoutInMinutes: 35
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:

@@ -13,6 +13,27 @@ if ($PSVersionTable.PSEdition -eq 'Desktop') {
     ))
 }
 
+function Copy-EndpointWinAppTools {
+    param([string]$SourceRoot, [string]$DestinationRoot)
+    $files = @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll')
+    foreach ($name in $files) {
+        if (-not (Test-Path -LiteralPath (Join-Path $SourceRoot $name) -PathType Leaf)) {
+            throw "The official guest CLI runtime is missing $name."
+        }
+    }
+    if (Test-Path -LiteralPath $DestinationRoot) { throw 'Guest CLI destination must be new.' }
+    $null = New-Item -ItemType Directory -Path $DestinationRoot
+    foreach ($name in $files) {
+        $source = Join-Path $SourceRoot $name
+        $destination = Join-Path $DestinationRoot $name
+        Copy-Item -LiteralPath $source -Destination $destination
+        if ((Get-FileHash -LiteralPath $source).Hash -ne (Get-FileHash -LiteralPath $destination).Hash) {
+            throw 'The locally staged guest CLI differs from its read-only source.'
+        }
+    }
+    Join-Path $DestinationRoot 'winapp.exe'
+}
+
 function Write-RunJson {
     param([string]$Path, $Value)
     $bytes = [Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 30))

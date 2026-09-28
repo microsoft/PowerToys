@@ -56,6 +56,9 @@ internal sealed class WinAppSandboxCommand : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
+        // Official v0.7.0 retains this documented override even though its default
+        // moved to %USERPROFILE%\.winapp\state\targets. Never redirect the profile.
         start.Environment["WINAPP_TARGET_STATE_ROOT"] = targetStateRoot;
         start.Environment["WINAPP_CLI_TELEMETRY_OPTOUT"] = "1";
         start.Environment["WINAPP_CLI_UPDATE_CHECK"] = "0";

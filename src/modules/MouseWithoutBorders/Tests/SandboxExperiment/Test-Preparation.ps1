@@ -63,6 +63,11 @@ try {
         $modern.InstanceId = $recoveryRunId
         $modern.TargetStateRoot = "$fixture\unrelated"
         Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'private state identity changed'
+        $profileState = "$fixture\userprofile\.winapp\state\targets"
+        $null = New-Item -ItemType Directory -Path $profileState
+        [IO.File]::WriteAllText("$profileState\unrelated-deployment.json", 'unowned')
+        $modern.TargetStateRoot = $profileState
+        Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'private state identity changed'
         $modern.TargetStateRoot = "$control\winapp-target"
         $modern.WinAppPath = "$fixture\untrusted\winapp.exe"
         Assert-Throws { Get-MwbModernRecoveryIdentity $modern $provisioning $control } 'private state identity changed'
@@ -81,6 +86,23 @@ try {
         [IO.File]::WriteAllText("$control\winapp-target\fixture.txt", 'private fixture')
         Remove-MwbPrivateTargetState "$control\winapp-target"
         Assert-Check (-not (Test-Path -LiteralPath "$control\winapp-target")) 'only the explicitly scoped private target state is removed'
+        Assert-Check ([IO.File]::ReadAllText("$profileState\unrelated-deployment.json") -ceq 'unowned') 'official default-profile state is never a recovery deletion target'
+        $toolsSource = "$fixture\official-cli"
+        $null = New-Item -ItemType Directory -Path $toolsSource
+        foreach ($name in @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll', 'winapp.pdb')) {
+            [IO.File]::WriteAllText((Join-Path $toolsSource $name), "fixture-$name")
+        }
+        $localCli = Copy-EndpointWinAppTools $toolsSource "$fixture\local-cli"
+        Assert-Check ($localCli -ceq "$fixture\local-cli\winapp.exe") 'guest CLI resolves to the local staged executable'
+        Assert-Check (@(Get-ChildItem "$fixture\local-cli" -File).Count -eq 3) 'guest CLI stages all three official runtime files without symbols'
+        foreach ($name in @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll')) {
+            Assert-Check ((Get-FileHash "$toolsSource\$name").Hash -ceq
+                (Get-FileHash "$fixture\local-cli\$name").Hash) "guest CLI preserves $name"
+        }
+        Assert-Throws { Copy-EndpointWinAppTools $toolsSource "$fixture\local-cli" } 'destination must be new'
+        Remove-Item "$toolsSource\libHarfBuzzSharp.dll"
+        Assert-Throws { Copy-EndpointWinAppTools $toolsSource "$fixture\incomplete-cli" } 'missing libHarfBuzzSharp.dll'
+        Assert-Check (-not (Test-Path "$fixture\incomplete-cli")) 'incomplete official runtime fails before creating a guest destination'
         $script:settingsRoot = "$fixture\mapping-settings"
         $OutputRoot = "$fixture\endpoint"
         $script:expectedPeerMapping = 'PEER 192.0.2.1'

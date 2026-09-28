@@ -128,7 +128,7 @@ internal sealed class WinAppSandbox : ISandboxSession
             saveJournal();
             ConnectOwnedClient();
 
-            // The first target command also installs the preview agent. Keep it
+            // The first target command also installs the released guest agent. Keep it
             // within the original endpoint deadline, not a shorter transfer cap.
             // A single transfer avoids repeating target preparation for each part
             // of the same immutable bootstrap input.
@@ -620,7 +620,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
     private JsonObject ReadSnapshot(bool bootstrap)
     {
-        // The preview's reconnect alone permits sixty seconds, before its
+        // The CLI's reconnect alone permits sixty seconds, before its
         // read-only guest-window query. Do not cut it off after twenty.
         var json = Target(["snapshot", "sandbox", "--json"], TimeSpan.FromSeconds(90), bootstrap);
         var snapshot = WinAppSandboxProtocol.ReadSafeSnapshot(json, epoch!);
@@ -682,7 +682,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         recorder = StartAttached(["target", "record", "sandbox", "--fps", "5", "--max-edge", "960", "--output", recordingPath, "--json"]);
         // Ownership is checked before launch and after readiness. Provider inventory
         // polling here can block delivery of an already-published readiness event.
-        // Allow the preview's reconnect and capture initialization, not just capture.
+        // Allow the CLI's reconnect and capture initialization, not just capture.
         recorder.WaitForRecordingStart(Budget(TimeSpan.FromSeconds(90)), RequireLiveWorker);
 
         ValidateOwnership(bootstrap: false);

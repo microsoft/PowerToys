@@ -79,7 +79,7 @@ if (-not $hasFlag) {
 $packages = @(Get-AppxPackage -Name winapp | Where-Object { $_.Architecture -eq 'X64' })
 if ($packages.Count -ne 1) { throw 'One installed x64 winapp package is required. No tools will be installed automatically.' }
 $package = $packages[0]
-foreach ($name in @('winapp.exe', 'libSkiaSharp.dll')) {
+foreach ($name in @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll')) {
     if (-not (Test-Path -LiteralPath (Join-Path $package.InstallLocation $name) -PathType Leaf)) {
         throw "Installed winapp package is missing $name."
     }
@@ -94,7 +94,7 @@ if ($moduleNames.Count -lt 30 -or 'MouseWithoutBorders' -notin $moduleNames) {
 }
 $inputRoot = Join-Path $destinationRoot 'input'
 $null = New-Item -ItemType Directory -Path "$inputRoot\winapp", "$destinationRoot\runs" -Force
-foreach ($name in @('winapp.exe', 'libSkiaSharp.dll')) {
+foreach ($name in @('winapp.exe', 'libSkiaSharp.dll', 'libHarfBuzzSharp.dll')) {
     Copy-Item -LiteralPath (Join-Path $package.InstallLocation $name) -Destination "$inputRoot\winapp\$name"
 }
 Get-ChildItem -LiteralPath $PSScriptRoot -File | Where-Object { $_.Extension -in '.ps1', '.md', '.json' } |
