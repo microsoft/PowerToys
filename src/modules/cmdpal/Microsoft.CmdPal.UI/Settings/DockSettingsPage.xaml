@@ -53,7 +53,10 @@
                     </controls:SettingsCard>
 
                     <!--  Focus Dock shortcut  -->
-                    <controls:SettingsCard x:Uid="Settings_DockPage_FocusShortcut_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <controls:SettingsCard
+                        x:Uid="Settings_DockPage_FocusShortcut_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
+                        local:SettingsPageTarget.Id="focus-shortcut">
                         <cpControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusShortcut" HotkeySettings="{x:Bind ViewModel.Dock_FocusHotkey, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
