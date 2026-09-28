@@ -91,6 +91,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         internal static extern bool SystemParametersInfo(int uiAction, int uiParam, StringBuilder pvParam, int fWinIni);
 
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+        internal static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr ppvReserved);
+
         public static void SetPopupStyle(IntPtr hwnd)
         {
             _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);

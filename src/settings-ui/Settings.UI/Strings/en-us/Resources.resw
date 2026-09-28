@@ -4106,7 +4106,22 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Classic</value>
   </data>
   <data name="ContextMenuManager_SourceModern" xml:space="preserve">
-    <value>Modern (not editable here)</value>
+    <value>Modern</value>
+  </data>
+  <data name="ContextMenuManager_RootFiles" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="ContextMenuManager_RootFolders" xml:space="preserve">
+    <value>Folders</value>
+  </data>
+  <data name="ContextMenuManager_RootBackground" xml:space="preserve">
+    <value>Folder background</value>
+  </data>
+  <data name="ContextMenuManager_RootFilesAndFolders" xml:space="preserve">
+    <value>Files and folders</value>
+  </data>
+  <data name="ContextMenuManager_RootDrives" xml:space="preserve">
+    <value>Drives</value>
   </data>
   <data name="Hosts.ModuleTitle" xml:space="preserve">
     <value>Hosts File Editor</value>

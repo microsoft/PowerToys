@@ -53,7 +53,10 @@
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ContextMenuEntry">
-                                <tkcontrols:SettingsCard Description="{x:Bind ScopeAndSourceDisplayName}" Header="{x:Bind DisplayName}">
+                                <tkcontrols:SettingsCard
+                                    Margin="{x:Bind IndentMargin}"
+                                    Description="{x:Bind ScopeAndSourceDisplayName}"
+                                    Header="{x:Bind DisplayName}">
                                     <ToggleSwitch
                                         DataContext="{x:Bind}"
                                         IsEnabled="{x:Bind IsToggleable, Mode=OneWay}"

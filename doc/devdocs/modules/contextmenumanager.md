@@ -6,10 +6,11 @@
 
 Context Menu Manager is a Settings UI page under **System Tools** that lists Windows Explorer right-click context-menu entries and lets the user enable/disable each one - a friendly front-end over registry state a user could otherwise only edit by hand in regedit.
 
-It lists two kinds of entries:
+It lists three kinds of entries, all toggleable:
 
-- **Classic (registry-based) entries** - the "Show more options" / Windows 10-style handlers registered under `...\shellex\ContextMenuHandlers\<Name>`, for both the current user (`HKCU`) and all users (`HKLM`). These are toggleable.
-- **Windows 11 modern (sparse-package) entries** - top-level packaged context-menu extensions. These are listed **read-only**: Windows has no mechanism to toggle a single verb inside someone else's already-installed package.
+- **Classic shell extension handlers** - registered under `...\shellex\ContextMenuHandlers\<Name>`, for both the current user (`HKCU`) and all users (`HKLM`). One row per handler, however many roots it is registered under. A handler is one COM object that builds its own items at runtime (TortoiseGit's whole submenu is one handler), so it can only be toggled as a whole and its individual items can't be listed without loading the DLL.
+- **Classic static verbs** - `...\shell\<verb>` keys (e.g. "Open with Visual Studio", "PowerShell 7"). Cascading submenus declared through `ExtendedSubCommandsKey` are listed as indented `Parent > Child` rows below their parent.
+- **Windows 11 modern (sparse-package) entries** - top-level packaged context-menu extensions, one row per package.
 
 ## Architecture
 
@@ -23,7 +24,11 @@ A minimal native [`ContextMenuManagerModuleInterface`](/src/modules/ContextMenuM
 
 ### Toggle mechanism
 
-Follows the same convention NewPlus uses to hide/show Explorer's built-in "New" verb (see [`new_utilities.h`](/src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h) `disable_built_in_new_via_registry`/`enable_built_in_new_via_registry`): overwrite the handler key's **default value** with a `"disabled_"`-prefixed copy of the original CLSID string to disable it, restore the original value to enable it. The handler key itself is never deleted, so the change is always reversible and non-destructive.
+Each kind uses the mechanism Explorer itself honours (`ContextMenuEntryKind`). No key is ever deleted, so every change is reversible:
+
+- **Handler with a CLSID default value**: the NewPlus convention (see [`new_utilities.h`](/src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h) `disable_built_in_new_via_registry`) - overwrite the default value with a `"disabled_"`-prefixed copy of the CLSID, restore it to enable.
+- **Handler whose key name is the CLSID** (default value empty or a label) and **modern packaged verbs** (manifest `Verb Clsid=...`): add/remove the CLSID under `Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked` (HKLM for all-users handlers, HKCU for packages).
+- **Static verb**: add/remove the `LegacyDisable` value on the verb key.
 
 ### Enumeration scope (v1)
 
@@ -39,7 +44,7 @@ Per-extension `SystemFileAssociations\<ext>\...` handlers are **not** walked in 
 
 ### Safety
 
-- A static, hardcoded denylist (`BuiltInHandlerDenylist` in the ViewModel) marks known Windows-owned handler keys (e.g. `New`, `Sharing`, `OneDrive`, `WorkFolders`) as non-toggleable. This is a starting set, not a live feed - expand it as gaps get reported.
+- `BuiltInHandlerDenylist` only holds `New`, which NewPlus owns. Windows' own handlers (e.g. `Sharing`, `WorkFolders`) are toggleable behind the confirmation below.
 - Any handler whose CLSID resolves to a DLL under `%SystemRoot%\System32`/`SysWOW64` is still toggleable but gets an extra confirmation dialog, since legitimate third-party/AV handlers also live there.
 - All-users (`HKLM`) writes require PowerToys to be running elevated (reuses the existing "Restart PowerToys as administrator" flow from the General page - no new elevation mechanism) and always show a confirmation dialog first, since the change affects every account on the machine.
 - Toggling an entry shows a manual "Restart File Explorer" notice/button - Explorer caches resolved context-menu handlers per process, so a change isn't visible until it restarts. This is never automatic (restarting Explorer closes every open Explorer window).
