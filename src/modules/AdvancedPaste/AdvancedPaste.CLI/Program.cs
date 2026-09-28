@@ -122,7 +122,7 @@ public static partial class Program
             return await root.InvokeAsync(args);
         }
 
-        var json = parseResult.GetValueForOption(options.Json);
+        var json = args.Contains("--json", StringComparer.Ordinal);
         if (parseResult.Errors.Count > 0 || parseResult.CommandResult.Command is RootCommand)
         {
             var message = parseResult.Errors.Count > 0
@@ -226,7 +226,7 @@ public static partial class Program
         }
         catch (InputTooLargeException)
         {
-            WriteError(stderr, json, "input_too_large", "Text input exceeds the 16 MiB limit.");
+            WriteError(stderr, json, "input_too_large", "Text input exceeds the 16,777,216 character limit.");
             return RuntimeErrorExitCode;
         }
         catch (UnsupportedOutputException ex)
@@ -234,7 +234,7 @@ public static partial class Program
             WriteError(stderr, json, "unsupported_output", ex.Message);
             return RuntimeErrorExitCode;
         }
-        catch (ArgumentException ex)
+        catch (CliActionResolutionException ex)
         {
             Logger.LogError("Advanced Paste CLI argument resolution failed.", ex);
             return WriteArgumentError(stderr, json, "invalid_action", ex.Message);

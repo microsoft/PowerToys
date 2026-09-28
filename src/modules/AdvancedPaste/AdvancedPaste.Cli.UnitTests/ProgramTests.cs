@@ -90,6 +90,16 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task ActionsListJson_ParseErrorIsMachineReadable()
+    {
+        var result = await RunAsync(["actions", "list", "--json", "--invalid"]);
+
+        Assert.AreEqual(2, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("error", document.RootElement.GetProperty("status").GetString());
+    }
+
+    [TestMethod]
     public async Task PasteWithAi_WithPromptReachesRuntime()
     {
         var result = await RunAsync(["transform", "--action", "paste-with-ai", "--prompt", "Summarize", "--stdin", "--stdout"], "hello");
@@ -227,6 +237,42 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task FileOutput_CancellationKeepsExistingDestination()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var sourcePath = Path.Combine(directory, "source.txt");
+        var outputPath = Path.Combine(directory, "output.txt");
+        await File.WriteAllTextAsync(sourcePath, "generated content");
+        await File.WriteAllTextAsync(outputPath, "existing content");
+
+        try
+        {
+            var source = await Windows.Storage.StorageFile.GetFileFromPathAsync(sourcePath);
+            var package = new DataPackage();
+            package.SetStorageItems([source]);
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+                CliOutputWriter.WriteAsync(
+                    package,
+                    new FileInfo(outputPath),
+                    stdoutRequested: false,
+                    clipboard: new TestClipboardAdapter(),
+                    stdout: TextWriter.Null,
+                    cancellationToken: cancellation.Token));
+
+            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath));
+            Assert.AreEqual(0, Directory.GetFiles(directory, ".output.txt.*.tmp").Length);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task UnsupportedFormat_ReturnsStableJsonError()
     {
         var result = await RunAsync(["transform", "--format", "ocr", "--stdin", "--json"]);
@@ -269,6 +315,32 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task ArgumentExceptionFromTransformation_UsesRuntimeExitCode()
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "plain-text", "--stdin", "--json"],
+            "hello",
+            runtime: new ExceptionRuntime(new ArgumentException("Transformation input was invalid.")));
+
+        Assert.AreEqual(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("transformation_error", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public async Task ActionResolutionException_UsesArgumentExitCode()
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "plain-text", "--stdin", "--json"],
+            "hello",
+            runtime: new ExceptionRuntime(new CliActionResolutionException("Custom action was not found.")));
+
+        Assert.AreEqual(2, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("invalid_action", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
     public void StartupFailure_WithJsonOption_WritesJsonErrorEnvelope()
     {
         var stderr = new StringWriter();
@@ -293,6 +365,14 @@ public class ProgramTests
     }
 
     private sealed record RunResult(int ExitCode, string Stdout, string Stderr);
+
+    private sealed class ExceptionRuntime(Exception exception) : IAdvancedPasteRuntime
+    {
+        public IReadOnlyList<CliActionDescriptor> GetActions() => [];
+
+        public Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
+            => Task.FromException<DataPackage>(exception);
+    }
 
     private sealed class TestClipboardAdapter : IClipboardAdapter
     {

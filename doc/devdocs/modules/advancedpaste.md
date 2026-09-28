@@ -31,7 +31,7 @@ PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summa
 PowerToys.AdvancedPaste.CLI.exe transform --custom-action 3 --clipboard
 ```
 
-Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to the clipboard; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. Clipboard output sets content but never simulates paste keys. Text inputs are limited to 16 MiB and raw input, prompts, and output are never written to the CLI log. `--format` remains an alias for `--action`.
+Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to the clipboard; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. Clipboard output sets content but never simulates paste keys. Text inputs are limited to 16,777,216 characters and raw input, prompts, and output are never written to the CLI log. `--format` remains an alias for `--action`.
 
 Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. AI actions honor the configured provider, GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
 

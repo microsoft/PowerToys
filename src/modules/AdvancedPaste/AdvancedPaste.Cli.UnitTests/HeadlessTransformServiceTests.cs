@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading;
+
 using AdvancedPaste.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -64,4 +67,24 @@ public class HeadlessTransformServiceTests
     [TestMethod]
     public void Json_PreservesJson()
         => Assert.AreEqual("{\"name\":\"Ada\"}", HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "{\"name\":\"Ada\"}"));
+
+    [TestMethod]
+    public void Markdown_HonorsCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        Assert.ThrowsExactly<OperationCanceledException>(
+            () => HeadlessTransformService.Transform(HeadlessTransformFormat.Markdown, "<p>text</p>", cancellation.Token));
+    }
+
+    [TestMethod]
+    public void Json_HonorsCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        Assert.ThrowsExactly<OperationCanceledException>(
+            () => HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,value", cancellation.Token));
+    }
 }

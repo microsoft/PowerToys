@@ -63,7 +63,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         {
             EnsureAIEnabled();
             var customAction = ResolveCustomAction(request.CustomAction);
-            var providerId = string.IsNullOrWhiteSpace(request.ProviderId) ? customAction.ProviderId : request.ProviderId;
+            var providerId = ResolveProviderId(string.IsNullOrWhiteSpace(request.ProviderId) ? customAction.ProviderId : request.ProviderId);
             EnsureProviderAllowed(providerId);
             return PasteFormat.CreateCustomAIFormat(
                 GetCustomAIFormat(providerId),
@@ -78,7 +78,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         if (string.Equals(request.Action, "paste-with-ai", StringComparison.OrdinalIgnoreCase))
         {
             EnsureAIEnabled();
-            var providerId = request.ProviderId;
+            var providerId = ResolveProviderId(request.ProviderId);
             EnsureProviderAllowed(providerId);
             return PasteFormat.CreateCustomAIFormat(
                 GetCustomAIFormat(providerId),
@@ -92,7 +92,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
         if (!BuiltInActions.TryGetValue(request.Action ?? string.Empty, out var format))
         {
-            throw new ArgumentException("Unsupported action.", nameof(request));
+            throw new CliActionResolutionException("Unsupported action.");
         }
 
         var builtInProviderId = format == PasteFormats.FixSpellingAndGrammar && string.IsNullOrWhiteSpace(request.ProviderId)
@@ -115,6 +115,23 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         }
     }
 
+    private string? ResolveProviderId(string? providerId)
+    {
+        if (!string.IsNullOrWhiteSpace(providerId))
+        {
+            return providerId;
+        }
+
+        var configuration = _settings.PasteAIConfiguration;
+        if (_settings.IsAIEnabled &&
+            AdvancedAIProviderResolver.TryResolveAdvancedProvider(configuration, providerIdOverride: null, out var advancedProvider))
+        {
+            return advancedProvider.Id;
+        }
+
+        return configuration?.ActiveProvider?.Id ?? configuration?.Providers?.FirstOrDefault()?.Id;
+    }
+
     private AdvancedPasteCustomAction ResolveCustomAction(string value)
     {
         AdvancedPasteCustomAction? action = null;
@@ -124,7 +141,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         }
 
         action ??= _settings.CustomActions.FirstOrDefault(candidate => string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase));
-        return action ?? throw new ArgumentException($"Custom action '{value}' was not found.", nameof(value));
+        return action ?? throw new CliActionResolutionException($"Custom action '{value}' was not found.");
     }
 
     private PasteFormats GetCustomAIFormat(string? providerId)

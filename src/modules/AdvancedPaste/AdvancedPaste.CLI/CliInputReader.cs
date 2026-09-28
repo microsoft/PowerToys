@@ -61,16 +61,8 @@ internal static class CliInputReader
 
         if (TextFileExtensions.Contains(inputFile.Extension))
         {
-            if (inputFile.Length > maximumTextCharacters)
-            {
-                throw new InputTooLargeException();
-            }
-
-            var text = await File.ReadAllTextAsync(inputFile.FullName, cancellationToken);
-            if (text.Length > maximumTextCharacters)
-            {
-                throw new InputTooLargeException();
-            }
+            using var reader = inputFile.OpenText();
+            var text = await ReadBoundedAsync(reader, maximumTextCharacters, cancellationToken);
 
             package.SetText(text);
             if (text.Length > 0 &&
