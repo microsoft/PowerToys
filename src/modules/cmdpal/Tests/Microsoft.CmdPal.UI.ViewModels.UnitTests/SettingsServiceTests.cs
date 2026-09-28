@@ -45,6 +45,15 @@ public class SettingsServiceTests
             .Returns(_testSettings);
     }
 
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Directory.Exists(_testDirectory))
+        {
+            Directory.Delete(_testDirectory, recursive: true);
+        }
+    }
+
     private static SettingsModel CreateMinimalSettingsModel()
     {
         // Bypass constructor by using deserialize from minimal JSON
@@ -89,6 +98,61 @@ public class SettingsServiceTests
 
         // Assert
         Assert.IsTrue(service.Settings.ShowAppDetails);
+    }
+
+    [TestMethod]
+    public void Constructor_DefaultsExternalCommandLinksToEnabled()
+    {
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void Constructor_DefaultsExternalCommandLinksToEnabled_WhenExistingFileOmitsSetting()
+    {
+        Directory.CreateDirectory(_testDirectory);
+        File.WriteAllText(Path.Combine(_testDirectory, "settings.json"), "{}");
+
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void Constructor_PreservesExplicitlyDisabledExternalCommandLinks()
+    {
+        Directory.CreateDirectory(_testDirectory);
+        File.WriteAllText(
+            Path.Combine(_testDirectory, "settings.json"),
+            "{\"EnableExternalCommandLinks\":false}");
+
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsFalse(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void QuickAccessShelf_DefaultsOffWhenSettingIsOmitted()
+    {
+        var settings = System.Text.Json.JsonSerializer.Deserialize(
+            "{}",
+            JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsFalse(settings.ShowQuickAccessShelf);
+    }
+
+    [TestMethod]
+    public void QuickAccessShelf_ExplicitValueRoundTrips()
+    {
+        var source = CreateMinimalSettingsModel() with { ShowQuickAccessShelf = true };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(source, JsonSerializationContext.Default.SettingsModel);
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsTrue(settings.ShowQuickAccessShelf);
     }
 
     [TestMethod]

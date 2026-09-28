@@ -340,8 +340,6 @@ function Test-CoreFiles {
         'PowerToys.CropAndLockModuleInterface.dll',
         'PowerToys.CropAndLock.exe',
         'PowerToys.PowerOCRModuleInterface.dll',
-        'PowerToys.PowerOCR.dll',
-        'PowerToys.PowerOCR.exe',
         'PowerToys.AdvancedPasteModuleInterface.dll',
         'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
@@ -357,45 +355,33 @@ function Test-CoreFiles {
         # Preview handlers
         'PowerToys.GcodePreviewHandler.dll',
         'PowerToys.GcodePreviewHandler.exe',
-        'PowerToys.GcodePreviewHandlerCpp.dll',
         'PowerToys.GcodeThumbnailProvider.dll',
         'PowerToys.GcodeThumbnailProvider.exe',
-        'PowerToys.GcodeThumbnailProviderCpp.dll',
         'PowerToys.BgcodePreviewHandler.dll',
         'PowerToys.BgcodePreviewHandler.exe',
-        'PowerToys.BgcodePreviewHandlerCpp.dll',
         'PowerToys.BgcodeThumbnailProvider.dll',
         'PowerToys.BgcodeThumbnailProvider.exe',
-        'PowerToys.BgcodeThumbnailProviderCpp.dll',
         'PowerToys.MarkdownPreviewHandler.dll',
         'PowerToys.MarkdownPreviewHandler.exe',
-        'PowerToys.MarkdownPreviewHandlerCpp.dll',
         'PowerToys.MonacoPreviewHandler.dll',
         'PowerToys.MonacoPreviewHandler.exe',
-        'PowerToys.MonacoPreviewHandlerCpp.dll',
         'PowerToys.PdfPreviewHandler.dll',
         'PowerToys.PdfPreviewHandler.exe',
-        'PowerToys.PdfPreviewHandlerCpp.dll',
         'PowerToys.PdfThumbnailProvider.dll',
         'PowerToys.PdfThumbnailProvider.exe',
-        'PowerToys.PdfThumbnailProviderCpp.dll',
         'PowerToys.powerpreview.dll',
+        'PowerToys.FileExplorerDLLExporter.dll',
         'PowerToys.PreviewHandlerCommon.dll',
         'PowerToys.QoiPreviewHandler.dll',
         'PowerToys.QoiPreviewHandler.exe',
-        'PowerToys.QoiPreviewHandlerCpp.dll',
         'PowerToys.QoiThumbnailProvider.dll',
         'PowerToys.QoiThumbnailProvider.exe',
-        'PowerToys.QoiThumbnailProviderCpp.dll',
         'PowerToys.StlThumbnailProvider.dll',
         'PowerToys.StlThumbnailProvider.exe',
-        'PowerToys.StlThumbnailProviderCpp.dll',
         'PowerToys.SvgPreviewHandler.dll',
         'PowerToys.SvgPreviewHandler.exe',
-        'PowerToys.SvgPreviewHandlerCpp.dll',
         'PowerToys.SvgThumbnailProvider.dll',
         'PowerToys.SvgThumbnailProvider.exe',
-        'PowerToys.SvgThumbnailProviderCpp.dll',
         
         # Image Resizer
         'PowerToys.ImageResizer.exe',
@@ -508,7 +494,17 @@ function Test-CoreFiles {
         'PowerAccent.Common.dll',
         'PowerToys.PowerAccent.dll',
         'PowerToys.PowerAccent.exe',
-        'PowerToys.PowerAccentKeyboardService.dll'
+        'PowerToys.PowerAccentKeyboardService.dll',
+
+        # PowerOCR (Text Extractor) - managed app moved to WinUI3Apps
+        'PowerToys.PowerOCR.Core.dll',
+        'PowerToys.PowerOCR.dll',
+        'PowerToys.PowerOCR.exe'
+    )
+
+    # Required unsigned files in the WinUI3Apps subdirectory
+    $winUI3RequiredUnsignedFiles = @(
+        'PowerToys.PowerOCR.pri'
     )
     
     # Tools signed files (in Tools subdirectory)
@@ -571,6 +567,14 @@ function Test-CoreFiles {
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
         Add-CheckResult -Category "Signed Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $status -Message "WinUI3 signed file: $filePath"
+    }
+
+    # Check required unsigned WinUI3Apps files
+    Write-StatusMessage "Checking required unsigned WinUI3Apps files..." -Level Info
+    foreach ($file in $winUI3RequiredUnsignedFiles) {
+        $filePath = Join-Path $InstallPath "WinUI3Apps\$file"
+        $exists = Test-Path $filePath
+        Add-CheckResult -Category "Required Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $(if ($exists) { 'Pass' } else { 'Fail' }) -Message "Required WinUI3 file: $filePath"
     }
     
     # Check Tools signed files

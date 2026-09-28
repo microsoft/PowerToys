@@ -76,7 +76,13 @@
             <uap:DisplayName>Command Palette Dev URI scheme</uap:DisplayName>
           </uap:Protocol>
         </uap:Extension>
-
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.windows.copilotkeyprovider"
+            Id="App"
+            DisplayName="ms-resource:AppNameDev"
+            Description="ms-resource:AppDescriptionDev"
+            PublicFolder="Public" />
+        </uap3:Extension>
       </Extensions>
 
     </Application>

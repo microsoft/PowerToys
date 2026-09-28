@@ -15,13 +15,10 @@ namespace Microsoft.PowerToys.ImageResizer.UITests;
 [DoNotParallelize]
 public sealed class ImageResizerEndToEndTests : UITestBase
 {
-    private const string ClassicContextMenuClassName = "#32768";
     private const string ContextMenuCaption = "Resize with Image Resizer";
-    private const string ExplorerProcessName = "explorer";
     private const string ImageResizerModuleName = "Image Resizer";
     private const string ImageResizerProcessName = "PowerToys.ImageResizer";
     private const string ModernPackageName = "ImageResizerContextMenu";
-    private const string ModernContextMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
     private const int DialogTimeoutMS = 30_000;
     private const int ExplorerTimeoutMS = 30_000;
     private const int ResizeTimeoutMS = 60_000;
@@ -76,7 +73,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     public void PrepareTest()
     {
         Assert.IsTrue(CloseImageResizerWindows(), "A stale Image Resizer process could not be closed before the test.");
-        Assert.IsTrue(CloseExplorerFileWindows(), "Stale Explorer file windows could not be closed before the test.");
+        Assert.IsTrue(ExplorerControl.CloseFileWindows(), "Stale Explorer file windows could not be closed before the test.");
     }
 
     [TestCleanup]
@@ -84,7 +81,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         CloseImageResizerWindows();
-        CloseExplorerFileWindows();
+        ExplorerControl.CloseFileWindows();
         explorerWindowHandle = 0;
         ConfigureResizeSettings(DefaultPreset);
 
@@ -150,42 +147,44 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         RestartScope(ImageResizerModule);
         var settings = NavigateToImageResizerSettings();
 
-        var removeButton = FindExact<Button>(settings, "Remove the Remove Me preset");
-        Assert.IsNotNull(removeButton, "The removable preset was not shown in Image Resizer settings.");
-        removeButton!.Click();
+        var removableCard = FindExact<Element>(settings, "Edit the Remove Me preset");
+        Assert.IsNotNull(removableCard, "The removable preset was not shown in Image Resizer settings.");
+
+        // More options is repeated for each preset; choose the control inside the intended row.
+        var moreOptions = settings.FindAll<Button>(By.Name("More options"))
+            .SingleOrDefault(button =>
+                button.X >= removableCard.X &&
+                button.Y >= removableCard.Y &&
+                button.X + button.Width <= removableCard.X + removableCard.Width &&
+                button.Y + button.Height <= removableCard.Y + removableCard.Height);
+        Assert.IsNotNull(moreOptions, "The removable preset did not expose its More options button.");
+        moreOptions.Invoke(msPostAction: 0);
+        var settingsProcess = Session.FromProcess("PowerToys.Settings");
+        var deleteItem = ShellMenu.FindVisibleMenuItem(settingsProcess, "Delete");
+        Assert.IsNotNull(deleteItem, "The preset's More options menu did not expose Delete.");
+        deleteItem.Invoke(msPostAction: 0);
 
         // The confirmation dialog can swallow the first click before its button is hit-testable, so
         // re-press Yes on every poll until the preset is actually gone.
-        var settingsProcess = Session.FromProcess("PowerToys.Settings");
         Assert.IsTrue(
             settings.WaitFor(
                 () =>
                 {
                     FindExact<Button>(settingsProcess, "Yes", timeoutMS: 500)?.Click();
-                    return FindExact<Button>(settings, "Remove the Remove Me preset", timeoutMS: 250) is null;
+                    return FindExact<Element>(settings, "Edit the Remove Me preset", timeoutMS: 250) is null;
                 },
                 timeoutMS: 15_000,
                 pollIntervalMS: 500),
             "The preset remained visible after confirming its removal.");
 
-        settings.Find<Button>(By.AccessibilityId("AddSizeButton")).Click();
-        var editNewPreset = FindExact<Button>(settings, "Edit the New size 1 preset");
-        Assert.IsNotNull(editNewPreset, "Adding a preset did not create 'New size 1'.");
-        editNewPreset!.Click(msPostAction: 500);
-
-        // The expander toggle can miss its hit-test, leaving the editor collapsed; re-open it (the
-        // pencil is only present while collapsed) until its Name field is exposed.
+        settings.Find<Button>(By.AccessibilityId("AddSizeButton")).Invoke(msPostAction: 0);
         settingsProcess = Session.FromProcess("PowerToys.Settings");
-        var nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 2_000);
-        for (var attempt = 0; nameBox is null && attempt < 5; attempt++)
-        {
-            FindExact<Button>(settings, "Edit the New size 1 preset", timeoutMS: 1_000)?.Click(msPostAction: 750);
-            nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 2_000);
-        }
-
-        Assert.IsNotNull(nameBox, "The new preset editor did not expose its Name field.");
+        var nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 15_000);
+        Assert.IsNotNull(nameBox, "The Add new size dialog did not expose its Name field.");
         nameBox!.SetText("UITest Custom");
-        KeyboardHelper.SendKeys(Key.Esc);
+        var save = FindExact<Button>(settingsProcess, "Save");
+        Assert.IsNotNull(save, "The Add new size dialog did not expose Save.");
+        save.Invoke(msPostAction: 0);
 
         Assert.IsTrue(
             settings.WaitFor(
@@ -484,7 +483,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             menu = OpenContextMenu(explorer);
             if (menu is not null)
             {
-                resizeMenuItem = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000);
+                resizeMenuItem = ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000);
                 if (resizeMenuItem is not null)
                 {
                     break;
@@ -618,27 +617,13 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         // Windows 11 shows the modern (tier-1) surface directly; Windows 10 the classic one. The
         // Image Resizer command is registered into whichever the OS shows, so no "Show more options"
         // step (and no classic fallback on Windows 11) is needed.
-        var surfaceClass = IsWindows11OrNewer() ? ModernContextMenuClassName : ClassicContextMenuClassName;
-        if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
-        {
-            return null;
-        }
-
-        return WaitForContextMenuSurface(surfaceClass, timeoutMS: 15_000);
+        var menu = ShellMenu.OpenForFocusedControl(explorer, timeoutMS: 15_000);
+        return menu is not null && WindowsFinder.ListByApp(ExplorerControl.ProcessName).Any(window =>
+            window.Hwnd == menu.WindowHandle &&
+            (UseModernContextMenu ? ShellMenu.IsModernWindow(window) : ShellMenu.IsClassicWindow(window)))
+            ? menu
+            : null;
     }
-
-    private static Session? WaitForContextMenuSurface(
-        string className,
-        int timeoutMS) =>
-        WindowsFinder.WaitForWindow(
-            window => IsContextMenuClass(window.ClassName, className),
-            timeoutMS: timeoutMS,
-            pollIntervalMS: 100);
-
-    private static bool IsContextMenuClass(string actualClassName, string expectedClassName) =>
-        expectedClassName == ClassicContextMenuClassName
-            ? actualClassName.Equals(expectedClassName, StringComparison.OrdinalIgnoreCase)
-            : actualClassName.Contains(expectedClassName, StringComparison.OrdinalIgnoreCase);
 
     private static ContextMenuObservation ObserveContextMenu(Session menu)
     {
@@ -651,7 +636,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
         try
         {
-            return new ContextMenuObservation(true, HasVisibleMenuItem(menu, ContextMenuCaption));
+            return new ContextMenuObservation(true, ShellMenu.FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 250) is not null);
         }
         catch (Exception)
         {
@@ -661,53 +646,12 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
     }
 
-    private static bool HasVisibleMenuItem(Session menu, string name) =>
-        FindVisibleMenuItem(menu, name, timeoutMS: 250) is not null;
-
-    private static Element? FindVisibleMenuItem(Session menu, string name, int timeoutMS)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
-        do
-        {
-            var item = menu.FindAll<Element>(By.Name(name), timeoutMS: 250)
-                .FirstOrDefault(element =>
-                    element.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
-                    element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase) &&
-                    element.Displayed &&
-                    element.Width > 0 &&
-                    element.Height > 0);
-            if (item is not null)
-            {
-                return item;
-            }
-
-            Thread.Sleep(100);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return null;
-    }
-
     private Session OpenExplorer(string folderPath)
     {
         EnsureContextMenuHandlerLoaded();
-        CloseExplorerFileWindows();
-        var existingHandles = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Select(window => window.Hwnd)
-            .ToHashSet();
+        ExplorerControl.CloseFileWindows();
 
-        using var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = "explorer.exe",
-            Arguments = $"/n,\"{folderPath}\"",
-            UseShellExecute = true,
-        });
-
-        var explorer = WindowsFinder.WaitForWindowByApp(
-            ExplorerProcessName,
-            window => IsExplorerFileWindow(window) && !existingHandles.Contains(window.Hwnd),
-            timeoutMS: ExplorerTimeoutMS);
+        var explorer = ExplorerControl.OpenFolder(folderPath, timeoutMS: ExplorerTimeoutMS);
         Assert.IsNotNull(explorer, $"Explorer did not open '{folderPath}'.");
 
         explorerWindowHandle = explorer!.WindowHandle;
@@ -725,38 +669,11 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             return;
         }
 
-        contextMenuExplorerRefreshed = true;
         Thread.Sleep(3_000);
-
-        var previousProcessIds = Process.GetProcessesByName(ExplorerProcessName)
-            .Select(process =>
-            {
-                var id = process.Id;
-                process.Dispose();
-                return id;
-            })
-            .ToHashSet();
-
-        WindowControl.TryKillProcessByName(ExplorerProcessName);
-
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
-        while (DateTime.UtcNow < deadline)
-        {
-            var current = Process.GetProcessesByName(ExplorerProcessName);
-            var hasFreshShell = current.Any(process => !previousProcessIds.Contains(process.Id));
-            foreach (var process in current)
-            {
-                process.Dispose();
-            }
-
-            if (hasFreshShell)
-            {
-                break;
-            }
-
-            Thread.Sleep(500);
-        }
-
+        Assert.IsTrue(
+            ExplorerControl.RestartShell(timeoutMS: ExplorerTimeoutMS),
+            "Explorer did not expose a taskbar in a fresh process after registering the Image Resizer context-menu handlers.");
+        contextMenuExplorerRefreshed = true;
         Thread.Sleep(2_000);
     }
 
@@ -770,7 +687,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             requiredConsecutiveMatches: 4);
         if (!selection.Succeeded)
         {
-            var replacement = FindReplacementExplorer(explorer, Path.GetDirectoryName(filePaths[0])!);
+            var replacement = ExplorerControl.FindReplacementWindow(explorer, Path.GetDirectoryName(filePaths[0])!);
             if (replacement is not null)
             {
                 explorer = replacement;
@@ -816,7 +733,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             return explorer;
         }
 
-        var replacement = FindReplacementExplorer(explorer, Path.GetDirectoryName(filePaths[0])!);
+        var replacement = ExplorerControl.FindReplacementWindow(explorer, Path.GetDirectoryName(filePaths[0])!);
         if (replacement is not null &&
             ExplorerShell.SetSelectionAndWaitForStable(
                 new IntPtr(replacement.WindowHandle), filePaths, filePaths[0], timeoutMS, requiredConsecutiveMatches: 4).Succeeded)
@@ -825,27 +742,6 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
 
         return null;
-    }
-
-    private static Session? FindReplacementExplorer(Session explorer, string folderPath)
-    {
-        var folderName = Path.GetFileName(Path.TrimEndingDirectorySeparator(folderPath));
-        var foregroundWindow = WindowControl.GetForegroundWindowHandle().ToInt64();
-        var replacement = WindowsFinder.ListByApp(ExplorerProcessName)
-            .Where(IsExplorerFileWindow)
-            .Where(window => window.Hwnd != explorer.WindowHandle)
-            .Where(window => window.Title.Contains(folderName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(window => window.Hwnd == foregroundWindow)
-            .FirstOrDefault();
-        if (replacement is null)
-        {
-            return null;
-        }
-
-        return WindowsFinder.WaitForWindow(
-            window => window.Hwnd == replacement.Hwnd,
-            timeoutMS: 2_000,
-            pollIntervalMS: 100);
     }
 
     private static void EnsureExplorerForeground(Session explorer)
@@ -1141,12 +1037,6 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     // (registry-COM) menu. CI signs the sparse package so the modern menu registers, so the test
     // drives the real per-OS surface with no classic fallback on Windows 11.
     private static bool UseModernContextMenu => IsWindows11OrNewer();
-
-    private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
-        window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
-
-    private static bool CloseExplorerFileWindows() =>
-        WindowControl.TryCloseByApp(ExplorerProcessName, IsExplorerFileWindow, timeoutMS: 10_000);
 
     private static bool CloseImageResizerWindows()
     {

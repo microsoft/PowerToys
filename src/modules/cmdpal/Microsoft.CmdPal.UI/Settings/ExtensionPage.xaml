@@ -60,6 +60,8 @@
                                         Width="20"
                                         Height="20"
                                         AutomationProperties.AccessibilityView="Raw"
+                                        DiagnosticScope="ExtensionSummary"
+                                        RequestSite="Settings"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
                                         SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                 </cpcontrols:ContentIcon.Content>
@@ -105,6 +107,8 @@
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
+                                                                DiagnosticScope="TopLevelCommand"
+                                                                RequestSite="Settings"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
@@ -183,6 +187,8 @@
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
+                                                                DiagnosticScope="Fallback"
+                                                                RequestSite="Settings"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>

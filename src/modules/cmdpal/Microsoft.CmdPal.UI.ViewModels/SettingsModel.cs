@@ -35,6 +35,8 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public string Language { get; init; } = string.Empty;
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }
@@ -44,11 +46,13 @@ public record SettingsModel
     public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
         = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public bool AllowExternalReload { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
 
     public bool AllowAltF4 { get; init; }
 
     public bool CompactMode { get; set; }
+
+    public bool ShowQuickAccessShelf { get; init; }
 
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
@@ -174,13 +178,15 @@ public record SettingsModel
           ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
-          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null,
+          bool enableExternalCommandLinks = true)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
         FallbackRanks = fallbackRanks ?? [];
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        EnableExternalCommandLinks = enableExternalCommandLinks;
     }
 
     public SettingsModel()

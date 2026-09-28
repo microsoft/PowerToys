@@ -34,11 +34,11 @@ public sealed class FilePathSetting : Setting<string>
     }
 
     /// <summary>
-    /// Gets or sets the file extensions shown by the file picker.
+    /// Gets the file extensions shown by the file picker.
     /// Values may use forms such as <c>.txt</c>, <c>*.txt</c>, or <c>*</c>.
     /// This property is ignored when <see cref="SelectionMode"/> is <see cref="FilePathSelectionMode.Folder"/>.
     /// </summary>
-    public List<string> FileTypeFilter { get; set; } = [];
+    public List<string> FileTypeFilter { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the placeholder shown by the path text box.

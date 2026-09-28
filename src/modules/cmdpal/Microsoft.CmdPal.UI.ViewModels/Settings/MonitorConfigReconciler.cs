@@ -140,8 +140,9 @@ public static class MonitorConfigReconciler
 
         // Create defaults for new monitors with no matching config.
         // Primary monitors inherit global bands (IsCustomized = false) for a seamless
-        // upgrade path. Secondary monitors start disabled with empty band lists;
-        // users opt-in via Settings when they want the dock on additional displays.
+        // upgrade path. Secondary monitors start disabled without a layout. We copy the
+        // primary layout when the user first enables them, so they get the current setup
+        // instead of whatever the primary looked like when the monitor was first seen.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
@@ -167,10 +168,6 @@ public static class MonitorConfigReconciler
                     MonitorDeviceId = monitor.StableId,
                     Enabled = false,
                     IsPrimary = false,
-                    IsCustomized = true,
-                    StartBands = ImmutableList<DockBandSettings>.Empty,
-                    CenterBands = ImmutableList<DockBandSettings>.Empty,
-                    EndBands = ImmutableList<DockBandSettings>.Empty,
                     LastSeen = utcNow,
                 });
             }

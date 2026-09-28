@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -147,7 +147,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var providerSettings = GetProviderSettings(settingsService.Settings);
 
-        // Persist the connected provider settings (fallback commands, etc.)
+        // Persist the connected provider settings. The fallbacks aren't loaded yet, so their
+        // defaults are persisted separately once they are (see PersistFallbackDefaults).
         settingsService.UpdateSettings(
             s =>
             {
@@ -233,6 +234,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
             InitializeCommands(objects, serviceProvider, four);
+            PersistFallbackDefaults(settingsService);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -245,6 +247,28 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 RecallFromCache();
             }
         }
+    }
+
+    /// <summary>
+    /// Records default settings for fallbacks that don't have any yet. The main page reads which
+    /// fallbacks are included in global results from the persisted settings, so without this a new
+    /// built-in fallback stays out of global results until the settings page is opened.
+    /// </summary>
+    private void PersistFallbackDefaults(ISettingsService settingsService)
+    {
+        if (FallbackItems.Length == 0)
+        {
+            return;
+        }
+
+        // UpdateSettings always writes the file, so skip it when every fallback is already known.
+        var current = settingsService.Settings;
+        if (ReferenceEquals(current.GetProviderSettings(this).Model, current))
+        {
+            return;
+        }
+
+        settingsService.UpdateSettings(s => s.GetProviderSettings(this).Model, hotReload: false);
     }
 
     private void RecallFromCache()
@@ -270,15 +294,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
-        WeakReference<IPageContext> pageContext = new(this.TopLevelPageContext);
         var make = (ICommandItem? i, TopLevelType t) =>
-        {
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, providerSettings, serviceProvider, i, contextMenuFactory: contextMenuFactory);
-            topLevelViewModel.InitializeProperties();
-
-            return topLevelViewModel;
-        };
+            CreateTopLevelViewModel(i, t, serviceProvider, providerSettings, contextMenuFactory, ourContext);
 
         var topLevelList = new List<TopLevelViewModel>();
 
@@ -394,6 +411,67 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         DockBandItems = bands.ToArray();
+    }
+
+    internal TopLevelViewModel? ResolveCommandItem(string commandId, IServiceProvider serviceProvider)
+    {
+        if (!isValid || !IsActive || _commandProvider.Unsafe is not ICommandProvider4 provider)
+        {
+            return null;
+        }
+
+        var item = provider.GetCommandItem(commandId);
+        if (item is null)
+        {
+            return null;
+        }
+
+        var settings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>();
+        var resolved = CreateTopLevelViewModel(
+            item,
+            TopLevelType.Normal,
+            serviceProvider,
+            GetProviderSettings(settings),
+            contextMenuFactory,
+            GetProviderContext());
+
+        if (string.Equals(resolved.Id, commandId, StringComparison.Ordinal))
+        {
+            return resolved;
+        }
+
+        Logger.LogWarning($"Provider {ProviderId} returned command {resolved.Id} when resolving {commandId}.");
+        resolved.Cleanup();
+        return null;
+    }
+
+    private TopLevelViewModel CreateTopLevelViewModel(
+        ICommandItem? item,
+        TopLevelType type,
+        IServiceProvider serviceProvider,
+        ProviderSettings providerSettings,
+        IContextMenuFactory? contextMenuFactory,
+        ICommandProviderContext providerContext)
+    {
+        CommandItemViewModel commandItemViewModel = new(new(item), new(TopLevelPageContext), contextMenuFactory);
+        TopLevelViewModel? topLevelViewModel = null;
+        try
+        {
+            topLevelViewModel = new(commandItemViewModel, type, ExtensionHost, providerContext, providerSettings, serviceProvider, item, contextMenuFactory);
+            topLevelViewModel.InitializeProperties();
+            return topLevelViewModel;
+        }
+        catch
+        {
+            topLevelViewModel?.Cleanup();
+            if (topLevelViewModel is null)
+            {
+                commandItemViewModel.SafeCleanup();
+            }
+
+            throw;
+        }
     }
 
     private TopLevelViewModel? LookupTopLevelCommand(string commandId)

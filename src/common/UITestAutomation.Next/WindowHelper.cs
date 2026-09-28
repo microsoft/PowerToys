@@ -87,6 +87,10 @@ public static class WindowHelper
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsZoomed(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int nIndex);
 
     [DllImport("user32.dll")]
@@ -153,6 +157,9 @@ public static class WindowHelper
     /// can't hide controls such as the Settings NavigationView pane.
     /// </summary>
     public static void MaximizeWindow(IntPtr hWnd) => ShowWindow(hWnd, SW_MAXIMIZE);
+
+    /// <summary>Read the native maximized state without relying on a window's UIA provider or DPI.</summary>
+    public static bool IsWindowMaximized(IntPtr hWnd) => IsZoomed(hWnd);
 
     /// <summary>
     /// Restore a window from maximized/minimized. Needed before positioning a window that a test will
