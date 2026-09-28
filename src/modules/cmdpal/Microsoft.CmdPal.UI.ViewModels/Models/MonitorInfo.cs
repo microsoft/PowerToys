@@ -28,6 +28,14 @@ public sealed record MonitorInfo
     public required string StableId { get; init; }
 
     /// <summary>
+    /// Gets an EDID-derived identifier for the physical panel (e.g. <c>DEL-41A3-ABC123</c>),
+    /// built by <see cref="EdidIdentity"/>. Unlike <see cref="StableId"/>, it follows the
+    /// monitor across ports, docks, and GPUs. <c>null</c> when the EDID is unavailable or
+    /// has no usable serial number.
+    /// </summary>
+    public string? HardwareId { get; init; }
+
+    /// <summary>
     /// Gets the human-readable display name (e.g. <c>DELL U2723QE</c>).
     /// </summary>
     public required string DisplayName { get; init; }

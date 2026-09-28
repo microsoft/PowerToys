@@ -15,6 +15,12 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public bool IsSet => Model.Unsafe is not null;
 
+    public bool IsPage { get; private set; }
+
+    public bool IsListPage { get; private set; }
+
+    public bool IsInvokableCommand { get; private set; }
+
     protected bool IsCleanedUp => _modelSubscription.IsClosed;
 
     protected bool IsInitialized { get; private set; }
@@ -66,6 +72,9 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
         Id = model.Id ?? string.Empty;
         Name = model.Name ?? string.Empty;
+        IsListPage = model is IListPage;
+        IsPage = IsListPage || model is IPage;
+        IsInvokableCommand = model is IInvokableCommand;
         IsFastInitialized = true;
     }
 

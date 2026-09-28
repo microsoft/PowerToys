@@ -24,6 +24,60 @@
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsGroup x:Uid="MouseUtils_AutoHideCursor" AutomationProperties.AutomationId="MouseUtils_AutoHideCursorTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsAutoHideCursorEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableAutoHideCursor"
+                            x:Uid="MouseUtils_Enable_AutoHideCursor"
+                            IsEnabled="{x:Bind ViewModel.IsAutoHideCursorEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE7B3;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_AutoHideCursorToggleId"
+                                IsOn="{x:Bind ViewModel.IsAutoHideCursorEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsAutoHideCursorSettingsExpander"
+                        x:Uid="MouseUtils_AutoHideCursor_Behavior"
+                        IsEnabled="{x:Bind ViewModel.IsAutoHideCursorEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.HeaderIcon>
+                            <FontIcon Glyph="&#xE713;" />
+                        </tkcontrols:SettingsExpander.HeaderIcon>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_AutoHideCursor_HideOnTyping">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    AutomationProperties.AutomationId="MouseUtils_AutoHideCursorHideOnTypingToggleId"
+                                    IsOn="{x:Bind ViewModel.AutoHideCursorHideOnTyping, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_AutoHideCursor_HideOnIdle">
+                                <ToggleSwitch
+                                    x:Uid="ToggleSwitch"
+                                    AutomationProperties.AutomationId="MouseUtils_AutoHideCursorHideOnIdleToggleId"
+                                    IsOn="{x:Bind ViewModel.AutoHideCursorHideOnIdle, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Uid="MouseUtils_AutoHideCursor_IdleDelay"
+                                IsEnabled="{x:Bind ViewModel.IsAutoHideCursorIdleDelayEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    x:Uid="MouseUtils_AutoHideCursor_IdleDelayInput"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_AutoHideCursorIdleDelayId"
+                                    LargeChange="5"
+                                    Maximum="60"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.AutoHideCursorIdleDelaySeconds, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap" AutomationProperties.AutomationId="MouseUtils_CursorWrapTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

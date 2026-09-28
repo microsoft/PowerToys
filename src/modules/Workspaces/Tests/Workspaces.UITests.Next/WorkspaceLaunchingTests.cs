@@ -217,13 +217,8 @@ namespace Microsoft.Workspaces.UITests
             var window = State.Fixture.WaitForWindow(firstTitle);
             AssertPositioned(window, first);
             var progress = LauncherWindow();
-            AssertLaunchGlyph(progress, "Ready fixture", "\uF78C");
-
-            // The missing app has no executable on disk, so it reaches Failed. Failed and the "\uEF2C"
-            // fallback share a glyph, but a still-pending app (Waiting/Launched) has Loading == true and
-            // hides its glyph behind the progress ring, and Canceled cannot occur before the Cancel below.
-            // A displayed "\uEF2C" here therefore uniquely proves the Failed state without a product hook.
-            AssertLaunchGlyph(progress, "Missing fixture", "\uEF2C");
+            AssertLaunchState(progress, "Ready fixture", "Launched and positioned");
+            AssertLaunchState(progress, "Missing fixture", "Failed");
             var loading = progress.Find(By.AccessibilityId("LaunchProgress_Pending fixture 01"), 15_000);
             Assert.IsTrue(loading.Displayed, "The not-yet-ready application did not show its launching indicator.");
             Assert.IsNull(State.Fixture.FindWindow(State.Prefix + "-pending-01"), "The gated fixture unexpectedly created a window.");
@@ -347,19 +342,19 @@ namespace Microsoft.Workspaces.UITests
             return progress;
         }
 
-        private void AssertLaunchGlyph(Session progress, string application, string expected)
+        private void AssertLaunchState(Session progress, string application, string expected)
         {
             Step($"Reading the launch state of '{application}'.");
             var result = WaitHelper.WaitForStable(
                 () =>
                 {
                     var state = progress.FindAll<Element>(By.AccessibilityId("LaunchState_" + application), 0).SingleOrDefault();
-                    return state is not null && state.Displayed ? state.GetValue() : string.Empty;
+                    return state is not null && state.Displayed ? state.Name : string.Empty;
                 },
-                glyph => glyph == expected,
+                name => name == expected,
                 15_000,
                 requiredConsecutiveMatches: 2);
-            Assert.IsTrue(result.Succeeded, $"'{application}' did not show the expected launch state glyph. Actual: '{result.LastObservation}'.");
+            Assert.IsTrue(result.Succeeded, $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'.");
         }
 
         private IEnumerable<JsonObject> PendingApplications(int count, string gate, string? firstStarted = null, string? lastStarted = null)

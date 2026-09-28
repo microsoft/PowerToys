@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
@@ -26,26 +27,56 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     {
     }
 
-    public Task<IconSource?> GetIconSource(IconDataViewModel icon, double scale)
+    public Task<IconSource?> GetIconSource(
+        IconDataViewModel icon,
+        double scale,
+        IconRequestMeasurement diagnostics = default,
+        IIconRequestDemand? demand = null,
+        ElementTheme theme = ElementTheme.Default)
     {
         var tcs = new TaskCompletionSource<IconSource?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IconLoadMeasurement? loadDiagnostics = null;
 
         try
         {
+            var streamReference = icon.Data?.Unsafe;
+            loadDiagnostics = IconLoadDiagnostics.CreateLoad(
+                diagnostics,
+                icon.Icon,
+                streamReference is not null,
+                _iconSize.Width,
+                _iconSize.Height,
+                scale);
+            diagnostics.RecordProviderResolution(IconProviderResolution.NewLoad, loadDiagnostics);
+
+            if (_loader.TryLoadGlyph(icon.Icon, icon.FontFamily, _iconSize, scale, out var glyph) && glyph is not null)
+            {
+                loadDiagnostics?.CompleteDirectGlyph(glyph);
+                tcs.TrySetResult(glyph);
+                return tcs.Task;
+            }
+
+            var loadDemand = new IconLoadDemand();
+            loadDemand.Attach(demand);
+
             if (!_loader.TryEnqueueLoad(
                     icon.Icon,
                     icon.FontFamily,
-                    icon.Data?.Unsafe,
+                    streamReference,
                     _iconSize,
                     scale,
+                    theme,
                     tcs,
-                    _isPriority ? IconLoadPriority.High : IconLoadPriority.Low))
+                    _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
+                    loadDiagnostics,
+                    loadDemand))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }
         }
         catch (Exception ex)
         {
+            loadDiagnostics?.Rejected();
             tcs.TrySetException(ex);
         }
 

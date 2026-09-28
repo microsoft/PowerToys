@@ -207,10 +207,10 @@ public partial class ListItemViewModel : CommandItemViewModel
             !listViewModel.ShowDetails)
         {
             var addedCommand = false;
-            lock (MoreCommandsLock)
+            lock (ContextItemsLock)
             {
                 // Check if "Show Details" action already exists to prevent duplicates
-                if (!UnsafeMoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                if (!UnsafeContextItems.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
                     var showDetailsCommand = new ShowDetailsCommand(Details);
@@ -220,16 +220,15 @@ public partial class ListItemViewModel : CommandItemViewModel
                     };
                     var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                     showDetailsContextItemViewModel.SlowInitializeProperties();
-                    UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
-                    RefreshMoreCommandStateUnsafe();
+                    UnsafeContextItems.Add(showDetailsContextItemViewModel);
+                    RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
                     addedCommand = true;
                 }
             }
 
             if (addedCommand)
             {
-                UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
-                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
+                NotifyContextMenuChanged();
             }
         }
     }
@@ -246,15 +245,15 @@ public partial class ListItemViewModel : CommandItemViewModel
             !listViewModel.ShowDetails)
         {
             CommandContextItemViewModel? oldCommand = null;
-            lock (MoreCommandsLock)
+            lock (ContextItemsLock)
             {
-                oldCommand = UnsafeMoreCommands
+                oldCommand = UnsafeContextItems
                     .OfType<CommandContextItemViewModel>()
                     .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
 
                 if (oldCommand is not null)
                 {
-                    UnsafeMoreCommands.Remove(oldCommand);
+                    UnsafeContextItems.Remove(oldCommand);
                 }
 
                 var showDetailsCommand = new ShowDetailsCommand(Details);
@@ -264,14 +263,13 @@ public partial class ListItemViewModel : CommandItemViewModel
                 };
                 var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                 showDetailsContextItemViewModel.SlowInitializeProperties();
-                UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
-                RefreshMoreCommandStateUnsafe();
+                UnsafeContextItems.Add(showDetailsContextItemViewModel);
+                RefreshContextMenuSnapshotUnsafe(contextItemsChanged: true);
             }
 
             oldCommand?.SafeCleanup();
 
-            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
-            UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
+            NotifyContextMenuChanged();
         }
     }
 

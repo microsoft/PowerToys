@@ -61,7 +61,6 @@
   <PropertyGroup Label="Configuration">
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
     <ConfigurationType>Application</ConfigurationType>
     <TargetName>PowerToys.$(MSBuildProjectName)</TargetName>
   </PropertyGroup>

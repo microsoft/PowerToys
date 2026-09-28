@@ -119,7 +119,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
-            switch (split[1].ToLower(CultureInfo.CurrentCulture))
+            switch (split[1].ToLowerInvariant())
             {
                 case "celsius":
                     split[1] = "DegreeCelsius";
@@ -141,7 +141,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
             }
 
-            switch (split[3].ToLower(CultureInfo.CurrentCulture))
+            switch (split[3].ToLowerInvariant())
             {
                 case "celsius":
                     split[3] = "DegreeCelsius";
