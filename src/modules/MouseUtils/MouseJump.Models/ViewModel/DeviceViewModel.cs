@@ -46,7 +46,7 @@ public sealed class DeviceViewModel
         public List<ScreenViewModel.Builder>? ScreenLayouts
         {
             get;
-            set;
+            init;
         }
 
         public DeviceViewModel Build()

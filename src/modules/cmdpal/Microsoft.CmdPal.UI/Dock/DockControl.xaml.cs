@@ -120,6 +120,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
 
+        // Bands can be added to CenterItems before Loaded fires (or while unloaded),
+        // and those CollectionChanged notifications are missed. Re-evaluate now.
+        UpdateCenterVisibility();
+
         UpdateEditModeTeachingTip();
     }
 
@@ -554,7 +558,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
-        if (item.HasMoreCommands)
+        if (item.CanOpenContextMenu)
         {
             ContextControl.ViewModel.SelectedItem = item;
             ContextControl.ShowFilterBox = false;
