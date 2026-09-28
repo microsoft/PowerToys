@@ -51,6 +51,30 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task TextOutput_CreatesMissingParentDirectories()
+    {
+        var outputDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(outputDirectory, "nested");
+        var outputPath = Path.Combine(directory, "result.txt");
+        try
+        {
+            var result = await RunAsync(
+                ["transform", "--format", "plain-text", "--stdin", "--output", outputPath],
+                "hello");
+
+            Assert.AreEqual(0, result.ExitCode);
+            Assert.AreEqual("hello", await File.ReadAllTextAsync(outputPath));
+        }
+        finally
+        {
+            if (Directory.Exists(outputDirectory))
+            {
+                Directory.Delete(outputDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task ClipboardInputAndOutput_UsesClipboardAdapter()
     {
         var clipboard = new TestClipboardAdapter("text");
@@ -515,6 +539,33 @@ public class ProgramTests
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("invalid_action", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public async Task ActionUnavailableException_UsesActionUnavailableError()
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "plain-text", "--stdin", "--json"],
+            "hello",
+            runtime: new ExceptionRuntime(new CliActionUnavailableException("Action is unavailable.")));
+
+        Assert.AreEqual(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("action_unavailable", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public async Task InvalidOperationFromTransformation_UsesGenericError()
+    {
+        var result = await RunAsync(
+            ["transform", "--action", "plain-text", "--stdin", "--json"],
+            "hello",
+            runtime: new ExceptionRuntime(new InvalidOperationException("Internal transform detail.")));
+
+        Assert.AreEqual(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
+        Assert.AreEqual("transformation_error", document.RootElement.GetProperty("code").GetString());
+        Assert.IsFalse(document.RootElement.GetProperty("message").GetString()!.Contains("Internal transform detail.", StringComparison.Ordinal));
     }
 
     [TestMethod]

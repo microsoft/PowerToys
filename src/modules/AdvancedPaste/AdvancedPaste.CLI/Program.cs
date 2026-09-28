@@ -282,7 +282,7 @@ public static partial class Program
             WriteError(stderr, json, "io_error", "The selected input or output file could not be accessed.");
             return RuntimeErrorExitCode;
         }
-        catch (InvalidOperationException ex)
+        catch (CliActionUnavailableException ex)
         {
             Logger.LogError("Advanced Paste action is unavailable.", ex);
             WriteError(stderr, json, "action_unavailable", ex.Message);

@@ -50,14 +50,14 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
     {
         if (!_isAdvancedPasteEnabled())
         {
-            throw new InvalidOperationException("Advanced Paste is disabled by policy.");
+            throw new CliActionUnavailableException("Advanced Paste is disabled by policy.");
         }
 
         var formats = await input.GetAvailableFormatsAsync();
         var pasteFormat = ResolvePasteFormat(request, formats);
         if (!pasteFormat.IsEnabled)
         {
-            throw new InvalidOperationException("The selected action does not support the supplied input or its configured AI provider is unavailable.");
+            throw new CliActionUnavailableException("The selected action does not support the supplied input or its configured AI provider is unavailable.");
         }
 
         return await _executor.ExecutePasteFormatAsync(pasteFormat, input, PasteActionSource.CommandLine, cancellationToken, progress);
@@ -117,7 +117,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
     {
         if (!_settings.IsAIEnabled)
         {
-            throw new InvalidOperationException("AI actions are disabled in Advanced Paste settings.");
+            throw new CliActionUnavailableException("AI actions are disabled in Advanced Paste settings.");
         }
     }
 
@@ -174,12 +174,12 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
         if (provider is null)
         {
-            throw new InvalidOperationException("No AI provider is configured.");
+            throw new CliActionUnavailableException("No AI provider is configured.");
         }
 
         if (!AdvancedPastePolicy.IsProviderAllowed(provider))
         {
-            throw new InvalidOperationException("The selected AI provider is disabled by policy.");
+            throw new CliActionUnavailableException("The selected AI provider is disabled by policy.");
         }
     }
 }

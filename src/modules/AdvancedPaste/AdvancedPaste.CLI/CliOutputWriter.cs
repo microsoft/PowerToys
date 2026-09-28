@@ -31,27 +31,30 @@ internal static class CliOutputWriter
 
         if (outputFile is not null)
         {
-            if (storageFile is not null)
+            try
             {
-                try
+                Directory.CreateDirectory(outputFile.DirectoryName!);
+                if (storageFile is not null)
                 {
-                    Directory.CreateDirectory(outputFile.DirectoryName!);
                     await CopyFileAsync(storageFile.Path, outputFile, cancellationToken);
                     return new CliOutputResult("file", null, outputFile.FullName, OutputClipboard: false);
                 }
-                finally
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    throw new UnsupportedOutputException("The transformation did not produce text or a file.");
+                }
+
+                await WriteTextFileAsync(text, outputFile, cancellationToken);
+                return new CliOutputResult("text", text, outputFile.FullName, OutputClipboard: false);
+            }
+            finally
+            {
+                if (storageFile is not null)
                 {
                     await view.TryCleanupAfterDelayAsync(TimeSpan.Zero);
                 }
             }
-
-            if (string.IsNullOrEmpty(text))
-            {
-                throw new UnsupportedOutputException("The transformation did not produce text or a file.");
-            }
-
-            await WriteTextFileAsync(text, outputFile, cancellationToken);
-            return new CliOutputResult("text", text, outputFile.FullName, OutputClipboard: false);
         }
 
         if (stdoutRequested)

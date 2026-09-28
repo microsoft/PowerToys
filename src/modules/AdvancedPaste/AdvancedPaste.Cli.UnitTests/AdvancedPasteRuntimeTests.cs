@@ -36,7 +36,7 @@ public class AdvancedPasteRuntimeTests
             var executor = new TestPasteFormatExecutor();
             var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: false), isAdvancedPasteEnabled: () => true);
 
-            await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            await Assert.ThrowsExactlyAsync<CliActionUnavailableException>(
                 () => runtime.ExecuteAsync(request, package.GetView(), CancellationToken.None));
 
             Assert.IsFalse(executor.WasCalled);
@@ -51,7 +51,7 @@ public class AdvancedPasteRuntimeTests
         var executor = new TestPasteFormatExecutor();
         var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: true), isAdvancedPasteEnabled: () => false);
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<CliActionUnavailableException>(
             () => runtime.ExecuteAsync(new CliActionRequest("plain-text", null, null, null), package.GetView(), CancellationToken.None));
 
         Assert.IsFalse(executor.WasCalled);
