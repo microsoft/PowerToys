@@ -603,6 +603,7 @@ public sealed partial class MainWindow : WindowEx,
                 && x.CompactMode == y.CompactMode
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
                 && x.DockFocusHotkey == y.DockFocusHotkey
+                && x.EnableDock == y.EnableDock
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -644,6 +645,7 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.CompactMode);
             hash.Add(obj.Hotkey);
             hash.Add(obj.DockFocusHotkey);
+            hash.Add(obj.EnableDock);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -1633,8 +1635,12 @@ public sealed partial class MainWindow : WindowEx,
         RegisterHotkey(settings, settings.Hotkey, string.Empty);
 
         // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
-        // peels it back off so nothing tries to summon a command with a dock ID.
-        RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
+        // peels it back off so nothing tries to summon a command with a dock ID. Skip it when
+        // the dock is off so we don't hold a global shortcut that does nothing.
+        if (settings.EnableDock)
+        {
+            RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
+        }
 
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
