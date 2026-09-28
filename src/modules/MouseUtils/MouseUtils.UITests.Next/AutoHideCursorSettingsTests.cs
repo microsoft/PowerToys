@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
@@ -142,46 +140,6 @@ public class AutoHideCursorSettingsTests : UITestBase
         idleDelay = Session.Find<NumberBox>(By.AccessibilityId(IdleDelayId), 5_000);
         Assert.IsTrue(idleDelay.IsEnabled, "Persisted hide-on-idle should keep the delay enabled.");
         AssertIdleDelaySetting(60000);
-    }
-
-    private static bool IsSystemArrowTransparent()
-    {
-        var arrow = LoadCursor(IntPtr.Zero, new IntPtr(32512));
-        if (arrow == IntPtr.Zero)
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error());
-        }
-
-        using var bitmap = new Bitmap(32, 32);
-        using (var graphics = Graphics.FromImage(bitmap))
-        {
-            graphics.Clear(Color.Magenta);
-            var dc = graphics.GetHdc();
-            try
-            {
-                if (!DrawIconEx(dc, 0, 0, arrow, 32, 32, 0, IntPtr.Zero, 3))
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
-            }
-            finally
-            {
-                graphics.ReleaseHdc(dc);
-            }
-        }
-
-        for (var y = 0; y < bitmap.Height; y++)
-        {
-            for (var x = 0; x < bitmap.Width; x++)
-            {
-                if (bitmap.GetPixel(x, y).ToArgb() != Color.Magenta.ToArgb())
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     private void OpenSettings()
