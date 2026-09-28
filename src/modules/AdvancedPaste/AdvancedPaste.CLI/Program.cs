@@ -33,7 +33,6 @@ public static partial class Program
     private static readonly string[] OutputClipboardAliases = ["--output-clipboard"];
     private static readonly string[] JsonAliases = ["--json"];
 
-    [STAThread]
     public static async Task<int> Main(string[] args)
     {
         using var cancellationSource = new CancellationTokenSource();
