@@ -23,7 +23,7 @@ Unlike most PowerToys modules, **all real logic lives in the Settings UI process
 - [`ContextMenuManagerViewModel.Preview.cs`](/src/settings-ui/Settings.UI/ViewModels/ContextMenuManagerViewModel.Preview.cs) - the page's menu, which is the whole UI: pick a target, click an item, see where it is registered and toggle it in the details pane. Every target is captured with the helper below the first time it is picked and cached until Refresh; a toggle only re-renders the cached rows (off items dim in place). Items are linked back to entries by the verb the menu reports (static verbs), by the helper's per-extension probe (shell extensions), or by label (cascading verbs); an extension's submenu items belong to the extension. Entries that are off aren't in the real menu, so they are listed under a "Turned off" caption at the end. It adds what a raw `IContextMenu` lacks: the view's View/Sort by/Refresh block and the Windows 11 packaged verbs, shown as the first menu with "Show more options" switching to the classic one.
 - [`ContextMenuManager.MenuCapture`](/src/modules/ContextMenuManager/ContextMenuManager.MenuCapture) - a console helper deployed next to Settings. It builds the real menu for a sample target under `%TEMP%\PowerToys\ContextMenuManagerPreview` (`--target desktop|background|folder|file|drive`), sends `WM_INITMENUPOPUP` so lazy submenus fill, and prints the item tree with 32bpp icons as JSON. `--probe {clsid},...` also loads each listed extension on its own against the same sample and reports its top-level item texts, since the merged menu doesn't say which extension added which item. It is a separate process because building a menu loads every registered shell extension, and a crashing or hanging third-party DLL must not take Settings down (Settings kills it after 10 s). A fresh process also has no handler cache, so a capture reflects registry toggles without restarting Explorer. Handlers that check for `explorer.exe` (e.g. NVIDIA's) don't show up in it.
 
-A minimal native [`ContextMenuManagerModuleInterface`](/src/modules/ContextMenuManager/ContextMenuManagerModuleInterface) DLL still exists, modeled on PowerPreview's toggle-only shape - not because the module needs native logic, but because the runner's `EnabledModules`/GPO/tray architecture requires every module to have a `PowertoyModuleIface`. Its `enable()`/`disable()` only flip a flag; there's no hotkey, no window, no background thread, and no dedicated GPO policy for v1 (`gpo_policy_enabled_configuration()` returns `gpo_rule_configured_not_configured`).
+A minimal native [`ContextMenuManagerModuleInterface`](/src/modules/ContextMenuManager/ContextMenuManagerModuleInterface) DLL still exists, modeled on PowerPreview's toggle-only shape - not because the module needs native logic, but because the runner's `EnabledModules`/GPO/tray architecture requires every module to have a `PowertoyModuleIface`. Its `enable()`/`disable()` only flip a flag; there's no hotkey, no window and no background thread. `gpo_policy_enabled_configuration()` returns the `ConfigureEnabledUtilityContextMenuManager` policy, which the Settings page also honours by locking its enable toggle.
 
 ### Toggle mechanism
 
@@ -35,15 +35,16 @@ Each kind uses the mechanism Explorer itself honours (`ContextMenuEntryKind`). N
 
 ### Enumeration scope (v1)
 
-Five roots are walked, under both `HKCU\Software\Classes\...` and `HKLM\Software\Classes\...`:
+Six roots are walked, under both `HKCU\Software\Classes\...` and `HKLM\Software\Classes\...`:
 
 - `*\shellex\ContextMenuHandlers`
 - `Directory\shellex\ContextMenuHandlers`
 - `Directory\Background\shellex\ContextMenuHandlers`
 - `AllFilesystemObjects\shellex\ContextMenuHandlers`
 - `Drive\shellex\ContextMenuHandlers`
+- `DesktopBackground\shellex\ContextMenuHandlers`
 
-Per-extension `SystemFileAssociations\<ext>\...` handlers are **not** walked in v1 - that tree is far larger (one subtree per file extension) for comparatively little added value over the five roots above, where most third-party context-menu bloat (7-Zip, Git, WinRAR, etc.) actually registers.
+Per-extension `SystemFileAssociations\<ext>\...` handlers are **not** walked in v1 - that tree is far larger (one subtree per file extension) for comparatively little added value over the roots above, where most third-party context-menu bloat (7-Zip, Git, WinRAR, etc.) actually registers.
 
 ### Safety
 
@@ -57,6 +58,5 @@ Per-extension `SystemFileAssociations\<ext>\...` handlers are **not** walked in 
 - **Icon art**: the nav item and page currently reuse the Registry Preview icon as a placeholder (`Assets/Settings/Icons/RegistryPreview.png`) - needs real icon art.
 - **Dashboard tile**: not added. Follow the `GetModuleItemsHosts()` pattern in `DashboardViewModel.cs` if wanted.
 - **OOBE (first-run) page**: skipped - this is an advanced/power-user feature, not onboarding-critical.
-- **GPO policy**: module-enable via `EnabledModules.ContextMenuManager` only, no dedicated ADMX policy yet.
 - **Command Palette integration**: `Microsoft.CmdPal.Ext.PowerToys`'s `ModuleEnablementService` (which lets Command Palette open/enable other PowerToys modules by name) doesn't know about this module yet.
 - **Automated tests**: none yet. The registry round-trip and denylist behavior are best verified manually against a real registry for v1 (build, toggle a real third-party entry such as 7-Zip/Git/WinRAR, restart Explorer, confirm the entry disappears/reappears; inspect with regedit that the handler key is never deleted).
