@@ -510,6 +510,9 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/ContextMenuManager/">
+    <Project Path="src/modules/ContextMenuManager/ContextMenuManagerModuleInterface/ContextMenuManagerModuleInterface.vcxproj" Id="cf8eda10-634b-4e91-b330-17e7730d600a" />
+  </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

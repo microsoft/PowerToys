@@ -4031,6 +4031,83 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Quick and simple utility for managing hosts file.</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
+  <data name="ContextMenuManager.ModuleTitle" xml:space="preserve">
+    <value>Context Menu Manager</value>
+  </data>
+  <data name="Shell_ContextMenuManager.Content" xml:space="preserve">
+    <value>Context Menu Manager</value>
+    <comment>Products name: Navigation view item name for Context Menu Manager</comment>
+  </data>
+  <data name="ContextMenuManager_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Context Menu Manager</value>
+    <comment>"Context Menu Manager" is the name of the utility</comment>
+  </data>
+  <data name="ContextMenuManager_GroupSettings.Header" xml:space="preserve">
+    <value>Context menu entries</value>
+  </data>
+  <data name="ContextMenuManager_HklmElevationNotice.Title" xml:space="preserve">
+    <value>Some entries can't be edited here</value>
+  </data>
+  <data name="ContextMenuManager_HklmElevationNotice.Message" xml:space="preserve">
+    <value>Restart PowerToys as administrator to edit entries that apply to all users of this PC.</value>
+  </data>
+  <data name="ContextMenuManager_RestartExplorerNotice.Title" xml:space="preserve">
+    <value>Changes will take effect after File Explorer restarts</value>
+  </data>
+  <data name="ContextMenuManager_RestartExplorerNotice.Message" xml:space="preserve">
+    <value>Restarting File Explorer closes all open File Explorer windows.</value>
+  </data>
+  <data name="ContextMenuManager_RestartExplorerButton.Content" xml:space="preserve">
+    <value>Restart File Explorer</value>
+  </data>
+  <data name="ContextMenuManager_SearchAndRefresh.Header" xml:space="preserve">
+    <value>Search entries</value>
+  </data>
+  <data name="ContextMenuManager_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search this list</value>
+  </data>
+  <data name="ContextMenuManager_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search this list</value>
+  </data>
+  <data name="ContextMenuManager_RefreshButton.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmAllUsers_Title" xml:space="preserve">
+    <value>Change this setting for all users?</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmAllUsers_Content" xml:space="preserve">
+    <value>You're about to change a context menu entry for every account on this PC, not just yours.</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmAllUsers_PrimaryButton" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmAllUsers_CloseButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmWindowsOwned_Title" xml:space="preserve">
+    <value>This looks like a built-in Windows component</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmWindowsOwned_Content" xml:space="preserve">
+    <value>Disabling it may affect File Explorer or security software. Continue only if you're sure.</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmWindowsOwned_PrimaryButton" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ContextMenuManager_ConfirmWindowsOwned_CloseButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ContextMenuManager_ScopeCurrentUser" xml:space="preserve">
+    <value>Current user</value>
+  </data>
+  <data name="ContextMenuManager_ScopeAllUsers" xml:space="preserve">
+    <value>All users</value>
+  </data>
+  <data name="ContextMenuManager_SourceClassic" xml:space="preserve">
+    <value>Classic</value>
+  </data>
+  <data name="ContextMenuManager_SourceModern" xml:space="preserve">
+    <value>Modern (not editable here)</value>
+  </data>
   <data name="Hosts.ModuleTitle" xml:space="preserve">
     <value>Hosts File Editor</value>
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>

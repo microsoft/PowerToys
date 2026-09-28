@@ -12,6 +12,7 @@ namespace ManagedCommon
         Awake,
         ColorPicker,
         CmdPal,
+        ContextMenuManager,
         CropAndLock,
         CursorWrap,
         EnvironmentVariables,

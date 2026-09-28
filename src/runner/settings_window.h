@@ -26,6 +26,7 @@ enum class ESettingsWindowNames
     FileExplorer,
     ShortcutGuide,
     Hosts,
+    ContextMenuManager,
     MeasureTool,
     PowerOCR,
     Workspaces,

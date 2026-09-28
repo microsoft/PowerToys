@@ -449,6 +449,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PowerOcr": return typeof(PowerOcrPage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
+                case "ContextMenuManager": return typeof(ContextMenuManagerPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);

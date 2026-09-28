@@ -153,6 +153,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool contextMenuManager; // defaulting to off
+
+        [JsonPropertyName("ContextMenuManager")]
+        public bool ContextMenuManager
+        {
+            get => contextMenuManager;
+            set
+            {
+                if (contextMenuManager != value)
+                {
+                    LogTelemetryEvent(value);
+                    contextMenuManager = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool cropAndLock; // defaulting to off
 
         [JsonPropertyName("CropAndLock")]

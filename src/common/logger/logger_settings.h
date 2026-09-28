@@ -69,6 +69,7 @@ struct LogSettings
     inline const static std::string hostsLoggerName = "hosts";
     inline const static std::wstring hostsLogPath = L"Logs\\hosts-log.log";
     inline const static std::string registryPreviewLoggerName = "registrypreview";
+    inline const static std::string contextMenuManagerLoggerName = "context-menu-manager";
     inline const static std::string cropAndLockLoggerName = "crop-and-lock";
     inline const static std::wstring registryPreviewLogPath = L"Logs\\registryPreview-log.log";
     inline const static std::string environmentVariablesLoggerName = "environment-variables";

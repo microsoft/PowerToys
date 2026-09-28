@@ -802,6 +802,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ShortcutGuide";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
+    case ESettingsWindowNames::ContextMenuManager:
+        return "ContextMenuManager";
     case ESettingsWindowNames::MeasureTool:
         return "MeasureTool";
     case ESettingsWindowNames::PowerOCR:
@@ -924,6 +926,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
+    }
+    else if (value == "ContextMenuManager")
+    {
+        return ESettingsWindowNames::ContextMenuManager;
     }
     else if (value == "MeasureTool")
     {
