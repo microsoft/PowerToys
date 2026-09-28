@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Cli;
 using AdvancedPaste.Core;
+using AdvancedPaste.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -87,6 +88,15 @@ public class ProgramTests
         Assert.AreEqual(0, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stdout);
         Assert.AreEqual("plain-text", document.RootElement[0].GetProperty("name").GetString());
+    }
+
+    [TestMethod]
+    public async Task ActionsParentCommand_RequiresListSubcommand()
+    {
+        var result = await RunAsync(["actions"]);
+
+        Assert.AreEqual(2, result.ExitCode);
+        StringAssert.Contains(result.Stderr, "actions list");
     }
 
     [TestMethod]

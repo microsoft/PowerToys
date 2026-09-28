@@ -45,6 +45,13 @@ public static partial class Program
 
     public static async Task<int> Main(string[] args)
     {
+        TrySetUtf8Output();
+        if (args.Length == 0 || args.Any(IsHelpArgument))
+        {
+            var root = CreateRootCommand(out _);
+            return await root.InvokeAsync(args);
+        }
+
         using var cancellationSource = new CancellationTokenSource();
         ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
         {
@@ -54,7 +61,6 @@ public static partial class Program
 
         try
         {
-            TrySetUtf8Output();
             Console.CancelKeyPress += cancelHandler;
             Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs");
             if (!AdvancedPastePolicy.IsAdvancedPasteEnabled)
@@ -158,6 +164,11 @@ public static partial class Program
             }
 
             return SuccessExitCode;
+        }
+
+        if (parseResult.CommandResult.Command.Name == "actions")
+        {
+            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.");
         }
 
         try
@@ -312,7 +323,10 @@ public static partial class Program
     }
 
     private static bool HasHelpToken(ParseResult parseResult)
-        => parseResult.Tokens.Any(token => token.Value is "--help" or "-h" or "-?" or "/?");
+        => parseResult.Tokens.Any(token => IsHelpArgument(token.Value));
+
+    private static bool IsHelpArgument(string value)
+        => value is "--help" or "-h" or "-?" or "/?";
 
     private static void WriteError(TextWriter stderr, bool json, string code, string message, bool includeUsage = false)
     {

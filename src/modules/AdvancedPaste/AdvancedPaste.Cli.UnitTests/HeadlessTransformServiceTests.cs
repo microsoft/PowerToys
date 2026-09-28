@@ -62,7 +62,7 @@ public class HeadlessTransformServiceTests
 
         var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input);
 
-        Assert.IsTrue(result.StartsWith("[", StringComparison.Ordinal));
+        Assert.IsTrue(result.StartsWith('['));
         StringAssert.Contains(result, input);
     }
 

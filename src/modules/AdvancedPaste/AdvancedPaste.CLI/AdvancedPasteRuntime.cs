@@ -140,14 +140,24 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
     private AdvancedPasteCustomAction ResolveCustomAction(string value)
     {
-        AdvancedPasteCustomAction? action = null;
         if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id))
         {
-            action = _settings.CustomActions.FirstOrDefault(candidate => candidate.Id == id);
+            var action = _settings.CustomActions.FirstOrDefault(candidate => candidate.Id == id);
+            if (action is not null)
+            {
+                return action;
+            }
         }
 
-        action ??= _settings.CustomActions.FirstOrDefault(candidate => string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase));
-        return action ?? throw new CliActionResolutionException($"Custom action '{value}' was not found.");
+        var matches = _settings.CustomActions
+            .Where(candidate => string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        return matches.Length switch
+        {
+            0 => throw new CliActionResolutionException($"Custom action '{value}' was not found."),
+            1 => matches[0],
+            _ => throw new CliActionResolutionException($"Custom action name '{value}' is ambiguous. Use its numeric ID."),
+        };
     }
 
     private PasteFormats GetCustomAIFormat(string? providerId)

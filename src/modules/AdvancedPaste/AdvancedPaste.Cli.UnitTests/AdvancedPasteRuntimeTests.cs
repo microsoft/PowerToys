@@ -57,6 +57,31 @@ public class AdvancedPasteRuntimeTests
         Assert.IsFalse(executor.WasCalled);
     }
 
+    [TestMethod]
+    public async Task CustomActionName_WhenAmbiguous_RequiresNumericId()
+    {
+        var actions = new[]
+        {
+            new AdvancedPasteCustomAction { Id = 1, Name = "Duplicate", Prompt = "first prompt" },
+            new AdvancedPasteCustomAction { Id = 2, Name = "duplicate", Prompt = "second prompt" },
+        };
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: true, customActions: actions),
+            isAdvancedPasteEnabled: () => true);
+        var package = new DataPackage();
+        package.SetText("input");
+
+        await Assert.ThrowsExactlyAsync<CliActionResolutionException>(
+            () => runtime.ExecuteAsync(
+                new CliActionRequest(null, "DUPLICATE", null, null),
+                package.GetView(),
+                CancellationToken.None));
+
+        Assert.IsFalse(executor.WasCalled);
+    }
+
     private sealed class TestPasteFormatExecutor : IPasteFormatExecutor
     {
         public bool WasCalled { get; private set; }
@@ -73,7 +98,7 @@ public class AdvancedPasteRuntimeTests
         }
     }
 
-    private sealed class TestUserSettings(bool isAIEnabled) : IUserSettings
+    private sealed class TestUserSettings(bool isAIEnabled, IReadOnlyList<AdvancedPasteCustomAction>? customActions = null) : IUserSettings
     {
         public bool IsAIEnabled { get; } = isAIEnabled;
 
@@ -85,7 +110,7 @@ public class AdvancedPasteRuntimeTests
 
         public bool EnableClipboardPreview => false;
 
-        public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => Array.Empty<AdvancedPasteCustomAction>();
+        public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => customActions ?? Array.Empty<AdvancedPasteCustomAction>();
 
         public IReadOnlyList<PasteFormats> AdditionalActions => Array.Empty<PasteFormats>();
 
