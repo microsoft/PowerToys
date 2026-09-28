@@ -78,6 +78,7 @@ internal static class SettingsCliHelper
         {
             "advancedpaste" => GpoApi.GetConfiguredAdvancedPasteEnabledValue(),
             "alwaysontop" => GpoApi.GetConfiguredAlwaysOnTopEnabledValue(),
+            "autohidecursor" => GpoApi.GetConfiguredAutoHideCursorEnabledValue(),
             "awake" => GpoApi.GetConfiguredAwakeEnabledValue(),
             "cmdpal" => GpoApi.GetConfiguredCmdPalEnabledValue(),
             "cmdnotfound" => GpoApi.GetConfiguredCmdNotFoundEnabledValue(),
@@ -126,7 +127,10 @@ internal static class SettingsCliHelper
 
         CheckModuleGpoLock(moduleEntry.ModuleName, gpoEnabledStateProvider);
 
-        SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{moduleEntry.ModuleName}", enabled.ToString().ToLowerInvariant(), settingsUtils);
+        SetSettingCommandLineCommand.ExecuteAndThrowOnSaveFailure(
+            $"GeneralSettings.Enabled.{moduleEntry.ModuleName}",
+            enabled.ToString().ToLowerInvariant(),
+            settingsUtils);
         return GetModuleStatus(moduleEntry.ModuleName, settingsUtils, gpoEnabledStateProvider);
     }
 

@@ -209,15 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             try
             {
-                if (jsonSettings != null)
-                {
-                    if (!_settingsPath.SettingsFolderExists(powertoy))
-                    {
-                        _settingsPath.CreateSettingsFolder(powertoy);
-                    }
-
-                    _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
-                }
+                SaveSettingsCore(jsonSettings, powertoy, fileName);
             }
             catch (Exception e)
             {
@@ -228,6 +220,32 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     throw;
                 }
 #endif
+            }
+        }
+
+        public virtual void SaveSettingsOrThrow(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+        {
+            try
+            {
+                SaveSettingsCore(jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings)), powertoy, fileName);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
+                throw;
+            }
+        }
+
+        private void SaveSettingsCore(string jsonSettings, string powertoy, string fileName)
+        {
+            if (jsonSettings != null)
+            {
+                if (!_settingsPath.SettingsFolderExists(powertoy))
+                {
+                    _settingsPath.CreateSettingsFolder(powertoy);
+                }
+
+                _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
             }
         }
 

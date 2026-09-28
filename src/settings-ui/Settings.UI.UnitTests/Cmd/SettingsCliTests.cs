@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine.Parsing;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -86,6 +87,19 @@ public class SettingsCliTests
                 _ => true));
     }
 
+    [TestMethod]
+    public void TestSetModuleEnabledPropagatesSaveFailure()
+    {
+        var failingSettingsUtils = new FailingSaveSettingsUtils();
+
+        Assert.ThrowsException<IOException>(() =>
+            SettingsCliHelper.SetModuleEnabled(
+                "FancyZones",
+                enabled: false,
+                failingSettingsUtils,
+                _ => null));
+    }
+
     [DataTestMethod]
     [DataRow("enable")]
     [DataRow("disable")]
@@ -97,5 +111,18 @@ public class SettingsCliTests
         var parseResult = parser.Parse([command]);
 
         Assert.IsTrue(parseResult.Errors.Count > 0);
+    }
+
+    private sealed class FailingSaveSettingsUtils : SettingsUtils
+    {
+        public FailingSaveSettingsUtils()
+            : base(new MockFileSystem())
+        {
+        }
+
+        public override void SaveSettingsOrThrow(string jsonSettings, string powertoy = "", string fileName = SettingsUtils.DefaultFileName)
+        {
+            throw new IOException("Simulated settings write failure.");
+        }
     }
 }
