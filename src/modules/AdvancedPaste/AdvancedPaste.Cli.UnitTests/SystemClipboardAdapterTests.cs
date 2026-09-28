@@ -14,6 +14,38 @@ namespace AdvancedPaste.Cli.UnitTests;
 public class SystemClipboardAdapterTests
 {
     [TestMethod]
+    public void FlushClipboard_RetriesTransientFailures()
+    {
+        var attempts = 0;
+
+        SystemClipboardAdapter.FlushClipboard(() =>
+        {
+            if (++attempts < 3)
+            {
+                throw new InvalidOperationException("Transient flush failure.");
+            }
+        });
+
+        Assert.AreEqual(3, attempts);
+    }
+
+    [TestMethod]
+    public void FlushClipboard_ThrowsAfterFinalFailure()
+    {
+        var attempts = 0;
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            SystemClipboardAdapter.FlushClipboard(() =>
+            {
+                attempts++;
+                throw new InvalidOperationException("Persistent flush failure.");
+            }));
+
+        Assert.AreEqual(5, attempts);
+        Assert.AreEqual("Persistent flush failure.", exception.Message);
+    }
+
+    [TestMethod]
     public async Task RunOnSta_FromMta_ExecutesOnSta()
     {
         var apartment = await Task.Run(() => SystemClipboardAdapter.RunOnSta(() => Thread.CurrentThread.GetApartmentState()));

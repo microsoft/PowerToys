@@ -405,6 +405,17 @@ public class ProgramTests
         Assert.AreEqual("internal_error", document.RootElement.GetProperty("code").GetString());
     }
 
+    [TestMethod]
+    public void DisabledByPolicy_WritesStableJsonError()
+    {
+        var stderr = new StringWriter();
+
+        Assert.IsTrue(Program.TryWritePolicyDisabledError(isEnabledByPolicy: false, ["transform", "--json"], stderr));
+
+        using var document = JsonDocument.Parse(stderr.ToString());
+        Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
+    }
+
     private static async Task<RunResult> RunAsync(
         string[] args,
         string input = "",

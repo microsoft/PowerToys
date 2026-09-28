@@ -57,6 +57,13 @@ public static partial class Program
             TrySetUtf8Output();
             Console.CancelKeyPress += cancelHandler;
             Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs");
+            if (!AdvancedPastePolicy.IsAdvancedPasteEnabled)
+            {
+                Logger.LogWarning("Advanced Paste CLI is disabled by policy.");
+                TryWritePolicyDisabledError(isEnabledByPolicy: false, args, Console.Error);
+                return RuntimeErrorExitCode;
+            }
+
             AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
 
             using var host = Host.CreateDefaultBuilder()
@@ -275,6 +282,17 @@ public static partial class Program
 
     internal static void WriteStartupError(string[] args, TextWriter stderr)
         => WriteError(stderr, args.Contains("--json", StringComparer.Ordinal), "internal_error", "Advanced Paste CLI failed.");
+
+    internal static bool TryWritePolicyDisabledError(bool isEnabledByPolicy, string[] args, TextWriter stderr)
+    {
+        if (isEnabledByPolicy)
+        {
+            return false;
+        }
+
+        WriteError(stderr, args.Contains("--json", StringComparer.Ordinal), "disabled_by_policy", "Advanced Paste is disabled by policy.");
+        return true;
+    }
 
     private static int CountSelected(params bool[] modes)
         => modes.Count(mode => mode);

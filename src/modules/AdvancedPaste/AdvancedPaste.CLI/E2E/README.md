@@ -6,7 +6,7 @@ The executable is the installed CLI target, not the PATH-visible shim; testing
 the shim itself requires an installed PowerToys build.
 
 ```powershell
-$kit = 'C:\PowerToys-4474-3e8f\src\modules\AdvancedPaste\AdvancedPaste.CLI\E2E'; $cli = 'C:\PowerToys-4474-3e8f\x64\Debug\WinUI3Apps\PowerToys.AdvancedPaste.Cli.exe'; $out = Join-Path $env:TEMP 'AdvancedPasteCliE2E'; New-Item -ItemType Directory -Force $out | Out-Null
+$repo = (Resolve-Path (Read-Host 'PowerToys repository root')).Path; $kit = Join-Path $repo 'src\modules\AdvancedPaste\AdvancedPaste.CLI\E2E'; $cli = Join-Path $repo 'x64\Debug\WinUI3Apps\PowerToys.AdvancedPaste.Cli.exe'; $out = Join-Path $env:TEMP 'AdvancedPasteCliE2E'; New-Item -ItemType Directory -Force $out | Out-Null
 ```
 
 Change `$cli` for ARM64, Release, or another worktree. The input fixtures are

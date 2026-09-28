@@ -18,9 +18,29 @@ internal sealed class SystemClipboardAdapter : IClipboardAdapter
         => RunOnSta(() =>
         {
             Clipboard.SetContent(content);
-            Clipboard.Flush();
+            FlushClipboard(Clipboard.Flush);
             return true;
         });
+
+    internal static void FlushClipboard(Action flush)
+    {
+        const int maxAttempts = 5;
+        ExceptionDispatchInfo? failure = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                flush();
+                return;
+            }
+            catch (Exception ex)
+            {
+                failure = ExceptionDispatchInfo.Capture(ex);
+            }
+        }
+
+        failure!.Throw();
+    }
 
     // Async entry points can resume on an MTA thread; clipboard calls always need STA.
     internal static T RunOnSta<T>(Func<T> operation)
