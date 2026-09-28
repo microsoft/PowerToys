@@ -47,11 +47,19 @@
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 
-                    <ItemsRepeater x:Name="EntriesListView" ItemsSource="{x:Bind ViewModel.FilteredEntries, Mode=OneWay}">
-                        <ItemsRepeater.Layout>
-                            <StackLayout Spacing="2" />
-                        </ItemsRepeater.Layout>
-                        <ItemsRepeater.ItemTemplate>
+                    <!--
+                        ItemsControl, not ItemsRepeater: the repeater recycles cards between entries, and
+                        re-binding IsOn on a recycled ToggleSwitch fires Toggled for the new entry, which
+                        opened the confirmation dialog without any click. The list is small enough to
+                        realize in full.
+                    -->
+                    <ItemsControl x:Name="EntriesListView" ItemsSource="{x:Bind ViewModel.FilteredEntries, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ContextMenuEntry">
                                 <tkcontrols:SettingsCard
                                     Margin="{x:Bind IndentMargin}"
@@ -64,8 +72,8 @@
                                         Toggled="ContextMenuEntryToggleSwitch_Toggled" />
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

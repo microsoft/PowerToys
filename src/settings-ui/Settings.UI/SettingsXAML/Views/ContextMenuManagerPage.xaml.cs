@@ -34,7 +34,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void ContextMenuEntryToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             var toggle = (ToggleSwitch)sender;
-            if (toggle.DataContext is not ContextMenuEntry entry)
+
+            // The initial IsOn binding runs before Loaded and must never count as a user toggle.
+            if (!toggle.IsLoaded || toggle.DataContext is not ContextMenuEntry entry)
             {
                 return;
             }
