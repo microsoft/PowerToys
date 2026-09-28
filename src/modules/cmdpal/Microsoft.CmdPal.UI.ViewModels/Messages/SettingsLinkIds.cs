@@ -68,6 +68,7 @@ public static class SettingsLinkIds
     {
         public const string Page = "dock";
         public const string Enabled = "dock-enabled";
+        public const string FocusShortcut = "dock-focus-shortcut";
         public const string AppearanceSection = "dock-appearance";
         public const string Position = "dock-position";
         public const string Size = "dock-size";
