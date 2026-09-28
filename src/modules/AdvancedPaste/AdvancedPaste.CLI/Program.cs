@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -59,13 +60,18 @@ public static partial class Program
             cancellationSource.Cancel();
         };
 
+        var loggerInitialized = false;
         try
         {
             Console.CancelKeyPress += cancelHandler;
-            Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs");
+            loggerInitialized = TryInitializeLogger(() => Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs"));
             if (!AdvancedPastePolicy.IsAdvancedPasteEnabled)
             {
-                Logger.LogWarning("Advanced Paste CLI is disabled by policy.");
+                if (loggerInitialized)
+                {
+                    Logger.LogWarning("Advanced Paste CLI is disabled by policy.");
+                }
+
                 TryWritePolicyDisabledError(isEnabledByPolicy: false, args, Console.Error);
                 return RuntimeErrorExitCode;
             }
@@ -84,7 +90,11 @@ public static partial class Program
         }
         catch (Exception ex)
         {
-            Logger.LogError("Advanced Paste CLI failed.", ex);
+            if (loggerInitialized)
+            {
+                Logger.LogError("Advanced Paste CLI failed.", ex);
+            }
+
             WriteStartupError(args, Console.Error);
             return RuntimeErrorExitCode;
         }
@@ -137,7 +147,13 @@ public static partial class Program
             return await root.InvokeAsync(args);
         }
 
-        var json = args.Contains("--json", StringComparer.Ordinal);
+        var json = parseResult.GetValueForOption(options.Json) ||
+            parseResult.GetValueForOption(options.ListJson);
+        if (args.SequenceEqual(["actions"], StringComparer.Ordinal))
+        {
+            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.");
+        }
+
         if (parseResult.Errors.Count > 0 || parseResult.CommandResult.Command is RootCommand)
         {
             var message = parseResult.Errors.Count > 0
@@ -164,11 +180,6 @@ public static partial class Program
             }
 
             return SuccessExitCode;
-        }
-
-        if (parseResult.CommandResult.Command.Name == "actions")
-        {
-            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.");
         }
 
         try
@@ -292,7 +303,7 @@ public static partial class Program
     }
 
     internal static void WriteStartupError(string[] args, TextWriter stderr)
-        => WriteError(stderr, args.Contains("--json", StringComparer.Ordinal), "internal_error", "Advanced Paste CLI failed.");
+        => WriteError(stderr, IsJsonRequested(args), "internal_error", "Advanced Paste CLI failed.");
 
     internal static bool TryWritePolicyDisabledError(bool isEnabledByPolicy, string[] args, TextWriter stderr)
     {
@@ -301,8 +312,37 @@ public static partial class Program
             return false;
         }
 
-        WriteError(stderr, args.Contains("--json", StringComparer.Ordinal), "disabled_by_policy", "Advanced Paste is disabled by policy.");
+        WriteError(stderr, IsJsonRequested(args), "disabled_by_policy", "Advanced Paste is disabled by policy.");
         return true;
+    }
+
+    internal static bool TryInitializeLogger(Action initializeLogger)
+    {
+        try
+        {
+            initializeLogger();
+            return true;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+        catch (SecurityException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsJsonRequested(string[] args)
+    {
+        var root = CreateRootCommand(out var options);
+        var parseResult = new Parser(root).Parse(args);
+        return parseResult.GetValueForOption(options.Json) ||
+            parseResult.GetValueForOption(options.ListJson);
     }
 
     private static int CountSelected(params bool[] modes)

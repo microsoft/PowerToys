@@ -91,6 +91,28 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task ActionsListJson_ExplicitTrue_IsMachineReadable()
+    {
+        var result = await RunAsync(["actions", "list", "--json=true"]);
+
+        Assert.AreEqual(0, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stdout);
+        Assert.AreEqual("plain-text", document.RootElement[0].GetProperty("name").GetString());
+    }
+
+    [TestMethod]
+    public async Task TransformJson_ExplicitFalse_UsesHumanReadableOutput()
+    {
+        var result = await RunAsync(
+            ["transform", "--format", "plain-text", "--stdin", "--stdout", "--json", "false"],
+            "hello");
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual("hello", result.Stdout);
+        Assert.AreEqual(string.Empty, result.Stderr);
+    }
+
+    [TestMethod]
     public async Task ActionsParentCommand_RequiresListSubcommand()
     {
         var result = await RunAsync(["actions"]);
@@ -264,7 +286,7 @@ public class ProgramTests
             using var cancellation = new CancellationTokenSource();
             cancellation.Cancel();
 
-            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
                 CliOutputWriter.WriteAsync(
                     package,
                     new FileInfo(outputPath),
@@ -297,7 +319,7 @@ public class ProgramTests
 
         try
         {
-            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
                 CliOutputWriter.WriteAsync(
                     package,
                     new FileInfo(outputPath),
@@ -369,7 +391,7 @@ public class ProgramTests
             using var cancellation = new CancellationTokenSource();
             cancellation.Cancel();
 
-            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
                 CliOutputWriter.WriteAsync(
                     package,
                     new FileInfo(outputPath),
@@ -507,6 +529,16 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public void StartupFailure_WithJsonFalse_WritesHumanReadableError()
+    {
+        var stderr = new StringWriter();
+
+        Program.WriteStartupError(["transform", "--json", "false"], stderr);
+
+        StringAssert.Contains(stderr.ToString(), "Error: Advanced Paste CLI failed.");
+    }
+
+    [TestMethod]
     public void DisabledByPolicy_WritesStableJsonError()
     {
         var stderr = new StringWriter();
@@ -515,6 +547,12 @@ public class ProgramTests
 
         using var document = JsonDocument.Parse(stderr.ToString());
         Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
+    }
+
+    [TestMethod]
+    public void LoggerInitializationFailure_DoesNotPreventCliStartup()
+    {
+        Assert.IsFalse(Program.TryInitializeLogger(() => throw new UnauthorizedAccessException()));
     }
 
     private static async Task<RunResult> RunAsync(
