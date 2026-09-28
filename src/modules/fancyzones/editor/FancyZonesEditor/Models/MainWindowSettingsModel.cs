@@ -60,16 +60,16 @@ namespace FancyZonesEditor
             var columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
-                RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
+            columnsModel.RowPercents.Add(GridLayoutModel.GridMultiplier);
             columnsModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Columns, columnsModel);
 
             var rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
-                ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
+            rowsModel.ColumnPercents.Add(GridLayoutModel.GridMultiplier);
             rowsModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Rows, rowsModel);
 
@@ -136,37 +136,28 @@ namespace FancyZonesEditor
 
         public static IList<LayoutModel> TemplateModels { get; } = new List<LayoutModel>(6);
 
-        public static ObservableCollection<LayoutModel> CustomModels
+        public static ObservableCollection<LayoutModel> CustomModels { get; } = new ObservableCollection<LayoutModel>();
+
+        public static void SetCustomModels(IEnumerable<LayoutModel> models)
         {
-            get
+            foreach (LayoutModel model in CustomModels)
             {
-                return _customModels;
+                LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
             }
 
-            set
+            CustomModels.Clear();
+            foreach (LayoutModel model in models)
             {
-                foreach (LayoutModel model in _customModels)
-                {
-                    LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
-                }
-
-                _customModels.Clear();
-                _customModels = value;
-
-                foreach (LayoutModel model in _customModels)
-                {
-                    LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
-                }
+                CustomModels.Add(model);
+                LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
             }
         }
-
-        private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
         public static int CustomModelsCount
         {
             get
             {
-                return _customModels.Count;
+                return CustomModels.Count;
             }
         }
 

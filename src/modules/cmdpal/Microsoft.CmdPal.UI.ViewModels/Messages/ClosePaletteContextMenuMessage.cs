@@ -5,6 +5,6 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to announce that a context menu should close
+/// Requests closing the palette's context menus and cancelling its pending menu opens.
 /// </summary>
-public record CloseContextMenuMessage;
+public record ClosePaletteContextMenuMessage;
