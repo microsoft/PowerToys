@@ -119,6 +119,19 @@ steps:
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
 
+  - pwsh: |-
+      $ErrorActionPreference = 'Stop'
+      $lifecycle = '$(Build.SourcesDirectory)\artifacts\ProtectedStorage\$(BuildPlatform)\$(BuildConfiguration)\Package\PowerToys.ProtectedStorageLifecycle.exe'
+      & .\tools\build\Test-ProtectedStorageMsiTables.ps1 `
+        -MsiPath '$(Build.SourcesDirectory)\$(InstallerMachineRoot)\$(InstallerMachineBasename).msi' `
+        -PerUser false -ExpectedLifecyclePath $lifecycle `
+        -ExtractedBinaryPath '$(Build.SourcesDirectory)\extractedMachineMsi\Binary\PTStorageRemoval'
+      & .\tools\build\Test-ProtectedStorageMsiTables.ps1 `
+        -MsiPath '$(Build.SourcesDirectory)\$(InstallerUserRoot)\$(InstallerUserBasename).msi' `
+        -PerUser true -ExpectedLifecyclePath $lifecycle `
+        -ExtractedBinaryPath '$(Build.SourcesDirectory)\extractedUserMsi\Binary\PTStorageRemoval'
+    displayName: Verify compiled Protected Storage uninstall hooks in both MSI scopes
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'

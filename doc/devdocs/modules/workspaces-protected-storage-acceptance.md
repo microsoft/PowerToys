@@ -30,7 +30,7 @@ Use separate actual interactive accounts A and B. A Session-0 synthetic token ru
 | BUILD-01 | Native Common/Client/Bootstrap/Runtime | x64 production configurations compile and link; no test-only authorization bypass |
 | BUILD-02 | Setup/Broker/Lifecycle/MsiAction/carrier | Build order and resource embedding are deterministic; no production signing key is synthesized |
 | BUILD-03 | Managed client and Workspaces integration | All changed native/managed consumers compile against the same contract; analyzer failures are resolved |
-| BUILD-04 | Main updater/installer integration | Main product and carrier scopes remain separate; both per-user and per-machine authoring compile |
+| BUILD-04 | Main updater/installer integration | Both scopes compile; inspect linked MSI tables and exact Lifecycle bytes: SYSTEM commit cleanup exists only in the per-machine package, with KeepData and major-upgrade exclusion |
 | BUILD-05 | ARM64 | Compile/link/package native ARM64 and matching managed payloads; execute on an ARM64 test machine before release |
 | UNIT-01 | Wire framing | Invalid lengths, overflow, malformed UTF-8, unknown commands/versions, trailing data and truncated replies are rejected |
 | UNIT-02 | Serialization consistency | Native and managed clients share golden vectors, including 64-bit values, Unicode, empty content and operation IDs |

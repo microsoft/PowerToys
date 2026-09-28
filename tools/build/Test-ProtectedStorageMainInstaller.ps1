@@ -113,8 +113,18 @@ if ($Compile) {
                 -d "ProtectedStorageSetupPath=$binaryPath" -d "ProtectedStorageLifecyclePath=$lifecyclePath" `
                 -pdbtype none -o (Join-Path $scratch "$perUser.msi")
             if ($LASTEXITCODE) { throw "Main installer fragment failed WiX compilation for PerUser=$perUser ($LASTEXITCODE)." }
+            $extracted = Join-Path $scratch "Extracted-$perUser"
+            & dotnet $wix msi decompile (Join-Path $scratch "$perUser.msi") `
+                -x $extracted -o (Join-Path $scratch "$perUser.wxs") -intermediateFolder (Join-Path $scratch "Intermediate-$perUser")
+            if ($LASTEXITCODE) { throw "Main installer fixture extraction failed for PerUser=$perUser ($LASTEXITCODE)." }
+            & (Join-Path $PSScriptRoot 'Test-ProtectedStorageMsiTables.ps1') `
+                -MsiPath (Join-Path $scratch "$perUser.msi") -PerUser $perUser `
+                -ExpectedLifecyclePath $lifecyclePath -ExtractedBinaryPath (Join-Path $extracted 'Binary\PTStorageRemoval')
         }
-        $baFunction = Join-Path $repo "$Platform\$Configuration\SilentFilesInUseBAFunction.dll"
+        $baFunction = Join-Path $repo "installer\$Platform\$Configuration\SilentFilesInUseBAFunction.dll"
+        if (!(Test-Path -LiteralPath $baFunction)) {
+            $baFunction = Join-Path $repo "$Platform\$Configuration\SilentFilesInUseBAFunction.dll"
+        }
         if (!(Test-Path -LiteralPath $baFunction)) {
             $baFunction = Join-Path $installer "SilentFilesInUseBA\$Platform\$Configuration\SilentFilesInUseBAFunction.dll"
         }
@@ -127,8 +137,7 @@ if ($Compile) {
     }
     finally {
         Pop-Location
-        foreach ($file in Get-ChildItem -LiteralPath $scratch -File) { Remove-Item -LiteralPath $file.FullName -Force }
-        Remove-Item -LiteralPath $scratch
+        Remove-Item -LiteralPath $scratch -Recurse -Force
     }
 }
 Write-Host 'PASS main-installer integration: release gate, single Setup component, machine-only embedded commit cleanup, upgrade guard, catalog role and solution references.'

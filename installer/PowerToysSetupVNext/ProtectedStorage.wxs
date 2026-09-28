@@ -15,6 +15,10 @@
     <ComponentGroup Id="ProtectedStorageComponents">
       <ComponentRef Id="ProtectedStorageSetupComponent" />
     </ComponentGroup>
+    <?if $(var.PerUser) = "false" ?>
+    <!-- Keep the separate cleanup fragment reachable from the installed component group. -->
+    <CustomActionRef Id="RemoveProtectedStorageInstances" />
+    <?endif?>
   </Fragment>
 
   <?if $(var.PerUser) = "false" ?>

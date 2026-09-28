@@ -438,11 +438,24 @@ The exact fixed backend command is:
 PowerToys.ProtectedStorageLifecycle.exe machine-remove --keep-data
 ```
 
-Schedule it deferred, no-impersonate, **only in the per-machine main package**,
-on final `REMOVE=ALL AND NOT UPGRADINGPRODUCTCODE`. Use best-effort return
+Schedule it as a commit action, no-impersonate, **only in the per-machine main package**,
+on final `Installed AND REMOVE=ALL AND NOT UPGRADINGPRODUCTCODE`. Use best-effort return
 handling (`Return="ignore"` for an EXE CA, or a native wrapper that logs failures
 without rolling back the main uninstall). Do not invoke carrier MSI from this
 action. No main-installer source files are owned by this component.
+
+The fragment containing `ProtectedStorageComponents` must explicitly reference
+`RemoveProtectedStorageInstances` for machine packages. Otherwise WiX can discard
+the separate Binary/action/sequence fragment even though compilation succeeds.
+`Test-ProtectedStorageMsiTables.ps1` checks the linked MSI tables, exact action
+flags, full-removal/upgrade condition, schedule, and embedded Lifecycle bytes.
+It requires all three cleanup entries to be absent from per-user main MSIs.
+The main release pipeline runs it against both actual MSIs after extraction;
+the local authoring fixtures use the same checks without installing anything.
+
+The already-published build `158510076` does not contain this reference and
+therefore lacks the per-machine cleanup hook. This source fix requires a new
+installer build; it does not retroactively change those signed artifacts.
 
 The backend requires SYSTEM and its approved release signature. It enumerates
 only protected owner inventory, holds per-owner maintenance leases, verifies
