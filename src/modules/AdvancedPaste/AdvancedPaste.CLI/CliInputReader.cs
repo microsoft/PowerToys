@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -15,19 +14,7 @@ namespace AdvancedPaste.Cli;
 
 internal static class CliInputReader
 {
-    private static readonly HashSet<string> TextFileExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".csv",
-        ".htm",
-        ".html",
-        ".ini",
-        ".json",
-        ".log",
-        ".markdown",
-        ".md",
-        ".txt",
-        ".xml",
-    };
+    private const int TextDetectionSampleLength = 4096;
 
     internal static async Task<DataPackageView> ReadAsync(
         FileInfo? inputFile,
@@ -59,21 +46,48 @@ internal static class CliInputReader
         var storageFile = await StorageFile.GetFileFromPathAsync(inputFile.FullName);
         package.SetStorageItems([storageFile]);
 
-        if (TextFileExtensions.Contains(inputFile.Extension))
+        using var reader = inputFile.OpenText();
+        var sample = new char[TextDetectionSampleLength];
+        var sampleLength = await reader.ReadAsync(sample.AsMemory(), cancellationToken);
+        if (!LooksLikeText(sample.AsSpan(0, sampleLength)))
         {
-            using var reader = inputFile.OpenText();
-            var text = await ReadBoundedAsync(reader, maximumTextCharacters, cancellationToken);
+            return package.GetView();
+        }
 
-            package.SetText(text);
-            if (text.Length > 0 &&
-                (inputFile.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-                 inputFile.Extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)))
-            {
-                package.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(text));
-            }
+        if (sampleLength > maximumTextCharacters)
+        {
+            throw new InputTooLargeException();
+        }
+
+        var textBuilder = new StringBuilder(sampleLength);
+        textBuilder.Append(sample, 0, sampleLength);
+        textBuilder.Append(await ReadBoundedAsync(reader, maximumTextCharacters - sampleLength, cancellationToken));
+        var text = textBuilder.ToString();
+
+        package.SetText(text);
+        if (text.Length > 0 &&
+            (inputFile.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+             inputFile.Extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)))
+        {
+            package.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(text));
         }
 
         return package.GetView();
+    }
+
+    private static bool LooksLikeText(ReadOnlySpan<char> sample)
+    {
+        foreach (var character in sample)
+        {
+            if (character == '\0' ||
+                character == '\uFFFD' ||
+                (char.IsControl(character) && character is not '\r' and not '\n' and not '\t'))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static async Task<string> ReadBoundedAsync(TextReader reader, int maximumCharacters, CancellationToken cancellationToken)

@@ -47,6 +47,15 @@ public class HeadlessTransformServiceTests
     }
 
     [TestMethod]
+    public void Json_UsesCustomCsvSeparatorAsLiteral()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "sep=|\nname|age\nAda|37");
+
+        StringAssert.Contains(result, "\"Ada\"");
+        StringAssert.Contains(result, "\"37\"");
+    }
+
+    [TestMethod]
     public void Json_ConvertsXml()
     {
         var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "<note><title>Hello</title></note>");

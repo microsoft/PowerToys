@@ -31,6 +31,7 @@ public static class JsonConverter
 
         if (IsJson(text))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return text;
         }
 
@@ -148,6 +149,7 @@ public static class JsonConverter
         {
             var lines = SplitLines(text);
             GetCsvDelimiter(lines, out var delimiter, out var delimiterCount);
+            var delimiterPattern = GetCsvDelimiterPattern(delimiter);
             var csv = new List<IEnumerable<string>>();
             foreach (var line in lines)
             {
@@ -157,13 +159,13 @@ public static class JsonConverter
                     continue;
                 }
 
-                if (Regex.Count(line, delimiter + CsvDelimiterSeparatorRegex) != delimiterCount
+                if (Regex.Count(line, delimiterPattern) != delimiterCount
                     || !int.IsEvenInteger(line.Count(character => character == '"')))
                 {
                     throw new FormatException();
                 }
 
-                csv.Add(Regex.Split(line, delimiter + CsvDelimiterSeparatorRegex, RegexOptions.IgnoreCase)
+                csv.Add(Regex.Split(line, delimiterPattern, RegexOptions.IgnoreCase)
                     .Select(ReplaceQuotationMarksInCsvData));
             }
 
@@ -187,7 +189,7 @@ public static class JsonConverter
             if (separator.Success)
             {
                 delimiter = separator.Groups[1].Value.Trim()[0];
-                delimiterCount = Regex.Count(csvLines[1], delimiter + CsvDelimiterSeparatorRegex, RegexOptions.IgnoreCase);
+                delimiterCount = Regex.Count(csvLines[1], GetCsvDelimiterPattern(delimiter), RegexOptions.IgnoreCase);
             }
         }
 
@@ -195,9 +197,10 @@ public static class JsonConverter
         {
             foreach (var candidate in CsvDelimiters)
             {
-                var firstLineCount = Regex.Count(csvLines[0], candidate + CsvDelimiterSeparatorRegex, RegexOptions.IgnoreCase);
+                var candidatePattern = GetCsvDelimiterPattern(candidate);
+                var firstLineCount = Regex.Count(csvLines[0], candidatePattern, RegexOptions.IgnoreCase);
                 var secondLineCount = csvLines.Length >= 2
-                    ? Regex.Count(csvLines[1], candidate + CsvDelimiterSeparatorRegex, RegexOptions.IgnoreCase)
+                    ? Regex.Count(csvLines[1], candidatePattern, RegexOptions.IgnoreCase)
                     : 0;
                 if (firstLineCount > delimiterCount && (secondLineCount == 0 || secondLineCount == firstLineCount))
                 {
@@ -206,6 +209,9 @@ public static class JsonConverter
                 }
             }
         }
+
+        private static string GetCsvDelimiterPattern(char delimiter)
+            => Regex.Escape(delimiter.ToString()) + CsvDelimiterSeparatorRegex;
 
         if (delimiterCount == 0)
         {

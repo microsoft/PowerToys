@@ -39,6 +39,55 @@ public class CliInputReaderTests
         }
     }
 
+    [TestMethod]
+    public async Task TextFilesWithUnlistedOrNoExtension_AreReadAsText()
+    {
+        foreach (var extension in new[] { ".cs", string.Empty })
+        {
+            var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}{extension}");
+            await File.WriteAllTextAsync(inputPath, "var answer = 42;");
+            try
+            {
+                var input = await CliInputReader.ReadAsync(
+                    inputFile: new FileInfo(inputPath),
+                    stdinRequested: false,
+                    clipboard: new TestClipboardAdapter(),
+                    stdin: TextReader.Null,
+                    maximumTextCharacters: 100,
+                    cancellationToken: CancellationToken.None);
+
+                Assert.AreEqual("var answer = 42;", await input.GetTextAsync());
+            }
+            finally
+            {
+                File.Delete(inputPath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task BinaryFile_IsNotExposedAsText()
+    {
+        var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.bin");
+        await File.WriteAllBytesAsync(inputPath, [0, 1, 2, 0, 255]);
+        try
+        {
+            var input = await CliInputReader.ReadAsync(
+                inputFile: new FileInfo(inputPath),
+                stdinRequested: false,
+                clipboard: new TestClipboardAdapter(),
+                stdin: TextReader.Null,
+                maximumTextCharacters: 100,
+                cancellationToken: CancellationToken.None);
+
+            Assert.IsFalse(input.Contains(StandardDataFormats.Text));
+        }
+        finally
+        {
+            File.Delete(inputPath);
+        }
+    }
+
     private sealed class TestClipboardAdapter : IClipboardAdapter
     {
         public DataPackageView Read() => throw new NotSupportedException();
