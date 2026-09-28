@@ -145,7 +145,7 @@ public static class TransformHelpers
         var prefix = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsFile_FilePrefix");
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
 
-        return Path.Combine(Path.GetTempPath(), $"{prefix}{timestamp}.{fileExtension}");
+        return Path.Combine(AdvancedPasteTempFileManager.CreateDirectory().FullName, $"{prefix}{timestamp}.{fileExtension}");
     }
 
     private static DataPackage CreateDataPackageFromText(string content) => DataPackageHelpers.CreateFromText(content);

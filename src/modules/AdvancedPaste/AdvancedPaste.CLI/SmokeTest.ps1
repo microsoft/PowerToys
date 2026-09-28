@@ -24,7 +24,7 @@ try {
     & $Executable --help | Out-Null
     Assert-ExitCode 0 'Help'
 
-    $json = "name,age`nAda,37" | & $Executable transform --format json --stdin
+    $json = "name,age`nAda,37" | & $Executable transform --format json --stdin --stdout
     Assert-ExitCode 0 'Standard input to standard output'
     if (($json | ConvertFrom-Json)[1][0] -ne 'Ada') {
         throw 'CSV input did not produce the expected JSON output.'
@@ -36,7 +36,7 @@ try {
         throw 'HTML input did not produce the expected Markdown output.'
     }
 
-    $envelope = 'hello' | & $Executable transform --format plain-text --stdin --json | ConvertFrom-Json
+    $envelope = 'hello' | & $Executable transform --format plain-text --stdin --stdout --json | ConvertFrom-Json
     Assert-ExitCode 0 'JSON success output'
     if ($envelope.status -ne 'success' -or $envelope.output.TrimEnd() -ne 'hello') {
         throw 'The JSON success envelope was not valid.'

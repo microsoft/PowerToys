@@ -20,17 +20,22 @@ TODO: Add implementation details
 
 ### Headless CLI
 
-`PowerToys.AdvancedPaste.CLI.exe` runs deterministic transformations without starting the Advanced Paste UI or communicating with Runner. It supports `plain-text`, `markdown` (HTML/text to Markdown), and `json` (JSON passthrough or XML/INI/CSV/plain-text conversion). AI, OCR, paste-as-file, and media-transcoding transformations are intentionally unavailable because they need module lifecycle, provider, or WinRT media infrastructure.
+`PowerToys.AdvancedPaste.CLI.exe` runs Advanced Paste actions without starting the Advanced Paste UI or communicating with Runner. It loads the same shared action engine, settings, policy, credential-vault entries, AI providers, OCR, and media-transcoding implementation used by the UI.
 
 ```powershell
-Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --format plain-text --stdin
-PowerToys.AdvancedPaste.CLI.exe transform --format markdown --input notes.html --output notes.md
-PowerToys.AdvancedPaste.CLI.exe transform --format json --input notes.csv --json
+Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --action plain-text --stdin --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action markdown --input notes.html --output notes.md
+PowerToys.AdvancedPaste.CLI.exe transform --action image-to-text --input screenshot.png --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action transcode-to-mp3 --input recording.mp4 --output recording.mp3
+PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize this" --clipboard
+PowerToys.AdvancedPaste.CLI.exe transform --custom-action 3 --clipboard
 ```
 
-Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to stdout; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. `--clipboard` and `--output-clipboard` are explicit and never simulate paste keys. Inputs are limited to 16 MiB and raw input/output is never written to the CLI log.
+Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to the clipboard; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. Clipboard output sets content but never simulates paste keys. Text inputs are limited to 16 MiB and raw input, prompts, and output are never written to the CLI log. `--format` remains an alias for `--action`.
 
-`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `format`, `outputPath`, `outputClipboard`, `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, clipboard, or transformation failures, and `2` for parser/argument errors.
+Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. AI actions honor the configured provider, GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
+
+`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
 
 Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
 

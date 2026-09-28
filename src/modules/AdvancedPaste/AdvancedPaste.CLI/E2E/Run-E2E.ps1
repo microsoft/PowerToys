@@ -28,7 +28,7 @@ try {
         throw 'Transform help does not describe --format.'
     }
 
-    $plainText = & $Executable transform --format plain-text --input (Join-Path $PSScriptRoot 'plain.txt')
+    $plainText = & $Executable transform --format plain-text --input (Join-Path $PSScriptRoot 'plain.txt') --stdout
     Assert-ExitCode 0 'Plain-text file to stdout'
     if (($plainText -join "`n") -notmatch 'This line stays plain text') {
         throw 'Plain-text output did not match the fixture.'
@@ -42,7 +42,7 @@ try {
         throw 'Markdown file is missing bold text or contains script content.'
     }
 
-    $csv = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'people.csv')
+    $csv = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'people.csv') --stdout
     Assert-ExitCode 0 'CSV file to JSON stdout'
     if (($csv | ConvertFrom-Json)[1][0] -ne 'Ada') {
         throw 'CSV conversion did not contain Ada in the first data row.'
@@ -55,23 +55,23 @@ try {
         throw 'XML conversion did not contain the expected owner.'
     }
 
-    $ini = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'config.ini')
+    $ini = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'config.ini') --stdout
     Assert-ExitCode 0 'INI file to JSON stdout'
     if (($ini | ConvertFrom-Json).general.name -ne 'PowerToys') {
         throw 'INI conversion did not contain the expected name.'
     }
 
     $originalJson = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot 'existing.json'))
-    $passthrough = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'existing.json')
+    $passthrough = & $Executable transform --format json --input (Join-Path $PSScriptRoot 'existing.json') --stdout
     Assert-ExitCode 0 'JSON passthrough'
     if (($passthrough -join "`n").TrimEnd() -ne $originalJson.TrimEnd()) {
         throw 'Existing JSON was not preserved.'
     }
 
-    $envelope = 'hello' | & $Executable transform --format plain-text --stdin --json
+    $envelope = 'hello' | & $Executable transform --format plain-text --stdin --stdout --json
     Assert-ExitCode 0 'Standard input to machine-readable stdout'
     $result = $envelope | ConvertFrom-Json
-    if ($result.status -ne 'success' -or $result.format -ne 'plain-text' -or $result.output.TrimEnd() -ne 'hello') {
+    if ($result.status -ne 'success' -or $result.action -ne 'plain-text' -or $result.output.TrimEnd() -ne 'hello') {
         throw 'JSON success envelope did not contain the expected values.'
     }
 

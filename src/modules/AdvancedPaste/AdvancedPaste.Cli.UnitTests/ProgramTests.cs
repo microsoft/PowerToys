@@ -3,12 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Cli;
+using AdvancedPaste.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -18,7 +22,7 @@ public class ProgramTests
     [TestMethod]
     public async Task StdinToStdout_TransformsJson()
     {
-        var result = await RunAsync(["transform", "--format", "json", "--stdin"], "name,age\r\nAda,37");
+        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--stdout"], "name,age\r\nAda,37");
 
         Assert.AreEqual(0, result.ExitCode);
         StringAssert.Contains(result.Stdout, "\"Ada\"");
@@ -28,7 +32,7 @@ public class ProgramTests
     [TestMethod]
     public async Task FileInputAndOutput_TransformsMarkdown()
     {
-        var inputPath = Path.GetTempFileName();
+        var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
         var outputPath = Path.GetTempFileName();
         try
         {
@@ -49,11 +53,72 @@ public class ProgramTests
     public async Task ClipboardInputAndOutput_UsesClipboardAdapter()
     {
         var clipboard = new TestClipboardAdapter("text");
-        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard", "--output-clipboard"], clipboard: clipboard);
+        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard"], clipboard: clipboard);
 
         Assert.AreEqual(0, result.ExitCode);
-        Assert.AreEqual("text", clipboard.WrittenText);
-        Assert.AreEqual(AdvancedPaste.Core.HeadlessTransformFormat.PlainText, clipboard.ReadFormat);
+        Assert.AreEqual("text", await clipboard.WrittenContent!.GetView().GetTextAsync());
+    }
+
+    [TestMethod]
+    public async Task DefaultOutput_WritesClipboardAndNotStdout()
+    {
+        var clipboard = new TestClipboardAdapter();
+        var result = await RunAsync(["transform", "--action", "plain-text", "--stdin"], "hello", clipboard);
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual(string.Empty, result.Stdout);
+        Assert.AreEqual("hello", await clipboard.WrittenContent!.GetView().GetTextAsync());
+    }
+
+    [TestMethod]
+    public async Task PasteWithAi_RequiresPrompt()
+    {
+        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--stdin"], "hello");
+
+        Assert.AreEqual(2, result.ExitCode);
+        StringAssert.Contains(result.Stderr, "prompt");
+    }
+
+    [TestMethod]
+    public async Task ActionsListJson_IsMachineReadable()
+    {
+        var result = await RunAsync(["actions", "list", "--json"]);
+
+        Assert.AreEqual(0, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stdout);
+        Assert.AreEqual("plain-text", document.RootElement[0].GetProperty("name").GetString());
+    }
+
+    [TestMethod]
+    public async Task PasteWithAi_WithPromptReachesRuntime()
+    {
+        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--prompt", "Summarize", "--stdin", "--stdout"], "hello");
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual("hello", result.Stdout);
+    }
+
+    [TestMethod]
+    public async Task SavedCustomAction_ReachesRuntime()
+    {
+        var result = await RunAsync(["transform", "--custom-action", "7", "--stdin", "--stdout"], "hello");
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual("hello", result.Stdout);
+    }
+
+    [TestMethod]
+    public async Task FileResultToStdout_ReturnsRuntimeError()
+    {
+        var runtime = new FileResultRuntime();
+        var result = await RunAsync(
+            ["transform", "--action", "paste-as-txt-file", "--stdin", "--stdout", "--json"],
+            "hello",
+            runtime: runtime);
+
+        Assert.AreEqual(1, result.ExitCode);
+        StringAssert.Contains(result.Stderr, "unsupported_output");
+        File.Delete(runtime.OutputPath);
     }
 
     [TestMethod]
@@ -90,7 +155,7 @@ public class ProgramTests
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
-        Assert.AreEqual("invalid_arguments", document.RootElement.GetProperty("code").GetString());
+        Assert.AreEqual("invalid_action", document.RootElement.GetProperty("code").GetString());
         StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "PowerToys.AdvancedPaste.CLI.exe transform");
     }
 
@@ -149,7 +214,7 @@ public class ProgramTests
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
-        Assert.AreEqual("unsupported_format", document.RootElement.GetProperty("code").GetString());
+        Assert.AreEqual("unsupported_action", document.RootElement.GetProperty("code").GetString());
     }
 
     [TestMethod]
@@ -160,14 +225,14 @@ public class ProgramTests
         Assert.AreEqual(0, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stdout);
         Assert.AreEqual("success", document.RootElement.GetProperty("status").GetString());
-        Assert.AreEqual("plain-text", document.RootElement.GetProperty("format").GetString());
+        Assert.AreEqual("plain-text", document.RootElement.GetProperty("action").GetString());
         Assert.AreEqual("hello", document.RootElement.GetProperty("output").GetString());
     }
 
     [TestMethod]
     public async Task Format_IsCaseInsensitive()
     {
-        var result = await RunAsync(["transform", "--format", "JSON", "--stdin"], "hello");
+        var result = await RunAsync(["transform", "--format", "JSON", "--stdin", "--stdout"], "hello");
 
         Assert.AreEqual(0, result.ExitCode);
         StringAssert.Contains(result.Stdout, "hello");
@@ -188,11 +253,12 @@ public class ProgramTests
         string[] args,
         string input = "",
         TestClipboardAdapter? clipboard = null,
+        IAdvancedPasteRuntime? runtime = null,
         CancellationToken cancellationToken = default)
     {
         var stdout = new StringWriter();
         var stderr = new StringWriter();
-        var exitCode = await Program.RunAsync(args, new StringReader(input), stdout, stderr, clipboard ?? new TestClipboardAdapter(), cancellationToken);
+        var exitCode = await Program.RunAsync(args, new StringReader(input), stdout, stderr, clipboard ?? new TestClipboardAdapter(), runtime ?? new TestRuntime(), cancellationToken);
         return new RunResult(exitCode, stdout.ToString(), stderr.ToString());
     }
 
@@ -202,21 +268,65 @@ public class ProgramTests
     {
         public TestClipboardAdapter(string text = "")
         {
-            Text = text;
+            var package = new DataPackage();
+            if (!string.IsNullOrEmpty(text))
+            {
+                package.SetText(text);
+            }
+
+            Content = package;
         }
 
-        public string Text { get; }
+        public DataPackage Content { get; }
 
-        public string? WrittenText { get; private set; }
+        public DataPackage? WrittenContent { get; private set; }
 
-        public AdvancedPaste.Core.HeadlessTransformFormat? ReadFormat { get; private set; }
+        public DataPackageView Read() => Content.GetView();
 
-        public string ReadText(AdvancedPaste.Core.HeadlessTransformFormat format)
+        public void Write(DataPackage content) => WrittenContent = content;
+    }
+
+    private sealed class TestRuntime : IAdvancedPasteRuntime
+    {
+        public IReadOnlyList<CliActionDescriptor> GetActions()
+            => [new("plain-text", "built-in", null, RequiresPrompt: false)];
+
+        public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
         {
-            ReadFormat = format;
-            return Text;
-        }
+            cancellationToken.ThrowIfCancellationRequested();
+            var text = input.Contains(StandardDataFormats.Html) && string.Equals(request.Action, "markdown", StringComparison.OrdinalIgnoreCase)
+                ? await input.GetHtmlFormatAsync()
+                : await input.GetTextAsync();
+            var format = request.CustomAction is not null || string.Equals(request.Action, "paste-with-ai", StringComparison.OrdinalIgnoreCase)
+                ? HeadlessTransformFormat.PlainText
+                : request.Action?.ToLowerInvariant() switch
+            {
+                "plain-text" => HeadlessTransformFormat.PlainText,
+                "markdown" => HeadlessTransformFormat.Markdown,
+                "json" => HeadlessTransformFormat.Json,
+                _ => throw new ArgumentException("Unsupported test action."),
+            };
 
-        public void WriteText(string text) => WrittenText = text;
+            var output = new DataPackage();
+            output.SetText(HeadlessTransformService.Transform(format, text, cancellationToken));
+            return output;
+        }
+    }
+
+    private sealed class FileResultRuntime : IAdvancedPasteRuntime
+    {
+        public string OutputPath { get; private set; } = string.Empty;
+
+        public IReadOnlyList<CliActionDescriptor> GetActions() => [];
+
+        public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
+        {
+            OutputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
+            await File.WriteAllTextAsync(OutputPath, await input.GetTextAsync(), cancellationToken);
+            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(OutputPath);
+            var output = new DataPackage();
+            output.SetStorageItems([file]);
+            return output;
+        }
     }
 }

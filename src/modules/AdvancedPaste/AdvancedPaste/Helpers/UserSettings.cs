@@ -78,7 +78,9 @@ namespace AdvancedPaste.Settings
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
-            _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            _taskScheduler = SynchronizationContext.Current is null
+                ? TaskScheduler.Default
+                : TaskScheduler.FromCurrentSynchronizationContext();
 
             LoadSettingsFromJson();
 

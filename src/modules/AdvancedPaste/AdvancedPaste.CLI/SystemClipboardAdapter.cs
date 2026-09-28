@@ -5,28 +5,20 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Windows.Forms;
-using AdvancedPaste.Core;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Cli;
 
 internal sealed class SystemClipboardAdapter : IClipboardAdapter
 {
-    public string ReadText(HeadlessTransformFormat format)
+    public DataPackageView Read()
+        => RunOnSta(Clipboard.GetContent);
+
+    public void Write(DataPackage content)
         => RunOnSta(() =>
         {
-            if (format == HeadlessTransformFormat.Markdown && Clipboard.ContainsText(TextDataFormat.Html))
-            {
-                return Clipboard.GetText(TextDataFormat.Html);
-            }
-
-            return Clipboard.ContainsText() ? Clipboard.GetText() : string.Empty;
-        });
-
-    public void WriteText(string text)
-        => RunOnSta(() =>
-        {
-            Clipboard.SetText(text);
+            Clipboard.SetContent(content);
+            Clipboard.Flush();
             return true;
         });
 

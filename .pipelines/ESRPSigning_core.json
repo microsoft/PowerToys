@@ -54,6 +54,7 @@
             "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.Core.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Engine.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.dll",
 
