@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.CursorWrap: return GPOWrapper.GetConfiguredCursorWrapEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
+                case ModuleType.ContextMenuManager: return GPOWrapper.GetConfiguredContextMenuManagerEnabledValue();
                 case ModuleType.FancyZones: return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
                 case ModuleType.FileLocksmith: return GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
                 case ModuleType.FindMyMouse: return GPOWrapper.GetConfiguredFindMyMouseEnabledValue();

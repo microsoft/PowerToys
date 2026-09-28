@@ -23,6 +23,7 @@ internal static class ModuleGpoHelper
             ModuleType.CropAndLock => GPOWrapper.GetConfiguredCropAndLockEnabledValue(),
             ModuleType.CursorWrap => GPOWrapper.GetConfiguredCursorWrapEnabledValue(),
             ModuleType.EnvironmentVariables => GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(),
+            ModuleType.ContextMenuManager => GPOWrapper.GetConfiguredContextMenuManagerEnabledValue(),
             ModuleType.FancyZones => GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
             ModuleType.FileLocksmith => GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),
             ModuleType.FindMyMouse => GPOWrapper.GetConfiguredFindMyMouseEnabledValue(),

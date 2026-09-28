@@ -184,6 +184,12 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(IsValidGpoResult(result));
         }
 
+        TEST_METHOD(GetConfiguredContextMenuManagerEnabledValue_ReturnsValidState)
+        {
+            auto result = getConfiguredContextMenuManagerEnabledValue();
+            Assert::IsTrue(IsValidGpoResult(result));
+        }
+
         // All GPO functions should not crash
         TEST_METHOD(AllGpoFunctions_DoNotCrash)
         {
@@ -211,6 +217,7 @@ namespace UnitTestsCommonUtils
             getConfiguredScreenRulerEnabledValue();
             getConfiguredCropAndLockEnabledValue();
             getConfiguredEnvironmentVariablesEnabledValue();
+            getConfiguredContextMenuManagerEnabledValue();
 
             Assert::IsTrue(true);
         }

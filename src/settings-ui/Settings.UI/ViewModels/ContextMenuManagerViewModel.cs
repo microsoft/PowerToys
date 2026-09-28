@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -74,6 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
+        private bool _enabledStateIsGPOConfigured;
         private bool _needsExplorerRestart;
 
         public ObservableCollection<ContextMenuEntry> Entries { get; } = new ObservableCollection<ContextMenuEntry>();
@@ -87,6 +89,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isEnabled;
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
@@ -97,6 +105,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
 
         public bool NeedsExplorerRestart
         {
@@ -121,14 +131,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
             IsElevated = isElevated;
-            _isEnabled = GeneralSettingsConfig.Enabled.ContextMenuManager;
+            InitializeEnabledValue();
 
             LoadEntries();
         }
 
+        private void InitializeEnabledValue()
+        {
+            var gpoRule = GPOWrapper.GetConfiguredContextMenuManagerEnabledValue();
+            _enabledStateIsGPOConfigured = gpoRule == GpoRuleConfigured.Disabled || gpoRule == GpoRuleConfigured.Enabled;
+            _isEnabled = _enabledStateIsGPOConfigured
+                ? gpoRule == GpoRuleConfigured.Enabled
+                : GeneralSettingsConfig.Enabled.ContextMenuManager;
+        }
+
         public void RefreshEnabledState()
         {
-            _isEnabled = GeneralSettingsConfig.Enabled.ContextMenuManager;
+            InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
         }
 

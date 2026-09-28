@@ -13,11 +13,13 @@
     <controls:SettingsPageControl x:Uid="ContextMenuManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/RegistryPreview.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    x:Uid="ContextMenuManager_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="ContextMenuManager_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="ContextMenuManager_PreviewGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar

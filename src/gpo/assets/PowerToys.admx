@@ -176,6 +176,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureEnabledUtilityContextMenuManager" class="Both" displayName="$(string.ConfigureEnabledUtilityContextMenuManager)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityContextMenuManager">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_101_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="ConfigureEnabledUtilityEnvironmentVariables" class="Both" displayName="$(string.ConfigureEnabledUtilityEnvironmentVariables)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityEnvironmentVariables">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />

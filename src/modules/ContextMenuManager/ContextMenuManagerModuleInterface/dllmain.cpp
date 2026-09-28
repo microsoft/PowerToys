@@ -78,10 +78,9 @@ public:
     }
 
     // Return the configured status for the gpo policy for the module.
-    // No dedicated GPO policy for v1 - module-enable via EnabledModules only.
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::gpo_rule_configured_not_configured;
+        return powertoys_gpo::getConfiguredContextMenuManagerEnabledValue();
     }
 
     // Returns whether the PowerToys should be enabled by default

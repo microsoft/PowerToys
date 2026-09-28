@@ -69,6 +69,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS = L"ConfigureEnabledUtilityMouseWithoutBorders";
     const std::wstring POLICY_CONFIGURE_ENABLED_PEEK = L"ConfigureEnabledUtilityPeek";
     const std::wstring POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES = L"ConfigureEnabledUtilityEnvironmentVariables";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CONTEXT_MENU_MANAGER = L"ConfigureEnabledUtilityContextMenuManager";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
@@ -510,6 +511,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredEnvironmentVariablesEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES);
+    }
+
+    inline gpo_rule_configured_t getConfiguredContextMenuManagerEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CONTEXT_MENU_MANAGER);
     }
 
     inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()

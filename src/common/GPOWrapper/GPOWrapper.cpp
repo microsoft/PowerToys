@@ -208,6 +208,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredContextMenuManagerEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredContextMenuManagerEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredQoiPreviewEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQoiPreviewEnabledValue());

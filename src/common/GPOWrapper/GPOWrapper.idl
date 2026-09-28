@@ -62,6 +62,7 @@ namespace PowerToys
             static GpoRuleConfigured GetAllowExperimentationValue();
             static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);
             static GpoRuleConfigured GetConfiguredEnvironmentVariablesEnabledValue();
+            static GpoRuleConfigured GetConfiguredContextMenuManagerEnabledValue();
             static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
             static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
