@@ -20,104 +20,6 @@
                 </tkcontrols:SettingsCard>
 
                 <controls:SettingsGroup x:Uid="ContextMenuManager_PreviewGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ContextMenuManager_PreviewTargetCard">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <ProgressRing
-                                Width="20"
-                                Height="20"
-                                IsActive="{x:Bind ViewModel.IsCapturing, Mode=OneWay}" />
-                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PreviewTargetIndex, Mode=TwoWay}">
-                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Desktop" />
-                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_FolderBackground" />
-                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Folder" />
-                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_File" />
-                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Drive" />
-                            </ComboBox>
-                            <Button
-                                x:Uid="ContextMenuManager_CaptureButton"
-                                Command="{x:Bind ViewModel.CaptureRealMenuCommand}"
-                                IsEnabled="{x:Bind ViewModel.IsNotCapturing, Mode=OneWay}" />
-                        </StackPanel>
-                    </tkcontrols:SettingsCard>
-
-                    <InfoBar
-                        x:Uid="ContextMenuManager_CaptureErrorNotice"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.HasCaptureError, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.CaptureError, Mode=OneWay}"
-                        Severity="Warning" />
-
-                    <!--  Styled after the classic Explorer context menu.  -->
-                    <Border
-                        Width="340"
-                        Padding="4"
-                        HorizontalAlignment="Left"
-                        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8">
-                        <StackPanel>
-                            <TextBlock
-                                Margin="12,4,12,4"
-                                Opacity="0.6"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{x:Bind ViewModel.PreviewSourceText, Mode=OneWay}" />
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.PreviewItems, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="viewModels:ContextMenuPreviewItem">
-                                        <Grid>
-                                            <Rectangle
-                                                Height="1"
-                                                Margin="0,4"
-                                                Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-                                                Visibility="{x:Bind IsSeparator}" />
-                                            <Button
-                                                Padding="12,5"
-                                                HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Stretch"
-                                                Background="Transparent"
-                                                BorderThickness="0"
-                                                Click="PreviewItem_Click"
-                                                DataContext="{x:Bind}"
-                                                Visibility="{x:Bind IsItem}">
-                                                <Grid ColumnSpacing="8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="12" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <Image
-                                                        Width="16"
-                                                        Height="16"
-                                                        Source="{x:Bind Icon}" />
-                                                    <TextBlock
-                                                        Grid.Column="1"
-                                                        Opacity="{x:Bind TextOpacity}"
-                                                        Text="{x:Bind Text}"
-                                                        TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock
-                                                        Grid.Column="2"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="12"
-                                                        Opacity="0.6"
-                                                        Text="{x:Bind Shortcut}" />
-                                                    <FontIcon
-                                                        Grid.Column="3"
-                                                        FontSize="10"
-                                                        Glyph="&#xE76C;"
-                                                        Visibility="{x:Bind HasChildren}" />
-                                                </Grid>
-                                            </Button>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="ContextMenuManager_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         x:Uid="ContextMenuManager_HklmElevationNotice"
                         IsClosable="False"
@@ -134,48 +36,168 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard x:Uid="ContextMenuManager_SearchAndRefresh">
+                    <tkcontrols:SettingsCard x:Uid="ContextMenuManager_PreviewTargetCard">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <AutoSuggestBox
-                                x:Uid="ContextMenuManager_SearchBox"
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                QueryIcon="Find"
-                                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <ProgressRing
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind ViewModel.IsCapturing, Mode=OneWay}" />
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PreviewTargetIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Desktop" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_FolderBackground" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Folder" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_File" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Drive" />
+                            </ComboBox>
                             <Button x:Uid="ContextMenuManager_RefreshButton" Command="{x:Bind ViewModel.RefreshCommand}" />
                             <Button x:Uid="ContextMenuManager_RestartExplorerButtonInline" Command="{x:Bind ViewModel.RestartExplorerCommand}" />
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 
-                    <!--
-                        ItemsControl, not ItemsRepeater: the repeater recycles cards between entries, and
-                        re-binding IsOn on a recycled ToggleSwitch fires Toggled for the new entry, which
-                        opened the confirmation dialog without any click. The list is small enough to
-                        realize in full.
-                    -->
-                    <ItemsControl x:Name="EntriesListView" ItemsSource="{x:Bind ViewModel.FilteredEntries, Mode=OneWay}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="2" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:ContextMenuEntry">
-                                <tkcontrols:SettingsCard
-                                    Margin="{x:Bind IndentMargin}"
-                                    Description="{x:Bind ScopeAndSourceDisplayName}"
-                                    Header="{x:Bind DisplayName}">
-                                    <tkcontrols:SettingsCard.HeaderIcon>
-                                        <ImageIcon Source="{x:Bind Icon, Mode=OneWay}" />
-                                    </tkcontrols:SettingsCard.HeaderIcon>
+                    <InfoBar
+                        x:Uid="ContextMenuManager_CaptureErrorNotice"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasCaptureError, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.CaptureError, Mode=OneWay}"
+                        Severity="Warning" />
+
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Styled after the classic Explorer context menu.  -->
+                        <Border
+                            Width="340"
+                            Padding="4"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <StackPanel>
+                                <HyperlinkButton
+                                    x:Uid="ContextMenuManager_PreviewBackButton"
+                                    Margin="4,0,4,4"
+                                    Command="{x:Bind ViewModel.BackToModernMenuCommand}"
+                                    Visibility="{x:Bind ViewModel.CanGoBackToModernMenu, Mode=OneWay}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.PreviewItems, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:ContextMenuPreviewItem">
+                                            <Grid>
+                                                <Rectangle
+                                                    Height="1"
+                                                    Margin="0,4"
+                                                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                                    Visibility="{x:Bind IsSeparator}" />
+                                                <TextBlock
+                                                    Margin="12,4,12,2"
+                                                    Opacity="0.6"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Text}"
+                                                    Visibility="{x:Bind IsHeader}" />
+                                                <Button
+                                                    Padding="12,5"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Click="PreviewItem_Click"
+                                                    DataContext="{x:Bind}"
+                                                    Visibility="{x:Bind IsItem}">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="20" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="12" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image
+                                                            Width="16"
+                                                            Height="16"
+                                                            Opacity="{x:Bind TextOpacity}"
+                                                            Source="{x:Bind Icon}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Opacity="{x:Bind TextOpacity}"
+                                                            Text="{x:Bind Text}"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock
+                                                            Grid.Column="2"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="12"
+                                                            Opacity="0.6"
+                                                            Text="{x:Bind SideText}" />
+                                                        <FontIcon
+                                                            Grid.Column="3"
+                                                            FontSize="10"
+                                                            Glyph="&#xE76C;"
+                                                            Visibility="{x:Bind HasChildren}" />
+                                                    </Grid>
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Details of the clicked menu item.  -->
+                        <Border
+                            Grid.Column="1"
+                            Padding="16"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}">
+                            <Grid>
+                                <TextBlock
+                                    x:Uid="ContextMenuManager_DetailsPlaceholder"
+                                    Opacity="0.6"
+                                    TextWrapping="Wrap"
+                                    Visibility="{x:Bind ViewModel.HasNoSelection, Mode=OneWay}" />
+                                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Image
+                                            Width="20"
+                                            Height="20"
+                                            Source="{x:Bind ViewModel.SelectedPreviewItem.Icon, Mode=OneWay}" />
+                                        <TextBlock
+                                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.SelectedPreviewItem.Text, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Opacity="0.8"
+                                        Text="{x:Bind ViewModel.SelectedDescription, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasSelectedEntry, Mode=OneWay}">
+                                        <TextBlock x:Uid="ContextMenuManager_DetailsLocationHeader" Style="{StaticResource CaptionTextBlockStyle}" />
+                                        <TextBlock
+                                            FontFamily="Consolas"
+                                            FontSize="12"
+                                            IsTextSelectionEnabled="True"
+                                            Text="{x:Bind ViewModel.SelectedLocation, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        x:Uid="ContextMenuManager_DetailsExtensionNote"
+                                        Opacity="0.8"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind ViewModel.IsSelectedExtension, Mode=OneWay}" />
                                     <ToggleSwitch
-                                        DataContext="{x:Bind}"
-                                        IsEnabled="{x:Bind IsToggleable, Mode=OneWay}"
-                                        IsOn="{x:Bind IsEnabled, Mode=OneWay}"
-                                        Toggled="ContextMenuEntryToggleSwitch_Toggled" />
-                                </tkcontrols:SettingsCard>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                        x:Uid="ContextMenuManager_DetailsToggle"
+                                        IsEnabled="{x:Bind ViewModel.SelectedEntry.IsToggleable, Mode=OneWay, FallbackValue=False}"
+                                        IsOn="{x:Bind ViewModel.SelectedEntry.IsEnabled, Mode=OneWay, FallbackValue=False}"
+                                        Toggled="DetailsToggleSwitch_Toggled"
+                                        Visibility="{x:Bind ViewModel.HasSelectedEntry, Mode=OneWay}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

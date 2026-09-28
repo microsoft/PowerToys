@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -10,29 +11,56 @@ using System.Text.Json;
 namespace PowerToys.ContextMenuManager.MenuCapture
 {
     // Builds the real Explorer context menu for a sample target and prints it as JSON:
-    // [{ "text", "shortcut", "verb", "disabled", "separator", "icon": { "w", "h", "bgra" }, "children": [...] }]
+    // {
+    //   "items": [{ "text", "shortcut", "verb", "disabled", "separator", "icon": { "w", "h", "bgra" }, "children": [...] }],
+    //   "handlers": { "<clsid>": ["top-level text", ...] }
+    // }
+    // "handlers" answers which extension added which item: every CLSID passed with --probe is loaded
+    // on its own against the same sample and asked for its items. Explorer's merged menu keeps no
+    // record of that.
     //
     // Runs as its own process on purpose: building the menu loads every registered shell
     // extension, and a misbehaving third-party DLL must not be able to take the Settings UI down.
     // A fresh process also has no cached handlers, so the result reflects the registry right now.
+    // PIDLs and COM pointers are left to process exit on purpose.
     internal static class Program
     {
         private const int MaxDepth = 4;
         private const uint FirstCommandId = 1;
 
+        // The right-clicked object as a shell extension sees it in IShellExtInit.Initialize.
+        private sealed class Sample
+        {
+            public IContextMenu Menu { get; init; }
+
+            public IntPtr FolderPidl { get; init; }
+
+            public IntPtr DataObject { get; init; }
+        }
+
         [STAThread]
         private static int Main(string[] args)
         {
-            string target = args.Length == 2 && args[0] == "--target" ? args[1] : null;
+            string target = null;
+            string probe = null;
+            for (int i = 0; i + 1 < args.Length; i += 2)
+            {
+                switch (args[i])
+                {
+                    case "--target": target = args[i + 1]; break;
+                    case "--probe": probe = args[i + 1]; break;
+                }
+            }
+
             if (target == null)
             {
-                Console.Error.WriteLine("Usage: --target desktop|background|folder|file|drive");
+                Console.Error.WriteLine("Usage: --target desktop|background|folder|file|drive [--probe {clsid},{clsid}...]");
                 return 2;
             }
 
             IntPtr owner = NativeMethods.CreateWindowEx(0, "Static", string.Empty, 0, 0, 0, 0, 0, NativeMethods.HWND_MESSAGE, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-            IContextMenu menu = CreateContextMenu(target, owner);
-            if (menu == null)
+            Sample sample = CreateSample(target, owner);
+            if (sample?.Menu == null)
             {
                 Console.Error.WriteLine($"Could not create a context menu for '{target}'.");
                 return 1;
@@ -41,7 +69,7 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             IntPtr hmenu = NativeMethods.CreatePopupMenu();
             try
             {
-                int hr = menu.QueryContextMenu(hmenu, 0, FirstCommandId, 0x7FFF, NativeMethods.CMF_NORMAL);
+                int hr = sample.Menu.QueryContextMenu(hmenu, 0, FirstCommandId, 0x7FFF, NativeMethods.CMF_NORMAL);
                 if (hr < 0)
                 {
                     Console.Error.WriteLine($"QueryContextMenu failed: 0x{hr:X8}");
@@ -50,7 +78,20 @@ namespace PowerToys.ContextMenuManager.MenuCapture
 
                 using var stdout = Console.OpenStandardOutput();
                 using var writer = new Utf8JsonWriter(stdout);
-                WriteMenu(writer, hmenu, menu, 0);
+                writer.WriteStartObject();
+                writer.WritePropertyName("items");
+                WriteMenu(writer, hmenu, sample.Menu, 0);
+                writer.WriteStartObject("handlers");
+                foreach (string clsid in (probe ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var texts = ProbeHandler(clsid, sample);
+                    writer.WriteStartArray(clsid);
+                    texts.ForEach(writer.WriteStringValue);
+                    writer.WriteEndArray();
+                }
+
+                writer.WriteEndObject();
+                writer.WriteEndObject();
                 writer.Flush();
                 return 0;
             }
@@ -60,7 +101,52 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             }
         }
 
-        private static IContextMenu CreateContextMenu(string target, IntPtr owner)
+        // Loads one handler the way Explorer does and lists the top-level items it adds.
+        private static List<string> ProbeHandler(string clsid, Sample sample)
+        {
+            var texts = new List<string>();
+            object handler = null;
+            IntPtr hmenu = NativeMethods.CreatePopupMenu();
+            try
+            {
+                handler = Activator.CreateInstance(Type.GetTypeFromCLSID(Guid.Parse(clsid), throwOnError: true));
+                if (handler is IShellExtInit init && init.Initialize(sample.FolderPidl, sample.DataObject, IntPtr.Zero) < 0)
+                {
+                    return texts;
+                }
+
+                if (handler is not IContextMenu menu || menu.QueryContextMenu(hmenu, 0, FirstCommandId, 0x7FFF, NativeMethods.CMF_NORMAL) < 0)
+                {
+                    return texts;
+                }
+
+                int count = NativeMethods.GetMenuItemCount(hmenu);
+                for (uint i = 0; i < count; i++)
+                {
+                    if (ReadItem(hmenu, i, out var info, out string text, out _) && (info.fType & NativeMethods.MFT_SEPARATOR) == 0 && text.Length > 0)
+                    {
+                        texts.Add(text);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Not registered, wrong bitness, or refuses to run outside Explorer: the item stays unattributed.
+                Console.Error.WriteLine($"Probe {clsid}: {ex.Message}");
+            }
+            finally
+            {
+                NativeMethods.DestroyMenu(hmenu);
+                if (handler != null && Marshal.IsComObject(handler))
+                {
+                    Marshal.FinalReleaseComObject(handler);
+                }
+            }
+
+            return texts;
+        }
+
+        private static Sample CreateSample(string target, IntPtr owner)
         {
             string sampleRoot = Path.Combine(Path.GetTempPath(), "PowerToys", "ContextMenuManagerPreview");
             string sampleFolder = Path.Combine(sampleRoot, "Sample folder");
@@ -88,37 +174,35 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             }
         }
 
-        // Right-click on an item: the parent folder hands out the item's menu.
-        private static IContextMenu ItemMenu(string path, IntPtr owner)
+        // Right-click on an item: the parent folder hands out the item's menu and data object.
+        private static Sample ItemMenu(string path, IntPtr owner)
         {
             if (NativeMethods.SHParseDisplayName(path, IntPtr.Zero, out IntPtr pidl, 0, out _) < 0)
             {
                 return null;
             }
 
-            try
+            Guid shellFolderId = NativeMethods.IID_IShellFolder;
+            Guid contextMenuId = NativeMethods.IID_IContextMenu;
+            Guid dataObjectId = NativeMethods.IID_IDataObject;
+            if (NativeMethods.SHBindToParent(pidl, ref shellFolderId, out IntPtr parentPtr, out IntPtr childPidl) < 0)
             {
-                Guid shellFolderId = NativeMethods.IID_IShellFolder;
-                Guid contextMenuId = NativeMethods.IID_IContextMenu;
-                if (NativeMethods.SHBindToParent(pidl, ref shellFolderId, out IntPtr parentPtr, out IntPtr childPidl) < 0)
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                var parent = (IShellFolder)Marshal.GetObjectForIUnknown(parentPtr);
-                Marshal.Release(parentPtr);
-                return parent.GetUIObjectOf(owner, 1, new[] { childPidl }, ref contextMenuId, IntPtr.Zero, out IntPtr menuPtr) < 0
-                    ? null
-                    : ToContextMenu(menuPtr);
-            }
-            finally
+            var parent = (IShellFolder)Marshal.GetObjectForIUnknown(parentPtr);
+            Marshal.Release(parentPtr);
+            if (parent.GetUIObjectOf(owner, 1, new[] { childPidl }, ref contextMenuId, IntPtr.Zero, out IntPtr menuPtr) < 0)
             {
-                Marshal.FreeCoTaskMem(pidl);
+                return null;
             }
+
+            _ = parent.GetUIObjectOf(owner, 1, new[] { childPidl }, ref dataObjectId, IntPtr.Zero, out IntPtr dataObject);
+            return new Sample { Menu = ToContextMenu(menuPtr), DataObject = dataObject };
         }
 
         // Right-click on empty space: the folder's own view object. null folder = the desktop.
-        private static IContextMenu BackgroundMenu(string folderPath, IntPtr owner)
+        private static Sample BackgroundMenu(string folderPath, IntPtr owner)
         {
             if (NativeMethods.SHGetDesktopFolder(out IntPtr desktopPtr) < 0)
             {
@@ -128,32 +212,30 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             var folder = (IShellFolder)Marshal.GetObjectForIUnknown(desktopPtr);
             Marshal.Release(desktopPtr);
 
+            // The desktop's absolute PIDL is the empty one: a single zero terminator.
+            IntPtr pidl = Marshal.AllocCoTaskMem(2);
+            Marshal.WriteInt16(pidl, 0);
             if (folderPath != null)
             {
-                if (NativeMethods.SHParseDisplayName(folderPath, IntPtr.Zero, out IntPtr pidl, 0, out _) < 0)
+                if (NativeMethods.SHParseDisplayName(folderPath, IntPtr.Zero, out pidl, 0, out _) < 0)
                 {
                     return null;
                 }
 
-                try
+                Guid shellFolderId = NativeMethods.IID_IShellFolder;
+                if (folder.BindToObject(pidl, IntPtr.Zero, ref shellFolderId, out IntPtr folderPtr) < 0)
                 {
-                    Guid shellFolderId = NativeMethods.IID_IShellFolder;
-                    if (folder.BindToObject(pidl, IntPtr.Zero, ref shellFolderId, out IntPtr folderPtr) < 0)
-                    {
-                        return null;
-                    }
+                    return null;
+                }
 
-                    folder = (IShellFolder)Marshal.GetObjectForIUnknown(folderPtr);
-                    Marshal.Release(folderPtr);
-                }
-                finally
-                {
-                    Marshal.FreeCoTaskMem(pidl);
-                }
+                folder = (IShellFolder)Marshal.GetObjectForIUnknown(folderPtr);
+                Marshal.Release(folderPtr);
             }
 
             Guid contextMenuId = NativeMethods.IID_IContextMenu;
-            return folder.CreateViewObject(owner, ref contextMenuId, out IntPtr menuPtr) < 0 ? null : ToContextMenu(menuPtr);
+            return folder.CreateViewObject(owner, ref contextMenuId, out IntPtr menuPtr) < 0
+                ? null
+                : new Sample { Menu = ToContextMenu(menuPtr), FolderPidl = pidl };
         }
 
         private static IContextMenu ToContextMenu(IntPtr ptr)
@@ -183,30 +265,30 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             writer.WriteEndArray();
         }
 
-        private static void WriteItem(Utf8JsonWriter writer, IntPtr hmenu, uint position, IContextMenu menu, int depth)
+        // Reads one item; text comes back without its "&" access-key markers and split at the tab
+        // Explorer puts before an accelerator.
+        private static bool ReadItem(IntPtr hmenu, uint position, out NativeMethods.MENUITEMINFO info, out string text, out string shortcut)
         {
-            var info = new NativeMethods.MENUITEMINFO
+            info = new NativeMethods.MENUITEMINFO
             {
                 cbSize = (uint)Marshal.SizeOf<NativeMethods.MENUITEMINFO>(),
                 fMask = NativeMethods.MIIM_FTYPE | NativeMethods.MIIM_STATE | NativeMethods.MIIM_ID | NativeMethods.MIIM_SUBMENU
                     | NativeMethods.MIIM_CHECKMARKS | NativeMethods.MIIM_BITMAP | NativeMethods.MIIM_STRING,
             };
+            text = string.Empty;
+            shortcut = null;
 
             // First call reports the text length, second one fills the buffer.
             if (!NativeMethods.GetMenuItemInfo(hmenu, position, true, ref info))
             {
-                return;
+                return false;
             }
 
             if ((info.fType & NativeMethods.MFT_SEPARATOR) != 0)
             {
-                writer.WriteStartObject();
-                writer.WriteBoolean("separator", true);
-                writer.WriteEndObject();
-                return;
+                return true;
             }
 
-            string text = string.Empty;
             if (info.cch > 0)
             {
                 info.cch++;
@@ -225,7 +307,6 @@ namespace PowerToys.ContextMenuManager.MenuCapture
                 }
             }
 
-            string shortcut = null;
             int tab = text.IndexOf('\t');
             if (tab >= 0)
             {
@@ -234,6 +315,24 @@ namespace PowerToys.ContextMenuManager.MenuCapture
             }
 
             text = text.Replace("&&", "\u0000").Replace("&", string.Empty).Replace("\u0000", "&");
+            return true;
+        }
+
+        private static void WriteItem(Utf8JsonWriter writer, IntPtr hmenu, uint position, IContextMenu menu, int depth)
+        {
+            if (!ReadItem(hmenu, position, out var info, out string text, out string shortcut))
+            {
+                return;
+            }
+
+            if ((info.fType & NativeMethods.MFT_SEPARATOR) != 0)
+            {
+                writer.WriteStartObject();
+                writer.WriteBoolean("separator", true);
+                writer.WriteEndObject();
+                return;
+            }
+
             string verb = info.hSubMenu == IntPtr.Zero ? GetVerb(menu, info.wID) : null;
 
             writer.WriteStartObject();

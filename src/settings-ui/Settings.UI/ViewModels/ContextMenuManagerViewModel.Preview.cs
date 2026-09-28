@@ -21,38 +21,17 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    // Emulated context menu: a best-effort rebuild of what Explorer shows for each kind of
-    // right-click, from the same entries the list toggles. Explorer's own items come from a fixed
-    // table (they aren't registry entries this tool edits), and a classic handler shows as one row
-    // since the items it adds only exist at runtime - "Capture real menu" shows those.
+    // The page's context menu: the real menu Windows builds for each kind of right-click, captured by
+    // the MenuCapture helper process, with every item linked back to the entry that adds it so it
+    // can be turned off from the menu itself. Captures are cached per target until the next refresh.
     public partial class ContextMenuManagerViewModel
     {
-        // Explorer's built-in items, by resw key suffix. A trailing '>' marks a submenu, "-" a separator.
-        private static readonly Dictionary<ContextMenuPreviewTarget, string[]> BuiltInTop = new()
+        // Explorer's folder view adds these itself at display time, so the captured menu lacks them.
+        // By resw key suffix; a trailing '>' marks a submenu, "-" a separator.
+        private static readonly Dictionary<ContextMenuPreviewTarget, string[]> ViewItems = new()
         {
             [ContextMenuPreviewTarget.Desktop] = new[] { "View>", "SortBy>", "Refresh", "-", "Paste", "PasteShortcut", "Undo" },
             [ContextMenuPreviewTarget.FolderBackground] = new[] { "View>", "SortBy>", "GroupBy>", "Refresh", "-", "Paste", "PasteShortcut", "Undo" },
-            [ContextMenuPreviewTarget.Folder] = new[] { "Open", "OpenInNewWindow", "PinToQuickAccess" },
-            [ContextMenuPreviewTarget.File] = new[] { "Open", "OpenWith>" },
-            [ContextMenuPreviewTarget.Drive] = new[] { "Open", "OpenInNewWindow", "PinToQuickAccess" },
-        };
-
-        private static readonly Dictionary<ContextMenuPreviewTarget, string[]> BuiltInMiddle = new()
-        {
-            [ContextMenuPreviewTarget.Desktop] = new[] { "New>" },
-            [ContextMenuPreviewTarget.FolderBackground] = new[] { "New>" },
-            [ContextMenuPreviewTarget.Folder] = new[] { "SendTo>", "-", "Cut", "Copy", "-", "CreateShortcut", "Delete", "Rename" },
-            [ContextMenuPreviewTarget.File] = new[] { "SendTo>", "-", "Cut", "Copy", "-", "CreateShortcut", "Delete", "Rename" },
-            [ContextMenuPreviewTarget.Drive] = new[] { "Format", "-", "Copy", "-", "CreateShortcut", "Rename" },
-        };
-
-        private static readonly Dictionary<ContextMenuPreviewTarget, string[]> BuiltInEnd = new()
-        {
-            [ContextMenuPreviewTarget.Desktop] = Array.Empty<string>(),
-            [ContextMenuPreviewTarget.FolderBackground] = new[] { "Properties" },
-            [ContextMenuPreviewTarget.Folder] = new[] { "Properties" },
-            [ContextMenuPreviewTarget.File] = new[] { "Properties" },
-            [ContextMenuPreviewTarget.Drive] = new[] { "Properties" },
         };
 
         // Registry roots Explorer merges for each target. The sample file is a .txt, matching the capture helper.
@@ -72,10 +51,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly TimeSpan CaptureTimeout = TimeSpan.FromSeconds(10);
 
+        // Modern is Windows 11's first menu; null when the classic menu is the default.
+        private sealed record CapturedMenu(List<ContextMenuPreviewItem> Modern, List<ContextMenuPreviewItem> Classic);
+
+        // Tasks rather than results, so flipping back to a target that is still capturing reuses it.
+        private readonly Dictionary<ContextMenuPreviewTarget, Task<CapturedMenu>> _captures = new();
+
         private ContextMenuPreviewTarget _previewTarget = ContextMenuPreviewTarget.Desktop;
-        private bool _isPreviewCaptured;
+        private bool _isClassicMenuDefault;
+        private bool _showClassicLayer;
         private bool _isCapturing;
         private string _captureError;
+        private ContextMenuPreviewItem _selectedPreviewItem;
 
         public ObservableCollection<ContextMenuPreviewItem> PreviewItems { get; } = new ObservableCollection<ContextMenuPreviewItem>();
 
@@ -88,27 +75,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _previewTarget = (ContextMenuPreviewTarget)value;
                     OnPropertyChanged(nameof(PreviewTargetIndex));
-                    BuildSyntheticPreview();
+                    SelectedPreviewItem = null;
+                    _ = LoadPreviewAsync();
                 }
             }
         }
-
-        public bool IsPreviewCaptured
-        {
-            get => _isPreviewCaptured;
-            private set
-            {
-                if (value != _isPreviewCaptured)
-                {
-                    _isPreviewCaptured = value;
-                    OnPropertyChanged(nameof(IsPreviewCaptured));
-                    OnPropertyChanged(nameof(PreviewSourceText));
-                }
-            }
-        }
-
-        public string PreviewSourceText => ResourceLoaderInstance.ResourceLoader.GetString(
-            IsPreviewCaptured ? "ContextMenuManager_PreviewSourceCaptured" : "ContextMenuManager_PreviewSourceSynthetic");
 
         public bool IsCapturing
         {
@@ -119,12 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isCapturing = value;
                     OnPropertyChanged(nameof(IsCapturing));
-                    OnPropertyChanged(nameof(IsNotCapturing));
                 }
             }
         }
-
-        public bool IsNotCapturing => !IsCapturing;
 
         public string CaptureError
         {
@@ -142,80 +110,252 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool HasCaptureError => !string.IsNullOrEmpty(CaptureError);
 
-        // CaptureRealMenuAsync handles every failure itself, so the discarded task can't fault unobserved.
-        public ButtonClickCommand CaptureRealMenuCommand => new ButtonClickCommand(() => _ = CaptureRealMenuAsync());
+        public bool CanGoBackToModernMenu => _showClassicLayer && !_isClassicMenuDefault;
 
-        public void BuildSyntheticPreview()
+        public ButtonClickCommand BackToModernMenuCommand => new ButtonClickCommand(() =>
         {
-            ShowPreview(WrapForMenuStyle(BuildClassicItems(_previewTarget)), captured: false);
+            _showClassicLayer = false;
+            RenderPreview();
+        });
+
+        public ContextMenuPreviewItem SelectedPreviewItem
+        {
+            get => _selectedPreviewItem;
+            set
+            {
+                if (value != _selectedPreviewItem)
+                {
+                    _selectedPreviewItem = value;
+                    OnPropertyChanged(nameof(SelectedPreviewItem));
+                    OnPropertyChanged(nameof(SelectedEntry));
+                    OnPropertyChanged(nameof(HasSelection));
+                    OnPropertyChanged(nameof(HasNoSelection));
+                    OnPropertyChanged(nameof(HasSelectedEntry));
+                    OnPropertyChanged(nameof(SelectedDescription));
+                    OnPropertyChanged(nameof(SelectedLocation));
+                    OnPropertyChanged(nameof(IsSelectedExtension));
+                }
+            }
         }
 
-        // Windows 11 menu: packaged items on top, everything classic behind "Show more options".
-        private List<ContextMenuPreviewItem> WrapForMenuStyle(List<ContextMenuPreviewItem> classic)
+        public ContextMenuEntry SelectedEntry => _selectedPreviewItem?.Entry;
+
+        public bool HasSelection => _selectedPreviewItem != null;
+
+        public bool HasNoSelection => !HasSelection;
+
+        public bool HasSelectedEntry => SelectedEntry != null;
+
+        public string SelectedDescription => SelectedEntry is { } entry
+            ? $"{entry.DisplayName} · {entry.ScopeAndSourceDisplayName}"
+            : ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_DetailsUnmanaged");
+
+        public string SelectedLocation
         {
-            if (IsClassicMenuDefault())
+            get
             {
-                return classic;
+                if (SelectedEntry is not { } entry)
+                {
+                    return null;
+                }
+
+                if (entry.Kind == ContextMenuEntryKind.BlockedClsid)
+                {
+                    return string.Join(Environment.NewLine, entry.Clsids.Prepend(entry.HandlerKeyName).Distinct(StringComparer.OrdinalIgnoreCase));
+                }
+
+                string hive = entry.Scope == ContextMenuEntryScope.CurrentUser ? "HKEY_CURRENT_USER" : "HKEY_LOCAL_MACHINE";
+                return string.Join(Environment.NewLine, entry.KeyPaths.Select(p => $"{hive}\\Software\\Classes\\{p}"));
+            }
+        }
+
+        // A shell extension can add several items; turning it off removes all of them.
+        public bool IsSelectedExtension => SelectedEntry is { Source: ContextMenuEntrySource.Classic, Kind: not ContextMenuEntryKind.Verb };
+
+        // Windows 11's "Show more options": swaps the preview to the classic menu, like Explorer does.
+        public void ShowClassicLayer()
+        {
+            _showClassicLayer = true;
+            RenderPreview();
+        }
+
+        // Entries were re-enumerated, so every cached item points at an old entry object.
+        private void ResetPreview()
+        {
+            _captures.Clear();
+            _isClassicMenuDefault = IsClassicMenuDefault();
+            SelectedPreviewItem = null;
+            _ = LoadPreviewAsync();
+        }
+
+        // Re-adds the cached rows so their on/off look and late-loaded icons are read again.
+        private void RenderPreview()
+        {
+            PreviewItems.Clear();
+            if (_captures.TryGetValue(_previewTarget, out var task) && task.IsCompletedSuccessfully)
+            {
+                foreach (var item in task.Result.Modern == null || _showClassicLayer ? task.Result.Classic : task.Result.Modern)
+                {
+                    PreviewItems.Add(item);
+                }
             }
 
-            var items = EnabledEntries(_previewTarget)
-                .Where(e => e.Source == ContextMenuEntrySource.Modern)
-                .Select(ToPreviewItem)
-                .ToList();
-            items.Add(ContextMenuPreviewItem.Separator());
-            var more = BuiltIn("ShowMoreOptions");
-            more.Children.AddRange(TidySeparators(classic));
-            items.Add(more);
-            return items;
+            OnPropertyChanged(nameof(CanGoBackToModernMenu));
         }
 
-        // Asks Windows for the real menu through the MenuCapture helper process. The capture misses
-        // what Explorer adds itself at display time - the view's own View/Sort by/Refresh block on
-        // backgrounds, and Windows 11 packaged verbs - so those are merged in from the entry list.
-        private async Task CaptureRealMenuAsync()
+        // Never throws: the page discards the task.
+        private async Task LoadPreviewAsync()
         {
             var target = _previewTarget;
-            IsCapturing = true;
             CaptureError = null;
+            if (!_captures.TryGetValue(target, out var task))
+            {
+                task = CaptureAsync(target);
+                _captures[target] = task;
+            }
+
+            RenderPreview();
+            IsCapturing = !task.IsCompleted;
             try
             {
-                string json = await RunCaptureHelperAsync(target);
-                if (target != _previewTarget)
-                {
-                    return;
-                }
-
-                using var document = JsonDocument.Parse(json);
-                var captured = ParseCapturedItems(document.RootElement);
-
-                var modern = EnabledEntries(target).Where(e => e.Source == ContextMenuEntrySource.Modern).Select(ToPreviewItem).ToList();
-                int firstSeparator = captured.FindIndex(i => i.IsSeparator);
-                captured.InsertRange(firstSeparator < 0 ? captured.Count : firstSeparator, modern);
-
-                if (target is ContextMenuPreviewTarget.Desktop or ContextMenuPreviewTarget.FolderBackground)
-                {
-                    var viewItems = BuiltInItems(BuiltInTop[target]).ToList();
-                    var viewTexts = viewItems.Where(i => !i.IsSeparator).Select(i => i.Text).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                    captured.RemoveAll(i => !i.IsSeparator && viewTexts.Contains(i.Text));
-                    captured.InsertRange(0, viewItems.Append(ContextMenuPreviewItem.Separator()));
-                }
-
-                ShowPreview(WrapForMenuStyle(captured), captured: true);
+                await task;
             }
             catch (Exception ex)
             {
                 Trace.WriteLine($"ContextMenuManager: menu capture failed: {ex}");
-                CaptureError = ex is TimeoutException
-                    ? ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_CaptureTimeout")
-                    : ex.Message;
+                if (_captures.TryGetValue(target, out var current) && current == task)
+                {
+                    // Not cached, so picking the target again retries.
+                    _captures.Remove(target);
+                    if (target == _previewTarget)
+                    {
+                        CaptureError = ex is TimeoutException
+                            ? ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_CaptureTimeout")
+                            : ex.Message;
+                    }
+                }
             }
-            finally
+
+            RenderPreview();
+            IsCapturing = _captures.TryGetValue(_previewTarget, out var shown) && !shown.IsCompleted;
+        }
+
+        // The capture misses what Explorer adds itself at display time - the view's own View/Sort
+        // by/Refresh block on backgrounds, and Windows 11 packaged verbs - so those are added here.
+        private async Task<CapturedMenu> CaptureAsync(ContextMenuPreviewTarget target)
+        {
+            var targetEntries = Entries.Where(e => IsForTarget(e, target)).ToList();
+
+            // Enabled shell extensions, probed one by one so their items can be traced back to them.
+            var extensions = new Dictionary<string, ContextMenuEntry>(StringComparer.OrdinalIgnoreCase);
+            foreach (var entry in targetEntries.Where(e => e.IsEnabled && e.Parent == null && e.Source == ContextMenuEntrySource.Classic && e.Kind != ContextMenuEntryKind.Verb))
             {
-                IsCapturing = false;
+                string clsid = entry.Kind == ContextMenuEntryKind.HandlerValue ? entry.OriginalClsidValue : entry.Clsids.FirstOrDefault();
+                if (Guid.TryParse(clsid, out Guid guid))
+                {
+                    extensions.TryAdd(guid.ToString("B"), entry);
+                }
+            }
+
+            string json = await RunCaptureHelperAsync(target, extensions.Keys);
+            using var document = JsonDocument.Parse(json);
+            var classic = ParseCapturedItems(document.RootElement.GetProperty("items"));
+
+            var extensionByText = new Dictionary<string, ContextMenuEntry>(StringComparer.OrdinalIgnoreCase);
+            foreach (var handler in document.RootElement.GetProperty("handlers").EnumerateObject())
+            {
+                foreach (var text in handler.Value.EnumerateArray())
+                {
+                    extensionByText.TryAdd(text.GetString() ?? string.Empty, extensions[handler.Name]);
+                }
+            }
+
+            var verbs = targetEntries.Where(e => e.Kind == ContextMenuEntryKind.Verb).ToList();
+            foreach (var item in classic.Where(i => i.IsItem))
+            {
+                item.Entry = MatchEntry(item, verbs, extensionByText);
+                LinkChildren(item, verbs);
+            }
+
+            // Turned-off entries aren't in the real menu at all; list them after it so they can come back.
+            var shown = Flatten(classic).Select(i => i.Entry).Where(e => e != null).ToHashSet();
+            var off = targetEntries
+                .Where(e => !e.IsEnabled && e.Source == ContextMenuEntrySource.Classic && !shown.Contains(e))
+                .OrderBy(e => e.SortKey ?? e.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .Select(e => new ContextMenuPreviewItem { Text = e.DisplayName, Entry = e })
+                .ToList();
+            if (off.Count > 0)
+            {
+                classic.Add(ContextMenuPreviewItem.Separator());
+                classic.Add(new ContextMenuPreviewItem { IsHeader = true, Text = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_PreviewTurnedOffHeader") });
+                classic.AddRange(off);
+            }
+
+            if (ViewItems.TryGetValue(target, out var viewKeys))
+            {
+                var viewItems = viewKeys.Select(BuiltIn).ToList();
+                var viewTexts = viewItems.Where(i => !i.IsSeparator).Select(i => i.Text).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                classic.RemoveAll(i => i.IsItem && i.Entry == null && viewTexts.Contains(i.Text));
+                classic.InsertRange(0, viewItems.Append(ContextMenuPreviewItem.Separator()));
+            }
+
+            var modern = targetEntries
+                .Where(e => e.Source == ContextMenuEntrySource.Modern)
+                .OrderBy(e => e.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .Select(e => new ContextMenuPreviewItem { Text = e.DisplayName, Entry = e })
+                .ToList();
+
+            if (_isClassicMenuDefault)
+            {
+                int firstSeparator = classic.FindIndex(i => i.IsSeparator);
+                classic.InsertRange(firstSeparator < 0 ? classic.Count : firstSeparator, modern);
+                return new CapturedMenu(null, TidySeparators(classic));
+            }
+
+            modern.Add(ContextMenuPreviewItem.Separator());
+            modern.Add(new ContextMenuPreviewItem { Text = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_BuiltIn_ShowMoreOptions"), IsShowMoreOptions = true });
+            return new CapturedMenu(TidySeparators(modern), TidySeparators(classic));
+        }
+
+        // Static verbs report their key name as the verb; extensions are known from the probe; a
+        // cascading verb has no verb string, so its label is the last resort.
+        private static ContextMenuEntry MatchEntry(ContextMenuPreviewItem item, List<ContextMenuEntry> verbs, Dictionary<string, ContextMenuEntry> extensionByText)
+        {
+            var topVerbs = verbs.Where(e => e.Parent == null);
+            return (item.Verb != null ? topVerbs.FirstOrDefault(e => string.Equals(e.HandlerKeyName, item.Verb, StringComparison.OrdinalIgnoreCase)) : null)
+                ?? extensionByText.GetValueOrDefault(item.Text)
+                ?? topVerbs.FirstOrDefault(e => string.Equals(e.DisplayName, item.Text, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // A cascading verb's items are entries of their own; an extension's submenu belongs to the extension.
+        private static void LinkChildren(ContextMenuPreviewItem parent, List<ContextMenuEntry> verbs)
+        {
+            foreach (var child in parent.Children.Where(c => c.IsItem))
+            {
+                child.Entry = parent.Entry is { Kind: ContextMenuEntryKind.Verb } verb
+                    ? verbs.FirstOrDefault(e => e.Parent == verb && string.Equals(e.DisplayName, $"{verb.DisplayName} > {child.Text}", StringComparison.OrdinalIgnoreCase))
+                    : parent.Entry;
+                LinkChildren(child, verbs);
             }
         }
 
-        private static async Task<string> RunCaptureHelperAsync(ContextMenuPreviewTarget target)
+        private static IEnumerable<ContextMenuPreviewItem> Flatten(IEnumerable<ContextMenuPreviewItem> items) =>
+            items.SelectMany(i => Flatten(i.Children).Prepend(i));
+
+        // Registered for the target; submenu items go by their top-level parent.
+        private static bool IsForTarget(ContextMenuEntry entry, ContextMenuPreviewTarget target)
+        {
+            while (entry.Parent != null)
+            {
+                entry = entry.Parent;
+            }
+
+            var roots = TargetRoots[target];
+            return entry.Roots.Any(r => roots.Contains(r, StringComparer.OrdinalIgnoreCase))
+                || entry.ItemTypes.Any(t => roots.Contains(t, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static async Task<string> RunCaptureHelperAsync(ContextMenuPreviewTarget target, IEnumerable<string> probeClsids)
         {
             string argument = target switch
             {
@@ -226,7 +366,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _ => "drive",
             };
 
-            var startInfo = new ProcessStartInfo(Path.Combine(AppContext.BaseDirectory, CaptureHelperExe), $"--target {argument}")
+            string probe = string.Join(",", probeClsids);
+            var startInfo = new ProcessStartInfo(Path.Combine(AppContext.BaseDirectory, CaptureHelperExe), $"--target {argument}" + (probe.Length > 0 ? $" --probe {probe}" : string.Empty))
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -274,6 +415,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Text = element.TryGetProperty("text", out var text) ? text.GetString() : string.Empty,
                     Shortcut = element.TryGetProperty("shortcut", out var shortcut) ? shortcut.GetString() : null,
+                    Verb = element.TryGetProperty("verb", out var verb) ? verb.GetString() : null,
                     IsDisabled = element.TryGetProperty("disabled", out _),
                 };
 
@@ -311,98 +453,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return bitmap;
         }
 
-        private void ShowPreview(IEnumerable<ContextMenuPreviewItem> items, bool captured)
-        {
-            PreviewItems.Clear();
-            foreach (var item in TidySeparators(items))
-            {
-                PreviewItems.Add(item);
-            }
-
-            IsPreviewCaptured = captured;
-        }
-
-        private List<ContextMenuPreviewItem> BuildClassicItems(ContextMenuPreviewTarget target)
-        {
-            var entries = EnabledEntries(target).ToList();
-
-            bool IsPosition(ContextMenuEntry e, string position) => string.Equals(e.Position, position, StringComparison.OrdinalIgnoreCase);
-
-            var items = new List<ContextMenuPreviewItem>();
-            items.AddRange(entries.Where(e => e.Kind == ContextMenuEntryKind.Verb && IsPosition(e, "Top")).OrderBy(e => e.HandlerKeyName, StringComparer.OrdinalIgnoreCase).Select(ToPreviewItem));
-            items.AddRange(BuiltInItems(BuiltInTop[target]));
-            items.Add(ContextMenuPreviewItem.Separator());
-
-            // Explorer adds static verbs first, then packaged verbs, then shellex handlers, each in key-name order.
-            items.AddRange(entries.Where(e => e.Kind == ContextMenuEntryKind.Verb && !IsPosition(e, "Top") && !IsPosition(e, "Bottom")).OrderBy(e => e.HandlerKeyName, StringComparer.OrdinalIgnoreCase).Select(ToPreviewItem));
-            items.AddRange(entries.Where(e => e.Source == ContextMenuEntrySource.Modern).OrderBy(e => e.DisplayName, StringComparer.OrdinalIgnoreCase).Select(ToPreviewItem));
-            items.AddRange(entries.Where(e => e.Source == ContextMenuEntrySource.Classic && e.Kind != ContextMenuEntryKind.Verb && !BuiltInHandlerDenylist.Contains(e.HandlerKeyName)).OrderBy(e => e.HandlerKeyName, StringComparer.OrdinalIgnoreCase).Select(ToPreviewItem));
-
-            items.Add(ContextMenuPreviewItem.Separator());
-            items.AddRange(BuiltInItems(BuiltInMiddle[target]));
-            items.Add(ContextMenuPreviewItem.Separator());
-            items.AddRange(entries.Where(e => e.Kind == ContextMenuEntryKind.Verb && IsPosition(e, "Bottom")).OrderBy(e => e.HandlerKeyName, StringComparer.OrdinalIgnoreCase).Select(ToPreviewItem));
-            items.Add(ContextMenuPreviewItem.Separator());
-            items.AddRange(BuiltInItems(BuiltInEnd[target]));
-            return items;
-        }
-
-        // Top-level entries that are enabled and registered for the target. Submenu items are reached
-        // through their parent in ToPreviewItem.
-        private IEnumerable<ContextMenuEntry> EnabledEntries(ContextMenuPreviewTarget target)
-        {
-            var roots = TargetRoots[target];
-            return Entries.Where(e => e.IsEnabled && e.Parent == null
-                && (e.Roots.Any(r => roots.Contains(r, StringComparer.OrdinalIgnoreCase))
-                    || e.ItemTypes.Any(t => roots.Contains(t, StringComparer.OrdinalIgnoreCase))));
-        }
-
-        private ContextMenuPreviewItem ToPreviewItem(ContextMenuEntry entry)
-        {
-            var item = new ContextMenuPreviewItem
-            {
-                Text = entry.DisplayName,
-                Icon = entry.Icon,
-                Shortcut = entry.Source == ContextMenuEntrySource.Classic && entry.Kind != ContextMenuEntryKind.Verb
-                    ? ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_PreviewHandlerHint")
-                    : null,
-            };
-
-            foreach (var child in Entries.Where(e => e.Parent == entry && e.IsEnabled).OrderBy(e => e.HandlerKeyName, StringComparer.OrdinalIgnoreCase))
-            {
-                var childItem = ToPreviewItem(child);
-
-                // Children carry "Parent > Child" in the list; the menu shows only their own label.
-                childItem.Text = child.DisplayName.Substring(entry.DisplayName.Length + 3);
-                item.Children.Add(childItem);
-            }
-
-            return item;
-        }
-
-        private static IEnumerable<ContextMenuPreviewItem> BuiltInItems(IEnumerable<string> keys) =>
-            keys.Select(k => k == "-" ? ContextMenuPreviewItem.Separator() : BuiltIn(k));
-
         private static ContextMenuPreviewItem BuiltIn(string key)
         {
-            bool submenu = key.EndsWith('>');
-            var item = new ContextMenuPreviewItem
+            if (key == "-")
             {
-                Text = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_BuiltIn_" + key.TrimEnd('>')),
-                IsBuiltIn = true,
-            };
+                return ContextMenuPreviewItem.Separator();
+            }
 
-            if (submenu)
+            var item = new ContextMenuPreviewItem { Text = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_BuiltIn_" + key.TrimEnd('>')) };
+            if (key.EndsWith('>'))
             {
                 // Placeholder so the row shows a chevron; Explorer fills these at runtime.
-                item.Children.Add(new ContextMenuPreviewItem { Text = "…", IsBuiltIn = true });
+                item.Children.Add(new ContextMenuPreviewItem { Text = "…", IsDisabled = true });
             }
 
             return item;
         }
 
         // Drops leading, trailing and doubled separators left behind by empty sections.
-        private static IEnumerable<ContextMenuPreviewItem> TidySeparators(IEnumerable<ContextMenuPreviewItem> items)
+        private static List<ContextMenuPreviewItem> TidySeparators(IEnumerable<ContextMenuPreviewItem> items)
         {
             var result = new List<ContextMenuPreviewItem>();
             foreach (var item in items)

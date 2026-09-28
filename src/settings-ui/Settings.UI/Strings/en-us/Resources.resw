@@ -4042,9 +4042,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Context Menu Manager</value>
     <comment>"Context Menu Manager" is the name of the utility</comment>
   </data>
-  <data name="ContextMenuManager_GroupSettings.Header" xml:space="preserve">
-    <value>Context menu entries</value>
-  </data>
   <data name="ContextMenuManager_HklmElevationNotice.Title" xml:space="preserve">
     <value>Some entries can't be edited here</value>
   </data>
@@ -4059,15 +4056,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="ContextMenuManager_RestartExplorerButton.Content" xml:space="preserve">
     <value>Restart File Explorer</value>
-  </data>
-  <data name="ContextMenuManager_SearchAndRefresh.Header" xml:space="preserve">
-    <value>Search entries</value>
-  </data>
-  <data name="ContextMenuManager_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>Search this list</value>
-  </data>
-  <data name="ContextMenuManager_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Search this list</value>
   </data>
   <data name="ContextMenuManager_RefreshButton.Content" xml:space="preserve">
     <value>Refresh</value>
@@ -4112,13 +4100,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Restart File Explorer</value>
   </data>
   <data name="ContextMenuManager_PreviewGroup.Header" xml:space="preserve">
-    <value>Preview</value>
+    <value>Context menu</value>
   </data>
   <data name="ContextMenuManager_PreviewTargetCard.Header" xml:space="preserve">
     <value>Right-click on</value>
   </data>
   <data name="ContextMenuManager_PreviewTargetCard.Description" xml:space="preserve">
-    <value>An approximation built from the entries below. Explorer's own items are dimmed. Capture the real menu to see the items handlers add at runtime.</value>
+    <value>The menu Windows shows right now. Select an item to turn it on or off.</value>
   </data>
   <data name="ContextMenuManager_PreviewTarget_Desktop.Content" xml:space="preserve">
     <value>Desktop</value>
@@ -4135,24 +4123,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ContextMenuManager_PreviewTarget_Drive.Content" xml:space="preserve">
     <value>A drive</value>
   </data>
-  <data name="ContextMenuManager_CaptureButton.Content" xml:space="preserve">
-    <value>Capture real menu</value>
-  </data>
   <data name="ContextMenuManager_CaptureErrorNotice.Title" xml:space="preserve">
     <value>Couldn't capture the menu</value>
   </data>
   <data name="ContextMenuManager_CaptureTimeout" xml:space="preserve">
     <value>The capture took too long and was stopped. A shell extension may be unresponsive.</value>
-  </data>
-  <data name="ContextMenuManager_PreviewSourceSynthetic" xml:space="preserve">
-    <value>Approximation</value>
-  </data>
-  <data name="ContextMenuManager_PreviewSourceCaptured" xml:space="preserve">
-    <value>Captured from Windows</value>
-  </data>
-  <data name="ContextMenuManager_PreviewHandlerHint" xml:space="preserve">
-    <value>adds own items</value>
-    <comment>Shown next to a shell extension whose menu items are only known at runtime</comment>
   </data>
   <data name="ContextMenuManager_BuiltIn_View" xml:space="preserve">
     <value>View</value>
@@ -4175,47 +4150,34 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ContextMenuManager_BuiltIn_Undo" xml:space="preserve">
     <value>Undo</value>
   </data>
-  <data name="ContextMenuManager_BuiltIn_Open" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_OpenInNewWindow" xml:space="preserve">
-    <value>Open in new window</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_PinToQuickAccess" xml:space="preserve">
-    <value>Pin to Quick access</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_OpenWith" xml:space="preserve">
-    <value>Open with</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_New" xml:space="preserve">
-    <value>New</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_SendTo" xml:space="preserve">
-    <value>Send to</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Cut" xml:space="preserve">
-    <value>Cut</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Copy" xml:space="preserve">
-    <value>Copy</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_CreateShortcut" xml:space="preserve">
-    <value>Create shortcut</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Delete" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Rename" xml:space="preserve">
-    <value>Rename</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Format" xml:space="preserve">
-    <value>Format...</value>
-  </data>
-  <data name="ContextMenuManager_BuiltIn_Properties" xml:space="preserve">
-    <value>Properties</value>
-  </data>
   <data name="ContextMenuManager_BuiltIn_ShowMoreOptions" xml:space="preserve">
     <value>Show more options</value>
+  </data>
+  <data name="ContextMenuManager_PreviewOff" xml:space="preserve">
+    <value>Off</value>
+    <comment>Shown next to a context menu item that has been turned off</comment>
+  </data>
+  <data name="ContextMenuManager_PreviewTurnedOffHeader" xml:space="preserve">
+    <value>Turned off</value>
+    <comment>Caption above the context menu items that are turned off and so no longer appear in the menu</comment>
+  </data>
+  <data name="ContextMenuManager_PreviewBackButton.Content" xml:space="preserve">
+    <value>Back to the Windows 11 menu</value>
+  </data>
+  <data name="ContextMenuManager_DetailsPlaceholder.Text" xml:space="preserve">
+    <value>Select an item in the menu to see where it comes from and turn it on or off.</value>
+  </data>
+  <data name="ContextMenuManager_DetailsUnmanaged" xml:space="preserve">
+    <value>Part of File Explorer, or added by something Context Menu Manager can't turn off.</value>
+  </data>
+  <data name="ContextMenuManager_DetailsLocationHeader.Text" xml:space="preserve">
+    <value>Registered at</value>
+  </data>
+  <data name="ContextMenuManager_DetailsExtensionNote.Text" xml:space="preserve">
+    <value>This is a shell extension. Turning it off removes every item it adds.</value>
+  </data>
+  <data name="ContextMenuManager_DetailsToggle.Header" xml:space="preserve">
+    <value>Show in the context menu</value>
   </data>
   <data name="ContextMenuManager_RootDesktop" xml:space="preserve">
     <value>Desktop</value>

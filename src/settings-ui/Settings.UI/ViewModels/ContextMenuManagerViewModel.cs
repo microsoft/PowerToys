@@ -74,12 +74,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
-        private string _searchText = string.Empty;
         private bool _needsExplorerRestart;
 
         public ObservableCollection<ContextMenuEntry> Entries { get; } = new ObservableCollection<ContextMenuEntry>();
-
-        public ObservableCollection<ContextMenuEntry> FilteredEntries { get; } = new ObservableCollection<ContextMenuEntry>();
 
         public bool IsElevated { get; }
 
@@ -97,20 +94,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
-                }
-            }
-        }
-
-        public string SearchText
-        {
-            get => _searchText;
-            set
-            {
-                if (value != _searchText)
-                {
-                    _searchText = value ?? string.Empty;
-                    OnPropertyChanged(nameof(SearchText));
-                    ApplyFilter();
                 }
             }
         }
@@ -191,8 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             NeedsExplorerRestart = false;
-            ApplyFilter();
-            BuildSyntheticPreview();
+            ResetPreview();
             LoadIcons();
         }
 
@@ -218,14 +200,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
 
-                // Preview items copy the icon when built, so rebuild once all icons are in.
-                dispatcher.TryEnqueue(() =>
-                {
-                    if (!IsPreviewCaptured)
-                    {
-                        BuildSyntheticPreview();
-                    }
-                });
+                // Rows without a captured bitmap fall back to the entry icon, read when rendered.
+                dispatcher.TryEnqueue(RenderPreview);
             });
         }
 
@@ -257,23 +233,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception)
             {
                 return null;
-            }
-        }
-
-        private void ApplyFilter()
-        {
-            FilteredEntries.Clear();
-
-            IEnumerable<ContextMenuEntry> filtered = Entries;
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                filtered = filtered.Where(e => e.DisplayName?.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) >= 0
-                    || e.HandlerKeyName?.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) >= 0);
-            }
-
-            foreach (var entry in filtered.OrderBy(e => e.Scope).ThenBy(e => e.Source).ThenBy(e => e.SortKey ?? e.DisplayName, StringComparer.OrdinalIgnoreCase))
-            {
-                FilteredEntries.Add(entry);
             }
         }
 
@@ -343,9 +302,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return false;
             }
 
+            // The cached menus stay: rows only re-read the entry's state, so no re-capture is needed.
             entry.IsEnabled = enable;
             NeedsExplorerRestart = true;
-            BuildSyntheticPreview();
+            RenderPreview();
             return true;
         }
 
@@ -551,7 +511,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 Scope = scope,
                                 Source = ContextMenuEntrySource.Classic,
                                 Kind = ContextMenuEntryKind.Verb,
-                                Depth = depth,
                                 SortKey = parent == null ? label : $"{parent.SortKey}{SortKeySeparator}{label}",
                                 IconSpec = verbKey.GetValue("Icon") as string,
                                 Parent = parent,

@@ -31,14 +31,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        // Intercepts the per-row toggle instead of a plain two-way binding, so HKLM (all-users) writes
+        // Intercepts the details toggle instead of a plain two-way binding, so HKLM (all-users) writes
         // and likely-Windows-owned entries can be confirmed before anything is written to the registry.
-        private async void ContextMenuEntryToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        private async void DetailsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             var toggle = (ToggleSwitch)sender;
 
-            // The initial IsOn binding runs before Loaded and must never count as a user toggle.
-            if (!toggle.IsLoaded || toggle.DataContext is not ContextMenuEntry entry)
+            // Selecting another item re-binds IsOn to that entry's state, which lands here as a no-op below.
+            if (!toggle.IsLoaded || ViewModel.SelectedEntry is not ContextMenuEntry entry)
             {
                 return;
             }
@@ -61,11 +61,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Opens a preview row's submenu the way Explorer would: to the right of the row.
+        // Selects the row for the details pane, and opens its submenu the way Explorer would: to the right of the row.
         private void PreviewItem_Click(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
-            if (button.DataContext is not ContextMenuPreviewItem item || !item.HasChildren)
+            if (button.DataContext is not ContextMenuPreviewItem item)
+            {
+                return;
+            }
+
+            if (item.IsShowMoreOptions)
+            {
+                ViewModel.ShowClassicLayer();
+                return;
+            }
+
+            ViewModel.SelectedPreviewItem = item;
+            if (!item.HasChildren)
             {
                 return;
             }
@@ -75,7 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             flyout.ShowAt(button);
         }
 
-        private static void AddPreviewMenuItems(IList<MenuFlyoutItemBase> target, IEnumerable<ContextMenuPreviewItem> items)
+        private void AddPreviewMenuItems(IList<MenuFlyoutItemBase> target, IEnumerable<ContextMenuPreviewItem> items)
         {
             foreach (var child in items)
             {
@@ -94,7 +106,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
                 else
                 {
-                    target.Add(new MenuFlyoutItem { Text = child.Text, Icon = icon, KeyboardAcceleratorTextOverride = child.Shortcut ?? string.Empty, IsEnabled = !child.IsDisabled });
+                    var menuItem = new MenuFlyoutItem { Text = child.Text, Icon = icon, KeyboardAcceleratorTextOverride = child.SideText ?? string.Empty, IsEnabled = !child.IsDisabled };
+                    menuItem.Click += (_, _) => ViewModel.SelectedPreviewItem = child;
+                    target.Add(menuItem);
                 }
             }
         }

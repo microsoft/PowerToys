@@ -7,7 +7,6 @@ using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -82,9 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Verb: the "Position" value ("Top"/"Bottom"), used to place it in the preview.
         public string Position { get; set; }
 
-        // Submenu nesting level; 0 for top-level entries.
-        public int Depth { get; set; }
-
         // Keeps submenu items directly below their parent when the list is sorted.
         public string SortKey { get; set; }
 
@@ -124,8 +120,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(Icon));
             }
         }
-
-        public Thickness IndentMargin => new Thickness(Depth * 32, 0, 0, 0);
 
         public string ScopeDisplayName => ResourceLoaderInstance.ResourceLoader.GetString(
             Scope == ContextMenuEntryScope.CurrentUser

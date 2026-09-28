@@ -32,6 +32,8 @@ namespace PowerToys.ContextMenuManager.MenuCapture
 
         internal static Guid IID_IContextMenu => new Guid("000214E4-0000-0000-C000-000000000046");
 
+        internal static Guid IID_IDataObject => new Guid("0000010E-0000-0000-C000-000000000046");
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct MENUITEMINFO
         {
@@ -165,6 +167,15 @@ namespace PowerToys.ContextMenuManager.MenuCapture
 
         [PreserveSig]
         int GetCommandString(UIntPtr idCmd, uint uType, IntPtr pReserved, IntPtr pszName, uint cchMax);
+    }
+
+    [ComImport]
+    [Guid("000214E8-0000-0000-C000-000000000046")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IShellExtInit
+    {
+        [PreserveSig]
+        int Initialize(IntPtr pidlFolder, IntPtr pdtobj, IntPtr hkeyProgID);
     }
 
     // IContextMenu2/3 repeat the base methods: classic COM interop has no interface inheritance.
