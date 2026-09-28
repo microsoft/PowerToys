@@ -19,10 +19,18 @@ public partial class ContextMenuViewModel : ObservableObject
 {
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly List<(IContextMenuContext Context, IReadOnlyList<IContextItemViewModel> Commands)> _contextMenuStack = [];
+    private readonly ContextMenuBackItemViewModel _backItem = new();
 
     public IContextMenuContext? SelectedItem { get; private set; }
 
     public IContextMenuContext? CurrentContext => _contextMenuStack.LastOrDefault().Context;
+
+    public bool IsSubmenu => _contextMenuStack.Count > 1;
+
+    public string CurrentMenuTitle => IsSubmenu && CurrentContext is CommandItemViewModel command ? command.Title : string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasSubmenuItems { get; private set; }
 
     private IReadOnlyList<IContextItemViewModel>? CurrentContextMenu => _contextMenuStack.LastOrDefault().Commands;
 
@@ -74,11 +82,18 @@ public partial class ContextMenuViewModel : ObservableObject
 
         SelectedItem = null;
         _lastSearchText = string.Empty;
-        FilteredItems.Clear();
+        UpdateFilteredItems();
+        OnPropertyChanged(nameof(IsSubmenu));
+        OnPropertyChanged(nameof(CurrentMenuTitle));
     }
 
     private void Context_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(CommandItemViewModel.Title) && ReferenceEquals(sender, CurrentContext))
+        {
+            OnPropertyChanged(nameof(CurrentMenuTitle));
+        }
+
         if (e.PropertyName != nameof(IContextMenuContext.AllCommands))
         {
             return;
@@ -138,25 +153,52 @@ public partial class ContextMenuViewModel : ObservableObject
 
     private void UpdateFilteredItems()
     {
-        if (CurrentContextMenu is null)
+        foreach (var command in FilteredItems.OfType<CommandContextItemViewModel>())
         {
-            FilteredItems.Clear();
-            return;
+            command.PropertyChanged -= MenuItem_PropertyChanged;
         }
 
-        if (string.IsNullOrEmpty(_lastSearchText))
+        IReadOnlyList<IContextItemViewModel> items = CurrentContextMenu ?? [];
+        if (!string.IsNullOrEmpty(_lastSearchText))
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu);
-            return;
+            var commands = items.OfType<CommandContextItemViewModel>().Where(command => command.ShouldBeVisible);
+            var query = _fuzzyMatcherProvider.Current.PrecomputeQuery(_lastSearchText);
+            items = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
         }
 
-        var commands = CurrentContextMenu
-                            .OfType<CommandContextItemViewModel>()
-                            .Where(c => c.ShouldBeVisible);
+        ListHelpers.InPlaceUpdateList(FilteredItems, IsSubmenu ? [_backItem, .. items] : items);
+        foreach (var command in FilteredItems.OfType<CommandContextItemViewModel>())
+        {
+            command.PropertyChanged += MenuItem_PropertyChanged;
+        }
 
-        var query = _fuzzyMatcherProvider.Current.PrecomputeQuery(_lastSearchText);
-        var newResults = InternalListHelpers.FilterList(commands, in query, ScoreFunction);
-        ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
+        UpdateHasSubmenuItems();
+    }
+
+    private void UpdateHasSubmenuItems() =>
+        HasSubmenuItems = FilteredItems.OfType<CommandContextItemViewModel>().Any(command => command.HasSubmenu);
+
+    private void MenuItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CommandItemViewModel.HasSubmenu))
+        {
+            UpdateHasSubmenuItems();
+        }
+    }
+
+    public int GetNextItemIndex(int currentIndex, bool forward)
+    {
+        for (var i = 0; i < FilteredItems.Count; i++)
+        {
+            currentIndex = forward ? (currentIndex + 1) % FilteredItems.Count :
+                currentIndex <= 0 ? FilteredItems.Count - 1 : currentIndex - 1;
+            if (FilteredItems[currentIndex] is CommandContextItemViewModel or ContextMenuBackItemViewModel)
+            {
+                return currentIndex;
+            }
+        }
+
+        return -1;
     }
 
     private int ScoreFunction(in FuzzyQuery query, CommandContextItemViewModel item)
@@ -191,7 +233,7 @@ public partial class ContextMenuViewModel : ObservableObject
     public CommandContextItemViewModel? FindKeybinding(KeyChord chord) =>
         IContextMenuContext.FindKeybinding(CurrentContextMenu, chord);
 
-    public bool CanPopContextStack() => _contextMenuStack.Count > 1;
+    public bool CanPopContextStack() => IsSubmenu;
 
     public void PopContextStack()
     {
@@ -254,6 +296,8 @@ public partial class ContextMenuViewModel : ObservableObject
         }
 
         UpdateFilteredItems();
+        OnPropertyChanged(nameof(IsSubmenu));
+        OnPropertyChanged(nameof(CurrentMenuTitle));
         OnPropertyChanged(resetSearch ? nameof(CurrentContext) : nameof(FilteredItems));
     }
 
