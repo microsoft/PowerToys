@@ -44,6 +44,7 @@
                                 QueryIcon="Find"
                                 Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <Button x:Uid="ContextMenuManager_RefreshButton" Command="{x:Bind ViewModel.RefreshCommand}" />
+                            <Button x:Uid="ContextMenuManager_RestartExplorerButtonInline" Command="{x:Bind ViewModel.RestartExplorerCommand}" />
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 

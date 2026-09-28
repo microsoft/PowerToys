@@ -133,6 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "Directory\\Background" => ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_RootBackground"),
             "AllFilesystemObjects" => ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_RootFilesAndFolders"),
             "Drive" => ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_RootDrives"),
+            "DesktopBackground" => ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_RootDesktop"),
             _ => root,
         };
     }

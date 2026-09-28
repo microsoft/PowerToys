@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "Directory\\Background",
             "AllFilesystemObjects",
             "Drive",
+            "DesktopBackground",
         };
 
         private const string DisabledValuePrefix = "disabled_";

@@ -4108,6 +4108,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ContextMenuManager_SourceModern" xml:space="preserve">
     <value>Modern</value>
   </data>
+  <data name="ContextMenuManager_RestartExplorerButtonInline.Content" xml:space="preserve">
+    <value>Restart File Explorer</value>
+  </data>
+  <data name="ContextMenuManager_RootDesktop" xml:space="preserve">
+    <value>Desktop</value>
+  </data>
   <data name="ContextMenuManager_RootFiles" xml:space="preserve">
     <value>Files</value>
   </data>
