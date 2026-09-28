@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -53,6 +54,7 @@ public static partial class Program
 
         try
         {
+            TrySetUtf8Output();
             Console.CancelKeyPress += cancelHandler;
             Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs");
             AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
@@ -276,6 +278,20 @@ public static partial class Program
 
     private static int CountSelected(params bool[] modes)
         => modes.Count(mode => mode);
+
+    private static void TrySetUtf8Output()
+    {
+        try
+        {
+            Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        }
+        catch (IOException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
+        }
+    }
 
     private static bool HasHelpToken(ParseResult parseResult)
         => parseResult.Tokens.Any(token => token.Value is "--help" or "-h" or "-?" or "/?");

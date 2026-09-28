@@ -44,7 +44,7 @@ internal static class CliOutputWriter
                 throw new UnsupportedOutputException("The transformation did not produce text or a file.");
             }
 
-            await File.WriteAllTextAsync(outputFile.FullName, text, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
+            await WriteTextFileAsync(text, outputFile, cancellationToken);
             return new CliOutputResult("text", text, outputFile.FullName, OutputClipboard: false);
         }
 
@@ -64,8 +64,27 @@ internal static class CliOutputWriter
             return new CliOutputResult("text", text, null, OutputClipboard: false);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         clipboard.Write(package);
         return new CliOutputResult(storageFile is null ? "text" : "file", text, null, OutputClipboard: true);
+    }
+
+    private static async Task WriteTextFileAsync(string text, FileInfo outputFile, CancellationToken cancellationToken)
+    {
+        var temporaryPath = Path.Combine(outputFile.DirectoryName!, $".{outputFile.Name}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await File.WriteAllTextAsync(temporaryPath, text, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Move(temporaryPath, outputFile.FullName, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 
     private static async Task CopyFileAsync(string sourcePath, FileInfo outputFile, CancellationToken cancellationToken)

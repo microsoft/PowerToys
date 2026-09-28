@@ -18,7 +18,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Cli;
 
-internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserSettings settings) : IAdvancedPasteRuntime
+internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserSettings settings, Func<bool>? isAdvancedPasteEnabled = null) : IAdvancedPasteRuntime
 {
     internal static readonly IReadOnlyDictionary<string, PasteFormats> BuiltInActions =
         new Dictionary<string, PasteFormats>(StringComparer.OrdinalIgnoreCase)
@@ -37,6 +37,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
     private readonly IPasteFormatExecutor _executor = executor;
     private readonly IUserSettings _settings = settings;
+    private readonly Func<bool> _isAdvancedPasteEnabled = isAdvancedPasteEnabled ?? (() => AdvancedPastePolicy.IsAdvancedPasteEnabled);
 
     public IReadOnlyList<CliActionDescriptor> GetActions()
         => BuiltInActions.Keys
@@ -47,6 +48,11 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
     public async Task<DataPackage> ExecuteAsync(CliActionRequest request, DataPackageView input, CancellationToken cancellationToken, IProgress<double>? progress = null)
     {
+        if (!_isAdvancedPasteEnabled())
+        {
+            throw new InvalidOperationException("Advanced Paste is disabled by policy.");
+        }
+
         var formats = await input.GetAvailableFormatsAsync();
         var pasteFormat = ResolvePasteFormat(request, formats);
         if (!pasteFormat.IsEnabled)

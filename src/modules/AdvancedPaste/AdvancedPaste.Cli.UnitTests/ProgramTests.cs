@@ -273,6 +273,60 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task TextFileOutput_CancellationKeepsExistingDestination()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var outputPath = Path.Combine(directory, "output.txt");
+        await File.WriteAllTextAsync(outputPath, "existing content");
+
+        try
+        {
+            var package = new DataPackage();
+            package.SetText("replacement content");
+            using var cancellation = new CancellationTokenSource();
+            cancellation.Cancel();
+
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+                CliOutputWriter.WriteAsync(
+                    package,
+                    new FileInfo(outputPath),
+                    stdoutRequested: false,
+                    clipboard: new TestClipboardAdapter(),
+                    stdout: TextWriter.Null,
+                    cancellationToken: cancellation.Token));
+
+            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath));
+            Assert.AreEqual(0, Directory.GetFiles(directory, ".output.txt.*.tmp").Length);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ClipboardOutput_CancellationDoesNotReplaceClipboard()
+    {
+        var clipboard = new TestClipboardAdapter();
+        var package = new DataPackage();
+        package.SetText("replacement content");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() =>
+            CliOutputWriter.WriteAsync(
+                package,
+                outputFile: null,
+                stdoutRequested: false,
+                clipboard,
+                TextWriter.Null,
+                cancellation.Token));
+
+        Assert.IsNull(clipboard.WrittenContent);
+    }
+
+    [TestMethod]
     public async Task UnsupportedFormat_ReturnsStableJsonError()
     {
         var result = await RunAsync(["transform", "--format", "ocr", "--stdin", "--json"]);

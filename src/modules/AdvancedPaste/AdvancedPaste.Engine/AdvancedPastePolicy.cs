@@ -8,6 +8,9 @@ namespace AdvancedPaste.Services;
 
 public static class AdvancedPastePolicy
 {
+    public static bool IsAdvancedPasteEnabled =>
+        PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+
     public static bool IsOnlineAIAllowed =>
         PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
 

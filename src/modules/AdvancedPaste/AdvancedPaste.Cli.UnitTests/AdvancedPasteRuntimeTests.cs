@@ -34,13 +34,27 @@ public class AdvancedPasteRuntimeTests
         })
         {
             var executor = new TestPasteFormatExecutor();
-            var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: false));
+            var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: false), isAdvancedPasteEnabled: () => true);
 
             await Assert.ThrowsExactlyAsync<InvalidOperationException>(
                 () => runtime.ExecuteAsync(request, package.GetView(), CancellationToken.None));
 
             Assert.IsFalse(executor.WasCalled);
         }
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_WhenAdvancedPasteIsDisabledByPolicy_IsRejectedBeforeExecution()
+    {
+        var package = new DataPackage();
+        package.SetText("input");
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: true), isAdvancedPasteEnabled: () => false);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => runtime.ExecuteAsync(new CliActionRequest("plain-text", null, null, null), package.GetView(), CancellationToken.None));
+
+        Assert.IsFalse(executor.WasCalled);
     }
 
     private sealed class TestPasteFormatExecutor : IPasteFormatExecutor
