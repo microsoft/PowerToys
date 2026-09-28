@@ -1789,8 +1789,24 @@ However, this class comes with restrictions around the ability to call it from a
 background thread. Since extensions are always running in the background, this
 presents persistent difficulties.
 
-We'll provide a helper class that allows developers to easily use the clipboard
-in their extensions.
+The extension toolkit provides `ClipboardHelper` for this purpose. Its methods
+create the required STA work automatically, so extension code does not need to
+create a foreground window or manage a clipboard thread:
+
+```cs
+ClipboardHelper.SetText("text");
+ClipboardHelper.SetRtf("plain text", rtfText);
+ClipboardHelper.SetImage(RandomAccessStreamReference.CreateFromStream(stream));
+ClipboardHelper.SetContent(dataPackage);
+```
+
+`SetText` and `SetRtf` use the Win32 clipboard formats directly. `SetImage`
+accepts a `RandomAccessStreamReference` containing an image and writes it as
+the standard bitmap clipboard format. `SetContent` accepts a `DataPackage` for
+other Windows clipboard formats. Clipboard ownership and bounded retries are
+handled by the helper. Clipboard access can still fail when another process
+owns the shared clipboard, so callers should treat clipboard operations as
+best-effort and surface their own user-facing error when appropriate.
 
 ### Settings helpers
 

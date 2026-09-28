@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -284,6 +285,35 @@ public partial class TopLevelCommandManagerTests
         Assert.AreEqual(TestCommandProvider.NestedCommandId, services.GetRequiredService<ISettingsService>().Settings.PinnedCommands[0].CommandId);
     }
 
+    [TestMethod]
+    public async Task ProviderSettingsViewModel_ExposesExternalProviderId()
+    {
+        using var services = CreateServices();
+        const string extensionProviderId = "external-provider";
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId);
+        var extension = new Mock<IExtensionWrapper>();
+        extension.SetupGet(wrapper => wrapper.ExtensionUniqueId).Returns(extensionProviderId);
+        extension.Setup(wrapper => wrapper.IsRunning()).Returns(true);
+        extension.Setup(wrapper => wrapper.GetExtensionObject()).Returns(new TestExtension(provider));
+
+        var wrapper = new CommandProviderWrapper(
+            extension.Object,
+            TaskScheduler.Default,
+            Mock.Of<ICommandProviderCache>());
+        var viewModel = new ProviderSettingsViewModel(
+            wrapper,
+            new ProviderSettings(),
+            Mock.Of<ISettingsService>());
+
+        Assert.AreEqual(string.Empty, viewModel.Id);
+        Assert.AreEqual(extensionProviderId, viewModel.ProviderId);
+
+        await wrapper.LoadTopLevelCommands(services);
+
+        Assert.AreEqual(provider.Id, viewModel.Id);
+        Assert.AreEqual(extensionProviderId, viewModel.ProviderId);
+    }
+
     private static ServiceProvider CreateServices(SettingsModel? initialSettings = null)
     {
         var settings = initialSettings ?? new SettingsModel();
@@ -340,6 +370,15 @@ public partial class TopLevelCommandManagerTests
             Interlocked.Increment(ref _lookupCount);
             OnLookup?.Invoke();
             return id == NestedCommandId ? _resolvedItem : null;
+        }
+    }
+
+    private sealed partial class TestExtension(ICommandProvider provider) : IExtension
+    {
+        public object GetProvider(ProviderType providerType) => provider;
+
+        public void Dispose()
+        {
         }
     }
 }

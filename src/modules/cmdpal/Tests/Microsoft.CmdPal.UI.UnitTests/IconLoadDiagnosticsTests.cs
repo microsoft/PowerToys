@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -85,7 +86,7 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Requests linked to session loads: 1");
         StringAssert.Contains(report.Text, "    Completed: 1");
         StringAssert.Contains(report.Text, "Loads completed with no live requester: 0");
-        StringAssert.Contains(report.Text, "CommandItemViewModel.InitializeProperties reading AppListItem.Icon");
+        StringAssert.Contains(report.Text, "Installed Apps icon extraction enters this pipeline as SpecializedAppIcon work");
         StringAssert.Contains(report.Text, "Created: 1");
         StringAssert.Contains(report.Text, "Reused: 1");
         StringAssert.Contains(report.Text, "Update wall time: count=2");
@@ -215,6 +216,32 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Enqueue to completion: no samples");
         StringAssert.Contains(report.Text, "New-load result kinds");
         StringAssert.Contains(report.Text, "Empty: 1");
+    }
+
+    [TestMethod]
+    public void AppIconProtocolUsesSpecializedInputKind()
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(
+            request,
+            AppIconProtocol.Create("C:\\Windows\\System32\\shell32.dll,1"),
+            hasStream: false,
+            width: 20,
+            height: 20,
+            scale: 1.0);
+
+        Assert.IsNotNull(load);
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.SetResult(null);
+        load.Complete();
+        request.Complete(IconRequestStatus.Empty);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, "  SpecializedAppIcon: 1");
+        Assert.IsFalse(report.Text.Contains("shell32", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]
@@ -414,11 +441,12 @@ public class IconLoadDiagnosticsTests
     {
         IconLoadDiagnostics.Start();
         var size = new global::Windows.Foundation.Size(20, 20);
-        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: false);
-        IconLoadDiagnostics.RecordCacheEntryAdded(size, capacity: 16, entryCount: 1);
-        IconLoadDiagnostics.RecordCacheLookup(size, capacity: 16, hit: true);
+        IconLoadDiagnostics.RecordCacheLookup(size, IconCachePartition.Glyph, capacity: 16, hit: false);
+        IconLoadDiagnostics.RecordCacheEntryAdded(size, IconCachePartition.Glyph, capacity: 16, entryCount: 1);
+        IconLoadDiagnostics.RecordCacheLookup(size, IconCachePartition.Glyph, capacity: 16, hit: true);
         IconLoadDiagnostics.RecordCacheEntryRemoved(
             size,
+            IconCachePartition.Glyph,
             capacity: 16,
             entryCount: 0,
             AdaptiveCacheRemovalReason.Explicit);
@@ -431,7 +459,7 @@ public class IconLoadDiagnosticsTests
             $"  Definition: each entry is a cached IconSource task; counts are approximate concurrent observations. Eviction only drops the cache reference.{Environment.NewLine}" +
             $"  A request coalesced with an in-flight load is a cache miss; see Provider resolution for in-flight reuse.{Environment.NewLine}" +
             $"  Capacity means the cache was over its limit when removal was attempted and takes precedence over LowScore; LowScore means score alone caused removal.{Environment.NewLine}" +
-            "  20x20, capacity 16";
+            "  20x20 Glyph cache, capacity 16";
         StringAssert.Contains(report.Text, expectedHeader);
         StringAssert.Contains(report.Text, "    Lookups: 2");
         StringAssert.Contains(report.Text, "    Hits: 1");

@@ -169,15 +169,23 @@ public class DockMultiMonitorTests
     [TestMethod]
     public void Reconciler_ExactMatch_PreservesExistingConfigs()
     {
+        var existingBand = new DockBandSettings { ProviderId = "custom", CommandId = "existing" };
         var configs = ImmutableList.Create(
             new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true },
-            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true });
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = SecondaryMonitor.StableId,
+                Enabled = true,
+                IsCustomized = true,
+                StartBands = ImmutableList.Create(existingBand),
+            });
 
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
         Assert.AreEqual(2, result.Count);
+        Assert.AreEqual(existingBand, result[1].StartBands![0]);
     }
 
     [TestMethod]
@@ -238,21 +246,140 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
-    public void Reconciler_NewSecondaryMonitor_StartsWithEmptyBands()
+    public void Reconciler_NewSecondaryMonitor_StartsWithoutLayout()
     {
-        // On first run / upgrade with multi-monitor, secondary monitors should start
-        // with empty bands so users are not forced to manually unpin from every display.
-        var configs = ImmutableList<DockMonitorConfig>.Empty;
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
 
-        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+        var result = MonitorConfigReconciler.Reconcile(ImmutableList<DockMonitorConfig>.Empty, monitors);
 
         var secondary = result.Find(c => !c.IsPrimary);
         Assert.IsNotNull(secondary, "A secondary monitor config should have been created.");
-        Assert.IsTrue(secondary!.IsCustomized, "Secondary monitor should be customized (IsCustomized = true).");
-        Assert.AreEqual(0, secondary.StartBands?.Count ?? 0, "Secondary monitor should start with empty StartBands.");
-        Assert.AreEqual(0, secondary.CenterBands?.Count ?? 0, "Secondary monitor should start with empty CenterBands.");
-        Assert.AreEqual(0, secondary.EndBands?.Count ?? 0, "Secondary monitor should start with empty EndBands.");
+        Assert.IsFalse(secondary!.Enabled);
+        Assert.IsFalse(secondary.HasOwnLayout, "The layout is copied when the dock is first enabled, not when the monitor is found.");
+    }
+
+    [TestMethod]
+    public void EnableMonitor_FirstEnable_CopiesCurrentPrimaryBands()
+    {
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+        var oldBands = ImmutableList.Create(new DockBandSettings { ProviderId = "primary", CommandId = "old" });
+        var primaryStart = ImmutableList.Create(new DockBandSettings { ProviderId = "primary", CommandId = "start" });
+        var primaryCenter = ImmutableList.Create(new DockBandSettings { ProviderId = "primary", CommandId = "center" });
+        var primaryEnd = ImmutableList.Create(new DockBandSettings { ProviderId = "primary", CommandId = "end" });
+        var primary = new DockMonitorConfig
+        {
+            MonitorDeviceId = PrimaryMonitor.StableId,
+            Enabled = true,
+            IsPrimary = true,
+            IsCustomized = true,
+            StartBands = oldBands,
+        };
+        var reconciled = MonitorConfigReconciler.Reconcile(ImmutableList.Create(primary), monitors);
+
+        // The primary layout changes after the secondary monitor was first detected.
+        var updatedPrimary = primary with { StartBands = primaryStart, CenterBands = primaryCenter, EndBands = primaryEnd };
+        var dockSettings = CreateMinimalDockSettings() with
+        {
+            StartBands = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "global-start" }),
+            MonitorConfigs = reconciled.SetItem(reconciled.FindIndex(c => c.IsPrimary), updatedPrimary),
+        };
+
+        var enabled = dockSettings.EnableMonitor(reconciled.Find(c => !c.IsPrimary)!);
+
+        Assert.IsTrue(enabled.Enabled);
+        Assert.IsTrue(enabled.IsCustomized, "Secondary monitor should have an independent band layout.");
+        CollectionAssert.AreEqual(primaryStart.ToArray(), enabled.StartBands!.ToArray());
+        CollectionAssert.AreEqual(primaryCenter.ToArray(), enabled.CenterBands!.ToArray());
+        CollectionAssert.AreEqual(primaryEnd.ToArray(), enabled.EndBands!.ToArray());
+    }
+
+    [TestMethod]
+    public void EnableMonitor_CopiesGlobalBandsWhenPrimaryConfigIsMissing()
+    {
+        var globalStart = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "start" });
+        var globalCenter = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "center" });
+        var globalEnd = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "end" });
+        var dockSettings = CreateMinimalDockSettings() with
+        {
+            StartBands = globalStart,
+            CenterBands = globalCenter,
+            EndBands = globalEnd,
+        };
+        var secondary = new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = false };
+
+        var enabled = dockSettings.EnableMonitor(secondary);
+
+        CollectionAssert.AreEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
+        CollectionAssert.AreEqual(globalCenter.ToArray(), enabled.CenterBands!.ToArray());
+        CollectionAssert.AreEqual(globalEnd.ToArray(), enabled.EndBands!.ToArray());
+    }
+
+    [TestMethod]
+    public void EnableMonitor_PreservesExistingSecondaryLayout()
+    {
+        var existingBand = new DockBandSettings { ProviderId = "custom", CommandId = "existing" };
+        var dockSettings = CreateMinimalDockSettings() with
+        {
+            StartBands = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "start" }),
+        };
+        var secondary = new DockMonitorConfig
+        {
+            MonitorDeviceId = SecondaryMonitor.StableId,
+            Enabled = false,
+            IsCustomized = true,
+            StartBands = ImmutableList.Create(existingBand),
+        };
+
+        var enabled = dockSettings.EnableMonitor(secondary);
+
+        Assert.AreEqual(secondary with { Enabled = true }, enabled);
+    }
+
+    [TestMethod]
+    public void EnableMonitor_SeedsLegacyEmptyCustomizedLayout()
+    {
+        var globalStart = ImmutableList.Create(new DockBandSettings { ProviderId = "global", CommandId = "start" });
+        var dockSettings = CreateMinimalDockSettings() with { StartBands = globalStart };
+        var secondary = new DockMonitorConfig
+        {
+            MonitorDeviceId = SecondaryMonitor.StableId,
+            Enabled = false,
+            IsCustomized = true,
+            StartBands = ImmutableList<DockBandSettings>.Empty,
+            CenterBands = ImmutableList<DockBandSettings>.Empty,
+            EndBands = ImmutableList<DockBandSettings>.Empty,
+        };
+
+        var enabled = dockSettings.EnableMonitor(secondary);
+
+        CollectionAssert.AreEqual(globalStart.ToArray(), enabled.StartBands!.ToArray());
+    }
+
+    [TestMethod]
+    public void DockMonitorConfigViewModel_IsEnabled_CopiesPrimaryLayoutOnFirstEnable()
+    {
+        var primaryBands = ImmutableList.Create(new DockBandSettings { ProviderId = "primary", CommandId = "start" });
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = PrimaryMonitor.StableId,
+                Enabled = true,
+                IsPrimary = true,
+                IsCustomized = true,
+                StartBands = primaryBands,
+            },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = false });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[1], SecondaryMonitor, mockSettings.Object);
+
+        vm.IsEnabled = true;
+
+        var secondary = mockSettings.Object.Settings.DockSettings.MonitorConfigs[1];
+        Assert.IsTrue(secondary.Enabled);
+        Assert.IsTrue(vm.IsCustomized);
+        CollectionAssert.AreEqual(primaryBands.ToArray(), secondary.StartBands!.ToArray());
     }
 
     [TestMethod]
@@ -707,15 +834,14 @@ public class DockMultiMonitorTests
             Assert.IsNull(config.Side, $"Monitor {config.MonitorDeviceId} should inherit global side");
         }
 
-        // Primary inherits global bands (IsCustomized=false); secondary starts with
-        // empty bands (IsCustomized=true) so users choose what to pin per-monitor.
+        // Primary inherits global bands; secondaries get a layout when they are first enabled.
         var primaryCfg = reconciled.Find(c => c.IsPrimary);
         Assert.IsFalse(primaryCfg!.IsCustomized, "Primary should inherit global bands");
         foreach (var config in reconciled)
         {
             if (!config.IsPrimary)
             {
-                Assert.IsTrue(config.IsCustomized, $"Monitor {config.MonitorDeviceId} (secondary) should be customized with empty bands");
+                Assert.IsFalse(config.HasOwnLayout, $"Monitor {config.MonitorDeviceId} (secondary) should wait until it is enabled to copy a layout");
             }
         }
 
@@ -748,7 +874,7 @@ public class DockMultiMonitorTests
         var secondaryConfig = reconciled.Find(c => !c.IsPrimary);
         Assert.IsNotNull(secondaryConfig, "Secondary config should be created");
         Assert.IsFalse(secondaryConfig.Enabled, "Secondary should be disabled by default");
-        Assert.IsTrue(secondaryConfig.IsCustomized, "Secondary should start with custom (empty) bands");
+        Assert.IsFalse(secondaryConfig.HasOwnLayout, "Secondary should wait until it is enabled to copy a layout");
     }
 
     [TestMethod]

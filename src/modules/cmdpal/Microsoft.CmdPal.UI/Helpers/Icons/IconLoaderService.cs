@@ -5,8 +5,8 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
-using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -98,9 +98,10 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 
     private FontFamily GetOrCreateFontFamily(FontIconGlyphKind glyphKind, string? requestedFontFamily)
     {
+        var familySource = FontIconGlyphClassifier.GetFontFamily(glyphKind, requestedFontFamily);
         if (!string.IsNullOrEmpty(requestedFontFamily))
         {
-            return new FontFamily(requestedFontFamily);
+            return new FontFamily(familySource);
         }
 
         // TryLoadGlyph gates this method to the service's dispatcher thread, so these
@@ -108,10 +109,10 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         return glyphKind switch
         {
             FontIconGlyphKind.FluentSymbol =>
-                _fluentIconFontFamily ??= new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+                _fluentIconFontFamily ??= new FontFamily(familySource),
             FontIconGlyphKind.Emoji =>
-                _emojiFontFamily ??= new FontFamily("Segoe UI Emoji, Segoe UI"),
-            _ => _generalFontFamily ??= new FontFamily("Segoe UI"),
+                _emojiFontFamily ??= new FontFamily(familySource),
+            _ => _generalFontFamily ??= new FontFamily(familySource),
         };
     }
 
@@ -121,6 +122,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
+        ElementTheme theme,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority = IconLoadPriority.Low,
         IconLoadMeasurement? diagnostics = null,
@@ -134,6 +136,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             streamRef,
             iconSize,
             scale,
+            theme,
             tcs,
             diagnostics);
         if (_queue.TryEnqueue(operation, priority, demand, out var actualPriority))
@@ -181,6 +184,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
+        ElementTheme theme,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadMeasurement? diagnostics)
     {
@@ -191,7 +195,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 diagnostics = null;
             }
 
-            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, diagnostics).ConfigureAwait(false);
+            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, theme, diagnostics).ConfigureAwait(false);
             diagnostics?.Complete();
             tcs.TrySetResult(result);
         }
@@ -208,6 +212,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
+        ElementTheme theme,
         IconLoadMeasurement? diagnostics)
     {
         var scaledSize = iconSize.IsEmpty
@@ -216,55 +221,51 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 
         if (!string.IsNullOrEmpty(iconString))
         {
-            var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
-                IconDispatcherMaterializationKind.Unknown) ?? 0;
-            try
-            {
-                return await _dispatcherQueue
-                    .EnqueueAsync(
-                        () =>
-                        {
-                            var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
-                            try
-                            {
-                                var result = GetStringIconSource(iconString, fontFamily, scaledSize);
-                                diagnostics?.SetResult(result);
-                                return result;
-                            }
-                            finally
-                            {
-                                diagnostics?.DispatcherUiSliceCompleted(
-                                    dispatcherStartedAt,
-                                    IconDispatcherUiSliceKind.SynchronousCallback);
-                                diagnostics?.DispatcherCompleted(dispatcherStartedAt);
-                            }
-                        },
-                        LoadingPriorityOnDispatcher)
-                    .ConfigureAwait(false);
-            }
-            catch
-            {
-                // This is a no-op after the callback has started or completed.
-                diagnostics?.DispatcherWaitFailed(dispatcherEnqueuedAt);
-                throw;
-            }
-        }
+            var preparationStartedAt = diagnostics?.BeginBackgroundPreparation() ?? 0;
+            var targetSize = scaledSize.IsEmpty
+                ? DefaultIconSize
+                : (int)Math.Max(scaledSize.Width, scaledSize.Height);
+            IconProtocolProcessingResult? protocolResult = null;
+            IconPathConverter.PreparedIcon? preparedIcon = null;
 
-        if (streamRef != null)
-        {
             try
             {
-                var preparationStartedAt = diagnostics?.BeginBackgroundPreparation() ?? 0;
-                using var bitmapStream = await streamRef.OpenReadAsync().AsTask().ConfigureAwait(false);
+                if (IconProtocolRegistry.Find(iconString) is not { } protocolProcessor)
+                {
+                    preparedIcon = IconPathConverter.Prepare(iconString, fontFamily, targetSize, theme);
+                }
+                else if (!protocolProcessor.TryPrepareSynchronously(iconString, targetSize, theme, out preparedIcon))
+                {
+                    protocolResult = await protocolProcessor.PrepareAsync(iconString, targetSize, theme).ConfigureAwait(false);
+                    if (protocolResult.BitmapStream is { } bitmapStream)
+                    {
+                        diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
+                        return await CreateImageIconSourceAsync(bitmapStream, scaledSize, diagnostics).ConfigureAwait(false);
+                    }
+
+                    preparedIcon = protocolResult.TakePreparedIcon();
+                    if (preparedIcon is null && protocolResult.FallbackIconStrings is { } fallbackIconStrings)
+                    {
+                        preparedIcon = IconPathConverter.PrepareFirstAvailable(fallbackIconStrings, fontFamily, targetSize, theme);
+                    }
+                }
+
+                preparedIcon ??= IconPathConverter.PreparedIcon.Empty();
                 diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
 
-                var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
-                    IconDispatcherMaterializationKind.BitmapStream) ?? 0;
+                var materializationKind = diagnostics is null
+                    ? IconDispatcherMaterializationKind.Unknown
+                    : GetDispatcherMaterializationKind(preparedIcon);
+                var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(materializationKind) ?? 0;
+
+                // Keep the dispatcher callback synchronous for glyph and URI sources.
+                // The returned ValueTask carries only binary transfer work beyond it.
                 try
                 {
-                    return await _dispatcherQueue
-                        .EnqueueAsync(BuildImageSource, LoadingPriorityOnDispatcher)
+                    var materialization = await _dispatcherQueue
+                        .EnqueueAsync(CreateIconSourceOnDispatcher, LoadingPriorityOnDispatcher)
                         .ConfigureAwait(false);
+                    return await materialization.ConfigureAwait(false);
                 }
                 catch
                 {
@@ -273,22 +274,57 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     throw;
                 }
 
-                async Task<IconSource?> BuildImageSource()
+                ValueTask<IconSource?> CreateIconSourceOnDispatcher()
                 {
                     var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
+                    var completionOwnedByCallback = true;
+                    try
+                    {
+                        if (IconPathConverter.TryCreateIconSourceSynchronously(preparedIcon, out var result))
+                        {
+                            diagnostics?.SetResult(result);
+                            return ValueTask.FromResult<IconSource?>(result);
+                        }
+
+                        var materializationInner = CompleteAsynchronousMaterializationAsync(dispatcherStartedAt);
+
+                        // The asynchronous continuation now owns the single timing-completion notification.
+                        completionOwnedByCallback = false;
+                        return materializationInner;
+                    }
+                    finally
+                    {
+                        if (completionOwnedByCallback)
+                        {
+                            diagnostics?.DispatcherUiSliceCompleted(
+                                dispatcherStartedAt,
+                                IconDispatcherUiSliceKind.SynchronousCallback);
+                            diagnostics?.DispatcherCompleted(dispatcherStartedAt);
+                        }
+                    }
+                }
+
+                async ValueTask<IconSource?> CompleteAsynchronousMaterializationAsync(long dispatcherStartedAt)
+                {
                     var suspensionStartedAt = 0L;
                     var continuationStartedAt = 0L;
                     try
                     {
-                        var bitmap = new BitmapImage();
-                        ApplyDecodeSize(bitmap, scaledSize);
-                        var operation = bitmap.SetSourceAsync(bitmapStream);
+                        var operation = IconPathConverter.CompleteIconSourceCreationAsync(preparedIcon);
+                        if (operation.IsCompleted)
+                        {
+                            var synchronousResult = await operation;
+                            diagnostics?.SetResult(synchronousResult);
+                            return synchronousResult;
+                        }
+
                         suspensionStartedAt = diagnostics?.DispatcherUiSliceCompleted(
                             dispatcherStartedAt,
                             IconDispatcherUiSliceKind.BeforeAsyncSuspension) ?? 0;
+                        IconSource result;
                         try
                         {
-                            await operation;
+                            result = await operation;
                         }
                         finally
                         {
@@ -299,7 +335,6 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                             }
                         }
 
-                        var result = new ImageIconSource { ImageSource = bitmap };
                         diagnostics?.SetResult(result);
                         return result;
                     }
@@ -322,6 +357,22 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                     }
                 }
             }
+            finally
+            {
+                preparedIcon?.Dispose();
+                protocolResult?.Dispose();
+            }
+        }
+
+        if (streamRef != null)
+        {
+            try
+            {
+                var preparationStartedAt = diagnostics?.BeginBackgroundPreparation() ?? 0;
+                using var bitmapStream = await streamRef.OpenReadAsync().AsTask().ConfigureAwait(false);
+                diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
+                return await CreateImageIconSourceAsync(bitmapStream, scaledSize, diagnostics).ConfigureAwait(false);
+            }
 #pragma warning disable CS0168 // Variable is declared but never used
             catch (Exception ex)
 #pragma warning restore CS0168 // Variable is declared but never used
@@ -334,6 +385,88 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         }
 
         return null;
+    }
+
+    private static IconDispatcherMaterializationKind GetDispatcherMaterializationKind(
+        IconPathConverter.PreparedIcon preparedIcon) =>
+        preparedIcon.Kind switch
+        {
+            IconPathConverter.PreparedIconKind.Empty => IconDispatcherMaterializationKind.Empty,
+            IconPathConverter.PreparedIconKind.BitmapUri => IconDispatcherMaterializationKind.BitmapUri,
+            IconPathConverter.PreparedIconKind.SvgUri => IconDispatcherMaterializationKind.SvgUri,
+            IconPathConverter.PreparedIconKind.Glyph => IconDispatcherMaterializationKind.Glyph,
+            IconPathConverter.PreparedIconKind.Binary => IconDispatcherMaterializationKind.Binary,
+            _ => IconDispatcherMaterializationKind.Unknown,
+        };
+
+    private async Task<IconSource?> CreateImageIconSourceAsync(
+        IRandomAccessStream bitmapStream,
+        Size scaledSize,
+        IconLoadMeasurement? diagnostics)
+    {
+        var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
+            IconDispatcherMaterializationKind.BitmapStream) ?? 0;
+        try
+        {
+            return await _dispatcherQueue
+                .EnqueueAsync(BuildImageSource, LoadingPriorityOnDispatcher)
+                .ConfigureAwait(false);
+        }
+        catch
+        {
+            // This is a no-op after the callback has started or completed.
+            diagnostics?.DispatcherWaitFailed(dispatcherEnqueuedAt);
+            throw;
+        }
+
+        async Task<IconSource?> BuildImageSource()
+        {
+            var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
+            var suspensionStartedAt = 0L;
+            var continuationStartedAt = 0L;
+            try
+            {
+                var bitmap = new BitmapImage();
+                ApplyDecodeSize(bitmap, scaledSize);
+                var operation = bitmap.SetSourceAsync(bitmapStream);
+                suspensionStartedAt = diagnostics?.DispatcherUiSliceCompleted(
+                    dispatcherStartedAt,
+                    IconDispatcherUiSliceKind.BeforeAsyncSuspension) ?? 0;
+                try
+                {
+                    await operation;
+                }
+                finally
+                {
+                    if (suspensionStartedAt != 0)
+                    {
+                        continuationStartedAt = diagnostics?.DispatcherAsyncSuspensionCompleted(
+                            suspensionStartedAt) ?? 0;
+                    }
+                }
+
+                var result = new ImageIconSource { ImageSource = bitmap };
+                diagnostics?.SetResult(result);
+                return result;
+            }
+            finally
+            {
+                if (suspensionStartedAt == 0)
+                {
+                    diagnostics?.DispatcherUiSliceCompleted(
+                        dispatcherStartedAt,
+                        IconDispatcherUiSliceKind.SynchronousCallback);
+                }
+                else if (continuationStartedAt != 0)
+                {
+                    diagnostics?.DispatcherUiSliceCompleted(
+                        continuationStartedAt,
+                        IconDispatcherUiSliceKind.AsyncContinuation);
+                }
+
+                diagnostics?.DispatcherCompleted(dispatcherStartedAt);
+            }
+        }
     }
 
     private static void ApplyDecodeSize(BitmapImage bitmap, Size size)
@@ -353,14 +486,6 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         }
     }
 
-    private static IconSource? GetStringIconSource(string iconString, string? fontFamily, Size size)
-    {
-        var iconSize = size.IsEmpty
-            ? DefaultIconSize
-            : (int)Math.Max(size.Width, size.Height);
-        return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
-    }
-
     private sealed class IconLoadOperation : IconLoadQueue.Operation
     {
         private readonly IconLoaderService _owner;
@@ -369,6 +494,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         private readonly IRandomAccessStreamReference? _streamRef;
         private readonly Size _iconSize;
         private readonly double _scale;
+        private readonly ElementTheme _theme;
         private readonly TaskCompletionSource<IconSource?> _completion;
         private readonly IconLoadMeasurement? _diagnostics;
 
@@ -379,6 +505,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             IRandomAccessStreamReference? streamRef,
             Size iconSize,
             double scale,
+            ElementTheme theme,
             TaskCompletionSource<IconSource?> completion,
             IconLoadMeasurement? diagnostics)
         {
@@ -388,6 +515,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             _streamRef = streamRef;
             _iconSize = iconSize;
             _scale = scale;
+            _theme = theme;
             _completion = completion;
             _diagnostics = diagnostics;
         }
@@ -412,6 +540,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 _streamRef,
                 _iconSize,
                 _scale,
+                _theme,
                 _completion,
                 _diagnostics);
 

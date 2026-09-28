@@ -60,8 +60,9 @@ public partial class DockMonitorConfigViewModel : ObservableObject
         get => GetConfig()?.Enabled ?? true;
         set
         {
-            UpdateConfig(c => c with { Enabled = value });
+            UpdateConfig((c, dockSettings) => value ? dockSettings.EnableMonitor(c) : c with { Enabled = false });
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsCustomized));
         }
     }
 
@@ -91,7 +92,7 @@ public partial class DockMonitorConfigViewModel : ObservableObject
                 _ => null,
             };
 
-            UpdateConfig(c => c with { Side = newSide });
+            UpdateConfig((c, _) => c with { Side = newSide });
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasSideOverride));
         }
@@ -162,7 +163,7 @@ public partial class DockMonitorConfigViewModel : ObservableObject
         return null;
     }
 
-    private void UpdateConfig(Func<DockMonitorConfig, DockMonitorConfig> transform)
+    private void UpdateConfig(Func<DockMonitorConfig, DockSettings, DockMonitorConfig> transform)
     {
         _settingsService.UpdateSettings(s =>
         {
@@ -174,7 +175,7 @@ public partial class DockMonitorConfigViewModel : ObservableObject
                 return s;
             }
 
-            var updated = transform(configs[index]);
+            var updated = transform(configs[index], dockSettings);
             return s with
             {
                 DockSettings = dockSettings with { MonitorConfigs = configs.SetItem(index, updated) },
