@@ -210,14 +210,14 @@ public static class JsonConverter
             }
         }
 
-        private static string GetCsvDelimiterPattern(char delimiter)
-            => Regex.Escape(delimiter.ToString()) + CsvDelimiterSeparatorRegex;
-
         if (delimiterCount == 0)
         {
             throw new FormatException();
         }
     }
+
+    private static string GetCsvDelimiterPattern(char delimiter)
+        => Regex.Escape(delimiter.ToString()) + CsvDelimiterSeparatorRegex;
 
     private static string ReplaceQuotationMarksInCsvData(string value)
     {

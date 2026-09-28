@@ -327,6 +327,25 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task ClipboardOutput_RejectsEmptyResult()
+    {
+        var clipboard = new TestClipboardAdapter();
+        var package = new DataPackage();
+        package.SetText(string.Empty);
+
+        await Assert.ThrowsExactlyAsync<UnsupportedOutputException>(() =>
+            CliOutputWriter.WriteAsync(
+                package,
+                outputFile: null,
+                stdoutRequested: false,
+                clipboard,
+                TextWriter.Null,
+                CancellationToken.None));
+
+        Assert.IsNull(clipboard.WrittenContent);
+    }
+
+    [TestMethod]
     public async Task UnsupportedFormat_ReturnsStableJsonError()
     {
         var result = await RunAsync(["transform", "--format", "ocr", "--stdin", "--json"]);

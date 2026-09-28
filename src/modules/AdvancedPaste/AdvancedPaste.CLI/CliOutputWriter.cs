@@ -65,6 +65,12 @@ internal static class CliOutputWriter
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        if (!await view.HasUsableDataAsync())
+        {
+            throw new UnsupportedOutputException("The transformation did not produce supported content.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
         clipboard.Write(package);
         return new CliOutputResult(storageFile is null ? "text" : "file", text, null, OutputClipboard: true);
     }
