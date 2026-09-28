@@ -40,19 +40,24 @@ public static class JsonConverter
             return jsonText;
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (TryConvertIni(text, cancellationToken, out jsonText))
         {
             return jsonText;
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (TryConvertCsv(text, cancellationToken, out jsonText))
         {
             return jsonText;
         }
 
-        return JsonConvert.SerializeObject(
+        cancellationToken.ThrowIfCancellationRequested();
+        var serialized = JsonConvert.SerializeObject(
             SplitLines(text),
             Newtonsoft.Json.Formatting.Indented);
+        cancellationToken.ThrowIfCancellationRequested();
+        return serialized;
     }
 
     private static bool IsJson(string text)
@@ -86,6 +91,7 @@ public static class JsonConverter
         }
         catch (Exception)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             jsonText = string.Empty;
             return false;
         }
@@ -134,10 +140,16 @@ public static class JsonConverter
             }
 
             jsonText = JsonConvert.SerializeObject(ini, Newtonsoft.Json.Formatting.Indented);
+            cancellationToken.ThrowIfCancellationRequested();
             return true;
         }
-        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             jsonText = string.Empty;
             return false;
         }
@@ -170,10 +182,16 @@ public static class JsonConverter
             }
 
             jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
+            cancellationToken.ThrowIfCancellationRequested();
             return true;
         }
-        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            throw;
+        }
+        catch (Exception)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             jsonText = string.Empty;
             return false;
         }

@@ -4,9 +4,12 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -58,5 +61,20 @@ public class AdvancedPasteTempFileManagerTests
                 Directory.Delete(directory.FullName, recursive: true);
             }
         }
+    }
+
+    [TestMethod]
+    public async Task TryCleanupAfterDelayAsync_RemovesOwnershipMarkerFromConsumedFileDirectory()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var filePath = Path.Combine(directory.FullName, "result.txt");
+        File.WriteAllText(filePath, "generated");
+        var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
+        var package = new DataPackage();
+        package.SetStorageItems([storageFile]);
+
+        await package.GetView().TryCleanupAfterDelayAsync(TimeSpan.Zero);
+
+        Assert.IsFalse(Directory.Exists(directory.FullName));
     }
 }

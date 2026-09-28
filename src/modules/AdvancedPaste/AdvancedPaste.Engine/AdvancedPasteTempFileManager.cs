@@ -37,11 +37,7 @@ internal static class AdvancedPasteTempFileManager
                     continue;
                 }
 
-                var markerPath = Path.Combine(directory.FullName, OwnershipMarkerName);
-                var marker = new FileInfo(markerPath);
-                if (!marker.Exists ||
-                    marker.Attributes.HasFlag(FileAttributes.ReparsePoint) ||
-                    File.ReadAllText(markerPath) != OwnershipMarkerContent)
+                if (!HasOwnershipMarker(directory))
                 {
                     continue;
                 }
@@ -61,5 +57,35 @@ internal static class AdvancedPasteTempFileManager
                 Logger.LogDebug($"Failed to clean stale Advanced Paste temporary directory: {ex.Message}");
             }
         }
+    }
+
+    internal static void RemoveOwnershipMarkerIfDirectoryWillBeEmpty(DirectoryInfo directory)
+    {
+        if (!HasOwnershipMarker(directory))
+        {
+            return;
+        }
+
+        var markerPath = Path.Combine(directory.FullName, OwnershipMarkerName);
+        if (directory.EnumerateFileSystemInfos().Any(entry => !string.Equals(entry.FullName, markerPath, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        File.Delete(markerPath);
+    }
+
+    private static bool HasOwnershipMarker(DirectoryInfo directory)
+    {
+        if (directory.Attributes.HasFlag(FileAttributes.ReparsePoint))
+        {
+            return false;
+        }
+
+        var markerPath = Path.Combine(directory.FullName, OwnershipMarkerName);
+        var marker = new FileInfo(markerPath);
+        return marker.Exists &&
+               !marker.Attributes.HasFlag(FileAttributes.ReparsePoint) &&
+               File.ReadAllText(markerPath) == OwnershipMarkerContent;
     }
 }
