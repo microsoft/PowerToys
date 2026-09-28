@@ -170,44 +170,14 @@ function Write-MwbProvisioningDiagnostics {
             continue
         }
         Assert-MwbProtectedDirectory $path
-        $stream = $null
         try {
-            $stream = [IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')
-            # Bound both I/O and task output even for a growing log or one enormous line.
-            $buffer = [byte[]]::new(16384)
-            $offset = [Math]::Max(0, $stream.Length - $buffer.Length)
-            $null = $stream.Seek($offset, 'Begin')
-            $count = $stream.Read($buffer, 0, $buffer.Length)
-            $text = [Text.Encoding]::UTF8.GetString($buffer, 0, $count)
-            if ($offset -gt 0) {
-                $newline = $text.IndexOf("`n")
-                if ($newline -lt 0) {
-                    Write-Host "MWB provisioning ${name}: oversized line omitted; inspect the protected run-local log."
-                    continue
-                }
-                $text = $text.Substring($newline + 1)
-            }
-            $text = [regex]::Replace($text, '\x1b\[[0-?]*[ -/]*[@-~]', '')
-            # Suppress the entire excerpt, not just the matching line: diagnostics can
-            # wrap credentials or command arguments onto subsequent lines.
-            if ($text -match '(?i)WindowsSandboxClient|password|token|credential|secret|authorization') {
-                Write-Host "MWB provisioning ${name}: sensitive diagnostic content omitted; inspect the protected run-local log."
-                continue
-            }
-            if ([string]::IsNullOrWhiteSpace($text)) {
-                Write-Host "MWB provisioning ${name}: empty."
-                continue
-            }
-            foreach ($line in @($text -split '\r\n|\n|\r' | Select-Object -Last 40)) {
-                # Untrusted text must not be interpreted as Azure logging commands.
-                Write-Host "MWB provisioning ${name}: $($line.Replace('##', '# #'))"
-            }
+            # Even apparently harmless excerpts can contain wrapped authentication state.
+            # Public diagnostics contain file metadata only; raw logs stay administrator-only.
+            $length = (Get-Item -LiteralPath $path -Force).Length
+            Write-Host "MWB provisioning ${name}: present; bytes=$length; raw content remains in protected local storage."
         }
         catch [IO.IOException], [UnauthorizedAccessException] {
             Write-Host "MWB provisioning ${name}: cannot read the protected log ($($_.Exception.GetType().Name))."
-        }
-        finally {
-            if ($null -ne $stream) { $stream.Dispose() }
         }
     }
 }
@@ -237,18 +207,7 @@ if ($Mode -eq 'Prepare') {
     # Written first, before any prerequisite can throw and before the protected run root
     # exists, so an admin/all-users package-registration gap is always evidenced even when
     # this pilot never reaches the build artifact, feature or backend checks below.
-    $prerequisiteReportPath = Join-Path (Split-Path ([IO.Path]::GetFullPath($ArtifactRoot)) -Parent) 'mwb-prerequisite-report.json'
-    try {
-        $prerequisiteReport = Get-MwbSandboxPrerequisiteReport -Platform $Platform
-    }
-    catch {
-        $prerequisiteReport = [ordered]@{
-            GeneratedUtc = [DateTime]::UtcNow.ToString('o'); Platform = $Platform
-            Overall = 'REPORT_GENERATION_FAILED'; Error = $_.Exception.Message
-        }
-    }
-    $prerequisiteReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $prerequisiteReportPath -Encoding utf8
-    Write-Host "MWB Sandbox prerequisite report written to $prerequisiteReportPath."
+    Write-MwbSandboxPrerequisiteReport -ResultsDirectory $ResultsDirectory -RunId $RunId -Platform $Platform
 
     $architecture = Get-MwbCiArchitecture $Platform
     $payload = Get-MwbSandboxPayload $ArtifactRoot -Architecture $architecture

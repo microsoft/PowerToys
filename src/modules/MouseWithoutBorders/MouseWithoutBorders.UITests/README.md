@@ -43,8 +43,8 @@ snapshots and sanitized endpoint logs survive successful runs. Windows 11
 Sandbox enablement **and current-test-user modern client registration** remain
 separate image prerequisites; updating winappcli does not install either.
 
-The gated CI pilot's elevated `Prepare` step now always writes
-`mwb-prerequisite-report.json` (published as the `mwb-prerequisite-report-<job>`
+The gated CI pilot's elevated `Prepare` step writes
+`prerequisite-admin.json` (published in the `mwb-prerequisite-report-<job>`
 pipeline artifact by `steps-mwb-sandbox-experiment.yml`) before any prerequisite
 can throw and before the protected run root exists, so a registration gap is
 evidenced even when the pilot never reaches the build artifact, feature, or
@@ -52,17 +52,52 @@ backend checks. It records: the OS architecture/build and
 `Containers-DisposableClientVM` feature state; an all-users
 `MicrosoftWindows.WindowsSandbox` package inventory and the matching
 provisioned-package inventory (elevated queries, since `Prepare` already
-requires an elevated agent); and, for the exact interactive test user
-`WinAppSandbox.cs` (`AssertPrerequisites`) runs as, its package count/PFN/version,
-its `wsb.exe` execution-alias existence and reparse-point state, and a bounded
-(15-second) `wsb --version` probe that records only a sanitized `major.minor.patch`
-line, never the raw command line or full process output. Every query
+requires an elevated agent); and inventory for the intended interactive test
+user. This administrator inventory is not proof that the provider executes
+successfully as that user: it does not run another account's execution alias.
+Every query
 distinguishes a confirmed-absent result (the call succeeded with zero matches)
 from a query failure (the call itself threw); a stage that could not be
 evaluated is listed under `StagesNotChecked` rather than omitted or reported as
-passing. A placeholder `REPORT_NOT_GENERATED` report is still published if
-`Prepare` never ran at all. This diagnostic report never installs, elevates,
+passing. Explicit `NotChecked` placeholders are still published if
+`Prepare` or the interactive probe never ran. The always-run collector publishes
+`prerequisite-admin.json`, allowlisted `prerequisite-user.json`, and `summary.txt`,
+even without TRX. This diagnostic report never installs, elevates,
 enables features, or reboots; it only reads what CI already runs as.
+
+The test separately creates and attaches `winapp-prerequisites.json`
+under persistent `TestResults\mwb-preflight-<invocationGuid>` before constructing
+the fixture, so even a failure before the protected RunId or normal run directory
+exists leaves evidence. It records the actual account/SID/session, elevation and
+process/OS architectures. Each completed or failed check is persisted immediately.
+When the launcher supplies `POWERTOYS_MWB_RUN_ROOT`, the same allowlisted JSON
+is also written to `prerequisite-user.json` in that run root's existing parent
+directory, before the run root is created. This fixed mirror lets the privileged
+collector publish user evidence independently of TRX; it does not run user probes.
+Existing `AssertPrerequisites` results include package query status/presence/count,
+full name/family/version/architecture/status, execution-alias existence/reparse
+state, package executable presence/PE machine, private tool/state validation,
+CLI schema and the single bounded (15-second) `wsb --version` probe.
+Unvisited checks remain `NotChecked`; a failed package query has a null count,
+not a false zero. The provider probe records its actual exit code (null when
+unavailable), timeout, fixed error codes/HRESULTs and only a recognized
+`wsb major.minor.patch[.revision]` output line. Unrecognized banners are withheld,
+not treated as a new prerequisite failure. No raw output, exception messages,
+command lines, private paths or bootstrap state are attached. This report does
+not run extra probes or establish a Windows 11 v0.7.0 pass.
+Every stage also exposes `FailureCode` and `QueryErrorHResult` (null unless
+applicable); confirmed package absence never invents a query-error HRESULT.
+
+The September 28 unfiltered Windows 11 run
+(`localvm-20260928-174310-a7f7f400`) exported this report and referenced it in TRX:
+the actual standard user had one healthy Sandbox 0.8.107.0 package, a reparse
+execution alias, an AMD64 provider and a successful `wsb --version` exit 0.
+The smoke still timed out in official target bootstrap after 807 seconds
+remaining in its unchanged 15-minute budget (3/4 tests; clean recovery).
+A separate expected early-preflight failure
+(`localvm-20260928-175405-bdbefcd1`, without starting provisioning) also exported
+and attached the report, with all unvisited provider checks explicitly
+`NotChecked`. This distinguishes a diagnostic-export pass from a scenario pass.
 
 The bootstrap and Settings startup failures have been diagnosed and repaired. The lean payload
 omitted dynamically activated Windows App SDK components and localized MUI

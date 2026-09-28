@@ -55,13 +55,43 @@ feature enablement, reboot, client installation, UAC prompt or security-policy
 change. Scoped firewall rules, exact run identities, protected staging, standard
 user dispatch and bounded owned recovery are unchanged.
 
-The elevated `mwbSandboxExperiment.ps1 -Mode Prepare` step always captures and
-publishes a read-only `mwb-prerequisite-report.json` diagnostic (feature state,
-an all-users/provisioned Sandbox package inventory, and the exact interactive
-test user's package/alias/bounded-`wsb --version` state) before any prerequisite
-throw, distinguishing a confirmed-absent result from a query failure. See
+The elevated `mwbSandboxExperiment.ps1 -Mode Prepare` step captures read-only
+`prerequisite-admin.json` before artifact, feature or backend gates: feature/OS
+state, all-users registrations (SID and install state), provisioned packages,
+and an explicit-SID inventory for the interactive test account. Provisioned packages are
+matched using DISM's `DisplayName` and full publisher-qualified `PackageName`,
+not a bare name compared to `PackageName`. Query failures remain distinct from
+confirmed absence.
+
+The elevated report never executes another user's alias or claims user readiness.
+The modern test records its actual Limited interactive identity, package and
+alias checks, and the existing bounded `wsb --version` probe when reached.
+The pipeline collects `mwb-preflight-<invocation-guid>\winapp-prerequisites.json`
+recursively beneath the exact job's `ui-<job-prefix>` launcher directory, even
+when fixture initialization fails before creating its ordinary run directory or
+TRX. It verifies invocation/run identities and retains every current-job report
+in the published `prerequisite-user.json`; other jobs are never searched.
+
+An `always()` artifact step publishes only the allowlisted reports and a text
+summary from `$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)`.
+Missing reports become explicit `NotChecked` placeholders. Query failures retain
+stable codes and HRESULTs, not raw exception text, and never imply package
+absence. User-report collection strips unapproved fields and private paths;
+raw initializer logs/markers, process arguments and authentication state remain
+private. Other-user registrations, staged-only, provisioned-only, and absent
+inventories remain distinguishable. Both reports must be considered
+before diagnosing image installation versus account registration. See
 `src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/README.md` for the
 full field list; this never itself installs, elevates, or enables features.
+
+For an image without the modern client, Microsoft's
+[upgrade instructions](https://learn.microsoft.com/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-versions#upgrading-to-the-newer-version)
+require launching Windows Sandbox from Start and completing its Store update,
+with access to Microsoft Store and Windows Update. Complete this during image
+preparation, then confirm registration and `wsb --version` under the actual test
+account. Registering an existing manifest alone cannot install a missing
+package; the diagnostic flow does not attempt client installation or alter
+Store/network policy.
 
 Focused inert Pester 3.4 coverage lives in
 `tests\winappCliRelease.Tests.ps1`, `tests\mwbSandboxCiPreparation.Tests.ps1`,

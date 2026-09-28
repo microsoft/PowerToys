@@ -741,7 +741,7 @@ Describe 'MWB gated preparation source contracts' {
     }
 
     It 'writes the prerequisite report before any BLOCKED_INFRASTRUCTURE preflight throw or run-root creation' {
-        $reportIndex = $script.IndexOf('Get-MwbSandboxPrerequisiteReport')
+        $reportIndex = $script.IndexOf('Write-MwbSandboxPrerequisiteReport')
         $featureThrowIndex = $script.IndexOf('BLOCKED_INFRASTRUCTURE: Sandbox feature')
         $noUserThrowIndex = $script.IndexOf('BLOCKED_INFRASTRUCTURE: no logged-on interactive desktop user')
         $runRootIndex = $script.IndexOf('New-MwbProtectedDirectory $runRoot')
@@ -749,16 +749,15 @@ Describe 'MWB gated preparation source contracts' {
         $reportIndex | Should BeLessThan $featureThrowIndex
         $reportIndex | Should BeLessThan $noUserThrowIndex
         $reportIndex | Should BeLessThan $runRootIndex
-        $script | Should Match 'catch \{\s*\$prerequisiteReport = \[ordered\]@\{'
-        $script | Should Match 'Set-Content -LiteralPath \$prerequisiteReportPath'
+        $script | Should Match 'Write-MwbSandboxPrerequisiteReport -ResultsDirectory \$ResultsDirectory -RunId \$RunId'
     }
 
     It 'always publishes the prerequisite report artifact even when Prepare never runs' {
         $steps = Get-Content -LiteralPath (Join-Path $templates 'steps-mwb-sandbox-experiment.yml') -Raw
-        $steps | Should Match 'displayName: Ensure MWB Sandbox prerequisite report exists\r?\n\s*condition: always\(\)'
-        $steps | Should Match "REPORT_NOT_GENERATED"
+        $steps | Should Match 'displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX\r?\n\s*condition: always\(\)'
+        $steps | Should Match 'Export-MwbSandboxPrerequisites.ps1'
         $steps | Should Match 'task: PublishPipelineArtifact@1\r?\n\s*displayName: Publish MWB Sandbox prerequisite report\r?\n\s*condition: always\(\)'
-        $steps | Should Match "targetPath: '\`$\(Pipeline.Workspace\)\\mwb-prerequisite-report.json'"
+        $steps | Should Match 'targetPath: ''\$\(Common.TestResultsDirectory\)\\mwb-prerequisites-\$\(System.JobId\)'''
     }
 }
 
@@ -767,82 +766,189 @@ Describe 'MWB Sandbox prerequisite diagnostics' {
         Mock Import-MwbAppxCompat {}
     }
 
+    Context 'MWB admin inventory conclusions and early failure evidence' {
+        BeforeEach {
+            $script:allUsersInventory = @{ QueryError = $null; Packages = @() }
+            $script:provisionedInventory = @{ QueryError = $null; Packages = @() }
+            $script:userInventory = @{
+                QueryError = $null; PackageQueryError = $null; PackageCount = 0
+                UserSid = 'S-1-5-21-123-456-789-1001'
+            }
+            Mock Get-MwbSandboxAllUsersPackageReport { $script:allUsersInventory }
+            Mock Get-MwbSandboxProvisionedPackageReport { $script:provisionedInventory }
+            Mock Get-MwbSandboxInteractiveUserReport { $script:userInventory }
+            Mock Get-CimInstance { [pscustomobject]@{ BuildNumber = '26100'; Version = '10.0.26100' } }
+            Mock Get-WindowsOptionalFeature { [pscustomobject]@{ State = 'Enabled' } }
+        }
+
+        It 'distinguishes absence everywhere, other-user registration, staged-only and provisioned-only inventories' -TestCases @(
+            @{ Kind = 'AbsentEverywhere' }
+            @{ Kind = 'RegisteredForOtherUser' }
+            @{ Kind = 'StagedOnly' }
+            @{ Kind = 'ProvisionedOnly' }
+            @{ Kind = 'RegisteredForTestUser' }
+        ) {
+            param($Kind)
+            switch ($Kind) {
+                'RegisteredForOtherUser' { $script:allUsersInventory.Packages = @(@{ Registrations = @(@{ InstallState = 'Installed' }) }) }
+                'StagedOnly' { $script:allUsersInventory.Packages = @(@{ Registrations = @(@{ InstallState = 'Staged' }) }) }
+                'ProvisionedOnly' { $script:provisionedInventory.Packages = @(@{ Version = '0.8.107.0' }) }
+                'RegisteredForTestUser' { $script:userInventory.PackageCount = 1 }
+            }
+            $report = Get-MwbSandboxPrerequisiteReport 'x64Win11'
+            $report.InventoryConclusion | Should Be $Kind
+            $report.InteractiveProbe.Status | Should Be 'NotChecked'
+            $report.InteractiveProbe.Reason | Should Be 'PrepareDoesNotExecuteAsTestUser'
+        }
+
+        It 'never converts a failed inventory query into confirmed package absence' -TestCases @(
+            @{ Query = 'AllUsers' }; @{ Query = 'Provisioned' }; @{ Query = 'Interactive' }
+        ) {
+            param($Query)
+            switch ($Query) {
+                'AllUsers' { $script:allUsersInventory.QueryError = @{ Code = 'AllUsersPackageQueryFailed' } }
+                'Provisioned' { $script:provisionedInventory.QueryError = @{ Code = 'ProvisionedPackageQueryFailed' } }
+                'Interactive' { $script:userInventory.PackageQueryError = @{ Code = 'InteractiveUserPackageQueryFailed' } }
+            }
+            (Get-MwbSandboxPrerequisiteReport 'x64Win11').InventoryConclusion | Should Be 'UnknownQueryFailure'
+        }
+
+        It 'persists allowlisted evidence when a feature query fails before privileged setup or TRX exists' {
+            Mock Get-WindowsOptionalFeature { throw 'password=do-not-publish WindowsSandboxClient --secret do-not-publish' }
+            $id = [guid]::NewGuid()
+            $root = (New-Item -ItemType Directory -Path (Join-Path $TestDrive ([guid]::NewGuid().ToString('N')))).FullName
+            Write-MwbSandboxPrerequisiteReport -ResultsDirectory $root -RunId $id -Platform x64Win11
+            $path = Join-Path $root "mwb-prerequisites-$id\prerequisite-admin.json"
+            Test-Path -LiteralPath $path | Should Be $true
+            $raw = Get-Content -LiteralPath $path -Raw
+            $raw | Should Not Match 'do-not-publish|WindowsSandboxClient|password|--secret'
+            $report = $raw | ConvertFrom-Json
+            $report.SandboxFeatureQueryError.Code | Should Be 'SandboxFeatureQueryFailed'
+            $report.SandboxFeatureQueryError.HResult | Should Match '^0x[0-9A-F]{8}$'
+            $report.InteractiveProbe.Status | Should Be 'NotChecked'
+            @(Get-ChildItem -LiteralPath $root -Filter '*.trx' -Recurse).Count | Should Be 0
+        }
+
+        It 'never uses the elevated agent to execute the interactive user alias or exposes raw package paths' {
+            $common = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbSandboxCi.Common.ps1') -Raw
+            $diagnostics = $common.Substring($common.IndexOf('# Match the trusted family'))
+            $diagnostics | Should Not Match 'Start-Process|ProcessStartInfo|Invoke-Expression|InstallLocation|AliasPath'
+            $diagnostics | Should Not Match '\.Exception\.Message|Format-List|Out-String'
+            $diagnostics | Should Match 'Get-MwbSandboxPackages -UserSid \$userSid.Value'
+        }
+    }
+
     It 'distinguishes a confirmed-absent all-users package inventory from a query failure' {
-        Mock Get-AppxPackage { @() }
+        Mock Get-MwbSandboxPackages { @() }
         $absent = Get-MwbSandboxAllUsersPackageReport
         $absent.QueryError | Should Be $null
         $absent.Packages.Count | Should Be 0
 
-        Mock Get-AppxPackage { throw 'Access is denied.' }
+        Mock Get-MwbSandboxPackages { throw 'Access is denied. password=never-public' }
         $failed = Get-MwbSandboxAllUsersPackageReport
-        $failed.QueryError | Should Match 'Access is denied'
+        $failed.QueryError.Code | Should Be 'AllUsersPackageQueryFailed'
+        $failed.QueryError.HResult | Should Match '^0x[0-9A-F]{8}$'
+        ($failed | ConvertTo-Json -Depth 5) | Should Not Match 'never-public|Access is denied'
         $failed.Packages.Count | Should Be 0
     }
 
+    It 'reads native AppxUserSecurityId objects without exporting their account names' {
+        Mock Get-MwbSandboxPackages {
+            [pscustomobject]@{
+                PackageFamilyName = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
+                PackageFullName = 'MicrosoftWindows.WindowsSandbox_0.8.107.0_x64__cw5n1h2txyewy'
+                Version = [version]'0.8.107.0'; Status = 'Ok'
+                PackageUserInformation = @([pscustomobject]@{
+                    UserSecurityId = [pscustomobject]@{ Sid = 'S-1-5-21-123-456-789-1001'; Username = 'private-account-name' }
+                    InstallState = 'Installed'
+                })
+            }
+        }
+        $report = Get-MwbSandboxAllUsersPackageReport
+        $report.QueryError | Should Be $null
+        $report.Packages.Count | Should Be 1
+        $report.Packages[0].Registrations[0].UserSid | Should Be 'S-1-5-21-123-456-789-1001'
+        $report.Packages[0].Registrations[0].InstallState | Should Be 'Installed'
+        ($report | ConvertTo-Json -Depth 6) | Should Not Match 'private-account-name|Username'
+    }
+
     It 'reports a matched all-users package only when the family name matches exactly' {
-        Mock Get-AppxPackage {
+        Mock Get-MwbSandboxPackages {
             @(
-                [pscustomobject]@{ PackageFamilyName = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'; PackageFullName = 'Sandbox_1.0_x64'; Version = [version]'1.0.0.0'; Status = 'Ok'; Architecture = 'X64' }
+                [pscustomobject]@{
+                    PackageFamilyName = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
+                    PackageFullName = 'MicrosoftWindows.WindowsSandbox_1.0.0.0_x64__cw5n1h2txyewy'
+                    Version = [version]'1.0.0.0'; Status = 'Ok'
+                    InstallLocation = 'private-path-not-exported'
+                    PackageUserInformation = @([pscustomobject]@{ UserSecurityId = 'S-1-5-21-123-456-789-1001'; InstallState = 'Installed' })
+                }
                 [pscustomobject]@{ PackageFamilyName = 'Unrelated_8wekyb3d8bbwe'; PackageFullName = 'Unrelated'; Version = [version]'1.0.0.0'; Status = 'Ok'; Architecture = 'X64' }
             )
         }
         $report = Get-MwbSandboxAllUsersPackageReport
         $report.QueryError | Should Be $null
         $report.Packages.Count | Should Be 1
-        $report.Packages[0].PackageFullName | Should Be 'Sandbox_1.0_x64'
+        $report.Packages[0].PackageFullName | Should Be 'MicrosoftWindows.WindowsSandbox_1.0.0.0_x64__cw5n1h2txyewy'
+        $report.Packages[0].Registrations[0].InstallState | Should Be 'Installed'
+        ($report | ConvertTo-Json -Depth 8) | Should Not Match 'InstallLocation|private-path'
     }
 
     It 'distinguishes a confirmed-absent provisioned package inventory from a query failure' {
-        Mock Get-AppxProvisionedPackage { @() }
+        Mock Get-MwbSandboxProvisionedPackages { @() }
         $absent = Get-MwbSandboxProvisionedPackageReport
         $absent.QueryError | Should Be $null
         $absent.Packages.Count | Should Be 0
 
-        Mock Get-AppxProvisionedPackage { throw 'The requested operation requires elevation.' }
+        Mock Get-MwbSandboxProvisionedPackages { throw 'The requested operation requires elevation.' }
         $failed = Get-MwbSandboxProvisionedPackageReport
-        $failed.QueryError | Should Match 'elevation'
+        $failed.QueryError.Code | Should Be 'ProvisionedPackageQueryFailed'
     }
 
-    It 'reports the interactive user identity, package absence, alias existence and reparse state' {
+    It 'finds provisioned packages by DisplayName and full trusted PackageName rather than a bare name' {
+        Mock Get-MwbSandboxProvisionedPackages {
+            @(
+                [pscustomobject]@{ DisplayName = 'MicrosoftWindows.WindowsSandbox'; PackageName = 'MicrosoftWindows.WindowsSandbox_0.8.107.0_neutral_~_cw5n1h2txyewy'; Version = '0.8.107.0'; Architecture = 'Neutral' }
+                [pscustomobject]@{ DisplayName = 'MicrosoftWindows.WindowsSandbox'; PackageName = 'MicrosoftWindows.WindowsSandbox_0.8.107.0_x64__cw5n1h2txyewy'; Version = '0.8.107.0'; Architecture = 'X64' }
+                [pscustomobject]@{ DisplayName = 'MicrosoftWindows.WindowsSandbox'; PackageName = 'MicrosoftWindows.WindowsSandbox_0.8.107.0_x64__otherpublisher'; Version = '0.8.107.0'; Architecture = 'X64' }
+                [pscustomobject]@{ DisplayName = 'MicrosoftWindows.WindowsSandboxExtra'; PackageName = 'MicrosoftWindows.WindowsSandboxExtra_0.8.107.0_x64__cw5n1h2txyewy'; Version = '0.8.107.0'; Architecture = 'X64' }
+            )
+        }
+        $report = Get-MwbSandboxProvisionedPackageReport
+        $report.QueryError | Should Be $null
+        $report.Packages.Count | Should Be 2
+        $report.Packages[0].PackageFamilyName | Should Be 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
+        $report.Packages[0].PackageFullName | Should Be 'MicrosoftWindows.WindowsSandbox_0.8.107.0_neutral_~_cw5n1h2txyewy'
+        $report.Packages[1].PackageFullName | Should Be 'MicrosoftWindows.WindowsSandbox_0.8.107.0_x64__cw5n1h2txyewy'
+    }
+
+    It 'inventories the exact user by SID without executing that user alias under the admin token' {
         $realAccount = "$env:USERDOMAIN\$env:USERNAME"
-        $profileRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
-        $null = New-Item -ItemType Directory -Path (Join-Path $profileRoot 'AppData\Local\Microsoft\WindowsApps') -Force
         Mock Get-CimInstance {
-            param($ClassName, $Filter)
+            param($ClassName)
             if ($ClassName -ceq 'Win32_ComputerSystem') { return [pscustomobject]@{ UserName = $realAccount } }
-            if ($ClassName -ceq 'Win32_UserProfile') { return [pscustomobject]@{ LocalPath = $profileRoot } }
             throw "unexpected CIM class $ClassName"
         }
-        Mock Get-AppxPackage { @() }
-        Mock Invoke-MwbWsbVersionProbe { throw 'must not be called when the alias is absent' }
+        Mock Get-MwbSandboxPackages { @() }
 
         $noAlias = Get-MwbSandboxInteractiveUserReport
+        $noAlias.QueryScope | Should Be 'ExplicitUserSid'
         $noAlias.QueryError | Should Be $null
         $noAlias.PackageCount | Should Be 0
         $noAlias.PackageAbsent | Should Be $true
-        $noAlias.AliasExists | Should Be $false
-        $noAlias.WsbVersionProbe.Attempted | Should Be $false
-
-        $aliasPath = Join-Path $profileRoot 'AppData\Local\Microsoft\WindowsApps\wsb.exe'
-        Set-Content -LiteralPath $aliasPath -Value 'fixture'
-        Mock Invoke-MwbWsbVersionProbe {
-            param($ExecutablePath)
-            $ExecutablePath | Should Be $aliasPath
-            [ordered]@{ Attempted = $true; ExitCode = 0; TimedOut = $false; DurationSeconds = 0.1; VersionText = '0.7.0'; Error = $null }
-        }
-        $withAlias = Get-MwbSandboxInteractiveUserReport
-        $withAlias.AliasExists | Should Be $true
-        $withAlias.AliasIsReparsePoint | Should Be $false
-        $withAlias.WsbVersionProbe.Attempted | Should Be $true
-        $withAlias.WsbVersionProbe.VersionText | Should Be '0.7.0'
+        $noAlias.UserName | Should Not Match '\\'
+        $noAlias.WsbVersionProbe.Status | Should Be 'NotChecked'
+        $noAlias.WsbVersionProbe.Reason | Should Be 'RequiresLimitedInteractiveUser'
+        $noAlias.WsbVersionProbe.EvidenceFile | Should Be 'prerequisite-user.json'
+        Assert-MockCalled Get-MwbSandboxPackages -Times 1 -Exactly -ParameterFilter { $UserSid -eq $noAlias.UserSid }
     }
 
     It 'reports a query error, not a false absence, when the interactive user cannot be determined' {
         Mock Get-CimInstance { [pscustomobject]@{ UserName = $null } }
         $report = Get-MwbSandboxInteractiveUserReport
-        $report.QueryError | Should Match 'No interactive desktop user'
+        $report.QueryError.Code | Should Be 'InteractiveUserNotLoggedOn'
         $report.PackageCount | Should Be $null
         $report.PackageAbsent | Should Be $null
+        $report.WsbVersionProbe.Status | Should Be 'NotChecked'
     }
 
     It 'records unreached stages explicitly rather than omitting or reporting them as passing' {
@@ -852,50 +958,21 @@ Describe 'MWB Sandbox prerequisite diagnostics' {
             [pscustomobject]@{ UserName = $null }
         }
         Mock Get-WindowsOptionalFeature { throw 'The requested operation requires elevation.' }
+        Mock Get-MwbSandboxPackages { throw 'Package query failed.' }
+        Mock Get-MwbSandboxProvisionedPackages { throw 'Provisioning query failed.' }
         $report = Get-MwbSandboxPrerequisiteReport -Platform 'x64Win11'
-        $report.SandboxFeatureQueryError | Should Match 'elevation'
+        $report.SchemaVersion | Should Be 3
+        $report.CollectionContext | Should Be 'ElevatedPrepareInventory'
+        $report.SandboxFeatureQueryError.Code | Should Be 'SandboxFeatureQueryFailed'
+        $report.InventoryConclusion | Should Be 'UnknownQueryFailure'
         ($report.StagesNotChecked -ccontains 'SandboxFeatureState') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'AllUsersPackages') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'ProvisionedPackages') | Should Be $true
         ($report.StagesNotChecked -ccontains 'InteractiveUserIdentity') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'InteractiveUserPackages') | Should Be $true
+        ($report.StagesNotChecked -ccontains 'InteractiveUserAlias') | Should Be $true
         ($report.StagesNotChecked -ccontains 'WsbVersionProbe') | Should Be $true
         # Round-trips without throwing, so a partially-failed report is still an exportable artifact.
         { $report | ConvertTo-Json -Depth 8 } | Should Not Throw
-    }
-}
-
-Describe 'MWB Sandbox bounded wsb version probe' {
-    BeforeAll { $pwshPath = (Get-Process -Id $PID).Path }
-
-    It 'captures a bounded, sanitized version line from a real fast process' {
-        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath $pwshPath -Arguments @('-NoProfile', '-NoLogo', '-Command', 'Write-Output 9.8.7')
-        $probe.Attempted | Should Be $true
-        $probe.TimedOut | Should Be $false
-        $probe.ExitCode | Should Be 0
-        $probe.VersionText | Should Be '9.8.7'
-        $probe.Error | Should Be $null
-    }
-
-    It 'never waits past its bound on an unresponsive process' {
-        $stopwatch = [Diagnostics.Stopwatch]::StartNew()
-        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath $pwshPath `
-            -Arguments @('-NoProfile', '-NoLogo', '-Command', 'Start-Sleep -Seconds 30') -TimeoutMilliseconds 500
-        $stopwatch.Stop()
-        $probe.TimedOut | Should Be $true
-        $probe.ExitCode | Should Be $null
-        $stopwatch.Elapsed.TotalSeconds | Should BeLessThan 10
-    }
-
-    It 'reports a query error rather than throwing when the executable is missing' {
-        $probe = Invoke-MwbWsbVersionProbe -ExecutablePath (Join-Path $TestDrive 'does-not-exist\wsb.exe')
-        $probe.Attempted | Should Be $true
-        $probe.Error | Should Not Be $null
-        $probe.ExitCode | Should Be $null
-    }
-
-    It 'never captures the raw command line or full process output as the version text' {
-        $definition = (Get-Command Invoke-MwbWsbVersionProbe).Definition
-        $definition | Should Not Match 'ArgumentList\s*-join'
-        $definition | Should Not Match 'Write-Host.*ArgumentList'
-        $definition | Should Match "\`$stdout -split '\\r\?\\n'"
-        $definition | Should Match "match '\^\\d\+\\\.\\d\+\\\.\\d\+"
     }
 }

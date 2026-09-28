@@ -41,6 +41,7 @@
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxConfiguration.cs" Link="Experiment\SandboxConfiguration.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\WinAppSandboxProtocol.cs" Link="Experiment\WinAppSandboxProtocol.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\WinAppSandboxException.cs" Link="Experiment\WinAppSandboxException.cs" />
+    <Compile Include="..\MouseWithoutBorders.UITests\WinAppSandboxPrerequisiteReport.cs" Link="Experiment\WinAppSandboxPrerequisiteReport.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\WinAppSandboxCommand.cs" Link="Experiment\WinAppSandboxCommand.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\WinAppSandboxPayload.cs" Link="Experiment\WinAppSandboxPayload.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\Payload\TcpSocketTable.cs" Link="Experiment\TcpSocketTable.cs" />

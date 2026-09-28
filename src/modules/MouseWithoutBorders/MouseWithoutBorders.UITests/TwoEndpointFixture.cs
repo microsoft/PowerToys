@@ -23,6 +23,7 @@ namespace Microsoft.MouseWithoutBorders.UITests;
 internal sealed class TwoEndpointFixture : IDisposable
 {
     private readonly TestContext context;
+    private readonly WinAppSandboxPrerequisiteReport prerequisites;
     private readonly ProcessIdentity testProcess = ProcessIdentity.Capture(Environment.ProcessId);
     private readonly List<object> phases = [];
     private readonly List<Exception> cleanupErrors = [];
@@ -57,9 +58,10 @@ internal sealed class TwoEndpointFixture : IDisposable
     private bool hostPeersStarted;
     private bool guestPeersStarted;
 
-    public TwoEndpointFixture(TestContext context)
+    public TwoEndpointFixture(TestContext context, WinAppSandboxPrerequisiteReport prerequisites)
     {
         this.context = context;
+        this.prerequisites = prerequisites;
     }
 
     public void Run()
@@ -233,6 +235,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         Assert.IsTrue(string.Equals(productRoot, provision["ProductRoot"]?.GetValue<string>()?.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase),
             "Provisioning ProductRoot does not match POWERTOYS_INSTALL_DIR.");
         runId = Guid.Parse(provision["RunId"]!.GetValue<string>()).ToString();
+        prerequisites.SetRunId(runId);
         Assert.IsTrue(!string.IsNullOrWhiteSpace(provision["RuleName"]?.GetValue<string>()), "Missing scoped firewall rule identity.");
         Assert.IsTrue(provision["Status"]?.GetValue<string>() is "WaitingForSandbox" or "Ready",
             "BLOCKED_INFRASTRUCTURE: privileged provisioning must be WaitingForSandbox or Ready before the test.");
@@ -304,7 +307,7 @@ internal sealed class TwoEndpointFixture : IDisposable
                 Convert.ToHexString(SHA256.HashData(binary)),
                 true,
                 "Sandbox winapp.exe changed after privileged provisioning.");
-            sandbox = new WinAppSandbox(runId, controlRoot, runRoot, sandboxWinApp, SaveJournal, context);
+            sandbox = new WinAppSandbox(runId, controlRoot, runRoot, sandboxWinApp, SaveJournal, context, prerequisites);
         }
         // Keep liveness outside MTP/native recording, and isolate mapped guest writes
         // from host publication so one stalled path cannot starve both endpoints.

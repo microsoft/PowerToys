@@ -229,12 +229,13 @@ Describe 'MWB bounded public provisioning diagnostics' {
         Mock Write-Host { param($Object) $script:diagnosticLines.Add([string]$Object) }
     }
 
-    It 'surfaces the underlying error and stdout context without a provisioning marker' {
+    It 'reports protected log presence without exposing raw errors or stdout before a marker' {
         Set-Content -LiteralPath $stderrPath -Value 'Exact underlying pre-marker error'
         Set-Content -LiteralPath $stdoutPath -Value 'Last completed initializer step'
         Write-MwbProvisioningDiagnostics $directory
-        ($script:diagnosticLines -join "`n") | Should Match 'Exact underlying pre-marker error'
-        ($script:diagnosticLines -join "`n") | Should Match 'Last completed initializer step'
+        ($script:diagnosticLines -join "`n") | Should Match 'stderr.log: present; bytes='
+        ($script:diagnosticLines -join "`n") | Should Match 'stdout.log: present; bytes='
+        ($script:diagnosticLines -join "`n") | Should Not Match 'Exact underlying|Last completed'
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $directory }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $logRoot }
         Assert-MockCalled Assert-MwbProtectedDirectory -Times 1 -Exactly -ParameterFilter { $Path -eq $stderrPath }
@@ -250,22 +251,23 @@ Describe 'MWB bounded public provisioning diagnostics' {
     It 'distinguishes missing and empty streams' {
         Set-Content -LiteralPath $stderrPath -Value '' -NoNewline
         Write-MwbProvisioningDiagnostics $directory
-        ($script:diagnosticLines -join "`n") | Should Match 'stderr.log: empty'
+        ($script:diagnosticLines -join "`n") | Should Match 'stderr.log: present; bytes=0'
         ($script:diagnosticLines -join "`n") | Should Match 'stdout.log: not created'
     }
 
-    It 'bounds reads and public output while retaining the end of a large log' {
+    It 'publishes only bounded metadata for a large log' {
         [IO.File]::WriteAllText($stderrPath, (('x' * 200 + "`n") * 20000) + "Final error`n")
         Write-MwbProvisioningDiagnostics $directory
         $script:diagnosticLines.Count | Should BeLessThan 42
         ($script:diagnosticLines -join "`n").Length | Should BeLessThan 20000
-        ($script:diagnosticLines -join "`n") | Should Match 'Final error'
+        ($script:diagnosticLines -join "`n") | Should Not Match 'Final error'
+        ($script:diagnosticLines -join "`n") | Should Match 'raw content remains in protected local storage'
     }
 
     It 'does not print a partial oversized line whose sensitive prefix is outside the read window' {
         [IO.File]::WriteAllText($stderrPath, 'AccountPassword=' + ('x' * 20000) + 'DO_NOT_PUBLISH')
         Write-MwbProvisioningDiagnostics $directory
-        ($script:diagnosticLines -join "`n") | Should Match 'oversized line omitted'
+        ($script:diagnosticLines -join "`n") | Should Match 'raw content remains in protected local storage'
         ($script:diagnosticLines -join "`n") | Should Not Match 'DO_NOT_PUBLISH'
     }
 
@@ -280,16 +282,16 @@ Describe 'MWB bounded public provisioning diagnostics' {
         param($Label)
         Set-Content -LiteralPath $stderrPath -Value "Sensitive context: $Label`nDO_NOT_PUBLISH"
         Write-MwbProvisioningDiagnostics $directory
-        ($script:diagnosticLines -join "`n") | Should Match 'sensitive diagnostic content omitted'
+        ($script:diagnosticLines -join "`n") | Should Match 'raw content remains in protected local storage'
         ($script:diagnosticLines -join "`n") | Should Not Match 'DO_NOT_PUBLISH|Sensitive context:'
         Get-Content -LiteralPath $stderrPath -Raw | Should Match 'DO_NOT_PUBLISH'
     }
 
-    It 'removes ANSI formatting and neutralizes Azure logging commands without altering the raw log' {
+    It 'never publishes ANSI formatting or Azure logging commands and preserves the raw log privately' {
         $raw = "$([char]27)[31mFixture error$([char]27)[0m`n##vso[task.complete result=Succeeded;]not a command"
         Set-Content -LiteralPath $stderrPath -Value $raw
         Write-MwbProvisioningDiagnostics $directory
-        ($script:diagnosticLines -join "`n") | Should Match 'Fixture error'
+        ($script:diagnosticLines -join "`n") | Should Not Match 'Fixture error'
         ($script:diagnosticLines -join "`n") | Should Not Match '##|\x1b'
         Get-Content -LiteralPath $stderrPath -Raw | Should Match '##vso'
     }
@@ -312,7 +314,7 @@ Describe 'MWB bounded public provisioning diagnostics' {
                 Write-MwbProvisioningDiagnostics $directory
                 throw 'Original provisioning failure'
             } | Should Throw 'Original provisioning failure'
-            ($script:diagnosticLines -join "`n") | Should Match 'cannot read the protected log'
+            ($script:diagnosticLines -join "`n") | Should Match 'stderr.log: present; bytes='
         }
         finally {
             $lock.Dispose()

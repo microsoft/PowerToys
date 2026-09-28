@@ -3,7 +3,8 @@ steps:
   - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Prepare `
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
-        -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)"
+        -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
+        -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Prepare asynchronous privileged MWB Sandbox prerequisite
     timeoutInMinutes: 15
 
@@ -32,19 +33,9 @@ steps:
     timeoutInMinutes: 5
 
   - pwsh: |
-      # The Prepare step writes this before any prerequisite throw. If Prepare never
-      # reached that point (for example, an unrelated elevation failure), still publish an
-      # explicit placeholder rather than silently omitting the diagnostic artifact.
-      $reportPath = "$(Pipeline.Workspace)\mwb-prerequisite-report.json"
-      if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
-        [ordered]@{
-          GeneratedUtc = [DateTime]::UtcNow.ToString('o')
-          Platform = "$(TestPlatform)"
-          Overall = 'REPORT_NOT_GENERATED'
-          Reason = 'The Prepare step did not reach prerequisite report generation.'
-        } | ConvertTo-Json | Set-Content -LiteralPath $reportPath -Encoding utf8
-      }
-    displayName: Ensure MWB Sandbox prerequisite report exists
+      & "$(Build.SourcesDirectory)\.pipelines\Export-MwbSandboxPrerequisites.ps1" `
+        -ResultsDirectory "$(Common.TestResultsDirectory)" -RunId "$(System.JobId)"
+    displayName: Collect allowlisted MWB prerequisite diagnostics even without TRX
     condition: always()
     timeoutInMinutes: 2
 
@@ -52,5 +43,5 @@ steps:
     displayName: Publish MWB Sandbox prerequisite report
     condition: always()
     inputs:
-      targetPath: '$(Pipeline.Workspace)\mwb-prerequisite-report.json'
+      targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: mwb-prerequisite-report-$(System.JobId)

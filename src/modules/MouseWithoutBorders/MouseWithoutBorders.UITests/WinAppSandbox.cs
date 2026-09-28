@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -27,6 +28,7 @@ internal sealed class WinAppSandbox : ISandboxSession
     private readonly string targetStateRoot;
     private readonly Action saveJournal;
     private readonly TestContext context;
+    private readonly WinAppSandboxPrerequisiteReport prerequisites;
     private readonly List<ProcessIdentity> commandProcesses = [];
     private readonly JsonArray commandLog = [];
     private readonly string recordingPath;
@@ -52,7 +54,7 @@ internal sealed class WinAppSandbox : ISandboxSession
     private bool recordingStarted;
     private bool recordingFinalized;
 
-    public WinAppSandbox(string runId, string controlRoot, string runRoot, string winappPath, Action saveJournal, TestContext context)
+    public WinAppSandbox(string runId, string controlRoot, string runRoot, string winappPath, Action saveJournal, TestContext context, WinAppSandboxPrerequisiteReport prerequisites)
     {
         instanceId = Guid.Parse(runId);
         if (instanceId == Guid.Empty)
@@ -66,6 +68,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         this.winappPath = Path.GetFullPath(winappPath);
         this.saveJournal = saveJournal;
         this.context = context;
+        this.prerequisites = prerequisites;
         wsbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WindowsApps\wsb.exe");
         targetStateRoot = Path.Combine(this.controlRoot, "winapp-target");
         recordingPath = Path.Combine(this.runRoot, "recordings", "sandbox-guest.mp4");
@@ -109,7 +112,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         try
         {
             ReadDeadlines(guest);
-            AssertPrerequisites();
+            AssertPrerequisites(prerequisites);
             var configuration = SandboxConfiguration.Create(productArchive, payloadRoot, toolsRoot, guest, legacyBootstrap: false);
             configuration.Save(configurationPath);
             stagedPayload = WinAppSandboxPayload.Create(
@@ -376,70 +379,107 @@ internal sealed class WinAppSandbox : ISandboxSession
         }
     }
 
-    private void AssertPrerequisites()
+    private void AssertPrerequisites(WinAppSandboxPrerequisiteReport report)
     {
-        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26100))
+        report.Check("OperatingSystem", stage =>
         {
-            throw new WinAppSandboxException("sandbox_unsupported");
-        }
+            stage["Version"] = Environment.OSVersion.Version.ToString();
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26100))
+            {
+                throw new WinAppSandboxException("sandbox_unsupported");
+            }
+        });
 
-        var packages = new PackageManager().FindPackagesForUser(string.Empty, SandboxPackageFamily)
-            .Where(package => package.Id.FamilyName == SandboxPackageFamily).ToArray();
-        if (packages.Length != 1)
+        var packages = report.Check(nameof(WinAppSandboxPrerequisite.UserPackageRegistration), stage =>
         {
-            throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserPackageRegistration);
-        }
+            stage["PackageFamily"] = SandboxPackageFamily;
+            stage["QueryStatus"] = "Failed";
+            var registered = new PackageManager().FindPackagesForUser(string.Empty, SandboxPackageFamily)
+                .Where(package => package.Id.FamilyName == SandboxPackageFamily).ToArray();
+            stage["QueryStatus"] = "Succeeded";
+            stage["Count"] = registered.Length;
+            stage["Present"] = registered.Length != 0;
+            stage["Packages"] = JsonSerializer.SerializeToNode(registered.Select(package => new
+            {
+                package.Id.Name,
+                package.Id.FullName,
+                package.Id.FamilyName,
+                Version = $"{package.Id.Version.Major}.{package.Id.Version.Minor}.{package.Id.Version.Build}.{package.Id.Version.Revision}",
+                Architecture = package.Id.Architecture.ToString(),
+                Status = new
+                {
+                    IsOk = package.Status.VerifyIsOK(),
+                    package.Status.Disabled,
+                    package.Status.NotAvailable,
+                    package.Status.NeedsRemediation,
+                    package.Status.DependencyIssue,
+                },
+            }));
+            if (registered.Length != 1)
+            {
+                throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserPackageRegistration);
+            }
 
-        if (!File.Exists(wsbPath) || (File.GetAttributes(wsbPath) & FileAttributes.ReparsePoint) == 0)
-        {
-            throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserExecutionAlias);
-        }
+            return registered;
+        });
 
-        trustedWsbExecutablePath = Path.Combine(packages[0].InstalledLocation.Path, "wsb.exe");
-        if (!File.Exists(trustedWsbExecutablePath))
+        report.Check(nameof(WinAppSandboxPrerequisite.UserExecutionAlias), stage =>
         {
-            throw new WinAppSandboxException(WinAppSandboxPrerequisite.PackageExecutable);
-        }
+            var exists = File.Exists(wsbPath);
+            stage["Exists"] = exists;
+            bool? reparsePoint = exists ? (File.GetAttributes(wsbPath) & FileAttributes.ReparsePoint) != 0 : null;
+            stage["IsReparsePoint"] = reparsePoint;
+            if (!exists || reparsePoint != true)
+            {
+                throw new WinAppSandboxException(WinAppSandboxPrerequisite.UserExecutionAlias);
+            }
+        });
 
-        WinAppSandboxPayload.RequirePlainPath(controlRoot);
-        WinAppSandboxPayload.RequirePlainPath(winappPath);
-        WinAppSandboxPayload.RequirePlainPath(targetStateRoot);
-        if (targetStateRoot.StartsWith(runRoot.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase))
+        report.Check(nameof(WinAppSandboxPrerequisite.PackageExecutable), stage =>
         {
-            throw new WinAppSandboxException("target_state_must_remain_private");
-        }
+            var installedLocation = packages[0].InstalledLocation.Path;
+            stage["InstalledLocation"] = installedLocation;
+            trustedWsbExecutablePath = Path.Combine(installedLocation, "wsb.exe");
+            var exists = File.Exists(trustedWsbExecutablePath);
+            stage["Exists"] = exists;
+            if (!exists)
+            {
+                throw new WinAppSandboxException(WinAppSandboxPrerequisite.PackageExecutable);
+            }
 
-        if (Directory.Exists(targetStateRoot) && Directory.EnumerateFileSystemEntries(targetStateRoot).Any())
-        {
-            throw new WinAppSandboxException("target_state_preexisting");
-        }
+            using var stream = File.OpenRead(trustedWsbExecutablePath);
+            using var executable = new PEReader(stream);
+            stage["Machine"] = executable.PEHeaders.CoffHeader.Machine.ToString();
+        });
 
-        Directory.CreateDirectory(targetStateRoot);
-        ownsTargetStateRoot = true;
-        using (var stream = File.OpenRead(winappPath))
+        report.Check("PrivateToolAndState", _ =>
         {
+            WinAppSandboxPayload.RequirePlainPath(controlRoot);
+            WinAppSandboxPayload.RequirePlainPath(winappPath);
+            WinAppSandboxPayload.RequirePlainPath(targetStateRoot);
+            if (targetStateRoot.StartsWith(runRoot.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new WinAppSandboxException("target_state_must_remain_private");
+            }
+
+            if (Directory.Exists(targetStateRoot) && Directory.EnumerateFileSystemEntries(targetStateRoot).Any())
+            {
+                throw new WinAppSandboxException("target_state_preexisting");
+            }
+
+            Directory.CreateDirectory(targetStateRoot);
+            ownsTargetStateRoot = true;
+            using var stream = File.OpenRead(winappPath);
             if (winappSha256 != Convert.ToHexString(SHA256.HashData(stream)))
             {
                 throw new WinAppSandboxException("preview_binary_changed");
             }
-        }
+        });
 
-        WinAppSandboxProtocol.RequireCapabilities(Run(winappPath, ["--cli-schema"], Budget(TimeSpan.FromSeconds(30), bootstrap: true)));
-        string version;
-        try
-        {
-            version = Run(wsbPath, ["--version"], Budget(TimeSpan.FromSeconds(15), bootstrap: true));
-        }
-        catch (Exception error) when (IsExpectedFailure(error))
-        {
-            throw new AggregateException(
-                new Exception[] { new WinAppSandboxException(WinAppSandboxPrerequisite.ProviderVersion) }.Concat(SafeFailures(error)));
-        }
-
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            throw new WinAppSandboxException(WinAppSandboxPrerequisite.ProviderVersion);
-        }
+        report.Check("CliSchema", _ =>
+            WinAppSandboxProtocol.RequireCapabilities(Run(winappPath, ["--cli-schema"], Budget(TimeSpan.FromSeconds(30), bootstrap: true))));
+        var timeout = Budget(TimeSpan.FromSeconds(15), bootstrap: true);
+        report.CheckProviderVersion(timeout, observe => Run(wsbPath, ["--version"], timeout, observe));
     }
 
     private void ReadDeadlines(EndpointChannel channel)
@@ -540,7 +580,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
     private string Inventory(TimeSpan timeout) => Run(wsbPath, ["list", "--raw"], timeout);
 
-    private string Run(string executable, string[] arguments, TimeSpan timeout)
+    private string Run(string executable, string[] arguments, TimeSpan timeout, Action<WinAppSandboxCommand.Result>? observe = null)
     {
         var operation = arguments[0] == "target" ? arguments[1] : arguments[0];
         var trace = new JsonObject
@@ -559,6 +599,7 @@ internal sealed class WinAppSandbox : ISandboxSession
             using var command = WinAppSandboxCommand.Start(executable, arguments, targetStateRoot, controlRoot);
             var result = command.CompleteAndDispose(timeout);
             trace["ExitCode"] = result.ExitCode;
+            observe?.Invoke(result);
             var output = result.RequireSuccess();
             trace["Status"] = "Completed";
             return output;

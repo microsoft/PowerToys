@@ -211,9 +211,7 @@ function Expand-MwbCiRuntime {
     finally { $zip.Dispose() }
 }
 
-# The MicrosoftWindows.WindowsSandbox package family that the modern WinApp backend and
-# WinAppSandbox.cs (AssertPrerequisites) both depend on. Kept in one place so the CI
-# diagnostic report and the product check can never silently drift apart.
+# Match the trusted family required by WinAppSandbox.AssertPrerequisites.
 $script:MwbSandboxPackageFamily = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
 
 function Import-MwbAppxCompat {
@@ -225,26 +223,68 @@ function Import-MwbAppxCompat {
     }
 }
 
+function Get-MwbDiagnosticError {
+    param([Management.Automation.ErrorRecord] $ErrorRecord, [string] $Code)
+
+    [ordered]@{
+        Code = $Code
+        HResult = '0x{0:X8}' -f ($ErrorRecord.Exception.HResult -band 0xffffffffL)
+    }
+}
+
+function Get-MwbSandboxPackages {
+    param([switch] $AllUsers, [string] $UserSid)
+
+    Import-MwbAppxCompat
+    if ($AllUsers) { Get-AppxPackage -Name MicrosoftWindows.WindowsSandbox -AllUsers -ErrorAction Stop }
+    else { Get-AppxPackage -Name MicrosoftWindows.WindowsSandbox -User $UserSid -ErrorAction Stop }
+}
+
+function Get-MwbSandboxProvisionedPackages {
+    Get-AppxProvisionedPackage -Online -ErrorAction Stop
+}
+
+function ConvertTo-MwbPackageDiagnostic {
+    param($Package, [switch] $IncludeUsers)
+
+    if ($Package.PackageFullName -cnotmatch '^MicrosoftWindows\.WindowsSandbox_\d+\.\d+\.\d+\.\d+_(?:x64|arm64|x86|neutral)_[A-Za-z0-9.~]*_cw5n1h2txyewy$' -or
+        [string]$Package.Version -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
+        [string]$Package.Status -notmatch '^[A-Za-z]+(?:, [A-Za-z]+)*$') {
+        throw 'The Sandbox package inventory has an unexpected identity or state.'
+    }
+    $result = [ordered]@{
+        PackageFullName = [string]$Package.PackageFullName
+        PackageFamilyName = $script:MwbSandboxPackageFamily
+        Version = [string]$Package.Version
+        Status = [string]$Package.Status
+    }
+    if ($IncludeUsers) {
+        $result.Registrations = @($Package.PackageUserInformation | ForEach-Object {
+            $sid = if ($_.UserSecurityId -is [string]) { $_.UserSecurityId } else { [string]$_.UserSecurityId.Sid }
+            $state = [string]$_.InstallState
+            if ($sid -notmatch '^S-1-(?:\d+-)+\d+$' -or $state -notin @('NotInstalled', 'Staged', 'Installed')) {
+                throw 'The Sandbox registration inventory has an unexpected identity or state.'
+            }
+            [ordered]@{ UserSid = $sid; InstallState = $state }
+        })
+    }
+    $result
+}
+
 function Get-MwbSandboxAllUsersPackageReport {
     # Requires the elevated Prepare identity. Distinguishes a confirmed-absent inventory
     # (query succeeded, zero matches) from a query failure (exception): both are reportable
     # facts, never collapsed into a single "not found" state.
     $report = [ordered]@{ QueryError = $null; Packages = @() }
     try {
-        Import-MwbAppxCompat
-        $packages = @(Get-AppxPackage -AllUsers -ErrorAction Stop |
+        $packages = @(Get-MwbSandboxPackages -AllUsers |
             Where-Object { $_.PackageFamilyName -ceq $script:MwbSandboxPackageFamily })
         $report.Packages = @($packages | ForEach-Object {
-            [ordered]@{
-                PackageFullName = $_.PackageFullName
-                Version = $_.Version.ToString()
-                Status = ($_.Status | Out-String).Trim()
-                Architecture = $_.Architecture.ToString()
-            }
+            ConvertTo-MwbPackageDiagnostic $_ -IncludeUsers
         })
     }
     catch {
-        $report.QueryError = $_.Exception.Message
+        $report.QueryError = Get-MwbDiagnosticError $_ 'AllUsersPackageQueryFailed'
     }
     $report
 }
@@ -252,140 +292,72 @@ function Get-MwbSandboxAllUsersPackageReport {
 function Get-MwbSandboxProvisionedPackageReport {
     $report = [ordered]@{ QueryError = $null; Packages = @() }
     try {
-        Import-MwbAppxCompat
-        $packages = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop |
-            Where-Object { $_.PackageName -ceq 'MicrosoftWindows.WindowsSandbox' })
+        $packages = @(Get-MwbSandboxProvisionedPackages |
+            Where-Object {
+                $_.DisplayName -ceq 'MicrosoftWindows.WindowsSandbox' -and
+                $_.PackageName -clike 'MicrosoftWindows.WindowsSandbox_*_cw5n1h2txyewy'
+            })
         $report.Packages = @($packages | ForEach-Object {
-            [ordered]@{ PackageName = $_.PackageName; Version = $_.Version; Architecture = $_.Architecture }
+            if ($_.PackageName -cnotmatch '^MicrosoftWindows\.WindowsSandbox_\d+\.\d+\.\d+\.\d+_(?:x64|arm64|x86|neutral)_[A-Za-z0-9.~]*_cw5n1h2txyewy$' -or
+                [string]$_.Version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+                throw 'The provisioned Sandbox package has an unexpected identity.'
+            }
+            [ordered]@{
+                PackageFullName = [string]$_.PackageName
+                PackageFamilyName = $script:MwbSandboxPackageFamily
+                Version = [string]$_.Version
+            }
         })
     }
     catch {
-        $report.QueryError = $_.Exception.Message
+        $report.QueryError = Get-MwbDiagnosticError $_ 'ProvisionedPackageQueryFailed'
     }
     $report
 }
 
-function Invoke-MwbWsbVersionProbe {
-    param(
-        [Parameter(Mandatory)][string] $ExecutablePath,
-        [string[]] $Arguments = @('--version'),
-        [int] $TimeoutMilliseconds = 15000
-    )
-
-    # A standalone, mockable/directly-testable bounded probe: never waits past
-    # TimeoutMilliseconds, never returns the raw command line, and reports a query error
-    # instead of throwing so a hung or missing modern client cannot fail the caller.
-    $probe = [ordered]@{
-        Attempted = $true; ExitCode = $null; TimedOut = $false
-        DurationSeconds = $null; VersionText = $null; Error = $null
-    }
-    $stopwatch = [Diagnostics.Stopwatch]::StartNew()
-    $process = $null
-    try {
-        $start = [Diagnostics.ProcessStartInfo]::new($ExecutablePath)
-        foreach ($argument in $Arguments) { $start.ArgumentList.Add($argument) }
-        $start.UseShellExecute = $false
-        $start.RedirectStandardInput = $true
-        $start.RedirectStandardOutput = $true
-        $start.RedirectStandardError = $true
-        $start.CreateNoWindow = $true
-        $process = [Diagnostics.Process]::Start($start)
-        $process.StandardInput.Close()
-        if (-not $process.WaitForExit($TimeoutMilliseconds)) {
-            $probe.TimedOut = $true
-            $process.Kill()
-            $null = $process.WaitForExit(5000)
-        }
-        else {
-            $probe.ExitCode = $process.ExitCode
-            $stdout = $process.StandardOutput.ReadToEnd()
-            # Keep only a short, already-public version line; never the raw command line
-            # or full banner text, which can carry unrelated diagnostic noise.
-            $versionLine = @($stdout -split '\r?\n' | Where-Object { $_ -match '^\d+\.\d+\.\d+\s*$' } | Select-Object -First 1)
-            if ($versionLine.Count -eq 1) { $probe.VersionText = $versionLine[0].Trim() }
-        }
-    }
-    catch {
-        $probe.Error = $_.Exception.Message
-    }
-    finally {
-        $probe.DurationSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 3)
-        if ($process) { $process.Dispose() }
-    }
-    $probe
-}
-
 function Get-MwbSandboxInteractiveUserReport {
-    # The interactive desktop user is the exact identity the modern backend's own
-    # AssertPrerequisites check (WinAppSandbox.cs, FindPackagesForUser) runs as. Reporting
-    # the same user's package/alias state here explains a later product failure instead of
-    # only restating it.
+    # This is an elevated inventory query by SID, not execution as the desktop user.
+    # Only the test's existing bounded probe can establish that user's wsb readiness.
     $report = [ordered]@{
+        QueryScope = 'ExplicitUserSid'
         UserName = $null; UserSid = $null; QueryError = $null
         PackageCount = $null; PackageAbsent = $null; PackageQueryError = $null; Packages = @()
-        AliasPath = $null; AliasExists = $null; AliasIsReparsePoint = $null; AliasQueryError = $null
         WsbVersionProbe = [ordered]@{
-            Attempted = $false; ExitCode = $null; TimedOut = $false
-            DurationSeconds = $null; VersionText = $null; Error = $null
+            Status = 'NotChecked'; Reason = 'RequiresLimitedInteractiveUser'
+            EvidenceFile = 'prerequisite-user.json'
         }
     }
     $userSid = $null
     try {
         $userName = (Get-CimInstance Win32_ComputerSystem -ErrorAction Stop).UserName
         if ([string]::IsNullOrWhiteSpace($userName)) {
-            $report.QueryError = 'No interactive desktop user is currently logged on.'
+            $report.QueryError = [ordered]@{ Code = 'InteractiveUserNotLoggedOn'; HResult = $null }
         }
         else {
             $userSid = [Security.Principal.NTAccount]::new($userName).Translate([Security.Principal.SecurityIdentifier])
-            $report.UserName = $userSid.Translate([Security.Principal.NTAccount]).Value
+            $report.UserName = ($userSid.Translate([Security.Principal.NTAccount]).Value -split '\\')[-1]
+            if ($report.UserName -notmatch '^[\p{L}\p{N}_. -]{1,64}$') { $report.UserName = 'OtherUser' }
             $report.UserSid = $userSid.Value
         }
     }
     catch {
-        $report.QueryError = $_.Exception.Message
+        $report.QueryError = Get-MwbDiagnosticError $_ 'InteractiveUserQueryFailed'
     }
     if (-not $userSid) { return $report }
 
     try {
-        Import-MwbAppxCompat
-        $packages = @(Get-AppxPackage -User $userSid.Value -ErrorAction Stop |
+        $packages = @(Get-MwbSandboxPackages -UserSid $userSid.Value |
             Where-Object { $_.PackageFamilyName -ceq $script:MwbSandboxPackageFamily })
         $report.PackageCount = $packages.Count
         $report.PackageAbsent = ($packages.Count -eq 0)
         $report.Packages = @($packages | ForEach-Object {
-            [ordered]@{
-                PackageFullName = $_.PackageFullName
-                Version = $_.Version.ToString()
-                Status = ($_.Status | Out-String).Trim()
-            }
+            ConvertTo-MwbPackageDiagnostic $_
         })
     }
     catch {
-        $report.PackageQueryError = $_.Exception.Message
-    }
-
-    $aliasPath = $null
-    try {
-        $profile = Get-CimInstance Win32_UserProfile -Filter "SID='$($userSid.Value)'" -ErrorAction Stop
-        if ($profile -and $profile.LocalPath) {
-            $aliasPath = Join-Path $profile.LocalPath 'AppData\Local\Microsoft\WindowsApps\wsb.exe'
-            $report.AliasPath = $aliasPath
-            $report.AliasExists = Test-Path -LiteralPath $aliasPath -PathType Leaf
-            if ($report.AliasExists) {
-                $attributes = (Get-Item -LiteralPath $aliasPath -Force).Attributes
-                $report.AliasIsReparsePoint = [bool]($attributes -band [IO.FileAttributes]::ReparsePoint)
-            }
-        }
-        else {
-            $report.AliasQueryError = 'The interactive user profile path could not be resolved.'
-        }
-    }
-    catch {
-        $report.AliasQueryError = $_.Exception.Message
-    }
-
-    if ($report.AliasExists) {
-        $report.WsbVersionProbe = Invoke-MwbWsbVersionProbe -ExecutablePath $aliasPath
+        $report.PackageCount = $null
+        $report.PackageAbsent = $null
+        $report.PackageQueryError = Get-MwbDiagnosticError $_ 'InteractiveUserPackageQueryFailed'
     }
     $report
 }
@@ -398,8 +370,10 @@ function Get-MwbSandboxPrerequisiteReport {
     # StagesNotChecked; it is never silently omitted or reported as a passing check.
     $stagesNotChecked = [Collections.Generic.List[string]]::new()
     $report = [ordered]@{
+        SchemaVersion = 3
         GeneratedUtc = [DateTime]::UtcNow.ToString('o')
-        Platform = $Platform
+        Platform = if ($Platform -cin @('x64Win10', 'x64Win11', 'arm64')) { $Platform } else { 'Unknown' }
+        CollectionContext = 'ElevatedPrepareInventory'
         OSArchitecture = $null
         OSBuildNumber = $null
         OSVersionString = $null
@@ -409,37 +383,86 @@ function Get-MwbSandboxPrerequisiteReport {
         AllUsersPackages = $null
         ProvisionedPackages = $null
         InteractiveUser = $null
+        InventoryConclusion = 'UnknownQueryFailure'
+        InteractiveProbe = [ordered]@{
+            Status = 'NotChecked'; Reason = 'PrepareDoesNotExecuteAsTestUser'
+            EvidenceFile = 'prerequisite-user.json'
+        }
         StagesNotChecked = $stagesNotChecked
     }
 
     try {
         $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
-        $report.OSArchitecture = $os.OSArchitecture
-        $report.OSBuildNumber = $os.BuildNumber
-        $report.OSVersionString = $os.Version
+        if ([string]$os.BuildNumber -notmatch '^\d+$' -or [string]$os.Version -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+            throw 'The OS inventory returned an unexpected version.'
+        }
+        $report.OSArchitecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+        $report.OSBuildNumber = [string]$os.BuildNumber
+        $report.OSVersionString = [string]$os.Version
     }
     catch {
-        $report.OSQueryError = $_.Exception.Message
+        $report.OSQueryError = Get-MwbDiagnosticError $_ 'OperatingSystemQueryFailed'
         $stagesNotChecked.Add('OperatingSystem')
     }
 
     try {
         $feature = Get-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -ErrorAction Stop
+        if ([string]$feature.State -notin @('Enabled', 'Disabled', 'EnablePending', 'DisablePending',
+            'DisabledWithPayloadRemoved', 'PartiallyInstalled', 'Superseded')) {
+            throw 'The Sandbox feature query returned an unexpected state.'
+        }
         $report.SandboxFeatureState = $feature.State.ToString()
     }
     catch {
-        $report.SandboxFeatureQueryError = $_.Exception.Message
+        $report.SandboxFeatureQueryError = Get-MwbDiagnosticError $_ 'SandboxFeatureQueryFailed'
         $stagesNotChecked.Add('SandboxFeatureState')
     }
 
     $report.AllUsersPackages = Get-MwbSandboxAllUsersPackageReport
     $report.ProvisionedPackages = Get-MwbSandboxProvisionedPackageReport
     $report.InteractiveUser = Get-MwbSandboxInteractiveUserReport
+    if ($report.AllUsersPackages.QueryError) { $stagesNotChecked.Add('AllUsersPackages') }
+    if ($report.ProvisionedPackages.QueryError) { $stagesNotChecked.Add('ProvisionedPackages') }
     if ($report.InteractiveUser.QueryError) { $stagesNotChecked.Add('InteractiveUserIdentity') }
-    if ($report.InteractiveUser.PackageQueryError) { $stagesNotChecked.Add('InteractiveUserPackages') }
-    if ($report.InteractiveUser.AliasQueryError) { $stagesNotChecked.Add('InteractiveUserAlias') }
-    if (-not $report.InteractiveUser.WsbVersionProbe.Attempted) { $stagesNotChecked.Add('WsbVersionProbe') }
+    if (-not $report.InteractiveUser.UserSid -or $report.InteractiveUser.PackageQueryError) { $stagesNotChecked.Add('InteractiveUserPackages') }
+    $stagesNotChecked.Add('InteractiveUserAlias')
+    $stagesNotChecked.Add('WsbVersionProbe')
+    if (-not $report.AllUsersPackages.QueryError -and -not $report.ProvisionedPackages.QueryError -and
+        -not $report.InteractiveUser.QueryError -and -not $report.InteractiveUser.PackageQueryError) {
+        $report.InventoryConclusion = if ($report.InteractiveUser.PackageCount -gt 0) { 'RegisteredForTestUser' }
+            elseif (@($report.AllUsersPackages.Packages | ForEach-Object Registrations |
+                Where-Object InstallState -EQ 'Installed').Count -gt 0) { 'RegisteredForOtherUser' }
+            elseif ($report.AllUsersPackages.Packages.Count -gt 0) { 'StagedOnly' }
+            elseif ($report.ProvisionedPackages.Packages.Count -gt 0) { 'ProvisionedOnly' }
+            else { 'AbsentEverywhere' }
+    }
 
     $report.StagesNotChecked = @($stagesNotChecked)
     $report
+}
+
+function Get-MwbPrerequisiteDirectory {
+    param([string] $ResultsDirectory, [guid] $RunId)
+
+    Assert-MwbCiPlainPath $ResultsDirectory
+    Join-Path $ResultsDirectory "mwb-prerequisites-$RunId"
+}
+
+function Write-MwbSandboxPrerequisiteReport {
+    param([string] $ResultsDirectory, [guid] $RunId, [string] $Platform)
+
+    $directory = Get-MwbPrerequisiteDirectory $ResultsDirectory $RunId
+    Assert-MwbCiPlainPath $directory
+    $null = New-Item -ItemType Directory -Path $directory -Force
+    try { $report = Get-MwbSandboxPrerequisiteReport -Platform $Platform }
+    catch {
+        $report = [ordered]@{
+            SchemaVersion = 3; CollectionContext = 'ElevatedPrepareInventory'
+            Status = 'QueryFailed'; QueryError = Get-MwbDiagnosticError $_ 'ReportGenerationFailed'
+            InteractiveProbe = [ordered]@{ Status = 'NotChecked'; Reason = 'PrepareDoesNotExecuteAsTestUser' }
+        }
+    }
+    $report | ConvertTo-Json -Depth 10 |
+        Set-Content -LiteralPath (Join-Path $directory 'prerequisite-admin.json') -Encoding utf8
+    Write-Host 'MWB Sandbox allowlisted prerequisite-admin.json written before preparation gates.'
 }

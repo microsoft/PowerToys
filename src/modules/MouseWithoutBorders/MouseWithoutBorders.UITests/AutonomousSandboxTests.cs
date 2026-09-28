@@ -18,7 +18,16 @@ public sealed class AutonomousSandboxTests
     [TestCategory("NestedSandboxDebugPilot")]
     public void AutonomousSandboxSmoke()
     {
-        using var fixture = new TwoEndpointFixture(TestContext);
+        WinAppSandboxPrerequisiteReport.CapturePersistent(
+            TestContext.TestRunDirectory,
+            TestContext.AddResultFile,
+            RunScenario,
+            Environment.GetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT"));
+    }
+
+    private void RunScenario(WinAppSandboxPrerequisiteReport prerequisites)
+    {
+        using var fixture = new TwoEndpointFixture(TestContext, prerequisites);
         Exception? failure = null;
         try
         {
