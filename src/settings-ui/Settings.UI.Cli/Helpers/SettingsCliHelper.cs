@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -27,7 +28,7 @@ internal static class SettingsCliHelper
     {
         settingsUtils ??= SettingsUtils.Default;
         gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
-        var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig;
+        var generalSettings = settingsUtils.GetSettingsOrDefaultReadOnly<GeneralSettings>();
         var enabledModules = generalSettings.Enabled;
 
         var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -119,12 +120,15 @@ internal static class SettingsCliHelper
         string moduleName,
         bool enabled,
         SettingsUtils? settingsUtils = null,
-        Func<string, bool?>? gpoEnabledStateProvider = null)
+        Func<string, bool?>? gpoEnabledStateProvider = null,
+        Func<IDisposable>? settingsLockProvider = null)
     {
         settingsUtils ??= SettingsUtils.Default;
         gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
-        var moduleEntry = GetModuleEntry(moduleName, settingsUtils, gpoEnabledStateProvider);
+        settingsLockProvider ??= () => AcquireSettingsFileLock(settingsUtils);
+        using var settingsLock = settingsLockProvider();
 
+        var moduleEntry = GetModuleEntry(moduleName, settingsUtils, gpoEnabledStateProvider);
         CheckModuleGpoLock(moduleEntry.ModuleName, gpoEnabledStateProvider);
 
         SetSettingCommandLineCommand.ExecuteAndThrowOnSaveFailure(
@@ -176,6 +180,22 @@ internal static class SettingsCliHelper
             GpoRuleConfigured.Disabled => false,
             _ => null,
         };
+    }
+
+    private static IDisposable AcquireSettingsFileLock(SettingsUtils settingsUtils)
+    {
+        try
+        {
+            return new FileStream(
+                settingsUtils.GetSettingsFilePath() + ".cli-lock",
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None);
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException("PowerToys is starting or running. Retry the command after PowerToys exits.", ex);
+        }
     }
 
     private sealed record ModuleEntry(string ModuleName, bool Enabled);

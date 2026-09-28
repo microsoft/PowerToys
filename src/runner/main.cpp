@@ -166,6 +166,31 @@ inline wil::unique_mutex_nothrow create_msi_mutex()
     return createAppMutex(POWERTOYS_MSI_MUTEX_NAME);
 }
 
+wil::unique_hfile create_settings_cli_lock()
+{
+    const std::wstring lock_path = PTSettingsHelper::get_powertoys_general_save_file_location() + L".cli-lock";
+    constexpr ULONGLONG lock_timeout_ms = 10000;
+    const ULONGLONG start_time = GetTickCount64();
+    while (GetTickCount64() - start_time < lock_timeout_ms)
+    {
+        wil::unique_hfile lock{ CreateFileW(lock_path.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr) };
+        if (lock)
+        {
+            return lock;
+        }
+
+        const DWORD error = GetLastError();
+        if (error != ERROR_SHARING_VIOLATION)
+        {
+            throw std::runtime_error("Failed to lock general settings for the Settings CLI. Win32 error: " + std::to_string(error));
+        }
+
+        Sleep(50);
+    }
+
+    throw std::runtime_error("Timed out waiting for the general settings lock. Close any stuck Settings CLI command and restart PowerToys.");
+}
+
 void open_menu_from_another_instance(std::optional<std::string> settings_window)
 {
     const HWND hwnd_main = FindWindowW(L"PToyTrayIconWindow", nullptr);
@@ -555,6 +580,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     int result = 0;
     try
     {
+        // Serialize Runner lifetime and CLI module-state writes so shutdown cannot overwrite a CLI update.
+        [[maybe_unused]] auto settings_cli_lock = create_settings_cli_lock();
+
         // Singletons initialization order needs to be preserved, first events and
         // then modules to guarantee the reverse destruction order.
         modules();

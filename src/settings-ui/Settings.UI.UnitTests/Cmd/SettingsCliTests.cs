@@ -18,11 +18,13 @@ namespace Settings.UI.UnitTests.Cmd;
 public class SettingsCliTests
 {
     private SettingsUtils settingsUtils;
+    private MockFileSystem mockFileSystem;
 
     [TestInitialize]
     public void Setup()
     {
-        settingsUtils = new SettingsUtils(new MockFileSystem());
+        mockFileSystem = new MockFileSystem();
+        settingsUtils = new SettingsUtils(mockFileSystem);
     }
 
     [TestMethod]
@@ -34,6 +36,20 @@ public class SettingsCliTests
         Assert.IsTrue(modules.Count > 0);
         Assert.IsTrue(modules.ContainsKey("FancyZones"));
         Assert.IsTrue(modules.ContainsKey("AlwaysOnTop"));
+        Assert.IsFalse(settingsUtils.SettingsExists());
+    }
+
+    [TestMethod]
+    public void TestReadOnlyModuleStatusDoesNotOverwriteInvalidSettings()
+    {
+        const string corruptSettings = "{";
+        var settingsFilePath = settingsUtils.GetSettingsFilePath();
+        mockFileSystem.AddFile(settingsFilePath, new MockFileData(corruptSettings));
+
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null));
+
+        Assert.AreEqual(corruptSettings, mockFileSystem.File.ReadAllText(settingsFilePath));
     }
 
     [TestMethod]
@@ -48,13 +64,13 @@ public class SettingsCliTests
     [TestMethod]
     public void TestSetModuleEnabled()
     {
-        var disabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: false, settingsUtils, _ => null);
+        var disabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: false, settingsUtils, _ => null, () => EmptyDisposable.Instance);
         Assert.IsFalse(disabledState.Enabled);
 
         var modulesAfterDisable = SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null);
         Assert.IsFalse(modulesAfterDisable["FancyZones"]);
 
-        var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils, _ => null);
+        var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils, _ => null, () => EmptyDisposable.Instance);
         Assert.IsTrue(enabledState.Enabled);
     }
 
@@ -78,13 +94,15 @@ public class SettingsCliTests
                 "FancyZones",
                 enabled: true,
                 settingsUtils,
-                _ => false));
+                _ => false,
+                () => EmptyDisposable.Instance));
         Assert.ThrowsException<InvalidOperationException>(() =>
             SettingsCliHelper.SetModuleEnabled(
                 "FancyZones",
                 enabled: false,
                 settingsUtils,
-                _ => true));
+                _ => true,
+                () => EmptyDisposable.Instance));
     }
 
     [TestMethod]
@@ -97,7 +115,30 @@ public class SettingsCliTests
                 "FancyZones",
                 enabled: false,
                 failingSettingsUtils,
-                _ => null));
+                _ => null,
+                () => EmptyDisposable.Instance));
+    }
+
+    [TestMethod]
+    public void TestSetModuleEnabledRejectsWhenSettingsAreLocked()
+    {
+        Assert.ThrowsException<IOException>(() =>
+            SettingsCliHelper.SetModuleEnabled(
+                "FancyZones",
+                enabled: false,
+                settingsUtils,
+                _ => null,
+                () => throw new IOException("Settings lock is held.")));
+        Assert.IsFalse(settingsUtils.SettingsExists());
+    }
+
+    private sealed class EmptyDisposable : IDisposable
+    {
+        public static EmptyDisposable Instance { get; } = new();
+
+        public void Dispose()
+        {
+        }
     }
 
     [DataTestMethod]
