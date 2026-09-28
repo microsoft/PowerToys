@@ -49,6 +49,11 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_EnableDock" IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <!--  Focus Dock shortcut  -->
+                    <controls:SettingsCard x:Uid="Settings_DockPage_FocusShortcut_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <cpControls:ShortcutControl AutomationProperties.AutomationId="CmdPal_DockSettingsPage_FocusShortcut" HotkeySettings="{x:Bind ViewModel.Dock_FocusHotkey, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Appearance Section  -->
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

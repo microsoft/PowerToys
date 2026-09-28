@@ -144,6 +144,7 @@ EVENT_SYSTEM_FOREGROUND
 WINEVENT_OUTOFCONTEXT
 GetWindowThreadProcessId
 AttachThreadInput
+IsWindow
 
 GetWindowPlacement
 WINDOWPLACEMENT

@@ -19,7 +19,33 @@ public record SettingsModel
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
+    /// <summary>
+    /// Gets the default shortcut that focuses the dock: win+alt+J. It shares the
+    /// activation shortcut's modifiers so the two sit next to each other in muscle memory.
+    /// Win+Alt+D would read better, but Windows 11 already owns it for the taskbar clock.
+    /// </summary>
+    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
+
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
+
+    private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
+
+    /// <summary>
+    /// Gets the shortcut that reveals and focuses the dock. Lives here rather than in
+    /// <see cref="Settings.DockSettings"/> because a change to that record makes
+    /// DockWindowManager tear down and rebuild every dock window, and a keybinding
+    /// has no business doing that.
+    /// </summary>
+    /// <remarks>
+    /// The setter falls back to the default because settings files written before this
+    /// shortcut existed have no value for it, and the deserializer hands us a null
+    /// instead of leaving the property initializer alone.
+    /// </remarks>
+    public HotkeySettings? DockFocusHotkey
+    {
+        get => _dockFocusHotkey;
+        init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
+    }
 
     public bool UseLowLevelGlobalHotkey { get; init; }
 
