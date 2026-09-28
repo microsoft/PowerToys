@@ -16,7 +16,7 @@ namespace AdvancedPaste.Core;
 public static class JsonConverter
 {
     private static readonly Regex IniSectionNameRegex = new(@"^\[(.+)\]");
-    private static readonly Regex IniValueLineRegex = new(@"(.+?)\s*=\s*(.*)");
+    private static readonly Regex IniValueLineRegex = new(@"^([^=]+)\s*=\s*(.*)$");
     private static readonly char[] CsvDelimiters = [',', ';', '\t'];
     private static readonly Regex CsvSeparatorIdentifierRegex = new(@"^sep=(.)$", RegexOptions.IgnoreCase);
     private static readonly string CsvDelimiterSeparatorRegex = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";

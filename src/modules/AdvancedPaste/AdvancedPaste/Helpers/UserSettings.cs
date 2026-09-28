@@ -21,7 +21,7 @@ namespace AdvancedPaste.Settings
     {
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;
-        private readonly IFileSystemWatcher _watcher;
+        private readonly IFileSystemWatcher? _watcher;
         private readonly Lock _loadingSettingsLock = new();
         private readonly List<PasteFormats> _additionalActions;
         private readonly List<AdvancedPasteCustomAction> _customActions;
@@ -66,7 +66,7 @@ namespace AdvancedPaste.Settings
 
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
-        public UserSettings(IFileSystem fileSystem)
+        public UserSettings(IFileSystem fileSystem, bool watchForChanges = true)
         {
             _settingsUtils = new SettingsUtils(fileSystem);
 
@@ -84,7 +84,9 @@ namespace AdvancedPaste.Settings
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
+            _watcher = watchForChanges
+                ? Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem)
+                : null;
         }
 
         private void OnSettingsFileChanged()

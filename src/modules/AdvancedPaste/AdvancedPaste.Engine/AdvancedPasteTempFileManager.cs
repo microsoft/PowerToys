@@ -13,9 +13,15 @@ namespace AdvancedPaste.Helpers;
 internal static class AdvancedPasteTempFileManager
 {
     private const string DirectoryPrefix = "PowerToys_AdvancedPaste_";
+    private const string OwnershipMarkerName = ".powertoys-advanced-paste-owned";
+    private const string OwnershipMarkerContent = "PowerToys Advanced Paste temporary directory";
 
     internal static DirectoryInfo CreateDirectory()
-        => Directory.CreateTempSubdirectory(DirectoryPrefix);
+    {
+        var directory = Directory.CreateTempSubdirectory(DirectoryPrefix);
+        File.WriteAllText(Path.Combine(directory.FullName, OwnershipMarkerName), OwnershipMarkerContent);
+        return directory;
+    }
 
     internal static void CleanupStaleDirectories(TimeSpan maximumAge)
     {
@@ -27,6 +33,15 @@ internal static class AdvancedPasteTempFileManager
             try
             {
                 if (directory.CreationTimeUtc >= cutoff || directory.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                {
+                    continue;
+                }
+
+                var markerPath = Path.Combine(directory.FullName, OwnershipMarkerName);
+                var marker = new FileInfo(markerPath);
+                if (!marker.Exists ||
+                    marker.Attributes.HasFlag(FileAttributes.ReparsePoint) ||
+                    File.ReadAllText(markerPath) != OwnershipMarkerContent)
                 {
                     continue;
                 }

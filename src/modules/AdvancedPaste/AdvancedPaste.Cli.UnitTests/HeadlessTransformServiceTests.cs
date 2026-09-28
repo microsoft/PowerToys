@@ -56,6 +56,17 @@ public class HeadlessTransformServiceTests
     }
 
     [TestMethod]
+    public void Json_ConvertsLongUnstructuredInput()
+    {
+        var input = new string('x', 100_000);
+
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input);
+
+        Assert.IsTrue(result.StartsWith("[", StringComparison.Ordinal));
+        StringAssert.Contains(result, input);
+    }
+
+    [TestMethod]
     public void Json_ConvertsXml()
     {
         var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "<note><title>Hello</title></note>");

@@ -68,7 +68,7 @@ public static partial class Program
 
             using var host = Host.CreateDefaultBuilder()
                 .UseContentRoot(AppContext.BaseDirectory)
-                .ConfigureServices((_, services) => services.AddAdvancedPasteEngine())
+                .ConfigureServices((_, services) => services.AddAdvancedPasteEngine(watchSettings: false))
                 .Build();
             var runtime = new AdvancedPasteRuntime(
                 host.Services.GetRequiredService<IPasteFormatExecutor>(),

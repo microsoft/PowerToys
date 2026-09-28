@@ -12,10 +12,11 @@ namespace AdvancedPaste.Services;
 
 public static class AdvancedPasteServiceCollectionExtensions
 {
-    public static IServiceCollection AddAdvancedPasteEngine(this IServiceCollection services)
+    public static IServiceCollection AddAdvancedPasteEngine(this IServiceCollection services, bool watchSettings = true)
     {
         services.AddSingleton<IFileSystem, FileSystem>();
-        services.AddSingleton<IUserSettings, UserSettings>();
+        services.AddSingleton<IUserSettings>(serviceProvider =>
+            new UserSettings(serviceProvider.GetRequiredService<IFileSystem>(), watchSettings));
         services.AddSingleton<IAICredentialsProvider, EnhancedVaultCredentialsProvider>();
         services.AddSingleton<IPromptModerationService, OpenAI.PromptModerationService>();
         services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();

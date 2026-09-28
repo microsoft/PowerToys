@@ -20,7 +20,7 @@ TODO: Add implementation details
 
 ### Headless CLI
 
-`PowerToys.AdvancedPaste.CLI.exe` runs Advanced Paste actions without starting the Advanced Paste UI or communicating with Runner. It loads the same shared action engine, settings, policy, credential-vault entries, AI providers, OCR, and media-transcoding implementation used by the UI.
+`PowerToys.AdvancedPaste.CLI.exe` runs Advanced Paste actions without starting the Advanced Paste UI or communicating with Runner. It loads the same shared action engine, a startup snapshot of settings, policy, credential-vault entries, AI providers, OCR, and media-transcoding implementation used by the UI; live settings-file watching is disabled for the one-shot CLI process.
 
 ```powershell
 Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --action plain-text --stdin --stdout
