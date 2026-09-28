@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -96,6 +97,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
                 }
+            }
+        }
+
+        // Where the icon comes from: a registry icon location ("path,index") or a package logo file.
+        public string IconSpec { get; set; }
+
+        private ImageSource icon;
+
+        // Loaded in the background after enumeration; null until then or when there is no icon.
+        public ImageSource Icon
+        {
+            get => icon;
+            set
+            {
+                icon = value;
+                OnPropertyChanged(nameof(Icon));
             }
         }
 

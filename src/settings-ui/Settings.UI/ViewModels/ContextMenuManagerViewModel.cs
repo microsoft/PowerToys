@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -15,6 +18,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
@@ -47,6 +52,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Joins SortKey segments; sorts below every printable character so children stay under their parent.
         private const char SortKeySeparator = '\u0001';
+
+        // Shown at 16 epx; 32 px source keeps icons sharp at 200% scaling.
+        private const int IconPixelSize = 32;
+
+        private static readonly ConcurrentDictionary<string, byte[]> IconCache = new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
         // Handler keys another PowerToys module owns: NewPlus hides/shows Explorer's built-in "New"
         // submenu through this same key, so editing it here would fight that module. Everything else
@@ -182,6 +192,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             NeedsExplorerRestart = false;
             ApplyFilter();
+            LoadIcons();
+        }
+
+        // Extraction touches the disk and third-party binaries, so it runs off the UI thread; only the
+        // BitmapImage (a UI object) is created back on the dispatcher. Cached by spec across refreshes.
+        private void LoadIcons()
+        {
+            var dispatcher = DispatcherQueue.GetForCurrentThread();
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            var pending = Entries.Where(e => !string.IsNullOrWhiteSpace(e.IconSpec)).ToList();
+            _ = Task.Run(() =>
+            {
+                foreach (var entry in pending)
+                {
+                    byte[] png = IconCache.GetOrAdd(entry.IconSpec, ReadIconPng);
+                    if (png != null)
+                    {
+                        dispatcher.TryEnqueue(() => entry.Icon = CreateImage(png));
+                    }
+                }
+            });
+        }
+
+        private static byte[] ReadIconPng(string spec)
+        {
+            try
+            {
+                // Package logos are image files; everything else is a registry icon location.
+                return spec.EndsWith(".png", StringComparison.OrdinalIgnoreCase) && File.Exists(spec)
+                    ? File.ReadAllBytes(spec)
+                    : ShellIconHelper.ExtractPng(spec, IconPixelSize);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        // Returns null for undecodable data. The stream is left to the GC on purpose: BitmapImage may
+        // still be reading it after SetSource returns.
+        internal static BitmapImage CreateImage(byte[] png)
+        {
+            try
+            {
+                var image = new BitmapImage { DecodePixelWidth = IconPixelSize };
+                image.SetSource(new MemoryStream(png).AsRandomAccessStream());
+                return image;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private void ApplyFilter()
@@ -353,9 +419,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 string groupKey = $"blocked|{blockedClsid}";
                                 if (!results.TryGetValue(groupKey, out var blockedEntry))
                                 {
-                                    ResolveClsid(blockedClsid, out string clsidName, out bool clsidWindowsOwned);
+                                    ResolveClsid(blockedClsid, out string clsidName, out bool clsidWindowsOwned, out string clsidIcon);
                                     blockedEntry = new ContextMenuEntry
                                     {
+                                        IconSpec = clsidIcon,
                                         DisplayName = FirstNonEmpty(clsidName, rawValue, handlerName),
                                         HandlerKeyName = handlerName,
                                         Scope = scope,
@@ -383,9 +450,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                             if (!results.TryGetValue(handlerGroupKey, out var entry))
                             {
-                                ResolveClsid(clsid, out string displayName, out bool isWindowsOwned);
+                                ResolveClsid(clsid, out string displayName, out bool isWindowsOwned, out string iconSpec);
                                 entry = new ContextMenuEntry
                                 {
+                                    IconSpec = iconSpec,
                                     DisplayName = FirstNonEmpty(displayName, handlerName),
                                     HandlerKeyName = handlerName,
                                     Scope = scope,
@@ -474,6 +542,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 Kind = ContextMenuEntryKind.Verb,
                                 Depth = depth,
                                 SortKey = parent == null ? label : $"{parent.SortKey}{SortKeySeparator}{label}",
+                                IconSpec = verbKey.GetValue("Icon") as string,
                             };
                             results.Add(groupKey, entry);
                         }
@@ -552,10 +621,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // CLSID lookup uses HKEY_CLASSES_ROOT, the OS's own merged view of HKCU+HKLM Software\Classes,
         // since a handler found under either hive can point at a CLSID registered in either.
-        private static void ResolveClsid(string clsid, out string displayName, out bool isWindowsOwned)
+        // iconSpec: the CLSID's DefaultIcon, else the handler DLL itself. The items a handler actually
+        // adds draw their own bitmaps at runtime, so this is only the closest static stand-in.
+        private static void ResolveClsid(string clsid, out string displayName, out bool isWindowsOwned, out string iconSpec)
         {
             displayName = null;
             isWindowsOwned = false;
+            iconSpec = null;
 
             if (string.IsNullOrWhiteSpace(clsid))
             {
@@ -573,6 +645,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     displayName = clsidKey.GetValue(null) as string;
 
+                    using (var defaultIconKey = clsidKey.OpenSubKey("DefaultIcon", writable: false))
+                    {
+                        iconSpec = defaultIconKey?.GetValue(null) as string;
+                    }
+
                     using (var inprocKey = clsidKey.OpenSubKey("InprocServer32", writable: false))
                     {
                         string dllPath = inprocKey?.GetValue(null) as string;
@@ -582,6 +659,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
 
                         string expandedPath = Environment.ExpandEnvironmentVariables(dllPath.Trim('"'));
+                        iconSpec ??= expandedPath;
 
                         string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
                         isWindowsOwned = expandedPath.StartsWith(systemRoot + "\\System32", StringComparison.OrdinalIgnoreCase)
@@ -659,6 +737,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             Source = ContextMenuEntrySource.Modern,
                             Kind = ContextMenuEntryKind.BlockedClsid,
                             IsEnabled = !clsids.Any(blocked.Contains),
+                            IconSpec = package.Logo?.LocalPath,
                         };
                         entry.Clsids.AddRange(clsids);
                         results.Add(entry);

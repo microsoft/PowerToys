@@ -66,6 +66,9 @@
                                     Margin="{x:Bind IndentMargin}"
                                     Description="{x:Bind ScopeAndSourceDisplayName}"
                                     Header="{x:Bind DisplayName}">
+                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                        <ImageIcon Source="{x:Bind Icon, Mode=OneWay}" />
+                                    </tkcontrols:SettingsCard.HeaderIcon>
                                     <ToggleSwitch
                                         DataContext="{x:Bind}"
                                         IsEnabled="{x:Bind IsToggleable, Mode=OneWay}"

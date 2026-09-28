@@ -94,6 +94,13 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         internal static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr ppvReserved);
 
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int SHDefExtractIcon(string pszIconFile, int iIndex, uint uFlags, out IntPtr phiconLarge, IntPtr phiconSmall, uint nIconSize);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DestroyIcon(IntPtr hIcon);
+
         public static void SetPopupStyle(IntPtr hwnd)
         {
             _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_POPUP);
