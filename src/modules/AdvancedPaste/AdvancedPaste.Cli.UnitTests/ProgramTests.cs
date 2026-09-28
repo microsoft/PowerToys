@@ -178,6 +178,25 @@ public class ProgramTests
     }
 
     [TestMethod]
+    public async Task EmptyHtmlFile_ReturnsRuntimeError()
+    {
+        var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
+        await File.WriteAllTextAsync(inputPath, string.Empty);
+        try
+        {
+            var result = await RunAsync(["transform", "--format", "plain-text", "--input", inputPath, "--json"]);
+
+            Assert.AreEqual(1, result.ExitCode);
+            using var document = JsonDocument.Parse(result.Stderr);
+            Assert.AreEqual("empty_input", document.RootElement.GetProperty("code").GetString());
+        }
+        finally
+        {
+            File.Delete(inputPath);
+        }
+    }
+
+    [TestMethod]
     public async Task OversizedClipboardInput_ReturnsSpecificRuntimeError()
     {
         var clipboard = new TestClipboardAdapter(new string('x', (16 * 1024 * 1024) + 1));
@@ -247,6 +266,17 @@ public class ProgramTests
 
         Assert.AreEqual(1, result.ExitCode);
         StringAssert.Contains(result.Stderr, "cancelled");
+    }
+
+    [TestMethod]
+    public void StartupFailure_WithJsonOption_WritesJsonErrorEnvelope()
+    {
+        var stderr = new StringWriter();
+
+        Program.WriteStartupError(["transform", "--json"], stderr);
+
+        using var document = JsonDocument.Parse(stderr.ToString());
+        Assert.AreEqual("internal_error", document.RootElement.GetProperty("code").GetString());
     }
 
     private static async Task<RunResult> RunAsync(

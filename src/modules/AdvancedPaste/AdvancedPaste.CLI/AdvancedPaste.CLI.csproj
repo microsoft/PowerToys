@@ -12,7 +12,12 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>AdvancedPaste.CLI.dev.manifest</ApplicationManifest>
     <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ApplicationManifest>AdvancedPaste.CLI.prod.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>

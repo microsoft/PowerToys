@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Core;
@@ -13,7 +14,7 @@ namespace AdvancedPaste.Helpers;
 
 internal static class MarkdownHelper
 {
-    internal static async Task<string> ToMarkdownAsync(DataPackageView clipboardData)
+    internal static async Task<string> ToMarkdownAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
@@ -21,6 +22,6 @@ internal static class MarkdownHelper
                  : clipboardData.Contains(StandardDataFormats.Text) ? await clipboardData.GetTextAsync()
                  : string.Empty;
 
-        return string.IsNullOrEmpty(data) ? string.Empty : MarkdownConverter.Convert(data);
+        return string.IsNullOrEmpty(data) ? string.Empty : MarkdownConverter.Convert(data, cancellationToken);
     }
 }

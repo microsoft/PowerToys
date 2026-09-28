@@ -70,7 +70,7 @@ public static partial class Program
         catch (Exception ex)
         {
             Logger.LogError("Advanced Paste CLI failed.", ex);
-            WriteError(Console.Error, false, "internal_error", "Advanced Paste CLI failed.");
+            WriteStartupError(args, Console.Error);
             return RuntimeErrorExitCode;
         }
         finally
@@ -270,6 +270,9 @@ public static partial class Program
         WriteError(stderr, json, code, message, includeUsage: true);
         return ArgumentErrorExitCode;
     }
+
+    internal static void WriteStartupError(string[] args, TextWriter stderr)
+        => WriteError(stderr, args.Contains("--json", StringComparer.Ordinal), "internal_error", "Advanced Paste CLI failed.");
 
     private static int CountSelected(params bool[] modes)
         => modes.Count(mode => mode);

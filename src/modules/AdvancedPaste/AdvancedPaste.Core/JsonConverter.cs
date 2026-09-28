@@ -34,7 +34,7 @@ public static class JsonConverter
             return text;
         }
 
-        if (TryConvertXml(text, out var jsonText))
+        if (TryConvertXml(text, cancellationToken, out var jsonText))
         {
             return jsonText;
         }
@@ -67,14 +67,21 @@ public static class JsonConverter
         }
     }
 
-    private static bool TryConvertXml(string text, out string jsonText)
+    private static bool TryConvertXml(string text, CancellationToken cancellationToken, out string jsonText)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var document = new XmlDocument();
             document.LoadXml(text);
+            cancellationToken.ThrowIfCancellationRequested();
             jsonText = JsonConvert.SerializeXmlNode(document, Newtonsoft.Json.Formatting.Indented);
+            cancellationToken.ThrowIfCancellationRequested();
             return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception)
         {

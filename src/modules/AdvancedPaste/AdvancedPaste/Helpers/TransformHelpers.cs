@@ -23,8 +23,8 @@ public static class TransformHelpers
         return format switch
         {
             PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
-            PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
-            PasteFormats.Json => await ToJsonAsync(clipboardData),
+            PasteFormats.Markdown => CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData, cancellationToken)),
+            PasteFormats.Json => CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData, cancellationToken)),
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData, cancellationToken),
             PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData, cancellationToken),
@@ -41,18 +41,6 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
         return CreateDataPackageFromText(await clipboardData.GetTextOrEmptyAsync());
-    }
-
-    private static async Task<DataPackage> ToMarkdownAsync(DataPackageView clipboardData)
-    {
-        Logger.LogTrace();
-        return CreateDataPackageFromText(await MarkdownHelper.ToMarkdownAsync(clipboardData));
-    }
-
-    private static async Task<DataPackage> ToJsonAsync(DataPackageView clipboardData)
-    {
-        Logger.LogTrace();
-        return CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData));
     }
 
     private static async Task<DataPackage> ImageToTextAsync(DataPackageView clipboardData, CancellationToken cancellationToken)

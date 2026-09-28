@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Core;
@@ -13,7 +14,7 @@ namespace AdvancedPaste.Helpers;
 
 internal static class JsonHelper
 {
-    internal static async Task<string> ToJsonFromXmlOrCsvAsync(DataPackageView clipboardData)
+    internal static async Task<string> ToJsonFromXmlOrCsvAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
@@ -25,7 +26,11 @@ internal static class JsonHelper
 
         try
         {
-            return JsonConverter.Convert(await clipboardData.GetTextAsync());
+            return JsonConverter.Convert(await clipboardData.GetTextAsync(), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (System.Exception ex)
         {

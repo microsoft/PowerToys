@@ -17,7 +17,9 @@ public static class MarkdownConverter
         html = Regex.Replace(html, @"<!--StartFragment-->|<!--EndFragment-->", string.Empty);
 
         var document = new HtmlDocument();
+        cancellationToken.ThrowIfCancellationRequested();
         document.LoadHtml(html);
+        cancellationToken.ThrowIfCancellationRequested();
 
         foreach (var node in document.DocumentNode.DescendantsAndSelf("script").ToArray())
         {
@@ -38,7 +40,9 @@ public static class MarkdownConverter
 
         using var writer = new System.IO.StringWriter();
         document.Save(writer);
-        return new ReverseMarkdown.Converter().Convert(writer.ToString());
+        var markdown = new ReverseMarkdown.Converter().Convert(writer.ToString());
+        cancellationToken.ThrowIfCancellationRequested();
+        return markdown;
     }
 
     private static void CleanNode(HtmlNode node, CancellationToken cancellationToken)
@@ -52,10 +56,7 @@ public static class MarkdownConverter
             return;
         }
 
-        foreach (var element in node.DescendantsAndSelf())
-        {
-            element.Attributes.Remove("style");
-        }
+        node.Attributes.Remove("style");
 
         foreach (var childNode in node.ChildNodes.ToArray())
         {

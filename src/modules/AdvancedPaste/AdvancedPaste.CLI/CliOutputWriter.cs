@@ -34,7 +34,7 @@ internal static class CliOutputWriter
             if (storageFile is not null)
             {
                 Directory.CreateDirectory(outputFile.DirectoryName!);
-                File.Copy(storageFile.Path, outputFile.FullName, overwrite: true);
+                await CopyFileAsync(storageFile.Path, outputFile, cancellationToken);
                 await view.TryCleanupAfterDelayAsync(TimeSpan.Zero);
                 return new CliOutputResult("file", null, outputFile.FullName, OutputClipboard: false);
             }
@@ -66,6 +66,29 @@ internal static class CliOutputWriter
 
         clipboard.Write(package);
         return new CliOutputResult(storageFile is null ? "text" : "file", text, null, OutputClipboard: true);
+    }
+
+    private static async Task CopyFileAsync(string sourcePath, FileInfo outputFile, CancellationToken cancellationToken)
+    {
+        var temporaryPath = Path.Combine(outputFile.DirectoryName!, $".{outputFile.Name}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await using (var source = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 81920, useAsync: true))
+            await using (var destination = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true))
+            {
+                await source.CopyToAsync(destination, cancellationToken);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Move(temporaryPath, outputFile.FullName, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 
     private static async Task<StorageFile?> GetSingleStorageFileAsync(DataPackageView view)

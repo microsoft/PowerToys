@@ -73,8 +73,9 @@ internal static class CliInputReader
             }
 
             package.SetText(text);
-            if (inputFile.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
-                inputFile.Extension.Equals(".htm", StringComparison.OrdinalIgnoreCase))
+            if (text.Length > 0 &&
+                (inputFile.Extension.Equals(".html", StringComparison.OrdinalIgnoreCase) ||
+                 inputFile.Extension.Equals(".htm", StringComparison.OrdinalIgnoreCase)))
             {
                 package.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(text));
             }

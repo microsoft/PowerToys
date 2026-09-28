@@ -61,6 +61,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
     {
         if (!string.IsNullOrWhiteSpace(request.CustomAction))
         {
+            EnsureAIEnabled();
             var customAction = ResolveCustomAction(request.CustomAction);
             var providerId = string.IsNullOrWhiteSpace(request.ProviderId) ? customAction.ProviderId : request.ProviderId;
             EnsureProviderAllowed(providerId);
@@ -76,6 +77,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
 
         if (string.Equals(request.Action, "paste-with-ai", StringComparison.OrdinalIgnoreCase))
         {
+            EnsureAIEnabled();
             var providerId = request.ProviderId;
             EnsureProviderAllowed(providerId);
             return PasteFormat.CreateCustomAIFormat(
@@ -98,10 +100,19 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
             : request.ProviderId;
         if (PasteFormat.MetadataDict[format].RequiresAIService)
         {
+            EnsureAIEnabled();
             EnsureProviderAllowed(builtInProviderId);
         }
 
         return PasteFormat.CreateStandardFormat(format, formats, isAIServiceEnabled: true, resourceLoader: value => value, builtInProviderId);
+    }
+
+    private void EnsureAIEnabled()
+    {
+        if (!_settings.IsAIEnabled)
+        {
+            throw new InvalidOperationException("AI actions are disabled in Advanced Paste settings.");
+        }
     }
 
     private AdvancedPasteCustomAction ResolveCustomAction(string value)
