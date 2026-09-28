@@ -44,9 +44,13 @@ internal static class AdvancedPasteTempFileManager
 
                 foreach (var file in directory.EnumerateFiles())
                 {
-                    file.Delete();
+                    if (!string.Equals(file.Name, OwnershipMarkerName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        file.Delete();
+                    }
                 }
 
+                RemoveOwnershipMarkerIfDirectoryWillBeEmpty(directory);
                 if (!directory.EnumerateFileSystemInfos().Any())
                 {
                     directory.Delete();

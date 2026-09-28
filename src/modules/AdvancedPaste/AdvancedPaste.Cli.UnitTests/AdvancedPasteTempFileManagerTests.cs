@@ -64,6 +64,35 @@ public class AdvancedPasteTempFileManagerTests
     }
 
     [TestMethod]
+    public void CleanupStaleDirectories_PreservesOwnershipMarkerUntilDirectoryIsEmpty()
+    {
+        var directory = AdvancedPasteTempFileManager.CreateDirectory();
+        var nestedDirectory = Directory.CreateDirectory(Path.Combine(directory.FullName, "nested"));
+        File.WriteAllText(Path.Combine(nestedDirectory.FullName, "stale.txt"), "stale");
+        Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
+
+        try
+        {
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsTrue(File.Exists(Path.Combine(directory.FullName, ".powertoys-advanced-paste-owned")));
+            Assert.IsTrue(Directory.Exists(directory.FullName));
+
+            Directory.Delete(nestedDirectory.FullName, recursive: true);
+            AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
+
+            Assert.IsFalse(Directory.Exists(directory.FullName));
+        }
+        finally
+        {
+            if (Directory.Exists(directory.FullName))
+            {
+                Directory.Delete(directory.FullName, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task TryCleanupAfterDelayAsync_RemovesOwnershipMarkerFromConsumedFileDirectory()
     {
         var directory = AdvancedPasteTempFileManager.CreateDirectory();
