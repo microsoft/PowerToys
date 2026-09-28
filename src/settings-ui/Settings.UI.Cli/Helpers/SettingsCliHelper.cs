@@ -21,9 +21,12 @@ internal static class SettingsCliHelper
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    public static Dictionary<string, bool> GetModulesAndStatus(SettingsUtils? settingsUtils = null)
+    public static Dictionary<string, bool> GetModulesAndStatus(
+        SettingsUtils? settingsUtils = null,
+        Func<string, bool?>? gpoEnabledStateProvider = null)
     {
         settingsUtils ??= SettingsUtils.Default;
+        gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
         var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig;
         var enabledModules = generalSettings.Enabled;
 
@@ -35,14 +38,10 @@ internal static class SettingsCliHelper
             if (prop.PropertyType == typeof(bool))
             {
                 var val = (bool)(prop.GetValue(enabledModules) ?? false);
-                var gpoRule = GetModuleGpoRule(prop.Name);
-                if (gpoRule == GpoRuleConfigured.Enabled)
+                var gpoEnabledState = gpoEnabledStateProvider(prop.Name);
+                if (gpoEnabledState.HasValue)
                 {
-                    val = true;
-                }
-                else if (gpoRule == GpoRuleConfigured.Disabled)
-                {
-                    val = false;
+                    val = gpoEnabledState.Value;
                 }
 
                 result[prop.Name] = val;
@@ -52,15 +51,25 @@ internal static class SettingsCliHelper
         return result;
     }
 
-    public static ModuleStatus GetModuleStatus(string moduleName, SettingsUtils? settingsUtils = null)
+    public static ModuleStatus GetModuleStatus(
+        string moduleName,
+        SettingsUtils? settingsUtils = null,
+        Func<string, bool?>? gpoEnabledStateProvider = null)
     {
-        var moduleEntry = GetModuleEntry(moduleName, settingsUtils);
-        var gpoRule = GetModuleGpoRule(moduleEntry.ModuleName);
+        gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
+        var moduleEntry = GetModuleEntry(moduleName, settingsUtils, gpoEnabledStateProvider);
+        var gpoEnabledState = gpoEnabledStateProvider(moduleEntry.ModuleName);
+        var groupPolicy = gpoEnabledState switch
+        {
+            true => "Enabled",
+            false => "Disabled",
+            _ => null,
+        };
 
         return new ModuleStatus(
             moduleEntry.ModuleName,
             moduleEntry.Enabled,
-            gpoRule is GpoRuleConfigured.Enabled or GpoRuleConfigured.Disabled ? gpoRule.ToString() : null);
+            groupPolicy);
     }
 
     public static GpoRuleConfigured GetModuleGpoRule(string moduleName)
@@ -71,6 +80,7 @@ internal static class SettingsCliHelper
             "alwaysontop" => GpoApi.GetConfiguredAlwaysOnTopEnabledValue(),
             "awake" => GpoApi.GetConfiguredAwakeEnabledValue(),
             "cmdpal" => GpoApi.GetConfiguredCmdPalEnabledValue(),
+            "cmdnotfound" => GpoApi.GetConfiguredCmdNotFoundEnabledValue(),
             "colorpicker" => GpoApi.GetConfiguredColorPickerEnabledValue(),
             "cropandlock" => GpoApi.GetConfiguredCropAndLockEnabledValue(),
             "cursorwrap" => GpoApi.GetConfiguredCursorWrapEnabledValue(),
@@ -104,15 +114,20 @@ internal static class SettingsCliHelper
         };
     }
 
-    public static ModuleStatus SetModuleEnabled(string moduleName, bool enabled, SettingsUtils? settingsUtils = null)
+    public static ModuleStatus SetModuleEnabled(
+        string moduleName,
+        bool enabled,
+        SettingsUtils? settingsUtils = null,
+        Func<string, bool?>? gpoEnabledStateProvider = null)
     {
         settingsUtils ??= SettingsUtils.Default;
-        var moduleEntry = GetModuleEntry(moduleName, settingsUtils);
+        gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
+        var moduleEntry = GetModuleEntry(moduleName, settingsUtils, gpoEnabledStateProvider);
 
-        CheckModuleGpoLock(moduleEntry.ModuleName);
+        CheckModuleGpoLock(moduleEntry.ModuleName, gpoEnabledStateProvider);
 
         SetSettingCommandLineCommand.Execute($"GeneralSettings.Enabled.{moduleEntry.ModuleName}", enabled.ToString().ToLowerInvariant(), settingsUtils);
-        return GetModuleStatus(moduleEntry.ModuleName, settingsUtils);
+        return GetModuleStatus(moduleEntry.ModuleName, settingsUtils, gpoEnabledStateProvider);
     }
 
     public static string SerializeToJson<T>(T obj)
@@ -120,9 +135,12 @@ internal static class SettingsCliHelper
         return JsonSerializer.Serialize(obj, JsonOptions);
     }
 
-    private static ModuleEntry GetModuleEntry(string moduleName, SettingsUtils? settingsUtils)
+    private static ModuleEntry GetModuleEntry(
+        string moduleName,
+        SettingsUtils? settingsUtils,
+        Func<string, bool?> gpoEnabledStateProvider)
     {
-        var modules = GetModulesAndStatus(settingsUtils);
+        var modules = GetModulesAndStatus(settingsUtils, gpoEnabledStateProvider);
         var matchedKey = modules.Keys.FirstOrDefault(k => string.Equals(k, moduleName, StringComparison.OrdinalIgnoreCase));
         if (matchedKey == null)
         {
@@ -132,18 +150,28 @@ internal static class SettingsCliHelper
         return new ModuleEntry(matchedKey, modules[matchedKey]);
     }
 
-    private static void CheckModuleGpoLock(string moduleName)
+    private static void CheckModuleGpoLock(string moduleName, Func<string, bool?> gpoEnabledStateProvider)
     {
-        var gpoRule = GetModuleGpoRule(moduleName);
-        if (gpoRule == GpoRuleConfigured.Disabled)
+        var gpoEnabledState = gpoEnabledStateProvider(moduleName);
+        if (gpoEnabledState == false)
         {
             throw new InvalidOperationException($"Module '{moduleName}' is disabled by Group Policy and cannot be modified.");
         }
 
-        if (gpoRule == GpoRuleConfigured.Enabled)
+        if (gpoEnabledState == true)
         {
             throw new InvalidOperationException($"Module '{moduleName}' is force-enabled by Group Policy and cannot be modified.");
         }
+    }
+
+    private static bool? GetModuleGpoEnabledState(string moduleName)
+    {
+        return GetModuleGpoRule(moduleName) switch
+        {
+            GpoRuleConfigured.Enabled => true,
+            GpoRuleConfigured.Disabled => false,
+            _ => null,
+        };
     }
 
     private sealed record ModuleEntry(string ModuleName, bool Enabled);

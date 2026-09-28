@@ -27,7 +27,7 @@ public class SettingsCliTests
     [TestMethod]
     public void TestGetModulesAndStatus()
     {
-        var modules = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
+        var modules = SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null);
 
         Assert.IsNotNull(modules);
         Assert.IsTrue(modules.Count > 0);
@@ -38,7 +38,7 @@ public class SettingsCliTests
     [TestMethod]
     public void TestGetModuleStatus()
     {
-        var status = SettingsCliHelper.GetModuleStatus("fancyzones", settingsUtils);
+        var status = SettingsCliHelper.GetModuleStatus("fancyzones", settingsUtils, _ => null);
 
         Assert.AreEqual("FancyZones", status.ModuleName);
         Assert.IsNull(status.GroupPolicy);
@@ -47,22 +47,54 @@ public class SettingsCliTests
     [TestMethod]
     public void TestSetModuleEnabled()
     {
-        var disabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: false, settingsUtils);
+        var disabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: false, settingsUtils, _ => null);
         Assert.IsFalse(disabledState.Enabled);
 
-        var modulesAfterDisable = SettingsCliHelper.GetModulesAndStatus(settingsUtils);
+        var modulesAfterDisable = SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null);
         Assert.IsFalse(modulesAfterDisable["FancyZones"]);
 
-        var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils);
+        var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils, _ => null);
         Assert.IsTrue(enabledState.Enabled);
     }
 
     [TestMethod]
-    public void TestCommandParsingReportsMissingArguments()
+    public void TestGroupPolicyOverridesEffectiveState()
+    {
+        var status = SettingsCliHelper.GetModuleStatus(
+            "FancyZones",
+            settingsUtils,
+            _ => false);
+
+        Assert.IsFalse(status.Enabled);
+        Assert.AreEqual("Disabled", status.GroupPolicy);
+    }
+
+    [TestMethod]
+    public void TestSetModuleEnabledRejectsGroupPolicyLockedModule()
+    {
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            SettingsCliHelper.SetModuleEnabled(
+                "FancyZones",
+                enabled: true,
+                settingsUtils,
+                _ => false));
+        Assert.ThrowsException<InvalidOperationException>(() =>
+            SettingsCliHelper.SetModuleEnabled(
+                "FancyZones",
+                enabled: false,
+                settingsUtils,
+                _ => true));
+    }
+
+    [DataTestMethod]
+    [DataRow("enable")]
+    [DataRow("disable")]
+    [DataRow("status")]
+    public void TestCommandParsingReportsMissingArguments(string command)
     {
         var parser = new Parser(Program.CreateRootCommand());
 
-        var parseResult = parser.Parse(["enable"]);
+        var parseResult = parser.Parse([command]);
 
         Assert.IsTrue(parseResult.Errors.Count > 0);
     }
