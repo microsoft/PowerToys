@@ -511,6 +511,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/ContextMenuManager/">
+    <Project Path="src/modules/ContextMenuManager/ContextMenuManager.MenuCapture/ContextMenuManager.MenuCapture.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/ContextMenuManager/ContextMenuManagerModuleInterface/ContextMenuManagerModuleInterface.vcxproj" Id="cf8eda10-634b-4e91-b330-17e7730d600a" />
   </Folder>
   <Folder Name="/modules/Hosts/">

@@ -269,6 +269,8 @@
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
+            "WinUI3Apps\\PowerToys.ContextMenuManager.MenuCapture.dll",
+            "WinUI3Apps\\PowerToys.ContextMenuManager.MenuCapture.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",

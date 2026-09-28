@@ -21,14 +21,31 @@
 
                 <controls:SettingsGroup x:Uid="ContextMenuManager_PreviewGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ContextMenuManager_PreviewTargetCard">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PreviewTargetIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Desktop" />
-                            <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_FolderBackground" />
-                            <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Folder" />
-                            <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_File" />
-                            <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Drive" />
-                        </ComboBox>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ProgressRing
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind ViewModel.IsCapturing, Mode=OneWay}" />
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PreviewTargetIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Desktop" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_FolderBackground" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Folder" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_File" />
+                                <ComboBoxItem x:Uid="ContextMenuManager_PreviewTarget_Drive" />
+                            </ComboBox>
+                            <Button
+                                x:Uid="ContextMenuManager_CaptureButton"
+                                Command="{x:Bind ViewModel.CaptureRealMenuCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsNotCapturing, Mode=OneWay}" />
+                        </StackPanel>
                     </tkcontrols:SettingsCard>
+
+                    <InfoBar
+                        x:Uid="ContextMenuManager_CaptureErrorNotice"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasCaptureError, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.CaptureError, Mode=OneWay}"
+                        Severity="Warning" />
 
                     <!--  Styled after the classic Explorer context menu.  -->
                     <Border

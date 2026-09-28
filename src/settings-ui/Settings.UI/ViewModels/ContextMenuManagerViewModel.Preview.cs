@@ -5,9 +5,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -59,8 +68,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Present when the user restored the Windows 10 menu as the default right-click menu.
         private const string ClassicMenuRestoreKey = "Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32";
 
+        private const string CaptureHelperExe = "PowerToys.ContextMenuManager.MenuCapture.exe";
+
+        private static readonly TimeSpan CaptureTimeout = TimeSpan.FromSeconds(10);
+
         private ContextMenuPreviewTarget _previewTarget = ContextMenuPreviewTarget.Desktop;
         private bool _isPreviewCaptured;
+        private bool _isCapturing;
+        private string _captureError;
 
         public ObservableCollection<ContextMenuPreviewItem> PreviewItems { get; } = new ObservableCollection<ContextMenuPreviewItem>();
 
@@ -95,29 +110,205 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string PreviewSourceText => ResourceLoaderInstance.ResourceLoader.GetString(
             IsPreviewCaptured ? "ContextMenuManager_PreviewSourceCaptured" : "ContextMenuManager_PreviewSourceSynthetic");
 
+        public bool IsCapturing
+        {
+            get => _isCapturing;
+            private set
+            {
+                if (value != _isCapturing)
+                {
+                    _isCapturing = value;
+                    OnPropertyChanged(nameof(IsCapturing));
+                    OnPropertyChanged(nameof(IsNotCapturing));
+                }
+            }
+        }
+
+        public bool IsNotCapturing => !IsCapturing;
+
+        public string CaptureError
+        {
+            get => _captureError;
+            private set
+            {
+                if (value != _captureError)
+                {
+                    _captureError = value;
+                    OnPropertyChanged(nameof(CaptureError));
+                    OnPropertyChanged(nameof(HasCaptureError));
+                }
+            }
+        }
+
+        public bool HasCaptureError => !string.IsNullOrEmpty(CaptureError);
+
+        // CaptureRealMenuAsync handles every failure itself, so the discarded task can't fault unobserved.
+        public ButtonClickCommand CaptureRealMenuCommand => new ButtonClickCommand(() => _ = CaptureRealMenuAsync());
+
         public void BuildSyntheticPreview()
         {
-            List<ContextMenuPreviewItem> classic = BuildClassicItems(_previewTarget);
+            ShowPreview(WrapForMenuStyle(BuildClassicItems(_previewTarget)), captured: false);
+        }
 
-            List<ContextMenuPreviewItem> items;
+        // Windows 11 menu: packaged items on top, everything classic behind "Show more options".
+        private List<ContextMenuPreviewItem> WrapForMenuStyle(List<ContextMenuPreviewItem> classic)
+        {
             if (IsClassicMenuDefault())
             {
-                items = classic;
-            }
-            else
-            {
-                // Windows 11 menu: packaged items on top, everything classic behind "Show more options".
-                items = EnabledEntries(_previewTarget)
-                    .Where(e => e.Source == ContextMenuEntrySource.Modern)
-                    .Select(ToPreviewItem)
-                    .ToList();
-                items.Add(ContextMenuPreviewItem.Separator());
-                var more = BuiltIn("ShowMoreOptions");
-                more.Children.AddRange(classic);
-                items.Add(more);
+                return classic;
             }
 
-            ShowPreview(items, captured: false);
+            var items = EnabledEntries(_previewTarget)
+                .Where(e => e.Source == ContextMenuEntrySource.Modern)
+                .Select(ToPreviewItem)
+                .ToList();
+            items.Add(ContextMenuPreviewItem.Separator());
+            var more = BuiltIn("ShowMoreOptions");
+            more.Children.AddRange(TidySeparators(classic));
+            items.Add(more);
+            return items;
+        }
+
+        // Asks Windows for the real menu through the MenuCapture helper process. The capture misses
+        // what Explorer adds itself at display time - the view's own View/Sort by/Refresh block on
+        // backgrounds, and Windows 11 packaged verbs - so those are merged in from the entry list.
+        private async Task CaptureRealMenuAsync()
+        {
+            var target = _previewTarget;
+            IsCapturing = true;
+            CaptureError = null;
+            try
+            {
+                string json = await RunCaptureHelperAsync(target);
+                if (target != _previewTarget)
+                {
+                    return;
+                }
+
+                using var document = JsonDocument.Parse(json);
+                var captured = ParseCapturedItems(document.RootElement);
+
+                var modern = EnabledEntries(target).Where(e => e.Source == ContextMenuEntrySource.Modern).Select(ToPreviewItem).ToList();
+                int firstSeparator = captured.FindIndex(i => i.IsSeparator);
+                captured.InsertRange(firstSeparator < 0 ? captured.Count : firstSeparator, modern);
+
+                if (target is ContextMenuPreviewTarget.Desktop or ContextMenuPreviewTarget.FolderBackground)
+                {
+                    var viewItems = BuiltInItems(BuiltInTop[target]).ToList();
+                    var viewTexts = viewItems.Where(i => !i.IsSeparator).Select(i => i.Text).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    captured.RemoveAll(i => !i.IsSeparator && viewTexts.Contains(i.Text));
+                    captured.InsertRange(0, viewItems.Append(ContextMenuPreviewItem.Separator()));
+                }
+
+                ShowPreview(WrapForMenuStyle(captured), captured: true);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"ContextMenuManager: menu capture failed: {ex}");
+                CaptureError = ex is TimeoutException
+                    ? ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuManager_CaptureTimeout")
+                    : ex.Message;
+            }
+            finally
+            {
+                IsCapturing = false;
+            }
+        }
+
+        private static async Task<string> RunCaptureHelperAsync(ContextMenuPreviewTarget target)
+        {
+            string argument = target switch
+            {
+                ContextMenuPreviewTarget.Desktop => "desktop",
+                ContextMenuPreviewTarget.FolderBackground => "background",
+                ContextMenuPreviewTarget.Folder => "folder",
+                ContextMenuPreviewTarget.File => "file",
+                _ => "drive",
+            };
+
+            var startInfo = new ProcessStartInfo(Path.Combine(AppContext.BaseDirectory, CaptureHelperExe), $"--target {argument}")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+            };
+
+            using var process = Process.Start(startInfo) ?? throw new InvalidOperationException($"Could not start {CaptureHelperExe}.");
+            Task<string> output = process.StandardOutput.ReadToEndAsync();
+            Task<string> error = process.StandardError.ReadToEndAsync();
+
+            // A shell extension can hang (network drives, licensing prompts); never wait on it forever.
+            using var timeout = new CancellationTokenSource(CaptureTimeout);
+            try
+            {
+                await process.WaitForExitAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                process.Kill(entireProcessTree: true);
+                throw new TimeoutException();
+            }
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException((await error).Trim());
+            }
+
+            return await output;
+        }
+
+        private static List<ContextMenuPreviewItem> ParseCapturedItems(JsonElement array)
+        {
+            var items = new List<ContextMenuPreviewItem>();
+            foreach (var element in array.EnumerateArray())
+            {
+                if (element.TryGetProperty("separator", out _))
+                {
+                    items.Add(ContextMenuPreviewItem.Separator());
+                    continue;
+                }
+
+                var item = new ContextMenuPreviewItem
+                {
+                    Text = element.TryGetProperty("text", out var text) ? text.GetString() : string.Empty,
+                    Shortcut = element.TryGetProperty("shortcut", out var shortcut) ? shortcut.GetString() : null,
+                    IsDisabled = element.TryGetProperty("disabled", out _),
+                };
+
+                if (element.TryGetProperty("icon", out var icon))
+                {
+                    item.Icon = CreateBgraImage(icon.GetProperty("w").GetInt32(), icon.GetProperty("h").GetInt32(), icon.GetProperty("bgra").GetBytesFromBase64());
+                }
+
+                if (element.TryGetProperty("children", out var children))
+                {
+                    item.Children.AddRange(ParseCapturedItems(children));
+                }
+
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        // The helper sends premultiplied 32bpp top-down pixels, which is WriteableBitmap's own layout.
+        private static WriteableBitmap CreateBgraImage(int width, int height, byte[] pixels)
+        {
+            if (width <= 0 || height <= 0 || pixels.Length != width * height * 4)
+            {
+                return null;
+            }
+
+            var bitmap = new WriteableBitmap(width, height);
+            using (var stream = bitmap.PixelBuffer.AsStream())
+            {
+                stream.Write(pixels, 0, pixels.Length);
+            }
+
+            bitmap.Invalidate();
+            return bitmap;
         }
 
         private void ShowPreview(IEnumerable<ContextMenuPreviewItem> items, bool captured)

@@ -4135,6 +4135,15 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="ContextMenuManager_PreviewTarget_Drive.Content" xml:space="preserve">
     <value>A drive</value>
   </data>
+  <data name="ContextMenuManager_CaptureButton.Content" xml:space="preserve">
+    <value>Capture real menu</value>
+  </data>
+  <data name="ContextMenuManager_CaptureErrorNotice.Title" xml:space="preserve">
+    <value>Couldn't capture the menu</value>
+  </data>
+  <data name="ContextMenuManager_CaptureTimeout" xml:space="preserve">
+    <value>The capture took too long and was stopped. A shell extension may be unresponsive.</value>
+  </data>
   <data name="ContextMenuManager_PreviewSourceSynthetic" xml:space="preserve">
     <value>Approximation</value>
   </data>

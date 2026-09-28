@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.ContextMenuManager.MenuCapture</AssemblyTitle>
+    <AssemblyDescription>PowerToys Context Menu Manager menu capture helper</AssemblyDescription>
+    <!-- Console subsystem so stdout is available; Settings starts it with CreateNoWindow. -->
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PowerToys.ContextMenuManager.MenuCapture</RootNamespace>
+    <AssemblyName>PowerToys.ContextMenuManager.MenuCapture</AssemblyName>
+    <!-- Next to PowerToys.Settings.exe, which launches it and shares its self-contained runtime. -->
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+</Project>
