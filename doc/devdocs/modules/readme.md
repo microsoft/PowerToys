@@ -11,6 +11,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Awake](awake.md) | Tool to keep your computer awake without modifying power settings |
 | [Color Picker](colorpicker.md) | Tool for selecting and managing colors from the screen |
 | [Command Not Found](commandnotfound.md) | Tool suggesting package installations for missing commands |
+| [Context Menu Manager](contextmenumanager.md) | Tool for viewing and turning off File Explorer context menu entries |
 | [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |
 | [Environment Variables](environmentvariables.md) | Tool for managing user and system environment variables |
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
