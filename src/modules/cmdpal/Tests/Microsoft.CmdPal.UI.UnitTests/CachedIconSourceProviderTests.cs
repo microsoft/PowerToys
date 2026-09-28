@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -15,7 +17,7 @@ using Windows.Storage.Streams;
 namespace Microsoft.CmdPal.UI.UnitTests;
 
 [TestClass]
-public class CachedIconSourceProviderTests
+public partial class CachedIconSourceProviderTests
 {
     [TestMethod]
     [Timeout(5_000)]
@@ -60,6 +62,114 @@ public class CachedIconSourceProviderTests
 
         Assert.AreSame(first, cached);
         Assert.AreEqual(1, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task SharedInFlightLoadTracksEveryLiveRequest()
+    {
+        var loader = new ControllableIconLoader();
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var icon = CreateIcon();
+        var firstDemand = new IconRequestDemand();
+        var secondDemand = new IconRequestDemand();
+
+        var first = provider.GetIconSource(icon, 1.0, demand: firstDemand);
+        var second = provider.GetIconSource(icon, 1.0, demand: secondDemand);
+
+        Assert.AreSame(first, second);
+        Assert.IsNotNull(loader.LastDemand);
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        firstDemand.Release();
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        secondDemand.Release();
+        Assert.IsFalse(loader.LastDemand.IsDemanded);
+
+        var returnedDemand = new IconRequestDemand();
+        var returned = provider.GetIconSource(icon, 1.0, demand: returnedDemand);
+        Assert.AreSame(first, returned);
+        Assert.IsTrue(loader.LastDemand.IsDemanded);
+
+        returnedDemand.Release();
+        Assert.IsFalse(loader.LastDemand.IsDemanded);
+
+        loader.CompleteNext(null);
+        await Task.WhenAll(first, second, returned);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task SuccessfulDirectGlyphLoadIsCachedWithoutQueueing()
+    {
+        var glyph = CreateTestIconSource();
+        var loader = new ControllableIconLoader
+        {
+            ReturnDirectGlyph = true,
+            DirectGlyphResult = glyph,
+        };
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var icon = CreateIcon("glyph");
+
+        var first = provider.GetIconSource(icon, 1.0);
+        var firstResult = await first;
+
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => GetInFlightCount(provider) == 0, TimeSpan.FromSeconds(2)),
+            "The direct glyph load was not retired from the in-flight dictionary.");
+
+        var cached = provider.GetIconSource(icon, 1.0);
+
+        Assert.AreSame(glyph, firstResult);
+        Assert.AreSame(first, cached);
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(0, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    public async Task CachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
+    {
+        var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+
+        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0);
+
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(1, loader.EnqueueCount);
+        loader.CompleteNext(null);
+        Assert.IsNull(await result);
+    }
+
+    [TestMethod]
+    [Timeout(5_000)]
+    public async Task DistinctStreamReferencesWithCollidingRuntimeHashesDoNotShareLoad()
+    {
+        var collision = FindRuntimeHashCollision();
+        if (collision is null)
+        {
+            Assert.Inconclusive("No runtime identity-hash collision was found among 500,000 live objects.");
+            return;
+        }
+
+        var (firstStream, secondStream) = collision.Value;
+        Assert.AreNotSame(firstStream, secondStream);
+        Assert.AreEqual(RuntimeHelpers.GetHashCode(firstStream), RuntimeHelpers.GetHashCode(secondStream));
+
+        var loader = new ControllableIconLoader();
+        var provider = new CachedIconSourceProvider(loader, new Size(20, 20), cacheSize: 16);
+        var firstIcon = CreateIcon(string.Empty, firstStream);
+        var secondIcon = CreateIcon(string.Empty, secondStream);
+
+        var first = provider.GetIconSource(firstIcon, 1.0);
+        var second = provider.GetIconSource(secondIcon, 1.0);
+
+        Assert.AreNotSame(first, second);
+        Assert.AreEqual(2, loader.EnqueueCount);
+
+        loader.CompleteNext(null);
+        loader.CompleteNext(null);
+        await Task.WhenAll(first, second);
     }
 
     [TestMethod]
@@ -124,9 +234,48 @@ public class CachedIconSourceProviderTests
         Assert.AreEqual(1, loader.EnqueueCount);
     }
 
-    private static IconDataViewModel CreateIcon()
+    [TestMethod]
+    public async Task UncachedProviderLoadsGlyphDirectlyWithoutQueueing()
     {
-        var icon = new IconDataViewModel(new IconData("test"));
+        var glyph = CreateTestIconSource();
+        var loader = new ControllableIconLoader
+        {
+            ReturnDirectGlyph = true,
+            DirectGlyphResult = glyph,
+        };
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+
+        var result = await provider.GetIconSource(CreateIcon("glyph"), 1.0);
+
+        Assert.AreSame(glyph, result);
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(0, loader.EnqueueCount);
+    }
+
+    [TestMethod]
+    public async Task UncachedProviderFallsBackWhenLoaderViolatesDirectGlyphContract()
+    {
+        var loader = new ControllableIconLoader { ReturnDirectGlyph = true };
+        var provider = new IconSourceProvider(loader, new Size(16, 16));
+
+        var result = provider.GetIconSource(CreateIcon("glyph"), 1.0);
+
+        Assert.AreEqual(1, loader.GlyphAttemptCount);
+        Assert.AreEqual(1, loader.EnqueueCount);
+        loader.CompleteNext(null);
+        Assert.IsNull(await result);
+    }
+
+    private static IconSource CreateTestIconSource()
+    {
+        // The unit-test process does not initialize WinUI. Providers treat a completed
+        // IconSource opaquely, so use a non-activated projection only as an identity token.
+        return (IconSource)RuntimeHelpers.GetUninitializedObject(typeof(FontIconSource));
+    }
+
+    private static IconDataViewModel CreateIcon(string iconString = "test", IRandomAccessStreamReference? stream = null)
+    {
+        var icon = new IconDataViewModel(new IconData(iconString) { Data = stream });
         icon.InitializeProperties();
         return icon;
     }
@@ -139,14 +288,61 @@ public class CachedIconSourceProviderTests
         return (int)countProperty!.GetValue(inFlight)!;
     }
 
+    private static (TestStreamReference First, TestStreamReference Second)? FindRuntimeHashCollision()
+    {
+        const int MaximumCandidates = 500_000;
+        var referencesByHash = new Dictionary<int, TestStreamReference>();
+
+        for (var i = 0; i < MaximumCandidates; i++)
+        {
+            var candidate = new TestStreamReference();
+            var hash = RuntimeHelpers.GetHashCode(candidate);
+            if (referencesByHash.TryGetValue(hash, out var existing))
+            {
+                return (existing, candidate);
+            }
+
+            referencesByHash.Add(hash, candidate);
+        }
+
+        return null;
+    }
+
+    private sealed partial class TestStreamReference : IRandomAccessStreamReference
+    {
+        public IAsyncOperation<IRandomAccessStreamWithContentType> OpenReadAsync() =>
+            throw new NotSupportedException("The cache-key test does not open its stream references.");
+    }
+
     private sealed class ControllableIconLoader : IIconLoaderService
     {
         private readonly ConcurrentQueue<TaskCompletionSource<IconSource?>> _pending = new();
         private int _enqueueCount;
+        private int _glyphAttemptCount;
 
         public bool AcceptLoads { get; set; } = true;
 
+        public bool ReturnDirectGlyph { get; set; }
+
+        public IconSource? DirectGlyphResult { get; set; }
+
         public int EnqueueCount => Volatile.Read(ref _enqueueCount);
+
+        public int GlyphAttemptCount => Volatile.Read(ref _glyphAttemptCount);
+
+        public IconLoadDemand? LastDemand { get; private set; }
+
+        public bool TryLoadGlyph(
+            string? iconString,
+            string? fontFamily,
+            Size iconSize,
+            double scale,
+            [MaybeNullWhen(false)] out IconSource result)
+        {
+            Interlocked.Increment(ref _glyphAttemptCount);
+            result = DirectGlyphResult!;
+            return ReturnDirectGlyph;
+        }
 
         public bool TryEnqueueLoad(
             string? iconString,
@@ -155,9 +351,12 @@ public class CachedIconSourceProviderTests
             Size iconSize,
             double scale,
             TaskCompletionSource<IconSource?> tcs,
-            IconLoadPriority priority)
+            IconLoadPriority priority,
+            IconLoadMeasurement? diagnostics = null,
+            IconLoadDemand? demand = null)
         {
             Interlocked.Increment(ref _enqueueCount);
+            LastDemand = demand;
             if (!AcceptLoads)
             {
                 return false;

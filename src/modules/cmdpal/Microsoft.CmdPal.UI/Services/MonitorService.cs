@@ -243,15 +243,14 @@ public sealed class MonitorService : IMonitorService
 
             var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
             var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
-            var topologyId = default(DISPLAYCONFIG_TOPOLOGY_ID);
 
+            // QDC_ONLY_ACTIVE_PATHS requires a null topology pointer, so omit the optional argument.
             result = PInvoke.QueryDisplayConfig(
                 QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
                 ref pathCount,
                 paths,
                 ref modeCount,
-                modes,
-                ref topologyId);
+                modes);
             if (result != WIN32_ERROR.NO_ERROR)
             {
                 return map;
