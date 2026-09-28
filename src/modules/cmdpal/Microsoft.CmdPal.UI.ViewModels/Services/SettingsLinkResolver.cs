@@ -86,6 +86,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
 
         new(SettingsLinkIds.Dock.Page, SettingsPageTags.Dock),
         CreateTarget(SettingsLinkIds.Dock.Enabled, SettingsPageTags.Dock, "enabled"),
+        CreateTarget(SettingsLinkIds.Dock.FocusShortcut, SettingsPageTags.Dock, "focus-shortcut"),
         CreateTarget(SettingsLinkIds.Dock.AppearanceSection, SettingsPageTags.Dock, "appearance-section"),
         CreateTarget(SettingsLinkIds.Dock.Position, SettingsPageTags.Dock, "position"),
         CreateTarget(SettingsLinkIds.Dock.Size, SettingsPageTags.Dock, "size"),
