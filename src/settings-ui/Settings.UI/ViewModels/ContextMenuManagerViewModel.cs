@@ -192,6 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             NeedsExplorerRestart = false;
             ApplyFilter();
+            BuildSyntheticPreview();
             LoadIcons();
         }
 
@@ -216,6 +217,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         dispatcher.TryEnqueue(() => entry.Icon = CreateImage(png));
                     }
                 }
+
+                // Preview items copy the icon when built, so rebuild once all icons are in.
+                dispatcher.TryEnqueue(() =>
+                {
+                    if (!IsPreviewCaptured)
+                    {
+                        BuildSyntheticPreview();
+                    }
+                });
             });
         }
 
@@ -335,6 +345,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             entry.IsEnabled = enable;
             NeedsExplorerRestart = true;
+            BuildSyntheticPreview();
             return true;
         }
 
@@ -543,6 +554,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 Depth = depth,
                                 SortKey = parent == null ? label : $"{parent.SortKey}{SortKeySeparator}{label}",
                                 IconSpec = verbKey.GetValue("Icon") as string,
+                                Parent = parent,
+                                Position = verbKey.GetValue("Position") as string,
                             };
                             results.Add(groupKey, entry);
                         }
@@ -716,8 +729,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
 
                         XDocument manifest = XDocument.Load(manifestPath);
-                        var clsids = manifest.Descendants()
+                        var extensions = manifest.Descendants()
                             .Where(el => el.Name.LocalName == "Extension" && (string)el.Attribute("Category") == "windows.fileExplorerContextMenus")
+                            .ToList();
+                        var clsids = extensions
                             .SelectMany(el => el.Descendants().Where(v => v.Name.LocalName == "Verb"))
                             .Select(v => Guid.TryParse((string)v.Attribute("Clsid"), out Guid guid) ? guid.ToString("B") : null)
                             .Where(c => c != null)
@@ -740,6 +755,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             IconSpec = package.Logo?.LocalPath,
                         };
                         entry.Clsids.AddRange(clsids);
+                        entry.ItemTypes.AddRange(extensions
+                            .SelectMany(el => el.Descendants().Where(t => t.Name.LocalName == "ItemType"))
+                            .Select(t => (string)t.Attribute("Type"))
+                            .Where(t => !string.IsNullOrEmpty(t))
+                            .Distinct(StringComparer.OrdinalIgnoreCase));
                         results.Add(entry);
                     }
                     catch (Exception)

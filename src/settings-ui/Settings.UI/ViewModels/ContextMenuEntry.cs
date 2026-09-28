@@ -73,6 +73,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // HandlerValue: original default value (the CLSID, without any "disabled_" prefix).
         public string OriginalClsidValue { get; set; }
 
+        // Modern: manifest ItemType values ("*", ".png", "Directory", "Directory\Background").
+        public List<string> ItemTypes { get; } = new List<string>();
+
+        // Verb: the submenu entry this item belongs to; null at top level.
+        public ContextMenuEntry Parent { get; set; }
+
+        // Verb: the "Position" value ("Top"/"Bottom"), used to place it in the preview.
+        public string Position { get; set; }
+
         // Submenu nesting level; 0 for top-level entries.
         public int Depth { get; set; }
 

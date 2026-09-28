@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -10,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -56,6 +58,44 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!ViewModel.ToggleEntry(entry, requestedState))
             {
                 toggle.IsOn = entry.IsEnabled;
+            }
+        }
+
+        // Opens a preview row's submenu the way Explorer would: to the right of the row.
+        private void PreviewItem_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            if (button.DataContext is not ContextMenuPreviewItem item || !item.HasChildren)
+            {
+                return;
+            }
+
+            var flyout = new MenuFlyout { Placement = FlyoutPlacementMode.RightEdgeAlignedTop };
+            AddPreviewMenuItems(flyout.Items, item.Children);
+            flyout.ShowAt(button);
+        }
+
+        private static void AddPreviewMenuItems(IList<MenuFlyoutItemBase> target, IEnumerable<ContextMenuPreviewItem> items)
+        {
+            foreach (var child in items)
+            {
+                if (child.IsSeparator)
+                {
+                    target.Add(new MenuFlyoutSeparator());
+                    continue;
+                }
+
+                IconElement icon = child.Icon != null ? new ImageIcon { Source = child.Icon } : null;
+                if (child.HasChildren)
+                {
+                    var sub = new MenuFlyoutSubItem { Text = child.Text, Icon = icon };
+                    AddPreviewMenuItems(sub.Items, child.Children);
+                    target.Add(sub);
+                }
+                else
+                {
+                    target.Add(new MenuFlyoutItem { Text = child.Text, Icon = icon, KeyboardAcceleratorTextOverride = child.Shortcut ?? string.Empty, IsEnabled = !child.IsDisabled });
+                }
             }
         }
 
