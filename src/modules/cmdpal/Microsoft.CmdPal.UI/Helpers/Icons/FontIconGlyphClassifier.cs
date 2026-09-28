@@ -17,8 +17,8 @@ internal static partial class FontIconGlyphClassifier
     private const int EmojiPresentationProperty = 58;
     private const int FluentIconsPrivateUseAreaStart = 0xE700;
     private const int FluentIconsPrivateUseAreaEnd = 0xF8FF;
-    private const int TextVariationSelector = 0xFE0E;
-    private const int EmojiVariationSelector = 0xFE0F;
+    private const char TextVariationSelector = '\uFE0E';
+    private const char EmojiVariationSelector = '\uFE0F';
 
     public static FontIconGlyphKind Classify(string? text)
     {
@@ -41,7 +41,26 @@ internal static partial class FontIconGlyphClassifier
                 return FontIconGlyphKind.FluentSymbol;
             }
 
-            return IsEmoji(text) ? FontIconGlyphKind.Emoji : FontIconGlyphKind.Other;
+            if (char.IsLowSurrogate(character))
+            {
+                return FontIconGlyphKind.Other;
+            }
+
+            // Preserve the native classifier's result for a degenerate standalone VS16.
+            if (character == EmojiVariationSelector)
+            {
+                return FontIconGlyphKind.Emoji;
+            }
+
+            return IsEmojiPresentation(character) ? FontIconGlyphKind.Emoji : FontIconGlyphKind.Other;
+        }
+
+        // A valid surrogate pair is exactly one Unicode scalar and therefore one
+        // grapheme. Avoid general grapheme segmentation and decoding it twice.
+        if (text.Length == 2 && char.IsSurrogatePair(text[0], text[1]))
+        {
+            var codePoint = char.ConvertToUtf32(text[0], text[1]);
+            return IsEmojiPresentation(codePoint) ? FontIconGlyphKind.Emoji : FontIconGlyphKind.Other;
         }
 
         // Two adjacent ASCII characters cannot be the single glyph expected here. This
@@ -90,22 +109,18 @@ internal static partial class FontIconGlyphClassifier
 
     private static bool IsEmoji(string text)
     {
-        foreach (var codePoint in text.EnumerateRunes())
+        var selectorIndex = text.AsSpan().IndexOfAny(TextVariationSelector, EmojiVariationSelector);
+        if (selectorIndex >= 0)
         {
-            if (codePoint.Value == EmojiVariationSelector)
-            {
-                return true;
-            }
-
-            if (codePoint.Value == TextVariationSelector)
-            {
-                return false;
-            }
+            return text[selectorIndex] == EmojiVariationSelector;
         }
 
         var status = Rune.DecodeFromUtf16(text.AsSpan(), out var first, out _);
-        return status == OperationStatus.Done && NativeMethods.HasBinaryProperty(first.Value, EmojiPresentationProperty) != 0;
+        return status == OperationStatus.Done && IsEmojiPresentation(first.Value);
     }
+
+    private static bool IsEmojiPresentation(int codePoint) =>
+        NativeMethods.HasBinaryProperty(codePoint, EmojiPresentationProperty) != 0;
 
     private static partial class NativeMethods
     {
