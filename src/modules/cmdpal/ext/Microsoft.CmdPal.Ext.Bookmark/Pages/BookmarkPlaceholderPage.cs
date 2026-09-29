@@ -19,8 +19,14 @@ internal sealed partial class BookmarkPlaceholderPage : ParametersPage, IDisposa
     private readonly Dictionary<string, StringParameterRun> _placeholderRuns;
     private readonly ListItem _commandItem;
     private readonly SupersedingAsyncValueGate<IIconInfo?> _iconReloadGate;
+    private readonly Func<Classification, bool> _launch;
 
-    public BookmarkPlaceholderPage(BookmarkData bookmarkData, IBookmarkIconLocator iconLocator, IBookmarkResolver resolver, IPlaceholderParser placeholderParser)
+    public BookmarkPlaceholderPage(
+        BookmarkData bookmarkData,
+        IBookmarkIconLocator iconLocator,
+        IBookmarkResolver resolver,
+        IPlaceholderParser placeholderParser,
+        Func<Classification, bool>? launch = null)
     {
         ArgumentNullException.ThrowIfNull(bookmarkData);
         ArgumentNullException.ThrowIfNull(resolver);
@@ -28,6 +34,7 @@ internal sealed partial class BookmarkPlaceholderPage : ParametersPage, IDisposa
 
         _bookmarkData = bookmarkData;
         _resolver = resolver;
+        _launch = launch ?? (classification => CommandLauncher.Launch(classification));
 
         // Cache the original bookmark's classification — it doesn't depend on
         // placeholder values, and we need it on every keystroke to know how to
@@ -110,8 +117,21 @@ internal sealed partial class BookmarkPlaceholderPage : ParametersPage, IDisposa
         // Re-classify the final target — adding placeholder values may change
         // what kind of command this is (e.g. a path that needs different launch).
         var classification = _resolver.ClassifyOrUnknown(target);
-        var success = CommandLauncher.Launch(classification);
+        var success = _launch(classification);
+        if (success)
+        {
+            ResetPlaceholderValues();
+        }
+
         return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
+    }
+
+    private void ResetPlaceholderValues()
+    {
+        foreach (var run in _placeholderRuns.Values)
+        {
+            run.ClearValue();
+        }
     }
 
     private string BuildEvaluatedBookmark()

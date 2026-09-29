@@ -27,6 +27,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private int _contextItemsVersion;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -219,6 +220,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
+        _contextItemsVersion = item.ContextItemsVersion;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
 
@@ -260,7 +262,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
-            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+            var propertyName = e.PropertyName;
+            if (propertyName == nameof(CommandItemViewModel.AllCommands))
+            {
+                // Keep batched background delivery, but invalidate the SDK list only when its entries changed.
+                var version = _commandItemViewModel.ContextItemsVersion;
+                if (_contextItemsVersion == version)
+                {
+                    return;
+                }
+
+                _contextItemsVersion = version;
+                propertyName = nameof(ICommandItem.MoreCommands);
+            }
+
+            PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName));
 
             if (e.PropertyName is nameof(CommandItemViewModel.Title) or nameof(CommandItemViewModel.Name))
             {
@@ -486,17 +502,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         List<IContextItem?> contextItems = new();
 
-        foreach (var item in _commandItemViewModel.MoreCommands)
-        {
-            if (item is ISeparatorContextItem)
-            {
-                contextItems.Add(item as IContextItem);
-            }
-            else if (item is CommandContextItemViewModel commandItem)
-            {
-                contextItems.Add(commandItem.Model.Unsafe);
-            }
-        }
+        _commandItemViewModel.CopySdkContextItemsTo(contextItems);
 
         _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
 

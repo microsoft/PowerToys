@@ -19,7 +19,33 @@ public record SettingsModel
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
+    /// <summary>
+    /// Gets the default shortcut that focuses the dock: win+alt+J. It shares the
+    /// activation shortcut's modifiers so the two sit next to each other in muscle memory.
+    /// Win+Alt+D would read better, but Windows 11 already owns it for the taskbar clock.
+    /// </summary>
+    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
+
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
+
+    private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
+
+    /// <summary>
+    /// Gets the shortcut that reveals and focuses the dock. Lives here rather than in
+    /// <see cref="Settings.DockSettings"/> because a change to that record makes
+    /// DockWindowManager tear down and rebuild every dock window, and a keybinding
+    /// has no business doing that.
+    /// </summary>
+    /// <remarks>
+    /// The setter falls back to the default because settings files written before this
+    /// shortcut existed have no value for it, and the deserializer hands us a null
+    /// instead of leaving the property initializer alone.
+    /// </remarks>
+    public HotkeySettings? DockFocusHotkey
+    {
+        get => _dockFocusHotkey;
+        init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
+    }
 
     public bool UseLowLevelGlobalHotkey { get; init; }
 
@@ -35,6 +61,8 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public string Language { get; init; } = string.Empty;
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }
@@ -44,11 +72,13 @@ public record SettingsModel
     public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
         = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public bool AllowExternalReload { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
 
     public bool AllowAltF4 { get; init; }
 
     public bool CompactMode { get; set; }
+
+    public bool ShowQuickAccessShelf { get; init; }
 
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
@@ -174,13 +204,15 @@ public record SettingsModel
           ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
-          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null,
+          bool enableExternalCommandLinks = true)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
         FallbackRanks = fallbackRanks ?? [];
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        EnableExternalCommandLinks = enableExternalCommandLinks;
     }
 
     public SettingsModel()

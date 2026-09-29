@@ -409,6 +409,25 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_CompactMode_SettingsCard.Header" xml:space="preserve">
     <value>Open with a compact search box</value>
   </data>
+  <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header" xml:space="preserve">
+    <value>Quick access shelf</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
+    <value>Shows pinned home commands below the search box while compact mode is collapsed. Use Alt+1 through Alt+9 for the first nine visible commands and Alt+0 for overflow.</value>
+  </data>
+  <data name="QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="QuickAccessShelfShortcutTextFormat" xml:space="preserve">
+    <value>Alt+{0}</value>
+    <comment>Tooltip shortcut text for a quick access item. {0} is a digit from 1 through 9.</comment>
+  </data>
+  <data name="QuickAccessOverflowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More quick access commands</value>
+  </data>
+  <data name="QuickAccessOverflowButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>More quick access commands</value>
+  </data>
   <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Header" xml:space="preserve">
     <value>Vertical search box position</value>
   </data>
@@ -493,6 +512,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
     <value>Enable a toolbar with quick access to commands</value>
   </data>
+  <data name="Settings_DockPage_FocusShortcut_SettingsCard.Header" xml:space="preserve">
+    <value>Focus the dock</value>
+  </data>
+  <data name="Settings_DockPage_FocusShortcut_SettingsCard.Description" xml:space="preserve">
+    <value>Shortcut to move keyboard focus to the dock. If the dock is hidden, it appears first. Press it again to go back to what you were doing.</value>
+  </data>
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Header" xml:space="preserve">
     <value>Always stay on top</value>
   </data>
@@ -513,6 +538,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
+  </data>
+  <data name="ContextMenu_Back" xml:space="preserve">
+    <value>Back from {0}</value>
+    <comment>Screen reader label for the back row in a submenu. {0} is the current submenu title.</comment>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back (Alt + Left arrow)</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Back (Alt + Left arrow)</value>
@@ -567,14 +602,179 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NavigationPaneOpened" xml:space="preserve">
     <value>Navigation page opened</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
-    <value>Enable external reload</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Header" xml:space="preserve">
+    <value>Enable external command links</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
-    <value>Allow reloads through the x-cmdpal://reload protocol</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Description" xml:space="preserve">
+    <value>Allow x-cmdpal links to request commands and extension reloads. New requests require your confirmation.</value>
   </data>
-  <data name="Settings_GeneralPage_ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For developers</value>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Header" xml:space="preserve">
+    <value>Always allowed command links</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Description" xml:space="preserve">
+    <value>Review or revoke requests you previously allowed without confirmation.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Warning.Text" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened a link. Always allowed requests remain global until you revoke them.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Empty.Text" xml:space="preserve">
+    <value>No command links are always allowed.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsFlyout_Title.Text" xml:space="preserve">
+    <value>Command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_ProviderIdLabel.Text" xml:space="preserve">
+    <value>Provider ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_CommandIdLabel.Text" xml:space="preserve">
+    <value>Command ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.Content" xml:space="preserve">
+    <value>Revoke</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Revoke permission</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.Content" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove all remembered command link permissions</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Title" xml:space="preserve">
+    <value>Remove all command link permissions?</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Description" xml:space="preserve">
+    <value>Command Palette will ask for confirmation the next time each external command link is opened.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_RemoveButton" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="CommandLink_CopyCommand_Name" xml:space="preserve">
+    <value>Copy command link</value>
+  </data>
+  <data name="CommandLink_Toast_Copied" xml:space="preserve">
+    <value>Command link copied to clipboard</value>
+  </data>
+  <data name="SettingsLink_CopyPage_Name" xml:space="preserve">
+    <value>Copy link to page</value>
+  </data>
+  <data name="SettingsLink_CopySetting_Name" xml:space="preserve">
+    <value>Copy link to setting</value>
+  </data>
+  <data name="SettingsLink_CopyExtensionSettings_Name" xml:space="preserve">
+    <value>Copy link to extension settings</value>
+  </data>
+  <data name="SettingsLink_CopyFallbackOrder_Name" xml:space="preserve">
+    <value>Copy link to fallback order</value>
+  </data>
+  <data name="SettingsLink_Copied_Announcement" xml:space="preserve">
+    <value>Settings link copied to clipboard</value>
+  </data>
+  <data name="SettingsLink_Fallback_RedirectedTitle" xml:space="preserve">
+    <value>Settings link redirected</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnavailableTitle" xml:space="preserve">
+    <value>Setting unavailable</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownLink" xml:space="preserve">
+    <value>This settings link is no longer available. Opened the closest settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownProvider" xml:space="preserve">
+    <value>The extension provider is missing or unavailable. Opened the Extensions page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_HiddenTarget" xml:space="preserve">
+    <value>This setting is currently hidden. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_MissingTarget" xml:space="preserve">
+    <value>This setting isn't available on this page. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_DisabledProvider" xml:space="preserve">
+    <value>This setting is unavailable while the extension is disabled. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_Other" xml:space="preserve">
+    <value>Opened the closest available settings page.</value>
+  </data>
+  <data name="ExternalCommandLink_Consent_Title" xml:space="preserve">
+    <value>Allow this command link?</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Title" xml:space="preserve">
+    <value>Opening command link</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Description" xml:space="preserve">
+    <value>Loading command information...</value>
+  </data>
+  <data name="ExternalCommandLink_CommandConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this command.</value>
+  </data>
+  <data name="ExternalCommandLink_PageConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this page.</value>
+  </data>
+  <data name="ExternalCommandLink_PageState_Label" xml:space="preserve">
+    <value>Page state:</value>
+  </data>
+  <data name="ExternalCommandLink_PageFilter_Description" xml:space="preserve">
+    <value>Filter: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_PageQuery_Description" xml:space="preserve">
+    <value>Search: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_FilterOneTime_Description" xml:space="preserve">
+    <value>Permission for links that select a filter is granted for this request only and cannot be remembered.</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadConsent_Description" xml:space="preserve">
+    <value>An external link is requesting that Command Palette reload all extensions.</value>
+  </data>
+  <data name="ExternalCommandLink_OriginWarning_Description" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened the link. Continue only if you expected this request.</value>
+  </data>
+  <data name="ExternalCommandLink_Link_Description" xml:space="preserve">
+    <value>Link: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_ShowMore_Button" xml:space="preserve">
+    <value>Show more...</value>
+  </data>
+  <data name="ExternalCommandLink_ShowLess_Button" xml:space="preserve">
+    <value>Show less</value>
+  </data>
+  <data name="ExternalCommandLink_RunOnce_Button" xml:space="preserve">
+    <value>Run once</value>
+  </data>
+  <data name="ExternalCommandLink_OpenOnce_Button" xml:space="preserve">
+    <value>Open once</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadOnce_Button" xml:space="preserve">
+    <value>Reload once</value>
+  </data>
+  <data name="ExternalCommandLink_AlwaysAllow_Button" xml:space="preserve">
+    <value>Always allow</value>
+  </data>
+  <data name="ExternalCommandLink_Cancel_Button" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ExternalCommandLink_Close_Button" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Title" xml:space="preserve">
+    <value>Command unavailable</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Description" xml:space="preserve">
+    <value>The linked command is not installed, enabled, or available at the top level.</value>
+  </data>
+  <data name="ExternalCommandLink_Reload_Name" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="ExternalCommandLink_CommandPalette_Name" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="ExternalLinksSettingsHeader.Text" xml:space="preserve">
+    <value>External links</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
     <value>an untitled</value>
@@ -1374,6 +1574,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock position</value>
     <comment>Per-monitor dock position settings card header</comment>
   </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Header" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Per-monitor setting for a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Description" xml:space="preserve">
+    <value>Leave blank to use the default name.</value>
+    <comment>The default is the friendly hardware name or the automatically assigned display label.</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Accessible name for the display name editor</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_ResetButton.Content" xml:space="preserve">
+    <value>Restore default</value>
+    <comment>Remove the user-defined display name and use the automatic name again</comment>
+  </data>
   <data name="AdaptiveListInput_Add" xml:space="preserve">
     <value>Add</value>
     <comment>Button that adds an entry to a list in an adaptive-card form.</comment>
@@ -1481,5 +1701,25 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AdaptiveFilePathInput_ValidationError" xml:space="preserve">
     <value>The path has an invalid format.</value>
     <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
+  </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Header" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Description" xml:space="preserve">
+    <value>Command Palette uses your Windows display language by default</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartInfo.Title" xml:space="preserve">
+    <value>A restart is needed for the language change to take effect</value>
+  </data>
+  <data name="Settings_GeneralPage_PseudoLocalizationInfo.Message" xml:space="preserve">
+    <value>Pseudolocalization (qps-PLOC) is not included in this build. Run .\Invoke-PseudoLocalization.ps1 -Path . from src\modules\cmdpal in PowerShell 7, then rebuild and deploy Command Palette.</value>
+    <comment>{Locked}Shown in development builds without pseudo resources</comment>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartButton.Content" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartFailed" xml:space="preserve">
+    <value>Command Palette couldn't restart. Try again, or close and reopen Command Palette to apply the language change.</value>
+    <comment>Shown when restarting Command Palette after a language change fails</comment>
   </data>
 </root>

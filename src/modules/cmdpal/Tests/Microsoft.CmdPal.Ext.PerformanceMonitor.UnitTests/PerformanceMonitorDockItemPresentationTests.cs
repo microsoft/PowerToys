@@ -113,6 +113,22 @@ public class PerformanceMonitorDockItemPresentationTests
     }
 
     [TestMethod]
+    public void ConfigureValueLabel_DynamicGpuSubtitleReplacesAnySampleWithAFixedWidth()
+    {
+        var item = new ListItem { Subtitle = "GPU" }.SetDockLabelReservations(null, DockLabelWidth.Sample("GPU"));
+
+        PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            item,
+            PerformanceMonitorDockItemPresentation.PercentageTitleWidth,
+            PerformanceMonitorDockItemPresentation.GpuSubtitleWidth);
+        item.Subtitle = "A different graphics adapter";
+
+        var properties = item.GetProperties();
+        Assert.AreEqual("text:100%", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("12ch", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+    }
+
+    [TestMethod]
     public void ConfigureValueLabel_TransferRatesKeepTheirValueReservation()
     {
         var item = PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
