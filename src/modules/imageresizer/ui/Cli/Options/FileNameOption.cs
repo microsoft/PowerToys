@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class FileNameOption : Option<string>
     {
-        private static readonly string[] _aliases = ["--filename", "-n"];
-
         public FileNameOption()
-            : base(_aliases, Properties.Resources.CLI_Option_FileName)
+            : base("--filename", "-n")
         {
+            Description = Properties.Resources.CLI_Option_FileName;
         }
     }
 }

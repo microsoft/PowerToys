@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Globalization;
 using System.Linq;
 
@@ -17,10 +17,10 @@ internal sealed partial class GetHotkeysCommand : FancyZonesBaseCommand
     public GetHotkeysCommand()
         : base("get-hotkeys", Properties.Resources.cmd_get_hotkeys)
     {
-        AddAlias("hk");
+        Aliases.Add("hk");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         var hotkeys = FancyZonesDataIO.ReadLayoutHotkeys();
 

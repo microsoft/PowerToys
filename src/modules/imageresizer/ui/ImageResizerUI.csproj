@@ -34,7 +34,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <NoWarn>0436;SA1210;SA1516;CA1305;CA1863;CA1852</NoWarn>
+    <!-- CA1010: System.CommandLine's Command implements only the non-generic IEnumerable. -->
+    <NoWarn>0436;SA1210;SA1516;CA1305;CA1863;CA1852;CA1010</NoWarn>
   </PropertyGroup>
 
   <!-- Allow test project to access internal types -->
