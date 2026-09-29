@@ -112,7 +112,6 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     private Task<Details> BuildDetails()
     {
-        // Build metadata, with app type, path, etc.
         var metadata = new List<DetailsElement>();
         metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.Type)] } });
         if (!_app.IsPackaged)
@@ -127,7 +126,6 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         metadata.Add(new DetailsElement() { Key = "[DEBUG] JumboIconPath", Data = new DetailsLink() { Text = _app.JumboIconPath ?? "(null)" } });
 #endif
 
-        // Icon
         var heroImage = CreateHeroIcon(_app);
 
         return Task.FromResult(new Details()
@@ -146,9 +144,10 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
             return Icons.GenericAppIcon;
         }
 
-        if (!app.IsPackaged && useThumbnails && IsShortcutPath(iconPath) && !string.IsNullOrEmpty(app.ExePath))
+        if (!app.IsPackaged && useThumbnails && IsShortcutPath(iconPath)
+            && !string.IsNullOrEmpty(app.FullExecutablePath) && !IsShortcutPath(app.FullExecutablePath))
         {
-            return new IconInfo(AppIconProtocol.Create(app.ExePath, iconPath));
+            return new IconInfo(AppIconProtocol.Create(app.FullExecutablePath));
         }
 
         return new IconInfo(
@@ -159,9 +158,10 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     private static IconInfo? CreateHeroIcon(AppItem app)
     {
-        if (!app.IsPackaged && IsShortcutPath(app.IcoPath) && !string.IsNullOrEmpty(app.ExePath))
+        if (!app.IsPackaged && IsShortcutPath(app.IcoPath)
+            && !string.IsNullOrEmpty(app.FullExecutablePath) && !IsShortcutPath(app.FullExecutablePath))
         {
-            return new IconInfo(AppIconProtocol.CreateJumbo(app.ExePath, app.IcoPath));
+            return new IconInfo(AppIconProtocol.CreateJumbo(app.FullExecutablePath));
         }
 
         if (!string.IsNullOrEmpty(app.JumboIconPath))

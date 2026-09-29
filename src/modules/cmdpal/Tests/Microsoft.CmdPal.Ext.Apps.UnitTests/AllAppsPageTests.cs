@@ -163,25 +163,27 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public void AppListItem_PrefersResolvedExecutableForShortcutIcons()
     {
-        var app = new AppItem
-        {
-            Name = "Shortcut App",
-            IcoPath = "C:\\Users\\Test\\Desktop\\Shortcut.lnk",
-            ExePath = "C:\\Program Files\\Example\\app.exe",
-        };
+        var shortcutPath = "C:\\Users\\Test\\Desktop\\Shortcut.lnk";
+        var program = TestDataHelper.CreateTestWin32Program("Shortcut App", "C:\\Program Files\\Example\\app.exe");
+        program.LnkFilePath = shortcutPath;
+        program.IcoPath = shortcutPath;
+        var app = program.ToAppItem();
+
+        Assert.AreEqual(shortcutPath, app.ExePath);
+        Assert.AreEqual(program.FullPath, app.FullExecutablePath);
 
         var item = new AppListItem(app, useThumbnails: true);
 
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
         Assert.IsFalse(rowJumbo);
-        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath }, rowCandidates);
+        CollectionAssert.AreEqual(new[] { program.FullPath }, rowCandidates);
 
         var details = (Details)item.Details!;
         var heroIcon = (IconInfo)details.HeroImage;
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var parsedHeroJumbo));
         Assert.IsTrue(parsedHeroJumbo);
-        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath }, heroCandidates);
+        CollectionAssert.AreEqual(new[] { program.FullPath }, heroCandidates);
     }
 
     [TestMethod]
