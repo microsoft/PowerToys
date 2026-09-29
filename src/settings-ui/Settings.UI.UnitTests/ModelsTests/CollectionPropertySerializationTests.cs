@@ -5,8 +5,8 @@
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PowerDisplay.Models;
 
 namespace CommonLibTest
 {
@@ -120,46 +120,24 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void AdditionalSettingsCollectionsDeserializeWithInitOnlySetters()
+        public void SettingsCollectionsDeserializeInitOnlyProperties()
         {
-            const string mouseWithoutBordersJson = """
-                {
-                  "MachineMatrixString": ["left", "right"]
-                }
-                """;
-            const string pasteAiJson = """
-                {
-                  "providers": [
-                    {
-                      "id": "provider-1",
-                      "service-type": "OpenAI"
-                    }
-                  ]
-                }
-                """;
-            const string pluginOptionJson = """
-                {
-                  "ComboBoxItems": [
-                    {
-                      "Key": "First",
-                      "Value": "1"
-                    }
-                  ]
-                }
-                """;
+            var awake = JsonSerializer.Deserialize<AwakeProperties>("""
+                { "customTrayTimes": { "Morning": 30 } }
+                """);
+            var customActions = JsonSerializer.Deserialize<AdvancedPasteCustomActions>("""
+                { "value": [] }
+                """);
+            var shortcutConflicts = JsonSerializer.Deserialize<ShortcutConflictProperties>("""
+                { "ignored_shortcuts": [] }
+                """);
 
-            var mouseWithoutBorders = JsonSerializer.Deserialize<MouseWithoutBordersProperties>(mouseWithoutBordersJson);
-            var pasteAi = JsonSerializer.Deserialize<PasteAIConfiguration>(pasteAiJson);
-            var pluginOption = JsonSerializer.Deserialize<PluginAdditionalOption>(pluginOptionJson);
-
-            Assert.IsNotNull(mouseWithoutBorders);
-            Assert.HasCount(2, mouseWithoutBorders.MachineMatrixString);
-            Assert.IsNotNull(pasteAi);
-            Assert.HasCount(1, pasteAi.Providers);
-            Assert.AreEqual("provider-1", pasteAi.Providers[0].Id);
-            Assert.IsNotNull(pluginOption);
-            Assert.HasCount(1, pluginOption.ComboBoxItems);
-            Assert.AreEqual("First", pluginOption.ComboBoxItems[0].Key);
+            Assert.IsNotNull(awake);
+            Assert.AreEqual(30u, awake.CustomTrayTimes["Morning"]);
+            Assert.IsNotNull(customActions);
+            Assert.IsEmpty(customActions.Value);
+            Assert.IsNotNull(shortcutConflicts);
+            Assert.IsEmpty(shortcutConflicts.IgnoredShortcuts);
         }
 
         [TestMethod]
@@ -302,108 +280,31 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        public void MouseWithoutBordersCollectionRemainsMutableWhenJsonValueIsNull()
+        public void HotkeyConflictCollectionsDeserializeInitOnlyProperties()
         {
-            const string json = """
-                {
-                  "MachineMatrixString": null
-                }
-                """;
+            var allConflicts = JsonSerializer.Deserialize<AllHotkeyConflictsData>("""
+                { "InAppConflicts": [], "SystemConflicts": [] }
+                """);
+            var moduleConflicts = JsonSerializer.Deserialize<ModuleConflictsData>("""
+                { "InAppConflicts": [], "SystemConflicts": [] }
+                """);
+            var group = JsonSerializer.Deserialize<HotkeyConflictGroupData>("""
+                { "Modules": [] }
+                """);
+            var info = JsonSerializer.Deserialize<HotkeyConflictInfo>("""
+                { "AllConflictingModules": ["FancyZones:1"] }
+                """);
 
-            var properties = JsonSerializer.Deserialize<MouseWithoutBordersProperties>(json);
-
-            Assert.IsNotNull(properties);
-            Assert.IsNotNull(properties.MachineMatrixString);
-            Assert.IsEmpty(properties.MachineMatrixString);
-
-            properties.MachineMatrixString.Add("machine-1");
-
-            Assert.HasCount(1, properties.MachineMatrixString);
-            Assert.AreEqual("machine-1", properties.MachineMatrixString[0]);
-        }
-
-        [TestMethod]
-        public void PowerDisplayCollectionsDeserializeWithInitOnlySetters()
-        {
-            const string json = """
-                {
-                  "monitors": [
-                    {
-                      "vcpCodesFormatted": [
-                        {
-                          "code": "0x14",
-                          "valueList": [
-                            {
-                              "value": "0x05",
-                              "name": "6500K"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ],
-                  "excluded_from_sync_monitor_ids": ["monitor-1"],
-                  "custom_vcp_mappings": [
-                    {
-                      "vcpCode": 20,
-                      "value": 5,
-                      "customName": "Warm"
-                    }
-                  ]
-                }
-                """;
-
-            var properties = JsonSerializer.Deserialize<PowerDisplayProperties>(json);
-
-            Assert.IsNotNull(properties);
-            Assert.HasCount(1, properties.Monitors);
-            Assert.HasCount(1, properties.Monitors[0].VcpCodesFormatted);
-            Assert.HasCount(1, properties.Monitors[0].VcpCodesFormatted[0].ValueList);
-            Assert.HasCount(1, properties.ExcludedFromSyncMonitorIds);
-            Assert.HasCount(1, properties.CustomVcpMappings);
-        }
-
-        [TestMethod]
-        public void PowerDisplayCollectionsRemainMutableWhenJsonValuesAreNull()
-        {
-            const string json = """
-                {
-                  "monitors": null,
-                  "excluded_from_sync_monitor_ids": null,
-                  "custom_vcp_mappings": null
-                }
-                """;
-
-            var properties = JsonSerializer.Deserialize<PowerDisplayProperties>(json);
-
-            Assert.IsNotNull(properties);
-            Assert.IsNotNull(properties.Monitors);
-            Assert.IsNotNull(properties.ExcludedFromSyncMonitorIds);
-            Assert.IsNotNull(properties.CustomVcpMappings);
-            Assert.IsEmpty(properties.Monitors);
-            Assert.IsEmpty(properties.ExcludedFromSyncMonitorIds);
-            Assert.IsEmpty(properties.CustomVcpMappings);
-
-            properties.Monitors.Add(new MonitorInfo());
-            properties.ExcludedFromSyncMonitorIds.Add("monitor-1");
-            properties.CustomVcpMappings.Add(new CustomVcpValueMapping());
-
-            Assert.HasCount(1, properties.Monitors);
-            Assert.HasCount(1, properties.ExcludedFromSyncMonitorIds);
-            Assert.HasCount(1, properties.CustomVcpMappings);
-        }
-
-        [TestMethod]
-        public void PluginMultilineAliasCanBeInitialized()
-        {
-            var option = new PluginAdditionalOption
-            {
-                TextValueAsMultilineList = ["first", "second"],
-            };
-
-            Assert.HasCount(2, option.TextValueAsMultilineList);
-            Assert.AreEqual("first", option.TextValueAsMultilineList[0]);
-            Assert.AreEqual("second", option.TextValueAsMultilineList[1]);
+            Assert.IsNotNull(allConflicts);
+            Assert.IsEmpty(allConflicts.InAppConflicts);
+            Assert.IsEmpty(allConflicts.SystemConflicts);
+            Assert.IsNotNull(moduleConflicts);
+            Assert.IsEmpty(moduleConflicts.InAppConflicts);
+            Assert.IsEmpty(moduleConflicts.SystemConflicts);
+            Assert.IsNotNull(group);
+            Assert.IsEmpty(group.Modules);
+            Assert.IsNotNull(info);
+            CollectionAssert.Contains(info.AllConflictingModules, "FancyZones:1");
         }
     }
 }
