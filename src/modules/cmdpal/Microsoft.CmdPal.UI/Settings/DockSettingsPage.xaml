@@ -52,6 +52,21 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_EnableDock" IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <InfoBar
+                        x:Name="DisabledDocksInfoBar"
+                        x:Uid="DockSettings_DisabledDocks_InfoBar"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_DisabledDocks"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Visibility="{x:Bind DisabledDocksInfoBar.IsOpen, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="DockSettings_MonitorOverrides_ManageMonitors"
+                                AutomationProperties.AutomationId="CmdPal_DockSettingsPage_DisabledDocks_ManageMonitors"
+                                Click="ManageMonitors_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <!--  Focus Dock shortcut  -->
                     <controls:SettingsCard
                         x:Uid="Settings_DockPage_FocusShortcut_SettingsCard"
@@ -83,6 +98,21 @@
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Bottom" />
                         </ComboBox>
                     </controls:SettingsCard>
+
+                    <InfoBar
+                        x:Name="PositionOverridesInfoBar"
+                        x:Uid="DockAppearance_PositionOverrides_InfoBar"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_PositionOverrides"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Visibility="{x:Bind PositionOverridesInfoBar.IsOpen, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="DockSettings_MonitorOverrides_ManageMonitors"
+                                AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ManageMonitors"
+                                Click="ManageMonitors_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
 
                     <!--  Dock Size (only for Top/Bottom positions)  -->
                     <controls:SettingsCard

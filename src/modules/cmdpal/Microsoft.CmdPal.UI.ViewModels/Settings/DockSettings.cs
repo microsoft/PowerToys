@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -131,6 +132,34 @@ public record DockSettings
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks whether any connected monitor has a disabled dock.
+    /// </summary>
+    public bool HasDisabledDocksForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor => MonitorConfigs.Any(config =>
+            !config.Enabled &&
+            string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// Checks whether any connected monitor has an enabled dock with a position override.
+    /// </summary>
+    public bool HasPositionOverridesForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor =>
+        {
+            return MonitorConfigs.Any(IsEnabledWithDifferentSettings);
+
+            bool IsEnabledWithDifferentSettings(DockMonitorConfig config)
+            {
+                return config.Enabled &&
+                       config.Side is not null &&
+                       string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase);
+            }
+        });
     }
 
     [JsonIgnore]

@@ -1177,6 +1177,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
+  <data name="DockSettings_DisabledDocks_InfoBar.Title" xml:space="preserve">
+    <value>Dock is turned off on some displays</value>
+    <comment>Shown when Dock is globally enabled but turned off on a connected display</comment>
+  </data>
+  <data name="DockSettings_DisabledDocks_InfoBar.Message" xml:space="preserve">
+    <value>Turn on Dock for these displays in Manage monitors. Per-display settings also apply when only one display is connected.</value>
+    <comment>Explains how to enable Dock on individual connected displays</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Title" xml:space="preserve">
+    <value>Some displays use their own Dock position</value>
+    <comment>Shown when an enabled Dock on a connected display uses its own position</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Message" xml:space="preserve">
+    <value>These displays won't follow changes to the default Dock position, even when their current positions match it. This also applies when only one display is connected.</value>
+    <comment>Explains why an explicit per-display position does not follow changes to the default</comment>
+  </data>
+  <data name="DockSettings_MonitorOverrides_ManageMonitors.Content" xml:space="preserve">
+    <value>Manage monitors</value>
+    <comment>Link to the per-monitor Dock settings on the same page</comment>
+  </data>
   <data name="DockAppearance_DockSize_SettingsCard.Header" xml:space="preserve">
     <value>Size</value>
   </data>

@@ -18,8 +18,16 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Windows.CsWin32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\Microsoft.CmdPal.UI\NativeMethods.txt" Link="NativeMethods.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -118,5 +126,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\PowerToysRootPageService.cs" Link="PowerToysRootPageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\BuildInfo.cs" Link="Helpers\BuildInfo.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />
   </ItemGroup>
 </Project>
