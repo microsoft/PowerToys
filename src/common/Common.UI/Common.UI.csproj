@@ -3,15 +3,13 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
+  <!--
+    Keep this library UI-framework neutral (no UseWPF, UseWindowsForms, UseWinUI or UI packages): it is referenced by
+    WPF, WinForms and WinUI 3 apps, and a framework reference here would flow into every one of them.
+  -->
   <PropertyGroup>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ControlzEx" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ManagedCommon\ManagedCommon.csproj" />
