@@ -414,6 +414,56 @@ internal sealed partial class IconLoadEventSource : EventSource
         WriteEvent(38, sessionId, elapsedMicroseconds);
     }
 
+    [Event(39, Level = EventLevel.Informational)]
+    public void ShellIconStepCompleted(
+        long sessionId,
+        int step,
+        int detail,
+        long elapsedMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(39, sessionId, step, detail, elapsedMicroseconds);
+    }
+
+    [Event(40, Level = EventLevel.Informational)]
+    public void ShellImageListExtractionCompleted(
+        long sessionId,
+        int imageListSize,
+        int requestedPixelSize,
+        int sourceWidth,
+        int sourceHeight,
+        long hIconConversionMicroseconds)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(
+            40,
+            sessionId,
+            imageListSize,
+            requestedPixelSize,
+            sourceWidth,
+            sourceHeight,
+            hIconConversionMicroseconds);
+    }
+
+    [Event(41, Level = EventLevel.Informational)]
+    public void LoadWorkerReleased(long sessionId, long loadId, long activeWorkers)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        WriteEvent(41, sessionId, loadId, activeWorkers);
+    }
+
     // These exact overloads intentionally shadow EventSource.WriteEvent(params object?[]).
     // The params overload allocates an array and boxes values while ETW is enabled, which
     // would make the icon diagnostics measurably perturb the paths they are observing.
@@ -512,6 +562,17 @@ internal sealed partial class IconLoadEventSource : EventSource
     }
 
     [NonEvent]
+    private unsafe void WriteEvent(int eventId, long value1, int value2, int value3, long value4)
+    {
+        EventData* data = stackalloc EventData[4];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(long));
+        WritePrimitiveEvent(eventId, 4, data);
+    }
+
+    [NonEvent]
     private unsafe void WriteEvent(int eventId, long value1, int value2, bool value3, long value4)
     {
         var boolValue3 = value3 ? 1 : 0;
@@ -582,6 +643,26 @@ internal sealed partial class IconLoadEventSource : EventSource
         SetEventData(&data[3], &boolValue4, sizeof(int));
         SetEventData(&data[4], &value5, sizeof(long));
         WritePrimitiveEvent(eventId, 5, data);
+    }
+
+    [NonEvent]
+    private unsafe void WriteEvent(
+        int eventId,
+        long value1,
+        int value2,
+        int value3,
+        int value4,
+        int value5,
+        long value6)
+    {
+        EventData* data = stackalloc EventData[6];
+        SetEventData(&data[0], &value1, sizeof(long));
+        SetEventData(&data[1], &value2, sizeof(int));
+        SetEventData(&data[2], &value3, sizeof(int));
+        SetEventData(&data[3], &value4, sizeof(int));
+        SetEventData(&data[4], &value5, sizeof(int));
+        SetEventData(&data[5], &value6, sizeof(long));
+        WritePrimitiveEvent(eventId, 6, data);
     }
 
     [NonEvent]

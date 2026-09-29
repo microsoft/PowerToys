@@ -44,7 +44,7 @@ internal static partial class NativeMethods
     internal static extern int SHGetImageList(int iImageList, ref Guid riid, out IntPtr ppv);
 
     [DllImport("comctl32.dll", SetLastError = true)]
-    internal static extern int ImageList_GetIcon(IntPtr himl, int i, int flags);
+    internal static extern nint ImageList_GetIcon(IntPtr himl, int i, int flags);
 
     [LibraryImport("shlwapi.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = false)]
     internal static unsafe partial int AssocQueryStringW(

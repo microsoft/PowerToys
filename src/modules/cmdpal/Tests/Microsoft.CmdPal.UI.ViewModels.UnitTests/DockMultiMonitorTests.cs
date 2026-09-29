@@ -58,6 +58,187 @@ public class DockMultiMonitorTests
         Assert.AreEqual(1.5, SecondaryMonitor.ScaleFactor, 0.001);
     }
 
+    // --- Monitor override notice tests ---
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void MonitorOverrides_PreviouslySecondaryMonitorIsOnlyConnectedDisplay_ShowsRelevantNotice(bool enabled)
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            Side = DockSide.Top,
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId },
+                new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = enabled, Side = enabled ? DockSide.Bottom : null }),
+        };
+
+        var monitors = new[] { SecondaryMonitor with { IsPrimary = true } };
+        Assert.AreEqual(!enabled, settings.HasDisabledDocksForMonitors(monitors));
+        Assert.AreEqual(enabled, settings.HasPositionOverridesForMonitors(monitors));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void MonitorOverrides_DisconnectedMonitor_ReturnsFalse(bool enabled)
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId },
+                new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = enabled, Side = enabled ? DockSide.Bottom : null }),
+        };
+
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+        Assert.AreEqual(!enabled, settings.HasDisabledDocksForMonitors([PrimaryMonitor, SecondaryMonitor]));
+        Assert.AreEqual(enabled, settings.HasPositionOverridesForMonitors([PrimaryMonitor, SecondaryMonitor]));
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([]));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void MonitorOverrides_DisabledDock_ShowsOnlyDisabledNotice(bool hasPositionOverride)
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            MonitorConfigs = ImmutableList.Create(new DockMonitorConfig
+            {
+                MonitorDeviceId = PrimaryMonitor.StableId.ToLowerInvariant(),
+                Enabled = false,
+                Side = hasPositionOverride ? DockSide.Bottom : null,
+            }),
+        };
+
+        Assert.IsTrue(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_UsesDefaultPosition_ReturnsFalse()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            MonitorConfigs = ImmutableList.Create(new DockMonitorConfig
+            {
+                MonitorDeviceId = PrimaryMonitor.StableId,
+                IsCustomized = true,
+            }),
+        };
+
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(CreateMinimalDockSettings().HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(CreateMinimalDockSettings().HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_ExplicitPositionMatchesGlobal_ReturnsTrue()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            Side = DockSide.Top,
+            MonitorConfigs = ImmutableList.Create(new DockMonitorConfig
+            {
+                MonitorDeviceId = PrimaryMonitor.StableId.ToLowerInvariant(),
+                Side = DockSide.Top,
+            }),
+        };
+
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsTrue(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_AllDisplaysEnabledWithDifferentPositions_ShowsOnlyPositionNotice()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            Side = DockSide.Top,
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true },
+                new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true, Side = DockSide.Bottom }),
+        };
+
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([PrimaryMonitor, SecondaryMonitor]));
+        Assert.IsTrue(settings.HasPositionOverridesForMonitors([PrimaryMonitor, SecondaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_DisabledDisplayAndPositionOverride_ShowBothNotices()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            Side = DockSide.Top,
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Side = DockSide.Bottom },
+                new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = false }),
+        };
+
+        Assert.IsTrue(settings.HasDisabledDocksForMonitors([PrimaryMonitor, SecondaryMonitor]));
+        Assert.IsTrue(settings.HasPositionOverridesForMonitors([PrimaryMonitor, SecondaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_ResetToDefault_ClearsNotice()
+    {
+        var config = new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Side = DockSide.Bottom };
+        var settings = CreateMinimalDockSettings() with { MonitorConfigs = ImmutableList.Create(config) };
+        Assert.IsTrue(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+
+        settings = settings with { MonitorConfigs = ImmutableList.Create(config with { Side = null }) };
+
+        Assert.IsFalse(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
+    [TestMethod]
+    public void MonitorOverrides_ResetPositionWhileDisabled_KeepsOnlyDisabledNotice()
+    {
+        var config = new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = false, Side = DockSide.Bottom };
+        var settings = CreateMinimalDockSettings() with { MonitorConfigs = ImmutableList.Create(config) };
+        Assert.IsTrue(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+
+        settings = settings with { MonitorConfigs = ImmutableList.Create(config with { Side = null }) };
+
+        Assert.IsTrue(settings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(settings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void MonitorOverrides_TogglingMonitorWhileDockEnabled_UpdatesRelevantNotices(bool hasPositionOverride)
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = PrimaryMonitor.StableId,
+                IsPrimary = true,
+                Side = hasPositionOverride ? DockSide.Bottom : null,
+            }) with { EnableDock = true };
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+        Assert.IsFalse(settings.DockSettings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.AreEqual(hasPositionOverride, settings.DockSettings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+
+        vm.IsEnabled = false;
+
+        Assert.IsTrue(mockSettings.Object.Settings.EnableDock);
+        Assert.IsTrue(mockSettings.Object.Settings.DockSettings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.IsFalse(mockSettings.Object.Settings.DockSettings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+
+        vm.IsEnabled = true;
+
+        Assert.IsTrue(mockSettings.Object.Settings.EnableDock);
+        Assert.IsFalse(mockSettings.Object.Settings.DockSettings.HasDisabledDocksForMonitors([PrimaryMonitor]));
+        Assert.AreEqual(hasPositionOverride, mockSettings.Object.Settings.DockSettings.HasPositionOverridesForMonitors([PrimaryMonitor]));
+    }
+
     // --- DockMonitorConfig tests ---
     [TestMethod]
     public void DockMonitorConfig_ResolveSide_ReturnsOverrideWhenSet()
@@ -610,8 +791,8 @@ public class DockMultiMonitorTests
         var now = DateTime.UtcNow;
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
         var configs = ImmutableList.Create(
-            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true, LastSeen = now },
-            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true, IsPrimary = false, LastSeen = now });
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, FallbackDisplayNumber = 1, Enabled = true, IsPrimary = true, LastSeen = now },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, FallbackDisplayNumber = 2, Enabled = true, IsPrimary = false, LastSeen = now });
 
         var reconciled = MonitorConfigReconciler.Reconcile(configs, monitors, now);
 
@@ -786,13 +967,13 @@ public class DockMultiMonitorTests
     public void DockMonitorConfigViewModel_DisplayInfo_ExposesMonitorProperties()
     {
         var settings = CreateSettingsModelWithConfigs(
-            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, IsPrimary = true });
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, FallbackDisplayNumber = 1, IsPrimary = true });
 
         var mockSettings = CreateMockSettingsService(settings);
         var vm = new DockMonitorConfigViewModel(
             settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
 
-        Assert.AreEqual("Display 1 (Primary)", vm.DisplayName);
+        Assert.AreEqual("Display A (Primary)", vm.DisplayName);
         Assert.AreEqual(PrimaryMonitor.DeviceId, vm.DeviceId);
         Assert.IsTrue(vm.IsPrimary);
         Assert.AreEqual("1920 \u00D7 1080", vm.Resolution);

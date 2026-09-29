@@ -271,6 +271,11 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
+        }
+
         this.viewModel.UpdateSettings(_settings);
         UpdateBackdrop();
 
@@ -631,6 +636,11 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         RefreshTargetMonitor();
+
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
+        }
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
@@ -1629,13 +1639,23 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
-    private void ShowMonitorLabel()
+    private void UpdateMonitorLabelTitle()
     {
-        var name = _targetMonitor?.DisplayName
-            ?? _monitorService.GetPrimaryMonitor()?.DisplayName
-            ?? string.Empty;
+        var monitor = _targetMonitor ?? _monitorService.GetPrimaryMonitor();
+        var name = string.Empty;
+        if (monitor is not null)
+        {
+            var config = _settings.MonitorConfigs.Find(c =>
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
+            name = DockMonitorDisplayName.Resolve(monitor, config);
+        }
 
         MonitorLabelTeachingTip.Title = name;
+    }
+
+    private void ShowMonitorLabel()
+    {
+        UpdateMonitorLabelTitle();
         MonitorLabelTeachingTip.Target = Root;
 
         // Open the tip on the side opposite the dock alignment so it stays

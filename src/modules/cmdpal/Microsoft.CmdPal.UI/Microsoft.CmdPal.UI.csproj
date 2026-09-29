@@ -138,6 +138,11 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Compile the internal error-mode scope into the host as well as the Toolkit assembly. -->
+    <Compile Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ShellThreadErrorModeScope.cs" Link="Helpers\Icons\ShellThreadErrorModeScope.cs" />
+  </ItemGroup>
+
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -156,6 +161,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
+    <ProjectReference Include="..\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
@@ -231,6 +237,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\Icons\AppIconFallback.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
+    </Content>
+    <Content Update="Assets\Icons\ShellItemIconFallback.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DeploymentContent>true</DeploymentContent>
     </Content>

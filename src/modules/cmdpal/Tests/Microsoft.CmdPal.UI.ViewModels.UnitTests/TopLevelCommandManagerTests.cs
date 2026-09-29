@@ -282,8 +282,9 @@ public partial class TopLevelCommandManagerTests
 
         Assert.AreEqual(1, manager.TopLevelCommands.Count);
         Assert.AreEqual(retainedCommandId, manager.TopLevelCommands[0].Id);
-        Assert.AreEqual(1, manager.PinnedCommands.Count);
-        Assert.AreEqual(TestCommandProvider.NestedCommandId, manager.PinnedCommands[0].CommandId);
+        var pinnedCommands = manager.GetPinnedCommandsSnapshot();
+        Assert.AreEqual(1, pinnedCommands.Count);
+        Assert.AreEqual(TestCommandProvider.NestedCommandId, pinnedCommands[0].CommandId);
         Assert.AreEqual(TestCommandProvider.NestedCommandId, services.GetRequiredService<ISettingsService>().Settings.PinnedCommands[0].CommandId);
     }
 

@@ -6,11 +6,14 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal enum IconLoadDemandStage
 {
-    Unlinked,
-    BeforeEnqueue,
-    Queued,
-    WorkerActive,
-    Completed,
-    Rejected,
-    Abandoned,
+    // These values are emitted in the RequestInvalidated ETW payload. Preserve
+    // existing values and append new stages so saved traces remain decodable.
+    Unlinked = 0,
+    BeforeEnqueue = 1,
+    Queued = 2,
+    WorkerActive = 3,
+    Completed = 4,
+    Rejected = 5,
+    Abandoned = 6,
+    AwaitingSharedLoad = 7,
 }

@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -133,6 +134,34 @@ public record DockSettings
         return null;
     }
 
+    /// <summary>
+    /// Checks whether any connected monitor has a disabled dock.
+    /// </summary>
+    public bool HasDisabledDocksForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor => MonitorConfigs.Any(config =>
+            !config.Enabled &&
+            string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// Checks whether any connected monitor has an enabled dock with a position override.
+    /// </summary>
+    public bool HasPositionOverridesForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor =>
+        {
+            return MonitorConfigs.Any(IsEnabledWithDifferentSettings);
+
+            bool IsEnabledWithDifferentSettings(DockMonitorConfig config)
+            {
+                return config.Enabled &&
+                       config.Side is not null &&
+                       string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase);
+            }
+        });
+    }
+
     [JsonIgnore]
     public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands
     {
@@ -221,6 +250,18 @@ public sealed record DockMonitorConfig
     /// moved to a different port, dock, or GPU.
     /// </summary>
     public string? MonitorHardwareId { get; init; }
+
+    /// <summary>
+    /// Gets the persistent ordinal used for fallback display labels (A, B, ...).
+    /// Independent of the Windows GDI display number. Zero means not yet assigned.
+    /// </summary>
+    public int FallbackDisplayNumber { get; init; }
+
+    /// <summary>
+    /// Gets the user-defined display name. When <c>null</c>, the display uses
+    /// its friendly hardware name or persistent fallback label.
+    /// </summary>
+    public string? DisplayNameOverride { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the dock is enabled on this monitor. Defaults to <c>true</c>.

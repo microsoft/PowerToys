@@ -56,7 +56,7 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
+        if (IsInitialized || IsCleanedUp)
         {
             return;
         }
@@ -64,7 +64,7 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
         base.InitializeProperties();
 
         var contextItem = Model.Unsafe;
-        if (contextItem is null)
+        if (contextItem is null || IsCleanedUp)
         {
             return; // throw?
         }
