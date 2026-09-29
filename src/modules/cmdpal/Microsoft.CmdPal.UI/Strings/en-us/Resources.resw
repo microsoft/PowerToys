@@ -1177,6 +1177,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Title" xml:space="preserve">
+    <value>Dock position is overridden</value>
+    <comment>Shown when a connected display has an enabled Dock with a position override</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Message" xml:space="preserve">
+    <value>One or more connected displays use their own Dock position instead of the setting above, even when only one display is connected.</value>
+    <comment>Explains why the global Dock position does not apply to every connected display</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_ManageMonitors.Content" xml:space="preserve">
+    <value>Manage monitors</value>
+    <comment>Link to the per-monitor Dock settings on the same page</comment>
+  </data>
   <data name="DockAppearance_DockSize_SettingsCard.Header" xml:space="preserve">
     <value>Size</value>
   </data>

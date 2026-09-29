@@ -113,8 +113,8 @@ public sealed partial class DockWindowManager : IDisposable
 
         var dockSettings = settings.DockSettings;
 
-        // Reconcile stale monitor device IDs with currently connected monitors
-        var monitors = _monitorService.GetMonitors();
+        // Discard snapshots read before the display topology settled.
+        var monitors = _monitorService.GetMonitors(forceRefresh: refreshDockWindows);
         var currentConfigs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
         var reconciled = MonitorConfigReconciler.Reconcile(currentConfigs, monitors);
         if (reconciled != currentConfigs)

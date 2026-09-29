@@ -23,19 +23,28 @@ public sealed class MonitorService : IMonitorService
     private const uint PrimaryFlag = 0x00000001;
 
     private readonly object _lock = new();
-    private List<MonitorInfo>? _cachedMonitors;
+    private readonly Func<IReadOnlyList<MonitorInfo>> _enumerateMonitors;
     private IReadOnlyList<MonitorInfo>? _cachedSnapshot;
+
+    public MonitorService()
+        : this(static () => EnumerateMonitors(BuildDisplayInfoMapWithRetry()).AsReadOnly())
+    {
+    }
+
+    internal MonitorService(Func<IReadOnlyList<MonitorInfo>> enumerateMonitors)
+    {
+        _enumerateMonitors = enumerateMonitors;
+    }
 
     /// <inheritdoc/>
     public event EventHandler? MonitorsChanged;
 
     /// <inheritdoc/>
-    public IReadOnlyList<MonitorInfo> GetMonitors()
+    public IReadOnlyList<MonitorInfo> GetMonitors(bool forceRefresh = false)
     {
-        // Check the cache first without paying for a retry-with-sleep under the lock.
         lock (_lock)
         {
-            if (_cachedSnapshot is not null)
+            if (!forceRefresh && _cachedSnapshot is not null)
             {
                 return _cachedSnapshot;
             }
@@ -44,17 +53,16 @@ public sealed class MonitorService : IMonitorService
         // BuildDisplayInfoMapWithRetry sleeps between attempts, so it runs unlocked. Another
         // thread might race us and rebuild the map too, but that's cheaper than blocking
         // every caller for up to 100ms.
-        var displayInfo = BuildDisplayInfoMapWithRetry();
+        var monitors = _enumerateMonitors();
 
         lock (_lock)
         {
-            if (_cachedSnapshot is not null)
+            if (!forceRefresh && _cachedSnapshot is not null)
             {
                 return _cachedSnapshot;
             }
 
-            _cachedMonitors = EnumerateMonitors(displayInfo);
-            _cachedSnapshot = _cachedMonitors.AsReadOnly();
+            _cachedSnapshot = monitors;
             return _cachedSnapshot;
         }
     }
@@ -112,7 +120,6 @@ public sealed class MonitorService : IMonitorService
     {
         lock (_lock)
         {
-            _cachedMonitors = null;
             _cachedSnapshot = null;
         }
 

@@ -14,7 +14,8 @@ public interface IMonitorService
     /// <summary>
     /// Gets all currently connected monitors.
     /// </summary>
-    IReadOnlyList<MonitorInfo> GetMonitors();
+    /// <param name="forceRefresh">Whether to replace the cached snapshot with a fresh enumeration.</param>
+    IReadOnlyList<MonitorInfo> GetMonitors(bool forceRefresh = false);
 
     /// <summary>
     /// Gets a specific monitor by its stable hardware identifier.

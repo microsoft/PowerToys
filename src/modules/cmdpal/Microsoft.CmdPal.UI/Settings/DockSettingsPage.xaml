@@ -84,6 +84,21 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <InfoBar
+                        x:Name="PositionOverridesInfoBar"
+                        x:Uid="DockAppearance_PositionOverrides_InfoBar"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_PositionOverrides"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Visibility="{x:Bind PositionOverridesInfoBar.IsOpen, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="DockAppearance_PositionOverrides_ManageMonitors"
+                                AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ManageMonitors"
+                                Click="ManageMonitors_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <!--  Dock Size (only for Top/Bottom positions)  -->
                     <controls:SettingsCard
                         x:Name="DockSizeSettingsCard"
