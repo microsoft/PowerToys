@@ -3,9 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -77,14 +83,41 @@ internal static partial class ScoringTestCatalog
         return items;
     }
 
-    internal static RecentCommandsManager SeedHistory(CatalogItem[] apps, int seedCount)
+    internal static AppListItem[] BuildAppCatalog(int count)
+    {
+        var programs = Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms);
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        return BuildCatalog(count, "app").Select((template, i) =>
+        {
+            var packaged = i % 3 == 0;
+            var shortcut = Path.Combine(programs, "Contoso", $"{template.Title}.lnk");
+            var directory = Path.Combine(programFiles, packaged ? "WindowsApps" : "Contoso", $"Contoso.App{i}");
+            return new AppListItem(
+                new AppItem
+                {
+                    Name = template.Title,
+                    Subtitle = template.Subtitle,
+                    AppIdentifier = template.Id,
+                    ExePath = packaged ? string.Empty : shortcut,
+                    FullExecutablePath = Path.Combine(directory, $"app{i}.exe"),
+                    DirPath = directory,
+                    IsPackaged = packaged,
+                    UserModelId = packaged ? $"Contoso.App{i}_publisher!App" : string.Empty,
+                    PackageFamilyName = packaged ? $"Contoso.App{i}_publisher" : string.Empty,
+                    MatchTerms = [$"alias{i}", $"Profile{i % 8}", shortcut],
+                },
+                useThumbnails: false);
+        }).ToArray();
+    }
+
+    internal static RecentCommandsManager SeedHistory(IReadOnlyList<IListItem> apps, int seedCount)
     {
         var history = new RecentCommandsManager();
-        var n = Math.Min(seedCount, apps.Length);
+        var n = Math.Min(seedCount, apps.Count);
         for (var i = 0; i < n; i++)
         {
-            var idx = (i * 7) % apps.Length;
-            history = history.WithHistoryItem(apps[idx].Id);
+            var idx = (i * 7) % apps.Count;
+            history = history.WithHistoryItem(apps[idx].Command!.Id);
         }
 
         return history;

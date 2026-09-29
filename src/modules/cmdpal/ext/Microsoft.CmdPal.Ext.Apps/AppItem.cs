@@ -56,6 +56,9 @@ public sealed class AppItem
     /// </summary>
     public IReadOnlyList<string> MatchTerms { get; set; } = [];
 
+    /// <summary>Gets or sets discovered executable paths retained through catalog provenance.</summary>
+    public IReadOnlyList<string> ExecutableSourcePaths { get; set; } = [];
+
     public AppItem()
     {
     }

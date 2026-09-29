@@ -32,7 +32,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         }
 
         using var itemSource = new AppListItemSource(mockCatalog, settings);
-        using var page = new AllAppsPage(itemSource);
+        using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await AppsTestBase.WaitForPageInitializationAsync(page);
 
         // Act

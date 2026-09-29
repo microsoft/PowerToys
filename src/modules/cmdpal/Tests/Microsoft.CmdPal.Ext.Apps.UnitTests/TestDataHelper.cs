@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -11,6 +12,8 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 /// </summary>
 public static class TestDataHelper
 {
+    internal static FuzzyMatcherProvider CreateFuzzyMatcherProvider() => new(new(), new());
+
     /// <summary>
     /// Creates a test Win32 program with the specified parameters.
     /// </summary>

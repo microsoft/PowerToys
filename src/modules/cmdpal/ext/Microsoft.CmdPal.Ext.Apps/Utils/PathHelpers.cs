@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -11,6 +12,52 @@ internal static class PathHelpers
 {
     private static readonly string CachedSystemRoot =
         NormalizeDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+
+    private static readonly string[] AppSearchRoots = new[]
+    {
+        Environment.GetFolderPath(Environment.SpecialFolder.Programs),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
+        Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+        Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WindowsApps"),
+        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+        Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+        Environment.GetFolderPath(Environment.SpecialFolder.System),
+        Environment.GetFolderPath(Environment.SpecialFolder.SystemX86),
+        Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+    }
+    .Where(Path.IsPathFullyQualified)
+    .Select(path => NormalizeDirectory(NormalizePath(path)))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .OrderByDescending(path => path.Length)
+    .ToArray();
+
+    /// <summary>Removes shared discovery directories from ordinary application search terms.</summary>
+    internal static string GetAppSearchPath(string path)
+    {
+        var normalized = NormalizePath(path);
+        foreach (var root in AppSearchRoots)
+        {
+            if (normalized.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            {
+                return normalized[root.Length..];
+            }
+
+            if (string.Equals(NormalizeDirectory(normalized), root, StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+        }
+
+        return normalized;
+    }
 
     /// <summary>
     /// Returns a full path without a trailing directory separator, or the original value when normalization fails.

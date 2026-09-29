@@ -4,12 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -19,11 +22,13 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 {
     private readonly AppItem _app;
     private readonly Lazy<Task<Details>> _detailsLoadTask;
+    private readonly string[] _pathSearchTerms;
 
     private InterlockedBoolean _isLoadingDetails;
 
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
+    private AppSearch.Targets? _searchTargets;
 
     public override string Title
     {
@@ -71,6 +76,8 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     internal IReadOnlyList<string> SearchTerms { get; }
 
+    internal IReadOnlyList<string> ExecutableNames { get; }
+
     public AppListItem(AppItem app, bool useThumbnails)
     {
         var appCommand = new AppCommand(app);
@@ -78,7 +85,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
-        SearchTerms = new[]
+        var terms = new[]
         {
             app.ExePath,
             app.FullExecutablePath ?? string.Empty,
@@ -87,9 +94,32 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
             app.PackageFamilyName ?? string.Empty,
         }
         .Concat(app.MatchTerms)
+        .Concat(app.ExecutableSourcePaths)
         .Where(term => !string.IsNullOrWhiteSpace(term))
-        .Except([app.Name, app.Subtitle], StringComparer.OrdinalIgnoreCase)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
+        SearchTerms = terms.SelectMany(term =>
+        {
+            var searchTerm = Path.IsPathFullyQualified(term) ? PathHelpers.GetAppSearchPath(term) : term;
+            return Win32Program.IsExecutablePath(term)
+                ? new[] { searchTerm, Path.GetFileName(term), Path.GetFileNameWithoutExtension(term) }
+                : [searchTerm];
+        })
+        .Where(term => !string.IsNullOrWhiteSpace(term))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+        // Only the actual launch/target paths identify an executable. Retained metadata
+        // may name other files, and arguments identify a specialized launch rather than the executable alone.
+        ExecutableNames = string.IsNullOrWhiteSpace(app.Arguments)
+            ? new[] { app.ExePath, app.FullExecutablePath ?? string.Empty }
+                .Concat(app.ExecutableSourcePaths)
+                .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
+                .Select(path => Path.GetFileName(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+            : [];
+        _pathSearchTerms = terms.Where(Path.IsPathFullyQualified).Except(SearchTerms, StringComparer.OrdinalIgnoreCase).ToArray();
         Icon = appCommand.Icon = CreateIcon(app, useThumbnails);
 
         MoreCommands = _app.Commands?.ToArray() ?? [];
@@ -216,4 +246,28 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+
+    internal AppSearch.Targets GetSearchTargets(IPrecomputedFuzzyMatcher matcher)
+    {
+        var title = Title;
+        var description = _app.Subtitle;
+        var targets = Volatile.Read(ref _searchTargets);
+        if (targets is null || targets.SchemaId != matcher.SchemaId
+            || targets.Title.Original != title || targets.Description.Original != description)
+        {
+            var metadata = SearchTerms.Select(matcher.PrecomputeTarget).ToArray();
+            targets = new AppSearch.Targets(
+                matcher.SchemaId,
+                matcher.PrecomputeTarget(title),
+                matcher.PrecomputeTarget(description),
+                metadata,
+                metadata.Concat(_pathSearchTerms.Select(matcher.PrecomputeTarget)).ToArray());
+
+            // Home and All Apps may search these rows concurrently. Publish a complete bundle;
+            // each caller keeps its own bundle even if another matcher replaces the cache.
+            Volatile.Write(ref _searchTargets, targets);
+        }
+
+        return targets;
+    }
 }

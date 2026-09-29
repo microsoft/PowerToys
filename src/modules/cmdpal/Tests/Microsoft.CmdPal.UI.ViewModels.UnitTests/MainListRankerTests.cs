@@ -71,6 +71,16 @@ public class MainListRankerTests
     }
 
     [TestMethod]
+    [DataRow("cmd", "CmdPal Extension", false, RankTier.ExactMetadata)]
+    [DataRow("person@example.com", "Jane", false, RankTier.ExactMetadata)]
+    [DataRow("cmd", "cmd", false, RankTier.ExactTitle)]
+    [DataRow("cmd", "Command Prompt", true, RankTier.AliasExact)]
+    public void ClassifyTier_PrioritizedMetadataKeepsExactTitlesAndAliasesAboveIt(string query, string title, bool aliasExact, RankTier expected)
+    {
+        Assert.AreEqual(expected, MainListRanker.ClassifyTier(query, title, false, aliasExact, false, false, isPrioritizedMetadataExact: true));
+    }
+
+    [TestMethod]
     public void Pack_HigherTierAlwaysOutranksLowerTier()
     {
         // The core invariant: a higher tier with the WORST possible within-tier score still
@@ -82,6 +92,7 @@ public class MainListRankerTests
             RankTier.Fuzzy,
             RankTier.AcronymWordBoundary,
             RankTier.Prefix,
+            RankTier.ExactMetadata,
             RankTier.ExactTitle,
             RankTier.AliasExact,
         };

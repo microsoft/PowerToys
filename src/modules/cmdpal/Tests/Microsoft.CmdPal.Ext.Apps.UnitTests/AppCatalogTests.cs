@@ -343,10 +343,13 @@ public class AppCatalogTests
         Assert.IsTrue(catalog.Items[0].IsPackaged);
         Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "ubuntu.exe"));
         Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Ubuntu"));
+        var row = new AppListItem(catalog.Items[0], useThumbnails: false);
+        var snapshot = new AppListItemSnapshot([row], []);
         foreach (var representation in new[] { aliasItem, targetItem, packagedItem })
         {
             var id = new AppCommand(representation.ToAppItem()).Id;
-            Assert.IsTrue(catalog.Items[0].CommandIds.Contains(id, StringComparer.Ordinal));
+            Assert.AreSame(row, snapshot.GetVisibleApp(id));
+            Assert.AreEqual(id, snapshot.GetCommandItem(id)?.Command?.Id);
         }
     }
 
@@ -892,7 +895,7 @@ public class AppCatalogTests
             var settings = new AllAppsSettings(settingsPath);
             using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
             using var list = new AppListItemSource(catalog, settings);
-            using var page = new AllAppsPage(list);
+            using var page = new AllAppsPage(list, TestDataHelper.CreateFuzzyMatcherProvider());
             using var provider = new AllAppsCommandProvider(page, list, settings);
             await catalog.InitializeAsync();
             await WaitForConditionAsync(() => !list.IsLoading);
@@ -901,6 +904,7 @@ public class AppCatalogTests
             var resolved = provider.GetCommandItem(legacyId);
             Assert.IsNotNull(resolved);
             Assert.AreEqual(legacyId, resolved.Command!.Id);
+            Assert.AreSame(canonical, list.GetSnapshot().GetVisibleApp(legacyId));
             Assert.AreEqual(canonical.Title, resolved.Title);
             Assert.AreEqual("Editor description", resolved.Subtitle);
             Assert.AreSame(canonical.Icon, resolved.Icon);
@@ -960,7 +964,7 @@ public class AppCatalogTests
             }.ToJsonString());
             using var catalog = CreateCatalog([source], cache, new SettingsAppVisibilityStore(settings));
             using var list = new AppListItemSource(catalog, settings);
-            using var page = new AllAppsPage(list);
+            using var page = new AllAppsPage(list, TestDataHelper.CreateFuzzyMatcherProvider());
             await catalog.InitializeAsync();
             await WaitForConditionAsync(() => !list.IsLoading);
             var initial = list.GetSnapshot();
