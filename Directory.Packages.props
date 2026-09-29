@@ -70,7 +70,6 @@
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
@@ -111,7 +110,6 @@
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.CodeDom" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.ComponentModel.Composition" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Data.OleDb" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
