@@ -821,8 +821,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void HostWindow_IsVisibleToUserChanged(object? sender, EventArgs e)
     {
-        if (HostWindow?.IsVisibleToUser == true &&
-            _pendingTopBarFocusRestore &&
+        if (HostWindow?.IsVisibleToUser != true)
+        {
+            ReleaseQuickAccessShelfContext();
+            return;
+        }
+
+        if (_pendingTopBarFocusRestore &&
             ViewModel.CurrentPage?.HasSearchBox == true)
         {
             _pendingTopBarFocusRestore = false;
@@ -1446,7 +1451,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private Task<ListItemViewModel?> EnsureQuickAccessShelfContextAsync(Button anchor, QuickAccessShelfItem item)
     {
-        if (!IsQuickAccessShelfVisible ||
+        if (HostWindow?.IsVisibleToUser != true ||
+            !IsQuickAccessShelfVisible ||
             !QuickAccessShelf.VisibleItems.Any(candidate => ReferenceEquals(candidate, item)) ||
             ViewModel.CurrentPage is not ListViewModel { IsMainPage: true } pageContext)
         {
@@ -1512,6 +1518,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ListItemViewModel? context)
     {
         var isCurrent = !_isDisposed &&
+            HostWindow?.IsVisibleToUser == true &&
             contextVersion == _quickAccessShelfContextVersion &&
             ReferenceEquals(_quickAccessShelfContextItem, item) &&
             ReferenceEquals(_quickAccessShelfContextPage, pageContext) &&
@@ -1542,6 +1549,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private bool IsCurrentQuickAccessShelfContext(Button anchor, QuickAccessShelfItem item) =>
         !_isDisposed &&
         IsLoaded &&
+        HostWindow?.IsVisibleToUser == true &&
         !IsContentDialogActive &&
         IsQuickAccessShelfVisible &&
         ReferenceEquals(_quickAccessShelfContextAnchor, anchor) &&
@@ -1696,9 +1704,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             case VirtualKey.Down when modifiers.None:
-                // In a collapsed compact palette, Down reveals the top-level items. Only swallow
-                // the key when we actually expand; otherwise retain normal list navigation.
-                if (shellPage.TryExpandCollapsedCompact())
+                // Preserve native shelf-button input while allowing Down to expand from the search box.
+                if (FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is null &&
+                    shellPage.TryExpandCollapsedCompact())
                 {
                     e.Handled = true;
                 }
