@@ -48,6 +48,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         _copyTitleCommand = new CopyTextCommand(string.Empty);
         _copySubtitleCommand = new CopyTextCommand(string.Empty);
 
+        this.SetDockLabelCompactInlineSubtitle(settings.DockClockShowDateInCompact);
         UpdateCommand(settings);
         UpdateCopyCommandNames(settings);
         UpdateMoreCommands(settings);
@@ -79,6 +80,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
         _copyFormat = CompileOptionalFormat(settings.DockClockCopyFormat);
+        this.SetDockLabelCompactInlineSubtitle(settings.DockClockShowDateInCompact);
         UpdateCommand(settings);
         UpdateCopyCommandNames(settings);
         UpdateMoreCommands(settings);

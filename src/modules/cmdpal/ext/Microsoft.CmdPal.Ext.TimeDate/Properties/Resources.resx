@@ -502,6 +502,9 @@
   <data name="timedate_custom_clock_save" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="timedate_dock_clock_show_date_in_compact" xml:space="preserve">
+    <value>Show the date inline in compact Dock mode</value>
+  </data>
   <data name="timedate_dock_clock_click_action" xml:space="preserve">
     <value>Dock clock click action</value>
   </data>

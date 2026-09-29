@@ -76,6 +76,15 @@ public sealed partial class DockItemControl : Control
         set => SetValue(ShowSubtitleProperty, value);
     }
 
+    public static readonly DependencyProperty ShowCompactInlineSubtitleProperty =
+        DependencyProperty.Register(nameof(ShowCompactInlineSubtitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnTextPropertyChanged));
+
+    public bool ShowCompactInlineSubtitle
+    {
+        get => (bool)GetValue(ShowCompactInlineSubtitleProperty);
+        set => SetValue(ShowCompactInlineSubtitleProperty, value);
+    }
+
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(object), typeof(DockItemControl), new PropertyMetadata(null, OnIconPropertyChanged));
 
@@ -205,7 +214,7 @@ public sealed partial class DockItemControl : Control
     // Explicit row widths keep their slots when text is temporarily empty.
     internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
 
-    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
+    internal bool HasSubtitle => ShowSubtitle && (!IsCompact || ShowCompactInlineSubtitle) && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
 
     internal bool HasText => HasTitle || HasSubtitle;
 
@@ -215,6 +224,7 @@ public sealed partial class DockItemControl : Control
     {
         UpdateTextVisibilityState();
         UpdateSubtitleVisibilityState();
+        UpdateCompactInlineSubtitleState();
         UpdateContentSpacingState();
         UpdateChromeSize();
         UpdateLabelWidth();
@@ -245,6 +255,12 @@ public sealed partial class DockItemControl : Control
     private void UpdateSubtitleVisibilityState()
     {
         VisualStateManager.GoToState(this, HasSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
+    }
+
+    private void UpdateCompactInlineSubtitleState()
+    {
+        var showSeparator = IsCompact && ShowCompactInlineSubtitle && HasTitle && HasSubtitle;
+        VisualStateManager.GoToState(this, showSeparator ? "CompactInlineSubtitleVisible" : "CompactInlineSubtitleHidden", true);
     }
 
     private void UpdateIconVisibility()

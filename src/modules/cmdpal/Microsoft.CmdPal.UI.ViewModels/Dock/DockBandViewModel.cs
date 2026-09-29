@@ -526,6 +526,8 @@ public partial class DockItemViewModel : CommandItemViewModel
 
     public bool UseTrailingLabelAlignment { get; private set; }
 
+    public bool ShowCompactInlineSubtitle { get; private set; }
+
     protected override void FetchProperty(string propertyName)
     {
         if (propertyName == WellKnownExtensionAttributes.DockLabelWidthPropertyName && Model.Unsafe is not null)
@@ -543,6 +545,11 @@ public partial class DockItemViewModel : CommandItemViewModel
             UpdateTrailingLabelAlignment(GetExtendedAttributes());
         }
 
+        if (propertyName == WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle && Model.Unsafe is not null)
+        {
+            UpdateCompactInlineSubtitle(GetExtendedAttributes());
+        }
+
         base.FetchProperty(propertyName);
     }
 
@@ -553,6 +560,7 @@ public partial class DockItemViewModel : CommandItemViewModel
         UpdateLabelWidthConstraints(properties);
         UpdateTabularDigits(properties);
         UpdateTrailingLabelAlignment(properties);
+        UpdateCompactInlineSubtitle(properties);
     }
 
     private void UpdateLabelWidthConstraints(IDictionary<string, object?>? properties)
@@ -584,6 +592,17 @@ public partial class DockItemViewModel : CommandItemViewModel
         {
             UseTrailingLabelAlignment = enabled;
             UpdateProperty(nameof(UseTrailingLabelAlignment));
+        }
+    }
+
+    private void UpdateCompactInlineSubtitle(IDictionary<string, object?>? properties)
+    {
+        var enabled = properties?.TryGetValue(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle, out var value) == true &&
+                      value is true;
+        if (enabled != ShowCompactInlineSubtitle)
+        {
+            ShowCompactInlineSubtitle = enabled;
+            UpdateProperty(nameof(ShowCompactInlineSubtitle));
         }
     }
 

@@ -1148,6 +1148,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("timedate_custom_clock_save", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show the date inline in compact Dock mode.
+        /// </summary>
+        public static string timedate_dock_clock_show_date_in_compact {
+            get {
+                return ResourceManager.GetString("timedate_dock_clock_show_date_in_compact", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Show clock.

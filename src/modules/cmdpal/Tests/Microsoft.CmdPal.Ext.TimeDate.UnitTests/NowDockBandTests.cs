@@ -54,6 +54,22 @@ public class NowDockBandTests
     }
 
     [TestMethod]
+    public void UpdateSettings_CompactDateSettingUpdatesDockPresentationHint()
+    {
+        var settings = new TestDockClockSettings();
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, () => FixedTime);
+
+        Assert.IsFalse(_band.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle));
+
+        settings.ShowDateInCompact = true;
+        _band.UpdateSettings(settings);
+
+        Assert.AreEqual(
+            true,
+            _band.GetProperties()[WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle]);
+    }
+
+    [TestMethod]
     public void UpdateText_LongTimeFormat_TitleContainsSeconds()
     {
         _band = CreateBand(titleFormat: "T");
@@ -311,11 +327,19 @@ public class NowDockBandTests
 
         public string DockClockClickAction => "default";
 
-        public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
+        public bool DockClockShowDateInCompact => ShowDateInCompact;
+
+        public bool ShowDateInCompact { get; set; }
+
+        public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat, bool? showDateInCompact = null)
         {
             DockClockTitleFormat = titleFormat;
             DockClockSubtitleFormat = subtitleFormat;
             DockClockCopyFormat = copyFormat;
+            if (showDateInCompact.HasValue)
+            {
+                ShowDateInCompact = showDateInCompact.Value;
+            }
         }
     }
 }

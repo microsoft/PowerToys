@@ -135,6 +135,14 @@
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                         <TextBlock
+                                            x:Name="CompactSubtitleSeparator"
+                                            Margin="2,0"
+                                            FontFamily="Segoe UI"
+                                            FontSize="12"
+                                            Text="·"
+                                            TextAlignment="Left"
+                                            Visibility="Collapsed" />
+                                        <TextBlock
                                             x:Name="SubtitleText"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Stretch"
@@ -280,6 +288,22 @@
                                         <VisualState.Setters>
                                             <!--  PART_RootGrid.Padding is owned by InnerMargin, which drops the edge gap when compact  -->
                                             <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CompactInlineSubtitleStates">
+                                    <VisualState x:Name="CompactInlineSubtitleHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="TextPanel.Orientation" Value="Vertical" />
+                                            <Setter Target="CompactSubtitleSeparator.Visibility" Value="Collapsed" />
+                                            <Setter Target="SubtitleText.Margin" Value="0,-2,0,0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CompactInlineSubtitleVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="TextPanel.Orientation" Value="Horizontal" />
+                                            <Setter Target="CompactSubtitleSeparator.Visibility" Value="Visible" />
+                                            <Setter Target="SubtitleText.Margin" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

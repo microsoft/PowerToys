@@ -33,5 +33,7 @@ internal interface IDockClockSettings : ISettingsInterface
 
     string DockClockClickAction { get; }
 
-    void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat);
+    bool DockClockShowDateInCompact { get; }
+
+    void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat, bool? showDateInCompact = null);
 }

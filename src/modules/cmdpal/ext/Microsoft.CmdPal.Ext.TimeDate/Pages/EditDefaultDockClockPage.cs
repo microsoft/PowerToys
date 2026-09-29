@@ -45,7 +45,8 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
   "body": [
     { "type": "Input.ChoiceSet", "id": "titleFormat", "label": {{Encode(Resources.timedate_custom_clock_title_format)}}, "value": {{Encode(GetTitleFormat(settings.DockClockTitleFormat))}}, "style": "compact", "choices": {{BuildChoices(settings, GetTitleFormat(settings.DockClockTitleFormat), includeNoText: false)}} },
     { "type": "Input.ChoiceSet", "id": "subtitleFormat", "label": {{Encode(Resources.timedate_custom_clock_subtitle_format)}}, "value": {{Encode(settings.DockClockSubtitleFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockSubtitleFormat)}} },
-    { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(settings.DockClockCopyFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockCopyFormat)}} }
+    { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(settings.DockClockCopyFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockCopyFormat)}} },
+    { "type": "Input.Toggle", "id": "showDateInCompact", "title": {{Encode(Resources.timedate_dock_clock_show_date_in_compact)}}, "value": {{Encode(settings.DockClockShowDateInCompact.ToString().ToLowerInvariant())}}, "valueOn": "true", "valueOff": "false" }
   ],
   "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat", "copyFormat": "copyFormat" } } ]
 }
@@ -64,7 +65,8 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
             _settings.SetDockClockFormats(
                 input["titleFormat"]?.ToString() ?? "t",
                 input["subtitleFormat"]?.ToString() ?? "d",
-                input["copyFormat"]?.ToString() ?? string.Empty);
+                input["copyFormat"]?.ToString() ?? string.Empty,
+                input["showDateInCompact"]?.GetValue<bool>() ?? false);
 
             return CommandResult.GoBack();
         }

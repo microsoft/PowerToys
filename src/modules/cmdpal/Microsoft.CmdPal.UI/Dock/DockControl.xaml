@@ -41,6 +41,7 @@
                                 LabelWidthConstraints="{x:Bind LabelWidthConstraints, Mode=OneWay}"
                                 PreviewKeyDown="BandItem_PreviewKeyDown"
                                 ShowSubtitle="{x:Bind ShowSubtitle, Mode=OneWay}"
+                                ShowCompactInlineSubtitle="{x:Bind ShowCompactInlineSubtitle, Mode=OneWay}"
                                 ShowTitle="{x:Bind ShowTitle, Mode=OneWay}"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"

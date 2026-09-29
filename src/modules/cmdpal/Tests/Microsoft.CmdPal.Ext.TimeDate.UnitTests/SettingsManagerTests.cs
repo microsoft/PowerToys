@@ -31,12 +31,14 @@ public class SettingsManagerTests
             Assert.AreEqual("T", savedSettings["timeDate.DockClockTitleFormat"]!.GetValue<string>());
             Assert.AreEqual("REL", savedSettings["timeDate.DockClockSubtitleFormat"]!.GetValue<string>());
             Assert.AreEqual("s", savedSettings["timeDate.DockClockCopyFormat"]!.GetValue<string>());
+            Assert.IsFalse(savedSettings["timeDate.DockClockShowDateInCompact"]!.GetValue<bool>());
 
             var reloadedSettings = new SettingsManager(filePath);
             Assert.IsTrue(reloadedSettings.TimeWithSecond);
             Assert.AreEqual("T", reloadedSettings.DockClockTitleFormat);
             Assert.AreEqual("REL", reloadedSettings.DockClockSubtitleFormat);
             Assert.AreEqual("s", reloadedSettings.DockClockCopyFormat);
+            Assert.IsFalse(reloadedSettings.DockClockShowDateInCompact);
         }
         finally
         {
@@ -152,10 +154,11 @@ public class SettingsManagerTests
             var settings = new SettingsManager(filePath);
             var form = new EditDefaultDockClockForm(settings);
 
-            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s"}""");
+            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s","showDateInCompact":true}""");
 
             Assert.AreEqual(CommandResultKind.GoBack, result.Kind);
             Assert.AreEqual("s", settings.DockClockCopyFormat);
+            Assert.IsTrue(settings.DockClockShowDateInCompact);
         }
         finally
         {

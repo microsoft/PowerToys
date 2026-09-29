@@ -24,6 +24,7 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
     private string _dockClockTitleFormat = "t";
     private string _dockClockSubtitleFormat = "d";
     private string _dockClockCopyFormat = string.Empty;
+    private bool _dockClockShowDateInCompact;
 
     internal event EventHandler? DockClockFormatsChanged;
 
@@ -127,6 +128,8 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     public string DockClockClickAction => _dockClockClickAction.Value ?? "default";
 
+    public bool DockClockShowDateInCompact => _dockClockShowDateInCompact;
+
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
     private static int ParseIntSetting(string? value, int fallback)
@@ -141,7 +144,7 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     public List<string> CustomFormats => (_customFormats.Value ?? string.Empty).Split(TEXTBOXNEWLINE).ToList();
 
-    public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
+    public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat, bool? showDateInCompact = null)
     {
         ValidateDockClockFormat(titleFormat, nameof(titleFormat));
         ValidateDockClockFormat(subtitleFormat, nameof(subtitleFormat));
@@ -150,6 +153,11 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
         _dockClockTitleFormat = titleFormat;
         _dockClockSubtitleFormat = subtitleFormat;
         _dockClockCopyFormat = copyFormat;
+        if (showDateInCompact.HasValue)
+        {
+            _dockClockShowDateInCompact = showDateInCompact.Value;
+        }
+
         SaveSettings();
         DockClockFormatsChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -166,6 +174,10 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
         _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), useLegacySeconds ? "T" : "t");
         _dockClockSubtitleFormat = LoadDockClockFormat(settings, nameof(DockClockSubtitleFormat), "d");
         _dockClockCopyFormat = LoadDockClockFormat(settings, nameof(DockClockCopyFormat), string.Empty);
+        _dockClockShowDateInCompact =
+            settings[Namespaced(nameof(DockClockShowDateInCompact))] is JsonValue showDateInCompact &&
+            showDateInCompact.TryGetValue<bool>(out var showDate) &&
+            showDate;
     }
 
     protected override void SaveAdditionalSettings(JsonObject settings)
@@ -173,6 +185,7 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
         settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
         settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
         settings[Namespaced(nameof(DockClockCopyFormat))] = _dockClockCopyFormat;
+        settings[Namespaced(nameof(DockClockShowDateInCompact))] = _dockClockShowDateInCompact;
     }
 
     private static string LoadDockClockFormat(JsonObject settings, string propertyName, string defaultFormat)

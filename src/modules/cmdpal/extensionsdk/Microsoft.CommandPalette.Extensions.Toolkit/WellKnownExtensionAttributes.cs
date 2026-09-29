@@ -28,6 +28,11 @@ public static class WellKnownExtensionAttributes
     public const string DockLabelTrailingAlignmentPropertyName = "DockLabelTrailingAlignment";
 
     /// <summary>
+    /// Optional bool that displays the title and subtitle inline when the Dock is compact.
+    /// </summary>
+    public const string DockLabelCompactInlineSubtitle = "Microsoft.CommandPalette.Dock.CompactInlineSubtitle";
+
+    /// <summary>
     /// Optional minimum width of the shared title/subtitle area, excluding the icon and padding.
     /// Accepts a finite, non-negative double in DIPs, an invariant character count such as "10ch",
     /// or a literal sample prefixed with "text:". Character counts and samples use the title font and text scale.

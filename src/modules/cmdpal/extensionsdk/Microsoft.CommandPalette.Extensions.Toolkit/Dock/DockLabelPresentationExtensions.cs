@@ -32,6 +32,14 @@ public static class DockLabelPresentationExtensions
         /// <returns>The same item, for fluent construction.</returns>
         public TItem SetDockLabelTrailingAlignment(bool enabled = true) =>
             SetHint(item, WellKnownExtensionAttributes.DockLabelTrailingAlignment, enabled, static target => target.NotifyDockLabelTrailingAlignmentChanged());
+
+        /// <summary>
+        /// Opts the Dock label into showing the subtitle inline with the title in compact mode.
+        /// </summary>
+        /// <param name="enabled">Whether the compact inline subtitle is enabled.</param>
+        /// <returns>The same item, for fluent construction.</returns>
+        public TItem SetDockLabelCompactInlineSubtitle(bool enabled = true) =>
+            SetHint(item, WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle, enabled, static target => target.NotifyDockLabelCompactInlineSubtitleChanged());
     }
 
     private static TItem SetHint<TItem>(TItem item, string key, bool enabled, Action<TItem> notify)

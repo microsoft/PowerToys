@@ -180,4 +180,6 @@ public partial class CommandItem : BaseObservable, ICommandItem
     internal void NotifyDockLabelTabularDigitsChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelTabularDigitsPropertyName);
 
     internal void NotifyDockLabelTrailingAlignmentChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelTrailingAlignmentPropertyName);
+
+    internal void NotifyDockLabelCompactInlineSubtitleChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle);
 }
