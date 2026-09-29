@@ -237,7 +237,7 @@ internal sealed class TestHelper
 
     public TimelineState WaitForPersistedTimeline()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         int light = ReadSetting<int>("lightTime");
         int dark = ReadSetting<int>("darkTime");
         Assert.IsTrue(light is >= 0 and < 1440 && dark is >= 0 and < 1440 && light != dark, $"Sun times must be distinct valid minutes: {light}/{dark}.");
@@ -246,7 +246,7 @@ internal sealed class TestHelper
 
     public void WaitForScheduledTheme()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         string mode = ReadSetting<string>("scheduleMode");
         Assert.IsTrue(mode is "FixedHours" or "SunsetToSunrise", "This check requires an active time schedule.");
         int light = ReadSetting<int>("lightTime") + (mode == "SunsetToSunrise" ? ReadSetting<int>("sunrise_offset") : 0);
@@ -461,17 +461,20 @@ internal sealed class TestHelper
         }
     }
 
-    private void WaitForScheduleReload()
+    private void WaitForSettingsChangeNotification()
     {
         Assert.IsNotNull(scheduleUpdate, "A real Settings edit must precede the native scheduling check.");
-        Step("Waiting for the LightSwitch service's debounced settings reload");
+        Step("Waiting for the LightSwitch service's debounced settings change notification");
+
+        // This marker confirms notification only. The subsequent theme checks
+        // wait for the worker to apply the changed schedule.
         var result = WaitHelper.WaitForStable(
             () => scheduleUpdate.ReadNew(),
-            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, reloading.", StringComparison.Ordinal),
+            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, notifying worker.", StringComparison.Ordinal),
             timeoutMS: 20_000,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"The service did not reload the changed schedule. New logs:\n{result.LastObservation}");
-        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after loading settings.");
+        Assert.IsTrue(result.Succeeded, $"The service did not notify its worker about the changed schedule. New logs:\n{result.LastObservation}");
+        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after the settings change notification.");
     }
 
     private bool HasSunTimes()
