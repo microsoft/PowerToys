@@ -1186,12 +1186,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Explains how to enable Dock on individual connected displays</comment>
   </data>
   <data name="DockAppearance_PositionOverrides_InfoBar.Title" xml:space="preserve">
-    <value>Dock position is overridden</value>
+    <value>Some displays use their own Dock position</value>
     <comment>Shown when an enabled Dock on a connected display uses its own position</comment>
   </data>
   <data name="DockAppearance_PositionOverrides_InfoBar.Message" xml:space="preserve">
-    <value>One or more connected displays use their own Dock position instead of this setting. This also applies when only one display is connected.</value>
-    <comment>Explains that connected displays can override the global Dock position</comment>
+    <value>These displays won't follow changes to the default Dock position, even when their current positions match it. This also applies when only one display is connected.</value>
+    <comment>Explains why an explicit per-display position does not follow changes to the default</comment>
   </data>
   <data name="DockSettings_MonitorOverrides_ManageMonitors.Content" xml:space="preserve">
     <value>Manage monitors</value>
