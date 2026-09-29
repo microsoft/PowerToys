@@ -4,13 +4,10 @@
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
-internal enum IconLoadInputKind
-{
-    Empty,
-    String,
-    ShellBinary,
-    Stream,
-    SpecializedAppIcon,
-    GeneratedSwatch,
-    GeneratedInitials,
-}
+/// <summary>
+/// Produces normalized SVG path data for an initials string.
+/// </summary>
+internal delegate bool InitialsPathFactory(
+    string text,
+    out string pathData,
+    out bool useEvenOddFill);
