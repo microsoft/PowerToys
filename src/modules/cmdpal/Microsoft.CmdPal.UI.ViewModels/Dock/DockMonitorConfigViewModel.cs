@@ -183,7 +183,7 @@ public partial class DockMonitorConfigViewModel : ObservableObject
         var name = NormalizedDisplayName;
         if (CanSaveDisplayName())
         {
-            UpdateConfig(c => c with { DisplayNameOverride = name });
+            UpdateConfig((c, _) => c with { DisplayNameOverride = name });
         }
 
         DisplayNameInput = GetConfig()?.DisplayNameOverride ?? string.Empty;
