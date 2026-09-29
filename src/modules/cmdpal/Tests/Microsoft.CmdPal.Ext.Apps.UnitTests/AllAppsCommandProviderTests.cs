@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -14,6 +15,34 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class AllAppsCommandProviderTests : AppsTestBase
 {
+    public TestContext TestContext { get; set; }
+
+    [TestMethod]
+    public void CatalogChanges_ReportProviderNotificationCounts()
+    {
+        using var catalog = new MockAppCatalog();
+        using var source = new AppListItemSource(catalog, Settings);
+        using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
+        using var provider = new AllAppsCommandProvider(page, source, Settings);
+        var notifications = 0;
+        provider.ItemsChanged += (_, _) => notifications++;
+
+        const int publicationCount = 30;
+        var stopwatch = Stopwatch.StartNew();
+        for (var i = 0; i < publicationCount; i++)
+        {
+            catalog.AddWin32Program(TestDataHelper.CreateTestWin32Program($"App {i}", $@"C:\Apps\app{i}.exe"));
+        }
+
+        stopwatch.Stop();
+        Assert.AreEqual(publicationCount, notifications);
+        TestContext.WriteLine($"{publicationCount} separate catalog publications produced {notifications} provider notifications in {stopwatch.Elapsed.TotalMilliseconds:F3} ms. Host reload coalescing is outside this measurement.");
+
+        catalog.SetRefreshing(true);
+        catalog.SetRefreshing(false);
+        Assert.AreEqual(publicationCount, notifications, "Refresh status alone must not request command reloads.");
+    }
+
     [TestMethod]
     public async Task CatalogPublication_ReloadsUnresolvedCommandsAndStopsAfterDisposal()
     {
@@ -21,7 +50,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         using var catalog = new MockAppCatalog();
         catalog.DeferInitialization(initialized.Task);
         using var source = new AppListItemSource(catalog, Settings);
-        using var page = new AllAppsPage(source);
+        using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
         using var provider = new AllAppsCommandProvider(page, source, Settings);
         var program = TestDataHelper.CreateTestWin32Program("Editor");
         var id = new AppListItem(Catalog.Win32AppPayload.From(program).ToAppItem(), false).Command.Id;
@@ -49,7 +78,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         using var catalog = new MockAppCatalog();
         catalog.DeferInitialization(initialized.Task);
         using var source = new AppListItemSource(catalog, Settings);
-        using var page = new AllAppsPage(source);
+        using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
         using var provider = new AllAppsCommandProvider(page, source, Settings);
         var notifications = 0;
         provider.ItemsChanged += (_, _) => notifications++;

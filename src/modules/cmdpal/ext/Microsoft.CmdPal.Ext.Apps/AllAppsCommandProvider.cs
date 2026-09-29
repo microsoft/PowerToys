@@ -135,17 +135,5 @@ public partial class AllAppsCommandProvider : CommandProvider
     }
 
     public override ICommandItem? GetCommandItem(string id)
-    {
-        var items = _appListItemSource.GetSnapshot().VisibleItems;
-        foreach (var item in items)
-        {
-            if (item.Command?.Id == id)
-            {
-                return item;
-            }
-        }
-
-        var alias = items.OfType<AppListItem>().FirstOrDefault(item => item.App.CommandIds.Contains(id, StringComparer.Ordinal));
-        return alias is null ? null : new AppCommandAlias(alias, id);
-    }
+        => _appListItemSource.GetSnapshot().GetCommandItem(id);
 }

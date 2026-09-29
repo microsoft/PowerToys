@@ -10,10 +10,14 @@ namespace Microsoft.CmdPal.Common.Helpers;
 
 public static partial class InternalListHelpers
 {
+    /// <summary>Scores candidates, discards nonpositive matches, and sorts the remaining items with the supplied comparer.</summary>
+    /// <typeparam name="T">The candidate item type.</typeparam>
+    /// <returns>An empty array for null input, otherwise the admitted items in score order.</returns>
     public static RoScored<T>[] FilterListWithScores<T>(
         IEnumerable<T>? items,
         in FuzzyQuery query,
-        in ScoringFunction<T> scoreFunction)
+        in ScoringFunction<T> scoreFunction,
+        IComparer<RoScored<T>>? comparer = null)
     {
         if (items == null)
         {
@@ -49,7 +53,7 @@ public static partial class InternalListHelpers
                 buffer[count++] = new RoScored<T>(item, score);
             }
 
-            Array.Sort(buffer, 0, count, default(RoScoredDescendingComparer<T>));
+            Array.Sort(buffer, 0, count, comparer ?? default(RoScoredDescendingComparer<T>));
             var result = GC.AllocateUninitializedArray<RoScored<T>>(count);
             buffer.AsSpan(0, count).CopyTo(result);
             return result;
@@ -73,7 +77,8 @@ public static partial class InternalListHelpers
     public static RoScored<T>[] FilterListWithScoresParallel<T>(
         IReadOnlyList<T>? items,
         in FuzzyQuery query,
-        in ScoringFunction<T> scoreFunction)
+        in ScoringFunction<T> scoreFunction,
+        IComparer<RoScored<T>>? comparer = null)
     {
         if (items is null || items.Count == 0)
         {
@@ -85,7 +90,7 @@ public static partial class InternalListHelpers
 
         if (count < ParallelScoringThreshold || partitions <= 1)
         {
-            return FilterListWithScores(items, query, scoreFunction);
+            return FilterListWithScores(items, query, scoreFunction, comparer);
         }
 
         // Copy the by-ref parameters into locals so the parallel body can capture them. FuzzyQuery
@@ -134,7 +139,7 @@ public static partial class InternalListHelpers
             }
         }
 
-        Array.Sort(buffer, 0, total, default(RoScoredDescendingComparer<T>));
+        Array.Sort(buffer, 0, total, comparer ?? default(RoScoredDescendingComparer<T>));
         return buffer;
     }
 

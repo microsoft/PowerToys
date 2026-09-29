@@ -119,7 +119,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public void AllAppsPage_Constructor_ThrowsOnNullAppListItemSource()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!));
+        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!, TestDataHelper.CreateFuzzyMatcherProvider()));
     }
 
     [TestMethod]
@@ -128,7 +128,7 @@ public class AllAppsPageTests : AppsTestBase
         using var mockCatalog = new MockAppCatalog();
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
 
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
 
         Assert.IsNotNull(page.Name);
         Assert.IsNotNull(page.Icon);
@@ -144,7 +144,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCatalog.SetRefreshing(true);
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
 
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
 
         Assert.IsTrue(page.IsLoading);
         Assert.AreEqual($"{Properties.Resources.all_apps} ({Properties.Resources.refreshing_page_title_suffix})", page.Title);
@@ -177,7 +177,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
         mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("Calculator"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
 
         var items = page.GetItems();
@@ -196,7 +196,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("App 10", @"C:\Apps\App10.exe"));
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("app 2", @"C:\Apps\App2.exe"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        using var page = new AllAppsPage(itemSource);
+        using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
 
         var items = page.GetItems();
@@ -215,7 +215,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Beta", @"C:\Apps\Beta.exe"));
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Zulu", @"C:\Apps\Zulu.exe"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        using var page = new AllAppsPage(itemSource);
+        using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         var beta = (AppListItem)page.GetItems()[1];
 
@@ -251,7 +251,7 @@ public class AllAppsPageTests : AppsTestBase
         {
             Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
             using var itemSource = new AppListItemSource(mockCatalog, Settings);
-            var page = new AllAppsPage(itemSource);
+            var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
 
             var appItem = page.GetItems().OfType<AppListItem>().Single();
@@ -276,7 +276,7 @@ public class AllAppsPageTests : AppsTestBase
             using var mockCatalog = new MockAppCatalog();
             mockCatalog.AddWin32Program(program);
             using var itemSource = new AppListItemSource(mockCatalog, Settings);
-            using var page = new AllAppsPage(itemSource);
+            using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
             page.SearchText = "HiddenNeedle";
 
@@ -301,7 +301,7 @@ public class AllAppsPageTests : AppsTestBase
         {
             Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
             using var itemSource = new AppListItemSource(mockCatalog, Settings);
-            var page = new AllAppsPage(itemSource);
+            var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
 
             var appItem = page.GetItems().OfType<AppListItem>().Single();
@@ -433,7 +433,7 @@ public class AllAppsPageTests : AppsTestBase
             using var mockCatalog = new MockAppCatalog();
             mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
             using var itemSource = new AppListItemSource(mockCatalog, settings);
-            using var page = new AllAppsPage(itemSource);
+            using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
             var originalItem = (AppListItem)page.GetItems().Single();
             var settingsForm = (SettingsForm)settings.Settings.ToContent().Single();
@@ -496,7 +496,7 @@ public class AllAppsPageTests : AppsTestBase
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
 
         mockCatalog.SetRefreshing(true);
@@ -514,7 +514,7 @@ public class AllAppsPageTests : AppsTestBase
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         mockCatalog.SetRefreshing(true);
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Paint"));
@@ -536,7 +536,7 @@ public class AllAppsPageTests : AppsTestBase
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         var notepadItem = page.GetItems().Single(item => item.Title == "Notepad");
         mockCatalog.SetRefreshing(true);
@@ -558,7 +558,7 @@ public class AllAppsPageTests : AppsTestBase
     {
         using var mockCatalog = new MockAppCatalog();
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        var page = new AllAppsPage(itemSource);
+        var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         var refreshItem = page.MoreCommands.OfType<CommandContextItem>().Single();
         var refreshCommand = (AnonymousCommand)refreshItem.Command;
@@ -652,7 +652,7 @@ public class AllAppsPageTests : AppsTestBase
         mockCatalog.Items[0].FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
         mockCatalog.Items[0].UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
-        using var page = new AllAppsPage(itemSource);
+        using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
 
         page.SearchText = query;
@@ -661,17 +661,43 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
-    public async Task AllAppsPage_SearchExcludesWeakFuzzyMatches()
+    [DataRow("camra", "Camera")]
+    [DataRow("clculator", "Calculator")]
+    [DataRow("ntpad", "Notepad")]
+    [DataRow("cptr", "Capture")]
+    public async Task AllAppsPage_MissingLettersMatchNamesAndDescriptions(string query, string name)
+    {
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program(query, $@"C:\Apps\{query}.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program(name, $@"C:\Apps\{name}.exe"));
+        var describedApp = TestDataHelper.CreateTestWin32Program("Utility", @"C:\Tools\Utility.exe");
+        describedApp.Description = name;
+        MockCatalog.AddWin32Program(describedApp);
+        var unrelatedApp = TestDataHelper.CreateTestWin32Program("Unrelated", @"C:\Tools\Unrelated.exe");
+        unrelatedApp.Description = string.Empty;
+        MockCatalog.AddWin32Program(unrelatedApp);
+        await WaitForPageInitializationAsync();
+
+        Page.SearchText = query;
+
+        CollectionAssert.AreEqual(new[] { query, name, "Utility" }, Page.GetItems().Select(item => item.Title).ToArray());
+    }
+
+    [TestMethod]
+    public async Task AllAppsPage_SearchRanksStrongNameMatchesFirstAndExcludesWeakMetadata()
     {
         MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Apps\Notepad.exe"));
         MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("NxxOxxTxxE", @"C:\Apps\NxxOxxTxxE.exe"));
+        var metadataOnly = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Metadata\NxxOxxTxxE.exe");
+        metadataOnly.Description = string.Empty;
+        MockCatalog.AddWin32Program(metadataOnly);
         await WaitForPageInitializationAsync();
 
         Page.SearchText = "note";
         var items = Page.GetItems();
 
-        Assert.AreEqual(1, items.Length);
+        Assert.AreEqual(2, items.Length);
         Assert.AreEqual("Notepad", items[0].Title);
+        Assert.AreEqual("NxxOxxTxxE", items[1].Title);
     }
 
     [TestMethod]
