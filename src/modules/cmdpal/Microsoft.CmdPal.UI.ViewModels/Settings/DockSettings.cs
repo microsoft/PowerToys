@@ -223,6 +223,18 @@ public sealed record DockMonitorConfig
     public string? MonitorHardwareId { get; init; }
 
     /// <summary>
+    /// Gets the persistent ordinal used for fallback display labels (A, B, ...).
+    /// Independent of the Windows GDI display number. Zero means not yet assigned.
+    /// </summary>
+    public int FallbackDisplayNumber { get; init; }
+
+    /// <summary>
+    /// Gets the user-defined display name. When <c>null</c>, the display uses
+    /// its friendly hardware name or persistent fallback label.
+    /// </summary>
+    public string? DisplayNameOverride { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether the dock is enabled on this monitor. Defaults to <c>true</c>.
     /// </summary>
     public bool Enabled { get; init; } = true;

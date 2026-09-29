@@ -610,8 +610,8 @@ public class DockMultiMonitorTests
         var now = DateTime.UtcNow;
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
         var configs = ImmutableList.Create(
-            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true, LastSeen = now },
-            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true, IsPrimary = false, LastSeen = now });
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, FallbackDisplayNumber = 1, Enabled = true, IsPrimary = true, LastSeen = now },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, FallbackDisplayNumber = 2, Enabled = true, IsPrimary = false, LastSeen = now });
 
         var reconciled = MonitorConfigReconciler.Reconcile(configs, monitors, now);
 
@@ -786,13 +786,13 @@ public class DockMultiMonitorTests
     public void DockMonitorConfigViewModel_DisplayInfo_ExposesMonitorProperties()
     {
         var settings = CreateSettingsModelWithConfigs(
-            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, IsPrimary = true });
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, FallbackDisplayNumber = 1, IsPrimary = true });
 
         var mockSettings = CreateMockSettingsService(settings);
         var vm = new DockMonitorConfigViewModel(
             settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
 
-        Assert.AreEqual("Display 1 (Primary)", vm.DisplayName);
+        Assert.AreEqual("Display A (Primary)", vm.DisplayName);
         Assert.AreEqual(PrimaryMonitor.DeviceId, vm.DeviceId);
         Assert.IsTrue(vm.IsPrimary);
         Assert.AreEqual("1920 \u00D7 1080", vm.Resolution);

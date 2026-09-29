@@ -175,6 +175,7 @@ public sealed class MonitorService : IMonitorService
                     {
                         DeviceId = deviceName,
                         StableId = stableId,
+                        FriendlyName = friendlyName,
                         HardwareId = hardwareId,
                         DisplayName = displayName,
                         Bounds = new ScreenRect(

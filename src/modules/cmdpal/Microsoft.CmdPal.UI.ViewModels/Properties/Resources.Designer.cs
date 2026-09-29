@@ -556,6 +556,33 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Display {0}.
+        /// </summary>
+        public static string dock_monitor_display_name {
+            get {
+                return ResourceManager.GetString("dock_monitor_display_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Display.
+        /// </summary>
+        public static string dock_monitor_display_name_default {
+            get {
+                return ResourceManager.GetString("dock_monitor_display_name_default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} (Primary).
+        /// </summary>
+        public static string dock_monitor_primary_display_name {
+            get {
+                return ResourceManager.GetString("dock_monitor_primary_display_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string dock_settings_name {
