@@ -488,11 +488,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var settings = settingsService.Settings;
         var dockSettings = settings.DockSettings;
 
-        // Prevent duplicate pins — check the target destination's bands.
-        // When pinning to a specific monitor, check that monitor's resolved bands
-        // (which include forked-from-global bands). Otherwise, check global bands.
+        // Taskbar pins are global and independent of dock pins.
+        var isTaskbar = side == Dock.DockPinSide.Taskbar;
         DockMonitorConfig? targetConfig = null;
-        if (monitorDeviceId is not null)
+        if (!isTaskbar && monitorDeviceId is not null)
         {
             foreach (var cfg in dockSettings.MonitorConfigs)
             {
@@ -508,9 +507,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var resolvedCenter = targetConfig?.ResolveCenterBands(dockSettings.CenterBands) ?? dockSettings.CenterBands;
         var resolvedEnd = targetConfig?.ResolveEndBands(dockSettings.EndBands) ?? dockSettings.EndBands;
 
-        var alreadyPinned = resolvedStart.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-                            resolvedCenter.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-                            resolvedEnd.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId);
+        var alreadyPinned = isTaskbar
+            ? dockSettings.TaskbarBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId)
+            : resolvedStart.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+              resolvedCenter.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+              resolvedEnd.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId);
 
         if (alreadyPinned)
         {
@@ -526,7 +527,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             ShowSubtitles = showSubtitles,
         };
 
-        if (monitorDeviceId is not null)
+        if (!isTaskbar && monitorDeviceId is not null)
         {
             PinDockBandToMonitor(settingsService, bandSettings, side, monitorDeviceId);
         }
@@ -554,6 +555,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                     {
                         Dock.DockPinSide.Center => dockSettings with { CenterBands = dockSettings.CenterBands.Add(bandSettings) },
                         Dock.DockPinSide.End => dockSettings with { EndBands = dockSettings.EndBands.Add(bandSettings) },
+                        Dock.DockPinSide.Taskbar => dockSettings with { TaskbarBands = dockSettings.TaskbarBands.Add(bandSettings) },
                         _ => dockSettings with { StartBands = dockSettings.StartBands.Add(bandSettings) },
                     },
                 };
@@ -614,7 +616,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             hotReload: false);
     }
 
-    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload)
+    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload, Dock.DockPinSide side = Dock.DockPinSide.Start)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         settingsService.UpdateSettings(
@@ -623,12 +625,17 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 var dockSettings = s.DockSettings;
                 return s with
                 {
-                    DockSettings = dockSettings with
-                    {
-                        StartBands = dockSettings.StartBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
-                        CenterBands = dockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
-                        EndBands = dockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
-                    },
+                    DockSettings = side == Dock.DockPinSide.Taskbar
+                        ? dockSettings with
+                        {
+                            TaskbarBands = dockSettings.TaskbarBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
+                        }
+                        : dockSettings with
+                        {
+                            StartBands = dockSettings.StartBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
+                            CenterBands = dockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
+                            EndBands = dockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId),
+                        },
                 };
             },
             hotReload: false);

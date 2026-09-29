@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -120,6 +121,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 }
 
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+                TryAddPinToTaskbarCommand(itemId, providerId, moreCommands, commandItem);
             }
         }
 
@@ -166,6 +168,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             TryAddPinToHomeCommand(itemId, providerId, commandItem, moreCommands);
 
             TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+            TryAddPinToTaskbarCommand(itemId, providerId, moreCommands, commandItem);
         }
 
         if (moreCommands.Count > 0)
@@ -273,6 +276,30 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         moreCommands.Add(contextItem);
     }
 
+    private void TryAddPinToTaskbarCommand(
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands,
+        CommandItemViewModel commandItem)
+    {
+        if (!_settingsService.Settings.EnableTaskbar)
+        {
+            return;
+        }
+
+        var alreadyPinned = _settingsService.Settings.DockSettings.TaskbarBands.Any(band => MatchesBand(band, itemId, providerId));
+        var command = new PinToCommand(
+            commandId: itemId,
+            providerId: providerId,
+            pin: !alreadyPinned,
+            PinLocation.Taskbar,
+            _settingsService,
+            _topLevelCommandManager,
+            commandItemViewModel: commandItem);
+
+        moreCommands.Add(new PinToContextItem(command, commandItem));
+    }
+
     internal static bool MatchesBand(DockBandSettings bandSettings, string commandId, string providerId)
     {
         return bandSettings.CommandId == commandId &&
@@ -283,6 +310,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         TopLevel,
         Dock,
+        Taskbar,
     }
 
     private sealed partial class PinToContextItem : CommandContextItem
@@ -345,13 +373,17 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly PinLocation _pinLocation;
         private readonly CommandItemViewModel? _commandItemViewModel;
 
-        private bool IsPinToDock => _pinLocation == PinLocation.Dock;
-
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ?
-            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) :
-            (IsPinToDock ? RS_.GetString("dock_unpin_command_name") : RS_.GetString("top_level_unpin_command_name"));
+        public override string Name => RS_.GetString((_pinLocation, _pin) switch
+        {
+            (PinLocation.Dock, true) => "dock_pin_command_name",
+            (PinLocation.Dock, false) => "dock_unpin_command_name",
+            (PinLocation.Taskbar, true) => "taskbar_pin_command_name",
+            (PinLocation.Taskbar, false) => "taskbar_unpin_command_name",
+            (_, true) => "top_level_pin_command_name",
+            (_, false) => "top_level_unpin_command_name",
+        });
 
         internal event EventHandler? PinStateChanged;
 
@@ -389,6 +421,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     case PinLocation.Dock:
                         PinToDock();
                         break;
+
+                    case PinLocation.Taskbar:
+                        PinToTaskbar();
+                        break;
                 }
             }
             else
@@ -401,6 +437,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                     case PinLocation.Dock:
                         UnpinFromDock();
+                        break;
+
+                    case PinLocation.Taskbar:
+                        WeakReferenceMessenger.Default.Send(new PinToDockMessage(
+                            _providerId,
+                            _commandId,
+                            Pin: false,
+                            Side: DockPinSide.Taskbar));
                         break;
                 }
             }
@@ -431,6 +475,17 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var dockSide = dockSettings.Side;
             IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
+            WeakReferenceMessenger.Default.Send(message);
+        }
+
+        private void PinToTaskbar()
+        {
+            var message = new ShowPinToTaskbarDialogMessage(
+                _providerId,
+                _commandId,
+                _commandItemViewModel?.Title ?? string.Empty,
+                _commandItemViewModel?.Subtitle ?? string.Empty,
+                _commandItemViewModel?.Icon);
             WeakReferenceMessenger.Default.Send(message);
         }
 

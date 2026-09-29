@@ -778,7 +778,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
             else
             {
-                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider, message.WithReload);
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider, message.WithReload, message.Side);
             }
         }
         else
