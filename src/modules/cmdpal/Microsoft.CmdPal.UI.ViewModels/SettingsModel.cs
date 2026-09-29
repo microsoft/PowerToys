@@ -47,7 +47,6 @@ public record SettingsModel
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
 
-    // Regular setters preserve defaults when source-generated JSON omits these properties.
     public bool DockFocusAcrossMonitors { get; init; } = true;
 
     public bool DockRememberLastFocusedItem { get; init; } = true;
@@ -210,7 +209,9 @@ public record SettingsModel
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
-          bool enableExternalCommandLinks = true)
+          bool enableExternalCommandLinks = true,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -218,6 +219,8 @@ public record SettingsModel
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
         EnableExternalCommandLinks = enableExternalCommandLinks;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
     }
 
     public SettingsModel()

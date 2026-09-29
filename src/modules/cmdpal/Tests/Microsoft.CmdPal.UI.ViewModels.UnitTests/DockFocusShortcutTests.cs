@@ -201,12 +201,15 @@ public class DockFocusShortcutTests
     }
 
     [TestMethod]
-    public void DockFocusAcrossMonitors_UnsetInJson_DefaultsToEnabled()
+    [DataRow("{}", true)]
+    [DataRow("""{"DockRememberLastFocusedItem":false}""", false)]
+    public void DockFocusAcrossMonitors_UnsetInJson_DefaultsToEnabled(string json, bool rememberLastFocusedItem)
     {
-        var settings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+        var settings = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
 
         Assert.IsNotNull(settings);
         Assert.IsTrue(settings.DockFocusAcrossMonitors);
+        Assert.AreEqual(rememberLastFocusedItem, settings.DockRememberLastFocusedItem);
     }
 
     [TestMethod]
@@ -229,12 +232,15 @@ public class DockFocusShortcutTests
     }
 
     [TestMethod]
-    public void DockRememberLastFocusedItem_UnsetInJson_DefaultsToEnabled()
+    [DataRow("{}", true)]
+    [DataRow("""{"DockFocusAcrossMonitors":false}""", false)]
+    public void DockRememberLastFocusedItem_UnsetInJson_DefaultsToEnabled(string json, bool focusAcrossMonitors)
     {
-        var settings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+        var settings = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
 
         Assert.IsNotNull(settings);
         Assert.IsTrue(settings.DockRememberLastFocusedItem);
+        Assert.AreEqual(focusAcrossMonitors, settings.DockFocusAcrossMonitors);
     }
 
     [TestMethod]
