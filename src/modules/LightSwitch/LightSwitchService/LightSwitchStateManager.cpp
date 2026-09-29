@@ -83,6 +83,13 @@ namespace
     {
         return LightSwitchStrings::Format(GET_RESOURCE_STRING(IDS_THEME_WRITE_FAILED), result);
     }
+
+    bool HasObservedThemeChange(const StatusSnapshot& snapshot, const std::optional<bool>& previousSystem, const std::optional<bool>& previousApps)
+    {
+        // Recovering an unreadable value alone does not establish a transition.
+        return (snapshot.config.changeSystem && previousSystem && snapshot.systemLight && snapshot.systemLight != previousSystem) ||
+               (snapshot.config.changeApps && previousApps && snapshot.appsLight && snapshot.appsLight != previousApps);
+    }
 }
 
 LightSwitchStateManager::LightSwitchStateManager() :
@@ -443,12 +450,16 @@ LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitc
     const bool light = ScheduledThemeLocked(config, now);
     if (_pendingThemeNotification != std::optional<bool>(light))
         _pendingThemeNotification.reset();
+    // Night Light transitions and changed settings can bypass external detection.
+    // Retain their observations before ApplyThemeLocked records the final snapshot.
+    const auto previousSystemTheme = _lastObservedSystemTheme;
+    const auto previousAppsTheme = _lastObservedAppsTheme;
     bool changed = false;
     StatusSnapshot snapshot;
     const auto result = ApplyThemeLocked(light, config, changed, snapshot);
     if (finalSnapshot)
         *finalSnapshot = snapshot;
-    if (changed)
+    if (changed || HasObservedThemeChange(snapshot, previousSystemTheme, previousAppsTheme))
         _pendingThemeNotification = light;
     if (result == ERROR_SUCCESS && _pendingThemeNotification)
     {
@@ -521,8 +532,7 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
     RecordEvaluationTimeLocked(now);
     // A no-op set can confirm an external choice before the minute poll sees it.
     // Acknowledge that transition once, even though no registry write was needed.
-    const bool observedChange = (config.changeSystem && previousSystemTheme && snapshot.systemLight != previousSystemTheme) ||
-                                (config.changeApps && previousAppsTheme && snapshot.appsLight != previousAppsTheme);
+    const bool observedChange = HasObservedThemeChange(snapshot, previousSystemTheme, previousAppsTheme);
     if (changed || observedChange || _pendingThemeNotification)
         NotifyAppliedThemeLocked(config, snapshot);
     _pendingThemeNotification.reset();
@@ -615,6 +625,10 @@ void LightSwitchStateManager::DetectExternalThemeChangeLocked(const LightSwitchC
     {
         // Matching the current plan is also an observation. Retaining an older
         // value here would invent an external edit at the next boundary.
+        // Preserve a real transition for notification even if applying the plan
+        // needs no writes. The scheduler will verify the selected targets first.
+        if (HasObservedThemeChange(snapshot, _lastObservedSystemTheme, _lastObservedAppsTheme))
+            _pendingThemeNotification = scheduledLight;
         RecordThemeObservationsLocked(snapshot);
     }
 }

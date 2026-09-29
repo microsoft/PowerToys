@@ -764,6 +764,195 @@ namespace LightSwitchServiceUnitTests
             Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
         }
 
+        TEST_METHOD (ExternalThemesMatchingTheClockBoundaryNotifyOnceWithoutWriting)
+        {
+            for (const int targets : { 1, 2, 3 })
+            {
+                for (const bool settingsNotification : { false, true })
+                {
+                    Environment environment;
+                    environment.config.changeSystem = (targets & 1) != 0;
+                    environment.config.changeApps = (targets & 2) != 0;
+                    environment.now.wHour = 19;
+                    environment.now.wMinute = 59;
+                    LightSwitchStateManager manager(environment.Dependencies());
+                    manager.SyncInitialThemeState();
+                    Assert::IsTrue(environment.notifications.empty());
+
+                    // An external editor reaches the upcoming plan before the
+                    // service's first evaluation at the scheduled boundary.
+                    if (environment.config.changeSystem)
+                        environment.system = false;
+                    if (environment.config.changeApps)
+                        environment.apps = false;
+                    environment.now.wHour = 20;
+                    environment.now.wMinute = 0;
+                    if (settingsNotification)
+                        Assert::IsTrue(manager.OnSettingsChanged().success);
+                    else
+                        manager.OnTick();
+
+                    Assert::IsFalse(manager.GetState().isManualOverride);
+                    Assert::AreEqual(0, environment.writes);
+                    Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                    Assert::IsFalse(environment.notifications.front());
+                    manager.OnTick();
+                    Assert::IsTrue(manager.OnSettingsChanged().success);
+                    Assert::AreEqual(0, environment.writes);
+                    Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                }
+            }
+        }
+
+        TEST_METHOD (ObservedThemeNotificationWaitsForReadbackRecoveryWithoutWriting)
+        {
+            for (const bool changeSystem : { false, true })
+            {
+                Environment environment;
+                environment.config.changeSystem = changeSystem;
+                environment.config.changeApps = !changeSystem;
+                environment.now.wHour = 19;
+                environment.now.wMinute = 59;
+                auto dependencies = environment.Dependencies();
+                const auto readTheme = dependencies.readTheme;
+                bool failVerification = false;
+                bool verificationFailed = false;
+                int selectedReads = 0;
+                dependencies.readTheme = [&](bool system, bool& light) -> LSTATUS {
+                    // External detection and the pre-write check can observe the
+                    // new theme, but the final verification cannot confirm it.
+                    if (failVerification && system == changeSystem && ++selectedReads == 3)
+                    {
+                        verificationFailed = true;
+                        return ERROR_ACCESS_DENIED;
+                    }
+                    return readTheme(system, light);
+                };
+                LightSwitchStateManager manager(std::move(dependencies));
+                manager.SyncInitialThemeState();
+
+                (changeSystem ? environment.system : environment.apps) = false;
+                environment.now.wHour = 20;
+                environment.now.wMinute = 0;
+                failVerification = true;
+                manager.OnTick();
+
+                Assert::IsTrue(verificationFailed);
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(0, environment.writes);
+                Assert::IsTrue(environment.notifications.empty());
+
+                failVerification = false;
+                ++environment.now.wMinute;
+                manager.OnTick();
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(0, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::IsFalse(environment.notifications.front());
+                manager.OnTick();
+                Assert::AreEqual(0, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            }
+        }
+
+        TEST_METHOD (ExternalThemesMatchingANightLightTransitionNotifyOnceWithoutWriting)
+        {
+            for (const int targets : { 1, 2, 3 })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::FollowNightLight;
+                environment.config.changeSystem = (targets & 1) != 0;
+                environment.config.changeApps = (targets & 2) != 0;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+                Assert::IsTrue(environment.notifications.empty());
+
+                if (environment.config.changeSystem)
+                    environment.system = false;
+                if (environment.config.changeApps)
+                    environment.apps = false;
+                environment.nightLight = true;
+                manager.OnNightLightChange();
+
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(0, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+                Assert::IsFalse(environment.notifications.front());
+                manager.OnNightLightChange();
+                manager.OnTick();
+                Assert::AreEqual(0, environment.writes);
+                Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            }
+        }
+
+        TEST_METHOD (ExternalThemesMatchingANewConfigurationNotifyOnceWithoutWriting)
+        {
+            Environment environment;
+            LightSwitchStateManager manager(environment.Dependencies());
+            manager.SyncInitialThemeState();
+            Assert::IsTrue(environment.notifications.empty());
+
+            environment.system = environment.apps = false;
+            environment.config.darkTime = 11 * 60;
+            const auto result = manager.OnSettingsChanged();
+
+            Assert::IsTrue(result.success);
+            Assert::IsFalse(result.status.manualOverride);
+            Assert::AreEqual(0, environment.writes);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+            Assert::IsFalse(environment.notifications.front());
+            manager.OnTick();
+            Assert::IsTrue(manager.OnSettingsChanged().success);
+            Assert::AreEqual(0, environment.writes);
+            Assert::AreEqual(size_t{ 1 }, environment.notifications.size());
+        }
+
+        TEST_METHOD (ScheduledNotificationsIgnoreChangesToUnselectedTargets)
+        {
+            for (const bool changeSystem : { false, true })
+            {
+                Environment environment;
+                environment.config.changeSystem = changeSystem;
+                environment.config.changeApps = !changeSystem;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+
+                (changeSystem ? environment.apps : environment.system) = false;
+                manager.OnTick();
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(0, environment.writes);
+                Assert::IsTrue(environment.notifications.empty());
+            }
+        }
+
+        TEST_METHOD (RecoveringAnUnknownThemeAlreadyAtThePlanDoesNotInventANotification)
+        {
+            for (const bool changeSystem : { false, true })
+            {
+                Environment environment;
+                environment.config.scheduleMode = ScheduleMode::Off;
+                environment.config.changeSystem = changeSystem;
+                environment.config.changeApps = !changeSystem;
+                environment.failSystemRead = changeSystem;
+                environment.failAppsRead = !changeSystem;
+                LightSwitchStateManager manager(environment.Dependencies());
+                manager.SyncInitialThemeState();
+
+                // No theme was written or observed on this target while Off.
+                // Recovering access when enabling the plan is not a transition.
+                environment.failSystemRead = environment.failAppsRead = false;
+                environment.config.scheduleMode = ScheduleMode::FixedHours;
+                Assert::IsTrue(manager.OnSettingsChanged().success);
+                manager.OnTick();
+
+                Assert::IsFalse(manager.GetState().isManualOverride);
+                Assert::AreEqual(0, environment.writes);
+                Assert::IsTrue(environment.notifications.empty());
+            }
+        }
+
         TEST_METHOD (MinuteTickDetectsExternalChoicesWithOneSettingsAndTimeSnapshot)
         {
             for (const bool initiallyReadableSettings : { false, true })
