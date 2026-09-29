@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Storage.Streams;
@@ -24,6 +25,7 @@ internal interface IIconLoaderService : IAsyncDisposable
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
         double scale,
+        ElementTheme theme,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority,
         IconLoadMeasurement? diagnostics = null,

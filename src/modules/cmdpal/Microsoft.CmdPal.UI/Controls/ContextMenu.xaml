@@ -23,6 +23,7 @@
             <Thickness x:Key="DefaultContextMenuItemPadding">12,8,12,8</Thickness>
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
+                Back="{StaticResource BackContextMenuViewModelTemplate}"
                 Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
                 Default="{StaticResource DefaultContextMenuViewModelTemplate}"
                 Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
@@ -33,6 +34,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <cpcontrols:IconBox
@@ -73,7 +75,21 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind DisplayShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                    <Border
+                        x:Name="SubmenuChevronColumn"
+                        Grid.Column="3"
+                        Width="24"
+                        ui:FrameworkElementExtensions.AncestorType="cpcontrols:ContextMenu"
+                        Visibility="{x:Bind ((cpcontrols:ContextMenu)SubmenuChevronColumn.(ui:FrameworkElementExtensions.Ancestor)).ViewModel.HasSubmenuItems, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <FontIcon
+                            HorizontalAlignment="Right"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="12"
+                            Glyph="&#xE76C;"
+                            MirroredWhenRightToLeft="True"
+                            Visibility="{x:Bind HasSubmenu, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Border>
                 </Grid>
             </DataTemplate>
 
@@ -83,6 +99,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <cpcontrols:IconBox
@@ -124,7 +141,56 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind DisplayShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                    <Border
+                        x:Name="SubmenuChevronColumn"
+                        Grid.Column="3"
+                        Width="24"
+                        ui:FrameworkElementExtensions.AncestorType="cpcontrols:ContextMenu"
+                        Visibility="{x:Bind ((cpcontrols:ContextMenu)SubmenuChevronColumn.(ui:FrameworkElementExtensions.Ancestor)).ViewModel.HasSubmenuItems, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <FontIcon
+                            HorizontalAlignment="Right"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="12"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Glyph="&#xE76C;"
+                            MirroredWhenRightToLeft="True"
+                            Visibility="{x:Bind HasSubmenu, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Border>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="BackContextMenuViewModelTemplate" x:DataType="viewModels:ContextMenuBackItemViewModel">
+                <Grid
+                    x:Uid="ContextMenuBackItem"
+                    AutomationProperties.HelpText="{x:Bind ((cpcontrols:ContextMenu)BackRow.(ui:FrameworkElementExtensions.Ancestor)).ViewModel.CurrentMenuTitle, Mode=OneWay}"
+                    RowDefinitions="Auto,Auto">
+                    <Grid
+                        x:Name="BackRow"
+                        Padding="{StaticResource DefaultContextMenuItemPadding}"
+                        ui:FrameworkElementExtensions.AncestorType="cpcontrols:ContextMenu"
+                        ColumnDefinitions="32,*">
+                        <FontIcon
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="12"
+                            Glyph="&#xE76B;"
+                            MirroredWhenRightToLeft="True" />
+                        <TextBlock
+                            Grid.Column="1"
+                            MaxWidth="200"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind ((cpcontrols:ContextMenu)BackRow.(ui:FrameworkElementExtensions.Ancestor)).ViewModel.CurrentMenuTitle, Mode=OneWay}"
+                            TextTrimming="WordEllipsis" />
+                    </Grid>
+                    <Rectangle
+                        Grid.Row="1"
+                        Height="1"
+                        Margin="0,2,0,2"
+                        Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
                 </Grid>
             </DataTemplate>
 
@@ -164,7 +230,6 @@
             ItemClick="CommandsDropdown_ItemClick"
             ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-            PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
             SelectionMode="Single">
             <ListView.Resources>
                 <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
@@ -173,6 +238,7 @@
                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemContainerTransitions>
@@ -190,8 +256,6 @@
             BorderThickness="0,0,0,2"
             CornerRadius="8, 8, 0, 0"
             IsTextScaleFactorEnabled="True"
-            KeyDown="ContextFilterBox_KeyDown"
-            PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             Style="{StaticResource SearchTextBoxStyle}"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>

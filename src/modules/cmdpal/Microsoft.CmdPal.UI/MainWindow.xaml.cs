@@ -18,8 +18,10 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -366,11 +368,11 @@ public sealed partial class MainWindow : WindowEx,
         {
             var finalRect = rect.Value;
 
-            // In compact mode, center the *visible collapsed card* (the search box) on the
-            // display, not the much larger transparent HWND. The card is anchored to the top
-            // of the HWND, so we offset the HWND upward by the card's center so that growing
-            // the card downward (when results appear) keeps the search box where it was.
-            if (TryGetCompactCardCenterOffsetPhysical(windowDpi, out var cardCenterFromHwndTop))
+            // In compact mode, center the visible collapsed search row on the display, not
+            // the much larger transparent HWND. The card is anchored to the top of the HWND,
+            // so we offset the HWND upward by the search row's center. Growing the card
+            // downward (from the shelf or expanded results) keeps the search box in place.
+            if (TryGetCompactSearchRowCenterOffsetPhysical(windowDpi, out var searchRowCenterFromHwndTop))
             {
                 var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
@@ -379,7 +381,7 @@ public sealed partial class MainWindow : WindowEx,
                 // so a larger percentage places the search box higher up the display.
                 var fractionFromTop = GetCompactCenterFractionFromTop(settings);
                 var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
-                finalRect.Y = desiredCardCenterY - cardCenterFromHwndTop;
+                finalRect.Y = desiredCardCenterY - searchRowCenterFromHwndTop;
 
                 if (finalRect.Y < workArea.Y)
                 {
@@ -394,13 +396,14 @@ public sealed partial class MainWindow : WindowEx,
     /// <summary>
     /// When the palette is in compact mode and is being centered on launch, computes the
     /// distance (in physical pixels) from the top of the HWND to the vertical center of the
-    /// collapsed card, so the caller can position the HWND such that the card is centered.
+    /// collapsed search row, so the caller can position the HWND such that the search box is
+    /// centered at the configured height.
     /// Returns false when the card should not be re-centered (compact mode off, or a summon
     /// behavior that restores the last position).
     /// </summary>
-    private bool TryGetCompactCardCenterOffsetPhysical(int windowDpi, out int cardCenterFromHwndTop)
+    private bool TryGetCompactSearchRowCenterOffsetPhysical(int windowDpi, out int searchRowCenterFromHwndTop)
     {
-        cardCenterFromHwndTop = 0;
+        searchRowCenterFromHwndTop = 0;
 
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode || !IsCenteringSummon(settings))
@@ -408,18 +411,27 @@ public sealed partial class MainWindow : WindowEx,
             return false;
         }
 
-        // Make sure the card is actually collapsed before we measure it.
-        (RootElement.MainContent as ShellPage)?.EnsureCompactLayout();
+        // Make sure the card is actually collapsed before we measure it. Anchor positioning
+        // to the search row, not the entire card: the optional quick-access shelf makes the
+        // collapsed card taller but should not move the search box on screen.
+        var shellPage = RootElement.MainContent as ShellPage;
+        shellPage?.EnsureCompactLayout();
 
-        var cardHeightDip = RootElement.GetCardHeight();
-        if (cardHeightDip <= 0)
+        var searchRowCenterDip = shellPage?.GetCompactSearchRowCenterY() ?? 0;
+        if (searchRowCenterDip <= 0)
         {
-            return false;
+            var cardHeightDip = RootElement.GetCardHeight();
+            if (cardHeightDip <= 0)
+            {
+                return false;
+            }
+
+            searchRowCenterDip = cardHeightDip / 2.0;
         }
 
         var scale = windowDpi / 96.0;
         var cardTopDip = RootElement.ShadowPadding.Top;
-        cardCenterFromHwndTop = (int)Math.Round((cardTopDip + (cardHeightDip / 2.0)) * scale);
+        searchRowCenterFromHwndTop = (int)Math.Round((cardTopDip + searchRowCenterDip) * scale);
         return true;
     }
 
@@ -590,6 +602,7 @@ public sealed partial class MainWindow : WindowEx,
                 && x.ShowHwndFrame == y.ShowHwndFrame
                 && x.CompactMode == y.CompactMode
                 && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
+                && x.DockFocusHotkey == y.DockFocusHotkey
                 && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
         }
 
@@ -630,6 +643,7 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.ShowHwndFrame);
             hash.Add(obj.CompactMode);
             hash.Add(obj.Hotkey);
+            hash.Add(obj.DockFocusHotkey);
             hash.Add(obj.CommandHotkeys.Count);
             return hash.ToHashCode();
         }
@@ -1486,6 +1500,13 @@ public sealed partial class MainWindow : WindowEx,
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
+        else if (!IsVisibleToUser)
+        {
+            // Something outside of our own summon path handed us focus while we were
+            // cloaked (e.g. the shell activating us for the Copilot key). Treat that as a
+            // request to show: position, uncloak and bring the window to the foreground.
+            WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(_hwnd));
+        }
 
         if (RootElement is not null)
         {
@@ -1609,67 +1630,57 @@ public sealed partial class MainWindow : WindowEx,
     {
         UnregisterHotkeys();
 
-        var globalHotkey = settings.Hotkey;
-        if (globalHotkey is not null)
-        {
-            if (settings.UseLowLevelGlobalHotkey)
-            {
-                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+        RegisterHotkey(settings, settings.Hotkey, string.Empty);
 
-                _hotkeys.Add(new(globalHotkey, string.Empty));
-            }
-            else
-            {
-                var vk = globalHotkey.Code;
-                var modifiers =
-                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                                ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
-                {
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-            }
-        }
+        // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
+        // peels it back off so nothing tries to summon a command with a dock ID.
+        RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
 
         foreach (var commandHotkey in settings.CommandHotkeys)
         {
-            var key = commandHotkey.Hotkey;
+            RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
+        }
+    }
 
-            if (key is not null)
-            {
-                if (settings.UseLowLevelGlobalHotkey)
-                {
-                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+    private void RegisterHotkey(SettingsModel settings, HotkeySettings? key, string commandId)
+    {
+        if (key is null)
+        {
+            return;
+        }
 
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-                else
-                {
-                    var vk = key.Code;
-                    var modifiers =
-                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                        ;
+        if (settings.UseLowLevelGlobalHotkey)
+        {
+            _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId);
+            _hotkeys.Add(new(key, commandId));
+            return;
+        }
 
-                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                    if (success)
-                    {
-                        _hotkeys.Add(commandHotkey);
-                    }
-                }
-            }
+        var modifiers =
+            (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+            (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+            (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+            (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0);
+
+        if (PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)key.Code))
+        {
+            _hotkeys.Add(new(key, commandId));
+        }
+        else
+        {
+            // Usually means another app (or Windows itself) already owns this combo.
+            Logger.LogWarning($"Failed to register hotkey {key} for '{commandId}'. Error: {Marshal.GetLastWin32Error()}.");
         }
     }
 
     private void HandleSummon(string commandId)
     {
+        if (DockHotkeyIds.IsDockHotkey(commandId))
+        {
+            WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
+            return;
+        }
+
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         if (isRootHotkey && IsPaletteVisibleToUser())
         {
@@ -1781,6 +1792,14 @@ public sealed partial class MainWindow : WindowEx,
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
+
+            // LOAD BEARING:
+            // This is necessary to prevent rapid deceleration of the machine running CmdPal.
+            // Handle unmatched menu characters here instead of letting DefWindowProc ignore
+            // them and play the system chime. Repeated chimes may otherwise cause the machine
+            // to experience sudden contact with the floor and subsequent rapid disassembly.
+            case PInvoke.WM_MENUCHAR:
+                return (LRESULT)(1 << 16); // MAKELRESULT(0, MNC_CLOSE)
 
             // When restoring a saved position across monitors with different DPIs,
             // MoveAndResize already sets the correctly-scaled size. Suppress the

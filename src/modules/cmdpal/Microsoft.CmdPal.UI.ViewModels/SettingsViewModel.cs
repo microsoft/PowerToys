@@ -227,6 +227,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool ShowQuickAccessShelf
+    {
+        get => _settingsService.Settings.ShowQuickAccessShelf;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
+        }
+    }
+
     public double CompactCenterHeightPercentage
     {
         get => _settingsService.Settings.CompactCenterHeightPercentage;
@@ -367,6 +376,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public HotkeySettings? Dock_FocusHotkey
+    {
+        get => _settingsService.Settings.DockFocusHotkey;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusHotkey = value ?? SettingsModel.DefaultDockFocusShortcut });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusHotkey)));
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
@@ -468,6 +487,40 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
     public void Receive(DockAutoHideConflictMessage message)
     {
         Dock_AutoHideConflict = message.IsConflict;
+    }
+
+    /// <summary>Returns settings for a loaded provider, adding a late provider to this view model.</summary>
+    public ProviderSettingsViewModel? FindOrAddCommandProvider(string providerId)
+    {
+        var existing = CommandProviders.FirstOrDefault(provider =>
+            string.Equals(provider.ProviderId, providerId, StringComparison.Ordinal));
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var provider = _topLevelCommandManager.LookupProvider(providerId);
+        if (provider is null)
+        {
+            return null;
+        }
+
+        var currentSettings = _settingsService.Settings;
+        var (updatedSettings, providerSettings) = currentSettings.GetProviderSettings(provider);
+        if (!ReferenceEquals(currentSettings, updatedSettings))
+        {
+            _settingsService.UpdateSettings(
+                settings =>
+                {
+                    (var model, providerSettings) = settings.GetProviderSettings(provider);
+                    return model;
+                },
+                hotReload: false);
+        }
+
+        var providerViewModel = new ProviderSettingsViewModel(provider, providerSettings, _settingsService);
+        CommandProviders.Add(providerViewModel);
+        return providerViewModel;
     }
 
     private void InitializeLanguages(ILanguageService languageService)

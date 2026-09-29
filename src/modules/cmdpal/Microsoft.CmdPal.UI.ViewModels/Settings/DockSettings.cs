@@ -163,6 +163,43 @@ public record DockSettings
             return result;
         }
     }
+
+    /// <summary>
+    /// Enables the dock on the given monitor. The first time a secondary monitor is
+    /// enabled without a layout of its own, it gets a copy of the primary monitor's
+    /// current bands (or the global bands when no primary config exists).
+    /// </summary>
+    public DockMonitorConfig EnableMonitor(DockMonitorConfig config)
+    {
+        if (config.Enabled || config.IsPrimary || config.HasOwnLayout)
+        {
+            return config with { Enabled = true };
+        }
+
+        DockMonitorConfig? primaryConfig = null;
+        var configs = MonitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
+        foreach (var candidate in configs)
+        {
+            if (candidate.IsPrimary)
+            {
+                primaryConfig = candidate;
+                break;
+            }
+        }
+
+        var startBands = primaryConfig?.ResolveStartBands(StartBands) ?? StartBands;
+        var centerBands = primaryConfig?.ResolveCenterBands(CenterBands) ?? CenterBands;
+        var endBands = primaryConfig?.ResolveEndBands(EndBands) ?? EndBands;
+
+        return config with
+        {
+            Enabled = true,
+            IsCustomized = true,
+            StartBands = ImmutableList.CreateRange(startBands),
+            CenterBands = ImmutableList.CreateRange(centerBands),
+            EndBands = ImmutableList.CreateRange(endBands),
+        };
+    }
 }
 
 /// <summary>
@@ -173,10 +210,17 @@ public record DockSettings
 public sealed record DockMonitorConfig
 {
     /// <summary>
-    /// Gets the monitor's stable hardware identifier. Legacy GDI device names
-    /// (e.g. <c>\\.\DISPLAY1</c>) are migrated during reconciliation.
+    /// Gets the monitor's stable device path (see <see cref="MonitorInfo.StableId"/>).
+    /// Older settings may still hold a legacy GDI name (e.g. <c>\\.\DISPLAY1</c>).
     /// </summary>
     public required string MonitorDeviceId { get; init; }
+
+    /// <summary>
+    /// Gets the EDID-derived identifier of the monitor (see <see cref="MonitorInfo.HardwareId"/>).
+    /// Used as a fallback match when <see cref="MonitorDeviceId"/> changes because the monitor
+    /// moved to a different port, dock, or GPU.
+    /// </summary>
+    public string? MonitorHardwareId { get; init; }
 
     /// <summary>
     /// Gets the persistent ordinal used for fallback display labels (A, B, ...).
@@ -281,6 +325,15 @@ public sealed record DockMonitorConfig
     /// </summary>
     public ImmutableList<DockBandSettings> ResolveEndBands(ImmutableList<DockBandSettings> globalBands) =>
         IsCustomized && EndBands is not null ? EndBands : globalBands;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor has at least one band of its own.
+    /// Older builds created secondary configs as customized with empty band lists, so
+    /// an empty customized layout is treated the same as no layout.
+    /// </summary>
+    [JsonIgnore]
+    public bool HasOwnLayout =>
+        IsCustomized && (StartBands?.Count > 0 || CenterBands?.Count > 0 || EndBands?.Count > 0);
 
     /// <summary>
     /// Creates a new <see cref="DockMonitorConfig"/> that is a customized fork of the
