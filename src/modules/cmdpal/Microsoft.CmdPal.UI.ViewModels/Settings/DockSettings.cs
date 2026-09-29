@@ -135,6 +135,16 @@ public record DockSettings
     }
 
     /// <summary>
+    /// Checks whether any connected monitor has a disabled dock.
+    /// </summary>
+    public bool HasDisabledDocksForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor => MonitorConfigs.Any(config =>
+            !config.Enabled &&
+            string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
     /// Checks whether any connected monitor has an enabled dock with a position override.
     /// </summary>
     public bool HasPositionOverridesForMonitors(IReadOnlyList<MonitorInfo> monitors)

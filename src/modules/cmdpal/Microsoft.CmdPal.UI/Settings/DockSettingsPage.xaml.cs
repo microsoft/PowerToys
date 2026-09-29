@@ -55,7 +55,7 @@ public sealed partial class DockSettingsPage : Page
         }
 
         ViewModel.PopulateMonitorConfigs();
-        UpdatePositionOverridesInfoBar();
+        UpdateMonitorOverridesInfoBars();
     }
 
     private void DockSettingsPage_Unloaded(object sender, RoutedEventArgs e)
@@ -69,15 +69,15 @@ public sealed partial class DockSettingsPage : Page
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel settings)
     {
-        DispatcherQueue.TryEnqueue(UpdatePositionOverridesInfoBar);
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
     }
 
     private void OnMonitorsChanged(object? sender, EventArgs e)
     {
-        DispatcherQueue.TryEnqueue(UpdatePositionOverridesInfoBar);
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
     }
 
-    private void UpdatePositionOverridesInfoBar()
+    private void UpdateMonitorOverridesInfoBars()
     {
         if (!IsLoaded)
         {
@@ -85,8 +85,11 @@ public sealed partial class DockSettingsPage : Page
         }
 
         var settings = _settingsService.Settings;
+        var monitors = settings.EnableDock ? _monitorService?.GetMonitors() ?? [] : [];
+        DisabledDocksInfoBar.IsOpen = settings.EnableDock &&
+            settings.DockSettings.HasDisabledDocksForMonitors(monitors);
         PositionOverridesInfoBar.IsOpen = settings.EnableDock &&
-            settings.DockSettings.HasPositionOverridesForMonitors(_monitorService?.GetMonitors() ?? []);
+            settings.DockSettings.HasPositionOverridesForMonitors(monitors);
     }
 
     private async void ManageMonitors_Click(object sender, RoutedEventArgs e)

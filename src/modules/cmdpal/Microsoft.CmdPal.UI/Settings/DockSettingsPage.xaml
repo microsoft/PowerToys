@@ -52,6 +52,21 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_EnableDock" IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <InfoBar
+                        x:Name="DisabledDocksInfoBar"
+                        x:Uid="DockSettings_DisabledDocks_InfoBar"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_DisabledDocks"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Visibility="{x:Bind DisabledDocksInfoBar.IsOpen, Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="DockSettings_MonitorOverrides_ManageMonitors"
+                                AutomationProperties.AutomationId="CmdPal_DockSettingsPage_DisabledDocks_ManageMonitors"
+                                Click="ManageMonitors_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <!--  Focus Dock shortcut  -->
                     <controls:SettingsCard
                         x:Uid="Settings_DockPage_FocusShortcut_SettingsCard"
@@ -93,7 +108,7 @@
                         Visibility="{x:Bind PositionOverridesInfoBar.IsOpen, Mode=OneWay}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton
-                                x:Uid="DockAppearance_PositionOverrides_ManageMonitors"
+                                x:Uid="DockSettings_MonitorOverrides_ManageMonitors"
                                 AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ManageMonitors"
                                 Click="ManageMonitors_Click" />
                         </InfoBar.ActionButton>
