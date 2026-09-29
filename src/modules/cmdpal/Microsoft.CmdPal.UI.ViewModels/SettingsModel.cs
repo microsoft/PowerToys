@@ -26,7 +26,17 @@ public record SettingsModel
     /// </summary>
     public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
 
-    public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
+    [JsonIgnore]
+    public HotkeySettings? Hotkey
+    {
+        get => SerializedHotkey;
+        init => SerializedHotkey = value;
+    }
+
+    // JSON setters preserve non-constant defaults without replacing explicit null or zero values.
+    [JsonInclude]
+    [JsonPropertyName(nameof(Hotkey))]
+    internal HotkeySettings? SerializedHotkey { get; set; } = DefaultActivationShortcut;
 
     private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
 
@@ -129,7 +139,16 @@ public record SettingsModel
 
     public WindowPosition? LastWindowPosition { get; init; }
 
-    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
+    [JsonIgnore]
+    public TimeSpan AutoGoHomeInterval
+    {
+        get => SerializedAutoGoHomeInterval;
+        init => SerializedAutoGoHomeInterval = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(AutoGoHomeInterval))]
+    internal TimeSpan SerializedAutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
 
     public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
 
@@ -148,7 +167,16 @@ public record SettingsModel
 
     public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+    [JsonIgnore]
+    public Color CustomThemeColor
+    {
+        get => SerializedCustomThemeColor;
+        init => SerializedCustomThemeColor = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(CustomThemeColor))]
+    internal Color SerializedCustomThemeColor { get; set; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Avoids the WinUI COM dependency on Colors.Transparent.
 
     public int CustomThemeColorIntensity { get; init; } = 100;
 
@@ -205,7 +233,15 @@ public record SettingsModel
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
-          bool enableExternalCommandLinks = true)
+          bool enableExternalCommandLinks = true,
+          bool highlightSearchOnActivate = true,
+          bool showSystemTrayIcon = true,
+          string language = "",
+          bool ignoreShortcutWhenFullscreen = true,
+          bool disableAnimations = true,
+          int customThemeColorIntensity = 100,
+          int backgroundImageOpacity = 20,
+          int backdropOpacity = 100)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -213,6 +249,14 @@ public record SettingsModel
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
         EnableExternalCommandLinks = enableExternalCommandLinks;
+        HighlightSearchOnActivate = highlightSearchOnActivate;
+        ShowSystemTrayIcon = showSystemTrayIcon;
+        Language = language;
+        IgnoreShortcutWhenFullscreen = ignoreShortcutWhenFullscreen;
+        DisableAnimations = disableAnimations;
+        CustomThemeColorIntensity = customThemeColorIntensity;
+        BackgroundImageOpacity = backgroundImageOpacity;
+        BackdropOpacity = backdropOpacity;
     }
 
     public SettingsModel()
