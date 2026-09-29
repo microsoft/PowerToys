@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
@@ -12,13 +14,29 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 public class ClipboardHelperTests
 {
     [TestMethod]
-    public void SetText_RoundTripsThroughClipboard()
+    [DataRow("ASCII clipboard text")]
+    [DataRow("Caf\u00e9, \u4e16\u754c, \ud83d\ude80\r\nSecond line.")]
+    public void SetText_RoundTripsThroughClipboard(string text)
     {
-        var value = $"Command Palette clipboard test {Guid.NewGuid():N}";
+        var value = $"{text} {Guid.NewGuid():N}";
 
         ClipboardHelper.SetText(value);
 
         Assert.AreEqual(value, ClipboardHelper.GetText());
+    }
+
+    [STATestMethod]
+    public async Task SetRtf_SetsRichTextAndPlainText()
+    {
+        var plainText = $"Command Palette RTF clipboard test {Guid.NewGuid():N}";
+        var rtfText = $@"{{\rtf1\ansi \b {plainText}\b0}}";
+
+        ClipboardHelper.SetRtf(plainText, rtfText);
+
+        Assert.AreEqual(plainText, ClipboardHelper.GetText());
+        var content = Clipboard.GetContent();
+        Assert.IsTrue(content.Contains(StandardDataFormats.Rtf));
+        Assert.AreEqual(rtfText, await content.GetRtfAsync());
     }
 
     [TestMethod]
