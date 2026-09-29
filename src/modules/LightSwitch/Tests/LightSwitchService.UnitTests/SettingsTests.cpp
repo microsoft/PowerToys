@@ -49,6 +49,32 @@ namespace LightSwitchServiceUnitTests
             }
         };
 
+        struct TemporarySettingsDirectory
+        {
+            std::wstring directory;
+            std::wstring path;
+
+            TemporarySettingsDirectory()
+            {
+                wchar_t temporaryRoot[MAX_PATH]{};
+                wchar_t name[MAX_PATH]{};
+                Assert::IsTrue(GetTempPathW(MAX_PATH, temporaryRoot) != 0);
+                Assert::IsTrue(GetTempFileNameW(temporaryRoot, L"LSW", 0, name) != 0);
+                auto reservationCleanup = wil::scope_exit([&]() { DeleteFileW(name); });
+                directory = name;
+                path = directory + L"\\settings.json";
+                Assert::IsTrue(DeleteFileW(directory.c_str()));
+                Assert::IsTrue(CreateDirectoryW(directory.c_str(), nullptr));
+                reservationCleanup.release();
+            }
+
+            ~TemporarySettingsDirectory()
+            {
+                DeleteFileW(path.c_str());
+                RemoveDirectoryW(directory.c_str());
+            }
+        };
+
         json::JsonObject SunSettings()
         {
             auto document = json::JsonObject::Parse(ValidSettings);
@@ -75,6 +101,41 @@ namespace LightSwitchServiceUnitTests
     TEST_CLASS (SettingsTests)
     {
     public:
+        TEST_METHOD (FileWatcherNotifiesTheFirstSettingsWrite)
+        {
+            TemporarySettingsDirectory file;
+            const auto writeSettings = [&](const std::string& contents, DWORD disposition) {
+                wil::unique_hfile settings(CreateFileW(file.path.c_str(), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, disposition, FILE_ATTRIBUTE_NORMAL, nullptr));
+                Assert::IsTrue(static_cast<bool>(settings));
+                DWORD written = 0;
+                Assert::IsTrue(WriteFile(settings.get(), contents.data(), static_cast<DWORD>(contents.size()), &written, nullptr));
+                Assert::AreEqual(static_cast<DWORD>(contents.size()), written);
+            };
+            writeSettings("{\"changed\":0}", CREATE_NEW);
+            {
+                // Make the first edit distinct even on filesystems with coarse
+                // timestamp resolution, without another write after subscribing.
+                wil::unique_hfile initial(CreateFileW(file.path.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+                Assert::IsTrue(static_cast<bool>(initial));
+                SYSTEMTIME earlier{};
+                earlier.wYear = 2020;
+                earlier.wMonth = earlier.wDay = 1;
+                FILETIME lastWrite{};
+                Assert::IsTrue(SystemTimeToFileTime(&earlier, &lastWrite));
+                Assert::IsTrue(SetFileTime(initial.get(), nullptr, nullptr, &lastWrite));
+            }
+
+            wil::unique_handle changed(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+            Assert::IsTrue(static_cast<bool>(changed));
+            FileWatcher watcher(file.path, [&]() { SetEvent(changed.get()); });
+
+            // Overwrite once without truncating, which could generate a separate
+            // first change. There is no priming write or delay after subscribing.
+            writeSettings("{\"changed\":1}", OPEN_EXISTING);
+
+            Assert::AreEqual<DWORD>(WAIT_OBJECT_0, WaitForSingleObject(changed.get(), 5000), L"The first settings write must notify its watcher.");
+        }
+
         TEST_METHOD (StartupDefaultsMatchSettingsUIAndAllowTheFirstHotkey)
         {
             Apartment apartment;
