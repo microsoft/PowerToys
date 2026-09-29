@@ -181,6 +181,105 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void AdvancedPasteSettingsMissingCustomActionsValueKeepsDefaultAndSerializesAddedAction()
+        {
+            const string json = """
+                {
+                  "name": "AdvancedPaste",
+                  "version": "1",
+                  "properties": {
+                    "custom-actions": {}
+                  }
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.AdvancedPasteSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.Properties.CustomActions.Value);
+            Assert.IsNotNull(settings.GetAllHotkeyAccessors());
+
+            settings.Properties.CustomActions.Value.Add(new AdvancedPasteCustomAction
+            {
+                Id = 42,
+                Name = "Test action",
+                Prompt = "Transform the clipboard",
+            });
+
+            var serialized = JsonSerializer.Serialize(settings, SettingsSerializationContext.Default.AdvancedPasteSettings);
+            var roundTripped = JsonSerializer.Deserialize(serialized, SettingsSerializationContext.Default.AdvancedPasteSettings);
+
+            Assert.IsNotNull(roundTripped);
+            Assert.HasCount(1, roundTripped.Properties.CustomActions.Value);
+            Assert.AreEqual(42, roundTripped.Properties.CustomActions.Value[0].Id);
+            Assert.AreEqual("Test action", roundTripped.Properties.CustomActions.Value[0].Name);
+        }
+
+        [TestMethod]
+        public void AdvancedPasteSettingsNullCustomActionsValueNormalizesToEmpty()
+        {
+            const string json = """
+                {
+                  "name": "AdvancedPaste",
+                  "version": "1",
+                  "properties": {
+                    "custom-actions": {
+                      "value": null
+                    }
+                  }
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.AdvancedPasteSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.Properties.CustomActions.Value);
+        }
+
+        [TestMethod]
+        public void GeneralSettingsMissingIgnoredShortcutsKeepsDefaultAndSerializesAddedShortcut()
+        {
+            const string json = """
+                {
+                  "ignored_conflict_properties": {}
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.GeneralSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.IgnoredConflictProperties.IgnoredShortcuts);
+
+            settings.IgnoredConflictProperties.IgnoredShortcuts.Add(new HotkeySettings(true, true, false, false, 0x41));
+
+            var serialized = JsonSerializer.Serialize(settings, SettingsSerializationContext.Default.GeneralSettings);
+            var roundTripped = JsonSerializer.Deserialize(serialized, SettingsSerializationContext.Default.GeneralSettings);
+
+            Assert.IsNotNull(roundTripped);
+            Assert.HasCount(1, roundTripped.IgnoredConflictProperties.IgnoredShortcuts);
+            Assert.IsTrue(roundTripped.IgnoredConflictProperties.IgnoredShortcuts[0].Win);
+            Assert.IsTrue(roundTripped.IgnoredConflictProperties.IgnoredShortcuts[0].Ctrl);
+            Assert.AreEqual(0x41, roundTripped.IgnoredConflictProperties.IgnoredShortcuts[0].Code);
+        }
+
+        [TestMethod]
+        public void GeneralSettingsNullIgnoredShortcutsNormalizesToEmpty()
+        {
+            const string json = """
+                {
+                  "ignored_conflict_properties": {
+                    "ignored_shortcuts": null
+                  }
+                }
+                """;
+
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.GeneralSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsEmpty(settings.IgnoredConflictProperties.IgnoredShortcuts);
+        }
+
+        [TestMethod]
         public void HotkeyConflictCollectionsDeserializeInitOnlyProperties()
         {
             var allConflicts = JsonSerializer.Deserialize<AllHotkeyConflictsData>("""
