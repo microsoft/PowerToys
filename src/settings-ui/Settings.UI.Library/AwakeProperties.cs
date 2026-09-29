@@ -40,5 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
         public Dictionary<string, uint> CustomTrayTimes { get; set; }
+
+        [JsonPropertyName("show_theme_adaptive_tray_icon")]
+        public bool ShowThemeAdaptiveTrayIcon { get; set; }
     }
 }

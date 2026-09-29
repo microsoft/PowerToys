@@ -45,6 +45,10 @@ namespace Awake.Core
         internal static readonly Icon IndefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
         internal static readonly Icon DisabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
 
+        private static bool _showThemeAdaptiveTrayIcon;
+        private static ThemeListener? _themeListener;
+        private static IntPtr _ownedAdaptiveIconHandle;
+
         private const int TrayIconId = 1000;
 
         static TrayHelper()
@@ -58,11 +62,108 @@ namespace Awake.Core
         /// </summary>
         internal static void DisposeIcons()
         {
+            DisposeThemeListener();
+            ReleaseOwnedAdaptiveIconHandle();
             DefaultAwakeIcon?.Dispose();
             TimedIcon?.Dispose();
             ExpirableIcon?.Dispose();
             IndefiniteIcon?.Dispose();
             DisabledIcon?.Dispose();
+        }
+
+        internal static void ConfigureThemeAdaptiveTrayIcon(bool themeAdaptive)
+        {
+            _showThemeAdaptiveTrayIcon = themeAdaptive;
+
+            if (themeAdaptive)
+            {
+                if (_themeListener is null)
+                {
+                    _themeListener = new ThemeListener();
+                    _themeListener.SystemThemeChanged += OnSystemThemeChanged;
+                }
+            }
+            else
+            {
+                DisposeThemeListener();
+                ReleaseOwnedAdaptiveIconHandle();
+            }
+        }
+
+        internal static Icon GetIconForMode(AwakeMode mode)
+        {
+            if (!_showThemeAdaptiveTrayIcon)
+            {
+                return GetColoredModeIcon(mode);
+            }
+
+            var baseName = GetIconBaseName(mode);
+            var assetsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Awake");
+            ReleaseOwnedAdaptiveIconHandle();
+            _ownedAdaptiveIconHandle = ThemeAdaptiveTrayIconHelper.LoadIconHandle(
+                true,
+                Path.Combine(assetsDir, $"{baseName}White.ico"),
+                Path.Combine(assetsDir, $"{baseName}Dark.ico"),
+                () => IntPtr.Zero);
+
+            if (_ownedAdaptiveIconHandle == IntPtr.Zero)
+            {
+                return GetColoredModeIcon(mode);
+            }
+
+            return Icon.FromHandle(_ownedAdaptiveIconHandle);
+        }
+
+        private static void OnSystemThemeChanged(ThemeListener sender)
+        {
+            if (!_showThemeAdaptiveTrayIcon)
+            {
+                return;
+            }
+
+            Manager.SetModeShellIcon();
+        }
+
+        private static void DisposeThemeListener()
+        {
+            if (_themeListener is null)
+            {
+                return;
+            }
+
+            _themeListener.SystemThemeChanged -= OnSystemThemeChanged;
+            _themeListener.Dispose();
+            _themeListener = null;
+        }
+
+        private static void ReleaseOwnedAdaptiveIconHandle()
+        {
+            ThemeAdaptiveTrayIconHelper.DestroyIconHandle(_ownedAdaptiveIconHandle);
+            _ownedAdaptiveIconHandle = IntPtr.Zero;
+        }
+
+        private static Icon GetColoredModeIcon(AwakeMode mode)
+        {
+            return mode switch
+            {
+                AwakeMode.INDEFINITE => IndefiniteIcon,
+                AwakeMode.PASSIVE => DisabledIcon,
+                AwakeMode.EXPIRABLE => ExpirableIcon,
+                AwakeMode.TIMED => TimedIcon,
+                _ => DefaultAwakeIcon,
+            };
+        }
+
+        private static string GetIconBaseName(AwakeMode mode)
+        {
+            return mode switch
+            {
+                AwakeMode.INDEFINITE => "indefinite",
+                AwakeMode.PASSIVE => "disabled",
+                AwakeMode.EXPIRABLE => "expirable",
+                AwakeMode.TIMED => "timed",
+                _ => "awake",
+            };
         }
 
         private static void ShowContextMenu(IntPtr hWnd)
