@@ -36,6 +36,8 @@
             <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
             <cmdpalUI:QuickAccessShortcutTextConverter x:Key="QuickAccessShortcutTextConverter" />
 
+            <cpcontrols:ContextMenuFlyout x:Name="QuickAccessShelfContextMenuFlyout" />
+
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
                 CommandTemplate="{StaticResource DetailsCommandsTemplate}"
@@ -506,8 +508,11 @@
                                     AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
                                     AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                                     Click="QuickAccessShelfItem_Click"
+                                    ContextCanceled="QuickAccessShelfItem_ContextCanceled"
+                                    ContextRequested="QuickAccessShelfItem_ContextRequested"
                                     DragStarting="QuickAccessShelfItem_DragStarting"
                                     DropCompleted="QuickAccessShelfItem_DropCompleted"
+                                    GotFocus="QuickAccessShelfItem_GotFocus"
                                     Style="{StaticResource SubtleButtonStyle}"
                                     Tag="{x:Bind}"
                                     UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">

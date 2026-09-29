@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuAnchor.cs" Link="Helpers\ContextMenuAnchor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuRequest.cs" Link="Helpers\ContextMenuRequest.cs" />
