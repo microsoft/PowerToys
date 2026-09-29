@@ -8,7 +8,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -283,6 +285,83 @@ public partial class TopLevelCommandManagerTests
         Assert.AreEqual(1, manager.PinnedCommands.Count);
         Assert.AreEqual(TestCommandProvider.NestedCommandId, manager.PinnedCommands[0].CommandId);
         Assert.AreEqual(TestCommandProvider.NestedCommandId, services.GetRequiredService<ISettingsService>().Settings.PinnedCommands[0].CommandId);
+    }
+
+    [TestMethod]
+    public async Task PruneErroredTopLevelItem_KeepsPinnedDockSourceAliveUntilDockItemCleanup()
+    {
+        var item = new Mock<ICommandItem>();
+        item.SetupGet(commandItem => commandItem.Command).Returns(new NoOpCommand
+        {
+            Id = TestCommandProvider.NestedCommandId,
+            Name = "Nested command",
+        });
+        item.SetupGet(commandItem => commandItem.Title).Returns("Nested command");
+        item.SetupGet(commandItem => commandItem.MoreCommands).Returns(Array.Empty<IContextItem>());
+        var eventRemovalCount = 0;
+        var sourceCleaned = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        item.SetupRemove(commandItem => commandItem.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>())
+            .Callback<TypedEventHandler<object, IPropChangedEventArgs>>(_ =>
+            {
+                eventRemovalCount++;
+                sourceCleaned.TrySetResult();
+            });
+
+        var settings = new SettingsModel
+        {
+            DockSettings = new DockSettings
+            {
+                StartBands = ImmutableList.Create(new DockBandSettings
+                {
+                    ProviderId = "test-provider",
+                    CommandId = TestCommandProvider.NestedCommandId,
+                }),
+                CenterBands = ImmutableList<DockBandSettings>.Empty,
+                EndBands = ImmutableList<DockBandSettings>.Empty,
+            },
+        };
+        using var services = CreateServices(settings);
+        var provider = new TestCommandProvider(TestCommandProvider.NestedCommandId, item.Object)
+        {
+            IncludeTopLevelCommand = true,
+        };
+        var wrapper = new CommandProviderWrapper(provider, TaskScheduler.Default);
+        using var manager = new TopLevelCommandManager(services, [CreateExtensionService(wrapper).Object]);
+        await manager.LoadExternalProvidersAsync();
+
+        var sourceItem = manager.TopLevelCommands.Single();
+        var dockBand = manager.DockBands.Single();
+        var dockList = (IListPage)dockBand.CommandViewModel.Model.Unsafe!;
+        Assert.AreSame(sourceItem, dockList.GetItems().Single());
+
+        var dockBandViewModel = new DockBandViewModel(
+            dockBand.ItemViewModel,
+            dockBand.ItemViewModel.PageContext,
+            new DockBandSettings
+            {
+                ProviderId = "test-provider",
+                CommandId = TestCommandProvider.NestedCommandId,
+            },
+            services.GetRequiredService<ISettingsService>(),
+            DefaultContextMenuFactory.Instance);
+        dockBandViewModel.InitializeProperties();
+        Assert.IsTrue(SpinWait.SpinUntil(() => dockBandViewModel.Items.Count == 1, TimeSpan.FromSeconds(5)));
+        Assert.AreSame(sourceItem, dockBandViewModel.Items.Single().Model.Unsafe);
+
+        manager.PruneErroredTopLevelItem(sourceItem);
+
+        Assert.AreEqual(0, manager.TopLevelCommands.Count);
+        Assert.AreEqual(0, eventRemovalCount);
+        Assert.AreSame(sourceItem, dockList.GetItems().Single());
+        Assert.AreSame(sourceItem, dockBandViewModel.Items.Single().Model.Unsafe);
+
+        dockBand.Cleanup();
+        Assert.AreEqual(0, eventRemovalCount);
+
+        dockBandViewModel.SafeCleanup();
+        await sourceCleaned.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(1, eventRemovalCount);
     }
 
     [TestMethod]

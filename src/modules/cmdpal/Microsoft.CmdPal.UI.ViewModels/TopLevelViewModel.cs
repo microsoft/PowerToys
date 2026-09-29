@@ -27,6 +27,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+    private readonly object _lifetimeLock = new();
+    private IDisposable? _dockSourceLease;
+    private int _lifetimeReferences = 1;
+    private bool _ownerReleased;
+    private bool _resourcesCleaned;
     private int _contextItemsVersion;
 
     public ICommandProviderContext ProviderContext { get; private set; }
@@ -226,6 +231,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
+        if (commandItem is PinnedDockItem { Items: [TopLevelViewModel sourceItem] })
+        {
+            _dockSourceLease = sourceItem.RetainForDock();
+        }
+
         ExtensionHost = extensionHost;
         if (IsFallback && commandItem is IFallbackCommandItem2 fallback)
         {
@@ -517,15 +527,85 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     }
 
     /// <summary>
-    /// Unsubscribes from the underlying <see cref="CommandItemViewModel"/> event
-    /// and cleans up its resources so the TopLevelViewModel can be garbage
-    /// collected after it is removed from the owning collections.
+    /// Releases this item's owner reference and cleans up once dock items no longer use it.
     /// </summary>
     internal void Cleanup()
+    {
+        ReleaseOwnerReference();
+        Interlocked.Exchange(ref _dockSourceLease, null)?.Dispose();
+    }
+
+    internal IDisposable RetainForDock()
+    {
+        lock (_lifetimeLock)
+        {
+            ObjectDisposedException.ThrowIf(_ownerReleased || _resourcesCleaned, this);
+
+            checked
+            {
+                _lifetimeReferences++;
+            }
+
+            return new DockSourceLease(this);
+        }
+    }
+
+    private void ReleaseOwnerReference()
+    {
+        bool cleanupResources;
+        lock (_lifetimeLock)
+        {
+            if (_ownerReleased)
+            {
+                return;
+            }
+
+            _ownerReleased = true;
+            cleanupResources = --_lifetimeReferences == 0;
+            _resourcesCleaned = cleanupResources;
+        }
+
+        if (cleanupResources)
+        {
+            CleanupResources();
+        }
+    }
+
+    private void ReleaseDockReference()
+    {
+        bool cleanupResources;
+        lock (_lifetimeLock)
+        {
+            if (_lifetimeReferences <= 0)
+            {
+                throw new InvalidOperationException("Top-level item lifetime reference count is invalid.");
+            }
+
+            cleanupResources = --_lifetimeReferences == 0;
+            _resourcesCleaned = cleanupResources;
+        }
+
+        if (cleanupResources)
+        {
+            CleanupResources();
+        }
+    }
+
+    private void CleanupResources()
     {
         _commandItemViewModel.PropertyChangedBackground -= Item_PropertyChanged;
         _commandItemViewModel.SafeCleanup();
         _initialIcon = null;
+    }
+
+    private sealed partial class DockSourceLease(TopLevelViewModel sourceItem) : IDisposable
+    {
+        private TopLevelViewModel? _sourceItem = sourceItem;
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref _sourceItem, null)?.ReleaseDockReference();
+        }
     }
 }
 

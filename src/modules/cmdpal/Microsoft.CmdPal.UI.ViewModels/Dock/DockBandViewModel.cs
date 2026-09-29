@@ -517,6 +517,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
 public partial class DockItemViewModel : CommandItemViewModel
 {
+    private IDisposable? _dockSourceLease;
     private bool _showTitle = true;
     private bool _showSubtitle = true;
 
@@ -659,6 +660,11 @@ public partial class DockItemViewModel : CommandItemViewModel
     public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showTitle, bool showSubtitle, IContextMenuFactory contextMenuFactory)
         : base(item, errorContext, contextMenuFactory)
     {
+        if (item.Unsafe is TopLevelViewModel sourceItem)
+        {
+            _dockSourceLease = sourceItem.RetainForDock();
+        }
+
         _showTitle = showTitle;
         _showSubtitle = showSubtitle;
         PropertyChanged += (s, e) =>
@@ -668,6 +674,12 @@ public partial class DockItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Tooltip));
             }
         };
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+        Interlocked.Exchange(ref _dockSourceLease, null)?.Dispose();
     }
 
     public override bool Equals(object? obj) => obj is DockItemViewModel viewModel && viewModel.Model.Equals(Model);
