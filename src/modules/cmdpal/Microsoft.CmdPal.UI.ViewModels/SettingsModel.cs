@@ -47,6 +47,11 @@ public record SettingsModel
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
 
+    // Regular setters preserve defaults when source-generated JSON omits these properties.
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
+
     public bool UseLowLevelGlobalHotkey { get; init; }
 
     public bool ShowAppDetails { get; init; }

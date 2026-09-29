@@ -745,7 +745,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
 
             // No manager means no dock has ever been shown, so there is nothing to focus.
-            _dockWindowManager?.FocusDock();
+            _dockWindowManager?.FocusDock(reverse: message.Reverse);
         });
     }
 

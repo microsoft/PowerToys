@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -38,6 +39,15 @@ public class DockFocusShortcutTests
     };
 
     private static readonly List<MonitorInfo> BothMonitors = [PrimaryMonitor, SecondaryMonitor];
+
+    private static readonly MonitorInfo LeftMonitor = PrimaryMonitor with
+    {
+        DeviceId = @"\\.\DISPLAY3",
+        StableId = "left-id",
+        Bounds = new ScreenRect(-1920, 0, 0, 1080),
+        WorkArea = new ScreenRect(-1920, 0, 0, 1040),
+        IsPrimary = false,
+    };
 
     [TestMethod]
     public void Resolve_NoDocks_ReturnsNull()
@@ -93,6 +103,151 @@ public class DockFocusShortcutTests
             -5000);
 
         Assert.AreEqual("primary-id", result);
+    }
+
+    [TestMethod]
+    [DataRow("primary-id", "primary-id", "secondary-id", "left-id")]
+    [DataRow("secondary-id", "secondary-id", "left-id", "primary-id")]
+    [DataRow("left-id", "left-id", "primary-id", "secondary-id")]
+    [DataRow("disconnected-id", "left-id", "primary-id", "secondary-id")]
+    public void GetTraversalOrder_TraversesSpatiallyFromCurrentDock(
+        string currentId, string firstId, string secondId, string thirdId)
+    {
+        var result = DockFocusTargetResolver.GetTraversalOrder(
+            [SecondaryMonitor, LeftMonitor, PrimaryMonitor],
+            ["secondary-id", "primary-id", "left-id"],
+            currentId);
+
+        CollectionAssert.AreEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow("primary-id", "primary-id", "left-id", "secondary-id")]
+    [DataRow("secondary-id", "secondary-id", "primary-id", "left-id")]
+    [DataRow("left-id", "left-id", "secondary-id", "primary-id")]
+    [DataRow("disconnected-id", "secondary-id", "primary-id", "left-id")]
+    public void GetTraversalOrder_Reverse_TraversesSpatiallyFromCurrentDock(
+        string currentId, string firstId, string secondId, string thirdId)
+    {
+        var result = DockFocusTargetResolver.GetTraversalOrder(
+            [SecondaryMonitor, LeftMonitor, PrimaryMonitor],
+            ["secondary-id", "primary-id", "left-id"],
+            currentId,
+            reverse: true);
+
+        CollectionAssert.AreEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GetTraversalOrder_ExcludesDisabledAndDisconnectedDocks(bool reverse)
+    {
+        string[] expected = ["secondary-id", "left-id"];
+
+        var result = DockFocusTargetResolver.GetTraversalOrder(
+            [SecondaryMonitor, LeftMonitor, PrimaryMonitor],
+            ["secondary-id", "disconnected-id", "left-id"],
+            "secondary-id",
+            reverse);
+
+        CollectionAssert.AreEqual(expected, result.ToArray());
+    }
+
+    [TestMethod]
+    public void GetTraversalOrder_StackedMonitorsAreOrderedTopToBottom()
+    {
+        var above = SecondaryMonitor with
+        {
+            Bounds = new ScreenRect(0, -1080, 1920, 0),
+        };
+        string[] expected = ["left-id", "secondary-id", "primary-id"];
+
+        var result = DockFocusTargetResolver.GetTraversalOrder(
+            [PrimaryMonitor, above, LeftMonitor],
+            ["primary-id", "secondary-id", "left-id"],
+            "left-id");
+
+        CollectionAssert.AreEqual(expected, result.ToArray());
+    }
+
+    [TestMethod]
+    public void GetTraversalOrder_MatchesMonitorIdsWithoutCaseSensitivity()
+    {
+        string[] expected = ["SECONDARY-ID", "PRIMARY-ID"];
+
+        var result = DockFocusTargetResolver.GetTraversalOrder(
+            BothMonitors,
+            ["PRIMARY-ID", "SECONDARY-ID"],
+            "secondary-id");
+
+        CollectionAssert.AreEqual(expected, result.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GetTraversalOrder_NoConnectedDocks_ReturnsEmpty(bool reverse)
+    {
+        var result = DockFocusTargetResolver.GetTraversalOrder(BothMonitors, ["disconnected-id"], "disconnected-id", reverse);
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void DockFocusAcrossMonitors_DefaultsToEnabled()
+    {
+        Assert.IsTrue(new SettingsModel().DockFocusAcrossMonitors);
+    }
+
+    [TestMethod]
+    public void DockFocusAcrossMonitors_UnsetInJson_DefaultsToEnabled()
+    {
+        var settings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsTrue(settings.DockFocusAcrossMonitors);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DockFocusAcrossMonitors_SurvivesJsonRoundTrip(bool enabled)
+    {
+        var settings = new SettingsModel { DockFocusAcrossMonitors = enabled };
+        var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.SettingsModel);
+        var roundTripped = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(roundTripped);
+        Assert.AreEqual(enabled, roundTripped.DockFocusAcrossMonitors);
+    }
+
+    [TestMethod]
+    public void DockRememberLastFocusedItem_DefaultsToEnabled()
+    {
+        Assert.IsTrue(new SettingsModel().DockRememberLastFocusedItem);
+    }
+
+    [TestMethod]
+    public void DockRememberLastFocusedItem_UnsetInJson_DefaultsToEnabled()
+    {
+        var settings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsTrue(settings.DockRememberLastFocusedItem);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DockRememberLastFocusedItem_SurvivesJsonRoundTrip(bool enabled)
+    {
+        var settings = new SettingsModel { DockRememberLastFocusedItem = enabled };
+        var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.SettingsModel);
+        var roundTripped = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(roundTripped);
+        Assert.AreEqual(enabled, roundTripped.DockRememberLastFocusedItem);
     }
 
     [TestMethod]

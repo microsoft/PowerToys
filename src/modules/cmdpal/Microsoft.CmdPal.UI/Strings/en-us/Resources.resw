@@ -513,10 +513,22 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Enable a toolbar with quick access to commands</value>
   </data>
   <data name="Settings_DockPage_FocusShortcut_SettingsCard.Header" xml:space="preserve">
-    <value>Focus the dock</value>
+    <value>Dock navigation</value>
   </data>
   <data name="Settings_DockPage_FocusShortcut_SettingsCard.Description" xml:space="preserve">
-    <value>Shortcut to move keyboard focus to the dock. If the dock is hidden, it appears first. Press it again to go back to what you were doing.</value>
+    <value>Focus the dock, then press again to cycle through items.</value>
+  </data>
+  <data name="Settings_DockPage_FocusAcrossMonitors_SettingsCard.Header" xml:space="preserve">
+    <value>Cycle through all docks</value>
+  </data>
+  <data name="Settings_DockPage_FocusAcrossMonitors_SettingsCard.Description" xml:space="preserve">
+    <value>Continue on the next monitor after the last dock item, moving from left to right and wrapping around.</value>
+  </data>
+  <data name="Settings_DockPage_RememberLastFocusedItem_SettingsCard.Header" xml:space="preserve">
+    <value>Remember last focused item</value>
+  </data>
+  <data name="Settings_DockPage_RememberLastFocusedItem_SettingsCard.Description" xml:space="preserve">
+    <value>Resume from this item when returning to a dock.</value>
   </data>
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Header" xml:space="preserve">
     <value>Always stay on top</value>

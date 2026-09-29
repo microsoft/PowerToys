@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuAnchor.cs" Link="Helpers\ContextMenuAnchor.cs" />

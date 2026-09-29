@@ -52,6 +52,40 @@ public static class DockFocusTargetResolver
         return null;
     }
 
+    /// <summary>
+    /// Orders connected docks spatially, starting at the current dock and wrapping in either direction.
+    /// </summary>
+    public static IReadOnlyList<string> GetTraversalOrder(
+        IReadOnlyList<MonitorInfo> monitors,
+        IReadOnlyCollection<string> liveDockMonitorIds,
+        string currentDockMonitorId,
+        bool reverse = false)
+    {
+        var orderedIds = new List<string>();
+        foreach (var monitor in monitors.OrderBy(monitor => monitor.Bounds.Left)
+            .ThenBy(monitor => monitor.Bounds.Top)
+            .ThenBy(monitor => monitor.StableId, StringComparer.OrdinalIgnoreCase))
+        {
+            if (TryMatch(liveDockMonitorIds, monitor.StableId, out var dockId))
+            {
+                orderedIds.Add(dockId);
+            }
+        }
+
+        if (reverse)
+        {
+            orderedIds.Reverse();
+        }
+
+        var currentIndex = orderedIds.FindIndex(id => string.Equals(id, currentDockMonitorId, StringComparison.OrdinalIgnoreCase));
+        if (currentIndex <= 0)
+        {
+            return orderedIds;
+        }
+
+        return [.. orderedIds.Skip(currentIndex), .. orderedIds.Take(currentIndex)];
+    }
+
     private static MonitorInfo? FindMonitorContaining(IReadOnlyList<MonitorInfo> monitors, int x, int y)
     {
         for (var i = 0; i < monitors.Count; i++)
