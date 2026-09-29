@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -55,12 +56,12 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
-    private const int DwmwaCloak = 13;
-    private const int DwmwaNcRenderingPolicy = 2;
-    private const int DwmwaWindowCornerPreference = 33;
-    private const int DwmwaBorderColor = 34;
-    private const int DwmncrpDisabled = 2;
-    private const int DwmwcpDoNotRound = 1;
+    private const uint DwmwaCloak = 13;
+    private const uint DwmwaNcRenderingPolicy = 2;
+    private const uint DwmwaWindowCornerPreference = 33;
+    private const uint DwmwaBorderColor = 34;
+    private const uint DwmncrpDisabled = 1;
+    private const uint DwmwcpDoNotRound = 1;
 
     private const int GwlpHwndParent = -8;
     private const int GwlExStyle = -20;
@@ -118,14 +119,11 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
 
-        unsafe
-        {
-            uint borderColor = DwmwaColorNone;
-            _ = DwmSetWindowAttribute(_hwnd, DwmwaBorderColor, &borderColor, sizeof(uint));
+        uint borderColor = DwmwaColorNone;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaBorderColor, ref borderColor, sizeof(uint));
 
-            int cornerPref = DwmwcpDoNotRound;
-            _ = DwmSetWindowAttribute(_hwnd, DwmwaWindowCornerPreference, &cornerPref, sizeof(int));
-        }
+        uint cornerPref = DwmwcpDoNotRound;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaWindowCornerPreference, ref cornerPref, sizeof(uint));
 
         ApplyExStyleBit(WsExToolWindow, true);
     }
@@ -145,17 +143,15 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         ApplyExStyleBit(WsExClientEdge, false);
         ApplyExStyleBit(WsExDlgModalFrame, false);
 
-        unsafe
-        {
-            int renderingPolicy = DwmncrpDisabled;
-            _ = DwmSetWindowAttribute(_hwnd, DwmwaNcRenderingPolicy, &renderingPolicy, sizeof(int));
-        }
+        uint renderingPolicy = DwmncrpDisabled;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaNcRenderingPolicy, ref renderingPolicy, sizeof(uint));
 
         var margins = new Margins { CxLeftWidth = -1, CxRightWidth = -1, CyTopHeight = -1, CyBottomHeight = -1 };
         _ = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
         _ = SetWindowPos(
             _hwnd,
-            0,
+            IntPtr.Zero,
             0,
             0,
             0,
@@ -394,11 +390,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             return false;
         }
 
-        unsafe
-        {
-            int value = cloak ? 1 : 0;
-            return DwmSetWindowAttribute(_hwnd, DwmwaCloak, &value, sizeof(int)) == 0;
-        }
+        uint value = cloak ? 1U : 0U;
+        return DwmSetWindowAttribute(_hwnd, DwmwaCloak, ref value, sizeof(uint)) == 0;
     }
 
     private void OnActivatedForDismiss(object sender, WindowActivatedEventArgs args)
@@ -461,15 +454,15 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint hWnd, int nCmdShow);
 
-    [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
-
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
+    private static partial bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
     [LibraryImport("dwmapi.dll")]
-    private static unsafe partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+    private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmSetWindowAttribute(nint hwnd, uint dwAttribute, ref uint pvAttribute, int cbAttribute);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Margins

@@ -4,13 +4,10 @@
 
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Common.UI;
 using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -100,6 +97,11 @@ namespace ShortcutGuide
         public OverlayWindow()
         {
             this.InitializeComponent();
+
+            if (this.AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.SetBorderAndTitleBar(hasBorder: false, hasTitleBar: false);
+            }
 
             const string fallbackTitle = "Shortcut Guide";
             this.Title = fallbackTitle;
@@ -418,11 +420,6 @@ namespace ShortcutGuide
 
             RepositionToCursorMonitor();
 
-            if (OSVersionHelper.IsWindows11())
-            {
-                this.ApplyFullBleedHardening();
-            }
-
             this.AppWindow.Show();
 
             var hwnd = WindowNative.GetWindowHandle(this);
@@ -598,11 +595,7 @@ namespace ShortcutGuide
                 _suppressDpiChange = false;
             }
 
-            if (OSVersionHelper.IsWindows11())
-            {
-                this.ApplyFullBleedHardening();
-            }
-
+            this.ApplyTransparentChrome();
             if (this.TaskbarPane.Visibility == Visibility.Visible)
             {
                 UpdateTaskbarPaneLayoutCore(playEntrance: false);
