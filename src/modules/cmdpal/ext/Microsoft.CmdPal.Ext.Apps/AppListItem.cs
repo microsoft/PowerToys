@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -145,6 +146,11 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
             return Icons.GenericAppIcon;
         }
 
+        if (!app.IsPackaged && useThumbnails && IsShortcutPath(iconPath) && !string.IsNullOrEmpty(app.ExePath))
+        {
+            return new IconInfo(AppIconProtocol.Create(app.ExePath, iconPath));
+        }
+
         return new IconInfo(
             !app.IsPackaged && useThumbnails
                 ? AppIconProtocol.Create(iconPath, app.ExePath)
@@ -153,6 +159,11 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     private static IconInfo? CreateHeroIcon(AppItem app)
     {
+        if (!app.IsPackaged && IsShortcutPath(app.IcoPath) && !string.IsNullOrEmpty(app.ExePath))
+        {
+            return new IconInfo(AppIconProtocol.CreateJumbo(app.ExePath, app.IcoPath));
+        }
+
         if (!string.IsNullOrEmpty(app.JumboIconPath))
         {
             return new IconInfo(
@@ -179,6 +190,10 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
         return null;
     }
+
+    private static bool IsShortcutPath(string? path) =>
+        !string.IsNullOrEmpty(path)
+        && string.Equals(Path.GetExtension(path), ".lnk", StringComparison.OrdinalIgnoreCase);
 
     public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _titleCache.GetOrUpdate(matcher, Title);

@@ -161,6 +161,30 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
+    public void AppListItem_PrefersResolvedExecutableForShortcutIcons()
+    {
+        var app = new AppItem
+        {
+            Name = "Shortcut App",
+            IcoPath = "C:\\Users\\Test\\Desktop\\Shortcut.lnk",
+            ExePath = "C:\\Program Files\\Example\\app.exe",
+        };
+
+        var item = new AppListItem(app, useThumbnails: true);
+
+        var rowIcon = (IconInfo)item.Icon!;
+        Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
+        Assert.IsFalse(rowJumbo);
+        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath }, rowCandidates);
+
+        var details = (Details)item.Details!;
+        var heroIcon = (IconInfo)details.HeroImage;
+        Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var parsedHeroJumbo));
+        Assert.IsTrue(parsedHeroJumbo);
+        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath }, heroCandidates);
+    }
+
+    [TestMethod]
     public void AppListItem_KeepsPackagedIconAssetsAsDirectPaths()
     {
         var app = new AppItem
