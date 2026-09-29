@@ -1,4 +1,16 @@
 version: 2
+registries:
+  # nuget.config clears every other package source and maps all packages to this Azure Artifacts feed, so it is
+  # the only place Dependabot can resolve NuGet packages from. Anonymous callers can list new upstream (nuget.org)
+  # versions but get HTTP 401 when downloading a version that has not been saved to the feed yet; saving from
+  # upstream requires the "Feed and Upstream Reader (Collaborator)" role. Dependabot therefore authenticates through
+  # GitHub OpenID Connect federation as an Azure app registration that holds that role on the feed. Both values
+  # are Dependabot secrets.
+  powertoys-public-dependencies:
+    type: "nuget-feed"
+    url: "https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json"
+    tenant-id: ${{secrets.POWERTOYS_FEED_TENANT_ID}}
+    client-id: ${{secrets.POWERTOYS_FEED_CLIENT_ID}}
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -6,3 +18,113 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+
+  # Packages centrally managed in Directory.Packages.props (projects are discovered through PowerToys.slnx).
+  # packages.config files are not covered: they belong to C++ (.vcxproj) projects or to no project at all, and the
+  # Dependabot NuGet updater only evaluates .csproj/.vbproj/.fsproj projects.
+  - package-ecosystem: "nuget"
+    directory: "/"
+    registries:
+      - "powertoys-public-dependencies"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    # Every NuGet PR edits Directory.Packages.props and runs the full CI build; merging one makes the others
+    # rebase and rebuild, so keep the queue short.
+    open-pull-requests-limit: 5
+    groups:
+      community-toolkit:
+        patterns:
+          - "CommunityToolkit.*"
+      # MSTest and MSTest.TestFramework share the $(MSTestVersion) property.
+      testing:
+        patterns:
+          - "MSTest*"
+          - "Microsoft.Testing.*"
+          - "Microsoft.NET.Test.Sdk"
+      analyzers:
+        patterns:
+          - "StyleCop.Analyzers"
+          - "Microsoft.CodeAnalysis.*"
+      semantic-kernel:
+        patterns:
+          - "Microsoft.SemanticKernel*"
+      # OpenAI depends on System.ClientModel, which is pinned in Directory.Packages.props.
+      extensions-ai:
+        patterns:
+          - "Microsoft.Extensions.AI*"
+          - "OpenAI"
+          - "System.ClientModel"
+      adaptive-cards:
+        patterns:
+          - "AdaptiveCards.*"
+      # MessagePack is pinned (for security fixes) only because StreamJsonRpc depends on it; update them together.
+      streamjsonrpc:
+        patterns:
+          - "StreamJsonRpc"
+          - "MessagePack*"
+      helix-toolkit:
+        patterns:
+          - "HelixToolkit*"
+      logging:
+        patterns:
+          - "NLog*"
+      system-io-abstractions:
+        patterns:
+          - "System.IO.Abstractions*"
+      # Referenced only from .wixproj files, which Dependabot does not evaluate today; grouped in case that changes.
+      wix:
+        patterns:
+          - "WixToolset.*"
+    ignore:
+      # Moq must stay below 4.20 (behavior change, see Directory.Packages.props).
+      - dependency-name: "Moq"
+        versions: [">= 4.20"]
+      # SkiaSharp.Views.WinUI 3.x breaks the HexBox control in Registry Preview; stay on 2.x.
+      - dependency-name: "SkiaSharp.Views.WinUI"
+        update-types: ["version-update:semver-major"]
+      # CsWinRT must match the WinRT.Runtime shipped in the .NET SDK used by CI; update it manually.
+      - dependency-name: "Microsoft.Windows.CsWinRT"
+      # Windows App SDK, Windows SDK build tools and C++/WinRT are updated together by hand
+      # (.pipelines/UpdateVersions.ps1, .pipelines/v2/ci-using-the-latest-winappsdk.yml).
+      - dependency-name: "Microsoft.WindowsAppSDK*"
+      - dependency-name: "Microsoft.Windows.SDK.BuildTools"
+      - dependency-name: "Microsoft.Windows.CppWinRT"
+      # Transitive pin for CoenM.ImageSharp.ImageHash, which is built against ImageSharp 2.x: take 2.x (security)
+      # updates only. 3.x and later have breaking API changes and a different license.
+      - dependency-name: "SixLabors.ImageSharp"
+        update-types: ["version-update:semver-major"]
+      # Legacy date-based HelixToolkit versions (2011.x-2015.x) sort above 2.x but are older builds.
+      - dependency-name: "HelixToolkit"
+        versions: [">= 2011.0"]
+      # WiX v6+ requires accepting the Open Source Maintenance Fee EULA and a matching WixToolset.Sdk version in
+      # the .wixproj Sdk attribute, so major WiX upgrades stay manual.
+      - dependency-name: "WixToolset.*"
+        update-types: ["version-update:semver-major"]
+      # These use $(DotNetRuntimePackageVersion), which must match the runtime in the .NET SDK pinned in
+      # .pipelines/v2/templates/job-build-project.yml. Dependabot updates a version by rewriting the property it comes
+      # from, so every package that uses it must be listed here. Keep this list in sync with Directory.Packages.props.
+      - dependency-name: "Microsoft.Bcl.AsyncInterfaces"
+      - dependency-name: "Microsoft.Data.Sqlite"
+      - dependency-name: "Microsoft.Extensions.Caching.Abstractions"
+      - dependency-name: "Microsoft.Extensions.Caching.Memory"
+      - dependency-name: "Microsoft.Extensions.DependencyInjection"
+      - dependency-name: "Microsoft.Extensions.Hosting"
+      - dependency-name: "Microsoft.Extensions.Hosting.WindowsServices"
+      - dependency-name: "Microsoft.Extensions.Logging"
+      - dependency-name: "Microsoft.Extensions.Logging.Abstractions"
+      - dependency-name: "Microsoft.Win32.SystemEvents"
+      - dependency-name: "Microsoft.Windows.Compatibility"
+      - dependency-name: "System.CodeDom"
+      - dependency-name: "System.ComponentModel.Composition"
+      - dependency-name: "System.Configuration.ConfigurationManager"
+      - dependency-name: "System.Data.OleDb"
+      - dependency-name: "System.Diagnostics.EventLog"
+      - dependency-name: "System.Diagnostics.PerformanceCounter"
+      - dependency-name: "System.Drawing.Common"
+      - dependency-name: "System.Management"
+      - dependency-name: "System.Runtime.Caching"
+      - dependency-name: "System.ServiceProcess.ServiceController"
+      - dependency-name: "System.Text.Encoding.CodePages"
+      - dependency-name: "System.Text.Json"
