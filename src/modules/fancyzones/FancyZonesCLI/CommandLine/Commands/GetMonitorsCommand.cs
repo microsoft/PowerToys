@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Globalization;
 
 using FancyZonesCLI.Utils;
@@ -17,10 +17,10 @@ internal sealed partial class GetMonitorsCommand : FancyZonesBaseCommand
     public GetMonitorsCommand()
         : base("get-monitors", Properties.Resources.cmd_get_monitors)
     {
-        AddAlias("m");
+        Aliases.Add("m");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         // Request FancyZones to save current monitor configuration and read it reliably.
         EditorParameters.ParamsWrapper editorParams;

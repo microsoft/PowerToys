@@ -244,16 +244,19 @@ In `.resw`, use property-suffixed keys: `Cancel.Content`, `Header.Text`, etc.
 
 ## CLI Options Migration
 
-`System.CommandLine.Option<T>` constructor signature changed:
+System.CommandLine 2.0 `Option<T>` constructors take the name followed by aliases, so the description is set through the `Description` property. A second string argument is treated as an alias, not as the description:
 
 ```csharp
 // WPF era — string[] aliases
 public DestinationOption()
     : base(_aliases, Properties.Resources.CLI_Option_Destination)
 
-// WinUI 3 — single string name
+// WinUI 3 — name and aliases, description as a property
 public DestinationOption()
-    : base(_aliases[0], ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_Destination"))
+    : base("--destination", "-d", "/d")
+{
+    Description = ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_Destination");
+}
 ```
 
 ---

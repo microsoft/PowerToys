@@ -5,8 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -62,58 +60,59 @@ public abstract class BaseCommand : Command
     {
         // Register the common options for all commands
         _moduleOption = new ModuleOption();
-        AddOption(_moduleOption);
+        Options.Add(_moduleOption);
 
         _resourceOption = new ResourceOption(AvailableResources);
-        AddOption(_resourceOption);
+        Options.Add(_resourceOption);
 
         _inputOption = new InputOption();
-        AddOption(_inputOption);
+        Options.Add(_inputOption);
 
         // Register the command handler
-        this.SetHandler(CommandHandler);
+        SetAction(CommandHandler);
     }
 
     /// <summary>
     /// Handles the command invocation.
     /// </summary>
-    /// <param name="context">The invocation context containing the parsed command options.</param>
-    public void CommandHandler(InvocationContext context)
+    /// <param name="parseResult">The parse result containing the parsed command options.</param>
+    /// <returns>The exit code of the command.</returns>
+    public int CommandHandler(ParseResult parseResult)
     {
-        Input = context.ParseResult.GetValueForOption(_inputOption);
-        Module = context.ParseResult.GetValueForOption(_moduleOption);
-        Resource = ResolvedResource(context);
+        Input = parseResult.GetValue(_inputOption);
+        Module = parseResult.GetValue(_moduleOption);
+        Resource = ResolvedResource(parseResult);
 
         // Validate the module against the resource's supported modules
         var supportedModules = Resource.GetSupportedModules();
         if (!string.IsNullOrEmpty(Module) && !supportedModules.Contains(Module))
         {
             var errorMessage = string.Format(CultureInfo.InvariantCulture, ModuleNotSupportedByResource, Module, Resource.Name);
-            context.Console.Error.WriteLine(errorMessage);
-            context.ExitCode = 1;
-            return;
+            parseResult.InvocationConfiguration.Error.WriteLine(errorMessage);
+            return 1;
         }
 
         // Continue with the command handler logic
-        CommandHandlerInternal(context);
+        return CommandHandlerInternal(parseResult);
     }
 
     /// <summary>
     /// Handles the command logic internally.
     /// </summary>
-    /// <param name="context">Invocation context containing the parsed command options.</param>
-    public abstract void CommandHandlerInternal(InvocationContext context);
+    /// <param name="parseResult">The parse result containing the parsed command options.</param>
+    /// <returns>The exit code of the command.</returns>
+    public abstract int CommandHandlerInternal(ParseResult parseResult);
 
     /// <summary>
-    /// Resolves the resource from the provided resource name in the context.
+    /// Resolves the resource from the provided resource name in the parse result.
     /// </summary>
-    /// <param name="context">Invocation context containing the parsed command options.</param>
+    /// <param name="parseResult">The parse result containing the parsed command options.</param>
     /// <returns>The resolved <see cref="BaseResource"/> instance.</returns>
-    private BaseResource ResolvedResource(InvocationContext context)
+    private BaseResource ResolvedResource(ParseResult parseResult)
     {
         // Resource option has already been validated before the command
         // handler is invoked.
-        var resourceName = context.ParseResult.GetValueForOption(_resourceOption);
+        var resourceName = parseResult.GetValue(_resourceOption);
         Debug.Assert(!string.IsNullOrEmpty(resourceName), "Resource name must not be null or empty.");
         Debug.Assert(_resourceFactories.ContainsKey(resourceName), $"Resource '{resourceName}' is not registered.");
         return _resourceFactories[resourceName](Module);

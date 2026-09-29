@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Globalization;
 
 using FancyZonesCLI.Utils;
@@ -17,10 +17,10 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
     public GetActiveLayoutCommand()
         : base("get-active-layout", Properties.Resources.cmd_get_active_layout)
     {
-        AddAlias("active");
+        Aliases.Add("active");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         // Trigger FancyZones to save current monitor info and read it reliably.
         var editorParams = EditorParametersRefresh.ReadEditorParametersWithRefresh(

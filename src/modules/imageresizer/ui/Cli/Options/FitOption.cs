@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class FitOption : Option<ImageResizer.Models.ResizeFit?>
     {
-        private static readonly string[] _aliases = ["--fit", "-f"];
-
         public FitOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Fit)
+            : base("--fit", "-f")
         {
+            Description = Properties.Resources.CLI_Option_Fit;
         }
     }
 }

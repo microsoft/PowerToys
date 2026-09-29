@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 
 using FancyZonesCLI;
 using FancyZonesCLI.CommandLine;
@@ -18,12 +17,12 @@ internal abstract class FancyZonesBaseCommand : Command
     protected FancyZonesBaseCommand(string name, string description)
         : base(name, description)
     {
-        this.SetHandler(InvokeInternal);
+        SetAction(InvokeInternal);
     }
 
-    protected abstract string Execute(InvocationContext context);
+    protected abstract string Execute(ParseResult parseResult);
 
-    private void InvokeInternal(InvocationContext context)
+    private int InvokeInternal(ParseResult parseResult)
     {
         Logger.LogInfo($"Executing command '{Name}'");
         bool successful = false;
@@ -31,16 +30,16 @@ internal abstract class FancyZonesBaseCommand : Command
         if (!FancyZonesCliGuards.IsFancyZonesRunning())
         {
             Logger.LogWarning($"Command '{Name}' blocked: FancyZones is not running");
-            context.Console.Error.Write($"{Properties.Resources.error_fancyzones_not_running}{Environment.NewLine}");
-            context.ExitCode = 1;
+            parseResult.InvocationConfiguration.Error.Write($"{Properties.Resources.error_fancyzones_not_running}{Environment.NewLine}");
             LogTelemetry(successful: false);
-            return;
+            return 1;
         }
 
+        int exitCode;
         try
         {
-            string output = Execute(context);
-            context.ExitCode = 0;
+            string output = Execute(parseResult);
+            exitCode = 0;
             successful = true;
 
             Logger.LogInfo($"Command '{Name}' completed successfully");
@@ -48,21 +47,23 @@ internal abstract class FancyZonesBaseCommand : Command
 
             if (!string.IsNullOrEmpty(output))
             {
-                context.Console.Out.Write(output);
-                context.Console.Out.Write(Environment.NewLine);
+                parseResult.InvocationConfiguration.Output.Write(output);
+                parseResult.InvocationConfiguration.Output.Write(Environment.NewLine);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError($"Command '{Name}' failed", ex);
-            context.Console.Error.Write($"Error: {ex.Message}{Environment.NewLine}");
-            context.ExitCode = 1;
+            parseResult.InvocationConfiguration.Error.Write($"Error: {ex.Message}{Environment.NewLine}");
+            exitCode = 1;
             successful = false;
         }
         finally
         {
             LogTelemetry(successful);
         }
+
+        return exitCode;
     }
 
     private void LogTelemetry(bool successful)

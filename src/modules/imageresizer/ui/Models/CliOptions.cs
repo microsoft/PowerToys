@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace ImageResizer.Models
             var options = new CliOptions();
             var cmd = new ImageResizerRootCommand();
 
-            var parseResult = new Parser(cmd).Parse(args);
+            var parseResult = cmd.Parse(args);
             var errors = new List<string>(parseResult.Errors.Count + 1);
 
             foreach (var error in parseResult.Errors)
@@ -80,7 +81,7 @@ namespace ImageResizer.Models
                 errors.Add(error.Message);
             }
 
-            var files = parseResult.GetValueForArgument(cmd.FilesArgument);
+            var files = parseResult.GetValue(cmd.FilesArgument);
             PopulateInputs(options, files);
             PopulateOptionValues(options, cmd, parseResult);
 
@@ -135,15 +136,15 @@ namespace ImageResizer.Models
 
         private static T GetValidOptionValue<T>(ParseResult parseResult, System.CommandLine.Option<T> option)
         {
-            var optionResult = parseResult.FindResultFor(option);
-            if (optionResult != null && !string.IsNullOrEmpty(optionResult.ErrorMessage))
+            var optionResult = parseResult.GetResult(option);
+            if (optionResult != null && optionResult.Errors.Any())
             {
                 return default;
             }
 
             try
             {
-                return parseResult.GetValueForOption(option);
+                return parseResult.GetValue(option);
             }
             catch (InvalidOperationException)
             {
@@ -154,7 +155,7 @@ namespace ImageResizer.Models
         private static void AddOptionLikeFileErrors(
             IReadOnlyList<string> args,
             ParseResult parseResult,
-            IReadOnlyList<System.CommandLine.Option> options,
+            IEnumerable<System.CommandLine.Option> options,
             ICollection<string> files,
             ICollection<string> errors)
         {
@@ -206,11 +207,11 @@ namespace ImageResizer.Models
 
         private static void AddInvalidBundleErrors(
             IReadOnlyList<string> args,
-            IReadOnlyList<System.CommandLine.Option> options,
+            IEnumerable<System.CommandLine.Option> options,
             ICollection<string> errors)
         {
             var aliasMap = options
-                .SelectMany(option => option.Aliases.Select(alias => (Alias: alias, Option: option)))
+                .SelectMany(option => option.Aliases.Prepend(option.Name).Select(alias => (Alias: alias, Option: option)))
                 .ToDictionary(item => item.Alias, item => item.Option, StringComparer.Ordinal);
             var shortOptions = aliasMap
                 .Where(item => item.Key.Length == 2 && item.Key[0] == '-' && item.Key[1] != '-')
@@ -306,13 +307,17 @@ namespace ImageResizer.Models
         private static IReadOnlyList<string> ExpandTokensForValidation(string[] args)
         {
             var tokenizerCommand = new System.CommandLine.RootCommand();
+
+            // Clear the default --help/--version options so parsing only expands response files and
+            // leaves every other argument as typed (for example, "-h100" stays a single token).
+            tokenizerCommand.Options.Clear();
             var tokenizerArgument = new System.CommandLine.Argument<string[]>("tokens")
             {
                 Arity = System.CommandLine.ArgumentArity.ZeroOrMore,
             };
-            tokenizerCommand.AddArgument(tokenizerArgument);
+            tokenizerCommand.Arguments.Add(tokenizerArgument);
 
-            return new Parser(tokenizerCommand)
+            return tokenizerCommand
                 .Parse(args)
                 .Tokens
                 .Select(token => token.Type == TokenType.DoubleDash ? "--" : token.Value)
@@ -391,7 +396,7 @@ namespace ImageResizer.Models
             Console.WriteLine(getString("CLI_UsageOptions"));
             foreach (var option in cmd.Options)
             {
-                var aliases = string.Join(", ", option.Aliases);
+                var aliases = string.Join(", ", option.Aliases.Prepend(option.Name));
                 var description = option.Description ?? string.Empty;
                 Console.WriteLine($"  {aliases,-30} {description}");
             }

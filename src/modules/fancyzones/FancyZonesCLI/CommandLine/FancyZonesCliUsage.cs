@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Linq;
 
@@ -23,9 +24,11 @@ internal static class FancyZonesCliUsage
         Console.WriteLine();
 
         Console.WriteLine(Properties.Resources.usage_options);
-        foreach (var option in cmd.Options)
+
+        // Skip the built-in --help/--version options every RootCommand gets; they are covered by the examples below.
+        foreach (var option in cmd.Options.Where(o => o is not HelpOption and not VersionOption))
         {
-            var aliases = string.Join(", ", option.Aliases);
+            var aliases = string.Join(", ", option.Aliases.Prepend(option.Name));
             var description = option.Description ?? string.Empty;
             Console.WriteLine($"  {aliases,-30} {description}");
         }
@@ -34,7 +37,7 @@ internal static class FancyZonesCliUsage
         Console.WriteLine(Properties.Resources.usage_commands);
         foreach (var command in cmd.Subcommands)
         {
-            if (command.IsHidden)
+            if (command.Hidden)
             {
                 continue;
             }
@@ -69,6 +72,7 @@ internal static class FancyZonesCliUsage
 
         // Find matching subcommand by name or alias
         var subcommand = rootCmd.Subcommands.FirstOrDefault(c =>
+            string.Equals(c.Name, commandName, StringComparison.OrdinalIgnoreCase) ||
             c.Aliases.Any(a => string.Equals(a, commandName, StringComparison.OrdinalIgnoreCase)));
 
         if (subcommand == null)
@@ -121,7 +125,7 @@ internal static class FancyZonesCliUsage
             Console.WriteLine(Properties.Resources.usage_options);
             foreach (var option in subcommand.Options)
             {
-                var optAliases = string.Join(", ", option.Aliases);
+                var optAliases = string.Join(", ", option.Aliases.Prepend(option.Name));
                 var optDescription = option.Description ?? string.Empty;
                 Console.WriteLine($"  {optAliases,-25} {optDescription}");
             }
