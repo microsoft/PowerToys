@@ -214,7 +214,13 @@ public sealed partial class DockItemControl : Control
     // Explicit row widths keep their slots when text is temporarily empty.
     internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
 
-    internal bool HasSubtitle => ShowSubtitle && (!IsCompact || ShowCompactInlineSubtitle) && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
+    // Compact mode drops the subtitle row unless the item opted into the inline layout.
+    internal bool SubtitleFitsLayout => ShowSubtitle && (!IsCompact || ShowCompactInlineSubtitle);
+
+    internal bool HasSubtitle => SubtitleFitsLayout && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
+
+    // Both rows share one line here, so they also share one width budget.
+    internal bool IsCompactInline => IsCompact && ShowCompactInlineSubtitle && HasTitle && HasSubtitle;
 
     internal bool HasText => HasTitle || HasSubtitle;
 
@@ -259,8 +265,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateCompactInlineSubtitleState()
     {
-        var showSeparator = IsCompact && ShowCompactInlineSubtitle && HasTitle && HasSubtitle;
-        VisualStateManager.GoToState(this, showSeparator ? "CompactInlineSubtitleVisible" : "CompactInlineSubtitleHidden", true);
+        VisualStateManager.GoToState(this, IsCompactInline ? "CompactInlineSubtitleVisible" : "CompactInlineSubtitleHidden", true);
     }
 
     private void UpdateIconVisibility()

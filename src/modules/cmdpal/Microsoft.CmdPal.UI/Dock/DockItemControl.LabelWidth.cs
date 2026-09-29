@@ -97,7 +97,7 @@ public sealed partial class DockItemControl
 
         // Cache each row's font measurement across ordinary label updates.
         var showTitle = ShowTitle;
-        var showSubtitle = ShowSubtitle && !IsCompact;
+        var showSubtitle = SubtitleFitsLayout;
         var titleCharacterWidth = constraints.UsesCharacters ? _titleCharacterWidth ??= MeasureTextWidth(_titleText, "0") : 0;
         var subtitleCharacterWidth = constraints.SubtitleWidth?.InCharacters == true ? _subtitleCharacterWidth ??= MeasureTextWidth(_subtitleText, "0") : 0;
         double? titleSampleWidth = showTitle && constraints.TitleWidth?.Sample is { } titleSample
@@ -113,7 +113,10 @@ public sealed partial class DockItemControl
             ? _maximumSampleWidth ??= MeasureTextWidth(_titleText, maximumSample, useLayoutRounding: true)
             : null;
         var defaultMinimum = hasVisibleText && HasTitle ? 24 : 0;
-        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, 100, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth, minimumSampleWidth, maximumSampleWidth);
+
+        // Inline compact lays both rows on one line, so the default cap has to cover both.
+        var defaultMaximum = IsCompactInline ? 200 : 100;
+        var (minimum, maximum) = constraints.Resolve(titleCharacterWidth, subtitleCharacterWidth, defaultMinimum, defaultMaximum, showTitle, showSubtitle, titleSampleWidth, subtitleSampleWidth, minimumSampleWidth, maximumSampleWidth);
 
         // A vertical Dock owns its width. A provider's reservation must not push the label outside it.
         if (_parentDock?.DockSide is DockSide.Left or DockSide.Right)

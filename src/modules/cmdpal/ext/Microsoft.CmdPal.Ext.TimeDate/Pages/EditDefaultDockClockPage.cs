@@ -48,7 +48,7 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
     { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(settings.DockClockCopyFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockCopyFormat)}} },
     { "type": "Input.Toggle", "id": "showDateInCompact", "title": {{Encode(Resources.timedate_dock_clock_show_date_in_compact)}}, "value": {{Encode(settings.DockClockShowDateInCompact.ToString().ToLowerInvariant())}}, "valueOn": "true", "valueOff": "false" }
   ],
-  "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat", "copyFormat": "copyFormat" } } ]
+  "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat", "copyFormat": "copyFormat", "showDateInCompact": {{Encode(settings.DockClockShowDateInCompact.ToString().ToLowerInvariant())}} } } ]
 }
 """;
     }
@@ -66,7 +66,7 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
                 input["titleFormat"]?.ToString() ?? "t",
                 input["subtitleFormat"]?.ToString() ?? "d",
                 input["copyFormat"]?.ToString() ?? string.Empty,
-                input["showDateInCompact"]?.GetValue<bool>() ?? false);
+                ParseToggle(input["showDateInCompact"]));
 
             return CommandResult.GoBack();
         }
@@ -76,6 +76,9 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
             return CommandResult.KeepOpen();
         }
     }
+
+    // Input.Toggle submits its valueOn/valueOff strings, not a JSON bool.
+    private static bool ParseToggle(JsonNode? value) => bool.TryParse(value?.ToString(), out var parsed) && parsed;
 
     private static string BuildChoices(ISettingsInterface settings, string selectedValue, bool includeNoText = true)
     {

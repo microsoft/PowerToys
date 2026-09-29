@@ -67,6 +67,11 @@ public class NowDockBandTests
         Assert.AreEqual(
             true,
             _band.GetProperties()[WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle]);
+
+        settings.ShowDateInCompact = false;
+        _band.UpdateSettings(settings);
+
+        Assert.IsFalse(_band.GetProperties().ContainsKey(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle));
     }
 
     [TestMethod]

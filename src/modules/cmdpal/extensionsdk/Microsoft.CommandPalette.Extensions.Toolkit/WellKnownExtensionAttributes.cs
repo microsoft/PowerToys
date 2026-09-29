@@ -28,7 +28,14 @@ public static class WellKnownExtensionAttributes
     public const string DockLabelTrailingAlignmentPropertyName = "DockLabelTrailingAlignment";
 
     /// <summary>
+    /// The logical property name used with <c>PropChanged</c> when the Dock compact inline subtitle hint changes.
+    /// </summary>
+    public const string DockLabelCompactInlineSubtitlePropertyName = "DockLabelCompactInlineSubtitle";
+
+    /// <summary>
     /// Optional bool that displays the title and subtitle inline when the Dock is compact.
+    /// Compact mode otherwise hides the subtitle entirely.
+    /// Use <see cref="DockLabelPresentationExtensions"/> or notify <see cref="DockLabelCompactInlineSubtitlePropertyName"/> after direct edits.
     /// </summary>
     public const string DockLabelCompactInlineSubtitle = "Microsoft.CommandPalette.Dock.CompactInlineSubtitle";
 

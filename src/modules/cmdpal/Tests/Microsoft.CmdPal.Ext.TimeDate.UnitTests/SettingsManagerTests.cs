@@ -154,11 +154,60 @@ public class SettingsManagerTests
             var settings = new SettingsManager(filePath);
             var form = new EditDefaultDockClockForm(settings);
 
-            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s","showDateInCompact":true}""");
+            // Input.Toggle submits its valueOn string, not a JSON bool.
+            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s","showDateInCompact":"true"}""");
 
             Assert.AreEqual(CommandResultKind.GoBack, result.Kind);
+            Assert.AreEqual("T", settings.DockClockTitleFormat);
+            Assert.AreEqual("REL", settings.DockClockSubtitleFormat);
             Assert.AreEqual("s", settings.DockClockCopyFormat);
             Assert.IsTrue(settings.DockClockShowDateInCompact);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [TestMethod]
+    public void EditDefaultDockClockForm_ShowDateInCompactRoundTripsThroughDisk()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var settings = new SettingsManager(filePath);
+            var form = new EditDefaultDockClockForm(settings);
+
+            Assert.AreEqual(CommandResultKind.GoBack, form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"d","copyFormat":"","showDateInCompact":"true"}""").Kind);
+
+            var reloaded = new SettingsManager(filePath);
+            Assert.IsTrue(reloaded.DockClockShowDateInCompact);
+
+            Assert.AreEqual(CommandResultKind.GoBack, form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"d","copyFormat":"","showDateInCompact":"false"}""").Kind);
+            Assert.IsFalse(new SettingsManager(filePath).DockClockShowDateInCompact);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [TestMethod]
+    public void EditDefaultDockClockForm_MissingToggleStillSavesFormats()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var settings = new SettingsManager(filePath);
+            var form = new EditDefaultDockClockForm(settings);
+
+            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s"}""");
+
+            Assert.AreEqual(CommandResultKind.GoBack, result.Kind);
+            Assert.AreEqual("T", settings.DockClockTitleFormat);
+            Assert.IsFalse(settings.DockClockShowDateInCompact);
         }
         finally
         {
@@ -176,13 +225,14 @@ public class SettingsManagerTests
             var settings = new SettingsManager(filePath);
             var page = new EditDefaultDockClockPage(settings);
             _ = page.GetContent();
-            settings.SetDockClockFormats("T", "REL", "s");
+            settings.SetDockClockFormats("T", "REL", "s", showDateInCompact: true);
 
             var reopenedForm = (EditDefaultDockClockForm)page.GetContent()[0];
             var inputs = JsonNode.Parse(reopenedForm.TemplateJson)!["body"]!.AsArray();
             Assert.AreEqual("T", inputs[0]!["value"]!.GetValue<string>());
             Assert.AreEqual("REL", inputs[1]!["value"]!.GetValue<string>());
             Assert.AreEqual("s", inputs[2]!["value"]!.GetValue<string>());
+            Assert.AreEqual("true", inputs[3]!["value"]!.GetValue<string>());
         }
         finally
         {

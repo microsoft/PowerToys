@@ -545,7 +545,7 @@ public partial class DockItemViewModel : CommandItemViewModel
             UpdateTrailingLabelAlignment(GetExtendedAttributes());
         }
 
-        if (propertyName == WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle && Model.Unsafe is not null)
+        if (propertyName == WellKnownExtensionAttributes.DockLabelCompactInlineSubtitlePropertyName && Model.Unsafe is not null)
         {
             UpdateCompactInlineSubtitle(GetExtendedAttributes());
         }

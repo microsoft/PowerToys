@@ -181,5 +181,5 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
     internal void NotifyDockLabelTrailingAlignmentChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelTrailingAlignmentPropertyName);
 
-    internal void NotifyDockLabelCompactInlineSubtitleChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitle);
+    internal void NotifyDockLabelCompactInlineSubtitleChanged() => OnPropertyChanged(WellKnownExtensionAttributes.DockLabelCompactInlineSubtitlePropertyName);
 }
