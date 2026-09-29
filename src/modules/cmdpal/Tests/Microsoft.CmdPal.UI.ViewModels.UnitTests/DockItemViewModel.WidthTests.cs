@@ -63,12 +63,16 @@ public partial class DockItemViewModelTests
             var notified = false;
             viewModel.PropertyChanged += (_, args) => notified |= args.PropertyName == nameof(viewModel.LabelWidthConstraints);
 
-            item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = "10ch";
-            item.GetProperties()[WellKnownExtensionAttributes.DockMaxLabelWidth] = "10ch";
+            item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = 20d;
+            item.GetProperties()[WellKnownExtensionAttributes.DockMaxLabelWidth] = 80d;
+            item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidth] = "5ch";
+            item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidth] = "text:Arbeitsspeicher";
             item.NotifyPropertiesChanged();
 
             scheduler.ExecuteUntil(() => notified);
-            Assert.AreEqual((60d, 60d), viewModel.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((30d, 30d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false));
+            Assert.AreEqual("Arbeitsspeicher", viewModel.LabelWidthConstraints.SubtitleWidth?.Sample);
+            Assert.AreEqual((80d, 80d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, subtitleSampleWidth: 90));
 
             notified = false;
             item.GetProperties().Clear();
@@ -85,11 +89,10 @@ public partial class DockItemViewModelTests
     }
 
     [TestMethod]
-    [DataRow(80d, 80d)]
-    [DataRow(0d, 0d)]
-    [DataRow("12ch", 72d)]
-    [DataRow("1200sqh", 72d)]
-    public void WidthHints_ToolkitHelpersUpdateAndClearTheSnapshot(object width, double expectedWidth)
+    [DataRow(80d, false, 80d)]
+    [DataRow(0d, false, 0d)]
+    [DataRow(12d, true, 72d)]
+    public void WidthHints_ToolkitHelpersUpdateAndClearTheSnapshot(double value, bool characters, double expectedWidth)
     {
         var scheduler = new QueuedTaskScheduler();
         var context = new TestPageContext(scheduler);
@@ -100,21 +103,15 @@ public partial class DockItemViewModelTests
             viewModel.InitializeProperties();
             var notified = false;
             viewModel.PropertyChanged += (_, args) => notified |= args.PropertyName == nameof(viewModel.LabelWidthConstraints);
+            var width = characters ? DockLabelWidth.Characters(value) : DockLabelWidth.Dips(value);
 
-            if (width is string text)
-            {
-                item.SetDockLabelWidth(text);
-            }
-            else
-            {
-                item.SetDockLabelWidth((double)width);
-            }
+            item.SetDockLabelWidthLimits(width, width);
 
             scheduler.ExecuteUntil(() => notified);
-            Assert.AreEqual((expectedWidth, expectedWidth), viewModel.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((expectedWidth, expectedWidth), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100));
 
             notified = false;
-            item.ClearDockLabelWidth();
+            item.ClearDockLabelWidthLimits();
 
             scheduler.ExecuteUntil(() => notified);
             Assert.AreSame(DockLabelWidthConstraints.Default, viewModel.LabelWidthConstraints);
@@ -131,22 +128,28 @@ public partial class DockItemViewModelTests
     {
         var scheduler = new QueuedTaskScheduler();
         var context = new TestPageContext(scheduler);
-        var item = new WidthTestItem { Title = "Clock" };
-        item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = "10ch";
+        var item = new WidthTestItem { Title = "Clock" }
+            .SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample("Arbeitsspeicher"));
         var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
             var original = viewModel.LabelWidthConstraints;
+            var originalReads = item.PropertyReads;
 
             for (var i = 0; i < 100; i++)
             {
-                item.Title = i.ToString(CultureInfo.InvariantCulture);
-                item.Subtitle = $"Value: {i}";
+                item.Title = i % 2 == 0 ? string.Empty : i.ToString(CultureInfo.InvariantCulture);
+                item.Subtitle = i % 3 == 0 ? string.Empty : $"Value: {i}";
+
+                Assert.AreEqual((90d, 90d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, titleSampleWidth: 28, subtitleSampleWidth: 90));
+                Assert.AreEqual((28d, 28d), viewModel.LabelWidthConstraints.Resolve(6, 5, 24, 100, showSubtitle: false, titleSampleWidth: 28, subtitleSampleWidth: 90));
             }
 
-            Assert.AreEqual(1, item.PropertyReads);
+            Assert.AreEqual(originalReads, item.PropertyReads);
             Assert.AreSame(original, viewModel.LabelWidthConstraints);
+            Assert.AreEqual("100%", original.TitleWidth?.Sample);
+            Assert.AreEqual("Arbeitsspeicher", original.SubtitleWidth?.Sample);
         }
         finally
         {
@@ -213,14 +216,14 @@ public partial class DockItemViewModelTests
             fixture.Scheduler.ExecuteUntil(() => fixture.Band.Items[0].Title == "Counter");
 
             var dockItem = fixture.Band.Items[0];
-            Assert.AreEqual((80d, 80d), dockItem.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((80d, 80d), dockItem.LabelWidthConstraints.Resolve(6, 6, 24, 100));
 
             item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = 120d;
             item.GetProperties()[WellKnownExtensionAttributes.DockMaxLabelWidth] = 120d;
             item.NotifyPropertiesChanged();
 
             Assert.AreSame(dockItem, fixture.Band.Items[0]);
-            Assert.AreEqual((120d, 120d), dockItem.LabelWidthConstraints.Resolve(6, 24, 100));
+            Assert.AreEqual((120d, 120d), dockItem.LabelWidthConstraints.Resolve(6, 6, 24, 100));
         }
         finally
         {

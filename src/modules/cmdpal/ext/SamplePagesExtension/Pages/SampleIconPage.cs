@@ -12,6 +12,36 @@ internal sealed partial class SampleIconPage : ListPage
 {
     private readonly IListItem[] _items =
     [
+        BuildIconItem(
+            "|Swatch|#FF0067C0|#FF60CDFF|square|",
+            "Theme-aware square swatch",
+            "Uses separate light and dark colors with the square background shape"),
+
+        BuildIconItem(
+            "|Swatch|success|circle|",
+            "Semantic success swatch",
+            "Uses a theme-aware semantic color with the circle background shape"),
+
+        BuildIconItem(
+            "|Initials|A|#FF7A3E9D|circle|",
+            "Generated circular initials avatar",
+            "Uses an automatically contrasting foreground"),
+
+        BuildIconItem(
+            "|Initials|CP|#FF005FB8|#FF60CDFF|square|",
+            "Theme-aware square initials avatar",
+            "Uses separate light and dark background colors"),
+
+        BuildIconItem(
+            "|Initials|N|normal|circle|",
+            "Semantic normal initials avatar",
+            "Uses the normal theme foreground as its background color"),
+
+        BuildIconItem(
+            "|Initials|T|transparent|square|",
+            "Transparent initials avatar",
+            "Uses a transparent square background and a theme-aware foreground"),
+
         /*
          * Quick intro to Unicode in source code:
          * - Every character has a code point (e.g., U+0041 = 'A').

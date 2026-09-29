@@ -18,7 +18,8 @@ public partial class ShellViewModel : ObservableObject,
     IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
-    IRecipient<WindowHiddenMessage>
+    IRecipient<WindowHiddenMessage>,
+    IRecipient<UpdateCommandBarMessage>
 {
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
@@ -41,6 +42,13 @@ public partial class ShellViewModel : ObservableObject,
 
     [ObservableProperty]
     public partial bool IsSearchBoxVisible { get; set; } = true;
+
+    // Input follows the current context without waiting for command-bar rendering.
+    public ICommandBarContext? CurrentCommandContext
+    {
+        get;
+        private set => SetProperty(ref field, value);
+    }
 
     private PageViewModel _currentPage;
 
@@ -130,6 +138,12 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
+    }
+
+    public void Receive(UpdateCommandBarMessage message)
+    {
+        CurrentCommandContext = message.ViewModel;
     }
 
     [RelayCommand]
@@ -629,6 +643,8 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
+        WeakReferenceMessenger.Default.Unregister<UpdateCommandBarMessage>(this);
+        CurrentCommandContext = null;
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 
