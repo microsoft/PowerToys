@@ -14,9 +14,9 @@ internal static class IconPathParser
         var commaIndex = iconPath.IndexOf(',');
         var path = commaIndex < 0 ? iconPath.AsSpan() : iconPath.AsSpan(0, commaIndex);
 
-        if (!path.EndsWith(".exe", StringComparison.Ordinal)
-            && !path.EndsWith(".dll", StringComparison.Ordinal)
-            && !path.EndsWith(".lnk", StringComparison.Ordinal))
+        if (!path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+            && !path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+            && !path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
         {
             iconReference = default;
             return false;

@@ -81,6 +81,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
+    private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
@@ -154,7 +155,8 @@ public sealed partial class MainWindow : WindowEx,
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
-        _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
+        var nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        _hwnd = new HWND(nativeWindowHandle.ToInt32());
 
         unsafe
         {
@@ -177,6 +179,12 @@ public sealed partial class MainWindow : WindowEx,
         _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+        var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
+            "PowerToys.CommandPalette.ShellIconAssociationsChanged");
+        _shellIconCacheInvalidator = new ShellIconCacheInvalidator(
+            nativeWindowHandle,
+            shellIconAssociationsChangedMessage,
+            App.Current.Services.GetRequiredService<IIconLoaderService>().ShellIconLocations);
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
         // member (and instead like, use a local), then the pointer we marshal
@@ -1885,8 +1893,17 @@ public sealed partial class MainWindow : WindowEx,
                 break;
 
             default:
+                if (_shellIconCacheInvalidator?.TryHandleMessage(
+                        uMsg,
+                        unchecked((nint)wParam.Value),
+                        lParam.Value) == true)
+                {
+                    return (LRESULT)0;
+                }
+
                 if (uMsg == WM_TASKBAR_RESTART)
                 {
+                    _shellIconCacheInvalidator?.OnShellRestarted();
                     HotReloadSettings();
                 }
 
@@ -2011,6 +2028,8 @@ public sealed partial class MainWindow : WindowEx,
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
 
+        _shellIconCacheInvalidator?.Dispose();
+        _shellIconCacheInvalidator = null;
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();

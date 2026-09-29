@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -28,14 +29,36 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     private readonly IconLoadQueue _queue = new(WorkerCount);
     private readonly Task[] _workers;
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly IShellItemIconExtractor _shellItemIconExtractor;
+    private readonly ShellIconLocationResolver _shellItemIconLocationResolver;
     private FontFamily? _fluentIconFontFamily;
     private FontFamily? _emojiFontFamily;
     private FontFamily? _generalFontFamily;
     private int _directGlyphFailureLogged;
 
+    public ShellIconLocationCache ShellIconLocations { get; }
+
     public IconLoaderService(DispatcherQueue dispatcherQueue)
+        : this(
+            dispatcherQueue,
+            ShellItemIconLocator.Instance,
+            ShellItemIconExtractor.Instance,
+            new ShellIconLocationCache())
+    {
+    }
+
+    internal IconLoaderService(
+        DispatcherQueue dispatcherQueue,
+        IShellItemIconLocator shellItemIconLocator,
+        IShellItemIconExtractor shellItemIconExtractor,
+        ShellIconLocationCache shellIconLocations)
     {
         _dispatcherQueue = dispatcherQueue;
+        _shellItemIconExtractor = shellItemIconExtractor;
+        ShellIconLocations = shellIconLocations;
+        _shellItemIconLocationResolver = new ShellIconLocationResolver(
+            shellItemIconLocator,
+            shellIconLocations);
         _workers = new Task[WorkerCount];
 
         for (var i = 0; i < WorkerCount; i++)
@@ -154,6 +177,44 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         return false;
     }
 
+    public bool TryEnqueueShellItemLoad(
+        ShellItemIconRequest request,
+        LocatedShellIcon? locatedIcon,
+        Size iconSize,
+        double scale,
+        TaskCompletionSource<IconSource?> tcs,
+        IconLoadPriority priority = IconLoadPriority.Low,
+        IconLoadMeasurement? diagnostics = null,
+        IconLoadDemand? demand = null,
+        IShellItemIconLoadCoordinator? coordinator = null,
+        ShellIconMeasurement shellDiagnostics = default)
+    {
+        demand ??= IconLoadDemand.CreateDemanded();
+        var operation = new ShellItemIconLoadOperation(
+            this,
+            request,
+            locatedIcon,
+            iconSize,
+            scale,
+            tcs,
+            diagnostics,
+            coordinator,
+            shellDiagnostics);
+        if (_queue.TryEnqueue(operation, priority, demand, out var actualPriority))
+        {
+#if DEBUG
+            if (priority == IconLoadPriority.High && actualPriority == IconLoadPriority.Low)
+            {
+                Logger.LogDebug("High priority icon queue full, falling back to low priority");
+            }
+#endif
+            return true;
+        }
+
+        diagnostics?.Rejected();
+        return false;
+    }
+
     public async ValueTask DisposeAsync()
     {
         _queue.Complete();
@@ -188,6 +249,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         TaskCompletionSource<IconSource?> tcs,
         IconLoadMeasurement? diagnostics)
     {
+        var workerDiagnostics = diagnostics;
         try
         {
             if (diagnostics is not null && !await diagnostics.WorkerStartingAsync(WorkerCount).ConfigureAwait(false))
@@ -204,6 +266,193 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             diagnostics?.Fail();
             tcs.TrySetException(ex);
         }
+        finally
+        {
+            workerDiagnostics?.WorkerReleased();
+        }
+    }
+
+    private async Task LoadShellItemAndCompleteAsync(
+        ShellItemIconRequest request,
+        LocatedShellIcon? knownLocation,
+        Size iconSize,
+        double scale,
+        TaskCompletionSource<IconSource?> tcs,
+        IconLoadMeasurement? diagnostics,
+        IShellItemIconLoadCoordinator? coordinator,
+        ShellIconMeasurement shellDiagnostics)
+    {
+        var workerDiagnostics = diagnostics;
+        try
+        {
+            if (diagnostics is not null && !await diagnostics.WorkerStartingAsync(WorkerCount).ConfigureAwait(false))
+            {
+                diagnostics = null;
+            }
+
+            var preparationStartedAt = diagnostics?.BeginBackgroundPreparation() ?? 0;
+            var locatedIcon = _shellItemIconLocationResolver.GetCurrentOrCached(
+                request,
+                knownLocation);
+            if (locatedIcon is null)
+            {
+                var identityStartedAt = shellDiagnostics.BeginIdentityResolution();
+                locatedIcon = _shellItemIconLocationResolver.Resolve(request);
+                shellDiagnostics.IdentityResolved(locatedIcon.Value.Identity.Kind, identityStartedAt);
+            }
+
+            if (coordinator?.TryJoinExistingLoad(locatedIcon.Value, out var sharedTask) == true)
+            {
+                diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
+                ForwardSharedLoad(sharedTask, tcs, diagnostics);
+                return;
+            }
+
+            var scaledSize = iconSize.IsEmpty
+                ? iconSize
+                : new Size(iconSize.Width * scale, iconSize.Height * scale);
+            var targetPixelSize = scaledSize.IsEmpty
+                ? DefaultIconSize
+                : (int)Math.Max(scaledSize.Width, scaledSize.Height);
+            var extractionStartedAt = shellDiagnostics.BeginExtraction();
+            ShellIconExtractionResult extractionResult;
+            try
+            {
+                extractionResult = await _shellItemIconExtractor
+                    .ExtractAsync(locatedIcon.Value, targetPixelSize)
+                    .ConfigureAwait(false);
+                shellDiagnostics.ExtractionCompleted(
+                    extractionStartedAt,
+                    locatedIcon.Value.Identity.Kind,
+                    extractionResult.HasContent);
+            }
+            catch
+            {
+                shellDiagnostics.ExtractionFailed(
+                    extractionStartedAt,
+                    locatedIcon.Value.Identity.Kind);
+                throw;
+            }
+
+            using (extractionResult)
+            {
+                if (extractionResult.ImageListSize is { } imageListSize)
+                {
+                    shellDiagnostics.SystemImageListExtracted(
+                        imageListSize,
+                        extractionResult.RequestedPixelSize,
+                        extractionResult.SourceWidth,
+                        extractionResult.SourceHeight,
+                        extractionResult.HIconConversionTicks);
+                }
+
+                diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
+                IconSource? result;
+                if (extractionResult.TakeSoftwareBitmap() is { } softwareBitmap)
+                {
+                    result = await CreateSoftwareBitmapIconSourceAsync(softwareBitmap, diagnostics).ConfigureAwait(false);
+                }
+                else if (extractionResult.BitmapStream is { } bitmapStream)
+                {
+                    result = await CreateImageIconSourceAsync(bitmapStream, scaledSize, diagnostics).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await GetShellItemFallbackSourceAsync(diagnostics).ConfigureAwait(false);
+                }
+
+                diagnostics?.Complete();
+                tcs.TrySetResult(result);
+            }
+        }
+        catch (Exception ex)
+        {
+            diagnostics?.Fail();
+            tcs.TrySetException(ex);
+        }
+        finally
+        {
+            workerDiagnostics?.WorkerReleased();
+        }
+    }
+
+    private async Task<IconSource?> GetShellItemFallbackSourceAsync(IconLoadMeasurement? diagnostics)
+    {
+        var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
+            IconDispatcherMaterializationKind.SvgUri) ?? 0;
+        try
+        {
+            return await _dispatcherQueue
+                .EnqueueAsync(CreateFallbackSource, LoadingPriorityOnDispatcher)
+                .ConfigureAwait(false);
+        }
+        catch
+        {
+            diagnostics?.DispatcherWaitFailed(dispatcherEnqueuedAt);
+            throw;
+        }
+
+        IconSource? CreateFallbackSource()
+        {
+            var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
+            try
+            {
+                var result = ShellItemIconFallback.GetOrCreate();
+                diagnostics?.SetResult(result);
+                return result;
+            }
+            finally
+            {
+                diagnostics?.DispatcherUiSliceCompleted(
+                    dispatcherStartedAt,
+                    IconDispatcherUiSliceKind.SynchronousCallback);
+                diagnostics?.DispatcherCompleted(dispatcherStartedAt);
+            }
+        }
+    }
+
+    private static void ForwardSharedLoad(
+        Task<IconSource?> sharedTask,
+        TaskCompletionSource<IconSource?> completion,
+        IconLoadMeasurement? diagnostics)
+    {
+        _ = sharedTask.ContinueWith(
+            completed =>
+            {
+                try
+                {
+                    if (completed.IsCompletedSuccessfully)
+                    {
+                        diagnostics?.SetResult(completed.Result);
+                        diagnostics?.Complete();
+                    }
+                    else
+                    {
+                        diagnostics?.Fail();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Diagnostic bookkeeping must not change the shared load's outcome.
+                    Logger.LogError("Failed to record forwarded Shell icon diagnostics", ex);
+                }
+
+                if (completed.IsCompletedSuccessfully)
+                {
+                    completion.TrySetResult(completed.Result);
+                }
+                else if (completed.IsCanceled)
+                {
+                    completion.TrySetCanceled();
+                }
+                else
+                {
+                    completion.TrySetException(completed.Exception!.InnerExceptions);
+                }
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private async Task<IconSource?> LoadIconCoreAsync(
@@ -400,6 +649,97 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             _ => IconDispatcherMaterializationKind.Unknown,
         };
 
+    private async Task<IconSource?> CreateSoftwareBitmapIconSourceAsync(
+        SoftwareBitmap softwareBitmap,
+        IconLoadMeasurement? diagnostics)
+    {
+        var ownershipTransferredToMaterializer = 0;
+        var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
+            IconDispatcherMaterializationKind.Binary) ?? 0;
+        try
+        {
+            var materialization = await _dispatcherQueue
+                .EnqueueAsync(CreateIconSourceOnDispatcher, LoadingPriorityOnDispatcher)
+                .ConfigureAwait(false);
+            return await materialization.ConfigureAwait(false);
+        }
+        catch
+        {
+            // This is a no-op after the callback has started or completed.
+            diagnostics?.DispatcherWaitFailed(dispatcherEnqueuedAt);
+            throw;
+        }
+        finally
+        {
+            if (Volatile.Read(ref ownershipTransferredToMaterializer) == 0)
+            {
+                softwareBitmap.Dispose();
+            }
+        }
+
+        ValueTask<IconSource?> CreateIconSourceOnDispatcher()
+        {
+            var dispatcherStartedAt = diagnostics?.DispatcherStarted(dispatcherEnqueuedAt) ?? 0;
+            return CompleteMaterializationAsync(dispatcherStartedAt);
+        }
+
+        async ValueTask<IconSource?> CompleteMaterializationAsync(long dispatcherStartedAt)
+        {
+            var suspensionStartedAt = 0L;
+            var continuationStartedAt = 0L;
+            try
+            {
+                // The converter now owns the bitmap and either disposes it on failure
+                // or transfers its lifetime to XAML on success.
+                Interlocked.Exchange(ref ownershipTransferredToMaterializer, 1);
+                var operation = IconPathConverter.CreateBinaryIconSourceAsync(softwareBitmap);
+                if (operation.IsCompleted)
+                {
+                    var synchronousResult = await operation;
+                    diagnostics?.SetResult(synchronousResult);
+                    return synchronousResult;
+                }
+
+                suspensionStartedAt = diagnostics?.DispatcherUiSliceCompleted(
+                    dispatcherStartedAt,
+                    IconDispatcherUiSliceKind.BeforeAsyncSuspension) ?? 0;
+                IconSource result;
+                try
+                {
+                    result = await operation;
+                }
+                finally
+                {
+                    if (suspensionStartedAt != 0)
+                    {
+                        continuationStartedAt = diagnostics?.DispatcherAsyncSuspensionCompleted(
+                            suspensionStartedAt) ?? 0;
+                    }
+                }
+
+                diagnostics?.SetResult(result);
+                return result;
+            }
+            finally
+            {
+                if (suspensionStartedAt == 0)
+                {
+                    diagnostics?.DispatcherUiSliceCompleted(
+                        dispatcherStartedAt,
+                        IconDispatcherUiSliceKind.SynchronousCallback);
+                }
+                else if (continuationStartedAt != 0)
+                {
+                    diagnostics?.DispatcherUiSliceCompleted(
+                        continuationStartedAt,
+                        IconDispatcherUiSliceKind.AsyncContinuation);
+                }
+
+                diagnostics?.DispatcherCompleted(dispatcherStartedAt);
+            }
+        }
+    }
+
     private async Task<IconSource?> CreateImageIconSourceAsync(
         IRandomAccessStream bitmapStream,
         Size scaledSize,
@@ -544,6 +884,78 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 _theme,
                 _completion,
                 _diagnostics);
+
+        public override void Fail(Exception failure)
+        {
+            try
+            {
+                _diagnostics?.Fail();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to record abandoned icon load diagnostics", ex);
+            }
+
+            _completion.TrySetException(failure);
+        }
+    }
+
+    private sealed class ShellItemIconLoadOperation : IconLoadQueue.Operation
+    {
+        private readonly IconLoaderService _owner;
+        private readonly ShellItemIconRequest _request;
+        private readonly LocatedShellIcon? _locatedIcon;
+        private readonly Size _iconSize;
+        private readonly double _scale;
+        private readonly TaskCompletionSource<IconSource?> _completion;
+        private readonly IconLoadMeasurement? _diagnostics;
+        private readonly IShellItemIconLoadCoordinator? _coordinator;
+        private readonly ShellIconMeasurement _shellDiagnostics;
+
+        public ShellItemIconLoadOperation(
+            IconLoaderService owner,
+            ShellItemIconRequest request,
+            LocatedShellIcon? locatedIcon,
+            Size iconSize,
+            double scale,
+            TaskCompletionSource<IconSource?> completion,
+            IconLoadMeasurement? diagnostics,
+            IShellItemIconLoadCoordinator? coordinator,
+            ShellIconMeasurement shellDiagnostics)
+        {
+            _owner = owner;
+            _request = request;
+            _locatedIcon = locatedIcon;
+            _iconSize = iconSize;
+            _scale = scale;
+            _completion = completion;
+            _diagnostics = diagnostics;
+            _coordinator = coordinator;
+            _shellDiagnostics = shellDiagnostics;
+        }
+
+        public override void Enqueued(IconLoadPriority priority, int workerCount)
+        {
+            try
+            {
+                _diagnostics?.Enqueued(priority, workerCount);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to record icon load enqueue diagnostics", ex);
+            }
+        }
+
+        public override Task ExecuteAsync() =>
+            _owner.LoadShellItemAndCompleteAsync(
+                _request,
+                _locatedIcon,
+                _iconSize,
+                _scale,
+                _completion,
+                _diagnostics,
+                _coordinator,
+                _shellDiagnostics);
 
         public override void Fail(Exception failure)
         {
