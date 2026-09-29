@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -103,6 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
                     case "PowerDisplay": NavigationFrame.Navigate(typeof(OobePowerDisplay)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
+                    case "TextExpander": NavigationFrame.Navigate(typeof(OobeTextExpander)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
