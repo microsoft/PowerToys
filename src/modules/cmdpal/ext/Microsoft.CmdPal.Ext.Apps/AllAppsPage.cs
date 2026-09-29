@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -15,13 +16,11 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public sealed partial class AllAppsPage : DynamicListPage, IDisposable
 {
-    private const double MinimumSearchScoreRatio = 0.75;
-    private const int MetadataScoreOffset = 4;
-    private const int MetadataScoreDivisor = 2;
     private const CompareOptions TitleCompareOptions = CompareOptions.IgnoreCase | CompareOptions.NumericOrdering;
     private static readonly CompareInfo TitleCompareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
     private readonly IAppListItemSource _appListItemSource;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly AllAppsFilters _filters;
     private readonly ListItem _refreshingBanner = new(new NoOpCommand())
     {
@@ -40,9 +39,10 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
 
     private InterlockedBoolean _disposed;
 
-    public AllAppsPage(IAppListItemSource appListItemSource)
+    public AllAppsPage(IAppListItemSource appListItemSource, IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
         _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
+        _fuzzyMatcherProvider = fuzzyMatcherProvider ?? throw new ArgumentNullException(nameof(fuzzyMatcherProvider));
         _appListItemSource.Changed += OnAppListItemSourceChanged;
         var isSourceLoading = _appListItemSource.IsLoading;
         Name = Resources.all_apps;
@@ -121,13 +121,15 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
     {
         var filterId = _filters.CurrentFilterId;
         var snapshot = _appListItemSource.GetSnapshot();
+        var query = SearchText;
+        var search = string.IsNullOrWhiteSpace(query) ? null : new AppSearch(query, _fuzzyMatcherProvider.Current);
         if (filterId != AllAppsFilters.HiddenFilterId)
         {
-            return FilterAppItems(snapshot.VisibleItems, filterId);
+            return FilterAppItems(snapshot.VisibleItems, filterId, search);
         }
 
-        var manuallyHidden = FilterAppItems(snapshot.HiddenItems, filterId);
-        var patternHidden = FilterAppItems(snapshot.PatternHiddenItems, filterId);
+        var manuallyHidden = FilterAppItems(snapshot.HiddenItems, filterId, search);
+        var patternHidden = FilterAppItems(snapshot.PatternHiddenItems, filterId, search);
         List<IListItem> items = [];
         if (manuallyHidden.Length > 0)
         {
@@ -144,10 +146,9 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         return [.. items];
     }
 
-    private AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId)
+    private static AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId, AppSearch? search)
     {
-        var query = SearchText.Trim();
-        if (string.IsNullOrWhiteSpace(query))
+        if (search is null)
         {
             var matches = new List<AppListItem>(candidates.Count);
             foreach (var candidate in candidates)
@@ -161,8 +162,6 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
             return [.. matches];
         }
 
-        var idealScore = FuzzyStringMatcher.ScoreFuzzy(query, query);
-        var minimumMatchScore = (int)Math.Ceiling(idealScore * MinimumSearchScoreRatio);
         var scoredItems = new List<ScoredAppListItem>(candidates.Count);
         foreach (var candidate in candidates)
         {
@@ -171,16 +170,28 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
                 continue;
             }
 
-            var score = ScoreApp(query, candidate, minimumMatchScore);
-            if (score > 0)
+            var match = search.Evaluate(candidate);
+            if (match.HasMatch)
             {
-                scoredItems.Add(new ScoredAppListItem(candidate, score));
+                scoredItems.Add(new ScoredAppListItem(candidate, match));
             }
         }
 
         scoredItems.Sort(static (left, right) =>
         {
-            var scoreComparison = right.Score.CompareTo(left.Score);
+            var titleComparison = right.Match.IsExactTitleMatch.CompareTo(left.Match.IsExactTitleMatch);
+            if (titleComparison != 0)
+            {
+                return titleComparison;
+            }
+
+            var executableComparison = right.Match.IsExactExecutableMatch.CompareTo(left.Match.IsExactExecutableMatch);
+            if (executableComparison != 0)
+            {
+                return executableComparison;
+            }
+
+            var scoreComparison = right.Match.LexicalScore.CompareTo(left.Match.LexicalScore);
             return scoreComparison != 0
                 ? scoreComparison
                 : TitleCompareInfo.Compare(left.Item.Title, right.Item.Title, TitleCompareOptions);
@@ -205,39 +216,11 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         };
     }
 
-    private static int ScoreApp(string query, AppListItem item, int minimumMatchScore)
-    {
-        var titleScore = FuzzyStringMatcher.ScoreFuzzy(query, item.Title);
-        var subtitleScore = FuzzyStringMatcher.ScoreFuzzy(query, item.App.Subtitle);
-        var hasValidMatch = titleScore >= minimumMatchScore || subtitleScore >= minimumMatchScore;
-
-        var score = titleScore;
-        score = Math.Max(score, (subtitleScore - MetadataScoreOffset) / MetadataScoreDivisor);
-        foreach (var matchTerm in item.SearchTerms)
-        {
-            score = Math.Max(score, ScoreMetadata(query, matchTerm, minimumMatchScore, ref hasValidMatch));
-        }
-
-        return hasValidMatch ? score : 0;
-    }
-
-    private static int ScoreMetadata(string query, string? value, int minimumMatchScore, ref bool hasValidMatch)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return 0;
-        }
-
-        var rawScore = FuzzyStringMatcher.ScoreFuzzy(query, value);
-        hasValidMatch |= rawScore >= minimumMatchScore;
-        return (rawScore - MetadataScoreOffset) / MetadataScoreDivisor;
-    }
-
     private static string GetTitle(bool isRefreshing)
         => isRefreshing ? $"{Resources.all_apps} ({Resources.refreshing_page_title_suffix})" : Resources.all_apps;
 
     /// <summary>Associates an application list item with its page-search score.</summary>
-    private readonly record struct ScoredAppListItem(AppListItem Item, int Score);
+    private readonly record struct ScoredAppListItem(AppListItem Item, AppSearch.Match Match);
 
     /// <inheritdoc />
     public void Dispose()

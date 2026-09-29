@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
@@ -49,6 +50,8 @@ public interface IAppListItemSource : IDisposable
 /// </summary>
 public sealed class AppListItemSnapshot
 {
+    private readonly Dictionary<string, AppListItem> _visibleByCommandId = new(StringComparer.Ordinal);
+
     /// <summary>
     /// Initializes an atomic visible and hidden list-item snapshot.
     /// </summary>
@@ -63,6 +66,21 @@ public sealed class AppListItemSnapshot
         VisibleItems = visibleItems ?? throw new ArgumentNullException(nameof(visibleItems));
         HiddenItems = hiddenItems ?? throw new ArgumentNullException(nameof(hiddenItems));
         PatternHiddenItems = patternHiddenItems ?? [];
+        foreach (var item in VisibleItems)
+        {
+            if (item.Command is { } command)
+            {
+                _visibleByCommandId.TryAdd(command.Id, item);
+            }
+        }
+
+        foreach (var item in VisibleItems)
+        {
+            foreach (var id in item.App.CommandIds)
+            {
+                _visibleByCommandId.TryAdd(id, item);
+            }
+        }
     }
 
     /// <summary>
@@ -77,4 +95,17 @@ public sealed class AppListItemSnapshot
 
     /// <summary>Gets applications hidden by global name or path exclusion patterns.</summary>
     public IReadOnlyList<AppListItem> PatternHiddenItems { get; }
+
+    /// <summary>Resolves an app command against this snapshot's visibility policy.</summary>
+    public AppListItem? GetVisibleApp(string commandId)
+        => _visibleByCommandId.GetValueOrDefault(commandId);
+
+    /// <summary>Resolves a visible app while preserving the requested persisted command ID.</summary>
+    public ICommandItem? GetCommandItem(string commandId)
+    {
+        var item = GetVisibleApp(commandId);
+        return item is null || string.Equals(item.Command!.Id, commandId, StringComparison.Ordinal)
+            ? item
+            : new AppCommandAlias(item, commandId);
+    }
 }

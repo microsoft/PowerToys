@@ -48,7 +48,7 @@ public abstract class AppsTestBase
         Settings = new AllAppsSettings(_settingsPath);
         MockCatalog = new MockAppCatalog();
         AppListItemSource = new AppListItemSource(MockCatalog, Settings);
-        Page = new AllAppsPage(AppListItemSource);
+        Page = new AllAppsPage(AppListItemSource, TestDataHelper.CreateFuzzyMatcherProvider());
 
         await WaitForPageInitializationAsync();
     }
