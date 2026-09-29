@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.TextExpander</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.TextExpander</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <UseWindowsForms>false</UseWindowsForms>
+    <UseWPF>false</UseWPF>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="app.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.TextExpander.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

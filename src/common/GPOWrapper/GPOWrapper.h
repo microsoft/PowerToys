@@ -45,6 +45,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
         static GpoRuleConfigured GetConfiguredQuickAccentEnabledValue();
+        static GpoRuleConfigured GetConfiguredTextExpanderEnabledValue();
         static GpoRuleConfigured GetConfiguredRegistryPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredScreenRulerEnabledValue();
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
