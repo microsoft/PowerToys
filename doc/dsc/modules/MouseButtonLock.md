@@ -23,9 +23,11 @@ lock.
 
 ## Properties
 
-The MouseButtonLock module supports the following configurable properties:
+The MouseButtonLock module supports the following configurable properties.
+Each property is set by its JSON key, and its value is wrapped in an object
+with a single `value` field (for example, `rmb_lock_enabled: { value: true }`).
 
-### LmbLockEnabled
+### lmb_lock_enabled
 
 Controls whether the left (primary) mouse button can be locked.
 
@@ -34,21 +36,21 @@ Controls whether the left (primary) mouse button can be locked.
 **Description:** Off by default because Windows already ships ClickLock
 for the left button.
 
-### RmbLockEnabled
+### rmb_lock_enabled
 
 Controls whether the right mouse button can be locked.
 
 **Type:** boolean  
 **Default:** `true`
 
-### MmbLockEnabled
+### mmb_lock_enabled
 
 Controls whether the middle mouse button can be locked.
 
 **Type:** boolean  
 **Default:** `false`
 
-### HoldDurationMs
+### hold_duration_ms
 
 Sets how long a button must be held, in milliseconds, before it locks.
 
@@ -57,7 +59,7 @@ Sets how long a button must be held, in milliseconds, before it locks.
 `2200`; a hand-edited value is clamped to the full range)  
 **Default:** `1200`
 
-### MoveCancelPixels
+### move_cancel_pixels
 
 Sets the drag threshold in pixels that separates hand jitter from a
 deliberate drag. Moving the cursor beyond this distance during the hold
@@ -77,9 +79,9 @@ to the default right button.
 $config = @{
     settings = @{
         properties = @{
-            LmbLockEnabled = $true
-            RmbLockEnabled = $true
-            MmbLockEnabled = $true
+            lmb_lock_enabled = @{ value = $true }
+            rmb_lock_enabled = @{ value = $true }
+            mmb_lock_enabled = @{ value = $true }
         }
         name = "MouseButtonLock"
         version = "1.0"
@@ -106,8 +108,10 @@ resources:
     properties:
       settings:
         properties:
-          HoldDurationMs: 1600
-          MoveCancelPixels: 10
+          hold_duration_ms:
+            value: 1600
+          move_cancel_pixels:
+            value: 10
         name: MouseButtonLock
         version: 1.0
 ```
@@ -139,8 +143,10 @@ resources:
     properties:
       settings:
         properties:
-          RmbLockEnabled: true
-          HoldDurationMs: 1000
+          rmb_lock_enabled:
+            value: true
+          hold_duration_ms:
+            value: 1000
         name: MouseButtonLock
         version: 1.0
 ```
@@ -163,7 +169,8 @@ resources:
     properties:
       settings:
         properties:
-          MmbLockEnabled: true
+          mmb_lock_enabled:
+            value: true
         name: MouseButtonLock
         version: 1.0
 ```
@@ -181,9 +188,12 @@ resources:
     properties:
       settings:
         properties:
-          RmbLockEnabled: true
-          HoldDurationMs: 600
-          MoveCancelPixels: 3
+          rmb_lock_enabled:
+            value: true
+          hold_duration_ms:
+            value: 600
+          move_cancel_pixels:
+            value: 3
         name: MouseButtonLock
         version: 1.0
 ```
@@ -200,10 +210,14 @@ resources:
     properties:
       settings:
         properties:
-          LmbLockEnabled: true
-          RmbLockEnabled: true
-          HoldDurationMs: 2000
-          MoveCancelPixels: 15
+          lmb_lock_enabled:
+            value: true
+          rmb_lock_enabled:
+            value: true
+          hold_duration_ms:
+            value: 2000
+          move_cancel_pixels:
+            value: 15
         name: MouseButtonLock
         version: 1.0
 ```
