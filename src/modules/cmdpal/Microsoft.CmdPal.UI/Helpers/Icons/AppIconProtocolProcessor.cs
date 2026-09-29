@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
+using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -11,17 +12,21 @@ namespace Microsoft.CmdPal.UI.Helpers;
 internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
 {
     private readonly Func<string, bool, Task<IRandomAccessStream?>> _getThumbnail;
+    private readonly Func<string, int, SoftwareBitmap?>? _getJumboIcon;
 
     public static AppIconProtocolProcessor Instance { get; } = new();
 
     private AppIconProtocolProcessor()
-        : this(ThumbnailHelper.GetThumbnail)
+        : this(ThumbnailHelper.GetThumbnail, ShellItemImageFactoryIconExtractor.Extract)
     {
     }
 
-    internal AppIconProtocolProcessor(Func<string, bool, Task<IRandomAccessStream?>> getThumbnail)
+    internal AppIconProtocolProcessor(
+        Func<string, bool, Task<IRandomAccessStream?>> getThumbnail,
+        Func<string, int, SoftwareBitmap?>? getJumboIcon = null)
     {
         _getThumbnail = getThumbnail;
+        _getJumboIcon = getJumboIcon;
     }
 
     public IconCachePartition CachePartition => IconCachePartition.Other;
@@ -49,7 +54,6 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
         int targetSize,
         ElementTheme theme)
     {
-        _ = targetSize;
         _ = theme;
 
         if (!AppIconProtocol.TryParse(value, out var candidates, out var jumbo))
@@ -61,6 +65,11 @@ internal sealed class AppIconProtocolProcessor : IIconProtocolProcessor
         {
             try
             {
+                if (jumbo && _getJumboIcon?.Invoke(candidate, targetSize) is { } bitmap)
+                {
+                    return IconProtocolProcessingResult.FromPreparedIcon(IconPathConverter.PreparedIcon.FromBinary(bitmap));
+                }
+
                 if (await _getThumbnail(candidate, jumbo).ConfigureAwait(false) is { } stream)
                 {
                     return IconProtocolProcessingResult.FromBitmapStream(stream);

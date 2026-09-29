@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
@@ -13,6 +15,99 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public class AppIconProtocolProcessorTests
 {
+    [TestMethod]
+    [DataRow(0, false)]
+    [DataRow(3, false)]
+    [DataRow(-4, false)]
+    [DataRow(0, true)]
+    [DataRow(3, true)]
+    [DataRow(-4, true)]
+    public async Task IndexedIconLoadsBeforeTheLaunchPathFallback(int index, bool jumbo)
+    {
+        var primary = FormattableString.Invariant($"{GetShell32DllPath()},{index}");
+        var fallback = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+        var attempts = new List<string>();
+        var processor = new AppIconProtocolProcessor((candidate, useJumbo) =>
+        {
+            attempts.Add(candidate);
+            return ThumbnailHelper.GetThumbnail(candidate, useJumbo);
+        });
+
+        using var result = await processor.PrepareAsync(
+            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
+            32,
+            ElementTheme.Default);
+
+        CollectionAssert.AreEqual(new[] { primary }, attempts);
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
+        var decoder = await BitmapDecoder.CreateAsync(result.BitmapStream!);
+        Assert.AreEqual(jumbo ? 256u : 32u, decoder.PixelWidth);
+        Assert.AreEqual(decoder.PixelWidth, decoder.PixelHeight);
+
+        // Compare against direct resource extraction, including the absence of overlays.
+        using var expected = IconPathConverter.Prepare(primary, null, (int)decoder.PixelWidth);
+        using var actual = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+        Assert.IsNotNull(expected.SoftwareBitmap);
+        var expectedPixels = new byte[actual.PixelWidth * actual.PixelHeight * 4];
+        var actualPixels = new byte[expectedPixels.Length];
+        expected.SoftwareBitmap.CopyToBuffer(expectedPixels.AsBuffer());
+        actual.CopyToBuffer(actualPixels.AsBuffer());
+        CollectionAssert.AreEqual(expectedPixels, actualPixels);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task MissingIconResourceAllowsFallback(bool jumbo)
+    {
+        using var result = await ThumbnailHelper.GetThumbnail($"{GetShell32DllPath()},2147483647", jumbo);
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task IndexedIconFileSupportsCommasAndUppercaseExtension(bool jumbo)
+    {
+        var iconPath = Path.Combine(Path.GetTempPath(), $"CmdPal,icon-{Guid.NewGuid():N}.ICO");
+        try
+        {
+            using (var file = File.Create(iconPath))
+            {
+                System.Drawing.SystemIcons.Information.Save(file);
+            }
+
+            using var result = await ThumbnailHelper.GetThumbnail($"{iconPath},0", jumbo);
+            Assert.IsNotNull(result);
+            var decoder = await BitmapDecoder.CreateAsync(result);
+            Assert.AreEqual(jumbo ? 256u : 32u, decoder.PixelWidth);
+            using var prepared = IconPathConverter.Prepare($"{iconPath},0", null, 32);
+            Assert.IsNotNull(prepared.SoftwareBitmap);
+        }
+        finally
+        {
+            File.Delete(iconPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ExistingFolderEndingInCommaAndNumberIsNotAnIconReference(bool jumbo)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"CmdPal-icons-{Guid.NewGuid():N},3");
+        Directory.CreateDirectory(path);
+        try
+        {
+            using var result = await ThumbnailHelper.GetThumbnail(path, jumbo);
+            Assert.IsNotNull(result);
+        }
+        finally
+        {
+            Directory.Delete(path);
+        }
+    }
+
     [TestMethod]
     public async Task TriesCandidatesInOrderUntilThumbnailSucceeds()
     {
