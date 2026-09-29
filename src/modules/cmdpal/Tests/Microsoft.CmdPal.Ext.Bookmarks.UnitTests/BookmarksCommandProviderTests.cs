@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
@@ -93,6 +96,45 @@ public class BookmarksCommandProviderTests
 
         Assert.IsNotNull(addCommand, "addCommand != null");
         Assert.IsNotNull(testBookmark, "testBookmark != null");
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task BookmarkListItem_LocalFileDataPackageTracksTargetUpdates()
+    {
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            var bookmark = new BookmarkData("Local file", filePath);
+            var bookmarkManager = new MockBookmarkManager(bookmark);
+            using var item = new BookmarkListItem(
+                bookmark,
+                bookmarkManager,
+                new BlockAfterFirstBookmarkResolver(),
+                new IconLocator(),
+                new PlaceholderParser());
+
+            await item.IsInitialized;
+
+            Assert.IsNotNull(item.DataPackage);
+            var dataPackageView = item.DataPackage.GetView();
+            Assert.AreEqual(DataPackageOperation.Copy, dataPackageView.RequestedOperation);
+            Assert.IsTrue(dataPackageView.Contains(StandardDataFormats.StorageItems));
+            var storageItems = await dataPackageView.GetStorageItemsAsync().AsTask();
+            Assert.AreEqual(1, storageItems.Count);
+            Assert.IsTrue(string.Equals(filePath, storageItems[0].Path, StringComparison.OrdinalIgnoreCase));
+
+            var renamed = bookmark with { Name = "Renamed local file" };
+            bookmarkManager.RaiseBookmarkUpdated(bookmark, renamed);
+            Assert.IsNotNull(item.DataPackage);
+
+            bookmarkManager.RaiseBookmarkUpdated(renamed, renamed with { Bookmark = "https://example.com" });
+            Assert.IsNull(item.DataPackage);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 
     [TestMethod]
@@ -210,5 +252,24 @@ public class BookmarksCommandProviderTests
             _completion.Task;
 
         public Classification ClassifyOrUnknown(string input) => Classification.Unknown(input);
+    }
+
+    private sealed class BlockAfterFirstBookmarkResolver : IBookmarkResolver
+    {
+        private readonly BookmarkResolver _resolver = new(new PlaceholderParser());
+        private int _callCount;
+
+        public async Task<(bool Success, Classification Result)> TryClassifyAsync(string input, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref _callCount) == 1)
+            {
+                return await _resolver.TryClassifyAsync(input, cancellationToken);
+            }
+
+            await Task.Delay(System.Threading.Timeout.Infinite, cancellationToken);
+            return (false, Classification.Unknown(input));
+        }
+
+        public Classification ClassifyOrUnknown(string input) => _resolver.ClassifyOrUnknown(input);
     }
 }
