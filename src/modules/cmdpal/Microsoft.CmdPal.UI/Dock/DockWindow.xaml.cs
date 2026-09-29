@@ -97,6 +97,8 @@ public sealed partial class DockWindow : WindowEx,
     private bool _slideIsRevealing;
     private System.Diagnostics.Stopwatch? _slideStopwatch;
     private bool _paletteOpenedFromDock;
+    private bool _hasKeyboardFocus;
+    private HWND _windowBeforeKeyboardFocus = HWND.Null;
     private const int AutoHideCollapsedThicknessDips = 0;
     private const int RevealHitTestMarginPixels = 1;
     private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
@@ -154,6 +156,7 @@ public sealed partial class DockWindow : WindowEx,
         InitializeBackdropSupport();
         _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
+        _dock.KeyboardFocusReleaseRequested += (_, _) => ReleaseKeyboardFocus(restoreForeground: true);
 
         InitializeComponent();
         Root.Children.Add(_dock);
@@ -229,6 +232,12 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        {
+            // Focus moved somewhere else on its own, so stop pretending we still hold it.
+            ReleaseKeyboardFocus(restoreForeground: false);
+        }
+
         UpdateWindowFrame();
         UpdateTopmostState();
     }
@@ -260,6 +269,11 @@ public sealed partial class DockWindow : WindowEx,
         if (_isDisposed)
         {
             return;
+        }
+
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
         }
 
         this.viewModel.UpdateSettings(_settings);
@@ -623,6 +637,11 @@ public sealed partial class DockWindow : WindowEx,
 
         RefreshTargetMonitor();
 
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
+        }
+
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             // The Shell caches the monitor coordinates from the original
@@ -817,6 +836,93 @@ public sealed partial class DockWindow : WindowEx,
         PInvoke.SetWindowPos(_hwnd, HWND.Null, rect.left, rect.top, width, height, flags);
     }
 
+    /// <summary>
+    /// Handles the dock focus shortcut: pull focus in, or hand it back if we already have it.
+    /// </summary>
+    public void ToggleKeyboardFocus()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        if (_hasKeyboardFocus)
+        {
+            ReleaseKeyboardFocus(restoreForeground: true);
+            return;
+        }
+
+        var foreground = PInvoke.GetForegroundWindow();
+        _windowBeforeKeyboardFocus = foreground == _hwnd ? HWND.Null : foreground;
+        _hasKeyboardFocus = true;
+
+        // Skip the slide animation. Focus has to land on a band that is already where the
+        // user can see it, not one that is still sliding in.
+        RevealAutoHideDock(immediate: true);
+        StopCollapseTimer();
+
+        ActivateForKeyboardFocus();
+
+        if (!_dock.TryFocusFirstItem())
+        {
+            // An empty dock has nothing to focus, so don't strand the user in it.
+            ReleaseKeyboardFocus(restoreForeground: true);
+        }
+    }
+
+    /// <summary>
+    /// Gives focus back to whatever the user was in before, and lets an auto-hide dock
+    /// slide away again.
+    /// </summary>
+    /// <param name="restoreForeground">
+    /// False when focus already moved elsewhere on its own, so there is nothing to restore.
+    /// </param>
+    public void ReleaseKeyboardFocus(bool restoreForeground)
+    {
+        if (!_hasKeyboardFocus)
+        {
+            return;
+        }
+
+        _hasKeyboardFocus = false;
+
+        var previous = _windowBeforeKeyboardFocus;
+        _windowBeforeKeyboardFocus = HWND.Null;
+
+        if (restoreForeground && previous != HWND.Null && PInvoke.IsWindow(previous))
+        {
+            PInvoke.SetForegroundWindow(previous);
+        }
+
+        // A pinned dock stays put. Only an auto-hide dock is expected to disappear again.
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            ScheduleCollapseAutoHideDock();
+        }
+    }
+
+    /// <summary>
+    /// The dock normally goes out of its way to never steal activation, so taking the
+    /// foreground has to be done deliberately, including the thread-input attach that
+    /// Windows requires to let a background process do it.
+    /// </summary>
+    private void ActivateForKeyboardFocus()
+    {
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(PInvoke.GetForegroundWindow());
+
+        if (foregroundThreadId != 0 && foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
+    }
+
     private void RevealAutoHideDock(bool immediate = false)
     {
         if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
@@ -880,6 +986,11 @@ public sealed partial class DockWindow : WindowEx,
 
     private bool CanCollapseAutoHideDock()
     {
+        if (_hasKeyboardFocus)
+        {
+            return false;
+        }
+
         if (_dock.IsEditMode || _dock.HasOpenTransientUi || _dock.IsDragOperationActive)
         {
             return false;
@@ -1528,13 +1639,23 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
-    private void ShowMonitorLabel()
+    private void UpdateMonitorLabelTitle()
     {
-        var name = _targetMonitor?.DisplayName
-            ?? _monitorService.GetPrimaryMonitor()?.DisplayName
-            ?? string.Empty;
+        var monitor = _targetMonitor ?? _monitorService.GetPrimaryMonitor();
+        var name = string.Empty;
+        if (monitor is not null)
+        {
+            var config = _settings.MonitorConfigs.Find(c =>
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
+            name = DockMonitorDisplayName.Resolve(monitor, config);
+        }
 
         MonitorLabelTeachingTip.Title = name;
+    }
+
+    private void ShowMonitorLabel()
+    {
+        UpdateMonitorLabelTitle();
         MonitorLabelTeachingTip.Target = Root;
 
         // Open the tip on the side opposite the dock alignment so it stays

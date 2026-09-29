@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, persistent local-VM validation on Hyper-V, resettable clean-baseline runs, Settings IPC authentication/test signing, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Settings IPC, not-microsoft-signed, Authenticode, local VM, Hyper-V, checkpoint, migrate, flaky, CI stability, Explorer, Shell extension, WebView2."
+description: "Create, migrate, and stabilize PowerToys UI tests with Microsoft.PowerToys.UITest.Next and winappcli, through local VM success, commit/push, and CI validation. Use for ports, new UITest projects, flaky CI tests, persistent Hyper-V validation, Settings IPC authentication/test signing, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or foreground failures. Covers APIs, scaffolding, test design, diagnostics, and the required handoff to ui-tests-pipeline-ci. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Settings IPC, not-microsoft-signed, Authenticode, local VM, Hyper-V, checkpoint, migrate, flaky, CI stability, Explorer, Shell extension, WebView2."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -34,6 +34,20 @@ Use this skill when the task is to:
 This skill is the *how*: the framework differences, the API mapping, the project scaffolding, the
 naming rules, the recurring PowerToys test recipes, and the build/validate loop. The *what* (which
 module, which tests) comes from the calling prompt.
+
+## End-to-end completion contract
+
+A request to **create, migrate, or stabilize UI tests** includes the complete delivery loop:
+implement -> build -> full local VM matrix -> commit and push -> scoped CI -> terminal results.
+Local success is a handoff, **not completion**. After the full default and constrained suites pass,
+invoke [ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md) automatically; do not wait for a
+separate "push" or "run CI" request. Keep commit/push and CI validation as open TODOs from the start.
+
+Respect an explicit local-only/no-push/no-CI request. A read-only investigation, VM setup, or request
+to run an existing suite locally does not authorize publishing changes. CI remains Microsoft
+FTE-only and requires the pipeline skill's successful access preflight; report an exact blocker
+when unavailable, never call local-only evidence CI-validated. The pipeline skill owns publication,
+queueing, synchronous waiting, and the three-run stabilization limit.
 
 > **Reference implementation — read these working examples before porting anything.** They are
 > the ground truth for "what good looks like" with each harness:
@@ -97,6 +111,8 @@ module, which tests) comes from the calling prompt.
   scaffold or reuse a persistent Hyper-V VM, run as a true standard user, refresh only
   changed payloads, iterate through durable TRX/evidence, and restore or recreate the baseline for
   clean-profile validation.
+10. **[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md)** — the mandatory post-local handoff
+  for implementation tasks: preflight, scoped commit/push, exact-revision CI, and terminal sign-off.
 
 ## Pick your scenario
 
@@ -168,6 +184,12 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
   timeouts; parse TRX and verify durable evidence export
 - [ ] 11. If the local VM is unavailable or unsupported, run on another live desktop or report the exact
    environmental blocker; do not silently stop at compile validation
+- [ ] 12. Complete the full default and Constrained suites on both guest OSes, plus applicable
+   architecture builds/guests; preserve counts, payload hashes, and evidence
+- [ ] 13. Invoke ui-tests-pipeline-ci, pass its access preflight, commit only task-owned changes,
+   and push the feature branch; record the exact SHA
+- [ ] 14. Preview and queue scoped CI, persist its build ID, wait synchronously, and diagnose/retry
+   within the three-run ceiling; finish only on verified terminal success or an explicit blocker
 ```
 
 ## Build & validate
@@ -233,13 +255,14 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
   12), not something the port must reproduce — the ScreenRuler legacy suite scores **4/5** elevated
   here (Bounds fails at 150% scale) while the `.Next` port scores **5/5**. `.Next` tests themselves
   need **no** elevation (the new harness launches the runner non-elevated).
-- **Always** build to exit code 0 before declaring the migration done. Fix every compile error — do
+- **Always** build to exit code 0 before proceeding to live validation. Fix every compile error — do
   not leave `// TODO: port this` stubs that break the build.
 - Running the tests requires a **live interactive desktop** plus `winapp.exe`
   (`winget install Microsoft.winappcli`, or set `WINAPP_CLI_PATH`). The whole PowerToys runner is
   launched by the harness (`PowerToys.exe --open-settings`) — you should see the Settings window
-  appear. If the environment has no desktop (headless agent), state that the project **builds clean
-  and is ready to run**, and list which source tests/checklist items each new `[TestMethod]` covers.
+  appear. If no supported live desktop is available, report **local validation blocked**, along with
+  the build result and checklist coverage. Compile-only evidence does not complete an implementation
+  task or satisfy the CI local gate.
 - New `.csproj` files under `src/` MUST `<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />`
   right after `<Project Sdk=...>` (CI audits this). The template already does.
 

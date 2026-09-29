@@ -11,5 +11,6 @@ public:
     static void Invoked() noexcept;
     static void InvokedRet(_In_ HRESULT hr) noexcept;
     static void QueryContextMenuError(_In_ HRESULT hr) noexcept;
+    static void ServicingWindowInitialization(_In_ HRESULT hr) noexcept;
     static void CLICommand(_In_ PCWSTR commandName, _In_ bool successful) noexcept;
 };

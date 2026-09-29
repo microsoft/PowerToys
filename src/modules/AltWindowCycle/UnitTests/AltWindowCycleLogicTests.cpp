@@ -113,7 +113,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(0, layout.pageSize);
         }
 
-        TEST_METHOD(TilePreviewAndHeaderRectsUsePanelRelativeInsetViewport)
+        TEST_METHOD(TilePreviewAndHeaderRectsUseFlushEdgeToEdgeViewport)
         {
             const RECT work = { 0, 0, 1920, 1080 };
             const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 1.0);

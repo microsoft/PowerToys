@@ -17,6 +17,14 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public class ProfileStoreTests
 {
+    private const string LegacyJson = """
+        {"nextId":8,"profiles":[
+          {"id":7,"name":"Legacy","monitorSettings":[{"monitorId":"MON1","brightness":60}],
+           "createdDate":"1970-01-01T00:00:00Z","lastModified":"1970-01-01T00:00:00Z"},
+          {"name":"Older","monitorSettings":[{"monitorId":"MON1","brightness":40}],
+           "createdDate":"1970-01-01T00:00:00Z","lastModified":"1970-01-01T00:00:00Z"}]}
+        """;
+
     private static readonly string[] ExpectedConcurrentProfileNames = { "First", "Second" };
 
     private string _tempDir = string.Empty;
@@ -96,7 +104,8 @@ public class ProfileStoreTests
 
         Assert.IsNotNull(exception);
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
-        Assert.AreEqual(0, store.LoadProfiles().Profiles[0].Id);
+        var persisted = JsonSerializer.Deserialize(File.ReadAllText(_profilesPath), ProfileSerializationContext.Default.PowerDisplayProfiles);
+        Assert.AreEqual(0, persisted!.Profiles[0].Id);
         Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
     }
 
@@ -114,14 +123,16 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
-    public void AddOrUpdateProfile_SaveFails_RestoresIncomingProfileState()
+    [DataRow(0)]
+    [DataRow(1)]
+    public void AddOrUpdateProfile_SaveFails_RestoresIncomingProfileState(int incomingId)
     {
         var profiles = new PowerDisplayProfiles { NextId = 2 };
         profiles.Profiles.Add(MakeProfile("Existing", id: 1));
         var originalJson = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
         File.WriteAllText(_profilesPath, originalJson);
         File.SetAttributes(_profilesPath, FileAttributes.ReadOnly);
-        var incoming = MakeProfile("New");
+        var incoming = MakeProfile("Changed", id: incomingId);
         incoming.LastModified = DateTime.UnixEpoch;
         var store = CreateStore();
 
@@ -136,7 +147,7 @@ public class ProfileStoreTests
         }
 
         Assert.IsNotNull(exception);
-        Assert.AreEqual(0, incoming.Id);
+        Assert.AreEqual(incomingId, incoming.Id);
         Assert.AreEqual(DateTime.UnixEpoch, incoming.LastModified);
         Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
         Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
@@ -273,6 +284,227 @@ public class ProfileStoreTests
             ExpectedConcurrentProfileNames,
             loaded.Profiles.Select(profile => profile.Name).ToArray());
     }
+
+    [TestMethod]
+    public void LoadProfiles_AssignedIdsReadOnlyFile_DoesNotRewrite()
+    {
+        var store = CreateStore();
+        SaveInitialProfiles(store);
+        var originalJson = File.ReadAllText(_profilesPath);
+        File.SetAttributes(_profilesPath, FileAttributes.ReadOnly);
+
+        var loaded = store.LoadProfiles();
+
+        Assert.AreEqual(3, loaded.Profiles.Count);
+        Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
+    }
+
+    [TestMethod]
+    public async Task UpdateProfilesAsync_MoveProfileBefore_PersistsArrayOrderWithoutChangingProfiles()
+    {
+        var store = CreateStore();
+        var original = SaveInitialProfiles(store);
+        var originalContents = original.Profiles.ToDictionary(profile => profile.Id, SerializeContents);
+        var originalNextId = original.NextId;
+
+        Assert.IsTrue(await store.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1)));
+
+        var loaded = await CreateStore().LoadProfilesAsync();
+        Assert.AreEqual("3,1,2", DisplayOrder(loaded));
+        Assert.AreEqual("3,1,2", string.Join(",", loaded.Profiles.Select(profile => profile.Id)));
+        Assert.AreEqual(originalContents.Count, loaded.Profiles.Count);
+        Assert.AreEqual(originalNextId, loaded.NextId);
+        foreach (var profile in loaded.Profiles)
+        {
+            Assert.AreEqual(originalContents[profile.Id], SerializeContents(profile));
+        }
+
+        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+    }
+
+    [TestMethod]
+    public void AddOrUpdateProfile_AfterReordering_PreservesArrayPosition()
+    {
+        var store = CreateStore();
+        SaveInitialProfiles(store);
+        Assert.IsTrue(store.UpdateProfiles(profiles => profiles.MoveProfileBefore(3, 1)));
+        var edited = MakeProfile("Edited", 3);
+        edited.MonitorSettings[0].Brightness = 60;
+
+        CreateStore().AddOrUpdateProfile(edited);
+
+        var loaded = store.LoadProfiles();
+        Assert.AreEqual("3,1,2", DisplayOrder(loaded));
+        Assert.AreEqual(3, loaded.Profiles[0].Id);
+        Assert.AreEqual("Edited", loaded.Profiles[0].Name);
+        Assert.AreEqual(60, loaded.Profiles[0].MonitorSettings[0].Brightness);
+    }
+
+    [TestMethod]
+    [DataRow(1, 2)]
+    [DataRow(3, null)]
+    [DataRow(1, 99)]
+    [DataRow(99, 1)]
+    [DataRow(0, 1)]
+    [DataRow(1, 0)]
+    [DataRow(1, 1)]
+    public void UpdateProfiles_MoveProfileBefore_InvalidOrUnchanged_DoesNotRewriteFile(int profileId, int? beforeProfileId)
+    {
+        var store = CreateStore();
+        SaveInitialProfiles(store);
+        var originalJson = File.ReadAllText(_profilesPath);
+        File.SetAttributes(_profilesPath, FileAttributes.ReadOnly);
+
+        Assert.IsFalse(store.UpdateProfiles(profiles => profiles.MoveProfileBefore(profileId, beforeProfileId)));
+
+        Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
+        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+    }
+
+    [TestMethod]
+    public void UpdateProfiles_MoveProfileBefore_SaveFails_PreservesPersistedOrderAndContents()
+    {
+        var store = CreateStore();
+        SaveInitialProfiles(store);
+        var originalJson = File.ReadAllText(_profilesPath);
+        File.SetAttributes(_profilesPath, FileAttributes.ReadOnly);
+        Exception? exception = null;
+
+        try
+        {
+            store.UpdateProfiles(profiles => profiles.MoveProfileBefore(3, 1));
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(originalJson, File.ReadAllText(_profilesPath));
+        Assert.AreEqual("1,2,3", DisplayOrder(store.LoadProfiles()));
+        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+    }
+
+    [TestMethod]
+    public async Task UpdateProfilesAsync_MoveProfileBefore_PreservesConcurrentAddAndEdit()
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        SaveInitialProfiles(firstStore);
+        using var writerLoaded = new ManualResetEventSlim();
+        using var continueWriter = new ManualResetEventSlim();
+        var writer = Task.Run(() => secondStore.UpdateProfiles(profiles =>
+        {
+            writerLoaded.Set();
+            if (!continueWriter.Wait(TimeSpan.FromSeconds(5)))
+            {
+                throw new TimeoutException("The concurrent profile writer was not released.");
+            }
+
+            var edited = MakeProfile("Edited", 3);
+            edited.MonitorSettings[0].Brightness = 60;
+            profiles.SetProfile(edited);
+            profiles.SetProfile(MakeProfile("Added"));
+            return true;
+        }));
+
+        try
+        {
+            Assert.IsTrue(writerLoaded.Wait(TimeSpan.FromSeconds(5)));
+            var move = firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1));
+            Assert.IsFalse(move.IsCompleted);
+            continueWriter.Set();
+            Assert.IsTrue(await writer);
+            Assert.IsTrue(await move);
+        }
+        finally
+        {
+            continueWriter.Set();
+            await writer;
+        }
+
+        var loaded = await firstStore.LoadProfilesAsync();
+        Assert.AreEqual("Edited,Profile 1,Profile 2,Added", string.Join(",", loaded.GetAssignedProfiles().Select(profile => profile.Name)));
+        Assert.AreEqual(60, loaded.GetById(3)!.MonitorSettings[0].Brightness);
+        Assert.AreEqual(4, loaded.Profiles.Select(profile => profile.Id).Distinct().Count());
+        Assert.AreEqual("3,1,2,4", DisplayOrder(loaded));
+    }
+
+    [TestMethod]
+    [DataRow(1, false, "2,3")]
+    [DataRow(3, false, "1,2")]
+    [DataRow(2, true, "3,1")]
+    public async Task UpdateProfilesAsync_MoveProfileBefore_UsesLatestIdsAfterDeletion(int deletedId, bool expectedChanged, string expectedOrder)
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        SaveInitialProfiles(firstStore);
+
+        Assert.IsTrue(secondStore.RemoveProfileById(deletedId));
+        var jsonAfterDeletion = File.ReadAllText(_profilesPath);
+        Assert.AreEqual(
+            expectedChanged,
+            await firstStore.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(3, 1)));
+
+        var loaded = firstStore.LoadProfiles();
+        Assert.AreEqual(expectedOrder, DisplayOrder(loaded));
+        Assert.IsNull(loaded.GetById(deletedId));
+        Assert.AreEqual(2, loaded.Profiles.Count);
+        if (!expectedChanged)
+        {
+            Assert.AreEqual(jsonAfterDeletion, File.ReadAllText(_profilesPath));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void LoadProfiles_LegacyFile_PreservesIdsAndArrayOrderWithoutRewriting(bool readOnly)
+    {
+        File.WriteAllText(_profilesPath, LegacyJson);
+        if (readOnly)
+        {
+            File.SetAttributes(_profilesPath, FileAttributes.ReadOnly);
+        }
+
+        var store = CreateStore();
+
+        var loaded = store.LoadProfiles();
+
+        Assert.AreEqual(2, loaded.Profiles.Count);
+        Assert.AreEqual(7, loaded.Profiles[0].Id);
+        Assert.AreEqual(0, loaded.Profiles[1].Id);
+        Assert.AreEqual(8, loaded.NextId);
+        Assert.AreEqual("Legacy,Older", string.Join(",", loaded.Profiles.Select(profile => profile.Name)));
+        Assert.IsTrue(loaded.Profiles.All(profile => profile.LastModified == DateTime.UnixEpoch));
+        Assert.AreEqual(LegacyJson, File.ReadAllText(_profilesPath));
+        var reloaded = CreateStore().LoadProfiles();
+        Assert.AreEqual(0, reloaded.Profiles[1].Id);
+        Assert.AreEqual(8, reloaded.NextId);
+        Assert.AreEqual(LegacyJson, File.ReadAllText(_profilesPath));
+        Assert.IsFalse(Directory.EnumerateFiles(_tempDir, "*.tmp").Any());
+    }
+
+    private static PowerDisplayProfiles SaveInitialProfiles(ProfileStore store)
+    {
+        var profiles = new PowerDisplayProfiles { NextId = 4 };
+        for (var id = 1; id <= 3; id++)
+        {
+            var profile = MakeProfile($"Profile {id}", id);
+            profile.CreatedDate = DateTime.UnixEpoch;
+            profile.LastModified = DateTime.UnixEpoch;
+            profiles.Profiles.Add(profile);
+        }
+
+        store.SaveProfiles(profiles);
+        return profiles;
+    }
+
+    private static string DisplayOrder(PowerDisplayProfiles profiles)
+        => string.Join(",", profiles.GetAssignedProfiles().Select(profile => profile.Id));
+
+    private static string SerializeContents(PowerDisplayProfile profile)
+        => JsonSerializer.Serialize(profile, ProfileSerializationContext.Default.PowerDisplayProfile);
 
     private ProfileStore CreateStore()
     {

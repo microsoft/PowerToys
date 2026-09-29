@@ -34,7 +34,8 @@ public sealed partial class AppearancePage : Page
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

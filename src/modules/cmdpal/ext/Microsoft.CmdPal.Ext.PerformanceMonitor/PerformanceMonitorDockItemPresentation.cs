@@ -8,19 +8,15 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 internal static class PerformanceMonitorDockItemPresentation
 {
-    internal const string CpuLabelWidth = "5ch";
-    internal const string MemoryLabelWidth = "6ch";
-    internal const string NetworkUsageLabelWidth = "6ch";
-    internal const string DiskActiveTimeLabelWidth = "8ch";
-    internal const string GpuLabelWidth = "12ch";
-    internal const string BatteryLabelWidth = "6ch";
-    internal const string TransferRateLabelWidth = "10ch";
-    internal const string DisabledLabelWidth = "8ch";
+    internal static readonly DockLabelWidth DisabledLabelWidth = DockLabelWidth.Characters(8);
+    internal static readonly DockLabelWidth PercentageTitleWidth = DockLabelWidth.Sample("100%");
+    internal static readonly DockLabelWidth GpuSubtitleWidth = DockLabelWidth.Characters(12);
+    internal static readonly DockLabelWidth TransferRateLabelWidth = DockLabelWidth.Characters(10);
 
-    internal static ListItem ConfigureValueLabel(ListItem item, string labelWidth)
+    internal static ListItem ConfigureValueLabel(ListItem item, DockLabelWidth titleWidth, DockLabelWidth? subtitleWidth = null)
     {
         item
-            .SetDockLabelWidth(labelWidth)
+            .SetDockLabelReservations(titleWidth, subtitleWidth ?? DockLabelWidth.Sample(item.Subtitle))
             .SetDockLabelTabularDigits();
 
         // item.SetDockLabelTrailingAlignment();
