@@ -1013,6 +1013,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Pin to Dock</value>
     <comment>Command name for pinning an item to the dock</comment>
   </data>
+  <data name="taskbar_pin_command_name" xml:space="preserve">
+    <value>Pin to Taskbar</value>
+    <comment>Command name for pinning an item to the taskbar</comment>
+  </data>
+  <data name="taskbar_unpin_command_name" xml:space="preserve">
+    <value>Unpin from Taskbar</value>
+    <comment>Command name for unpinning an item from the taskbar</comment>
+  </data>
+  <data name="PinToTaskbar_DialogTitle" xml:space="preserve">
+    <value>Pin to Taskbar</value>
+    <comment>Title for the taskbar pinning dialog</comment>
+  </data>
   <data name="dock_unpin_command_name" xml:space="preserve">
     <value>Unpin from Dock</value>
     <comment>Command name for unpinning an item from the dock</comment>

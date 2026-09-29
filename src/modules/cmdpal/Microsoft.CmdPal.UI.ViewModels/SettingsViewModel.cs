@@ -321,6 +321,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         {
             _settingsService.UpdateSettings(s => s with { EnableTaskbar = value });
             WeakReferenceMessenger.Default.Send(new ShowHideTaskbarMessage(value));
+            WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage());
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableTaskbar)));
         }
     }

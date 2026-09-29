@@ -19,6 +19,7 @@ using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.Taskbar;
 using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -50,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowHideDockMessage>,
     IRecipient<ShowHideTaskbarMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
+    IRecipient<ShowPinToTaskbarDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
     INotifyPropertyChanged,
     IDisposable
@@ -163,6 +165,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowHideTaskbarMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowPinToTaskbarDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
@@ -355,6 +358,41 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             try
             {
                 await HandlePinToDockDialogOnUiThread(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        });
+    }
+
+    public void Receive(ShowPinToTaskbarDialogMessage message)
+    {
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                if (!_settingsService.Settings.EnableTaskbar)
+                {
+                    return;
+                }
+
+                var (result, content) = await PinToDockDialogContent.ShowForTaskbarAsync(
+                    XamlRoot,
+                    message.Title,
+                    message.Subtitle,
+                    message.Icon);
+
+                if (result == ContentDialogResult.Primary && _settingsService.Settings.EnableTaskbar)
+                {
+                    WeakReferenceMessenger.Default.Send(new PinToDockMessage(
+                        message.ProviderId,
+                        message.CommandId,
+                        Pin: true,
+                        Side: DockPinSide.Taskbar,
+                        ShowTitles: content.ShowTitles,
+                        ShowSubtitles: content.ShowSubtitles));
+                }
             }
             catch (Exception ex)
             {

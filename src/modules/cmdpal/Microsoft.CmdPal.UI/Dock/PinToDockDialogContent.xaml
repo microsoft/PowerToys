@@ -53,7 +53,7 @@
             </StackPanel>
 
             <!--  Dock Section Selector  -->
-            <StackPanel Spacing="8">
+            <StackPanel x:Name="SectionSelectorPanel" Spacing="8">
                 <TextBlock
                     x:Uid="PinToDock_SectionHeader"
                     FontWeight="SemiBold"

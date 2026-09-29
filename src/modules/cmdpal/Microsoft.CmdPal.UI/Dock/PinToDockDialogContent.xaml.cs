@@ -85,7 +85,7 @@ public sealed partial class PinToDockDialogContent : UserControl
         ConfigureMonitorSelector(monitors);
     }
 
-    public static async System.Threading.Tasks.Task<(ContentDialogResult Result, PinToDockDialogContent Content)> ShowAsync(
+    public static System.Threading.Tasks.Task<(ContentDialogResult Result, PinToDockDialogContent Content)> ShowAsync(
         XamlRoot xamlRoot,
         string title,
         string subtitle,
@@ -96,9 +96,30 @@ public sealed partial class PinToDockDialogContent : UserControl
         var content = new PinToDockDialogContent();
         content.Configure(title, subtitle, icon, dockSide, monitors);
 
+        return ShowAsync(xamlRoot, content, RS_.GetString("PinToDock_DialogTitle"));
+    }
+
+    public static System.Threading.Tasks.Task<(ContentDialogResult Result, PinToDockDialogContent Content)> ShowForTaskbarAsync(
+        XamlRoot xamlRoot,
+        string title,
+        string subtitle,
+        IconInfoViewModel? icon)
+    {
+        var content = new PinToDockDialogContent();
+        content.Configure(title, subtitle, icon, DockSide.Bottom);
+        content.SectionSelectorPanel.Visibility = Visibility.Collapsed;
+
+        return ShowAsync(xamlRoot, content, RS_.GetString("PinToTaskbar_DialogTitle"));
+    }
+
+    private static async System.Threading.Tasks.Task<(ContentDialogResult Result, PinToDockDialogContent Content)> ShowAsync(
+        XamlRoot xamlRoot,
+        PinToDockDialogContent content,
+        string dialogTitle)
+    {
         var dialog = new ContentDialog
         {
-            Title = RS_.GetString("PinToDock_DialogTitle"),
+            Title = dialogTitle,
             Content = content,
             PrimaryButtonText = RS_.GetString("PinToDock_PinButton"),
             CloseButtonText = RS_.GetString("PinToDock_CancelButton"),
