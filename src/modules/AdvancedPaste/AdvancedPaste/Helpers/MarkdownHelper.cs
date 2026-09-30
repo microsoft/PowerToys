@@ -18,7 +18,7 @@ internal static class MarkdownHelper
     {
         Logger.LogTrace();
 
-        var data = clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync()
+        var data = clipboardData.Contains(StandardDataFormats.Html) ? HtmlFormatHelper.GetStaticFragment(await clipboardData.GetHtmlFormatAsync())
                  : clipboardData.Contains(StandardDataFormats.Text) ? await clipboardData.GetTextAsync()
                  : string.Empty;
 
