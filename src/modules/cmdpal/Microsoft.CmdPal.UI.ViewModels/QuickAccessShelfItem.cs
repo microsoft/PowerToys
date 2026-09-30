@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 {
     private readonly IListItem _item;
+    private IDisposable? _sourceLease;
     private readonly object? _sourceIcon;
     private readonly int _shortcutIndex;
 
@@ -46,6 +47,7 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
         DataPackageView? dataPackage)
     {
         _item = item;
+        _sourceLease = item is TopLevelViewModel topLevel ? topLevel.RetainForDock() : null;
         Title = title;
         _sourceIcon = sourceIcon;
         Icon = icon;
@@ -131,6 +133,8 @@ public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
     public override bool Equals(object? obj) => Equals(obj as QuickAccessShelfItem);
 
     public override int GetHashCode() => HashCode.Combine(_item, _sourceIcon, Title, _shortcutIndex, StartsNewSection, IsPinned, CanPin, DataPackage);
+
+    public void Dispose() => Interlocked.Exchange(ref _sourceLease, null)?.Dispose();
 
     private bool Matches(
         IListItem item,

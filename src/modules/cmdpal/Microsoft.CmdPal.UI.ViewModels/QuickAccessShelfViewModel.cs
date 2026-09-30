@@ -361,11 +361,19 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
 
     private void ApplyRebuild(IReadOnlyList<QuickAccessShelfItem> shelfItems)
     {
+        var previousItems = _itemSnapshot;
         var hadItems = HasItems;
         var previousItemCount = ItemCount;
 
         ListHelpers.InPlaceUpdateList(Items, shelfItems);
         _itemSnapshot = [.. Items];
+        foreach (var previousItem in previousItems)
+        {
+            if (!_itemSnapshot.Contains(previousItem))
+            {
+                previousItem.Dispose();
+            }
+        }
         RepartitionItems();
 
         if (hadItems != HasItems)
@@ -463,6 +471,11 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         _topLevelCommandManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _appStateService.StateChanged -= AppStateService_StateChanged;
         AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
+        foreach (var item in _itemSnapshot)
+        {
+            item.Dispose();
+        }
+        _itemSnapshot = [];
         UpdateObservedItems([]);
         GC.SuppressFinalize(this);
     }

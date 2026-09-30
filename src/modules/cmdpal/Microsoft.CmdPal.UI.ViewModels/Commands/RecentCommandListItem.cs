@@ -14,8 +14,10 @@ namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 /// context commands without changing the item everywhere else it is displayed.
 /// </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public sealed partial class RecentCommandListItem : IListItem, IExtendedAttributesProvider, ICommandContextSource
+public sealed partial class RecentCommandListItem : IListItem, IExtendedAttributesProvider, ICommandContextSource, IDisposable
 {
+    private IDisposable? _sourceLease;
+
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
     {
         add => Source.PropChanged += value;
@@ -52,7 +54,10 @@ public sealed partial class RecentCommandListItem : IListItem, IExtendedAttribut
     {
         Source = source;
         CommandId = commandId;
+        _sourceLease = source is TopLevelViewModel topLevel ? topLevel.RetainForDock() : null;
     }
+
+    public void Dispose() => Interlocked.Exchange(ref _sourceLease, null)?.Dispose();
 
     internal static RecentCommandListItem CreateOrReuse(
         IReadOnlyList<IListItem>? existingItems,

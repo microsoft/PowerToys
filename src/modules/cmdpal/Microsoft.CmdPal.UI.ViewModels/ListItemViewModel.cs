@@ -362,6 +362,8 @@ public partial class ListItemViewModel : CommandItemViewModel
         var model = Model.Unsafe;
         if (model is not null)
         {
+            (model as IDisposable)?.Dispose();
+
             // We don't need to revoke the PropChanged event handler here,
             // because we are just overriding CommandItem's FetchProperty and
             // piggy-backing off their PropChanged
