@@ -39,6 +39,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly ISettingsService _settingsService;
     private readonly SettingsTargetHighlighter _settingsTargetHighlighter = new();
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private IDisposable? _currentPage;
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
@@ -438,7 +439,7 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        if (!NavFrame.Navigate(typeof(ExtensionPage), extension))
+        if (!NavFrame.Navigate(typeof(ExtensionPage), extension.Provider))
         {
             Logger.LogWarning($"Could not open the settings page for provider '{providerId}'.");
             return;
@@ -588,7 +589,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Navigate(ProviderSettingsViewModel extension)
     {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        NavFrame.Navigate(typeof(ExtensionPage), extension.Provider);
     }
 
     private void PositionCentered()
@@ -785,6 +786,8 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         CancelSettingsNavigation();
         _settingsLinkContextMenuService.Hide();
+        _currentPage?.Dispose();
+        _currentPage = null;
         CloseScreenshotViewer();
         _settingsTargetHighlighter.Close();
         WinGetOperationsButtonControl?.Dispose();
@@ -795,6 +798,10 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         CancelSettingsNavigation();
         SettingsLinkFallbackInfoBar.IsOpen = false;
+
+        // Settings pages are not cached and can be navigated away from before they load.
+        _currentPage?.Dispose();
+        _currentPage = e.Content as IDisposable;
 
         BreadCrumbs.Clear();
         ShowBreadcrumb();
@@ -832,11 +839,11 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = DockSettingsPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), SettingsPageTags.Dock));
         }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is CommandProviderWrapper provider)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), SettingsPageTags.Extensions));
-            BreadCrumbs.Add(new(vm.DisplayName, vm));
+            BreadCrumbs.Add(new(provider.DisplayName, provider));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
