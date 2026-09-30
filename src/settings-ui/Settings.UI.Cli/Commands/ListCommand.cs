@@ -6,6 +6,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Linq;
+using ManagedCommon;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace PowerToys.Settings.Cli.Commands;
@@ -60,6 +61,7 @@ internal sealed class ListCommand : Command
         }
         catch (Exception ex)
         {
+            Logger.LogError("Failed to list module status.", ex);
             Console.Error.WriteLine($"Error executing list command: {ex.Message}");
             return 1;
         }

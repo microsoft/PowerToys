@@ -65,6 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             _settingsPath.DeleteSettings(powertoy);
         }
 
+        public void CreateSettingsFolder(string powertoy = "")
+        {
+            _settingsPath.CreateSettingsFolder(powertoy);
+        }
+
         public virtual T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
             where T : ISettingsConfig, new()
         {

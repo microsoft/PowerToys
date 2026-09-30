@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using ManagedCommon;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace PowerToys.Settings.Cli.Commands;
@@ -28,11 +29,12 @@ internal sealed class EnableCommand : Command
         try
         {
             var moduleStatus = SettingsCliHelper.SetModuleEnabled(module, enabled: true);
-            Console.WriteLine($"Module '{moduleStatus.ModuleName}' is saved as Enabled. Restart PowerToys to apply the module state.");
+            Console.WriteLine($"Module '{moduleStatus.ModuleName}' is saved as Enabled. Start PowerToys to apply the module state.");
             return 0;
         }
         catch (Exception ex)
         {
+            Logger.LogError($"Failed to enable module '{module}'.", ex);
             Console.Error.WriteLine($"Failed to enable module '{module}': {ex.Message}");
             return 1;
         }

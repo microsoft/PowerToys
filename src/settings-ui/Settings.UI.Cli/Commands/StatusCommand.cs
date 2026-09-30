@@ -4,6 +4,7 @@
 
 using System;
 using System.CommandLine;
+using ManagedCommon;
 using PowerToys.Settings.Cli.Helpers;
 
 namespace PowerToys.Settings.Cli.Commands;
@@ -55,6 +56,7 @@ internal sealed class StatusCommand : Command
         }
         catch (Exception ex)
         {
+            Logger.LogError($"Failed to get module status for '{module}'.", ex);
             Console.Error.WriteLine($"Failed to get module status for '{module}': {ex.Message}");
             return 1;
         }

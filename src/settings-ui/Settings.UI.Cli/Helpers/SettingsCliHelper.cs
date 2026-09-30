@@ -125,6 +125,7 @@ internal static class SettingsCliHelper
     {
         settingsUtils ??= SettingsUtils.Default;
         gpoEnabledStateProvider ??= GetModuleGpoEnabledState;
+        settingsUtils.CreateSettingsFolder();
         settingsLockProvider ??= () => AcquireSettingsFileLock(settingsUtils);
         using var settingsLock = settingsLockProvider();
 

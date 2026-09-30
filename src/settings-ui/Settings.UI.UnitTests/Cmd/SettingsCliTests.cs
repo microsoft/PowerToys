@@ -69,9 +69,30 @@ public class SettingsCliTests
 
         var modulesAfterDisable = SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null);
         Assert.IsFalse(modulesAfterDisable["FancyZones"]);
+        Assert.IsTrue(settingsUtils.GetSettings<GeneralSettings>().ShowWhatsNewAfterUpdates);
 
         var enabledState = SettingsCliHelper.SetModuleEnabled("FancyZones", enabled: true, settingsUtils, _ => null, () => EmptyDisposable.Instance);
         Assert.IsTrue(enabledState.Enabled);
+    }
+
+    [TestMethod]
+    public void TestSetModuleEnabledCreatesSettingsFolderBeforeAcquiringLock()
+    {
+        var settingsFolderExistsWhenLockAcquired = false;
+
+        SettingsCliHelper.SetModuleEnabled(
+            "FancyZones",
+            enabled: false,
+            settingsUtils,
+            _ => null,
+            () =>
+            {
+                settingsFolderExistsWhenLockAcquired = mockFileSystem.Directory.Exists(
+                    Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()));
+                return EmptyDisposable.Instance;
+            });
+
+        Assert.IsTrue(settingsFolderExistsWhenLockAcquired);
     }
 
     [TestMethod]

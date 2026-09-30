@@ -46,6 +46,7 @@ ALLOWUNDO
 ALLVIEW
 ALPHATYPE
 altkey
+altwindowcycle
 amr
 animatedvisuals
 Animnate
@@ -104,6 +105,7 @@ authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
+autohidecursor
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
 autopf
@@ -242,6 +244,7 @@ CLOSEAPP
 clsids
 Clusion
 cmder
+cmdnotfound
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -1111,6 +1114,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
