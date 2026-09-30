@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     /// <summary>
-    /// The curated set of modules that erupt out of the logo in the Welcome hero.
+    /// The curated set of modules that warp into the Welcome hero.
     /// The order matters: the first modules land closest to the logo.
     /// </summary>
     /// <remarks>

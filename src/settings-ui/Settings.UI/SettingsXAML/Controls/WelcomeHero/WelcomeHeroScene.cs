@@ -12,16 +12,17 @@ using Windows.UI;
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     /// <summary>
-    /// The Composition visual tree behind the Welcome hero ("Power on").
+    /// The Composition visual tree behind the Welcome hero ("Warp").
     /// <para>
-    /// The PowerToys logo ignites, a dome of light rises behind it, every tool erupts out of the logo
-    /// and lands in its glass tile, and a shockwave in the logo colors ripples through the constellation.
-    /// Afterwards the scene stays alive: tiles float, the aurora drifts, and the pointer tilts the scene and
-    /// magnifies nearby tiles.
+    /// Every tool drops out of hyperspace: the tiles rush in from deep behind the logo trailing light streaks
+    /// in the logo colors, through a field of stars that races past the viewer. The PowerToys logo slams in
+    /// last, the scene shakes, a flash and a ring in the logo colors burst out of it, and the dome of light
+    /// rises behind it like a sunrise. Afterwards the scene stays alive: tiles float, the aurora drifts, and
+    /// the pointer tilts the scene and magnifies nearby tiles.
     /// </para>
     /// <para>
     /// Every animated property lives on its own visual level (slot = magnification, floater = idle bob and
-    /// shockwave pulse, tile = intro flight), so the whole timeline starts in a single frame using delays.
+    /// impact pulse, body = warp flight), so the whole timeline starts in a single frame using delays.
     /// </para>
     /// </summary>
     internal sealed partial class WelcomeHeroScene : IDisposable
@@ -31,30 +32,49 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         /// </summary>
         internal const float MaxMagnification = 1.26f;
 
-        // Intro timeline, in milliseconds.
-        private const float LogoIntroMs = 700f;
-        private const float FlashDelayMs = 60f;
+        /// <summary>
+        /// Time at which the page text starts to rise into view (intro), right after the logo has landed.
+        /// </summary>
+        internal const float TextRevealStartMs = ImpactMs + 60f;
+
+        // Intro timeline, in milliseconds. The logo lands (impact) at SlamStartMs + SlamMs.
+        private const float FlightMs = 1150f;
+        private const float LaunchStaggerMs = 11f;
+        private const float SlamStartMs = 780f;
+        private const float SlamMs = 240f;
+        private const float ImpactMs = SlamStartMs + SlamMs;
+        private const float ShakeMs = 320f;
         private const float FlashMs = 620f;
-        private const float DomeDelayMs = 90f;
         private const float DomeMs = 1100f;
-        private const float GlowDelayMs = 140f;
         private const float GlowMs = 1500f;
-        private const float EruptionStartMs = 300f;
-        private const float EruptionMsPerDip = 1.45f;
-        private const float FlightMs = 820f;
-        private const float ShockwaveStartMs = 1750f;
-        private const float RingMs = 1100f;
+        private const float RingMs = 1000f;
+        private const float PulseSpreadMs = 900f;
         private const float TilePulseMs = 560f;
         private const float ShineIntervalMs = 7000f;
-        private const float IdleStartMs = 2700f;
+        private const float IdleStartMs = 2100f;
 
         // Settle timeline (repeat visits), in milliseconds.
         private const float SettleMs = 450f;
         private const float SettleStaggerMs = 7f;
 
-        private const float FlightDepth = -380f;
-        private const float LogoDepth = -300f;
-        private const float PerspectiveDistance = 900f;
+        // The warp: depths are in DIPs along the z axis (negative = away from the viewer).
+        private const float WarpDepth = 3600f;
+        private const float SlamScale = 2.6f;
+        private const float ShakeAmplitude = 3f;
+        private const float TilePulse = 1.1f;
+        private const float RingOpacity = 0.4f;
+        private const float RingThickness = 8f;
+
+        // Light streaks behind the tiles and the star field.
+        private const float TrailLagMs = 55f;
+        private const float TrailOpacity = 0.75f;
+        private const float TrailThickness = 18f;
+        private const int StarCount = 70;
+        private const float StarOpacity = 0.8f;
+        private const float StarTravel = 6200f;
+        private const float StarFadeInMs = 90f;
+        private const float StarCullDepth = 620f;
+
         private const float MagnifyBoost = MaxMagnification - 1f;
         private const float MagnifyRadius = 120f;
         private const float MaxTiltDegrees = 5f;
@@ -84,8 +104,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly CompositionEasingFunction _easeOutCubic;
         private readonly CompositionEasingFunction _easeInOutSine;
         private readonly CompositionEasingFunction _easeInQuad;
+        private readonly CompositionEasingFunction _easeWarp;
+        private readonly CompositionEasingFunction _easeOutBack;
 
         private readonly RectangleClip _clip;
+        private readonly ContainerVisual _shake;
         private readonly ContainerVisual _auroraRig;
         private readonly ContainerVisual _auroraParallax;
         private readonly SpriteVisual _dome;
@@ -97,6 +120,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly CompositionColorGradientStop[] _flashStops;
 
         private readonly ContainerVisual _stage;
+        private readonly ContainerVisual _trails;
+        private readonly Dictionary<Color, CompositionBrush> _trailBrushes = [];
+        private readonly CompositionBrush _starlightBrush;
+        private readonly CompositionColorGradientStop[] _starlightStops;
+        private readonly WelcomeHeroWarp.Star[] _stars;
+        private readonly Trail[] _starTrails;
+        private readonly Trail[] _tileTrails;
         private readonly ContainerVisual _tiltY;
         private readonly ContainerVisual _tiltX;
         private readonly ShapeVisual _ring;
@@ -121,6 +151,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private WelcomeHeroPalette _palette;
         private int _highlighted = -1;
+        private int _introGeneration;
+        private bool _trailsActive;
         private bool _hasViewport;
         private bool _entered;
         private bool _disposed;
@@ -142,6 +174,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _easeInOutSine = Track(compositor.CreateCubicBezierEasingFunction(new Vector2(0.37f, 0f), new Vector2(0.63f, 1f)));
             _easeInQuad = Track(compositor.CreateCubicBezierEasingFunction(new Vector2(0.11f, 0f), new Vector2(0.5f, 0f)));
 
+            // Blasts out of the depth and brakes hard: most of the distance is covered in the first frames.
+            _easeWarp = Track(compositor.CreateCubicBezierEasingFunction(new Vector2(0.05f, 0.8f), new Vector2(0.1f, 1f)));
+            _easeOutBack = Track(CompositionEasingFunction.CreateBackEasingFunction(compositor, CompositionEasingFunctionMode.Out, 1.6f));
+
             _interaction = Track(compositor.CreatePropertySet());
             _interaction.InsertScalar("Strength", 0f);
             _interaction.InsertScalar("Boost", MagnifyBoost);
@@ -159,11 +195,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _clip.TopRightRadius = new Vector2(CornerRadius);
             Root.Clip = _clip;
 
+            // Everything but the clip shakes when the logo lands.
+            _shake = Track(compositor.CreateContainerVisual());
+            Root.Children.InsertAtTop(_shake);
+
             // --- Aurora: the dome of light and the brand colored glows behind everything. ---
             _auroraRig = Track(compositor.CreateContainerVisual());
             _auroraParallax = Track(compositor.CreateContainerVisual());
             _auroraRig.Children.InsertAtTop(_auroraParallax);
-            Root.Children.InsertAtTop(_auroraRig);
+            _shake.Children.InsertAtTop(_auroraRig);
 
             _domeStopAlphas = [1f, 1f, 0.82f, 0.45f, 0.14f, 0f];
             var domeStopOffsets = new[] { 0f, 0.5f, 0.66f, 0.8f, 0.92f, 1f };
@@ -200,11 +240,32 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // --- Stage: the tilting 3D plane that holds the ring, the tiles and the logo. ---
             _stage = Track(compositor.CreateContainerVisual());
             var funnelCenter = layout.ApexY / 2f;
-            _stage.TransformMatrix =
-                Matrix4x4.CreateTranslation(0f, funnelCenter, 0f) *
-                new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -1f / PerspectiveDistance, 0, 0, 0, 1) *
-                Matrix4x4.CreateTranslation(0f, -funnelCenter, 0f);
-            Root.Children.InsertAtTop(_stage);
+            _stage.TransformMatrix = WelcomeHeroWarp.CreateStageTransform(funnelCenter);
+            _shake.Children.InsertAtTop(_stage);
+
+            // Light streaks live flat on the stage (depth 0 is untouched by the perspective), below the tilt,
+            // in a layer centered on the vanishing point. Stars first, so the tile streaks draw on top.
+            _trails = Track(compositor.CreateContainerVisual());
+            _trails.Offset = new Vector3(WelcomeHeroWarp.GetVanishingPoint(funnelCenter), 0f);
+            _trails.IsVisible = false;
+            _stage.Children.InsertAtTop(_trails);
+
+            var warpMs = FlightMs + (layout.Slots.Count * LaunchStaggerMs);
+            (_starlightBrush, _starlightStops) = CreateTrailBrush(palette.Starlight);
+            _stars = WelcomeHeroWarp.CreateStars(StarCount, funnelCenter, warpMs);
+            _starTrails = new Trail[_stars.Length];
+            for (var i = 0; i < _stars.Length; i++)
+            {
+                var star = _stars[i];
+                _starTrails[i] = CreateTrail(
+                    star.Ray,
+                    star.Thickness,
+                    star.Color is { } color ? GetTrailBrush(color) : _starlightBrush,
+                    "Peak * Min(1, d.Life * FadeIn) * Pow(1 - d.Life, 1.4) * Clamp((Cull - d.Head) / 40, 0, 1)",
+                    StarOpacity);
+                _starTrails[i].Opacity.SetScalarParameter("FadeIn", star.DurationMs / StarFadeInMs);
+                _starTrails[i].Opacity.SetScalarParameter("Cull", StarCullDepth);
+            }
 
             _tiltY = Track(compositor.CreateContainerVisual());
             _tiltY.RotationAxis = Vector3.UnitY;
@@ -267,11 +328,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             var slotCount = Math.Max(icons.Count, layout.Slots.Count);
             _tiles = new Tile[Math.Min(slotCount, layout.Slots.Count)];
+            _tileTrails = new Trail[_tiles.Length];
             for (var i = 0; i < _tiles.Length; i++)
             {
+                var slot = layout.Slots[i];
                 var icon = i < icons.Count ? icons[i] : null;
-                _tiles[i] = CreateTile(layout.Slots[i], icon, tileFill, highlightBrush, highlightExtent);
+                _tiles[i] = CreateTile(slot, icon, tileFill, highlightBrush, highlightExtent);
                 _tiltX.Children.InsertAtTop(_tiles[i].Slot);
+
+                _tileTrails[i] = CreateTrail(
+                    WelcomeHeroWarp.GetRay(slot.Offset, funnelCenter),
+                    TrailThickness,
+                    GetTrailBrush(WelcomeHeroWarp.BrandColorAt(slot.Offset.X)),
+                    "Peak * Pow(Clamp(-d.Head / Depth, 0, 1), 0.6)",
+                    TrailOpacity * slot.Opacity);
+                _tileTrails[i].Opacity.SetScalarParameter("Depth", WarpDepth);
             }
 
             // The logo sits on top of the tiles, so the tools appear to pour out of it.
@@ -383,87 +454,120 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 tile.Body.Opacity = 0f;
             }
+
+            StopTrails();
         }
 
         /// <summary>
-        /// Plays the full "Power on" intro. Everything is scheduled in a single frame.
+        /// Plays the full "Warp" intro. Everything is scheduled in a single frame.
         /// </summary>
         public void PlayIntro()
         {
             _entered = true;
+            var generation = ++_introGeneration;
 
-            // 1. Ignition: the logo springs out of the depth.
-            Animate(_logoRig, "Opacity", Scalar(260f, 0f, (0f, 0f, null), (1f, 1f, null)));
-            Animate(_logoRig, "Scale", Vector(LogoIntroMs, 0f, (0f, Uniform(0.3f), null), (0.62f, Uniform(1.1f), _easeOutCubic), (1f, Uniform(1f), _easeInOutSine)));
-            Animate(_logoRig, "Offset", Vector(LogoIntroMs, 0f, (0f, new Vector3(0f, 0f, LogoDepth), null), (1f, Vector3.Zero, _easeOutExpo)));
+            Stop(_logoRig, "Offset");
+            _logoRig.Offset = Vector3.Zero;
+            foreach (var tile in _tiles)
+            {
+                Stop(tile.Body, "Scale");
+                tile.Body.Scale = Vector3.One;
+            }
 
-            // 2. A white-hot core flash and the four logo colors bursting out as light.
-            Animate(_flash, "Opacity", Scalar(FlashMs, FlashDelayMs, (0f, 0f, null), (0.16f, 1f, _easeOutCubic), (1f, 0f, _easeInQuad)));
-            Animate(_flash, "Scale", Vector(FlashMs, FlashDelayMs, (0f, Uniform(0.2f), null), (1f, Uniform(2.2f), _easeOutExpo)));
+            // 1. Warp: every tool drops out of hyperspace, trailing light, through a field of rushing stars.
+            //    The streaks are only needed during the flight, so they are switched off once it is over.
+            StartTrails();
+            var flight = Track(_compositor.CreateScopedBatch(CompositionBatchTypes.Animation));
+            for (var i = 0; i < _tiles.Length; i++)
+            {
+                var tile = _tiles[i];
+                var launch = i * LaunchStaggerMs;
+                Animate(tile.Body, "Offset", Vector(FlightMs, launch, (0f, new Vector3(0f, 0f, -WarpDepth), null), (1f, Vector3.Zero, _easeWarp)));
+                Animate(tile.Body, "Opacity", Scalar(180f, launch, (0f, 0f, null), (1f, tile.Layout.Opacity, _easeOutCubic)));
+
+                var depth = _tileTrails[i].Depth;
+                Animate(depth, "Head", Scalar(FlightMs, launch, (0f, -WarpDepth, null), (1f, 0f, _easeWarp)));
+                Animate(depth, "Tail", Scalar(FlightMs, launch + TrailLagMs, (0f, -WarpDepth, null), (1f, 0f, _easeWarp)));
+            }
+
+            for (var i = 0; i < _stars.Length; i++)
+            {
+                var star = _stars[i];
+                var depth = _starTrails[i].Depth;
+                var end = star.StartZ + StarTravel;
+                Animate(depth, "Head", Scalar(star.DurationMs, star.DelayMs, (0f, star.StartZ, null), (1f, end, _easeWarp)));
+                Animate(depth, "Tail", Scalar(star.DurationMs, star.DelayMs + TrailLagMs, (0f, star.StartZ, null), (1f, end, _easeWarp)));
+                Animate(depth, "Life", Scalar(star.DurationMs, star.DelayMs, (0f, 0f, null), (1f, 1f, null)));
+            }
+
+            flight.End();
+            flight.Completed += (_, _) =>
+            {
+                if (!_disposed && generation == _introGeneration)
+                {
+                    StopTrails();
+                }
+            };
+
+            // 2. Slam: the logo drops in last, hits the stage and pops back.
+            Animate(_logoRig, "Opacity", Scalar(90f, SlamStartMs, (0f, 0f, null), (1f, 1f, null)));
+            Animate(_logoRig, "Scale", Vector(SlamMs, SlamStartMs, (0f, Uniform(SlamScale), null), (1f, Vector3.One, _easeInQuad)));
+            Animate(_logoPulse, "Scale", Vector(460f, ImpactMs, (0f, Vector3.One, null), (0.2f, Uniform(0.92f), _easeOutCubic), (1f, Vector3.One, _easeOutBack)));
+
+            const float k = ShakeAmplitude;
+            Animate(_shake, "Offset", Vector(
+                ShakeMs,
+                ImpactMs,
+                (0f, Vector3.Zero, null),
+                (0.1f, new Vector3(k, -k * 0.7f, 0f), null),
+                (0.3f, new Vector3(-k * 0.75f, k * 0.45f, 0f), null),
+                (0.55f, new Vector3(k * 0.35f, -k * 0.2f, 0f), null),
+                (1f, Vector3.Zero, _easeInOutSine)));
+
+            // 3. Impact: a white-hot flash, and the four logo colors bursting out as light.
+            Animate(_flash, "Opacity", Scalar(FlashMs, ImpactMs, (0f, 0f, null), (0.1f, 1f, _easeOutCubic), (1f, 0f, _easeInQuad)));
+            Animate(_flash, "Scale", Vector(FlashMs, ImpactMs, (0f, Uniform(0.3f), null), (1f, Uniform(2.3f), _easeOutExpo)));
 
             for (var i = 0; i < _glows.Length; i++)
             {
                 var glow = _glows[i];
-                var delay = GlowDelayMs + (Math.Abs(i - 1.5f) * 50f);
+                var delay = ImpactMs + (Math.Abs(i - 1.5f) * 40f);
                 Animate(glow.Sprite, "Opacity", Scalar(GlowMs, delay, (0f, 0f, null), (0.22f, 1f, _easeOutCubic), (1f, _palette.AuroraRestOpacity, _easeInOutSine)));
                 Animate(glow.Sprite, "Scale", Vector(GlowMs, delay, (0f, Uniform(0.15f), null), (1f, Vector3.One, _easeOutExpo)));
                 Animate(glow.Sprite, "Offset", Vector(GlowMs, delay, (0f, new Vector3(glow.Origin, 0f), null), (1f, new Vector3(glow.Home, 0f), _easeOutExpo)));
             }
 
-            // 3. Dawn: the dome of light grows out of the logo like a sunrise.
+            // 4. Sunrise: the dome of light grows out of the logo.
+            var dawnStart = ImpactMs - 40f;
             var dawnCenter = new Vector2(DomeCenter.X, _layout.ApexY);
-            Animate(_dome, "Opacity", Scalar(250f, DomeDelayMs, (0f, 0f, null), (1f, 1f, null)));
-            Animate(_domeBrush, "EllipseCenter", Vector2D(DomeMs, DomeDelayMs, (0f, dawnCenter, null), (1f, DomeCenter, _easeOutExpo)));
-            Animate(_domeBrush, "EllipseRadius", Vector2D(DomeMs, DomeDelayMs, (0f, new Vector2(90f, 60f), null), (1f, DomeRadius, _easeOutExpo)));
+            Animate(_dome, "Opacity", Scalar(200f, dawnStart, (0f, 0f, null), (1f, 1f, null)));
+            Animate(_domeBrush, "EllipseCenter", Vector2D(DomeMs, dawnStart, (0f, dawnCenter, null), (1f, DomeCenter, _easeOutExpo)));
+            Animate(_domeBrush, "EllipseRadius", Vector2D(DomeMs, dawnStart, (0f, new Vector2(90f, 60f), null), (1f, DomeRadius, _easeOutExpo)));
 
-            // 4. Eruption: every tool is born from the logo and arcs into its tile.
-            var nearest = _layout.Slots.Count > 0 ? MinDistance() : 0f;
-            for (var i = 0; i < _tiles.Length; i++)
-            {
-                var tile = _tiles[i];
-                var slot = tile.Layout;
-                if (tile.IsGhost)
-                {
-                    // Empty tiles quietly materialize around the eruption.
-                    var ghostDelay = EruptionStartMs + 450f + ((slot.Distance - nearest) * EruptionMsPerDip * 0.8f);
-                    tile.Body.Properties.InsertScalar("P", 1f);
-                    Animate(tile.Body, "Opacity", Scalar(700f, ghostDelay, (0f, 0f, null), (1f, slot.Opacity, _easeOutCubic)));
-                    Animate(tile.Body, "Scale", Vector(700f, ghostDelay, (0f, Uniform(0.6f), null), (1f, Vector3.One, _easeOutExpo)));
-                    continue;
-                }
-
-                var launch = EruptionStartMs + ((slot.Distance - nearest) * EruptionMsPerDip) + (Hash(i) * 50f);
-                Animate(tile.Body.Properties, "P", Scalar(FlightMs, launch, (0f, 0f, null), (1f, 1f, _easeOutExpo)));
-                Animate(tile.Body, "Opacity", Scalar(FlightMs, launch, (0f, 0f, null), (0.1f, slot.Opacity, null), (1f, slot.Opacity, null)));
-                Animate(tile.Body, "Scale", Vector(FlightMs, launch, (0f, Uniform(0.15f), null), (0.55f, Uniform(1.12f), _easeOutCubic), (1f, Vector3.One, _easeInOutSine)));
-            }
-
-            // 5. Shockwave: the logo pulses and a ring in the logo colors ripples through every tile.
+            // 5. Shockwave: a ring in the logo colors ripples out of the logo and bumps every tile it passes.
             var ringStart = WelcomeHeroLayout.LogoSize / 2f;
             var ringEnd = _layout.MaxSlotDistance + 120f;
-            var radius = CreateAnimation<Vector2KeyFrameAnimation>(RingMs, ShockwaveStartMs);
-            for (var k = 0; k <= 12; k++)
+            var radius = CreateAnimation<Vector2KeyFrameAnimation>(RingMs, ImpactMs);
+            for (var step = 0; step <= 12; step++)
             {
-                var t = k / 12f;
+                var t = step / 12f;
                 radius.InsertKeyFrame(t, new Vector2(ringStart + ((ringEnd - ringStart) * EaseOutCubic(t))), _linear);
             }
 
             Animate(_ringGeometry, "Radius", radius);
-            Animate(_ringShape, "StrokeThickness", Scalar(RingMs, ShockwaveStartMs, (0f, 12f, null), (1f, 1f, _easeOutCubic)));
-            Animate(_ring, "Opacity", Scalar(RingMs, ShockwaveStartMs, (0f, 0f, null), (0.04f, 0.85f, null), (0.55f, 0.45f, _linear), (1f, 0f, _easeInOutSine)));
-
-            Animate(_logoPulse, "Scale", Vector(520f, ShockwaveStartMs - 120f, (0f, Vector3.One, null), (0.3f, Uniform(1.14f), _easeOutCubic), (1f, Vector3.One, _easeInOutSine)));
+            Animate(_ringShape, "StrokeThickness", Scalar(RingMs, ImpactMs, (0f, RingThickness, null), (1f, 1f, _easeOutCubic)));
+            Animate(_ring, "Opacity", Scalar(RingMs, ImpactMs, (0f, 0f, null), (0.04f, RingOpacity, null), (0.55f, RingOpacity * 0.53f, null), (1f, 0f, _easeInOutSine)));
 
             for (var i = 0; i < _tiles.Length; i++)
             {
                 var tile = _tiles[i];
                 var reach = Math.Clamp((tile.Layout.Distance - ringStart) / (ringEnd - ringStart), 0f, 1f);
-                var arrival = ShockwaveStartMs + (RingMs * (1f - MathF.Cbrt(1f - reach)));
-                var strength = tile.IsGhost ? 1.08f : 1.16f;
+                var arrival = ImpactMs + (PulseSpreadMs * (1f - MathF.Cbrt(1f - reach)));
+                var strength = tile.IsGhost ? 1f + ((TilePulse - 1f) / 2f) : TilePulse;
                 Animate(tile.Floater, "Scale", Vector(TilePulseMs, arrival - 60f, (0f, Vector3.One, null), (0.32f, Uniform(strength), _easeOutCubic), (1f, Vector3.One, _easeInOutSine)));
             }
 
-            StartShine(ShockwaveStartMs + 60f);
+            StartShine(ImpactMs + 120f);
 
             // 6. Alive.
             StartIdle(IdleStartMs);
@@ -475,6 +579,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public void PlaySettle()
         {
             _entered = true;
+            _introGeneration++;
+            StopTrails();
+            Stop(_shake, "Offset");
+            _shake.Offset = Vector3.Zero;
 
             Animate(_logoRig, "Opacity", Scalar(SettleMs * 0.6f, 0f, (0f, 0f, null), (1f, 1f, _easeOutCubic)));
             Animate(_logoRig, "Scale", Vector(SettleMs, 0f, (0f, Uniform(0.85f), null), (1f, Vector3.One, _easeOutExpo)));
@@ -503,8 +611,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 var tile = _tiles[i];
                 var delay = i * SettleStaggerMs;
-                tile.Body.Properties.StopAnimation("P");
-                tile.Body.Properties.InsertScalar("P", 1f);
+                Stop(tile.Body, "Offset");
+                tile.Body.Offset = Vector3.Zero;
                 tile.Floater.StopAnimation("Scale");
                 tile.Floater.Scale = Vector3.One;
                 Animate(tile.Body, "Opacity", Scalar(SettleMs * 0.7f, delay, (0f, 0f, null), (1f, tile.Layout.Opacity, _easeOutCubic)));
@@ -521,6 +629,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public void ShowFinalState()
         {
             _entered = true;
+            _introGeneration++;
+            StopTrails();
+            Stop(_shake, "Offset");
+            _shake.Offset = Vector3.Zero;
 
             Stop(_logoRig, "Opacity", "Scale", "Offset");
             _logoRig.Opacity = 1f;
@@ -551,11 +663,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             foreach (var tile in _tiles)
             {
-                tile.Body.Properties.StopAnimation("P");
-                tile.Body.Properties.InsertScalar("P", 1f);
-                Stop(tile.Body, "Opacity", "Scale");
+                Stop(tile.Body, "Opacity", "Scale", "Offset");
                 tile.Body.Opacity = tile.Layout.Opacity;
                 tile.Body.Scale = Vector3.One;
+                tile.Body.Offset = Vector3.Zero;
                 Stop(tile.Floater, "Scale", "Offset");
                 tile.Floater.Scale = Vector3.One;
                 tile.Floater.Offset = Vector3.Zero;
@@ -658,6 +769,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 SetColor(_flashStops[i], WithAlpha(palette.Flash, flashAlphas[i]), animate);
             }
 
+            SetColor(_starlightStops[0], WithAlpha(palette.Starlight, 0f), animate);
+            SetColor(_starlightStops[1], palette.Starlight, animate);
+
             for (var i = 0; i < _highlightStops.Length && i < palette.Highlight.Length; i++)
             {
                 SetColor(_highlightStops[i], palette.Highlight[i], animate);
@@ -721,12 +835,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private static float[] GlowAlphas(float peak) => [peak, peak * 0.55f, peak * 0.2f, 0f];
 
-        // Deterministic 0..1 noise, so every launch has the same organic jitter.
-        private static float Hash(int i)
-        {
-            var x = MathF.Sin((i + 1) * 12.9898f) * 43758.5453f;
-            return x - MathF.Floor(x);
-        }
+        private static float Hash(int i) => WelcomeHeroWarp.Hash(i);
 
         private static void Stop(CompositionObject target, params string[] properties)
         {
@@ -736,15 +845,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        private float MinDistance()
+        private static void StopTrail(Trail trail)
         {
-            var min = float.MaxValue;
-            foreach (var tile in _tiles)
-            {
-                min = Math.Min(min, tile.Layout.Distance);
-            }
-
-            return min;
+            Stop(trail.Sprite, "Offset", "Size", "Opacity");
+            Stop(trail.Depth, "Head", "Tail", "Life");
+            trail.Sprite.Opacity = 0f;
         }
 
         private void StartIdle(float startMs)
@@ -812,6 +917,117 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _auroraRig.IsVisible = _palette.ShowEffects;
             _ring.IsVisible = _palette.ShowEffects;
             _aura.IsVisible = _palette.ShowEffects;
+            _trails.IsVisible = _palette.ShowEffects && _trailsActive;
+        }
+
+        private void StartTrails()
+        {
+            _trailsActive = true;
+            foreach (var trail in _starTrails)
+            {
+                StartTrail(trail);
+            }
+
+            foreach (var trail in _tileTrails)
+            {
+                StartTrail(trail);
+            }
+
+            ApplyEffectsVisibility();
+        }
+
+        private void StartTrail(Trail trail)
+        {
+            Animate(trail.Sprite, "Offset", trail.Offset);
+            Animate(trail.Sprite, "Size", trail.Size);
+            Animate(trail.Sprite, "Opacity", trail.Opacity);
+        }
+
+        private void StopTrails()
+        {
+            _trailsActive = false;
+            _trails.IsVisible = false;
+            foreach (var trail in _starTrails)
+            {
+                StopTrail(trail);
+            }
+
+            foreach (var trail in _tileTrails)
+            {
+                StopTrail(trail);
+            }
+        }
+
+        /// <summary>
+        /// Creates a light streak on <paramref name="ray"/>: a sprite that fades in from its tail and reaches from
+        /// the projection of depth "Tail" to the projection of depth "Head" (both in its Depth property set).
+        /// Its thickness follows the perspective of the head, just like a line drawn in 3D.
+        /// </summary>
+        private Trail CreateTrail(WelcomeHeroWarp.Ray ray, float thickness, CompositionBrush brush, string opacityExpression, float peakOpacity)
+        {
+            var rayVisual = Track(_compositor.CreateContainerVisual());
+            rayVisual.RotationAngle = ray.Angle;
+            _trails.Children.InsertAtTop(rayVisual);
+
+            var sprite = Track(_compositor.CreateSpriteVisual());
+            sprite.Brush = brush;
+            sprite.Opacity = 0f;
+            rayVisual.Children.InsertAtTop(sprite);
+
+            var depth = Track(_compositor.CreatePropertySet());
+            depth.InsertScalar("Head", 0f);
+            depth.InsertScalar("Tail", 0f);
+            depth.InsertScalar("Life", 1f);
+
+            const string head = "Max(1 - d.Head / Focal, MinW)";
+            const string tail = "Max(1 - d.Tail / Focal, MinW)";
+            var offset = CreateTrailExpression($"Vector3(Reach / {tail}, -Width / (2 * {head}), 0)", depth, ray, thickness);
+            var size = CreateTrailExpression($"Vector2(Reach / {head} - Reach / {tail}, Width / {head})", depth, ray, thickness);
+            var opacity = CreateTrailExpression(opacityExpression, depth, ray, thickness);
+            opacity.SetScalarParameter("Peak", peakOpacity);
+
+            return new Trail(sprite, depth, offset, size, opacity);
+        }
+
+        private ExpressionAnimation CreateTrailExpression(string expression, CompositionPropertySet depth, WelcomeHeroWarp.Ray ray, float thickness)
+        {
+            var animation = Track(_compositor.CreateExpressionAnimation(expression));
+            animation.SetReferenceParameter("d", depth);
+            animation.SetScalarParameter("Reach", ray.Length);
+            animation.SetScalarParameter("Width", thickness);
+            animation.SetScalarParameter("Focal", WelcomeHeroWarp.PerspectiveDistance);
+            animation.SetScalarParameter("MinW", WelcomeHeroWarp.MinPerspectiveDivisor);
+            return animation;
+        }
+
+        private CompositionBrush GetTrailBrush(Color color)
+        {
+            if (!_trailBrushes.TryGetValue(color, out var brush))
+            {
+                brush = CreateTrailBrush(color).Brush;
+                _trailBrushes[color] = brush;
+            }
+
+            return brush;
+        }
+
+        // A streak fades in from its tail, at the left of the sprite, to its head.
+        private (CompositionBrush Brush, CompositionColorGradientStop[] Stops) CreateTrailBrush(Color color)
+        {
+            var gradient = Track(_compositor.CreateLinearGradientBrush());
+            gradient.StartPoint = Vector2.Zero;
+            gradient.EndPoint = Vector2.UnitX;
+            var stops = new[]
+            {
+                Track(_compositor.CreateColorGradientStop(0f, WithAlpha(color, 0f))),
+                Track(_compositor.CreateColorGradientStop(1f, color)),
+            };
+            foreach (var stop in stops)
+            {
+                gradient.ColorStops.Add(stop);
+            }
+
+            return (gradient, stops);
         }
 
         private Tile CreateTile(WelcomeHeroSlot slot, LoadedImageSurface icon, CompositionBrush tileFill, CompositionBrush highlightBrush, float highlightExtent)
@@ -864,26 +1080,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 iconVisual.Offset = new Vector3(-iconSize / 2f, -iconSize / 2f, 0f);
                 body.Children.InsertAtTop(iconVisual);
                 body.Children.InsertAtTop(highlight);
-
-                // The flight: a quadratic Bezier from the logo (A) to the tile (origin), bulging past the
-                // tile (C), so tools shoot out like a fountain and rain down into place.
-                var start = new Vector3(-slot.Offset, FlightDepth);
-                var control = new Vector3(start.X * 0.8f, start.Y * -0.25f, FlightDepth * 0.2f);
-                var path = Track(_compositor.CreateExpressionAnimation("A * Square(1 - t.P) + C * (2 * (1 - t.P) * t.P)"));
-                path.SetReferenceParameter("t", body.Properties);
-                path.SetVector3Parameter("A", start);
-                path.SetVector3Parameter("C", control);
-                body.Properties.InsertScalar("P", 0f);
-                body.StartAnimation("Offset", path);
-
-                var spin = Track(_compositor.CreateExpressionAnimation("R * (1 - t.P)"));
-                spin.SetReferenceParameter("t", body.Properties);
-                spin.SetScalarParameter("R", (slot.Column < 0 ? -1f : 1f) * (12f + (Hash(slot.Rank + 31) * 22f)));
-                body.StartAnimation("RotationAngleInDegrees", spin);
-            }
-            else
-            {
-                body.Properties.InsertScalar("P", 1f);
             }
 
             return new Tile(slot, isGhost, slotVisual, floater, body, highlight);
@@ -1018,5 +1214,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private sealed record Tile(WelcomeHeroSlot Layout, bool IsGhost, ContainerVisual Slot, ContainerVisual Floater, ContainerVisual Body, ShapeVisual Highlight);
 
         private sealed record Glow(ContainerVisual Drift, SpriteVisual Sprite, CompositionColorGradientStop[] Stops, Vector2 Home, Vector2 Origin);
+
+        private sealed record Trail(SpriteVisual Sprite, CompositionPropertySet Depth, ExpressionAnimation Offset, ExpressionAnimation Size, ExpressionAnimation Opacity);
     }
 }

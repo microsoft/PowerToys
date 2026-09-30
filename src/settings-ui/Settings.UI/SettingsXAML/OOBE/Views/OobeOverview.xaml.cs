@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Overview);
             DataContext = this;
 
-            // The full "Power on" intro plays once per OOBE window; later visits get a quick settle.
+            // The full "Warp" intro plays once per OOBE window; later visits get a quick settle.
             Hero.Playback = OobeWindow.WelcomeIntroPlayed ? WelcomeHeroPlayback.Settle : WelcomeHeroPlayback.Intro;
             OobeWindow.WelcomeIntroPlayed = true;
             Hero.RevealTargets.Add(WelcomeTitle);

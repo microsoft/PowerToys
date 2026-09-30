@@ -22,8 +22,9 @@ using Windows.UI.ViewManagement;
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     /// <summary>
-    /// The animated hero of the OOBE Welcome page: every PowerToys tool erupts out of the logo and settles
-    /// into a constellation that reacts to the pointer. Hovering a tool shows its name, clicking it opens its page.
+    /// The animated hero of the OOBE Welcome page: every PowerToys tool warps in out of the depth, the logo slams
+    /// down, and the tools settle into a constellation that reacts to the pointer. Hovering a tool shows its name,
+    /// clicking it opens its page.
     /// </summary>
     [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "The scene is created on Loaded and disposed on Unloaded.")]
     public sealed partial class WelcomeHero : UserControl
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private const float LabelGap = 6f;
 
         // Text reveal, in milliseconds.
-        private const float IntroRevealStartMs = 950f;
+        private const float IntroRevealStartMs = WelcomeHeroScene.TextRevealStartMs;
         private const float IntroRevealStaggerMs = 90f;
         private const float IntroRevealMs = 700f;
         private const float SettleRevealStartMs = 80f;

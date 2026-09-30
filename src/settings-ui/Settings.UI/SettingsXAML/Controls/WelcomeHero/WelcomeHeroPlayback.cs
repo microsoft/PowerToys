@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public enum WelcomeHeroPlayback
     {
         /// <summary>
-        /// The full "Power on" intro, played on the first visit of the Welcome page.
+        /// The full "Warp" intro, played on the first visit of the Welcome page.
         /// </summary>
         Intro,
 
