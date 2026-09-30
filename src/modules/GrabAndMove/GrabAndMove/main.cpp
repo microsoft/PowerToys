@@ -276,6 +276,7 @@ static std::optional<SettingsSnapshot> g_pendingSettings;
 
 // Custom messages are handled only by the main message window.
 static constexpr UINT WM_APPLY_SETTINGS = WM_APP + 1;
+static constexpr UINT WM_REPLAY_CLICK = WM_APP + 2;
 
 static constexpr unsigned int ButtonBit(MouseButton button)
 {
@@ -2936,8 +2937,18 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
             g_modifierSession.disposition = ModifierHoldDisposition::Passthrough;
         }
         const MouseButton button = g_interaction.button;
+        const bool fromTitleBar = g_interaction.fromTitleBar;
         StopInteraction();
-        ReplayPendingClick(button);
+        if (fromTitleBar)
+        {
+            // SendInput from inside the hook stalls until the hook times out,
+            // which delays the title bar menu. Replay once the hook has returned.
+            PostMessage(g_hMsgWnd, WM_REPLAY_CLICK, static_cast<WPARAM>(button), 0);
+        }
+        else
+        {
+            ReplayPendingClick(button);
+        }
         return HookDisposition::Swallow;
     }
 
@@ -3267,6 +3278,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
     case WM_APPLY_SETTINGS:
         ApplyPendingSettings();
+        return 0;
+
+    case WM_REPLAY_CLICK:
+        ReplayPendingClick(static_cast<MouseButton>(wParam));
         return 0;
 
     case WM_CLOSE:
