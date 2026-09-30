@@ -237,6 +237,32 @@ public class BasicTests : CommandPaletteTestBase
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SettingsSearch_SubmissionOpensResults(bool showAllResults)
+    {
+        OpenSettingsWindow();
+        this.Find<TextBox>("Search settings and extensions", global: true).SetText("preview");
+        Assert.IsNotNull(this.Find("Show all results", global: true));
+
+        if (showAllResults)
+        {
+            this.Find("Show all results", global: true).Click();
+        }
+        else
+        {
+            SendKeys(Key.Enter);
+        }
+
+        Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+
+        this.Find<TextBox>("Search settings and extensions", global: true).SetText("zqxzqxzqx");
+        SendKeys(Key.Enter);
+        Assert.IsNotNull(this.Find("Results for 'zqxzqxzqx'", global: true));
+        Assert.IsNotNull(this.Find("No settings or extensions found. Try a different search term.", global: true));
+    }
+
+    [TestMethod]
     public void DockSettingsAutoHideToggleTest()
     {
         OpenSettingsWindow();

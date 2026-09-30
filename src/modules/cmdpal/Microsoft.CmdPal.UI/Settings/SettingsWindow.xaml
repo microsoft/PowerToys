@@ -54,7 +54,6 @@
                     VerticalAlignment="Center"
                     AutomationProperties.AutomationId="CmdPal_SettingsSearch"
                     CornerRadius="16"
-                    GotFocus="SettingsSearchBox_GotFocus"
                     Loaded="SettingsSearchBox_Loaded"
                     MaxSuggestionListHeight="400"
                     QueryIcon="Find"

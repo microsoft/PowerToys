@@ -165,8 +165,6 @@ public sealed partial class SettingsWindow : WindowEx,
         args.Handled = true;
     }
 
-    private void SettingsSearchBox_GotFocus(object sender, RoutedEventArgs e) => UpdateSettingsSearch();
-
     private void SettingsSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
@@ -194,6 +192,11 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void UpdateSettingsSearch()
     {
+        if (_isClosed || !SettingsSearchBox.IsLoaded || SettingsSearchBox.XamlRoot is null)
+        {
+            return;
+        }
+
         var results = GetSettingsSearchResults(SettingsSearchBox.Text);
         var template = (DataTemplate)SettingsSearchBox.Resources[results.Length == 0 ? "SettingsSearchEmptyTemplate" : "SettingsSearchResultTemplate"];
         if (SettingsSearchBox.ItemTemplate != template)
@@ -216,17 +219,34 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void SettingsSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-        if (args.ChosenSuggestion is SettingsSearchResult { Destination: { } destination })
+        if (_isClosed || !sender.IsLoaded || sender.XamlRoot is null)
         {
-            Navigate(destination);
-        }
-        else if (!string.IsNullOrWhiteSpace(args.QueryText))
-        {
-            NavFrame.Navigate(typeof(SettingsSearchPage), args.QueryText.Trim());
+            return;
         }
 
+        var destination = (args.ChosenSuggestion as SettingsSearchResult)?.Destination;
+        var query = args.QueryText.Trim();
         sender.IsSuggestionListOpen = false;
-        NavFrame.Focus(FocusState.Programmatic);
+
+        // Finish the suggestion's input event before changing pages and focus.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isClosed || !NavFrame.IsLoaded || NavFrame.XamlRoot is null)
+            {
+                return;
+            }
+
+            if (destination is not null)
+            {
+                Navigate(destination);
+            }
+            else if (!string.IsNullOrWhiteSpace(query))
+            {
+                NavFrame.Navigate(typeof(SettingsSearchPage), query);
+            }
+
+            NavFrame.Focus(FocusState.Programmatic);
+        });
     }
 
     private void TopLevelCommandManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -772,6 +792,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Window_Closed(object sender, WindowEventArgs args)
     {
+        _isClosed = true;
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
@@ -1092,7 +1113,10 @@ public sealed partial class SettingsWindow : WindowEx,
         _currentScreenshotSet = [];
         _currentScreenshot = null;
         UpdateScreenshotViewerBindings();
-        RootElement.Focus(FocusState.Programmatic);
+        if (!_isClosed)
+        {
+            RootElement.Focus(FocusState.Programmatic);
+        }
     }
 
     private void ChangeScreenshot(int delta)
