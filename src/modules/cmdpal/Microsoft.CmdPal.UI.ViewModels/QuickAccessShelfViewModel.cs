@@ -384,6 +384,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
                 previousItem.Dispose();
             }
         }
+
         RepartitionItems();
 
         if (hadItems != HasItems)
@@ -485,6 +486,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         {
             item.Dispose();
         }
+
         _itemSnapshot = [];
         UpdateObservedItems([]);
         GC.SuppressFinalize(this);

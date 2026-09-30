@@ -13,9 +13,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class QuickAccessShelfItem : IEquatable<QuickAccessShelfItem>
 {
     private readonly IListItem _item;
-    private IDisposable? _sourceLease;
     private readonly object? _sourceIcon;
     private readonly int _shortcutIndex;
+    private IDisposable? _sourceLease;
 
     public string Title { get; }
 
