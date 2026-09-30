@@ -25,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\Microsoft.CmdPal.UI\Strings\en-us\Resources.resw" Link="SettingsPages\Resources.resw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip" Link="Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

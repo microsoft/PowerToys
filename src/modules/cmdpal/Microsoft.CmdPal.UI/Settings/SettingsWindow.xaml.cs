@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -21,6 +24,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
+using ListHelpers = Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 
@@ -37,14 +41,18 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly SettingsLinkContextMenuService _settingsLinkContextMenuService;
     private readonly ISettingsLinkResolver _settingsLinkResolver;
     private readonly ISettingsService _settingsService;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly SettingsTargetHighlighter _settingsTargetHighlighter = new();
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly SettingsSearchResult[] _settingsSearchEntries;
+    private readonly ObservableCollection<SettingsSearchResult> _settingsSearchSuggestions = [];
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
     private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
     private CancellationTokenSource? _extensionSettingsNavigationCts;
     private CancellationTokenSource? _settingsTargetNavigationCts;
+    private bool _isClosed;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
@@ -62,20 +70,26 @@ public sealed partial class SettingsWindow : WindowEx,
         TopLevelCommandManager topLevelCommandManager,
         ISettingsLinkResolver settingsLinkResolver,
         SettingsLinkContextMenuService settingsLinkContextMenuService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
         ArgumentNullException.ThrowIfNull(topLevelCommandManager);
         ArgumentNullException.ThrowIfNull(settingsLinkResolver);
         ArgumentNullException.ThrowIfNull(settingsLinkContextMenuService);
         ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(fuzzyMatcherProvider);
 
         _settingsLinkContextMenuService = settingsLinkContextMenuService;
         _settingsLinkResolver = settingsLinkResolver;
         _settingsService = settingsService;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _topLevelCommandManager = topLevelCommandManager;
+        _settingsSearchEntries = SettingsSearchCatalog.CreateEntries(id => RS_.GetString(id.Replace('.', '/')));
 
         this.InitializeComponent();
+        SettingsSearchBox.ItemsSource = _settingsSearchSuggestions;
         this.ExtendsContentIntoTitleBar = true;
+        this.SetTitleBar(AppTitleBar);
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
@@ -94,6 +108,7 @@ public sealed partial class SettingsWindow : WindowEx,
         Closed += SettingsWindow_Closed;
         RootElement.SizeChanged += RootElement_SizeChanged;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+        _topLevelCommandManager.PropertyChanged += TopLevelCommandManager_PropertyChanged;
 
         if (!BuildInfo.IsCiBuild)
         {
@@ -116,6 +131,126 @@ public sealed partial class SettingsWindow : WindowEx,
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
     {
         Dispose();
+    }
+
+    private void SettingsSearchBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        SettingsSearchBox.ApplyTemplate();
+        var textBox = SettingsSearchBox.FindDescendant<TextBox>();
+        textBox?.ApplyTemplate();
+
+        // ponytail: uses WinUI's four-column template; use a custom template if its layout changes.
+        if (textBox?.FindDescendant<Button>(button => button.Name == "QueryButton") is not { Parent: Grid layout } queryButton
+            || layout.ColumnDefinitions.Count != 4
+            || textBox.FindDescendant<ScrollViewer>(element => element.Name == "ContentElement") is not { } content
+            || textBox.FindDescendant<ContentControl>(element => element.Name == "PlaceholderTextContentPresenter") is not { } placeholder
+            || textBox.FindDescendant<Button>(button => button.Name == "DeleteButton") is not { } clearButton)
+        {
+            return;
+        }
+
+        layout.ColumnDefinitions[0].Width = GridLength.Auto;
+        layout.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
+        Grid.SetColumn(queryButton, 0);
+        Grid.SetColumn(content, 1);
+        Grid.SetColumn(placeholder, 1);
+        Grid.SetColumn(clearButton, 2);
+    }
+
+    private void SettingsSearch_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        SettingsSearchBox.Focus(FocusState.Keyboard);
+        SettingsSearchBox.FindDescendant<TextBox>()?.SelectAll();
+        UpdateSettingsSearch();
+        args.Handled = true;
+    }
+
+    private void SettingsSearchBox_GotFocus(object sender, RoutedEventArgs e) => UpdateSettingsSearch();
+
+    private void SettingsSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            UpdateSettingsSearch();
+        }
+    }
+
+    private SettingsSearchResult[] GetSettingsSearchResults(string query)
+    {
+        var extensionsTitle = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+        var extensionsKeywords = RS_.GetString("SettingsSearch_Keywords_Extensions");
+        var extensions = _topLevelCommandManager.CommandProviders
+            .Where(provider => !string.IsNullOrWhiteSpace(provider.DisplayName))
+            .Select(provider => new SettingsSearchResult(
+                provider.DisplayName,
+                extensionsTitle,
+                new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: provider.ProviderId),
+                provider.Extension?.ExtensionDisplayName ?? string.Empty,
+                extensionsKeywords,
+                "\uEA86",
+                provider.Icon));
+        return SettingsSearchCatalog.Search(query, _settingsSearchEntries.Concat(extensions), _fuzzyMatcherProvider.Current);
+    }
+
+    private void UpdateSettingsSearch()
+    {
+        var results = GetSettingsSearchResults(SettingsSearchBox.Text);
+        var template = (DataTemplate)SettingsSearchBox.Resources[results.Length == 0 ? "SettingsSearchEmptyTemplate" : "SettingsSearchResultTemplate"];
+        if (SettingsSearchBox.ItemTemplate != template)
+        {
+            SettingsSearchBox.ItemTemplate = template;
+            SettingsSearchBox.ItemContainerStyle = (Style)SettingsSearchBox.Resources[results.Length == 0 ? "SettingsSearchEmptyItemStyle" : "SettingsSearchItemStyle"];
+        }
+
+        var suggestions = string.IsNullOrWhiteSpace(SettingsSearchBox.Text)
+            ? []
+            : SettingsSearchCatalog.CreateSuggestions(results, RS_.GetString("SettingsWindow_SearchShowAllResults"), RS_.GetString("SettingsWindow_SearchNoResults"));
+        ListHelpers.InPlaceUpdateList(_settingsSearchSuggestions, suggestions, out _);
+
+        var showSuggestions = !string.IsNullOrWhiteSpace(SettingsSearchBox.Text);
+        if (SettingsSearchBox.IsSuggestionListOpen != showSuggestions)
+        {
+            SettingsSearchBox.IsSuggestionListOpen = showSuggestions;
+        }
+    }
+
+    private void SettingsSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion is SettingsSearchResult { Destination: { } destination })
+        {
+            Navigate(destination);
+        }
+        else if (!string.IsNullOrWhiteSpace(args.QueryText))
+        {
+            NavFrame.Navigate(typeof(SettingsSearchPage), args.QueryText.Trim());
+        }
+
+        sender.IsSuggestionListOpen = false;
+        NavFrame.Focus(FocusState.Programmatic);
+    }
+
+    private void TopLevelCommandManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TopLevelCommandManager.IsLoading))
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_isClosed)
+                {
+                    return;
+                }
+
+                if (SettingsSearchBox.IsSuggestionListOpen)
+                {
+                    UpdateSettingsSearch();
+                }
+
+                if (NavFrame.Content is SettingsSearchPage page)
+                {
+                    page.ShowResults(page.Query, GetSettingsSearchResults(page.Query), Navigate);
+                }
+            });
+        }
     }
 
     // Handles NavigationView loaded event.
@@ -724,6 +859,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void RootElement_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+        SettingsSearchBox.Width = Math.Clamp(e.NewSize.Width - 320, 160, 480);
         UpdateScreenshotViewerPopupSize();
     }
 
@@ -783,6 +919,8 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        _isClosed = true;
+        _topLevelCommandManager.PropertyChanged -= TopLevelCommandManager_PropertyChanged;
         CancelSettingsNavigation();
         _settingsLinkContextMenuService.Hide();
         CloseScreenshotViewer();
@@ -799,7 +937,15 @@ public sealed partial class SettingsWindow : WindowEx,
         BreadCrumbs.Clear();
         ShowBreadcrumb();
 
-        if (e.SourcePageType == typeof(GeneralPage))
+        if (e.Content is SettingsSearchPage searchPage && e.Parameter is string query)
+        {
+            NavView.SelectedItem = null;
+            SettingsSearchBox.Text = query;
+            SettingsSearchBox.IsSuggestionListOpen = false;
+            BreadCrumbs.Add(new(RS_.GetString("SettingsWindow_SearchResultsTitle"), string.Empty));
+            searchPage.ShowResults(query, GetSettingsSearchResults(query), Navigate);
+        }
+        else if (e.SourcePageType == typeof(GeneralPage))
         {
             NavView.SelectedItem = GeneralPageNavItem;
             BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), SettingsPageTags.General));

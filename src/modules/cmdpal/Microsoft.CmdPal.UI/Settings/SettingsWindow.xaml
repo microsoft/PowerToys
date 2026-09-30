@@ -5,9 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settingsViewModels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:text="using:Windows.UI.Text"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
     xmlns:winuiex="using:WinUIEx"
@@ -43,6 +46,114 @@
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="ms-appx:///Assets/icon.svg" />
             </TitleBar.IconSource>
+            <TitleBar.Content>
+                <AutoSuggestBox
+                    x:Name="SettingsSearchBox"
+                    x:Uid="SettingsWindow_SearchBox"
+                    Width="480"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="CmdPal_SettingsSearch"
+                    CornerRadius="16"
+                    GotFocus="SettingsSearchBox_GotFocus"
+                    Loaded="SettingsSearchBox_Loaded"
+                    MaxSuggestionListHeight="400"
+                    QueryIcon="Find"
+                    QuerySubmitted="SettingsSearchBox_QuerySubmitted"
+                    TextChanged="SettingsSearchBox_TextChanged"
+                    UpdateTextOnSelect="False">
+                    <AutoSuggestBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                            <x:Double x:Key="AutoSuggestListMaxHeight">400</x:Double>
+                            <Style x:Key="SettingsSearchItemStyle" BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                <Setter Property="MinHeight" Value="64" />
+                                <Setter Property="Padding" Value="12,0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                            <DataTemplate x:Key="SettingsSearchResultTemplate" x:DataType="settingsViewModels:SettingsSearchResult">
+                                <toolkit:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind IsShowAllResults}">
+                                    <toolkit:Case Value="True">
+                                        <Border
+                                            Padding="0,12"
+                                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                            BorderThickness="0,1,0,0">
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                Text="{x:Bind Title}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </Border>
+                                    </toolkit:Case>
+                                    <toolkit:Case Value="False">
+                                        <Grid Padding="0,8" ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="20" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <toolkit:SwitchPresenter
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                TargetType="x:Boolean"
+                                                Value="{x:Bind HasIcon}">
+                                                <toolkit:Case Value="True">
+                                                    <controls:IconBox
+                                                        Width="20"
+                                                        Height="20"
+                                                        DiagnosticScope="SettingsSearch"
+                                                        RequestSite="Settings"
+                                                        SourceKey="{x:Bind Icon}"
+                                                        SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}">
+                                                        <controls:IconBox.FallbackSource>
+                                                            <FontIconSource Glyph="{x:Bind IconGlyph}" />
+                                                        </controls:IconBox.FallbackSource>
+                                                    </controls:IconBox>
+                                                </toolkit:Case>
+                                                <toolkit:Case Value="False">
+                                                    <FontIcon FontSize="20" Glyph="{x:Bind IconGlyph}" />
+                                                </toolkit:Case>
+                                            </toolkit:SwitchPresenter>
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock Text="{x:Bind Title}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Breadcrumb}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </toolkit:Case>
+                                </toolkit:SwitchPresenter>
+                            </DataTemplate>
+                            <Style x:Key="SettingsSearchEmptyItemStyle" BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                <Setter Property="IsEnabled" Value="False" />
+                                <Setter Property="MinHeight" Value="48" />
+                                <Setter Property="Padding" Value="12,0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                            <DataTemplate x:Key="SettingsSearchEmptyTemplate" x:DataType="settingsViewModels:SettingsSearchResult">
+                                <TextBlock
+                                    Margin="0,12"
+                                    HorizontalAlignment="Center"
+                                    Text="{x:Bind Title}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ResourceDictionary>
+                    </AutoSuggestBox.Resources>
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Invoked="SettingsSearch_Invoked"
+                            Key="E"
+                            Modifiers="Control" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
+            </TitleBar.Content>
         </TitleBar>
         <NavigationView
             x:Name="NavView"

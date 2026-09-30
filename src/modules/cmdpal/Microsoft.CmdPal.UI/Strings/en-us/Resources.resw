@@ -1797,4 +1797,162 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Command Palette couldn't restart. Try again, or close and reopen Command Palette to apply the language change.</value>
     <comment>Shown when restarting Command Palette after a language change fails</comment>
   </data>
+  <data name="SettingsWindow_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search settings and extensions (Ctrl+E)</value>
+  </data>
+  <data name="SettingsWindow_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search settings and extensions</value>
+  </data>
+  <data name="SettingsWindow_SearchNoResults" xml:space="preserve">
+    <value>No results found</value>
+  </data>
+  <data name="SettingsWindow_SearchShowAllResults" xml:space="preserve">
+    <value>Show all results</value>
+  </data>
+  <data name="SettingsWindow_SearchResultsTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SettingsWindow_SearchResultsQuery" xml:space="preserve">
+    <value>Results for '{0}'</value>
+    <comment>{0} is the search query.</comment>
+  </data>
+  <data name="SettingsWindow_SearchEmptyState.Text" xml:space="preserve">
+    <value>No settings or extensions found. Try a different search term.</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Shortcuts" xml:space="preserve">
+    <value>hotkey shortcut keyboard keybinding key combination</value>
+    <comment>Search aliases for keyboard shortcuts. Translate and add natural alternatives for your language; these words are not displayed.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoHome" xml:space="preserve">
+    <value>reset return home timeout delay</value>
+    <comment>Search aliases for automatically returning to the home page.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_PreviousQuery" xml:space="preserve">
+    <value>remember retain last previous search text query</value>
+    <comment>Search aliases for keeping the previous query.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_HighlightSearch" xml:space="preserve">
+    <value>select selection search text</value>
+    <comment>Search aliases for highlighting the search text on activation.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_TrayIcon" xml:space="preserve">
+    <value>taskbar notification area tray icon</value>
+    <comment>Search aliases for the system tray icon.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Quit" xml:space="preserve">
+    <value>quit exit close alt f4</value>
+    <comment>Search aliases for allowing Alt+F4 to close Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Language" xml:space="preserve">
+    <value>locale localization translation display language</value>
+    <comment>Search aliases for the display language.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Links" xml:space="preserve">
+    <value>deep link deeplink uri url protocol external permissions consent</value>
+    <comment>Search aliases for external command links and their permissions.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_About" xml:space="preserve">
+    <value>version build license credits</value>
+    <comment>Search aliases for information about Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Feedback" xml:space="preserve">
+    <value>bug issue report suggestion feedback</value>
+    <comment>Search aliases for sending feedback.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Appearance" xml:space="preserve">
+    <value>personalization customise customize look style visuals</value>
+    <comment>Search aliases for appearance settings.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Theme" xml:space="preserve">
+    <value>light dark mode system theme</value>
+    <comment>Search aliases for the light, dark, and system themes.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Backdrop" xml:space="preserve">
+    <value>acrylic mica blur transparent transparency material</value>
+    <comment>Search aliases for the window or dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Background" xml:space="preserve">
+    <value>wallpaper picture image photo accent tint color colour colorization opacity</value>
+    <comment>Search aliases for background images and colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackdrop" xml:space="preserve">
+    <value>acrylic blur transparent transparency material</value>
+    <comment>Search aliases for the dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackground" xml:space="preserve">
+    <value>accent tint color colour colorization opacity</value>
+    <comment>Search aliases for dock background colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Animations" xml:space="preserve">
+    <value>motion movement transitions effects reduce</value>
+    <comment>Search aliases for disabling animations.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_CompactMode" xml:space="preserve">
+    <value>small mini minimal collapsed shelf quick access pinned</value>
+    <comment>Search aliases for compact mode and its quick access shelf.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_History" xml:space="preserve">
+    <value>history recently used recent commands</value>
+    <comment>Search aliases for recently used commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_ClearHistory" xml:space="preserve">
+    <value>history recently used clear delete remove erase reset</value>
+    <comment>Search aliases for clearing recent commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_LaunchPosition" xml:space="preserve">
+    <value>window location screen monitor display cursor mouse center centre remember position</value>
+    <comment>Search aliases for where the Command Palette window opens.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Toast" xml:space="preserve">
+    <value>notification popup pop-up toast message indicator</value>
+    <comment>Search aliases for the toast notification position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_SingleClick" xml:space="preserve">
+    <value>mouse click open run launch execute double-click</value>
+    <comment>Search aliases for activating commands with a single click.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AppDetails" xml:space="preserve">
+    <value>preview pane panel details information info expand sidebar</value>
+    <comment>Search aliases for automatically expanding app details, also known as the preview pane.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoBack" xml:space="preserve">
+    <value>back navigation previous page keyboard</value>
+    <comment>Search aliases for using Backspace to go back.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Escape" xml:space="preserve">
+    <value>esc dismiss hide close back keyboard</value>
+    <comment>Search aliases for Escape key behavior.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Extensions" xml:space="preserve">
+    <value>plugins plug-ins addons add-ons providers</value>
+    <comment>Search aliases for extensions and installed extension providers.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_FallbackOrder" xml:space="preserve">
+    <value>priority ranking reorder sort fallback commands</value>
+    <comment>Search aliases for ordering fallback commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockPosition" xml:space="preserve">
+    <value>location edge side top bottom left right</value>
+    <comment>Search aliases for the dock position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockSize" xml:space="preserve">
+    <value>height width small compact large</value>
+    <comment>Search aliases for the dock size.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AlwaysOnTop" xml:space="preserve">
+    <value>foreground above windows overlay topmost</value>
+    <comment>Search aliases for keeping the dock above other windows.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AutoHide" xml:space="preserve">
+    <value>automatic hide reveal hover show</value>
+    <comment>Search aliases for automatically hiding the dock.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Monitors" xml:space="preserve">
+    <value>screens displays multiple primary secondary overrides</value>
+    <comment>Search aliases for configuring the dock on individual monitors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Gallery" xml:space="preserve">
+    <value>browse discover download install extensions plugins plug-ins addons add-ons store marketplace</value>
+    <comment>Search aliases for finding new extensions in the gallery.</comment>
+  </data>
 </root>

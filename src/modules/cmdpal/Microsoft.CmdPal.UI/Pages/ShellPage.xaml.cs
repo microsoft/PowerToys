@@ -8,6 +8,7 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -519,7 +520,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
                 App.Current.Services.GetRequiredService<ISettingsLinkResolver>(),
                 App.Current.Services.GetRequiredService<SettingsLinkContextMenuService>(),
-                _settingsService);
+                _settingsService,
+                App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         }
 
         _settingsWindow.Activate();
