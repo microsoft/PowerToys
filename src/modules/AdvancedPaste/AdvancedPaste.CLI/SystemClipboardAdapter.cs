@@ -3,46 +3,119 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
+using System.Threading.Tasks;
+
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.Storage.Streams;
+
+using FormsClipboard = System.Windows.Forms.Clipboard;
+using FormsDataFormats = System.Windows.Forms.DataFormats;
+using FormsDataObject = System.Windows.Forms.DataObject;
+using FormsIDataObject = System.Windows.Forms.IDataObject;
 
 namespace AdvancedPaste.Cli;
 
 internal sealed class SystemClipboardAdapter : IClipboardAdapter
 {
     public DataPackageView Read()
-        => RunOnSta(Clipboard.GetContent);
+        => RunOnSta(() => CreateDataPackageView(FormsClipboard.GetDataObject()));
 
     public void Write(DataPackage content)
         => RunOnSta(() =>
         {
-            Clipboard.SetContent(content);
-            FlushClipboard(Clipboard.Flush);
+            var dataObject = CreateDataObjectAsync(content.GetView()).GetAwaiter().GetResult();
+            FormsClipboard.SetDataObject(dataObject, copy: true, retryTimes: 5, retryDelay: 100);
             return true;
         });
 
-    internal static void FlushClipboard(Action flush)
+    internal static DataPackageView CreateDataPackageView(FormsIDataObject? dataObject)
     {
-        const int maxAttempts = 5;
-        ExceptionDispatchInfo? failure = null;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        var package = new DataPackage();
+        if (dataObject is null)
         {
-            try
-            {
-                flush();
-                return;
-            }
-            catch (Exception ex)
-            {
-                failure = ExceptionDispatchInfo.Capture(ex);
-            }
+            return package.GetView();
         }
 
-        failure!.Throw();
+        if (dataObject.GetDataPresent(FormsDataFormats.UnicodeText, autoConvert: true) &&
+            dataObject.GetData(FormsDataFormats.UnicodeText, autoConvert: true) is string text)
+        {
+            package.SetText(text);
+        }
+
+        if (dataObject.GetDataPresent(FormsDataFormats.Html, autoConvert: false) &&
+            dataObject.GetData(FormsDataFormats.Html, autoConvert: false) is string html)
+        {
+            package.SetHtmlFormat(html);
+        }
+
+        if (dataObject.GetDataPresent(FormsDataFormats.FileDrop, autoConvert: false) &&
+            dataObject.GetData(FormsDataFormats.FileDrop, autoConvert: false) is string[] paths)
+        {
+            package.SetStorageItems(GetStorageItems(paths));
+        }
+
+        if (dataObject.GetDataPresent(FormsDataFormats.Bitmap, autoConvert: true) &&
+            dataObject.GetData(FormsDataFormats.Bitmap, autoConvert: true) is Image image)
+        {
+            using var stream = new MemoryStream();
+            image.Save(stream, ImageFormat.Png);
+            var randomAccessStream = new InMemoryRandomAccessStream();
+            randomAccessStream.WriteAsync(stream.ToArray().AsBuffer()).AsTask().GetAwaiter().GetResult();
+            randomAccessStream.Seek(0);
+            package.SetBitmap(RandomAccessStreamReference.CreateFromStream(randomAccessStream));
+        }
+
+        return package.GetView();
     }
 
-    // Async entry points can resume on an MTA thread; clipboard calls always need STA.
+    internal static async Task<FormsDataObject> CreateDataObjectAsync(DataPackageView content)
+    {
+        var dataObject = new FormsDataObject();
+        if (content.Contains(StandardDataFormats.Text))
+        {
+            dataObject.SetText(await content.GetTextAsync());
+        }
+
+        if (content.Contains(StandardDataFormats.Html))
+        {
+            dataObject.SetData(FormsDataFormats.Html, autoConvert: false, await content.GetHtmlFormatAsync());
+        }
+
+        if (content.Contains(StandardDataFormats.StorageItems))
+        {
+            var paths = new StringCollection();
+            paths.AddRange((await content.GetStorageItemsAsync()).Select(item => item.Path).ToArray());
+            dataObject.SetFileDropList(paths);
+        }
+
+        if (content.Contains(StandardDataFormats.Bitmap))
+        {
+            using var randomAccessStream = await (await content.GetBitmapAsync()).OpenReadAsync();
+            using var stream = randomAccessStream.AsStreamForRead();
+            using var image = Image.FromStream(stream);
+            dataObject.SetImage(new Bitmap(image));
+        }
+
+        return dataObject;
+    }
+
+    private static IReadOnlyList<IStorageItem> GetStorageItems(IEnumerable<string> paths)
+        => paths.Select(path => Directory.Exists(path)
+                ? (IStorageItem)StorageFolder.GetFolderFromPathAsync(path).AsTask().GetAwaiter().GetResult()
+                : StorageFile.GetFileFromPathAsync(path).AsTask().GetAwaiter().GetResult())
+            .ToArray();
+
+    // Async entry points can resume on an MTA thread; OLE clipboard calls always need STA.
     internal static T RunOnSta<T>(Func<T> operation)
     {
         if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)

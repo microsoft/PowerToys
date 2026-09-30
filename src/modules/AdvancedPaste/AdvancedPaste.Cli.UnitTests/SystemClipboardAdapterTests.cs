@@ -3,10 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Specialized;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Cli;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel.DataTransfer;
+
+using FormsDataFormats = System.Windows.Forms.DataFormats;
+using FormsDataObject = System.Windows.Forms.DataObject;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -14,35 +23,35 @@ namespace AdvancedPaste.Cli.UnitTests;
 public class SystemClipboardAdapterTests
 {
     [TestMethod]
-    public void FlushClipboard_RetriesTransientFailures()
+    public async Task DataObjectConversion_PreservesRichFormats()
     {
-        var attempts = 0;
+        const string text = "Hello PowerToys";
+        var html = HtmlFormatHelper.CreateHtmlFormat("<strong>Hello PowerToys</strong>");
+        var path = Path.GetTempFileName();
+        var source = new FormsDataObject();
+        source.SetText(text);
+        source.SetData(FormsDataFormats.Html, autoConvert: false, html);
+        source.SetFileDropList(new StringCollection { path });
+        using var image = new Bitmap(2, 2);
+        source.SetImage(image);
 
-        SystemClipboardAdapter.FlushClipboard(() =>
+        try
         {
-            if (++attempts < 3)
-            {
-                throw new InvalidOperationException("Transient flush failure.");
-            }
-        });
+            var packageView = SystemClipboardAdapter.CreateDataPackageView(source);
+            var storageItems = await packageView.GetStorageItemsAsync();
+            var roundTripped = await SystemClipboardAdapter.CreateDataObjectAsync(packageView);
 
-        Assert.AreEqual(3, attempts);
-    }
-
-    [TestMethod]
-    public void FlushClipboard_ThrowsAfterFinalFailure()
-    {
-        var attempts = 0;
-
-        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
-            SystemClipboardAdapter.FlushClipboard(() =>
-            {
-                attempts++;
-                throw new InvalidOperationException("Persistent flush failure.");
-            }));
-
-        Assert.AreEqual(5, attempts);
-        Assert.AreEqual("Persistent flush failure.", exception.Message);
+            Assert.AreEqual(text, roundTripped.GetText());
+            Assert.IsTrue(roundTripped.TryGetData<string>(FormsDataFormats.Html, out var roundTrippedHtml));
+            Assert.AreEqual(html, roundTrippedHtml);
+            Assert.AreEqual(path, storageItems.Single().Path);
+            CollectionAssert.Contains(roundTripped.GetFileDropList(), path);
+            Assert.IsNotNull(roundTripped.GetImage());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     [TestMethod]
