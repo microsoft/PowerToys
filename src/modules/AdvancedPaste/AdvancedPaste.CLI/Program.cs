@@ -50,7 +50,7 @@ public static partial class Program
     {
         TrySetUtf8Output();
         TrySetUtf8RedirectedInput();
-        if (args.Length == 0 || args.Any(IsHelpArgument))
+        if (IsHelpRequest(args))
         {
             var root = CreateRootCommand(out _);
             var helpExitCode = await root.InvokeAsync(args);
@@ -105,7 +105,7 @@ public static partial class Program
 
     internal static string GetTelemetryCommandName(string[] args)
     {
-        if (args.Length == 0 || args.Any(IsHelpArgument))
+        if (IsHelpRequest(args))
         {
             return "help";
         }
@@ -419,8 +419,16 @@ public static partial class Program
     internal static TextReader CreateUtf8InputReader(Stream stream)
         => new StreamReader(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true);
 
+    internal static bool IsHelpRequest(string[] args)
+    {
+        var root = CreateRootCommand(out _);
+        return args.Length == 0 || HasHelpToken(new Parser(root).Parse(args));
+    }
+
     private static bool HasHelpToken(ParseResult parseResult)
-        => parseResult.Tokens.Any(token => IsHelpArgument(token.Value));
+        => parseResult.Tokens.Any(token =>
+            (token.Type != TokenType.Argument || parseResult.Errors.Count > 0)
+            && IsHelpArgument(token.Value));
 
     private static bool IsHelpArgument(string value)
         => value is "--help" or "-h" or "-?" or "/?";

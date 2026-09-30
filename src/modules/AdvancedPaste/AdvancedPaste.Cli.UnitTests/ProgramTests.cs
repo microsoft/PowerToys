@@ -621,6 +621,7 @@ public class ProgramTests
     [DataTestMethod]
     [DataRow(new string[] { }, "help")]
     [DataRow(new[] { "transform", "--help" }, "help")]
+    [DataRow(new[] { "transform", "--action", "plain-text", "--input", "-h", "--stdout" }, "transform")]
     [DataRow(new[] { "transform", "--action", "plain-text" }, "transform")]
     [DataRow(new[] { "actions", "list", "--json" }, "actions list")]
     [DataRow(new[] { "unexpected", "--prompt", "sensitive prompt" }, "unknown")]
