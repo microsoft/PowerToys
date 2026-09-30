@@ -352,6 +352,26 @@ namespace Awake.Core
                                 break;
                             }
 
+                        case (uint)TrayCommands.TC_MODE_EXPIRABLE:
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+
+                                // A stored expiration that already passed is no useful starting point.
+                                DateTimeOffset suggestion = settings.Properties.ExpirationDateTime > DateTimeOffset.Now
+                                    ? settings.Properties.ExpirationDateTime
+                                    : DateTimeOffset.Now.AddHours(1);
+
+                                if (ExpirationDialog.TryPick(hWnd, suggestion, out DateTimeOffset expireAt))
+                                {
+                                    // The tray menu and the Settings app stay usable while the dialog is open,
+                                    // so re-read to avoid writing back a stale display setting.
+                                    settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                                    Manager.SetExpirableKeepAwake(expireAt, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                }
+
+                                break;
+                            }
+
                         default:
                             {
                                 // Custom tray time commands start at TC_TIME and increment by 1 for each entry.
@@ -516,7 +536,7 @@ namespace Awake.Core
 
             InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
             InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
-            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
+            InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE);
         }
     }
 }
