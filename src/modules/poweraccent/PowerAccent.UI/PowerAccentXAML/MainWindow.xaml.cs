@@ -204,6 +204,12 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
         double heightDip = RowHeightDip + (ViewModel.ShowDescription ? DescriptionHeightDip : 0);
 
+        // Measure at the final capped width: only overflowing lists need a scrollbar row.
+        // Reserve its actual themed height rather than clipping it within the fixed
+        // character row.
+        Selector.Measure(new Windows.Foundation.Size(widthDip, double.PositiveInfinity));
+        heightDip = Math.Max(heightDip, Selector.DesiredSize.Height + LayoutRoundingDip);
+
         // Calculation works in physical pixels; GetDisplayCoordinates multiplies the DIP size by
         // the active monitor's DPI internally and returns the physical top-left for the anchor.
         var coordinates = _powerAccent.GetDisplayCoordinates(new CoreSize(widthDip, heightDip));
