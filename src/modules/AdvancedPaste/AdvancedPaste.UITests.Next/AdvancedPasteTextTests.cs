@@ -113,8 +113,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsMarkdown);
         AssertTransformedText();
 
-        // CF_HTML boundary comments remain inert HTML comments in the generated Markdown.
-        Assert.AreEqual("<!--StartFragment -->\n## Offline\n\n**Bold** and *italic* [link](https://example.test/)\n<!--EndFragment -->", NormalizeMarkdown(Target.Text));
+        Assert.AreEqual("## Offline\n\n**Bold** and *italic* [link](https://example.test/)", NormalizeMarkdown(Target.Text));
     }
 
     [TestMethod]
