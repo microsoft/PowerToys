@@ -42,6 +42,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.Appearance.LaunchPosition, SettingsPageTags.Appearance, "launch-position"),
         CreateTarget(SettingsLinkIds.Appearance.ToastPosition, SettingsPageTags.Appearance, "toast-position"),
         CreateTarget(SettingsLinkIds.Appearance.Interaction, SettingsPageTags.Appearance, "interaction-section"),
+        CreateTarget(SettingsLinkIds.Appearance.ListItemAltNumberBehavior, SettingsPageTags.Appearance, "list-item-alt-number-behavior"),
         CreateTarget(SettingsLinkIds.Appearance.SingleClickActivation, SettingsPageTags.Appearance, "single-click-activation"),
         CreateTarget(SettingsLinkIds.Appearance.ShowAppDetails, SettingsPageTags.Appearance, "show-app-details"),
         CreateTarget(SettingsLinkIds.Appearance.BackspaceGoesBack, SettingsPageTags.Appearance, "backspace-goes-back"),

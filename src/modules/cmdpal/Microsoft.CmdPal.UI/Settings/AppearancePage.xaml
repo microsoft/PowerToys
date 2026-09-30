@@ -438,6 +438,19 @@
                         local:SettingsPageTarget.Id="interaction-section"
                         Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
+                        local:SettingsPageTarget.Id="list-item-alt-number-behavior">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_AppearancePage_ListItemAltNumberBehavior"
+                            SelectedIndex="{x:Bind ViewModel.ListItemAltNumberBehaviorIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_Run" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ListItemAltNumberBehavior_Select" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
                         x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         local:SettingsPageTarget.Id="single-click-activation">
