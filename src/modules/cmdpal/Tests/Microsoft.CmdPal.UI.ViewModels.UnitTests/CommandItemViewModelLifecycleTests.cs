@@ -138,7 +138,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         item.BeforeSubscribe = viewModel.SafeCleanup;
 
         try
@@ -163,7 +163,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         var addFailure = new InvalidOperationException("Event add failed.");
         Action failAdd = () =>
         {
@@ -207,7 +207,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         var addFailure = new InvalidOperationException("Event add failed.");
         item.AfterUnsubscribe = () => throw new InvalidOperationException("Event remove failed.");
         Action failAdd = () =>
@@ -241,7 +241,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         var removeFailure = new InvalidOperationException("Event remove failed.");
         item.BeforeSubscribe = viewModel.SafeCleanup;
         item.AfterUnsubscribe = () => throw removeFailure;
@@ -263,7 +263,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         item.ReadIcon = () => Assert.Fail("A cleaned item must not restart initialization.");
         item.ReadCommand = item.ReadIcon;
 
@@ -281,7 +281,7 @@ public partial class CommandItemViewModelLifecycleTests
     {
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
 
         try
         {
@@ -315,7 +315,7 @@ public partial class CommandItemViewModelLifecycleTests
         using var resume = new ManualResetEventSlim();
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         viewModel.FastInitializeProperties();
         item.ReadIcon = () =>
         {
@@ -349,7 +349,7 @@ public partial class CommandItemViewModelLifecycleTests
         using var resume = new ManualResetEventSlim();
         var context = new TestPageContext();
         var item = new TestCommandItem();
-        var viewModel = new CommandItemViewModel(new(item), new(context), null, ContextMenuPlacement.CommandPalette);
+        var viewModel = new CommandItemViewModel(new(item), new(context), null);
         configureBlock(item, () =>
         {
             entered.Set();

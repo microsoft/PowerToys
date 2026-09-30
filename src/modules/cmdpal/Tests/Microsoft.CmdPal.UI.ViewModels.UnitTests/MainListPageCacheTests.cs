@@ -206,7 +206,7 @@ public sealed class MainListPageCacheTests
         ICommandProviderContext providerContext)
     {
         var model = new CommandItem(new NoOpCommand { Id = id, Name = title }) { Title = title };
-        var item = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
+        var item = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance);
         var topLevel = new TopLevelViewModel(
             item,
             TopLevelType.Normal,

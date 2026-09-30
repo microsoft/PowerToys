@@ -41,7 +41,7 @@ public sealed class CommandContextSourceTests
         var pageContext = new TestPageContext();
         var page = new ListPage { Id = "test.page", Name = "Test page" };
         var model = new CommandItem(page);
-        var itemViewModel = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
+        var itemViewModel = new CommandItemViewModel(new(model), new(pageContext), DefaultContextMenuFactory.Instance);
         itemViewModel.SlowInitializeProperties();
         var topLevel = new TopLevelViewModel(itemViewModel, TopLevelType.Normal, host, provider, new ProviderSettings(), services, model, DefaultContextMenuFactory.Instance);
 

@@ -657,7 +657,7 @@ public partial class DockItemViewModel : CommandItemViewModel
     }
 
     public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showTitle, bool showSubtitle, IContextMenuFactory contextMenuFactory)
-        : base(item, errorContext, contextMenuFactory, ContextMenuPlacement.Dock)
+        : base(item, errorContext, contextMenuFactory)
     {
         _showTitle = showTitle;
         _showSubtitle = showSubtitle;

@@ -271,7 +271,7 @@ public partial class DockItemViewModelTests
         var services = new Mock<IServiceProvider>();
         services.Setup(service => service.GetService(typeof(ISettingsService))).Returns(settingsService.Object);
 
-        var itemViewModel = new CommandItemViewModel(new(item), new(context), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
+        var itemViewModel = new CommandItemViewModel(new(item), new(context), DefaultContextMenuFactory.Instance);
         var topLevel = new TopLevelViewModel(
             itemViewModel,
             TopLevelType.Normal,
@@ -284,7 +284,7 @@ public partial class DockItemViewModelTests
         topLevel.InitializeProperties();
 
         var pinnedItem = topLevel.ToPinnedDockBandItem();
-        var root = new CommandItemViewModel(new(pinnedItem), new(context), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette);
+        var root = new CommandItemViewModel(new(pinnedItem), new(context), DefaultContextMenuFactory.Instance);
         root.SlowInitializeProperties();
         var band = new DockBandViewModel(
             root,

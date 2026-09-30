@@ -152,7 +152,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        EmptyContent = new(new(null), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette);
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
     }
 
     internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
@@ -445,7 +445,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         continue;
                     }
 
-                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory, ContextMenuPlacement.CommandPalette);
+                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory, ItemSurface.CommandPalette);
 
                     // If an item fails to load, silently ignore it.
                     if (viewModel.SafeFastInit())
@@ -1124,7 +1124,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
-        EmptyContent = new(new(model.EmptyContent), PageContext, _contextMenuFactory, ContextMenuPlacement.CommandPalette);
+        EmptyContent = new(new(model.EmptyContent), PageContext, _contextMenuFactory);
         EmptyContent.SlowInitializeProperties();
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -1267,6 +1267,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;
+                RefreshDetailsCommands();
                 break;
             case nameof(PlaceholderText):
                 _modelPlaceholderText = model.PlaceholderText;
@@ -1275,7 +1276,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
-                EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette);
+                EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
@@ -1307,6 +1308,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
            });
+    }
+
+    private void RefreshDetailsCommands()
+    {
+        ListItemViewModel[] items;
+        lock (_listLock)
+        {
+            items = Items.ToArray();
+        }
+
+        foreach (var item in items)
+        {
+            item.RefreshDetailsCommand();
+        }
     }
 
     private void ApplyLayoutToItems()
@@ -1531,7 +1546,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
-        EmptyContent = new(new(null), PageContext, contextMenuFactory: null, contextMenuPlacement: ContextMenuPlacement.CommandPalette); // necessary?
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
 
         lock (_listLock)
         {

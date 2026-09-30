@@ -54,24 +54,22 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     public List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
         IContextItem[] items,
         CommandItemViewModel commandItem,
-        ContextMenuPlacement placement)
+        ItemSurface? surface)
     {
-        // Build each complete raw menu in one pass so Show Details stays last and its
-        // duplicate-ID check sees extension and generated pin items together.
-        List<IContextItem> contextItems = items is null ? [] : [.. items];
+        var results = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(items, commandItem, surface);
 
         IPageContext? page = null;
         var succeeded = commandItem.PageContext.TryGetTarget(out page);
         if (!succeeded || page is null)
         {
-            return DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(contextItems.ToArray(), commandItem, placement);
+            return results;
         }
 
         var isTopLevelItem = page is TopLevelItemPageContext;
         if (isTopLevelItem)
         {
             // Bail early. We'll handle it below.
-            return DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(contextItems.ToArray(), commandItem, placement);
+            return results;
         }
 
         List<IContextItem> moreCommands = [];
@@ -148,17 +146,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         if (moreCommands.Count > 0)
         {
             moreCommands.Insert(0, new Separator());
-            contextItems.AddRange(moreCommands);
+            var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem, surface: null);
+            var slotIndex = results.FindIndex(item => item is ContextMenuSlot);
+            results.InsertRange(slotIndex < 0 ? results.Count : slotIndex, moreResults);
         }
 
-        return DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(contextItems.ToArray(), commandItem, placement);
+        return results;
     }
-
-    public List<IContextItemViewModel>? UpdateMoreCommandsForDetails(
-        IReadOnlyList<IContextItemViewModel> items,
-        CommandItemViewModel commandItem,
-        ContextMenuPlacement placement) =>
-        DefaultContextMenuFactory.Instance.UpdateMoreCommandsForDetails(items, commandItem, placement);
 
     /// <summary>
     /// Called to create the context menu on TopLevelViewModels.

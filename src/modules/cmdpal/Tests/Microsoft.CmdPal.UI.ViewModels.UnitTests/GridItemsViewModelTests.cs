@@ -387,7 +387,7 @@ public class GridItemsViewModelTests
         }
 
         private TestItem(IListItem model, TestPageContext context, bool initializeMetadata)
-            : base(model, new(context), DefaultContextMenuFactory.Instance, ContextMenuPlacement.CommandPalette)
+            : base(model, new(context), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette)
         {
             _context = context;
             FastInitializeProperties();

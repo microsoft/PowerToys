@@ -179,13 +179,12 @@ public partial class ListViewModelTests
             .FirstOrDefault(command => command.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
 
     [TestMethod]
-    public void ShowDetailsCommand_FollowsPlacement()
+    public void ShowDetailsCommand_FollowsSurface()
     {
-        foreach (var (placement, expected) in new[]
+        foreach (var (surface, expected) in new[]
         {
-            (ContextMenuPlacement.CommandPalette, true),
-            (ContextMenuPlacement.QuickAccessShelf, false),
-            (ContextMenuPlacement.Dock, false),
+            (ItemSurface.CommandPalette, true),
+            (ItemSurface.QuickAccessShelf, false),
         })
         {
             var pageViewModel = CreateViewModel(new ListPage());
@@ -193,16 +192,16 @@ public partial class ListViewModelTests
                 new ListItem(new NoOpCommand { Name = "Item" }) { Details = new Details { Title = "Details" } },
                 new(pageViewModel),
                 DefaultContextMenuFactory.Instance,
-                placement);
+                surface);
 
             try
             {
                 Assert.IsTrue(itemViewModel.SafeFastInit());
                 Assert.IsTrue(itemViewModel.SafeInitializeProperties());
                 Assert.IsTrue(itemViewModel.SafeSlowInit());
-                Assert.IsTrue(itemViewModel.HasDetails);
-                Assert.AreEqual(expected, GetShowDetailsCommand(itemViewModel) is not null, placement.Name);
-                Assert.AreEqual(placement.Name, placement.ToString());
+                Assert.AreEqual(expected, itemViewModel.HasDetails, surface.Name);
+                Assert.AreEqual(expected, GetShowDetailsCommand(itemViewModel) is not null, surface.Name);
+                Assert.AreEqual(surface.Name, surface.ToString());
             }
             finally
             {
@@ -211,8 +210,6 @@ public partial class ListViewModelTests
                 pageViewModel.Dispose();
             }
         }
-
-        Assert.AreNotEqual(ContextMenuPlacement.QuickAccessShelf.Name, ContextMenuPlacement.Dock.Name);
     }
 
     [TestMethod]
@@ -224,7 +221,7 @@ public partial class ListViewModelTests
             item,
             new(pageViewModel),
             DefaultContextMenuFactory.Instance,
-            ContextMenuPlacement.CommandPalette);
+            ItemSurface.CommandPalette);
 
         try
         {

@@ -87,8 +87,7 @@ public partial class DockBandViewModelLifecycleTests
         var root = new CommandItemViewModel(
             new(new CommandItem(page) { Title = page.Title }),
             new(context),
-            DefaultContextMenuFactory.Instance,
-            ContextMenuPlacement.Dock);
+            DefaultContextMenuFactory.Instance);
         root.SlowInitializeProperties();
 
         var settingsService = new Mock<ISettingsService>();
