@@ -188,6 +188,11 @@ public sealed partial class TaskbarWindow : WindowEx,
             immediate: false);
     }
 
+    private void Root_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
+        _bandsControl.ShowTaskbarContextMenu(Root, e);
+    }
+
     private void TaskbarChangeTick(DispatcherQueueTimer sender, object args)
     {
         if (_disposed)
@@ -791,8 +796,9 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                     Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentLeft={contentLeft} contentRight={contentRight}");
 
-                    clipLeft = contentLeft;
-                    clipRight = Math.Min(clipRight, contentRight);
+                    var hitPadding = (int)Math.Ceiling(8 * scaleFactor);
+                    clipLeft = Math.Max(_taskbarMetrics.ButtonsWidthInPixels, contentLeft - hitPadding);
+                    clipRight = Math.Min(clipRight, contentRight + hitPadding);
                 }
             }
             else
@@ -817,8 +823,9 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                     Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) contentTop={contentTop} contentBottom={contentBottom}");
 
-                    clipTop = Math.Max(clipTop, contentTop);
-                    clipBottom = Math.Min(clipBottom, contentBottom);
+                    var hitPadding = (int)Math.Ceiling(8 * scaleFactor);
+                    clipTop = Math.Max(_taskbarMetrics.ButtonsWidthInPixels, contentTop - hitPadding);
+                    clipBottom = Math.Min(clipBottom, contentBottom + hitPadding);
                 }
             }
 

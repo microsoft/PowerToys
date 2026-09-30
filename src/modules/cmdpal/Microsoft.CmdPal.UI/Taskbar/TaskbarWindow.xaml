@@ -19,7 +19,8 @@
         x:Name="Root"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
-        Background="Transparent">
+        Background="Transparent"
+        RightTapped="Root_RightTapped">
 
         <!--
             Horizontal layout uses columns: Logo | Buttons | Mid(*) | Content | Tray

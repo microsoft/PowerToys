@@ -707,12 +707,16 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     private void RootPanel_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
+        ShowTaskbarContextMenu((FrameworkElement)sender, e);
+    }
+
+    internal void ShowTaskbarContextMenu(FrameworkElement target, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
         if (_isEditMode)
         {
             return;
         }
 
-        var pos = e.GetPosition(null);
         var item = _viewModel.GetContextMenuForTaskbar();
         if (item.HasMoreCommands)
         {
@@ -721,12 +725,12 @@ public sealed partial class TaskbarBandControl : UserControl,
             ContextControl.ShowFilterBox = false;
             ContextControl.PrepareForOpen(GetContextMenuFilterLocation());
             ContextMenuFlyout.ShowAt(
-                (FrameworkElement)sender,
+                target,
                 new FlyoutShowOptions()
                 {
                     ShowMode = FlyoutShowMode.Standard,
                     Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                    Position = e.GetPosition((UIElement)sender),
+                    Position = e.GetPosition(target),
                 });
             e.Handled = true;
         }
