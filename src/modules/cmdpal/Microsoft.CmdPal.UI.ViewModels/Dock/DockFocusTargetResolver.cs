@@ -18,16 +18,33 @@ public static class DockFocusTargetResolver
     /// <param name="liveDockMonitorIds">Stable IDs of the monitors that actually have a dock window.</param>
     /// <param name="cursorX">Cursor X in virtual-screen coordinates.</param>
     /// <param name="cursorY">Cursor Y in virtual-screen coordinates.</param>
+    /// <param name="focusPrimaryFirst">Whether to prefer the primary monitor's dock over the cursor's monitor.</param>
     /// <returns>The stable ID to focus, or <c>null</c> when no dock is running.</returns>
     public static string? Resolve(
         IReadOnlyList<MonitorInfo> monitors,
         IReadOnlyCollection<string> liveDockMonitorIds,
         int cursorX,
-        int cursorY)
+        int cursorY,
+        bool focusPrimaryFirst = false)
     {
         if (liveDockMonitorIds.Count == 0)
         {
             return null;
+        }
+
+        string? primaryDockId = null;
+        for (var i = 0; i < monitors.Count; i++)
+        {
+            if (monitors[i].IsPrimary && TryMatch(liveDockMonitorIds, monitors[i].StableId, out var onPrimary))
+            {
+                primaryDockId = onPrimary;
+                break;
+            }
+        }
+
+        if (focusPrimaryFirst && primaryDockId is not null)
+        {
+            return primaryDockId;
         }
 
         var cursorMonitor = FindMonitorContaining(monitors, cursorX, cursorY);
@@ -36,12 +53,9 @@ public static class DockFocusTargetResolver
             return onCursor;
         }
 
-        for (var i = 0; i < monitors.Count; i++)
+        if (primaryDockId is not null)
         {
-            if (monitors[i].IsPrimary && TryMatch(liveDockMonitorIds, monitors[i].StableId, out var onPrimary))
-            {
-                return onPrimary;
-            }
+            return primaryDockId;
         }
 
         foreach (var id in liveDockMonitorIds)

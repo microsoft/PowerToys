@@ -192,7 +192,7 @@ public sealed partial class DockWindowManager : IDisposable
     }
 
     /// <summary>
-    /// Cycles from the focused dock, using the cursor to choose where traversal begins.
+    /// Cycles from the focused dock, using the navigation settings to choose where a new cycle begins.
     /// </summary>
     public void FocusDock(bool reverse = false)
     {
@@ -214,7 +214,8 @@ public sealed partial class DockWindowManager : IDisposable
             monitors,
             _docks.Keys,
             cursor.X,
-            cursor.Y);
+            cursor.Y,
+            focusPrimaryFirst: _settingsService.Settings.DockFocusPrimaryFirst);
 
         if (targetId is null)
         {

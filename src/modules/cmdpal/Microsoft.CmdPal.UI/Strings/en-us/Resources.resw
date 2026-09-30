@@ -573,6 +573,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_DockPage_FocusShortcut_SettingsCard.Description" xml:space="preserve">
     <value>Focus the dock, then press again to cycle through items.</value>
   </data>
+  <data name="Settings_DockPage_FocusPrimaryFirst_SettingsCard.Header" xml:space="preserve">
+    <value>Focus primary dock first</value>
+  </data>
+  <data name="Settings_DockPage_FocusPrimaryFirst_SettingsCard.Description" xml:space="preserve">
+    <value>Start navigation on the primary monitor.</value>
+  </data>
   <data name="Settings_DockPage_FocusAcrossMonitors_SettingsCard.Header" xml:space="preserve">
     <value>Cycle through all docks</value>
   </data>

@@ -54,6 +54,8 @@ public record SettingsModel
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
 
+    public bool DockFocusPrimaryFirst { get; init; }
+
     public bool DockFocusAcrossMonitors { get; init; } = true;
 
     public bool DockRememberLastFocusedItem { get; init; } = true;
@@ -246,7 +248,8 @@ public record SettingsModel
           int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
           int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
           bool dockFocusAcrossMonitors = true,
-          bool dockRememberLastFocusedItem = true)
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -258,6 +261,7 @@ public record SettingsModel
         RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
         DockFocusAcrossMonitors = dockFocusAcrossMonitors;
         DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
     }
 
     public SettingsModel()
