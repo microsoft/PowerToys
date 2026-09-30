@@ -12,6 +12,11 @@
     <RootNamespace>NewPlusShellExtension</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
     <ProjectName>NewPlus.ShellExtension</ProjectName>
+    <!--
+      Keep a private static UCRT rather than the Hybrid CRT from Cpp.Build.props: GetDatedFileName (Helpers.cpp)
+      calls std::locale::global, which with a shared UCRT would change the C locale of every module in explorer.exe.
+    -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>

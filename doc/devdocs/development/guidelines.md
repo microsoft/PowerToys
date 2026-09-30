@@ -72,6 +72,13 @@
   - Sanity check that all modules still work
   - Open PR with changes
 
+### C/C++ Runtime (Hybrid CRT)
+- Native projects link the C runtime as a "Hybrid CRT" (set up in `Cpp.Build.props`): the VC++ runtime and STL (`vcruntime`, `msvcp`) are linked statically (`/MT`, `/MTd`), and the Universal CRT comes from `ucrtbase.dll`, which is part of Windows 10 and later. No VC++ redistributable is needed. Windows App SDK, Windows Terminal and Command Palette use the same model.
+- All modules in a process share one Universal CRT, so process-wide CRT state is shared too. In DLLs that run inside other processes (Explorer, the runner, .NET apps), don't change the C locale (`setlocale`, `std::locale::global`; MSVC's STL also calls `setlocale` while constructing a named `std::locale`) or the CRT environment (`_putenv`). CRT handlers such as `signal` and `_set_invalid_parameter_handler` apply to the whole process. Use Win32 APIs such as `GetEnvironmentVariableW`, or the `_l` CRT functions that take an explicit locale.
+- The CRT's copy of the environment isn't updated by `SetEnvironmentVariableW`. Read values that were set with it using `GetEnvironmentVariableW`.
+- A project that uses the DLL CRT (`/MD`) or must keep a private static CRT sets `<EnableHybridCRT>false</EnableHybridCRT>`. The exceptions today are `BackgroundActivatorDLL` (`/MD`), `PowerRename.FuzzingTest` (ASan), and the New+ shell extensions and PowerRename UI, test app and unit tests, which call `std::locale::global`.
+- Debug builds link the debug Universal CRT, `ucrtbased.dll`. It's installed with the Windows SDK but not on clean machines. To run PowerToys on a machine without the Windows SDK, such as a clean test VM, use a Release build.
+
 ## Testing Requirements
 
 ### Multiple Computers

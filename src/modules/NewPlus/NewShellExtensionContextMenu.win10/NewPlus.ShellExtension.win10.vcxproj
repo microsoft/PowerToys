@@ -15,6 +15,11 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <!--
+      Keep a private static UCRT rather than the Hybrid CRT from Cpp.Build.props: GetDatedFileName (Helpers.cpp)
+      calls std::locale::global, which with a shared UCRT would change the C locale of every module in explorer.exe.
+    -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>

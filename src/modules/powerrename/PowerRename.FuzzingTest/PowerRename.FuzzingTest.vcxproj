@@ -13,6 +13,8 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <!-- The ASan/libFuzzer build keeps the fully static CRT rather than the Hybrid CRT from Cpp.Build.props. -->
+    <EnableHybridCRT>false</EnableHybridCRT>
     
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

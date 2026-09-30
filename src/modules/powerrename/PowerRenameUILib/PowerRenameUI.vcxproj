@@ -48,6 +48,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <!--
+      Keep a private static UCRT rather than the Hybrid CRT from Cpp.Build.props: PowerRenameLib (Helpers.cpp) calls
+      std::locale::global, which with a shared UCRT would also change the C locale used by the Windows App SDK here.
+    -->
+    <EnableHybridCRT>false</EnableHybridCRT>
     
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
