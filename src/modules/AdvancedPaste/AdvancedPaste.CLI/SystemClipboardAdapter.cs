@@ -61,7 +61,11 @@ internal sealed class SystemClipboardAdapter : IClipboardAdapter
         if (dataObject.GetDataPresent(FormsDataFormats.FileDrop, autoConvert: false) &&
             dataObject.GetData(FormsDataFormats.FileDrop, autoConvert: false) is string[] paths)
         {
-            package.SetStorageItems(GetStorageItems(paths));
+            var storageItems = GetStorageItems(paths);
+            if (storageItems.Count > 0)
+            {
+                package.SetStorageItems(storageItems);
+            }
         }
 
         if (dataObject.GetDataPresent(FormsDataFormats.Bitmap, autoConvert: true) &&
@@ -110,10 +114,33 @@ internal sealed class SystemClipboardAdapter : IClipboardAdapter
     }
 
     private static IReadOnlyList<IStorageItem> GetStorageItems(IEnumerable<string> paths)
-        => paths.Select(path => Directory.Exists(path)
-                ? (IStorageItem)StorageFolder.GetFolderFromPathAsync(path).AsTask().GetAwaiter().GetResult()
-                : StorageFile.GetFileFromPathAsync(path).AsTask().GetAwaiter().GetResult())
-            .ToArray();
+    {
+        var storageItems = new List<IStorageItem>();
+        foreach (var path in paths)
+        {
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    storageItems.Add(StorageFolder.GetFolderFromPathAsync(path).AsTask().GetAwaiter().GetResult());
+                }
+                else if (File.Exists(path))
+                {
+                    storageItems.Add(StorageFile.GetFileFromPathAsync(path).AsTask().GetAwaiter().GetResult());
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // The item can disappear between the existence check and WinRT resolution.
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // The item can disappear between the existence check and WinRT resolution.
+            }
+        }
+
+        return storageItems;
+    }
 
     // Async entry points can resume on an MTA thread; OLE clipboard calls always need STA.
     internal static T RunOnSta<T>(Func<T> operation)

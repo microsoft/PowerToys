@@ -622,6 +622,7 @@ public class ProgramTests
     [DataRow(new string[] { }, "help")]
     [DataRow(new[] { "transform", "--help" }, "help")]
     [DataRow(new[] { "transform", "--action", "plain-text", "--input", "-h", "--stdout" }, "transform")]
+    [DataRow(new[] { "transform", "--input", "-h", "--invalid" }, "transform")]
     [DataRow(new[] { "transform", "--action", "plain-text" }, "transform")]
     [DataRow(new[] { "actions", "list", "--json" }, "actions list")]
     [DataRow(new[] { "unexpected", "--prompt", "sensitive prompt" }, "unknown")]
@@ -638,6 +639,15 @@ public class ProgramTests
         Assert.AreEqual("AdvancedPaste_CLICommand", telemetryEvent.EventName);
         Assert.AreEqual("transform", telemetryEvent.CommandName);
         Assert.IsTrue(telemetryEvent.Successful);
+    }
+
+    [TestMethod]
+    public async Task HelpLikeOptionValue_WithParseError_ReturnsArgumentError()
+    {
+        var result = await RunAsync(["transform", "--input", "-h", "--invalid"]);
+
+        Assert.AreEqual(Program.ArgumentErrorExitCode, result.ExitCode);
+        StringAssert.Contains(result.Stderr, "Usage:");
     }
 
     private static async Task<RunResult> RunAsync(

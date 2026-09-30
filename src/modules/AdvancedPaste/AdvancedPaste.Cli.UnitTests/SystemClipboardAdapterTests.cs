@@ -31,7 +31,7 @@ public class SystemClipboardAdapterTests
         var source = new FormsDataObject();
         source.SetText(text);
         source.SetData(FormsDataFormats.Html, autoConvert: false, html);
-        source.SetFileDropList(new StringCollection { path });
+        source.SetFileDropList(new StringCollection { path, path + ".deleted" });
         using var image = new Bitmap(2, 2);
         source.SetImage(image);
 

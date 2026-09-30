@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
@@ -182,7 +183,7 @@ public static partial class Program
         var root = CreateRootCommand(out var options);
         var parseResult = new Parser(root).Parse(args);
 
-        if (args.Length == 0 || HasHelpToken(parseResult))
+        if (args.Length == 0 || HasHelpToken(parseResult, options))
         {
             return await root.InvokeAsync(args);
         }
@@ -421,14 +422,20 @@ public static partial class Program
 
     internal static bool IsHelpRequest(string[] args)
     {
-        var root = CreateRootCommand(out _);
-        return args.Length == 0 || HasHelpToken(new Parser(root).Parse(args));
+        var root = CreateRootCommand(out var options);
+        return args.Length == 0 || HasHelpToken(new Parser(root).Parse(args), options);
     }
 
-    private static bool HasHelpToken(ParseResult parseResult)
+    private static bool HasHelpToken(ParseResult parseResult, CliOptions options)
         => parseResult.Tokens.Any(token =>
-            (token.Type != TokenType.Argument || parseResult.Errors.Count > 0)
+            !IsOptionValueToken(parseResult, options, token)
             && IsHelpArgument(token.Value));
+
+    private static bool IsOptionValueToken(ParseResult parseResult, CliOptions options, Token token)
+        => options.ValueOptions.Any(option =>
+            parseResult.FindResultFor(option)?.Children
+                .SelectMany(child => child.Tokens)
+                .Contains(token) == true);
 
     private static bool IsHelpArgument(string value)
         => value is "--help" or "-h" or "-?" or "/?";
@@ -487,6 +494,16 @@ public static partial class Program
         internal Option<bool> Json { get; } = new(JsonAliases, "Emit a stable machine-readable result or error envelope.");
 
         internal Option<bool> ListJson { get; } = new(JsonAliases, "Emit the action list as JSON.");
+
+        internal IEnumerable<Option> ValueOptions =>
+        [
+            Action,
+            CustomAction,
+            Prompt,
+            Provider,
+            Input,
+            Output,
+        ];
     }
 
     [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
