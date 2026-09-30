@@ -1279,8 +1279,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
+                var exclusions = current.Properties.ExcludedFromSyncMonitorIds.ToList();
                 _settings.Properties.ExcludedFromSyncMonitorIds.Clear();
-                _settings.Properties.ExcludedFromSyncMonitorIds.AddRange(current.Properties.ExcludedFromSyncMonitorIds);
+                _settings.Properties.ExcludedFromSyncMonitorIds.AddRange(exclusions);
             }
             catch (Exception ex)
             {
