@@ -8,8 +8,10 @@ using Microsoft.CmdPal.UI.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
-public static class SettingsSearchCatalog
+public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entries)
 {
+    private readonly SearchEntry[] _entries = [.. entries.Where(entry => entry.Destination is not null).Select(entry => new SearchEntry(entry))];
+
     // Reuse the labels shown on the pages without constructing pages or loading extension settings.
     // Keywords is a localized resource key suffix: "Shortcuts" resolves to "SettingsSearch_Keywords_Shortcuts".
     private static readonly Dictionary<string, (string Title, string? Description, string IconGlyph, string? Keywords, string? Section)> EntryMetadata = new()
@@ -105,6 +107,51 @@ public static class SettingsSearchCatalog
         return [.. entries];
     }
 
+    public static SettingsSearchResult[] CreateExtensionEntries(
+        IEnumerable<CommandProviderWrapper> providers,
+        SettingsModel settings,
+        Func<string, string> getString)
+    {
+        var extensionsTitle = getString("Settings_PageTitles_ExtensionsPage");
+        var commandsTitle = getString("ExtensionCommandsHeader.Text");
+        var extensionCategory = getString("SettingsWindow_SearchCategoryExtension");
+        var commandCategory = getString("SettingsWindow_SearchCategoryCommand");
+        var breadcrumbFormat = getString("SettingsWindow_SearchBreadcrumb");
+        var aliases = settings.Aliases.Values.ToLookup(alias => alias.CommandId, StringComparer.Ordinal);
+        var hotkeys = settings.CommandHotkeys.ToLookup(hotkey => hotkey.CommandId, StringComparer.Ordinal);
+        var results = new List<SettingsSearchResult>();
+        foreach (var provider in providers.Where(provider => !string.IsNullOrWhiteSpace(provider.DisplayName)))
+        {
+            results.Add(new(
+                provider.DisplayName,
+                extensionsTitle,
+                new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: provider.ProviderId),
+                Description: provider.Extension?.ExtensionDisplayName ?? string.Empty,
+                IconGlyph: Glyphs.Extensions,
+                Icon: provider.Icon,
+                GroupName: extensionsTitle,
+                Category: extensionCategory));
+
+            var providerBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, extensionsTitle, provider.DisplayName);
+            var commandBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, providerBreadcrumb, commandsTitle);
+            foreach (var command in provider.TopLevelItems.Where(command => !string.IsNullOrWhiteSpace(command.Title) && !string.IsNullOrEmpty(command.Id)))
+            {
+                var hotkey = hotkeys[command.Id].FirstOrDefault()?.Hotkey;
+                results.Add(new(
+                    command.Title,
+                    commandBreadcrumb,
+                    new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Commands, ExtensionProviderId: provider.ProviderId) { CommandId = command.Id },
+                    Keywords: string.Join(" ", aliases[command.Id].Select(alias => alias.Alias)),
+                    Icon: command.IconViewModel,
+                    GroupName: commandsTitle,
+                    AssignedHotkey: hotkey is { Code: > 0 } ? hotkey.ToString() : string.Empty,
+                    Category: commandCategory));
+            }
+        }
+
+        return [.. results];
+    }
+
     public static SettingsSearchResultGroup[] GroupResults(IEnumerable<SettingsSearchResult> results)
     {
         return
@@ -127,7 +174,7 @@ public static class SettingsSearchCatalog
             ];
     }
 
-    public static SettingsSearchResult[] Search(string query, IEnumerable<SettingsSearchResult> entries, IPrecomputedFuzzyMatcher matcher)
+    public SettingsSearchResult[] Search(string query, IPrecomputedFuzzyMatcher matcher, IEnumerable<SettingsSearchResult>? dynamicEntries = null)
     {
         var terms = query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         if (terms.Length == 0)
@@ -140,13 +187,12 @@ public static class SettingsSearchCatalog
         var fuzzyQueries = terms.Select(matcher.PrecomputeQuery).ToArray();
         return
         [
-            .. entries
-                .Where(entry => entry.Destination is not null)
-                .Select(entry =>
+            .. _entries.Concat((dynamicEntries ?? []).Where(entry => entry.Destination is not null).Select(entry => new SearchEntry(entry)))
+                .Select(searchEntry =>
                 {
-                    var keywords = entry.Keywords.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                    var entry = searchEntry.Result;
                     var hotkeyMatch = !string.IsNullOrEmpty(entry.AssignedHotkey) &&
-                                      hotkeyQuery.Equals(NormalizeHotkey(entry.AssignedHotkey), StringComparison.Ordinal);
+                                      hotkeyQuery.Equals(searchEntry.Hotkey, StringComparison.Ordinal);
                     var literalMatch = hotkeyMatch || terms.All(term => MatchesLiteralTerm(entry, term));
                     var rank = !literalMatch ? 5
                         : hotkeyMatch ? 0
@@ -156,13 +202,13 @@ public static class SettingsSearchCatalog
                         : terms.Any(MatchesTitleOrAlias) && terms.All(term =>
                             MatchesTitleOrAlias(term) ||
                             entry.Breadcrumb.Contains(term, StringComparison.OrdinalIgnoreCase)) ? 3 : 4;
-                    var score = literalMatch ? 0 : GetFuzzyScore(entry, terms, fuzzyQueries, matcher);
+                    var score = literalMatch ? 0 : searchEntry.GetFuzzyScore(terms, fuzzyQueries, matcher);
                     return (Entry: entry, Rank: rank, Score: score);
 
                     bool MatchesTitleOrAlias(string term)
                     {
                         return entry.Title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                               keywords.Contains(term, StringComparer.OrdinalIgnoreCase);
+                               searchEntry.Keywords.Contains(term, StringComparer.OrdinalIgnoreCase);
                     }
                 })
                 .Where(match => match.Rank < 5 || match.Score > 0)
@@ -184,7 +230,14 @@ public static class SettingsSearchCatalog
 
     private static string NormalizeHotkey(string text)
     {
-        return string.Join("+", text.Replace('+', ' ').Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+        // The final plus can name the key itself, including "Num +", rather than a separator.
+        var keys = text.Trim().Replace('+', ' ').Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
+        if (text.TrimEnd().EndsWith('+'))
+        {
+            keys = keys.Append("+");
+        }
+
+        return string.Join("+", keys
             .Select(key => key.ToUpperInvariant() switch
             {
                 "CONTROL" => "CTRL",
@@ -194,31 +247,48 @@ public static class SettingsSearchCatalog
             .Order(StringComparer.Ordinal));
     }
 
-    private static int GetFuzzyScore(SettingsSearchResult entry, string[] terms, FuzzyQuery[] queries, IPrecomputedFuzzyMatcher matcher)
+    private sealed class SearchEntry
     {
-        var targets = entry.Keywords.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-            .Prepend(entry.Breadcrumb)
-            .Prepend(entry.Title)
-            .Select(matcher.PrecomputeTarget)
-            .ToArray();
-        var score = 0;
-        for (var i = 0; i < terms.Length; i++)
+        private readonly string[] _targetText;
+        private readonly FuzzyTargetCache[] _targets;
+
+        public SettingsSearchResult Result { get; }
+
+        public string[] Keywords { get; }
+
+        public string Hotkey { get; }
+
+        public SearchEntry(SettingsSearchResult result)
         {
-            var bestScore = 0;
-            foreach (var target in targets)
-            {
-                bestScore = Math.Max(bestScore, matcher.Score(queries[i], target));
-            }
-
-            if (bestScore == 0 && !MatchesLiteralTerm(entry, terms[i]))
-            {
-                return 0;
-            }
-
-            score += bestScore;
+            Result = result;
+            Keywords = result.Keywords.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            Hotkey = NormalizeHotkey(result.AssignedHotkey);
+            _targetText = [result.Title, result.Breadcrumb, .. Keywords];
+            _targets = new FuzzyTargetCache[_targetText.Length];
         }
 
-        return score;
+        public int GetFuzzyScore(string[] terms, FuzzyQuery[] queries, IPrecomputedFuzzyMatcher matcher)
+        {
+            var score = 0;
+            for (var i = 0; i < terms.Length; i++)
+            {
+                var bestScore = 0;
+                for (var j = 0; j < _targets.Length; j++)
+                {
+                    var target = _targets[j].GetOrUpdate(matcher, _targetText[j]);
+                    bestScore = Math.Max(bestScore, matcher.Score(queries[i], target));
+                }
+
+                if (bestScore == 0 && !MatchesLiteralTerm(Result, terms[i]))
+                {
+                    return 0;
+                }
+
+                score += bestScore;
+            }
+
+            return score;
+        }
     }
 
     private static class Glyphs

@@ -4,7 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
@@ -45,7 +44,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
     private readonly SettingsTargetHighlighter _settingsTargetHighlighter = new();
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly SettingsSearchResult[] _settingsSearchEntries;
+    private readonly SettingsSearchCatalog _settingsSearchCatalog;
     private readonly ObservableCollection<SettingsSearchResult> _settingsSearchSuggestions = [];
 
     private Storyboard? _breadcrumbStoryboard;
@@ -85,7 +84,7 @@ public sealed partial class SettingsWindow : WindowEx,
         _settingsService = settingsService;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _topLevelCommandManager = topLevelCommandManager;
-        _settingsSearchEntries = SettingsSearchCatalog.CreateEntries(id => RS_.GetString(id.Replace('.', '/')));
+        _settingsSearchCatalog = new(SettingsSearchCatalog.CreateEntries(id => RS_.GetString(id.Replace('.', '/'))));
 
         this.InitializeComponent();
         SettingsSearchBox.ItemsSource = _settingsSearchSuggestions;
@@ -181,47 +180,11 @@ public sealed partial class SettingsWindow : WindowEx,
             return [];
         }
 
-        var extensionsTitle = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-        var extensionsKeywords = RS_.GetString("SettingsSearch_Keywords_Extensions");
-        var commandsTitle = RS_.GetString("ExtensionCommandsHeader/Text");
-        var extensionCategory = RS_.GetString("SettingsWindow_SearchCategoryExtension");
-        var commandCategory = RS_.GetString("SettingsWindow_SearchCategoryCommand");
-        var breadcrumbFormat = RS_.GetString("SettingsWindow_SearchBreadcrumb");
-        var settings = _settingsService.Settings;
-        var aliases = settings.Aliases.Values.ToLookup(alias => alias.CommandId, StringComparer.Ordinal);
-        var hotkeys = settings.CommandHotkeys.ToLookup(hotkey => hotkey.CommandId, StringComparer.Ordinal);
-        var entries = _settingsSearchEntries.ToList();
-        foreach (var provider in _topLevelCommandManager.CommandProviders.Where(provider => !string.IsNullOrWhiteSpace(provider.DisplayName)))
-        {
-            entries.Add(new(
-                provider.DisplayName,
-                extensionsTitle,
-                new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: provider.ProviderId),
-                provider.Extension?.ExtensionDisplayName ?? string.Empty,
-                extensionsKeywords,
-                "\uEA86",
-                provider.Icon,
-                GroupName: extensionsTitle,
-                Category: extensionCategory));
-
-            var providerBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, extensionsTitle, provider.DisplayName);
-            var commandBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, providerBreadcrumb, commandsTitle);
-            foreach (var command in provider.TopLevelItems.Where(command => !string.IsNullOrWhiteSpace(command.Title) && !string.IsNullOrEmpty(command.Id)))
-            {
-                var hotkey = hotkeys[command.Id].FirstOrDefault()?.Hotkey;
-                entries.Add(new(
-                    command.Title,
-                    commandBreadcrumb,
-                    new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Commands, ExtensionProviderId: provider.ProviderId) { CommandId = command.Id },
-                    Keywords: string.Join(" ", aliases[command.Id].Select(alias => alias.Alias)),
-                    Icon: command.IconViewModel,
-                    GroupName: commandsTitle,
-                    AssignedHotkey: hotkey is { Code: > 0 } ? hotkey.ToString() : string.Empty,
-                    Category: commandCategory));
-            }
-        }
-
-        return SettingsSearchCatalog.Search(query, entries, _fuzzyMatcherProvider.Current);
+        var dynamicEntries = SettingsSearchCatalog.CreateExtensionEntries(
+            _topLevelCommandManager.CommandProviders,
+            _settingsService.Settings,
+            id => RS_.GetString(id.Replace('.', '/')));
+        return _settingsSearchCatalog.Search(query, _fuzzyMatcherProvider.Current, dynamicEntries);
     }
 
     private void UpdateSettingsSearch()
@@ -279,10 +242,18 @@ public sealed partial class SettingsWindow : WindowEx,
             }
             else if (!string.IsNullOrWhiteSpace(query))
             {
-                NavFrame.Navigate(typeof(SettingsSearchPage), query);
-            }
+                CancelSettingsNavigation();
+                if (NavFrame.Content is SettingsSearchPage page && page.Query == query)
+                {
+                    page.ShowResults(query, GetSettingsSearchResults(query), Navigate);
+                }
+                else
+                {
+                    NavFrame.Navigate(typeof(SettingsSearchPage), query);
+                }
 
-            NavFrame.Focus(FocusState.Programmatic);
+                NavigateToSettingsTarget(null, focusPage: true);
+            }
         });
     }
 
@@ -366,7 +337,8 @@ public sealed partial class SettingsWindow : WindowEx,
             message.ExtensionGalleryId,
             message.SettingsLinkId,
             message.ExtensionProviderId,
-            message.CommandId);
+            message.CommandId,
+            focusPage: true);
     }
 
     internal void Navigate(
@@ -374,7 +346,8 @@ public sealed partial class SettingsWindow : WindowEx,
         string? extensionGalleryId = null,
         string? settingsLinkId = null,
         string? extensionProviderId = null,
-        string? commandId = null)
+        string? commandId = null,
+        bool focusPage = false)
     {
         CancelSettingsNavigation();
         SettingsLinkFallbackInfoBar.IsOpen = false;
@@ -428,7 +401,7 @@ public sealed partial class SettingsWindow : WindowEx,
                 settingsTarget = SettingsPageTarget.CommandTargetPrefix + commandId;
             }
 
-            NavigateToExtensionSettings(extensionProviderId, settingsTarget, settingsLinkId!, settingsLinkFallback);
+            NavigateToExtensionSettings(extensionProviderId, settingsTarget, settingsLinkId!, settingsLinkFallback, focusPage);
             return;
         }
 
@@ -473,19 +446,20 @@ public sealed partial class SettingsWindow : WindowEx,
         var openGalleryExtension = openGallery && !string.IsNullOrWhiteSpace(extensionGalleryId);
         if (openGallery && TryOpenGallery(extensionGalleryId))
         {
+            NavigateToSettingsTarget(null, focusPage: focusPage);
             return;
         }
 
         if (pageType == typeof(ExtensionsPage) && TryReturnToExtensionsPage())
         {
-            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
             ShowSettingsLinkFallback(settingsLinkFallback);
             return;
         }
 
         if (NavFrame.Content?.GetType() == pageType)
         {
-            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
             ShowSettingsLinkFallback(settingsLinkFallback);
             return;
         }
@@ -501,7 +475,7 @@ public sealed partial class SettingsWindow : WindowEx,
             galleryPage.OpenExtension(extensionGalleryId!);
         }
 
-        NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId);
+        NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
 
         // Now, make sure to actually select the correct menu item too
         foreach (var obj in NavView.MenuItems)
@@ -518,9 +492,10 @@ public sealed partial class SettingsWindow : WindowEx,
     private void NavigateToSettingsTarget(
         string? settingsTarget,
         SettingsLinkAction settingsAction = SettingsLinkAction.None,
-        string? settingsLinkId = null)
+        string? settingsLinkId = null,
+        bool focusPage = false)
     {
-        if (settingsTarget is null && settingsAction == SettingsLinkAction.None)
+        if (settingsTarget is null && settingsAction == SettingsLinkAction.None && !focusPage)
         {
             return;
         }
@@ -560,11 +535,11 @@ public sealed partial class SettingsWindow : WindowEx,
         SettingsLinkFallbackInfoBar.IsOpen = true;
     }
 
-    private void NavigateToExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback)
+    private void NavigateToExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback, bool focusPage)
     {
         var cancellation = new CancellationTokenSource();
         _extensionSettingsNavigationCts = cancellation;
-        _ = NavigateToExtensionSettingsAsync(providerId, settingsTarget, settingsLinkId, fallback, cancellation);
+        _ = NavigateToExtensionSettingsAsync(providerId, settingsTarget, settingsLinkId, fallback, focusPage, cancellation);
     }
 
     private async Task NavigateToExtensionSettingsAsync(
@@ -572,6 +547,7 @@ public sealed partial class SettingsWindow : WindowEx,
         string? settingsTarget,
         string settingsLinkId,
         SettingsLinkFallback fallback,
+        bool focusPage,
         CancellationTokenSource cancellation)
     {
         try
@@ -588,7 +564,7 @@ public sealed partial class SettingsWindow : WindowEx,
             }
 
             _extensionSettingsNavigationCts = null;
-            OpenExtensionSettings(providerId, settingsTarget, settingsLinkId, fallback);
+            OpenExtensionSettings(providerId, settingsTarget, settingsLinkId, fallback, focusPage);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
@@ -608,13 +584,13 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    private void OpenExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback)
+    private void OpenExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback, bool focusPage)
     {
         if (NavFrame.Content is ExtensionPage extensionPage)
         {
             if (string.Equals(extensionPage.ViewModel?.ProviderId, providerId, StringComparison.Ordinal))
             {
-                NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId);
+                NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId, focusPage: focusPage);
                 ShowSettingsLinkFallback(fallback);
                 return;
             }
@@ -637,6 +613,7 @@ public sealed partial class SettingsWindow : WindowEx,
         if (extension is null)
         {
             Logger.LogWarning($"Unknown extension settings provider '{providerId}'.");
+            NavigateToSettingsTarget(null, focusPage: focusPage);
             ShowSettingsLinkFallback(SettingsLinkFallback.UnknownProvider);
             return;
         }
@@ -647,7 +624,7 @@ public sealed partial class SettingsWindow : WindowEx,
             return;
         }
 
-        NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId);
+        NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId, focusPage: focusPage);
         ShowSettingsLinkFallback(fallback);
     }
 
@@ -702,6 +679,17 @@ public sealed partial class SettingsWindow : WindowEx,
             else
             {
                 await SettingsPageTarget.WaitForLoadedAsync(page, cancellation.Token);
+                cancellation.Token.ThrowIfCancellationRequested();
+                if (_isClosed || !ReferenceEquals(NavFrame.Content, page) || page.XamlRoot is null)
+                {
+                    return;
+                }
+
+                page.UpdateLayout();
+                if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement focusable)
+                {
+                    focusable.Focus(FocusState.Programmatic);
+                }
             }
 
             await InvokeSettingsLinkActionAsync(page, settingsAction, cancellation.Token);

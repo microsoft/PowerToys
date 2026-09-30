@@ -5,25 +5,29 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public class SettingsSearchTests
+public partial class SettingsSearchTests
 {
     private readonly IPrecomputedFuzzyMatcher _matcher = new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions()).Current;
 
     [TestMethod]
     public void Catalog_UsesExistingLabelsAndCoversSettingsDestinations()
     {
-        var resources = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "SettingsPages", "Resources.resw"))
-            .Root!.Elements("data").ToDictionary(element => (string)element.Attribute("name")!, element => (string)element.Element("value")!);
-        var entries = SettingsSearchCatalog.CreateEntries(id => resources[id]);
+        var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
         var indexedLinks = entries.Select(entry => entry.Destination!.SettingsLinkId).Where(id => id is not null).ToArray();
 
         // These are toolbar/list anchors on the already indexed Extensions page, not settings.
@@ -38,7 +42,7 @@ public class SettingsSearchTests
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.Category)));
         Assert.AreEqual(1, entries.Count(entry => entry.Destination!.SettingsPageTag == SettingsPageTags.Gallery));
 
-        var results = SettingsSearchCatalog.Search("DOCK theme", entries, _matcher);
+        var results = new SettingsSearchCatalog(entries).Search("DOCK theme", _matcher);
         Assert.AreEqual(SettingsLinkIds.Dock.Theme, results[0].Destination!.SettingsLinkId);
         Assert.AreEqual("Dock › Appearance", results[0].Breadcrumb);
         Assert.AreEqual("Dock", results[0].GroupName);
@@ -49,7 +53,7 @@ public class SettingsSearchTests
         Assert.AreEqual("Personalization › Interaction", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.ShowAppDetails).Breadcrumb);
         Assert.AreEqual("Personalization", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Interaction).Breadcrumb);
         Assert.AreEqual("Pages", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.General.Page).GroupName);
-        Assert.IsTrue(SettingsSearchCatalog.Search("background image", entries, _matcher).Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Background));
+        Assert.IsTrue(new SettingsSearchCatalog(entries).Search("background image", _matcher).Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Background));
     }
 
     [TestMethod]
@@ -60,11 +64,9 @@ public class SettingsSearchTests
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
     public void Search_RanksExpectedSettingFirst(string query, string expectedLink)
     {
-        var resources = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "SettingsPages", "Resources.resw"))
-            .Root!.Elements("data").ToDictionary(element => (string)element.Attribute("name")!, element => (string)element.Element("value")!);
-        var entries = SettingsSearchCatalog.CreateEntries(id => resources[id]);
+        var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
 
-        Assert.AreEqual(expectedLink, SettingsSearchCatalog.Search(query, entries, _matcher)[0].Destination!.SettingsLinkId);
+        Assert.AreEqual(expectedLink, new SettingsSearchCatalog(entries).Search(query, _matcher)[0].Destination!.SettingsLinkId);
     }
 
     [TestMethod]
@@ -82,11 +84,9 @@ public class SettingsSearchTests
     [DataRow("prvw", SettingsLinkIds.Appearance.ShowAppDetails)]
     public void Search_FindsLocalizedAlternativeTerms(string query, string expectedLink)
     {
-        var resources = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "SettingsPages", "Resources.resw"))
-            .Root!.Elements("data").ToDictionary(element => (string)element.Attribute("name")!, element => (string)element.Element("value")!);
-        var entries = SettingsSearchCatalog.CreateEntries(id => resources[id]);
+        var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
 
-        Assert.IsTrue(SettingsSearchCatalog.Search(query, entries, _matcher).Any(entry => entry.Destination!.SettingsLinkId == expectedLink));
+        Assert.IsTrue(new SettingsSearchCatalog(entries).Search(query, _matcher).Any(entry => entry.Destination!.SettingsLinkId == expectedLink));
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class SettingsSearchTests
         var entries = Enumerable.Range(0, 8)
             .Select(index => new SettingsSearchResult($"Setting {index}", "General", new(SettingsLinkId: SettingsLinkIds.General.Page)))
             .ToArray();
-        var results = SettingsSearchCatalog.Search("setting", entries, _matcher);
+        var results = new SettingsSearchCatalog(entries).Search("setting", _matcher);
         var suggestions = SettingsSearchCatalog.CreateSuggestions(results, "Show all {0} results", "No results found");
 
         Assert.AreEqual(8, results.Length);
@@ -134,11 +134,11 @@ public class SettingsSearchTests
             new("The menu", "General", new(SettingsLinkId: SettingsLinkIds.General.Page)),
         ];
 
-        CollectionAssert.AreEqual(new[] { provider, entries[2], entries[1], entries[4], entries[0], entries[6], entries[5] }, SettingsSearchCatalog.Search("theme", entries, _matcher));
-        Assert.AreSame(provider, SettingsSearchCatalog.Search("theme extensions", entries, _matcher).Single());
-        Assert.AreEqual("com.example.provider", SettingsSearchCatalog.Search("theme", entries, _matcher)[0].Destination!.ExtensionProviderId);
-        Assert.AreEqual(0, SettingsSearchCatalog.Search(" \t\r\n", entries, _matcher).Length);
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("no matching setting", entries, _matcher).Length);
+        CollectionAssert.AreEqual(new[] { provider, entries[2], entries[1], entries[4], entries[0], entries[6], entries[5] }, new SettingsSearchCatalog(entries).Search("theme", _matcher));
+        Assert.AreSame(provider, new SettingsSearchCatalog(entries).Search("theme extensions", _matcher).Single());
+        Assert.AreEqual("com.example.provider", new SettingsSearchCatalog(entries).Search("theme", _matcher)[0].Destination!.ExtensionProviderId);
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search(" \t\r\n", _matcher).Length);
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("no matching setting", _matcher).Length);
     }
 
     [TestMethod]
@@ -155,7 +155,7 @@ public class SettingsSearchTests
             new("Z setting", "Dock", new(SettingsLinkId: SettingsLinkIds.Dock.Size), Keywords: "pane PREVIEW details"),
         ];
 
-        var results = SettingsSearchCatalog.Search(query, entries, _matcher);
+        var results = new SettingsSearchCatalog(entries).Search(query, _matcher);
         Assert.AreSame(entries[3], results[0]);
         CollectionAssert.AreEquivalent(entries, results);
     }
@@ -188,10 +188,10 @@ public class SettingsSearchTests
         var entry = new SettingsSearchResult("Zoom", "View", new(SettingsLinkId: SettingsLinkIds.General.Page), Description: "axbycz", Keywords: "apricot banana cherry");
         SettingsSearchResult[] entries = [entry, new("abc", "View", null)];
 
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("abc", entries, _matcher).Length);
-        Assert.AreSame(entry, SettingsSearchCatalog.Search("axbycz", entries, _matcher).Single());
-        Assert.AreSame(entry, SettingsSearchCatalog.Search("aprc axbycz", entries, _matcher).Single());
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("aprc zqx", entries, _matcher).Length);
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("abc", _matcher).Length);
+        Assert.AreSame(entry, new SettingsSearchCatalog(entries).Search("axbycz", _matcher).Single());
+        Assert.AreSame(entry, new SettingsSearchCatalog(entries).Search("aprc axbycz", _matcher).Single());
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("aprc zqx", _matcher).Length);
     }
 
     [TestMethod]
@@ -206,7 +206,7 @@ public class SettingsSearchTests
         var destination = new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Commands, ExtensionProviderId: "calculator.provider") { CommandId = "calculator.command" };
         var command = new SettingsSearchResult("Calculator", "Extensions › Calculator › Commands", destination, Keywords: "= math tool", GroupName: "Commands", AssignedHotkey: "Ctrl + Alt + C");
 
-        var result = SettingsSearchCatalog.Search(query, [command], _matcher).Single();
+        var result = new SettingsSearchCatalog([command]).Search(query, _matcher).Single();
         Assert.AreSame(command, result);
         Assert.AreSame(destination, result.Destination);
         Assert.AreEqual("calculator.command", result.Destination!.CommandId);
@@ -224,10 +224,10 @@ public class SettingsSearchTests
             new("Matching shortcut", "Extensions", destination, AssignedHotkey: "Win + Ctrl + P"),
         ];
 
-        Assert.AreSame(entries[3], SettingsSearchCatalog.Search("Control + Windows + P", entries, _matcher).Single());
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("ctl+win+p", entries, _matcher).Length);
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("ctrl+p", entries, _matcher).Length);
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("win+ctrl+p", [entries[3] with { AssignedHotkey = string.Empty }], _matcher).Length);
+        Assert.AreSame(entries[3], new SettingsSearchCatalog(entries).Search("Control + Windows + P", _matcher).Single());
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("ctl+win+p", _matcher).Length);
+        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("ctrl+p", _matcher).Length);
+        Assert.AreEqual(0, new SettingsSearchCatalog([entries[3] with { AssignedHotkey = string.Empty }]).Search("win+ctrl+p", _matcher).Length);
     }
 
     [TestMethod]
@@ -237,13 +237,193 @@ public class SettingsSearchTests
         var extension = new SettingsSearchResult("Café", "Extensions", new(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: "com.example.cafe"));
         var localized = new SettingsSearchResult("北京", "Extensions", new(SettingsLinkId: SettingsLinkIds.General.Page));
         SettingsSearchResult[] entries = [extension, localized];
+        var catalog = new SettingsSearchCatalog(entries);
 
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("cafe", entries, provider.Current).Length);
-        Assert.AreEqual(0, SettingsSearchCatalog.Search("beijing", entries, provider.Current).Length);
+        Assert.AreEqual(0, catalog.Search("cafe", provider.Current).Length);
+        Assert.AreEqual(0, catalog.Search("beijing", provider.Current).Length);
 
         provider.UpdateSettings(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions { Mode = PinyinMode.On });
 
-        Assert.AreSame(extension, SettingsSearchCatalog.Search("cafe", entries, provider.Current).Single());
-        Assert.AreSame(localized, SettingsSearchCatalog.Search("beijing", entries, provider.Current).Single());
+        Assert.AreSame(extension, catalog.Search("cafe", provider.Current).Single());
+        Assert.AreSame(localized, catalog.Search("beijing", provider.Current).Single());
+    }
+
+    [TestMethod]
+    [DataRow("Ctrl + +", "ctrl++", "ctrl")]
+    [DataRow("Ctrl + Num +", "control num +", "ctrl num")]
+    [DataRow("+", "+", "ctrl")]
+    public void Search_PreservesPlusKeys(string hotkey, string matchingQuery, string missingKeyQuery)
+    {
+        var command = new SettingsSearchResult("Example", "Extensions", new(SettingsLinkId: SettingsLinkIds.General.Page), AssignedHotkey: hotkey);
+        var catalog = new SettingsSearchCatalog([command]);
+
+        Assert.AreSame(command, catalog.Search(matchingQuery, _matcher).Single());
+        Assert.IsEmpty(catalog.Search(missingKeyQuery, _matcher));
+    }
+
+    [TestMethod]
+    public void Search_ReusesStaticTargetsUntilMatcherSchemaChanges()
+    {
+        var provider = new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions { RemoveDiacritics = false });
+        var matcher = new CountingMatcher(provider.Current);
+        var catalog = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(LoadResources()));
+
+        catalog.Search("zzzzz", matcher);
+        var initialCount = matcher.TargetCount;
+        Assert.IsTrue(initialCount > 0);
+        catalog.Search("zzzzzx", matcher);
+        Assert.AreEqual(initialCount, matcher.TargetCount);
+
+        provider.UpdateSettings(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions { Mode = PinyinMode.On });
+        matcher.Matcher = provider.Current;
+        catalog.Search("zzzzzx", matcher);
+        Assert.AreEqual(initialCount * 2, matcher.TargetCount);
+    }
+
+    [TestMethod]
+    public void Search_RanksFreshDynamicEntriesTogetherWithStaticEntries()
+    {
+        var page = new SettingsSearchResult("Theme", "Settings", new(SettingsLinkId: SettingsLinkIds.Appearance.Page));
+        var setting = new SettingsSearchResult("App theme", "Personalization", new(SettingsLinkId: SettingsLinkIds.Appearance.Theme));
+        var extension = new SettingsSearchResult("Theme editor", "Extensions", new(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: "theme.provider"));
+        var catalog = new SettingsSearchCatalog([page, setting]);
+
+        CollectionAssert.AreEqual(new[] { page, extension, setting }, catalog.Search("theme", _matcher, [extension]));
+
+        var renamed = extension with { Title = "Theme" };
+        CollectionAssert.AreEqual(new[] { renamed, page, setting }, catalog.Search("theme", _matcher, [renamed, renamed with { Destination = null }]));
+        CollectionAssert.AreEqual(new[] { page, setting }, catalog.Search("theme", _matcher));
+    }
+
+    [TestMethod]
+    public async Task Catalog_BuildsProviderAndCommandEntriesFromCurrentSettings()
+    {
+        var getString = LoadResources();
+        var settings = new SettingsModel();
+        var settingsService = new Mock<ISettingsService>();
+        settingsService.SetupGet(service => service.Settings).Returns(() => settings);
+        settingsService.Setup(service => service.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()))
+            .Callback<Func<SettingsModel, SettingsModel>, bool>((update, _) => settings = update(settings));
+        using var services = new ServiceCollection().AddSingleton(settingsService.Object).BuildServiceProvider();
+        var item = new CommandItem(new NoOpCommand { Id = "calculator.command", Name = "Calculator" });
+        string[] providerNames = ["Apps", "Bookmarks", "Calculator", "Clipboard", "DevTools"];
+        var providers = providerNames
+            .Select(name => new CommandProviderWrapper(new SearchTestProvider(name, name == "Calculator" ? [item] : []), TaskScheduler.Default)).ToArray();
+        foreach (var provider in providers)
+        {
+            await provider.LoadTopLevelCommands(services);
+        }
+
+        try
+        {
+            var hotkey = new HotkeySettings(false, true, true, false, 'C');
+            settings = settings with
+            {
+                Aliases = settings.Aliases.Add("=", new("=", "calculator.command")).Add("math", new("math tool", "calculator.command")),
+                CommandHotkeys = [new(hotkey, "calculator.command")],
+            };
+            var dynamicEntries = SettingsSearchCatalog.CreateExtensionEntries(providers, settings, getString);
+            var catalog = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(getString));
+            Assert.IsTrue(catalog.Search("plugins", _matcher, dynamicEntries).Take(5).Any(result => result.Destination!.SettingsLinkId == SettingsLinkIds.Extensions.Page));
+            Assert.AreEqual(5, dynamicEntries.Count(result => result.Category == "Extension"));
+            Assert.IsTrue(dynamicEntries.Where(result => result.Category == "Extension").All(result => result.Keywords.Length == 0 && result.GroupName == "Extensions"));
+            var command = dynamicEntries.Single(result => result.Category == "Command");
+            Assert.AreEqual("Extensions › Calculator › Commands", command.Breadcrumb);
+            Assert.AreEqual("Commands", command.GroupName);
+            Assert.AreSame(providers[2].TopLevelItems[0].IconViewModel, command.Icon);
+            Assert.AreEqual("Calculator", command.Destination!.ExtensionProviderId);
+            Assert.AreEqual("calculator.command", command.Destination.CommandId);
+            Assert.AreEqual(SettingsLinkIds.Extensions.Extension.Commands, command.Destination.SettingsLinkId);
+            foreach (var query in new[] { "=", "math tool", hotkey.ToString() })
+            {
+                Assert.AreSame(command, catalog.Search(query, _matcher, dynamicEntries)[0]);
+            }
+
+            settings = settings with
+            {
+                Aliases = settings.Aliases.Clear().Add("new", new("new alias", "calculator.command")),
+                CommandHotkeys = [new(hotkey, "another.command")],
+            };
+            var refreshedEntries = SettingsSearchCatalog.CreateExtensionEntries(providers, settings, getString);
+            var refreshed = refreshedEntries.Single(result => result.Category == "Command");
+            Assert.AreEqual("new alias", refreshed.Keywords);
+            Assert.AreEqual(string.Empty, refreshed.AssignedHotkey);
+            Assert.IsFalse(catalog.Search("math tool", _matcher, refreshedEntries).Contains(refreshed));
+            Assert.IsFalse(catalog.Search(hotkey.ToString(), _matcher, refreshedEntries).Contains(refreshed));
+            Assert.AreSame(refreshed, catalog.Search("new alias", _matcher, refreshedEntries)[0]);
+
+            var renamed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var commandViewModel = providers[2].TopLevelItems[0];
+            void OnRenamed(object sender, IPropChangedEventArgs args)
+            {
+                if (args.PropertyName == nameof(TopLevelViewModel.Title))
+                {
+                    renamed.TrySetResult();
+                }
+            }
+
+            commandViewModel.PropChanged += OnRenamed;
+            try
+            {
+                item.Title = "Renamed command";
+                await renamed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                var renamedEntries = SettingsSearchCatalog.CreateExtensionEntries(providers, settings, getString);
+                var renamedEntry = renamedEntries.Single(result => result.Category == "Command");
+                Assert.AreEqual("Renamed command", renamedEntry.Title);
+                Assert.AreEqual(command.Destination, renamedEntry.Destination);
+                Assert.IsTrue(catalog.Search("rnmd", _matcher, renamedEntries).Contains(renamedEntry));
+            }
+            finally
+            {
+                commandViewModel.PropChanged -= OnRenamed;
+            }
+        }
+        finally
+        {
+            foreach (var command in providers.SelectMany(provider => provider.TopLevelItems))
+            {
+                command.Cleanup();
+            }
+        }
+    }
+
+    private static Func<string, string> LoadResources()
+    {
+        var resources = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "SettingsPages", "Resources.resw"))
+            .Root!.Elements("data").ToDictionary(element => (string)element.Attribute("name")!, element => (string)element.Element("value")!);
+        return id => resources[id];
+    }
+
+    private sealed partial class SearchTestProvider : CommandProvider
+    {
+        private readonly ICommandItem[] _items;
+
+        public SearchTestProvider(string name, ICommandItem[] items)
+        {
+            Id = name;
+            DisplayName = name;
+            _items = items;
+        }
+
+        public override ICommandItem[] TopLevelCommands() => _items;
+    }
+
+    private sealed class CountingMatcher(IPrecomputedFuzzyMatcher matcher) : IPrecomputedFuzzyMatcher
+    {
+        public IPrecomputedFuzzyMatcher Matcher { get; set; } = matcher;
+
+        public int TargetCount { get; private set; }
+
+        public uint SchemaId => Matcher.SchemaId;
+
+        public FuzzyQuery PrecomputeQuery(string? input) => Matcher.PrecomputeQuery(input);
+
+        public FuzzyTarget PrecomputeTarget(string? input)
+        {
+            TargetCount++;
+            return Matcher.PrecomputeTarget(input);
+        }
+
+        public int Score(scoped in FuzzyQuery query, scoped in FuzzyTarget target) => Matcher.Score(query, target);
     }
 }
