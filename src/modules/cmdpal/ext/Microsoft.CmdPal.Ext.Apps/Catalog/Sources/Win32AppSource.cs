@@ -365,18 +365,17 @@ internal sealed partial class Win32AppSource : IAppSource
                 }
 
                 var workingDirectory = Win32Program.GetDistinctWorkingDirectory(program.AppExecutionAlias?.TargetPath ?? program.FullPath, program.WorkingDirectory, program.ExplicitAppUserModelId);
-                var identity = CreateCatalogIdentity(program, workingDirectory);
-                var legacyWorkingDirectory = string.IsNullOrEmpty(program.WorkingDirectory)
-                    ? string.Empty
-                    : PathHelpers.NormalizePath(Environment.ExpandEnvironmentVariables(program.WorkingDirectory));
-                var legacyIdentity = CreateCatalogIdentity(program, legacyWorkingDirectory);
+                var target = string.IsNullOrWhiteSpace(program.FullPath) ? LaunchTarget.FilePath(path) : program.Target;
+
+                var identity = CreateCatalogIdentity(target.IdentityToken, program.Arguments, workingDirectory);
+                var launchIdentity = CreateCatalogIdentity(LaunchTarget.FilePath(path).IdentityToken, program.Arguments, workingDirectory);
                 indexedItems.Add(new AppCatalogItem(
                     identity,
                     GetRepresentationPriority(program, path) + _source.Priority,
                     new AppCatalogSourceReference(_source.Id, path),
                     CreateMatchTerms(program, path),
                     Win32AppPayload.From(program),
-                    [legacyIdentity]));
+                    [launchIdentity]));
             });
 
         var itemsByIdentity = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
@@ -405,12 +404,9 @@ internal sealed partial class Win32AppSource : IAppSource
             ? RawExecutablePriorityOffset
             : 0;
 
-    private static string CreateCatalogIdentity(Win32Program program, string workingDirectory)
+    private static string CreateCatalogIdentity(string target, string? arguments, string workingDirectory)
     {
-        var target = Win32Program.UsesExecutableTargetIdentity(program.AppType) && !string.IsNullOrWhiteSpace(program.FullPath)
-            ? PathHelpers.NormalizePath(program.FullPath)
-            : program.GetAppIdentifier();
-        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(program.Arguments ?? string.Empty));
+        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(arguments ?? string.Empty));
         var identity = $"win32:{target}|args:{encodedArguments}";
         return string.IsNullOrEmpty(workingDirectory)
             ? identity

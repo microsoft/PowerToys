@@ -118,10 +118,12 @@ public class Win32ProgramTests
     [DataRow(@"%SystemRoot%\System32\cmd.exe", @"%SystemRoot%\System32\", "")]
     [DataRow(@"C:\Tools\console.exe", "c:/Projects/Work/", @"c:\Projects\Work")]
     [DataRow(@"C:\Tools\console.lnk", @"C:\Tools", @"C:\Tools")]
-    [DataRow(@"C:\Tools\console.exe", ".", null)]
+    [DataRow(@"C:\Tools\console.exe", ".", ".")]
+    [DataRow(@"C:\Tools\console.exe", @".\Work", @".\Work")]
+    [DataRow(@"C:\Tools\console.exe", "C:Work", "C:Work")]
     public void GetDistinctWorkingDirectory_NormalizesOnlyDefaultExecutableDirectories(string target, string directory, string expected)
     {
-        Assert.AreEqual(expected ?? Path.GetFullPath(directory), Win32Program.GetDistinctWorkingDirectory(target, directory));
+        Assert.AreEqual(expected, Win32Program.GetDistinctWorkingDirectory(target, directory));
     }
 
     [TestMethod]
@@ -196,5 +198,15 @@ public class Win32ProgramTests
         Assert.AreEqual(differentArguments ? 2 : 1, Win32Program.DeduplicatePrograms([first, second]).Count);
         Assert.AreEqual(@"C:\Apps\GitHubDesktop\app-2.7.2", first.WorkingDirectory);
         Assert.AreEqual(@"C:\Apps\GitHubDesktop\app-3.6.3", second.WorkingDirectory);
+    }
+
+    [TestMethod]
+    public void DeduplicatePrograms_UrlPayloadDiffersByCase_KeepsBothPrograms()
+    {
+        var first = TestDataHelper.CreateTestWin32Program("Game", "com.epicgames.launcher://apps/Example?action=launch");
+        first.AppType = Win32Program.ApplicationType.InternetShortcutApplication;
+        var second = TestDataHelper.CreateTestWin32Program("Game", "com.epicgames.launcher://apps/example?action=launch");
+        second.AppType = Win32Program.ApplicationType.InternetShortcutApplication;
+        Assert.AreEqual(2, Win32Program.DeduplicatePrograms([first, second]).Count);
     }
 }

@@ -183,11 +183,24 @@ public class Win32AppSourceTests
         Assert.AreEqual(shortcutPath, app.ExePath);
         Assert.AreEqual(targetPath, app.FullExecutablePath);
         Assert.AreEqual(defaultWorkingDirectory ? Path.GetDirectoryName(targetPath) : string.Empty, ((Win32AppPayload)merged.Payload).WorkingDirectory);
-        CollectionAssert.Contains(merged.CommandIds.ToArray(), new AppCommand(shortcutItems[0].ToAppItem()).Id);
-        CollectionAssert.Contains(merged.CommandIds.ToArray(), new AppCommand(registryItems[0].ToAppItem()).Id);
+        CollectionAssert.Contains(merged.CommandIds.ToArray(), shortcutItems[0].Payload.GetCommandId());
+        CollectionAssert.Contains(merged.CommandIds.ToArray(), registryItems[0].Payload.GetCommandId());
+        Assert.AreEqual(new AppCommand(shortcutItems[0].ToAppItem()).Id, new AppCommand(registryItems[0].ToAppItem()).Id);
+        var row = new AppListItem(app, useThumbnails: false);
+        var snapshot = new AppListItemSnapshot([row], []);
+        var shortcutIdentity = $"win32:{shortcutPath}|args:";
+        CollectionAssert.Contains(merged.IdentityAliases.ToArray(), shortcutIdentity);
+        foreach (var commandId in merged.CommandIds.Append(AppIdentity.ForCommand(shortcutIdentity)))
+        {
+            Assert.AreSame(row, snapshot.GetVisibleApp(commandId));
+            Assert.AreEqual(commandId, snapshot.GetCommandItem(commandId)?.Command?.Id);
+        }
+
         if (defaultWorkingDirectory)
         {
-            CollectionAssert.Contains(merged.IdentityAliases.ToArray(), $"win32:{targetPath}|args:|cwd:{Path.GetDirectoryName(targetPath)}");
+            var syntheticIdentity = $"win32:{targetPath}|args:|cwd:{Path.GetDirectoryName(targetPath)}";
+            CollectionAssert.DoesNotContain(merged.IdentityAliases.ToArray(), syntheticIdentity);
+            Assert.IsNull(snapshot.GetVisibleApp(AppIdentity.ForCommand(syntheticIdentity)));
         }
     }
 
@@ -250,6 +263,292 @@ public class Win32AppSourceTests
 
         Assert.AreEqual(expectedCount, items.Count);
         Assert.AreEqual(2, items.SelectMany(item => item.CommandIds).Distinct(StringComparer.Ordinal).Count());
+        Assert.AreEqual(expectedCount, items.Select(item => new AppCommand(item.ToAppItem()).Id).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [TestMethod]
+    [DataRow("GitHubDesktop", "GitHubDesktop.exe", "2.7.2", "3.4.9", "3.6.3")]
+    [DataRow("AnthropicClaude", "claude.exe", "1.1.7464", null, "2.19675.0")]
+    [DataRow("SourceTree", "SourceTree.exe", "3.4.3", null, "3.4.32")]
+    public async Task LoadAsync_SquirrelVersionShortcutsMergeWithoutLosingLaunchDataOrSavedState(
+        string packageName,
+        string executableName,
+        string firstOldVersion,
+        string secondOldVersion,
+        string currentVersion)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-squirrel-profiles");
+        try
+        {
+            var installDirectory = Path.Combine(@"C:\Users\Test\AppData\Local", packageName);
+            var targetPath = Path.Combine(installDirectory, executableName);
+            var startMenuPath = Path.Combine(@"C:\Start Menu", $"{packageName}.lnk");
+            var versions = secondOldVersion is null ? new[] { firstOldVersion } : new[] { firstOldVersion, secondOldVersion };
+            var desktopPaths = versions.Select((version, index) => Path.Combine(@"C:\Desktop", $"{packageName}-{index}.lnk")).ToArray();
+            var programs = new Dictionary<string, Win32Program>(StringComparer.OrdinalIgnoreCase);
+            for (var index = 0; index < versions.Length; index++)
+            {
+                var program = CreateExecutable(packageName, targetPath, desktopPaths[index]);
+                program.WorkingDirectory = Path.Combine(installDirectory, $"app-{versions[index]}");
+                program.ExplicitAppUserModelId = $"com.squirrel.{packageName}.{Path.GetFileNameWithoutExtension(executableName)}";
+                programs.Add(desktopPaths[index], program);
+            }
+
+            var preferredProgram = CreateExecutable(packageName, targetPath, startMenuPath);
+            preferredProgram.WorkingDirectory = Path.Combine(installDirectory, $"app-{currentVersion}");
+            preferredProgram.ExplicitAppUserModelId = $"com.squirrel.{packageName}.{Path.GetFileNameWithoutExtension(executableName)}";
+            programs.Add(startMenuPath, preferredProgram);
+            using var desktopSource = new Win32AppSource(
+                new TestProgramSource("desktop", 20, Win32ProgramSourceProfile.None, desktopPaths),
+                (path, _) => programs[path],
+                createWatchers: false);
+            using var startMenuSource = new Win32AppSource(
+                new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, startMenuPath),
+                (path, _) => programs[path],
+                createWatchers: false);
+            var desktopItems = await desktopSource.LoadAsync(CancellationToken.None);
+            var startMenuItems = await startMenuSource.LoadAsync(CancellationToken.None);
+            var merged = desktopItems.Single().MergeProvenance(startMenuItems.Single());
+
+            Assert.AreEqual($"win32:{targetPath}|args:", merged.Identity);
+            Assert.AreEqual(10, merged.Provenance.Priority);
+            Assert.AreEqual(programs.Count, merged.Provenance.References.Length);
+            foreach (var path in desktopPaths)
+            {
+                Assert.IsTrue(ContainsSourceReference(merged, "desktop", path));
+            }
+
+            Assert.IsTrue(ContainsSourceReference(merged, "start-menu", startMenuPath));
+            var payload = (Win32AppPayload)merged.Payload;
+            Assert.AreEqual(preferredProgram.WorkingDirectory, payload.WorkingDirectory);
+            Assert.AreEqual(targetPath, merged.Payload.GetCanonicalTargetPath());
+            Assert.IsNull(merged.Payload.GetCanonicalIdentityHint());
+            Assert.AreEqual(startMenuPath, merged.ToAppItem().ExePath);
+            var row = new AppListItem(merged.ToAppItem(), useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], []);
+            foreach (var program in programs.Values)
+            {
+                var shortcutIdentity = $"win32:{program.LnkFilePath}|args:";
+                CollectionAssert.Contains(merged.IdentityAliases.ToArray(), shortcutIdentity);
+                var shortcutId = AppIdentity.ForCommand(shortcutIdentity);
+                Assert.AreSame(row, snapshot.GetVisibleApp(shortcutId));
+                Assert.AreEqual(shortcutId, snapshot.GetCommandItem(shortcutId)?.Command?.Id);
+                Assert.AreSame(row, snapshot.GetVisibleApp(Win32AppPayload.From(program).GetCommandId()));
+                var syntheticIdentity = $"win32:{targetPath}|args:|cwd:{program.WorkingDirectory}";
+                CollectionAssert.DoesNotContain(merged.IdentityAliases.ToArray(), syntheticIdentity);
+                Assert.IsNull(snapshot.GetCommandItem(AppIdentity.ForCommand(syntheticIdentity)));
+            }
+
+            var desktopPayload = (Win32AppPayload)desktopItems.Single().Payload;
+            Assert.AreEqual(programs[desktopPayload.LnkFilePath].WorkingDirectory, desktopPayload.WorkingDirectory);
+            var settingsPath = Path.Combine(root, "settings.json");
+            var settings = new AllAppsSettings(settingsPath);
+            settings.SetAppHidden($"win32:{desktopPaths[0]}|args:", hidden: true);
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(merged));
+            visibility.Persist();
+            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
+            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(merged));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("--profile work", "app-2.7.2")]
+    [DataRow("", @"C:\Projects\Work")]
+    [DataRow("", "app-custom")]
+    public async Task LoadAsync_SquirrelIdPreservesDistinctArgumentsAndCustomWorkingDirectories(string arguments, string secondDirectory)
+    {
+        const string installDirectory = @"C:\Users\Test\AppData\Local\GitHubDesktop";
+        var targetPath = Path.Combine(installDirectory, "GitHubDesktop.exe");
+        var first = CreateExecutable("GitHub Desktop", targetPath, @"C:\Links\First.lnk");
+        first.WorkingDirectory = Path.Combine(installDirectory, "app-3.6.3");
+        first.ExplicitAppUserModelId = "com.squirrel.GitHubDesktop.GitHubDesktop";
+        var second = CreateExecutable("GitHub Desktop", targetPath, @"C:\Links\Second.lnk");
+        second.Arguments = arguments;
+        second.WorkingDirectory = Path.IsPathFullyQualified(secondDirectory) ? secondDirectory : Path.Combine(installDirectory, secondDirectory);
+        second.ExplicitAppUserModelId = first.ExplicitAppUserModelId;
+        using var source = new Win32AppSource(
+            new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, first.LnkFilePath, second.LnkFilePath),
+            (path, _) => path == first.LnkFilePath ? first : second,
+            createWatchers: false);
+
+        var items = await source.LoadAsync(CancellationToken.None);
+
+        Assert.AreEqual(2, items.Count);
+        Assert.AreEqual(2, items.Select(item => new AppCommand(item.ToAppItem()).Id).Distinct(StringComparer.Ordinal).Count());
+        var secondPayload = (Win32AppPayload)FindItemByReference(items, second.LnkFilePath).Payload;
+        Assert.AreEqual(arguments, secondPayload.Arguments);
+        Assert.AreEqual(second.WorkingDirectory, secondPayload.WorkingDirectory);
+    }
+
+    [TestMethod]
+    [DataRow(Win32Program.ApplicationType.ShortcutApplication)]
+    [DataRow(Win32Program.ApplicationType.GenericFile)]
+    public async Task LoadAsync_FallbackIdentityIgnoresDisplayNameAndRetainsReleasedCommandIds(Win32Program.ApplicationType appType)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-fallback-aliases");
+        try
+        {
+            const string path = @"C:\Links\App.lnk";
+            var name = "Original";
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, Win32ProgramSourceProfile.IncludeNonApplications, path),
+                (_, _) =>
+                {
+                    var program = CreateExecutable(name, path, path);
+                    program.AppType = appType;
+                    return program;
+                },
+                createWatchers: false);
+            var original = (await source.LoadAsync(CancellationToken.None)).Single();
+            var settings = new AllAppsSettings(Path.Combine(root, "settings.json"));
+            settings.RetainAppCommandAliases([original.ToAppItem()]);
+            name = "Localized";
+            var renamed = (await source.LoadAsync(CancellationToken.None)).Single();
+            var aliases = settings.RetainAppCommandAliases([renamed.ToAppItem()]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.AreEqual(original.Identity, renamed.Identity);
+            Assert.AreEqual(new AppCommand(original.ToAppItem()).Id, new AppCommand(renamed.ToAppItem()).Id);
+            var row = new AppListItem(renamed.ToAppItem(), useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+            foreach (var item in new[] { original, renamed })
+            {
+                var syntheticIdentity = $"win32:{((Win32AppPayload)item.Payload).Name}|{path}|args:";
+                CollectionAssert.DoesNotContain(item.IdentityAliases.ToArray(), syntheticIdentity);
+                Assert.IsNull(snapshot.GetCommandItem(AppIdentity.ForCommand(syntheticIdentity)));
+                var releasedId = item.Payload.GetCommandId();
+                Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
+                Assert.AreEqual(releasedId, snapshot.GetCommandItem(releasedId)?.Command?.Id);
+            }
+
+            Assert.AreSame(row, snapshot.GetVisibleApp(AppIdentity.ForCommand($"win32:{path}|args:")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_CommandAliasesFollowShortcutWhenTargetAndDisplayNameChangeTogether()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-move-{Guid.NewGuid():N}.json");
+        try
+        {
+            const string shortcut = @"C:\Links\Editor.lnk";
+            var program = CreateExecutable("Editor", @"C:\Old\Editor.exe", shortcut);
+            program.Arguments = "--profile Work";
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, includeNonApps: false, shortcut),
+                (_, _) => program,
+                createWatchers: false);
+            var original = (await source.LoadAsync(CancellationToken.None)).Single();
+            var primaryId = new AppCommand(original.ToAppItem()).Id;
+            var legacyId = original.Payload.GetCommandId();
+            var settings = new AllAppsSettings(settingsPath);
+            settings.RetainAppCommandAliases([original.ToAppItem()]);
+
+            program.Name = "Éditeur";
+            program.Description = "Éditeur de texte";
+            program.FullPath = @"D:\New\Editor.exe";
+            var current = (await source.LoadAsync(CancellationToken.None)).Single();
+            Assert.AreNotEqual(original.Identity, current.Identity);
+            var aliases = settings.RetainAppCommandAliases([current.ToAppItem()]);
+            var row = new AppListItem(current.ToAppItem(), useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+            Assert.AreSame(row, snapshot.GetVisibleApp(primaryId));
+            Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
+            await settings.WaitForAliasSavesAsync();
+            aliases = new AllAppsSettings(settingsPath).RetainAppCommandAliases([current.ToAppItem()]);
+            snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+            Assert.AreEqual("Éditeur", snapshot.GetCommandItem(primaryId)?.Title);
+            Assert.AreEqual(program.FullPath, snapshot.GetVisibleApp(legacyId)?.App.FullExecutablePath);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public async Task LoadAsync_RelativeWorkingDirectoryIdentityIgnoresCurrentDirectory()
+    {
+        var originalDirectory = Environment.CurrentDirectory;
+        var root = CreateTemporaryDirectory("cmdpal-relative-start-in");
+        try
+        {
+            const string shortcut = @"C:\Links\Console.lnk";
+            var program = CreateExecutable("Console", @"C:\Tools\Console.exe", shortcut);
+            program.WorkingDirectory = ".";
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, includeNonApps: false, shortcut),
+                (_, _) => program,
+                createWatchers: false);
+            Environment.CurrentDirectory = Directory.CreateDirectory(Path.Combine(root, "first")).FullName;
+            var original = (await source.LoadAsync(CancellationToken.None)).Single();
+            Environment.CurrentDirectory = Directory.CreateDirectory(Path.Combine(root, "second")).FullName;
+            var current = (await source.LoadAsync(CancellationToken.None)).Single();
+
+            Assert.AreEqual(@"win32:C:\Tools\Console.exe|args:|cwd:.", current.Identity);
+            Assert.AreEqual(original.Identity, current.Identity);
+            CollectionAssert.AreEqual(original.IdentityAliases.ToArray(), current.IdentityAliases.ToArray());
+            CollectionAssert.AreEqual(original.ToAppItem().CommandIds.ToArray(), current.ToAppItem().CommandIds.ToArray());
+            Assert.AreEqual(".", ((Win32AppPayload)current.Payload).WorkingDirectory);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    [DataRow("steam://rungameid/123")]
+    [DataRow("com.epicgames.launcher://apps/Example?action=launch&silent=true")]
+    public async Task LoadAsync_GameUriIdentityAndSavedStateIgnoreCurrentDirectory(string uri)
+    {
+        var originalDirectory = Environment.CurrentDirectory;
+        var root = CreateTemporaryDirectory("cmdpal-game-uri");
+        try
+        {
+            var shortcut = Path.Combine(root, "Game.url");
+            File.WriteAllText(shortcut, $"[InternetShortcut]\r\nURL={uri}\r\nIconFile=C:\\Icons\\Game.ico\r\n");
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, includeNonApps: false, shortcut),
+                Win32Program.LoadFromPath,
+                createWatchers: false);
+            Environment.CurrentDirectory = Directory.CreateDirectory(Path.Combine(root, "first")).FullName;
+            var original = (await source.LoadAsync(CancellationToken.None)).Single();
+            var settingsPath = Path.Combine(root, "settings.json");
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases([original.ToAppItem()]);
+            settings.SetAppHidden(original.Identity, hidden: true);
+            settings.SaveSettings();
+            await settings.WaitForAliasSavesAsync();
+
+            Environment.CurrentDirectory = Directory.CreateDirectory(Path.Combine(root, "second")).FullName;
+            var current = (await source.LoadAsync(CancellationToken.None)).Single();
+            Assert.AreEqual($"win32:{LaunchTarget.Url(uri).IdentityToken}|args:", current.Identity);
+            Assert.AreEqual(original.Identity, current.Identity);
+            Assert.AreEqual(uri, current.ToAppItem().ExePath);
+            var snapshot = new AppListItemSnapshot([new AppListItem(current.ToAppItem(), useThumbnails: false)], [], commandAliases: aliases);
+            Assert.IsNotNull(snapshot.GetCommandItem(new AppCommand(original.ToAppItem()).Id));
+            Assert.IsNotNull(snapshot.GetCommandItem(original.Payload.GetCommandId()));
+            using var visibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(current));
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -911,5 +1210,49 @@ public class Win32AppSourceTests
         public IEnumerable<string> GetPaths() => _paths;
 
         public bool IsRelevantPath(string path) => true;
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_GameUrlsDifferingByCase_KeepSeparateCommandsAndHides()
+    {
+        var root = CreateTemporaryDirectory("cmdpal-game-url-case");
+        try
+        {
+            var firstPath = Path.Combine(root, "First.url");
+            var secondPath = Path.Combine(root, "Second.url");
+            const string firstUrl = "com.epicgames.launcher://apps/Example?action=launch";
+            const string secondUrl = "com.epicgames.launcher://apps/example?action=launch";
+            File.WriteAllText(firstPath, $"[InternetShortcut]\r\nURL={firstUrl}\r\n");
+            File.WriteAllText(secondPath, $"[InternetShortcut]\r\nURL={secondUrl}\r\n");
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, includeNonApps: false, firstPath, secondPath),
+                Win32Program.LoadFromPath,
+                createWatchers: false);
+            var items = await source.LoadAsync(CancellationToken.None);
+            Assert.AreEqual(2, items.Count);
+            Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            var first = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == firstUrl);
+            var second = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == secondUrl);
+            var settingsPath = Path.Combine(root, "settings.json");
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases(items.Select(item => item.ToAppItem()));
+            var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray(), [], commandAliases: aliases);
+            Assert.AreEqual(firstUrl, snapshot.GetVisibleApp(first.Payload.GetCommandId())?.App.ExePath);
+            Assert.AreEqual(secondUrl, snapshot.GetVisibleApp(second.Payload.GetCommandId())?.App.ExePath);
+
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            Assert.IsTrue(visibility.SetHidden(first, hidden: true));
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(first));
+            Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(second));
+            settings.SaveSettings();
+            await settings.WaitForAliasSavesAsync();
+            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
+            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(first));
+            Assert.AreEqual(AppVisibility.Visible, reloadedVisibility.GetVisibility(second));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 }

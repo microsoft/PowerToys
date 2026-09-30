@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -50,9 +51,13 @@ public partial class MainListPageTests
                 MatchTerms = ["LegacyAliasNeedle", @"C:\Aliases\wt.exe", "vv"],
             },
             useThumbnails: false);
+        var legacyCommandId = app.Command!.Id;
+        app.App.CatalogId = "packaged:Contoso.PackagedIdentityNeedle!Editor";
+        app = new AppListItem(app.App, useThumbnails: false);
+        Assert.AreNotEqual(legacyCommandId, app.Command!.Id);
         app.Subtitle = string.Empty;
-        var commandId = useSavedAlias ? CreateApp("Legacy Editor").Command!.Id : app.Command!.Id;
-        app.App.CommandIds = [commandId];
+        var commandId = useSavedAlias ? legacyCommandId : app.Command!.Id;
+        app.App.CommandIds = [legacyCommandId];
         await WithSearchPages(new AppListItemSnapshot([app, CreateApp("Other")], []), pinned, pinnedCommandId: commandId, check: (home, allApps, _) =>
         {
             foreach (var query in MetadataQueries)
@@ -252,6 +257,34 @@ public partial class MainListPageTests
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task HiddenPin_RemainsOnHomeAndSearchableUntilExplicitlyUnpinned(bool patternHidden, bool useSavedAlias)
+    {
+        var hidden = new AppListItem(new AppItem { Name = "Hidden Editor", MatchTerms = ["Needle"] }, useThumbnails: false);
+        var id = useSavedAlias ? "Old editor_42" : hidden.Command!.Id;
+        hidden.App.CommandIds = [id];
+        var snapshot = new AppListItemSnapshot([CreateApp("Other")], patternHidden ? [] : [hidden], patternHidden ? [hidden] : []);
+        await WithSearchPages(snapshot, true, pinnedCommandId: id, check: async (home, allApps, manager) =>
+        {
+            Assert.IsTrue(home.GetItems().Any(item => item.Command?.Id == id));
+            home.SearchText = allApps.SearchText = "Needle";
+            var pin = home.GetItems().OfType<TopLevelViewModel>().Single(item => item.Id == id);
+            Assert.AreEqual(hidden.Title, pin.Title);
+            Assert.IsTrue(pin.CommandViewModel.IsInvokableCommand);
+            Assert.IsFalse(allApps.GetItems().Any(item => item is AppListItem));
+
+            manager.Receive(new UnpinCommandItemMessage(AllAppsCommandProvider.WellKnownId, id));
+            await WaitForConditionAsync(() => home.GetItems().All(item => item.Command?.Id != id));
+            home.SearchText = string.Empty;
+            Assert.IsFalse(home.GetItems().Any(item => item.Command?.Id == id));
+            Assert.IsNull(snapshot.GetVisibleApp(id));
+        });
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task PinAndUnpin_PreserveMetadataSearchWithoutDuplicates(bool useSavedAlias)
@@ -275,6 +308,90 @@ public partial class MainListPageTests
             manager.Receive(new UnpinCommandItemMessage(AllAppsCommandProvider.WellKnownId, commandId));
             await WaitForConditionAsync(() => home.GetItems().Any(item => ReferenceEquals(item, app)));
             Assert.AreSame(app, home.GetItems().Where(item => item is not Separator).Single());
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false, false, false)]
+    [DataRow(true, false, false)]
+    [DataRow(true, true, false)]
+    [DataRow(true, false, true)]
+    public async Task Search_RetainsAndCombinesLegacyAppHistoryForVisibleAppsAndHiddenPins(bool pinned, bool manuallyHidden, bool patternHidden)
+    {
+        var habitual = CreateApp("Old Editor");
+        var legacyId = habitual.Command!.Id;
+        habitual.App.Name = "Editor Z";
+        habitual.App.CatalogId = @"win32:C:\Tools\Old Editor.exe|args:";
+        habitual = new AppListItem(habitual.App, useThumbnails: false);
+        var primaryId = habitual.Command!.Id;
+        var other = CreateApp("Editor A");
+        var snapshot = new AppListItemSnapshot(
+            manuallyHidden || patternHidden ? [other] : [habitual, other],
+            manuallyHidden ? [habitual] : [],
+            patternHidden ? [habitual] : [],
+            commandAliases: new Dictionary<string, string> { [legacyId] = primaryId });
+        var now = DateTimeOffset.UtcNow.AddHours(-1);
+        var history = new RecentCommandsManager().WithHistoryItem(primaryId, now);
+        for (var i = 0; i < 3; i++)
+        {
+            history = history.WithHistoryItem(legacyId, now).WithHistoryItem(other.Command!.Id, now);
+        }
+
+        var state = new AppStateModel { RecentCommands = history };
+        var stateService = new Mock<IAppStateService>();
+        stateService.SetupGet(service => service.State).Returns(() => state);
+        stateService.Setup(service => service.UpdateState(It.IsAny<Func<AppStateModel, AppStateModel>>()))
+            .Callback<Func<AppStateModel, AppStateModel>>(update => state = update(state));
+        await WithSearchPages(snapshot, pinned, pinnedCommandId: pinned ? legacyId : null, appStateService: stateService, check: async (home, _, _) =>
+        {
+            var projected = home.GetAppHistory(history, snapshot);
+            Assert.AreEqual(4, projected.History.Single(item => item.CommandId == primaryId).Uses);
+            home.SearchText = "Editor";
+            await WaitForConditionAsync(() => home.GetItems().Count(item => item is not Separator) == 2);
+            var first = home.GetItems().First(item => item is not Separator);
+            Assert.AreEqual("Editor Z", first.Title, "Three legacy uses and one current use must outrank three uses of another app.");
+            Assert.AreSame(projected, home.GetAppHistory(history, snapshot), "Keystrokes must reuse the merged history view.");
+            Assert.AreNotSame(projected, home.GetAppHistory(history.WithHistoryItem(other.Command!.Id, now), snapshot));
+            Assert.AreNotSame(projected, home.GetAppHistory(history, new AppListItemSnapshot([habitual, other], [], commandAliases: new Dictionary<string, string> { [legacyId] = primaryId })));
+            home.UpdateHistory(first);
+            var entry = state.RecentCommands.History.Single(item => item.CommandId == primaryId);
+            Assert.AreEqual(2, entry.Uses, "Selecting the app or its legacy pin must record new uses under the canonical ID.");
+            Assert.IsTrue(entry.LastUsed > now);
+            Assert.AreSame(history.History.Single(item => item.CommandId == legacyId), state.RecentCommands.History.Single(item => item.CommandId == legacyId), "Recording a use must leave stored legacy history untouched.");
+            Assert.AreEqual(5, home.GetAppHistory(state.RecentCommands, snapshot).History.Single(item => item.CommandId == primaryId).Uses);
+        });
+    }
+
+    [TestMethod]
+    public async Task History_KeepsIdenticallyNamedPackagedAppsSeparate()
+    {
+        var apps = Enumerable.Range(1, 2).Select(index =>
+        {
+            var aumid = $"Contoso.App{index}!app";
+            var app = new AppItem { Name = "Editor", Subtitle = "Text editor", UserModelId = aumid, IsPackaged = true };
+            app.CommandIds = [new AppListItem(app, useThumbnails: false).Command!.Id];
+            app.CatalogId = $"packaged:{aumid}";
+            return new AppListItem(app, useThumbnails: false);
+        }).ToArray();
+        var legacyId = apps[0].App.CommandIds.Single();
+        Assert.AreEqual(legacyId, apps[1].App.CommandIds.Single());
+        var snapshot = new AppListItemSnapshot(apps, [], commandAliases: new Dictionary<string, string> { [legacyId] = string.Empty });
+        var state = new AppStateModel();
+        var stateService = new Mock<IAppStateService>();
+        stateService.SetupGet(service => service.State).Returns(() => state);
+        stateService.Setup(service => service.UpdateState(It.IsAny<Func<AppStateModel, AppStateModel>>()))
+            .Callback<Func<AppStateModel, AppStateModel>>(update => state = update(state));
+        await WithSearchPages(snapshot, false, appStateService: stateService, check: (home, _, _) =>
+        {
+            home.UpdateHistory(apps[0]);
+            home.UpdateHistory(apps[1]);
+            foreach (var app in apps)
+            {
+                Assert.AreEqual(1, state.RecentCommands.History.Single(item => item.CommandId == app.Command!.Id).Uses);
+            }
+
+            Assert.IsFalse(state.RecentCommands.History.Any(item => item.CommandId == legacyId), "Ambiguous legacy IDs must never merge unrelated applications.");
+            return Task.CompletedTask;
         });
     }
 
@@ -386,7 +503,7 @@ public partial class MainListPageTests
         },
         useThumbnails: false);
 
-    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null)
+    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null)
     {
         var settings = new SettingsModel();
         if (pinFirstApp)
@@ -420,8 +537,12 @@ public partial class MainListPageTests
             resolved.Cleanup();
         }
 
-        var stateService = new Mock<IAppStateService>();
-        stateService.SetupGet(service => service.State).Returns(new AppStateModel());
+        var stateService = appStateService ?? new Mock<IAppStateService>();
+        if (appStateService is null)
+        {
+            stateService.SetupGet(service => service.State).Returns(new AppStateModel());
+        }
+
         using var home = new MainListPage(manager, new AliasManager(manager, settingsService.Object), matcherProvider, settingsService.Object, stateService.Object, source.Object);
 
         await check(home, allApps, manager);

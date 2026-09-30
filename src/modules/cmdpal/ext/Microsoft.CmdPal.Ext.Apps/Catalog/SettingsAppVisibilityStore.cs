@@ -22,6 +22,7 @@ internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _patterns = ReadPatterns();
         _settings.Settings.SettingsChanged += OnSettingsChanged;
+        _settings.HiddenAppsChanged += OnHiddenAppsChanged;
     }
 
     public event EventHandler? Changed;
@@ -55,16 +56,7 @@ internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        var changed = _settings.SetAppHidden(item.Identity, hidden);
-        if (!hidden)
-        {
-            foreach (var identity in item.IdentityAliases)
-            {
-                changed |= _settings.SetAppHidden(identity, hidden: false);
-            }
-        }
-
-        return changed;
+        return _settings.SetAppHidden(item.IdentityAliases, hidden);
     }
 
     public void Persist()
@@ -95,9 +87,12 @@ internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
         }
     }
 
+    private void OnHiddenAppsChanged(object? sender, EventArgs args) => Changed?.Invoke(this, EventArgs.Empty);
+
     public void Dispose()
     {
         _settings.Settings.SettingsChanged -= OnSettingsChanged;
+        _settings.HiddenAppsChanged -= OnHiddenAppsChanged;
         Changed = null;
     }
 

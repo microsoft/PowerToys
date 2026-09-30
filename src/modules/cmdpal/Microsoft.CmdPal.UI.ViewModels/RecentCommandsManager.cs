@@ -118,6 +118,23 @@ public record RecentCommandsManager : IRecentCommandsManager
         }
     }
 
+    /// <summary>Combines saved aliases under their current command IDs without losing uses or recency.</summary>
+    internal RecentCommandsManager WithCanonicalCommandIds(Func<string, string> canonicalId)
+    {
+        if (!History.Any(item => canonicalId(item.CommandId) != item.CommandId))
+        {
+            return this;
+        }
+
+        var merged = History.GroupBy(item => canonicalId(item.CommandId), StringComparer.Ordinal).Select(group => new HistoryItem
+        {
+            CommandId = group.Key,
+            Uses = group.Sum(item => item.Uses),
+            LastUsed = group.Max(item => item.LastUsed),
+        }).ToImmutableList();
+        return this with { History = merged };
+    }
+
     public int GetCommandHistoryWeight(string commandId)
         => GetCommandHistoryWeight(commandId, DateTimeOffset.UtcNow);
 
@@ -169,6 +186,15 @@ public record RecentCommandsManager : IRecentCommandsManager
         return existing is null
             ? this
             : this with { History = History.Remove(existing) };
+    }
+
+    /// <summary>Removes saved IDs equivalent to a displayed command without migrating unrelated history.</summary>
+    public RecentCommandsManager WithoutHistoryItem(string commandId, Func<string, string> canonicalId)
+    {
+        ArgumentNullException.ThrowIfNull(canonicalId);
+        var targetId = canonicalId(commandId);
+        var history = History.RemoveAll(item => canonicalId(item.CommandId) == targetId);
+        return history.Count == History.Count ? this : this with { History = history };
     }
 
     /// <summary>

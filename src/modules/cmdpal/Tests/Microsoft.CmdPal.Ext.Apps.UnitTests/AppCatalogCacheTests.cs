@@ -96,7 +96,7 @@ public class AppCatalogCacheTests
             Assert.AreEqual(program.AppExecutionAlias.Aumid, app.UserModelId);
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
-            CollectionAssert.AreEqual(item.CommandIds.ToArray(), app.CommandIds.ToArray());
+            CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
             var row = new Programs.AppListItem(app, useThumbnails: false);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));

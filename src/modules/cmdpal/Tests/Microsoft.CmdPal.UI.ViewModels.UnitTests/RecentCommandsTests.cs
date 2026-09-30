@@ -358,6 +358,34 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void CanonicalCommandIds_CombineHistoryWithoutChangingOriginalOrUnknownEntries()
+    {
+        var now = new DateTimeOffset(2026, 9, 30, 12, 0, 0, TimeSpan.Zero);
+        var original = new RecentCommandsManager()
+            .WithHistoryItem("legacy", now.AddDays(-2))
+            .WithHistoryItem("legacy", now.AddDays(-2))
+            .WithHistoryItem("old-primary", now.AddDays(-1))
+            .WithHistoryItem("current", now)
+            .WithHistoryItem("unknown", now);
+        original.PrewarmIndex();
+        static string CanonicalId(string id) => id is "legacy" or "old-primary" ? "current" : id;
+        var migrated = original.WithCanonicalCommandIds(CanonicalId);
+        var current = migrated.History.Single(item => item.CommandId == "current");
+        Assert.AreEqual(4, current.Uses);
+        Assert.AreEqual(now, current.LastUsed);
+        Assert.AreEqual(2, migrated.History.Count);
+        Assert.AreEqual(original.History.Single(item => item.CommandId == "unknown"), migrated.History.Single(item => item.CommandId == "unknown"));
+        Assert.AreEqual(0, migrated.GetCommandHistoryWeight("legacy", now));
+        Assert.IsTrue(migrated.GetCommandHistoryWeight("current", now) > original.GetCommandHistoryWeight("current", now));
+        Assert.IsTrue(original.GetCommandHistoryWeight("legacy", now) > 0);
+        Assert.AreEqual(2, original.History.Single(item => item.CommandId == "legacy").Uses);
+        Assert.AreSame(migrated, migrated.WithCanonicalCommandIds(CanonicalId), "Migration must be idempotent.");
+        var json = JsonSerializer.Serialize(migrated, JsonSerializationContext.Default.RecentCommandsManager);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.RecentCommandsManager)!;
+        Assert.AreEqual(current, restored.History.Single(item => item.CommandId == "current"));
+    }
+
+    [TestMethod]
     public void ValidateHistorySerializationRoundTrips()
     {
         // The persisted history (see SettingsModel's JsonSerializable context) must round-trip,

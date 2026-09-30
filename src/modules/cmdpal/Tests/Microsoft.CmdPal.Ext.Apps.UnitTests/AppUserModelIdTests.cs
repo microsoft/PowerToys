@@ -154,6 +154,7 @@ public class AppUserModelIdTests
             Assert.AreEqual(program.WorkingDirectory, payload.WorkingDirectory);
             Assert.AreEqual(item.Identity, loadedItem.Identity);
             CollectionAssert.AreEqual(item.CommandIds.ToArray(), loadedItem.CommandIds.ToArray());
+            CollectionAssert.AreEqual(item.IdentityAliases.ToArray(), loadedItem.IdentityAliases.ToArray());
             var app = loadedItem.ToAppItem();
             Assert.AreEqual(hasPackagedId ? program.PackagedAppUserModelId : expectedExplicitId, app.UserModelId);
             Assert.IsFalse(app.IsPackaged);
@@ -177,6 +178,7 @@ public class AppUserModelIdTests
             var enriched = (await LoadItemsAsync(program)).Single();
 
             Assert.AreEqual(original.Identity, enriched.Identity);
+            CollectionAssert.AreEqual(original.IdentityAliases.ToArray(), enriched.IdentityAliases.ToArray());
             CollectionAssert.AreEqual(original.ToAppItem().CommandIds.ToArray(), enriched.ToAppItem().CommandIds.ToArray());
             Assert.AreEqual(new AppCommand(original.ToAppItem()).Id, new AppCommand(enriched.ToAppItem()).Id);
             Assert.IsNull(enriched.Payload.GetCanonicalIdentityHint());

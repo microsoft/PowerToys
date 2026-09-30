@@ -14,24 +14,93 @@ internal static class TopLevelCommandResolver
         IReadOnlyList<TCommand> Recent,
         IReadOnlyList<TCommand> Regular);
 
+    /// <summary>Resolves Home pins, recents, and regular commands against one captured Apps snapshot.</summary>
+    /// <remarks>Explicit pins can resolve hidden apps; ordinary app results and app recents respect discovery visibility.</remarks>
     internal static Sections<IListItem> Resolve(
         IEnumerable<PinnedCommandSettings> pinnedCommands,
         IEnumerable<string> recentCommandIds,
         IEnumerable<TopLevelViewModel> availableCommands,
-        IListPage allAppsPage,
+        AppListItemSnapshot appSnapshot,
         bool includeApps,
         int pinnedCommandLimit = int.MaxValue,
         int recentCommandLimit = SettingsModel.DefaultRecentCommandsDisplayLimit,
         bool includeRegular = true,
         bool recentCommandsFirst = false)
     {
+        ArgumentNullException.ThrowIfNull(appSnapshot);
+        var pins = pinnedCommands.ToArray();
+        var pinnedAppCommandIds = pins.Where(pin => pin.ProviderId == AllAppsCommandProvider.WellKnownId)
+            .Select(pin => pin.CommandId)
+            .ToHashSet(StringComparer.Ordinal);
+        var identities = new Dictionary<IListItem, (string ProviderId, string CommandId, bool IsApp)>(ReferenceEqualityComparer.Instance);
+        var appCommandsBySavedId = new Dictionary<string, TopLevelViewModel>(StringComparer.Ordinal);
+        var preferredAppCommands = new Dictionary<string, TopLevelViewModel>(StringComparer.Ordinal);
+        var commands = new List<IListItem>();
+        foreach (var command in availableCommands)
+        {
+            if (!IsEligibleForHome(command))
+            {
+                continue;
+            }
+
+            var providerId = GetProviderId(command);
+            var commandId = GetCommandId(command);
+            var isApp = providerId == AllAppsCommandProvider.WellKnownId && command.CommandViewModel.IsInvokableCommand;
+            if (providerId == AllAppsCommandProvider.WellKnownId)
+            {
+                if (!includeApps)
+                {
+                    continue;
+                }
+
+                var savedCommandId = commandId;
+                if (isApp)
+                {
+                    var pinned = pinnedAppCommandIds.Contains(savedCommandId);
+                    var app = pinned ? appSnapshot.GetApp(commandId) : appSnapshot.GetVisibleApp(commandId);
+                    if (app is null)
+                    {
+                        continue;
+                    }
+
+                    // Explicit pins retain hidden apps until the user unpins them.
+                    commandId = app.Command!.Id;
+                    preferredAppCommands.TryAdd(commandId, command);
+                }
+
+                appCommandsBySavedId.TryAdd(savedCommandId, command);
+            }
+
+            identities.TryAdd(command, (providerId, commandId, isApp));
+            commands.Add(command);
+        }
+
+        var preferredPinnedAppIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var pin in pins)
+        {
+            if (pin.ProviderId == AllAppsCommandProvider.WellKnownId && appCommandsBySavedId.TryGetValue(pin.CommandId, out var command))
+            {
+                var canonicalId = identities[command].CommandId;
+                if (identities[command].IsApp && preferredPinnedAppIds.Add(canonicalId))
+                {
+                    preferredAppCommands[canonicalId] = command;
+                }
+            }
+        }
+
+        var visibleCommands = commands.Where(command => !identities[command].IsApp
+            || ReferenceEquals(preferredAppCommands[identities[command].CommandId], command));
+        var visiblePins = pins.Where(pin => pin.ProviderId != AllAppsCommandProvider.WellKnownId || appCommandsBySavedId.ContainsKey(pin.CommandId))
+            .Select(pin => pin.ProviderId == AllAppsCommandProvider.WellKnownId
+                ? pin with { CommandId = identities[appCommandsBySavedId[pin.CommandId]].CommandId }
+                : pin);
         Func<string, IListItem?>? additionalRecentResolver = includeApps ? ResolveRecentApp : null;
         return Resolve<IListItem>(
-            pinnedCommands,
-            recentCommandIds,
-            availableCommands,
-            GetProviderId,
-            GetCommandId,
+            visiblePins,
+            recentCommandIds.Select(CanonicalAppId),
+            visibleCommands,
+            command => GetIdentity(command).ProviderId,
+            command => GetIdentity(command).CommandId,
             IsEligibleForHome,
             additionalRecentResolver,
             pinnedCommandLimit,
@@ -41,12 +110,19 @@ internal static class TopLevelCommandResolver
 
         IListItem? ResolveRecentApp(string commandId)
         {
-            if (allAppsPage is AllAppsPage appsPage)
-            {
-                return appsPage.TryGetCurrentItem(commandId, out var item) ? item : null;
-            }
+            return appSnapshot.GetVisibleApp(commandId);
+        }
 
-            return allAppsPage.GetItems().FirstOrDefault(item => item.Command?.Id == commandId);
+        string CanonicalAppId(string commandId)
+        {
+            return includeApps ? appSnapshot.GetApp(commandId)?.Command?.Id ?? commandId : commandId;
+        }
+
+        (string ProviderId, string CommandId, bool IsApp) GetIdentity(IListItem command)
+        {
+            return identities.TryGetValue(command, out var identity)
+                ? identity
+                : (GetProviderId(command), GetCommandId(command), true);
         }
     }
 

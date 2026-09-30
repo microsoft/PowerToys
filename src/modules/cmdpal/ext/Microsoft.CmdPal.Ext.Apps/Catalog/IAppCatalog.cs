@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -33,16 +32,6 @@ public interface IAppCatalog : IDisposable
     event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
 
     /// <summary>
-    /// Gets the current visible, policy-approved applications.
-    /// </summary>
-    IReadOnlyList<AppItem> Items { get; }
-
-    /// <summary>
-    /// Gets the current policy-approved applications that the user explicitly hid.
-    /// </summary>
-    IReadOnlyList<AppItem> HiddenItems { get; }
-
-    /// <summary>
     /// Gets a value indicating whether source reconciliation is in progress.
     /// </summary>
     bool IsRefreshing { get; }
@@ -53,19 +42,24 @@ public interface IAppCatalog : IDisposable
     AppCatalogSnapshot GetSnapshot();
 
     /// <summary>
-    /// Initializes the catalog once and returns when its initial cache or source result is available.
+    /// Initializes the catalog once, publishes reusable cache entries, and loads sources missing from the cache.
     /// </summary>
+    /// <returns>A shared task that completes when the initial uncached sources have been handled.</returns>
+    /// <remarks>Cached sources reconcile later; completion does not wait for unrelated refreshes queued during startup.</remarks>
     Task InitializeAsync();
 
     /// <summary>
-    /// Requests a full background reconciliation of every configured source.
+    /// Requests foreground full scans of all currently configured sources.
     /// </summary>
+    /// <returns>A task that waits for these requests to be handled or retired, independently of later queued work.</returns>
+    /// <remarks>Sources publish individually as they finish; completion does not imply every source scan succeeded.</remarks>
     Task RefreshAsync();
 
     /// <summary>
     /// Moves an existing application between visible and explicitly hidden projections.
     /// </summary>
     /// <param name="catalogId">The stable canonical application identity.</param>
-    /// <param name="hidden"><see langword="true"/> to hide the item; otherwise, to make it visible.</param>
+    /// <param name="hidden"><see langword="true"/> to hide the item; otherwise, to remove its explicit hide.</param>
+    /// <remarks>Global exclusions still apply. Persistence failures fault the task after the in-memory visibility update.</remarks>
     Task SetAppHiddenAsync(string catalogId, bool hidden);
 }

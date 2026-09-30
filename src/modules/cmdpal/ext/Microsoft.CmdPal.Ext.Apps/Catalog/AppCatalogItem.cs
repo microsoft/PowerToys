@@ -97,12 +97,13 @@ internal sealed class AppCatalogItem
     public AppItem ToAppItem()
     {
         var app = Payload.ToAppItem();
+        app.CatalogId = Identity;
         app.MatchTerms = MatchTerms;
         app.ExecutableSourcePaths = Provenance.References
             .Select(reference => reference.ItemId)
             .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
             .ToArray();
-        app.CommandIds = CommandIds;
+        app.CommandIds = CommandIds.Concat(IdentityAliases.SelectMany(identity => AppIdentity.GetCommandIds(identity))).Distinct(StringComparer.Ordinal).ToArray();
         return app;
     }
 
@@ -172,6 +173,7 @@ internal sealed class AppCatalogItem
         return string.Equals(Identity, other.Identity, StringComparison.OrdinalIgnoreCase)
             && Payload.Equals(other.Payload)
             && CommandIds.SequenceEqual(other.CommandIds, StringComparer.Ordinal)
+            && IdentityAliases.SequenceEqual(other.IdentityAliases, StringComparer.OrdinalIgnoreCase)
             && HasSameMatchTerms(MatchTerms, other.MatchTerms);
     }
 
@@ -300,5 +302,36 @@ internal sealed class AppCatalogItem
         return comparison != 0
             ? comparison
             : string.Compare(left, right, StringComparison.Ordinal);
+    }
+
+    /// <summary>Compares source snapshots by persisted item content, independent of item order.</summary>
+    internal static bool HaveSamePersistedContent(
+        IReadOnlyList<AppCatalogItem> left,
+        IReadOnlyList<AppCatalogItem> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        var leftById = new Dictionary<string, AppCatalogItem>(left.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var item in left)
+        {
+            if (!leftById.TryAdd(item.Identity, item))
+            {
+                return false;
+            }
+        }
+
+        foreach (var item in right)
+        {
+            if (!leftById.Remove(item.Identity, out var leftItem)
+                || !leftItem.HasSamePersistedContent(item))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

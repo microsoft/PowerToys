@@ -25,10 +25,6 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
 
-    public IReadOnlyList<AppItem> Items => _items.AsReadOnly();
-
-    public IReadOnlyList<AppItem> HiddenItems => _hiddenItems.AsReadOnly();
-
     public bool IsRefreshing { get; private set; }
 
     public int InitializeCallCount { get; private set; }
@@ -37,7 +33,7 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public Task RefreshCompletion { get; set; } = Task.CompletedTask;
 
-    public AppCatalogSnapshot GetSnapshot() => new(Items, HiddenItems);
+    public AppCatalogSnapshot GetSnapshot() => new(_items.AsReadOnly(), _hiddenItems.AsReadOnly());
 
     public Task InitializeAsync()
     {
@@ -69,13 +65,13 @@ public sealed class MockAppCatalog : IAppCatalog
     public void AddWin32Program(Win32Program program)
     {
         ArgumentNullException.ThrowIfNull(program);
-        AddAndRaise(Win32AppPayload.From(program).ToAppItem());
+        AddAndRaise(Win32AppPayload.From(program));
     }
 
     public void AddUWPApplication(IUWPApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        AddAndRaise(PackagedAppSnapshot.From(app).ToAppItem());
+        AddAndRaise(PackagedAppSnapshot.From(app));
     }
 
     public Task SetAppHiddenAsync(string catalogId, bool hidden)
@@ -112,9 +108,11 @@ public sealed class MockAppCatalog : IAppCatalog
         }
     }
 
-    private void AddAndRaise(AppItem app)
+    private void AddAndRaise(IAppCatalogPayload payload)
     {
+        var app = payload.ToAppItem();
         app.CatalogId = app.AppIdentifier;
+        app.CommandIds = [payload.GetCommandId(), .. AppIdentity.GetCommandIds(app.CatalogId)];
         _items.Add(app);
         Changed?.Invoke(
             this,
