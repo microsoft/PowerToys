@@ -147,6 +147,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RightDragTitleBar
+        {
+            get => _moduleSettings.Properties.RightDragTitleBar.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.RightDragTitleBar.Value != value)
+                {
+                    _moduleSettings.Properties.RightDragTitleBar.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(RightDragTitleBar));
+                }
+            }
+        }
+
         public bool DoNotActivateOnGameMode
         {
             get => _moduleSettings.Properties.DoNotActivateOnGameMode.Value;

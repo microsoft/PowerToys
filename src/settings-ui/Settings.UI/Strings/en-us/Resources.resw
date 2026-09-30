@@ -6696,6 +6696,13 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
     <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
   </data>
+  <data name="GrabAndMove_RightDragTitleBar.Header" xml:space="preserve">
+    <value>Move windows by right-dragging the title bar</value>
+    <comment>Drag a window's title bar with the right mouse button to move it, with no modifier key</comment>
+  </data>
+  <data name="GrabAndMove_RightDragTitleBar.Description" xml:space="preserve">
+    <value>Drag a title bar with the right mouse button to move the window without bringing it to the front. A right-click without dragging still opens the title bar menu</value>
+  </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
