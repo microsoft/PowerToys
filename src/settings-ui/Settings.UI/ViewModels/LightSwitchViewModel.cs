@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -21,6 +22,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Newtonsoft.Json.Linq;
 using PowerDisplay.Models;
+using PowerScripts.Client;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
@@ -35,9 +37,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly PowerScriptsClient powerScriptsClient;
+
         public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
 
-        public LightSwitchViewModel(ISettingsRepository<GeneralSettings> settingsRepository, LightSwitchSettings? initialSettings = null, Func<string, int>? ipcMSGCallBackFunc = null)
+        public LightSwitchViewModel(
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            LightSwitchSettings? initialSettings = null,
+            Func<string, int>? ipcMSGCallBackFunc = null,
+            PowerScriptsClient? powerScriptsClient = null)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -45,6 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _moduleSettings = initialSettings ?? new LightSwitchSettings();
             SendConfigMSG = ipcMSGCallBackFunc ?? (_ => 0);
+            this.powerScriptsClient = powerScriptsClient ?? new PowerScriptsClient();
 
             ForceLightCommand = new RelayCommand(ForceLightNow);
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
@@ -611,6 +620,120 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled;
 
+        public ObservableCollection<PowerScriptInfo> AvailablePowerScripts { get; } = new();
+
+        public bool IsPowerScriptsAvailable => powerScriptsClient.IsAvailable;
+
+        public bool EnableDarkModePowerScript
+        {
+            get => ModuleSettings.Properties.EnableDarkModePowerScript.Value;
+            set
+            {
+                if (value && !CanEnableDarkModePowerScript)
+                {
+                    return;
+                }
+
+                if (ModuleSettings.Properties.EnableDarkModePowerScript.Value != value)
+                {
+                    ModuleSettings.Properties.EnableDarkModePowerScript.Value = value;
+                    NotifyPropertyChanged();
+                    SaveSettings();
+                }
+            }
+        }
+
+        public bool EnableLightModePowerScript
+        {
+            get => ModuleSettings.Properties.EnableLightModePowerScript.Value;
+            set
+            {
+                if (value && !CanEnableLightModePowerScript)
+                {
+                    return;
+                }
+
+                if (ModuleSettings.Properties.EnableLightModePowerScript.Value != value)
+                {
+                    ModuleSettings.Properties.EnableLightModePowerScript.Value = value;
+                    NotifyPropertyChanged();
+                    SaveSettings();
+                }
+            }
+        }
+
+        public PowerScriptInfo? SelectedDarkModePowerScript
+        {
+            get => _selectedDarkModePowerScript;
+            set => SetSelectedPowerScript(value, isDarkMode: true);
+        }
+
+        public PowerScriptInfo? SelectedLightModePowerScript
+        {
+            get => _selectedLightModePowerScript;
+            set => SetSelectedPowerScript(value, isDarkMode: false);
+        }
+
+        public bool CanConfigureDarkModePowerScript => SelectedDarkModePowerScript?.Parameters.Count > 0;
+
+        public bool CanConfigureLightModePowerScript => SelectedLightModePowerScript?.Parameters.Count > 0;
+
+        public bool CanEnableDarkModePowerScript =>
+            SelectedDarkModePowerScript is not null &&
+            HasRequiredPowerScriptParameters(SelectedDarkModePowerScript, GetPowerScriptParameters(isDarkMode: true));
+
+        public bool CanEnableLightModePowerScript =>
+            SelectedLightModePowerScript is not null &&
+            HasRequiredPowerScriptParameters(SelectedLightModePowerScript, GetPowerScriptParameters(isDarkMode: false));
+
+        public IReadOnlyDictionary<string, string> GetPowerScriptParameters(bool isDarkMode)
+        {
+            var json = isDarkMode
+                ? ModuleSettings.Properties.DarkModePowerScriptParameters.Value
+                : ModuleSettings.Properties.LightModePowerScriptParameters.Value;
+
+            try
+            {
+                return JsonSerializer.Deserialize(
+                           json,
+                           SourceGenerationContextContext.Default.DictionaryStringString) ??
+                       new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+            catch (JsonException)
+            {
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        public void SetPowerScriptParameters(bool isDarkMode, IReadOnlyDictionary<string, string> parameters)
+        {
+            var json = JsonSerializer.Serialize(
+                parameters.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
+                SourceGenerationContextContext.Default.DictionaryStringString);
+
+            if (isDarkMode)
+            {
+                ModuleSettings.Properties.DarkModePowerScriptParameters.Value = json;
+                if (!CanEnableDarkModePowerScript)
+                {
+                    ModuleSettings.Properties.EnableDarkModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableDarkModePowerScript));
+                }
+            }
+            else
+            {
+                ModuleSettings.Properties.LightModePowerScriptParameters.Value = json;
+                if (!CanEnableLightModePowerScript)
+                {
+                    ModuleSettings.Properties.EnableLightModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableLightModePowerScript));
+                }
+            }
+
+            NotifyPowerScriptConfigurationChanged(isDarkMode);
+            SaveSettings();
+        }
+
         public bool EnableDarkModeProfile
         {
             get => ModuleSettings.Properties.EnableDarkModeProfile.Value;
@@ -746,6 +869,155 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public async Task LoadPowerScriptsAsync()
+        {
+            if (!powerScriptsClient.IsAvailable)
+            {
+                return;
+            }
+
+            var darkModeScriptId = ModuleSettings.Properties.DarkModePowerScript.Value;
+            var lightModeScriptId = ModuleSettings.Properties.LightModePowerScript.Value;
+            var scripts = await Task.Run(() => powerScriptsClient
+                .ListActions()
+                .Where(IsSupportedAutomaticAction)
+                .OrderBy(script => script.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToList());
+
+            _isLoadingPowerScripts = true;
+            try
+            {
+                AvailablePowerScripts.Clear();
+                foreach (var script in scripts)
+                {
+                    AvailablePowerScripts.Add(script);
+                }
+
+                UpdateSelectedPowerScriptFromId(darkModeScriptId, isDarkMode: true);
+                UpdateSelectedPowerScriptFromId(lightModeScriptId, isDarkMode: false);
+            }
+            finally
+            {
+                _isLoadingPowerScripts = false;
+            }
+        }
+
+        private void SetSelectedPowerScript(PowerScriptInfo? value, bool isDarkMode)
+        {
+            if (_isLoadingPowerScripts)
+            {
+                return;
+            }
+
+            var current = isDarkMode ? _selectedDarkModePowerScript : _selectedLightModePowerScript;
+            if (current == value)
+            {
+                return;
+            }
+
+            if (value is not null && !powerScriptsClient.TrustApprove(value.Id))
+            {
+                Logger.LogWarning($"Failed to approve PowerScript '{value.Id}' for LightSwitch.");
+                return;
+            }
+
+            if (isDarkMode)
+            {
+                _selectedDarkModePowerScript = value;
+                ModuleSettings.Properties.DarkModePowerScript.Value = value?.Id ?? string.Empty;
+                ModuleSettings.Properties.DarkModePowerScriptParameters.Value = LightSwitchProperties.DefaultDarkModePowerScriptParameters;
+                if (!CanEnableDarkModePowerScript)
+                {
+                    ModuleSettings.Properties.EnableDarkModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableDarkModePowerScript));
+                }
+
+                NotifyPropertyChanged(nameof(SelectedDarkModePowerScript));
+            }
+            else
+            {
+                _selectedLightModePowerScript = value;
+                ModuleSettings.Properties.LightModePowerScript.Value = value?.Id ?? string.Empty;
+                ModuleSettings.Properties.LightModePowerScriptParameters.Value = LightSwitchProperties.DefaultLightModePowerScriptParameters;
+                if (!CanEnableLightModePowerScript)
+                {
+                    ModuleSettings.Properties.EnableLightModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableLightModePowerScript));
+                }
+
+                NotifyPropertyChanged(nameof(SelectedLightModePowerScript));
+            }
+
+            NotifyPowerScriptConfigurationChanged(isDarkMode);
+            SaveSettings();
+        }
+
+        private void UpdateSelectedPowerScriptFromId(string scriptId, bool isDarkMode)
+        {
+            var script = string.IsNullOrEmpty(scriptId)
+                ? null
+                : AvailablePowerScripts.FirstOrDefault(
+                    candidate => candidate.Id.Equals(scriptId, StringComparison.OrdinalIgnoreCase));
+
+            if (isDarkMode)
+            {
+                _selectedDarkModePowerScript = script;
+                if (!CanEnableDarkModePowerScript && ModuleSettings.Properties.EnableDarkModePowerScript.Value)
+                {
+                    ModuleSettings.Properties.EnableDarkModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableDarkModePowerScript));
+                    SaveSettings();
+                }
+
+                NotifyPropertyChanged(nameof(SelectedDarkModePowerScript));
+                NotifyPowerScriptConfigurationChanged(isDarkMode: true);
+            }
+            else
+            {
+                _selectedLightModePowerScript = script;
+                if (!CanEnableLightModePowerScript && ModuleSettings.Properties.EnableLightModePowerScript.Value)
+                {
+                    ModuleSettings.Properties.EnableLightModePowerScript.Value = false;
+                    NotifyPropertyChanged(nameof(EnableLightModePowerScript));
+                    SaveSettings();
+                }
+
+                NotifyPropertyChanged(nameof(SelectedLightModePowerScript));
+                NotifyPowerScriptConfigurationChanged(isDarkMode: false);
+            }
+        }
+
+        private static bool IsSupportedAutomaticAction(PowerScriptInfo script) =>
+            script.IsAction &&
+            script.Parameters.All(parameter =>
+                parameter.Type.Equals("string", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Type.Equals("int", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Type.Equals("bool", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Type.Equals("choice", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Type.Equals("file", StringComparison.OrdinalIgnoreCase));
+
+        private static bool HasRequiredPowerScriptParameters(
+            PowerScriptInfo script,
+            IReadOnlyDictionary<string, string> values) =>
+            script.Parameters.All(parameter =>
+                !parameter.IsRequired ||
+                parameter.Default is not null ||
+                (values.TryGetValue(parameter.Name, out var value) && !string.IsNullOrWhiteSpace(value)));
+
+        private void NotifyPowerScriptConfigurationChanged(bool isDarkMode)
+        {
+            if (isDarkMode)
+            {
+                NotifyPropertyChanged(nameof(CanConfigureDarkModePowerScript));
+                NotifyPropertyChanged(nameof(CanEnableDarkModePowerScript));
+            }
+            else
+            {
+                NotifyPropertyChanged(nameof(CanConfigureLightModePowerScript));
+                NotifyPropertyChanged(nameof(CanEnableLightModePowerScript));
+            }
+        }
+
         /// <summary>
         /// Helper method to sync the selected profile object from the profile name stored in settings.
         /// If the configured profile no longer exists, clears the selection and updates settings.
@@ -837,6 +1109,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(EnableLightModeProfile));
             OnPropertyChanged(nameof(DarkModeProfile));
             OnPropertyChanged(nameof(LightModeProfile));
+            OnPropertyChanged(nameof(EnableDarkModePowerScript));
+            OnPropertyChanged(nameof(EnableLightModePowerScript));
+            OnPropertyChanged(nameof(SelectedDarkModePowerScript));
+            OnPropertyChanged(nameof(SelectedLightModePowerScript));
+            OnPropertyChanged(nameof(CanConfigureDarkModePowerScript));
+            OnPropertyChanged(nameof(CanConfigureLightModePowerScript));
+            OnPropertyChanged(nameof(CanEnableDarkModePowerScript));
+            OnPropertyChanged(nameof(CanEnableLightModePowerScript));
         }
 
         private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
@@ -899,6 +1179,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isPowerDisplayEnabled;
         private PowerDisplayProfile? _selectedDarkModeProfile;
         private PowerDisplayProfile? _selectedLightModeProfile;
+        private PowerScriptInfo? _selectedDarkModePowerScript;
+        private PowerScriptInfo? _selectedLightModePowerScript;
+        private bool _isLoadingPowerScripts;
 
         public ICommand ForceLightCommand { get; }
 

@@ -21,6 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultEnableLightModeProfile = false;
         public const string DefaultDarkModeProfile = "";
         public const string DefaultLightModeProfile = "";
+        public const bool DefaultEnableDarkModePowerScript = false;
+        public const bool DefaultEnableLightModePowerScript = false;
+        public const string DefaultDarkModePowerScript = "";
+        public const string DefaultLightModePowerScript = "";
+        public const string DefaultDarkModePowerScriptParameters = "{}";
+        public const string DefaultLightModePowerScriptParameters = "{}";
         public static readonly HotkeySettings DefaultToggleThemeHotkey = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
         public LightSwitchProperties()
@@ -39,6 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableLightModeProfile = new BoolProperty(DefaultEnableLightModeProfile);
             DarkModeProfile = new StringProperty(DefaultDarkModeProfile);
             LightModeProfile = new StringProperty(DefaultLightModeProfile);
+            EnableDarkModePowerScript = new BoolProperty(DefaultEnableDarkModePowerScript);
+            EnableLightModePowerScript = new BoolProperty(DefaultEnableLightModePowerScript);
+            DarkModePowerScript = new StringProperty(DefaultDarkModePowerScript);
+            LightModePowerScript = new StringProperty(DefaultLightModePowerScript);
+            DarkModePowerScriptParameters = new StringProperty(DefaultDarkModePowerScriptParameters);
+            LightModePowerScriptParameters = new StringProperty(DefaultLightModePowerScriptParameters);
         }
 
         [JsonPropertyName("changeSystem")]
@@ -82,5 +94,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("lightModeProfile")]
         public StringProperty LightModeProfile { get; set; }
+
+        [JsonPropertyName("enableDarkModePowerScript")]
+        public BoolProperty EnableDarkModePowerScript { get; set; }
+
+        [JsonPropertyName("enableLightModePowerScript")]
+        public BoolProperty EnableLightModePowerScript { get; set; }
+
+        [JsonPropertyName("darkModePowerScript")]
+        public StringProperty DarkModePowerScript { get; set; }
+
+        [JsonPropertyName("lightModePowerScript")]
+        public StringProperty LightModePowerScript { get; set; }
+
+        [JsonPropertyName("darkModePowerScriptParameters")]
+        public StringProperty DarkModePowerScriptParameters { get; set; }
+
+        [JsonPropertyName("lightModePowerScriptParameters")]
+        public StringProperty LightModePowerScriptParameters { get; set; }
     }
 }

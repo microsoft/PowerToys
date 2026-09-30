@@ -1,0 +1,31 @@
+{
+  "name": "greet",
+  "title": "Greet (PowerShell)",
+  "description": "Show a greeting. Demonstrates typed parameters that consumer modules can render.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "greeting": {
+        "type": "string",
+        "enum": ["Hello", "Hi", "Hey", "Howdy"],
+        "default": "Hello",
+        "description": "Pick how to say hello."
+      },
+      "name": {
+        "type": "string",
+        "default": "World",
+        "description": "Who to greet."
+      },
+      "shout": {
+        "type": "boolean",
+        "default": false,
+        "description": "Shout (UPPERCASE)."
+      }
+    }
+  },
+  "x-powerscript": {
+    "capabilities": ["ui"],
+    "publisher": "PowerToys samples",
+    "version": "1.0.0"
+  }
+}

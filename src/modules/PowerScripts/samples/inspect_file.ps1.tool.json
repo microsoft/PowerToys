@@ -1,0 +1,21 @@
+{
+  "name": "inspect-file",
+  "title": "Inspect a file (PowerShell)",
+  "description": "Pick a file and show its name, folder, and size. Demonstrates a scalar file parameter.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "format": "file-path",
+        "description": "Choose a file to inspect."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-powerscript": {
+    "capabilities": ["fileRead", "ui"],
+    "publisher": "PowerToys samples",
+    "version": "1.0.0"
+  }
+}

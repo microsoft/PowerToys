@@ -19,25 +19,23 @@ namespace AdvancedPaste.Services;
 
 /// <summary>
 /// Bridges Advanced Paste to PowerScripts. PowerScripts are user-authored scripts (PowerShell or
-/// Python) that declare an <c>advancedPaste</c> surface and a transform contract
-/// (<c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c>). This service enumerates those scripts and runs
-/// one as a clipboard transform by shelling the shared <c>PowerScripts.Host.exe</c>, so every surface
-/// (a hotkey, the Explorer context menu, Advanced Paste) executes them through the same gated host.
+/// Python) that expose a transform contract (<c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c>).
+/// This service enumerates those scripts and runs one as a clipboard transform by shelling the shared
+/// <c>PowerScripts.Host.exe</c>, so every consumer executes them through the same gated host.
 /// </summary>
 internal static class PowerScriptsService
 {
     private const string HostExeName = "PowerScripts.Host.exe";
-    private const string AdvancedPasteSurface = "advancedPaste";
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    /// <summary>A PowerScript that opts into the Advanced Paste surface.</summary>
+    /// <summary>A PowerScript with an Advanced Paste-compatible transform contract.</summary>
     public sealed record PowerScriptInfo(string Id, string Name, string Description, ClipboardFormat SupportedFormats);
 
     /// <summary>
-    /// Enumerates PowerScripts that declare the <c>advancedPaste</c> surface and expose a transform
-    /// contract. Returns an empty list when PowerScripts is disabled or the host is unavailable, so
-    /// disabling PowerScripts makes its scripts disappear from Advanced Paste.
+    /// Enumerates PowerScripts that expose a transform contract. Returns an empty list when PowerScripts
+    /// is disabled or the host is unavailable, so disabling PowerScripts makes its scripts disappear
+    /// from Advanced Paste.
     /// </summary>
     public static IReadOnlyList<PowerScriptInfo> GetAdvancedPasteScripts()
     {
@@ -76,7 +74,6 @@ internal static class PowerScriptsService
             var scripts = JsonSerializer.Deserialize<List<HostScript>>(json, JsonOptions) ?? [];
 
             return scripts
-                .Where(s => s.Surfaces is not null && s.Surfaces.Contains(AdvancedPasteSurface, StringComparer.OrdinalIgnoreCase))
                 .Where(s => s.Transform is not null)
                 .Select(s => new PowerScriptInfo(s.Id, s.Name, s.Description ?? string.Empty, MapInputFormat(s.Transform.InputFormat)))
                 .ToList();
@@ -292,8 +289,6 @@ internal static class PowerScriptsService
         public string Name { get; set; }
 
         public string Description { get; set; }
-
-        public List<string> Surfaces { get; set; }
 
         public TransformContract Transform { get; set; }
     }

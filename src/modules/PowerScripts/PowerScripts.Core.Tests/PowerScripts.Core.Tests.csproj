@@ -15,5 +15,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
+    <ProjectReference Include="..\PowerScripts.Client\PowerScripts.Client.csproj" />
+
+    <!-- Build-order only: guarantees PowerScripts.Host.exe exists before the CLI tests run, so the
+         host integration/CLI tests act as a real guard instead of silently skipping. The host is a
+         net10.0-windows exe; we don't reference its output assembly (ReferenceOutputAssembly=false)
+         and skip TFM negotiation so this net10.0 test project can still depend on its build. -->
+    <ProjectReference Include="..\PowerScripts.Host\PowerScripts.Host.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      Private="false" />
   </ItemGroup>
 </Project>

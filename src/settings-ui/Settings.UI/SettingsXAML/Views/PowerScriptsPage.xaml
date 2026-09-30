@@ -15,9 +15,9 @@
 
     <controls:SettingsPageControl
         x:Name="PowerScriptsSettingsPage"
+        IsTabStop="False"
         ModuleDescription="Write a small script once and surface it everywhere — the Explorer right-click menu and Keyboard Manager. This is an experimental prototype."
-        ModuleTitle="PowerScripts"
-        IsTabStop="False">
+        ModuleTitle="PowerScripts">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
@@ -25,7 +25,7 @@
                     Description="Enable PowerScripts"
                     Header="PowerScripts"
                     HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch AutomationProperties.AutomationId="PowerScriptsEnabledToggle" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
                 <tkcontrols:SettingsCard
@@ -37,28 +37,119 @@
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button
                             x:Name="OpenScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsOpenFolderButton"
+                            AutomationProperties.Name="Open scripts folder"
                             Click="OpenScriptsFolderButton_Click"
                             ToolTipService.ToolTip="Open scripts folder in File Explorer">
                             <FontIcon FontSize="16" Glyph="&#xE838;" />
                         </Button>
                         <Button
                             x:Name="BrowseScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsBrowseFolderButton"
                             Click="BrowseScriptsFolderButton_Click"
                             Content="Browse..." />
                         <Button
                             x:Name="ResetScriptsFolderButton"
+                            AutomationProperties.AutomationId="PowerScriptsResetFolderButton"
                             Click="ResetScriptsFolderButton_Click"
                             Content="Reset"
                             IsEnabled="{x:Bind ViewModel.IsCustomFolder, Mode=OneWay}" />
                     </StackPanel>
                 </tkcontrols:SettingsCard>
 
+                <controls:SettingsGroup x:Uid="PowerScripts_MxcGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEnabled" HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}">
+                        <ToggleSwitch
+                            x:Uid="PowerScripts_MxcEnabledToggle"
+                            AutomationProperties.AutomationId="PowerScriptsMxcEnabledToggle"
+                            IsEnabled="{x:Bind ViewModel.CanChangeMxcEnabled, Mode=OneWay}"
+                            IsOn="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}"
+                            Toggled="MxcEnabledToggle_Toggled" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerScripts_MxcExecutor"
+                        Description="{x:Bind ViewModel.MxcExecutorStatus, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox
+                                MinWidth="300"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.AutomationId="PowerScriptsMxcExecutorPathTextBox"
+                                LostFocus="MxcExecutorPathTextBox_LostFocus"
+                                PlaceholderText="wxc-exec.exe"
+                                Text="{x:Bind ViewModel.MxcExecutorPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                            <Button
+                                x:Name="BrowseMxcExecutorButton"
+                                x:Uid="PowerScripts_MxcExecutorBrowse"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="PowerScriptsBrowseMxcExecutorButton"
+                                Click="BrowseMxcExecutorButton_Click" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsMxcSupported, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="PowerScripts_MxcUnavailable"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsMxcUnsupported, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.MxcSupportMessage, Mode=OneWay}"
+                        Severity="Warning" />
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="PowerScripts_MxcRestrictions"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}"
+                        IsEnabled="{x:Bind ViewModel.IsMxcEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcFilesystem">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcFilesystemToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcFilesystemToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcFilesystemRestrictionEnabled, Mode=OneWay}"
+                                    Tag="filesystem"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcNetwork">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcNetworkToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcNetworkToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcNetworkRestrictionEnabled, Mode=OneWay}"
+                                    Tag="network"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcUi">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcUiToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcUiToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcUiRestrictionEnabled, Mode=OneWay}"
+                                    Tag="ui"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcLeastPrivilege">
+                                <ToggleSwitch
+                                    x:Uid="PowerScripts_MxcLeastPrivilegeToggle"
+                                    AutomationProperties.AutomationId="PowerScriptsMxcLeastPrivilegeToggle"
+                                    IsOn="{x:Bind ViewModel.IsMxcLeastPrivilegeRestrictionEnabled, Mode=OneWay}"
+                                    Tag="leastPrivilege"
+                                    Toggled="GlobalMxcPolicyToggle_Toggled" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup Header="Python runtime" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Description="Run Python PowerScripts (scripts whose manifest sets &quot;runtime&quot;: &quot;python&quot;) natively on Windows or inside WSL."
                         Header="Python execution"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE943;}">
-                        <ComboBox MinWidth="160" SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="160"
+                            AutomationProperties.AutomationId="PowerScriptsPythonModeComboBox"
+                            SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="Disabled" />
                             <ComboBoxItem Content="Windows" />
                             <ComboBoxItem Content="WSL" />
@@ -74,10 +165,12 @@
                             <TextBox
                                 MinWidth="300"
                                 HorizontalAlignment="Stretch"
+                                AutomationProperties.AutomationId="PowerScriptsPythonInterpreterPathTextBox"
                                 Text="{x:Bind ViewModel.PythonInterpreterPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                             <Button
                                 x:Name="BrowsePythonInterpreterButton"
                                 VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="PowerScriptsBrowsePythonInterpreterButton"
                                 Click="BrowsePythonInterpreterButton_Click"
                                 Content="Browse..." />
                         </StackPanel>
@@ -90,17 +183,23 @@
                         Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ComboBox
                             MinWidth="200"
+                            AutomationProperties.AutomationId="PowerScriptsWslDistributionComboBox"
                             IsEditable="True"
                             ItemsSource="{x:Bind ViewModel.WslDistributions, Mode=OneWay}"
                             Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="PowerScripts_MxcWslUnavailable"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsWslMode, Mode=OneWay}"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        Message="No PowerScripts found. Pick a scripts folder above (or use the default) that contains script subfolders, each with a manifest.json."
+                        Message="No PowerScripts found. Pick a scripts folder above (or use the default) containing header-authored scripts or scripts with .tool.json sidecars."
                         Severity="Informational" />
 
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Scripts, Mode=OneWay}">
@@ -117,7 +216,7 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind Kind}" />
+                                        Text="{x:Bind KindDisplay}" />
                                     <tkcontrols:SettingsExpander.Items>
                                         <tkcontrols:SettingsCard
                                             ContentAlignment="Right"
@@ -134,11 +233,11 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind RuntimeDisplay}" />
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Surfaces">
+                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Input / output">
                                             <TextBlock
                                                 VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Text="{x:Bind SurfacesDisplay}" />
+                                                Text="{x:Bind IoDisplay}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Right" Header="Capabilities">
                                             <TextBlock
@@ -146,9 +245,38 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind CapabilitiesDisplay}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcEffective" ContentAlignment="Right">
+                                            <TextBlock
+                                                MaxWidth="360"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind MxcEffectiveDisplay, Mode=OneWay}"
+                                                TextWrapping="Wrap" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcRecommendation" ContentAlignment="Right">
+                                            <StackPanel MaxWidth="360" Spacing="4">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Text="{x:Bind RecommendedPoliciesDisplay}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind RecommendationSummary}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPerScript">
+                                            <Button
+                                                x:Uid="PowerScripts_MxcConfigure"
+                                                AutomationProperties.AutomationId="{x:Bind MxcPolicyEditorAutomationId}"
+                                                Click="ConfigureScriptMxcPolicyButton_Click"
+                                                DataContext="{x:Bind}" />
+                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard
                                             ContentAlignment="Vertical"
-                                            Header="{x:Bind ParametersHeader}"
+                                            Description="Consumer modules choose how to collect and supply these values."
+                                            Header="Parameters"
                                             Visibility="{x:Bind HasParameters, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <ItemsControl ItemsSource="{x:Bind Parameters}">
                                                 <ItemsControl.ItemTemplate>
@@ -176,9 +304,7 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind TrustDisplay}" />
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard
-                                            Header="Location"
-                                            Visibility="{x:Bind HasFolderPath, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard Header="Location" Visibility="{x:Bind HasFolderPath, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <StackPanel
                                                 HorizontalAlignment="Right"
                                                 Orientation="Horizontal"
@@ -191,6 +317,8 @@
                                                     TextTrimming="CharacterEllipsis"
                                                     ToolTipService.ToolTip="{x:Bind FolderPath}" />
                                                 <Button
+                                                    AutomationProperties.AutomationId="{x:Bind OpenFolderAutomationId}"
+                                                    AutomationProperties.Name="Open script folder"
                                                     Click="OpenScriptFolderButton_Click"
                                                     DataContext="{x:Bind}"
                                                     ToolTipService.ToolTip="Open script folder">

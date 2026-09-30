@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(CropAndLockSettings))]
 [JsonSerializable(typeof(CursorWrapSettings))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
+[JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSerializable(typeof(FileLocksmithSettings))]
 [JsonSerializable(typeof(FindMyMouseSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]

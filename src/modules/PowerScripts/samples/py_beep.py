@@ -2,13 +2,9 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# @powerscript.id           py_beep
-# @powerscript.name         Beep (Python)
-# @powerscript.description   Play a short beep. A Python system PowerScript you can bind to a hotkey from Keyboard Manager.
-# @powerscript.kind         system
-# @powerscript.publisher    PowerToys samples
-# @powerscript.version      1.0.0
-# @powerscript.capability   systemControl
+# Metadata lives in the sibling py_beep.py.tool.json descriptor (an MCP Tool). This script keeps the
+# Python function convention (powerscript_from_<input>_to_<output>), so it runs through the Python
+# runtime with full WSL / interpreter-settings support.
 
 import sys
 

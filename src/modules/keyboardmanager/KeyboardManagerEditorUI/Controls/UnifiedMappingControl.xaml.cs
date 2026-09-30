@@ -5,11 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -35,6 +38,7 @@ namespace KeyboardManagerEditorUI.Controls
         private readonly ObservableCollection<string> _actionKeys = new();
 
         private readonly ObservableCollection<Helpers.PowerScriptInfo> _powerScripts = new();
+        private readonly Dictionary<string, Control> _powerScriptParameterControls = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _disposed;
         private bool _internalUpdate;
@@ -288,7 +292,153 @@ namespace KeyboardManagerEditorUI.Controls
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
 
+            RenderPowerScriptParameters(PowerScriptComboBox?.SelectedItem as Helpers.PowerScriptInfo);
             RaiseValidationStateChanged();
+        }
+
+        private void RenderPowerScriptParameters(Helpers.PowerScriptInfo? script)
+        {
+            _powerScriptParameterControls.Clear();
+            PowerScriptParametersPanel.Children.Clear();
+
+            if (script?.Parameters is not { Count: > 0 })
+            {
+                PowerScriptParametersPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            foreach (var parameter in script.Parameters)
+            {
+                var field = new StackPanel { Spacing = 4 };
+                field.Children.Add(new TextBlock
+                {
+                    Text = parameter.DisplayLabel + (parameter.IsRequired ? " *" : string.Empty),
+                });
+
+                var editor = CreatePowerScriptParameterEditor(parameter);
+                editor.SetValue(AutomationProperties.AutomationIdProperty, $"KeyboardManagerPowerScriptParameter_{parameter.Name}");
+                field.Children.Add(editor);
+
+                if (!string.IsNullOrWhiteSpace(parameter.Description))
+                {
+                    field.Children.Add(new TextBlock
+                    {
+                        Text = parameter.Description,
+                        Foreground = Application.Current.Resources["TextFillColorSecondaryBrush"] as Brush,
+                        TextWrapping = TextWrapping.Wrap,
+                    });
+                }
+
+                _powerScriptParameterControls[parameter.Name] = editor;
+                PowerScriptParametersPanel.Children.Add(field);
+            }
+
+            PowerScriptParametersPanel.Visibility = Visibility.Visible;
+        }
+
+        private Control CreatePowerScriptParameterEditor(Helpers.PowerScriptParameterInfo parameter)
+        {
+            if (string.Equals(parameter.Type, "file", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreatePowerScriptFileParameterEditor(parameter);
+            }
+
+            if (string.Equals(parameter.Type, "bool", StringComparison.OrdinalIgnoreCase))
+            {
+                var toggle = new ToggleSwitch
+                {
+                    IsOn = bool.TryParse(parameter.Default, out var defaultValue) && defaultValue,
+                };
+                toggle.Toggled += (_, _) => RaiseValidationStateChanged();
+                return toggle;
+            }
+
+            if (string.Equals(parameter.Type, "choice", StringComparison.OrdinalIgnoreCase))
+            {
+                var choices = new ComboBox
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ItemsSource = parameter.Options,
+                    SelectedItem = parameter.Default,
+                };
+                choices.SelectionChanged += (_, _) => RaiseValidationStateChanged();
+                return choices;
+            }
+
+            if (string.Equals(parameter.Type, "int", StringComparison.OrdinalIgnoreCase))
+            {
+                var number = new NumberBox
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    Minimum = parameter.Min ?? int.MinValue,
+                    Maximum = parameter.Max ?? int.MaxValue,
+                    SmallChange = 1,
+                    Value = int.TryParse(parameter.Default, NumberStyles.Integer, CultureInfo.InvariantCulture, out var defaultValue)
+                        ? defaultValue
+                        : double.NaN,
+                };
+                number.ValueChanged += (_, _) => RaiseValidationStateChanged();
+                return number;
+            }
+
+            var text = new TextBox
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Text = parameter.Default ?? string.Empty,
+            };
+            text.TextChanged += (_, _) => RaiseValidationStateChanged();
+            return text;
+        }
+
+        private Control CreatePowerScriptFileParameterEditor(Helpers.PowerScriptParameterInfo parameter)
+        {
+            var grid = new Grid
+            {
+                ColumnSpacing = 8,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+            };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var path = new TextBox
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                IsReadOnly = true,
+                Text = parameter.Default ?? string.Empty,
+            };
+            path.TextChanged += (_, _) => RaiseValidationStateChanged();
+            grid.Children.Add(path);
+
+            var browse = new Button
+            {
+                Content = ResourceHelper.GetString("PowerScriptBrowseFileButton_Content"),
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+            browse.Click += async (_, _) => await PickPowerScriptFileAsync(path);
+            Grid.SetColumn(browse, 1);
+            grid.Children.Add(browse);
+
+            return new ContentControl
+            {
+                Content = grid,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Tag = path,
+            };
+        }
+
+        private async System.Threading.Tasks.Task PickPowerScriptFileAsync(TextBox path)
+        {
+            var picker = new FileOpenPicker();
+            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+            InitializeWithWindow.Initialize(picker, hwnd);
+            picker.FileTypeFilter.Add("*");
+
+            var file = await picker.PickSingleFileAsync();
+            if (file is not null)
+            {
+                path.Text = file.Path;
+                RaiseValidationStateChanged();
+            }
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -781,6 +931,104 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public Helpers.PowerScriptInfo? GetSelectedPowerScript() => PowerScriptComboBox?.SelectedItem as Helpers.PowerScriptInfo;
 
+        public IReadOnlyDictionary<string, string?> GetPowerScriptParameterValues()
+        {
+            var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (name, control) in _powerScriptParameterControls)
+            {
+                var value = GetPowerScriptParameterValue(control);
+                if (value is not null)
+                {
+                    values[name] = value;
+                }
+            }
+
+            return values;
+        }
+
+        public void SetPowerScriptParameterValues(IReadOnlyDictionary<string, string?> values)
+        {
+            foreach (var (name, value) in values)
+            {
+                if (!_powerScriptParameterControls.TryGetValue(name, out var control))
+                {
+                    continue;
+                }
+
+                switch (control)
+                {
+                    case ToggleSwitch toggle:
+                        toggle.IsOn = bool.TryParse(value, out var boolean) && boolean;
+                        break;
+                    case ComboBox choices:
+                        choices.SelectedItem = value;
+                        break;
+                    case NumberBox number:
+                        number.Value = int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer)
+                            ? integer
+                            : double.NaN;
+                        break;
+                    case TextBox text:
+                        text.Text = value ?? string.Empty;
+                        break;
+                    case ContentControl filePicker when filePicker.Tag is TextBox path:
+                        path.Text = value ?? string.Empty;
+                        break;
+                }
+            }
+        }
+
+        public bool TryValidatePowerScriptParameters(out string error)
+        {
+            error = string.Empty;
+            var script = GetSelectedPowerScript();
+            if (script is null)
+            {
+                return true;
+            }
+
+            foreach (var parameter in script.Parameters.Where(parameter => parameter.IsRequired))
+            {
+                if (!_powerScriptParameterControls.TryGetValue(parameter.Name, out var control) ||
+                    string.IsNullOrEmpty(GetPowerScriptParameterValue(control)))
+                {
+                    error = ResourceHelper.GetString("PowerScriptRequiredParameter_Message")
+                        .Replace("{0}", parameter.DisplayLabel, StringComparison.Ordinal);
+                    return false;
+                }
+            }
+
+            foreach (var parameter in script.Parameters.Where(parameter => string.Equals(parameter.Type, "int", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (_powerScriptParameterControls.TryGetValue(parameter.Name, out var control) &&
+                    control is NumberBox number &&
+                    !double.IsNaN(number.Value) &&
+                    (number.Value < int.MinValue || number.Value > int.MaxValue || number.Value != Math.Truncate(number.Value)))
+                {
+                    error = ResourceHelper.GetString("PowerScriptIntegerParameter_Message")
+                        .Replace("{0}", parameter.DisplayLabel, StringComparison.Ordinal);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static string? GetPowerScriptParameterValue(Control control) =>
+            control switch
+            {
+                ToggleSwitch toggle => toggle.IsOn ? "true" : "false",
+                ComboBox choices => choices.SelectedItem?.ToString(),
+                NumberBox number when !double.IsNaN(number.Value) &&
+                                      number.Value >= int.MinValue &&
+                                      number.Value <= int.MaxValue &&
+                                      number.Value == Math.Truncate(number.Value) =>
+                    Convert.ToInt32(number.Value).ToString(CultureInfo.InvariantCulture),
+                TextBox text => text.Text,
+                ContentControl filePicker when filePicker.Tag is TextBox path => path.Text,
+                _ => null,
+            };
+
         /// <summary>
         /// Selects the PowerScript with the given id in the picker, if present.
         /// </summary>
@@ -1171,6 +1419,15 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 ActionTypeComboBox.SelectedIndex = 0;
             }
+
+            if (PowerScriptComboBox != null)
+            {
+                PowerScriptComboBox.SelectedIndex = -1;
+            }
+
+            _powerScriptParameterControls.Clear();
+            PowerScriptParametersPanel.Children.Clear();
+            PowerScriptParametersPanel.Visibility = Visibility.Collapsed;
 
             if (MouseTriggerComboBox != null)
             {

@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "LightSwitchStateManager.h"
+#include "PowerScriptsRunner.h"
 #include <logger.h>
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
@@ -57,6 +58,7 @@ void LightSwitchStateManager::OnManualOverride()
                   (_state.isAppsLightActive ? L"light" : L"dark"));
 
     NotifyPowerDisplay(_state.isSystemLightActive);
+    RunPowerScript(_state.isSystemLightActive);
 
     EvaluateAndApplyIfNeeded();
 }
@@ -273,6 +275,7 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         // Notify PowerDisplay to apply display profile if configured
         NotifyPowerDisplay(shouldBeLight);
+        RunPowerScript(shouldBeLight);
     }
 
     _state.lastTickMinutes = now;
@@ -323,8 +326,24 @@ void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
             Logger::warn(L"[LightSwitchStateManager] Failed to create theme event (error: {})", GetLastError());
         }
     }
+
     catch (...)
     {
         Logger::error(L"[LightSwitchStateManager] Failed to notify PowerDisplay");
+    }
+}
+
+void LightSwitchStateManager::RunPowerScript(bool isLight)
+{
+    const auto& settings = LightSwitchSettings::settings();
+    const auto& scriptId = isLight ? settings.lightModePowerScript : settings.darkModePowerScript;
+    const bool enabled = isLight ? settings.enableLightModePowerScript : settings.enableDarkModePowerScript;
+    const auto& parameters = isLight
+                                 ? settings.lightModePowerScriptParameters
+                                 : settings.darkModePowerScriptParameters;
+
+    if (enabled && !scriptId.empty())
+    {
+        PowerScriptsRunner::RunAction(scriptId, parameters);
     }
 }

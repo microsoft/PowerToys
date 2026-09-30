@@ -4,11 +4,13 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text;
 using PowerScripts.Core;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
 using PowerScripts.Core.Security;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Host;
 
@@ -45,11 +47,11 @@ internal static class Program
 
             return args[0].ToLowerInvariant() switch
             {
-                "list" => RunList(registry, options.ContainsKey("json")),
+                "list" => RunList(registry, options),
                 "run" => RunScript(registry, positional, options),
                 "transform" => RunTransform(registry, positional, options),
+                "mxc-support" => RunMxcSupport(options.ContainsKey("json")),
                 "trust" => RunTrust(registry, positional),
-                "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
                 "shell-menu" => RunShellMenu(registry, options),
                 "shell-install" => ShellRegistration.Install(registry, Environment.ProcessPath ?? "PowerScripts.Host.exe"),
                 "shell-uninstall" => ShellRegistration.Uninstall(registry),
@@ -64,40 +66,90 @@ internal static class Program
         }
     }
 
-    private static int RunList(ScriptRegistry registry, bool asJson)
+    private static int RunList(ScriptRegistry registry, IReadOnlyDictionary<string, List<string>> options)
     {
+        bool asJson = options.ContainsKey("json");
+
+        // Optional discovery filters so any consumer — including native/C++ callers that only shell
+        // out to this CLI — can narrow the catalogue without reimplementing the I/O model:
+        //   list --input text      only scripts consuming text
+        //   list --output text     only scripts producing text
+        //   list --no-input        only actions (consume nothing)   [alias for --input none]
+        if (!TryParseListFilters(options, out var wantInput, out var wantOutput))
+        {
+            return 1;
+        }
+
+        // Resolve each script's I/O once (Python transforms read it from their function name) so the
+        // JSON and text renderers — and the filters above — all work from the same shapes.
+        var rows = registry.Scripts
+            .Select(s =>
+            {
+                var signature = s.Runtime == ScriptRuntime.Python
+                    ? PowerScriptPythonConvention.ParseFile(s.EntryFullPath)
+                    : null;
+                var (input, output) = ScriptIo.Resolve(s, signature);
+                return (Script: s, Signature: signature, Input: input, Output: output);
+            })
+            .Where(r => wantInput is null || r.Input == wantInput)
+            .Where(r => wantOutput is null || r.Output == wantOutput)
+            .ToList();
+
         if (asJson)
         {
             // Structured, permissioned capability list — also the shape the KBM editor picker and
             // future agents/MCP servers consume.
-            var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
-            var projection = registry.Scripts.Select(s =>
+            var trustStore = new TrustStore(SettingsStore.Current);
+            var projection = rows.Select(r =>
             {
-                // For Python scripts, derive the transform contract from the single
-                // powerscript_from_<input>_to_<output> function so surfaces (e.g. Advanced Paste) know
-                // which data shapes the script consumes/produces without running it.
-                var signature = s.Runtime == ScriptRuntime.Python
-                    ? PowerScriptPythonConvention.ParseFile(s.EntryFullPath)
-                    : null;
+                var s = r.Script;
+
+                // For Python scripts the transform contract comes from the single
+                // powerscript_from_<input>_to_<output> function so consumers know which data shapes the
+                // script consumes/produces without running it.
+                var signature = r.Signature;
+
+                // Scripts declare only their I/O; each consuming module discovers the scripts it can
+                // use by filtering on this shape (e.g. Advanced Paste wants scripts accepting Text).
+                var ioInput = r.Input;
+                var ioOutput = r.Output;
 
                 return new
                 {
                     s.Id,
                     s.Name,
                     s.Description,
-                    kind = s.Kind.ToString(),
                     runtime = s.Runtime.ToString(),
                     s.Publisher,
                     s.Version,
                     s.Source,
-                    s.Surfaces,
+                    io = new
+                    {
+                        input = ScriptIo.ToToken(ioInput),
+                        output = ScriptIo.ToToken(ioOutput),
+                    },
+
                     s.Capabilities,
+                    mxc = new
+                    {
+                        recommendedPolicies = s.Mxc.RecommendedPolicies,
+                    },
                     folderPath = s.FolderPath,
                     entryFullPath = s.EntryFullPath,
                     trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
                     input = s.Input,
-                    parameters = s.Parameters,
-                    promptForParameters = s.PromptForParameters,
+                    parameters = s.Parameters.Select(parameter => new
+                    {
+                        parameter.Name,
+                        parameter.Type,
+                        parameter.IsRequired,
+                        parameter.Label,
+                        parameter.Description,
+                        parameter.Default,
+                        parameter.Options,
+                        parameter.Min,
+                        parameter.Max,
+                    }),
                     transform = signature is null ? null : new
                     {
                         function = signature.FunctionName,
@@ -118,19 +170,52 @@ internal static class Program
         }
 
         Console.WriteLine($"Scripts root: {registry.Root}");
-        if (registry.Scripts.Count == 0)
+        if (rows.Count == 0)
         {
             Console.WriteLine("(no scripts found)");
         }
 
-        foreach (var s in registry.Scripts)
+        foreach (var r in rows)
         {
-            Console.WriteLine($"  {s.Id,-24} [{s.Kind,-6}] {s.Name}");
+            var s = r.Script;
+            var io = $"{ScriptIo.ToToken(r.Input)}->{ScriptIo.ToToken(r.Output)}";
+            Console.WriteLine($"  {s.Id,-24} {s.Runtime,-10} {io,-14} {s.Name}");
         }
 
         foreach (var e in registry.Errors)
         {
             Console.Error.WriteLine($"  ! {e.FolderPath}: {e.Message}");
+        }
+
+        return 0;
+    }
+
+    private static int RunMxcSupport(bool asJson)
+    {
+        var settings = MxcSettings.Load();
+        var support = settings.PlatformSupport ?? MxcPlatformSupport.Probe(settings);
+
+        if (asJson)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(new
+            {
+                support.IsSupported,
+                support.Reason,
+                support.WindowsBuild,
+                support.ExecutorPath,
+                support.Tier,
+                support.Warnings,
+            }, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            }));
+        }
+        else
+        {
+            Console.WriteLine(support.IsSupported
+                ? $"MXC supported: {support.Reason}"
+                : $"MXC unsupported: {support.Reason}");
         }
 
         return 0;
@@ -179,33 +264,40 @@ internal static class Program
             }
         }
 
-        // Optional parameter prompt: only when the manifest opts in and declares parameters. The
-        // dialog is pre-filled with each parameter's default and any --set override. --no-prompt
-        // suppresses it (e.g. for automated runs), keeping the current --set-only behavior.
-        if (manifest.PromptForParameters &&
-            manifest.Parameters.Count > 0 &&
-            !options.ContainsKey("no-prompt"))
+        if (options.TryGetValue("set-base64", out var encodedSets))
         {
-            var initial = new Dictionary<string, string?>(StringComparer.Ordinal);
-            foreach (var p in manifest.Parameters)
+            foreach (var encodedSet in encodedSets)
             {
-                initial[p.Name] = parameters.TryGetValue(p.Name, out var overridden) ? overridden : p.Default;
-            }
+                string decoded;
+                try
+                {
+                    decoded = Encoding.UTF8.GetString(Convert.FromBase64String(encodedSet));
+                }
+                catch (FormatException)
+                {
+                    Console.Error.WriteLine("run: --set-base64 received an invalid value.");
+                    return 1;
+                }
 
-            if (!PromptLauncher.TryPrompt(manifest, initial, out var chosen))
-            {
-                Console.Error.WriteLine("run: cancelled at the parameter prompt.");
-                return 2;
-            }
+                var separator = decoded.IndexOf('\0');
+                if (separator <= 0)
+                {
+                    Console.Error.WriteLine("run: --set-base64 received an invalid parameter.");
+                    return 1;
+                }
 
-            foreach (var (name, value) in chosen)
-            {
-                parameters[name] = value;
+                parameters[decoded[..separator]] = decoded[(separator + 1)..];
             }
         }
 
+        if (!ScriptParameterResolver.TryResolve(manifest, parameters, out var resolvedParameters, out var parameterError))
+        {
+            Console.Error.WriteLine($"run: {parameterError}");
+            return 1;
+        }
+
         var executor = new ScriptExecutor();
-        var result = executor.Execute(manifest, files, parameters);
+        var result = executor.Execute(manifest, files, resolvedParameters);
 
         if (!string.IsNullOrEmpty(result.StdOut))
         {
@@ -241,7 +333,7 @@ internal static class Program
 
         // Trust-on-first-use gate. A script only runs once the user has approved its exact current
         // content, and is re-prompted whenever the script body or its declared capabilities change.
-        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
+        var trustStore = new TrustStore(SettingsStore.Current);
         var contentHash = ScriptIntegrity.ComputeHash(manifest);
         if (trustStore.IsTrusted(manifest.Id, contentHash))
         {
@@ -322,7 +414,31 @@ internal static class Program
             return 1;
         }
 
-        if (manifest.Runtime == ScriptRuntime.Python)
+        var suppliedParameters = new Dictionary<string, string?>(StringComparer.Ordinal);
+        if (input.Params is not null)
+        {
+            foreach (var pair in input.Params)
+            {
+                suppliedParameters[pair.Key] = pair.Value;
+            }
+        }
+
+        if (!ScriptParameterResolver.TryResolve(
+            manifest,
+            suppliedParameters,
+            out var resolvedParameters,
+            out var parameterError))
+        {
+            Console.Error.WriteLine($"transform: {parameterError}");
+            return 1;
+        }
+
+        input.Params = resolvedParameters.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase);
+
+        if (manifest.Execute is null && manifest.Runtime == ScriptRuntime.Python)
         {
             var result = new PythonRuntime().Run(manifest, input);
             if (!string.IsNullOrEmpty(result.StdErr))
@@ -334,13 +450,11 @@ internal static class Program
             return result.ExitCode;
         }
 
-        // PowerShell transform: hand the text/html in as parameters and any files, and return the
-        // script's stdout as the transformed text.
-        var parameters = new Dictionary<string, string?>
-        {
-            ["Text"] = input.Text ?? string.Empty,
-            ["Html"] = input.Html ?? string.Empty,
-        };
+        // PowerShell transform and descriptor-authored scripts: hand text/html in as parameters plus
+        // any files, and return the script's stdout as the transformed text.
+        var parameters = new Dictionary<string, string?>(resolvedParameters, StringComparer.OrdinalIgnoreCase);
+        parameters.TryAdd("Text", input.Text ?? string.Empty);
+        parameters.TryAdd("Html", input.Html ?? string.Empty);
 
         var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters);
         if (!string.IsNullOrEmpty(psResult.StdErr))
@@ -366,7 +480,7 @@ internal static class Program
     private static int RunTrust(ScriptRegistry registry, IReadOnlyList<string> positional)
     {
         var sub = positional.Count > 0 ? positional[0].ToLowerInvariant() : "list";
-        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
+        var trustStore = new TrustStore(SettingsStore.Current);
 
         switch (sub)
         {
@@ -436,62 +550,6 @@ internal static class Program
     }
 
     /// <summary>
-    /// Emits the Keyboard Manager "Run Program" mapping for a system PowerScript so a user (or the
-    /// future KBM editor picker) can bind a hotkey to it. KBM's existing RunProgram action already
-    /// supports this — no KBM engine change is needed. The app path + args go straight into the
-    /// editor's "Run Program" fields; <c>--json</c> emits the on-disk mapping shape (the user still
-    /// chooses the trigger keys, so <c>originalKeys</c> is left as a placeholder).
-    /// </summary>
-    private static int RunKbm(ScriptRegistry registry, IReadOnlyList<string> positional, bool asJson)
-    {
-        if (positional.Count == 0)
-        {
-            Console.Error.WriteLine("kbm: missing <id>.");
-            return 1;
-        }
-
-        var manifest = registry.Get(positional[0]);
-        if (manifest is null)
-        {
-            Console.Error.WriteLine($"kbm: no script with id '{positional[0]}'. Try 'list'.");
-            return 1;
-        }
-
-        var hostPath = Environment.ProcessPath ?? "PowerScripts.Host.exe";
-        var programArgs = $"run {manifest.Id}";
-
-        if (asJson)
-        {
-            // Field names match the KBM engine (see common/KeyboardManagerConstants.h /
-            // MappingConfiguration.cpp). Append this to remapShortcutsToRunProgram and set
-            // originalKeys to your chosen trigger (e.g. "162;91;83" for Ctrl+Win+S).
-            var mapping = new Dictionary<string, object>
-            {
-                ["originalKeys"] = "<set-your-trigger-keys>",
-                ["operationType"] = 1,
-                ["runProgramFilePath"] = hostPath,
-                ["runProgramArgs"] = programArgs,
-                ["runProgramStartInDir"] = string.Empty,
-                ["runProgramElevationLevel"] = 0,
-                ["runProgramAlreadyRunningAction"] = 0,
-                ["runProgramStartWindowType"] = 0,
-                ["unicodeText"] = "*Unsupported*",
-            };
-
-            Console.WriteLine(JsonSerializer.Serialize(mapping, new JsonSerializerOptions { WriteIndented = true }));
-            return 0;
-        }
-
-        Console.WriteLine($"PowerScript '{manifest.Id}' ({manifest.Name}) — Keyboard Manager 'Run Program' action:");
-        Console.WriteLine($"  Program:    {hostPath}");
-        Console.WriteLine($"  Arguments:  {programArgs}");
-        Console.WriteLine();
-        Console.WriteLine("In Keyboard Manager: Remap a shortcut -> action 'Run Program', paste the values above,");
-        Console.WriteLine("then pick the trigger shortcut. (Use 'kbm <id> --json' for the raw mapping object.)");
-        return 0;
-    }
-
-    /// <summary>
     /// Emits the file scripts that match a right-clicked selection as tab-separated
     /// <c>&lt;id&gt;\t&lt;name&gt;</c> lines (one per script). This is the machine-readable feed the
     /// Windows 11 modern context-menu handler (IExplorerCommand) consumes to build its submenu; a
@@ -517,6 +575,46 @@ internal static class Program
         }
 
         return 0;
+    }
+
+    /// <summary>
+    /// Parses the optional <c>list</c> discovery filters (<c>--input</c>, <c>--output</c>,
+    /// <c>--no-input</c>). Returns false (after printing an error) on an unknown token.
+    /// </summary>
+    private static bool TryParseListFilters(
+        IReadOnlyDictionary<string, List<string>> options,
+        out PowerScriptDataFormat? wantInput,
+        out PowerScriptDataFormat? wantOutput)
+    {
+        wantInput = null;
+        wantOutput = null;
+
+        // --no-input is a convenience alias for --input none (actions that consume nothing).
+        string? inputToken = options.ContainsKey("no-input")
+            ? "none"
+            : options.TryGetValue("input", out var i) ? i.FirstOrDefault() : null;
+        string? outputToken = options.TryGetValue("output", out var o) ? o.FirstOrDefault() : null;
+
+        return TryResolveIoFilter("--input", inputToken, ref wantInput)
+            && TryResolveIoFilter("--output", outputToken, ref wantOutput);
+    }
+
+    private static bool TryResolveIoFilter(string flag, string? token, ref PowerScriptDataFormat? result)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return true;
+        }
+
+        var parsed = ScriptIo.TryParse(token);
+        if (parsed is null)
+        {
+            Console.Error.WriteLine($"list: unknown {flag} '{token}'. Use one of: none, text, html, image, audio, video, files.");
+            return false;
+        }
+
+        result = parsed;
+        return true;
     }
 
     /// <summary>
@@ -563,11 +661,12 @@ internal static class Program
     {
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
-        Console.WriteLine("  list [--json] [--root <dir>]");
-        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-prompt] [--no-consent] [--root <dir>]");
+        Console.WriteLine("  list [--json] [--input <shape>] [--output <shape>] [--no-input] [--root <dir>]");
+        Console.WriteLine("       <shape>: none | text | html | image | audio | video | files   (filter by declared I/O)");
+        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
+        Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
-        Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
         Console.WriteLine("  shell-menu --files <f1> <f2> ...    (tab-separated id/name of matching file scripts)");
         Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
         Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
 
@@ -48,7 +49,6 @@ public class ScriptHeaderTests
             "# @powerscript.id whats-my-ip\n" +
             "# @powerscript.name What's my IP\n" +
             "# @powerscript.description Shows the public IP.\n" +
-            "# @powerscript.kind action\n" +
             "Write-Host 'x'\n");
 
         var manifest = ScriptHeaderParser.TryParseFile(file);
@@ -57,7 +57,10 @@ public class ScriptHeaderTests
         Assert.AreEqual("whats-my-ip", manifest!.Id);
         Assert.AreEqual("What's my IP", manifest.Name);
         Assert.AreEqual("Shows the public IP.", manifest.Description);
-        Assert.AreEqual(ScriptKind.System, manifest.Kind);
+
+        // No declared file input => a "system" (no-input) script, derived purely from I/O.
+        Assert.IsNull(manifest.Input);
+        Assert.AreEqual(PowerScriptDataFormat.None, ScriptIo.Resolve(manifest, null).Input);
         Assert.AreEqual(ScriptRuntime.PowerShell, manifest.Runtime);
         Assert.AreEqual("whats-my-ip.ps1", manifest.Entry);
     }
@@ -83,7 +86,6 @@ public class ScriptHeaderTests
             "convert.ps1",
             "# @powerscript.id conv\n" +
             "# @powerscript.name Convert\n" +
-            "# @powerscript.kind file\n" +
             "# @powerscript.extensions .md, .txt\n" +
             "# @powerscript.capability fileRead fileWrite\n" +
             "# @powerscript.param name=greeting type=string label=\"Greeting text\" default=Hello\n" +
@@ -93,7 +95,10 @@ public class ScriptHeaderTests
         var manifest = ScriptHeaderParser.TryParseFile(file);
 
         Assert.IsNotNull(manifest);
-        Assert.AreEqual(ScriptKind.File, manifest!.Kind);
+
+        // Declaring file extensions makes it file-driven (input shape = files); no "kind" needed.
+        Assert.IsNotNull(manifest!.Input);
+        Assert.AreEqual(PowerScriptDataFormat.Files, ScriptIo.Resolve(manifest, null).Input);
         CollectionAssert.AreEquivalent(new[] { ".md", ".txt" }, manifest.Input!.Extensions);
         CollectionAssert.AreEquivalent(new[] { "fileRead", "fileWrite" }, manifest.Capabilities);
         Assert.AreEqual(2, manifest.Parameters.Count);
@@ -125,39 +130,47 @@ public class ScriptHeaderTests
     }
 
     [TestMethod]
-    public void SurfaceInference_Infers_ContextMenu_For_File()
+    public void ScriptIo_Infers_Files_For_File_Input()
     {
-        var manifest = new PowerScriptManifest { Kind = ScriptKind.File };
-        SurfaceInference.ApplyDefaults(manifest);
-        CollectionAssert.AreEquivalent(new[] { SurfaceInference.ContextMenu }, manifest.Surfaces);
+        var manifest = new PowerScriptManifest
+        {
+            Input = new ScriptInput { Extensions = { ".md" } },
+            Output = new ScriptOutput { Type = ScriptOutputType.ConvertedFile },
+        };
+        var (input, output) = ScriptIo.Resolve(manifest, null);
+        Assert.AreEqual(PowerScriptDataFormat.Files, input);
+        Assert.AreEqual(PowerScriptDataFormat.Files, output);
     }
 
     [TestMethod]
-    public void SurfaceInference_Infers_Kbm_And_CmdPal_For_System()
+    public void ScriptIo_Infers_None_Input_Text_Output_By_Default()
     {
-        var manifest = new PowerScriptManifest { Kind = ScriptKind.System };
-        SurfaceInference.ApplyDefaults(manifest);
-        CollectionAssert.AreEquivalent(
-            new[] { SurfaceInference.KeyboardManager, SurfaceInference.CommandPalette },
-            manifest.Surfaces);
+        var manifest = new PowerScriptManifest();
+        var (input, output) = ScriptIo.Resolve(manifest, null);
+        Assert.AreEqual(PowerScriptDataFormat.None, input);
+        Assert.AreEqual(PowerScriptDataFormat.Text, output);
     }
 
     [TestMethod]
-    public void SurfaceInference_Does_Not_Override_Declared_Surfaces()
+    public void ScriptIo_ExplicitDeclaration_Overrides_Inference()
     {
-        var manifest = new PowerScriptManifest { Kind = ScriptKind.System, Surfaces = { "contextMenu" } };
-        SurfaceInference.ApplyDefaults(manifest);
-        CollectionAssert.AreEquivalent(new[] { "contextMenu" }, manifest.Surfaces);
+        var manifest = new PowerScriptManifest
+        {
+            InputFormat = PowerScriptDataFormat.Text,
+            OutputFormat = PowerScriptDataFormat.Html,
+        };
+        var (input, output) = ScriptIo.Resolve(manifest, null);
+        Assert.AreEqual(PowerScriptDataFormat.Text, input);
+        Assert.AreEqual(PowerScriptDataFormat.Html, output);
     }
 
     [TestMethod]
-    public void Registry_Loads_Loose_Header_Script_With_Inferred_Surfaces()
+    public void Registry_Loads_Loose_Header_Script_With_Inferred_Io()
     {
         WriteFile(
             "whats-my-ip.ps1",
             "# @powerscript.id whats-my-ip\n" +
             "# @powerscript.name What's my IP\n" +
-            "# @powerscript.kind action\n" +
             "Write-Host 'x'\n");
 
         var registry = new ScriptRegistry(_root);
@@ -166,10 +179,8 @@ public class ScriptHeaderTests
         Assert.AreEqual(0, registry.Errors.Count, string.Join("; ", registry.Errors.Select(e => e.Message)));
         var script = registry.Get("whats-my-ip");
         Assert.IsNotNull(script);
-        Assert.AreEqual(ScriptKind.System, script!.Kind);
-        CollectionAssert.AreEquivalent(
-            new[] { SurfaceInference.KeyboardManager, SurfaceInference.CommandPalette },
-            script.Surfaces);
+        var (input, _) = ScriptIo.Resolve(script!, null);
+        Assert.AreEqual(PowerScriptDataFormat.None, input);
     }
 
     [TestMethod]
@@ -181,7 +192,6 @@ public class ScriptHeaderTests
             Path.Combine(folder, "run.ps1"),
             "# @powerscript.id my-tool\n" +
             "# @powerscript.name My Tool\n" +
-            "# @powerscript.kind action\n" +
             "Write-Host 'x'\n");
 
         var registry = new ScriptRegistry(_root);

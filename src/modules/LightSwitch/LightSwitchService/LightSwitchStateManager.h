@@ -51,4 +51,7 @@ private:
 
     // Notify PowerDisplay module about theme change to apply display profiles
     void NotifyPowerDisplay(bool isLight);
+
+    // Run the configured no-input PowerScript for the applied theme.
+    void RunPowerScript(bool isLight);
 };

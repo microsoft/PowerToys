@@ -1,14 +1,6 @@
-# @powerscript.id           convert_md_to_txt
-# @powerscript.name         Convert Markdown to Text
-# @powerscript.description   Convert the selected Markdown file(s) to a plain .txt file next to the original.
-# @powerscript.kind         file
-# @powerscript.extensions   .md
-# @powerscript.output       convertedFile
-# @powerscript.outputextension .txt
-# @powerscript.capability   fileRead fileWrite
-#
-# A "file" PowerScript surfaced on .md right-click (contextMenu is inferred from the file kind).
-# Writes a plain .txt next to each selected .md file (light Markdown stripping).
+# Convert Markdown to Text. Metadata lives in the sibling convert_md_to_txt.ps1.tool.json descriptor
+# (an MCP Tool). Its file input and .md extension filter make it available in the Explorer context
+# menu. Writes a plain .txt next to each selected .md file (light Markdown stripping).
 
 param(
     [string[]]$Files
@@ -38,7 +30,12 @@ foreach ($f in $Files) {
     $text = $text -replace '(?m)^\s{0,3}#{1,6}\s*', ''
     $text = $text -replace '(\*\*|__|\*|_|`)', ''
 
-    $out = [System.IO.Path]::ChangeExtension($path, '.txt')
-    Set-Content -LiteralPath $out -Value $text -Encoding UTF8
+    $outputDirectory = Split-Path -Parent $path
+    if ($env:POWERSCRIPTS_MXC_WORKSPACE) {
+        $outputDirectory = $env:POWERSCRIPTS_MXC_WORKSPACE
+    }
+
+    $out = Join-Path $outputDirectory ([System.IO.Path]::GetFileNameWithoutExtension($path) + '.txt')
+    Set-Content -LiteralPath $out -Value $text -Encoding UTF8 -ErrorAction Stop
     "Converted: $out"
 }

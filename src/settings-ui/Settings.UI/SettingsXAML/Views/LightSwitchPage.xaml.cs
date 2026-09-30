@@ -83,7 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.RefreshEnabledState();
         }
 
-        private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
+        private async void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (this.ViewModel.SearchLocations.Count == 0)
             {
@@ -94,6 +94,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             this.ViewModel.InitializeScheduleMode();
+            await this.ViewModel.LoadPowerScriptsAsync();
+        }
+
+        private async void ConfigureDarkModePowerScript_Click(object sender, RoutedEventArgs e)
+        {
+            await ConfigurePowerScriptAsync(isDarkMode: true);
+        }
+
+        private async void ConfigureLightModePowerScript_Click(object sender, RoutedEventArgs e)
+        {
+            await ConfigurePowerScriptAsync(isDarkMode: false);
+        }
+
+        private async Task ConfigurePowerScriptAsync(bool isDarkMode)
+        {
+            var script = isDarkMode
+                ? ViewModel.SelectedDarkModePowerScript
+                : ViewModel.SelectedLightModePowerScript;
+            if (script is null || script.Parameters.Count == 0)
+            {
+                return;
+            }
+
+            var dialog = new LightSwitchPowerScriptParametersDialog(
+                script,
+                ViewModel.GetPowerScriptParameters(isDarkMode))
+            {
+                XamlRoot = XamlRoot,
+            };
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                ViewModel.SetPowerScriptParameters(isDarkMode, dialog.Values);
+            }
         }
 
         private async void GetGeoLocation_Click(object sender, RoutedEventArgs e)

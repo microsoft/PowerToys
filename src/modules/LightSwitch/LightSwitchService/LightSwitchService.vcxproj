@@ -78,6 +78,7 @@
     <ClCompile Include="LightSwitchSettings.cpp" />
     <ClCompile Include="LightSwitchStateManager.cpp" />
     <ClCompile Include="NightLightRegistryObserver.cpp" />
+    <ClCompile Include="PowerScriptsRunner.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
     <ClCompile Include="trace.cpp" />
@@ -91,6 +92,7 @@
     <ClInclude Include="LightSwitchStateManager.h" />
     <ClInclude Include="LightSwitchUtils.h" />
     <ClInclude Include="NightLightRegistryObserver.h" />
+    <ClInclude Include="PowerScriptsRunner.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="ThemeScheduler.h" />

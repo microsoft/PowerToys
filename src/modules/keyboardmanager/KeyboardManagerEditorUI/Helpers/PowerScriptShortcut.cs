@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 
 namespace KeyboardManagerEditorUI.Helpers
@@ -21,6 +22,9 @@ namespace KeyboardManagerEditorUI.Helpers
 
         /// <summary>The PowerScript's friendly name, for display.</summary>
         public string ScriptName { get; set; } = string.Empty;
+
+        public IReadOnlyDictionary<string, string?> ParameterValues { get; set; } =
+            new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
         public bool IsActive { get; set; } = true;
 

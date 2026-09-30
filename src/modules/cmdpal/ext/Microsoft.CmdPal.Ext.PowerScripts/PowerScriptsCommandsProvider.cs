@@ -9,10 +9,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.Ext.PowerScripts;
 
 /// <summary>
-/// Surfaces every PowerScript that declares the <c>commandPalette</c> surface as a top-level command.
+/// Surfaces every no-input PowerScript action as a top-level command.
 /// This is a built-in provider, so the Command Palette shows it in Settings → Extensions with the
 /// standard per-provider enable toggle — no extra settings UI is required. Selecting an entry runs the
-/// script through <c>PowerScripts.Host.exe</c>, which also drives the optional parameter prompt.
+/// script through <c>PowerScripts.Host.exe</c>. Parameterized scripts open a Command Palette-owned page.
 /// </summary>
 public sealed partial class PowerScriptsCommandsProvider : CommandProvider
 {
@@ -37,7 +37,9 @@ public sealed partial class PowerScriptsCommandsProvider : CommandProvider
 
         foreach (var script in PowerScriptHostClient.ListCommandPaletteScripts())
         {
-            var command = new RunPowerScriptCommand(script.Id, script.Name, PowerScriptsIcon);
+            ICommand command = script.Parameters.Count == 0
+                ? new RunPowerScriptCommand(script.Id, script.Name, PowerScriptsIcon)
+                : new PowerScriptParameterPage(script, PowerScriptsIcon);
 
             items.Add(new CommandItem(command)
             {

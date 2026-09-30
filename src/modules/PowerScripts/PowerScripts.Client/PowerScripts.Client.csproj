@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!--
+      net8.0 (LTS) with no OS suffix so every PowerToys module that might consume PowerScripts
+      (Keyboard Manager editor, Advanced Paste, Command Palette, Settings, and future modules) plus
+      external .NET 8+ tools can reference this client directly. It deliberately does NOT reference
+      PowerScripts.Core: the client only speaks the process + JSON contract of PowerScripts.Host.exe,
+      so a consumer never pulls in the execution engine and stays fully decoupled.
+    -->
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PowerScripts.Client</RootNamespace>
+    <AssemblyName>PowerScripts.Client</AssemblyName>
+    <!-- Parsing uses JsonDocument / Utf8JsonWriter only (no reflection), so it is trim/AOT friendly. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

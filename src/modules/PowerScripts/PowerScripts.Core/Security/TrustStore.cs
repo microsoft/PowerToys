@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core.Security;
 
@@ -42,13 +43,32 @@ public sealed class TrustStore
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private readonly string _path;
+    private readonly ISettingsStore _store;
+    private readonly string _key;
     private readonly Dictionary<string, TrustRecord> _records;
 
-    public TrustStore(string path)
+    /// <summary>
+    /// Creates a trust store backed by <paramref name="store"/>, reading/writing the blob named
+    /// <paramref name="key"/> (<c>trust.json</c> by default). This is the seam through which the trust
+    /// store can later move into the protected settings store without changing any caller.
+    /// </summary>
+    public TrustStore(ISettingsStore store, string key = PowerScriptsPaths.TrustFileName)
     {
-        _path = path ?? throw new ArgumentNullException(nameof(path));
-        _records = Load(path);
+        _store = store ?? throw new ArgumentNullException(nameof(store));
+        _key = string.IsNullOrWhiteSpace(key) ? throw new ArgumentException("A blob key is required.", nameof(key)) : key;
+        _records = Load(_store, _key);
+    }
+
+    /// <summary>
+    /// Convenience constructor that persists to a specific file path (used by tests and any caller that
+    /// wants an explicit location). Wraps a <see cref="FileSettingsStore"/> rooted at the file's
+    /// directory so the on-disk behavior is identical to before this seam was introduced.
+    /// </summary>
+    public TrustStore(string path)
+        : this(
+            new FileSettingsStore(Path.GetDirectoryName(Path.GetFullPath(path ?? throw new ArgumentNullException(nameof(path))))!),
+            Path.GetFileName(path))
+    {
     }
 
     /// <summary>All current trust records.</summary>
@@ -86,14 +106,15 @@ public sealed class TrustStore
         return true;
     }
 
-    private static Dictionary<string, TrustRecord> Load(string path)
+    private static Dictionary<string, TrustRecord> Load(ISettingsStore store, string key)
     {
         var result = new Dictionary<string, TrustRecord>(StringComparer.OrdinalIgnoreCase);
         try
         {
-            if (File.Exists(path))
+            var text = store.ReadBlob(key);
+            if (!string.IsNullOrEmpty(text))
             {
-                var records = JsonSerializer.Deserialize<List<TrustRecord>>(File.ReadAllText(path), Options);
+                var records = JsonSerializer.Deserialize<List<TrustRecord>>(text, Options);
                 if (records is not null)
                 {
                     foreach (var record in records.Where(r => !string.IsNullOrEmpty(r.Id)))
@@ -105,21 +126,12 @@ public sealed class TrustStore
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            // A corrupt or unreadable trust file is treated as "nothing trusted" so the user is
+            // A corrupt or unreadable trust store is treated as "nothing trusted" so the user is
             // simply re-prompted, rather than crashing every surface that runs a script.
         }
 
         return result;
     }
 
-    private void Save()
-    {
-        var directory = Path.GetDirectoryName(_path);
-        if (!string.IsNullOrEmpty(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        File.WriteAllText(_path, JsonSerializer.Serialize(_records.Values.ToList(), Options));
-    }
+    private void Save() => _store.WriteBlob(_key, JsonSerializer.Serialize(_records.Values.ToList(), Options));
 }

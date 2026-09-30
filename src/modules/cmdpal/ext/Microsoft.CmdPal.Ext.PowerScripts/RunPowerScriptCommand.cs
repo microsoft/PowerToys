@@ -9,8 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.Ext.PowerScripts;
 
 /// <summary>
-/// Invokes a single PowerScript by id. Execution is offloaded to a background task so the palette UI
-/// thread is never blocked; the host takes over from there (including the optional parameter prompt).
+/// Invokes a parameterless PowerScript by id without blocking the palette UI thread.
 /// </summary>
 internal sealed partial class RunPowerScriptCommand : InvokableCommand
 {

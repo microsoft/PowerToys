@@ -145,6 +145,257 @@
     <value>Write a small script once and surface it across PowerToys and the Windows shell.</value>
     <comment>Description of the PowerScripts utility</comment>
   </data>
+  <data name="PowerScripts_MxcPolicyDialog_Title" xml:space="preserve">
+    <value>MXC permissions for {0}</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_Apply" xml:space="preserve">
+    <value>Apply permissions</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_RecommendationInfo.Message" xml:space="preserve">
+    <value>Author recommendations are guidance only. PowerScripts never weakens isolation until you explicitly apply and accept the change.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_UseRecommended.Content" xml:space="preserve">
+    <value>Use author recommendation</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_UseMaximum.Content" xml:space="preserve">
+    <value>Maximum isolation</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_UseGlobal.Content" xml:space="preserve">
+    <value>Use global policy</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ExecutionIsolation.Header" xml:space="preserve">
+    <value>Execution isolation</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ExecutionIsolation.Description" xml:space="preserve">
+    <value>Use the global MXC mode, explicitly require MXC, or allow this script to run directly.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ModeGlobal.Content" xml:space="preserve">
+    <value>Use global setting</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ModeRequired.Content" xml:space="preserve">
+    <value>Require MXC</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ModeDirect.Content" xml:space="preserve">
+    <value>Run without MXC</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_ReducedIsolationWarning.Message" xml:space="preserve">
+    <value>This policy grants the script broader access. Review the script and enable the confirmation below before applying.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicyDialog_RiskAcceptance.Content" xml:space="preserve">
+    <value>I understand and accept the reduced isolation for this script.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Filesystem_Title" xml:space="preserve">
+    <value>Restrict filesystem access</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Filesystem_Description" xml:space="preserve">
+    <value>Keep the script package and selected inputs read-only; allow writes only in the per-run workspace.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Network_Title" xml:space="preserve">
+    <value>Block network access</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Network_Description" xml:space="preserve">
+    <value>Deny outbound, inbound, and host-loopback network access.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Ui_Title" xml:space="preserve">
+    <value>Isolate desktop interaction</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Ui_Description" xml:space="preserve">
+    <value>Block clipboard access, input injection, and system-control access.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_LeastPrivilege_Title" xml:space="preserve">
+    <value>Use least-privilege mode</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_LeastPrivilege_Description" xml:space="preserve">
+    <value>Run the script in MXC's least-privilege ProcessContainer mode.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_RecommendedKeep" xml:space="preserve">
+    <value>Author recommendation: keep this restriction.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_RecommendedAllow" xml:space="preserve">
+    <value>Author recommendation: allow this access if the script needs it.</value>
+  </data>
+  <data name="PowerScripts_MxcGroup.Header" xml:space="preserve">
+    <value>MXC execution isolation</value>
+  </data>
+  <data name="PowerScripts_MxcEnabled.Header" xml:space="preserve">
+    <value>Use MXC</value>
+  </data>
+  <data name="PowerScripts_MxcEnabled.Description" xml:space="preserve">
+    <value>Run PowerScripts through MXC. Turning this off requires accepting the reduced-isolation risk.</value>
+  </data>
+  <data name="PowerScripts_MxcEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use MXC</value>
+  </data>
+  <data name="PowerScripts_MxcExecutor.Header" xml:space="preserve">
+    <value>MXC executor path</value>
+  </data>
+  <data name="PowerScripts_MxcExecutorBrowse.Content" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="PowerScripts_MxcUnavailable.Title" xml:space="preserve">
+    <value>MXC is unavailable; PowerScripts run without MXC by default.</value>
+  </data>
+  <data name="PowerScripts_MxcRestrictions.Header" xml:space="preserve">
+    <value>MXC restrictions</value>
+  </data>
+  <data name="PowerScripts_MxcRestrictions.Description" xml:space="preserve">
+    <value>All restrictions are enabled by default. Turning one off requires accepting the reduced-isolation risk.</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystem.Header" xml:space="preserve">
+    <value>Filesystem</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystem.Description" xml:space="preserve">
+    <value>Keep the script package and selected inputs read-only; allow writes only in the per-run workspace.</value>
+  </data>
+  <data name="PowerScripts_MxcFilesystemToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Restrict filesystem access</value>
+  </data>
+  <data name="PowerScripts_MxcNetwork.Header" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="PowerScripts_MxcNetwork.Description" xml:space="preserve">
+    <value>Deny outbound, inbound, and host-loopback network access.</value>
+  </data>
+  <data name="PowerScripts_MxcNetworkToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Block network access</value>
+  </data>
+  <data name="PowerScripts_MxcUi.Header" xml:space="preserve">
+    <value>UI isolation</value>
+  </data>
+  <data name="PowerScripts_MxcUi.Description" xml:space="preserve">
+    <value>Isolate desktop UI, clipboard, input injection, and system-control access.</value>
+  </data>
+  <data name="PowerScripts_MxcUiToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Isolate desktop interaction</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilege.Header" xml:space="preserve">
+    <value>Least privilege</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilege.Description" xml:space="preserve">
+    <value>Run in ProcessContainer least-privilege mode.</value>
+  </data>
+  <data name="PowerScripts_MxcLeastPrivilegeToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use least-privilege mode</value>
+  </data>
+  <data name="PowerScripts_MxcWslUnavailable.Title" xml:space="preserve">
+    <value>MXC isolation is unavailable for WSL execution.</value>
+  </data>
+  <data name="PowerScripts_MxcWslUnavailable.Message" xml:space="preserve">
+    <value>WSL cannot run inside MXC's Windows process container. With the machine-derived default, WSL scripts run directly in the selected distribution. If MXC was explicitly required, execution is refused instead of silently bypassing isolation.</value>
+  </data>
+  <data name="PowerScripts_MxcEffective.Header" xml:space="preserve">
+    <value>Effective isolation</value>
+  </data>
+  <data name="PowerScripts_MxcEffective.Description" xml:space="preserve">
+    <value>Effective policy after applying the global setting and this script's override.</value>
+  </data>
+  <data name="PowerScripts_MxcRecommendation.Header" xml:space="preserve">
+    <value>Author-recommended restrictions</value>
+  </data>
+  <data name="PowerScripts_MxcRecommendation.Description" xml:space="preserve">
+    <value>The author's recommendation is advisory only and can never weaken your configured policy automatically.</value>
+  </data>
+  <data name="PowerScripts_MxcPerScript.Header" xml:space="preserve">
+    <value>Per-script MXC permissions</value>
+  </data>
+  <data name="PowerScripts_MxcPerScript.Description" xml:space="preserve">
+    <value>Review each restriction, compare it with the author's recommendation, and apply a per-script policy as one change.</value>
+  </data>
+  <data name="PowerScripts_MxcConfigure.Content" xml:space="preserve">
+    <value>Configure...</value>
+  </data>
+  <data name="PowerScripts_MxcNoRestrictions" xml:space="preserve">
+    <value>No restrictions specified</value>
+  </data>
+  <data name="PowerScripts_MxcRecommendationMaximum" xml:space="preserve">
+    <value>The author recommends maximum isolation.</value>
+  </data>
+  <data name="PowerScripts_MxcRecommendationAccess" xml:space="preserve">
+    <value>The author indicates this script may need: {0}.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveDisabled" xml:space="preserve">
+    <value>Runs without MXC.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveAll" xml:space="preserve">
+    <value>MXC required with all restrictions.</value>
+  </data>
+  <data name="PowerScripts_MxcEffectiveReduced" xml:space="preserve">
+    <value>MXC enabled; disabled restrictions: {0}.</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Filesystem_DisplayName" xml:space="preserve">
+    <value>Filesystem</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Network_DisplayName" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_Ui_DisplayName" xml:space="preserve">
+    <value>UI isolation</value>
+  </data>
+  <data name="PowerScripts_MxcPolicy_LeastPrivilege_DisplayName" xml:space="preserve">
+    <value>Least privilege</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Filesystem" xml:space="preserve">
+    <value>broader file access</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Network" xml:space="preserve">
+    <value>network access</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_Ui" xml:space="preserve">
+    <value>desktop interaction</value>
+  </data>
+  <data name="PowerScripts_MxcAccess_LeastPrivilege" xml:space="preserve">
+    <value>standard process privileges</value>
+  </data>
+  <data name="PowerScripts_MxcSupportChecking" xml:space="preserve">
+    <value>Checking MXC support...</value>
+  </data>
+  <data name="PowerScripts_MxcExecutorAutomatic" xml:space="preserve">
+    <value>No explicit path is configured. PowerScripts will look beside the Host, in POWERSCRIPTS_MXC_EXECUTOR, and on PATH.</value>
+  </data>
+  <data name="PowerScripts_MxcExecutorFound" xml:space="preserve">
+    <value>The configured wxc-exec.exe was found.</value>
+  </data>
+  <data name="PowerScripts_MxcExecutorMissing" xml:space="preserve">
+    <value>The configured wxc-exec.exe could not be found.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportHostMissing" xml:space="preserve">
+    <value>PowerScripts.Host.exe was not found, so MXC support could not be verified.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeStartFailed" xml:space="preserve">
+    <value>The MXC support probe could not be started.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeFailed" xml:space="preserve">
+    <value>The MXC support probe did not complete successfully.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportProbeNoResult" xml:space="preserve">
+    <value>The MXC support probe returned no result.</value>
+  </data>
+  <data name="PowerScripts_MxcSupportUnknown" xml:space="preserve">
+    <value>MXC support could not be verified on this machine.</value>
+  </data>
+  <data name="PowerScripts_MxcExecutorPickerTitle" xml:space="preserve">
+    <value>Select MXC executor</value>
+  </data>
+  <data name="PowerScripts_MxcDisableWarning" xml:space="preserve">
+    <value>Turning off MXC allows all PowerScripts to run without execution isolation.</value>
+  </data>
+  <data name="PowerScripts_MxcDisablePolicyWarning" xml:space="preserve">
+    <value>Turning off the {0} restriction weakens isolation for all PowerScripts.</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogTitle" xml:space="preserve">
+    <value>Accept reduced PowerScript isolation?</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogContent" xml:space="preserve">
+    <value>{0}
+
+This can expose files, network access, the desktop, or elevated capabilities to untrusted script code. Continue only if you understand and accept the risk.</value>
+  </data>
+  <data name="PowerScripts_MxcRiskDialogAccept" xml:space="preserve">
+    <value>Accept risk and continue</value>
+  </data>
   <data name="MeasureTool_ActivationSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
@@ -5326,6 +5577,57 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_LightModeProfileCheckbox.Content" xml:space="preserve">
     <value>Light mode profile</value>
+  </data>
+  <data name="LightSwitch_ApplyPowerScriptsExpander.Header" xml:space="preserve">
+    <value>Run PowerScripts when the theme changes</value>
+  </data>
+  <data name="LightSwitch_ApplyPowerScriptsExpander.Description" xml:space="preserve">
+    <value>Choose no-input system scripts and configure their values once for automatic use</value>
+  </data>
+  <data name="LightSwitch_DarkModePowerScriptCheckbox.Content" xml:space="preserve">
+    <value>When switching to dark mode</value>
+  </data>
+  <data name="LightSwitch_LightModePowerScriptCheckbox.Content" xml:space="preserve">
+    <value>When switching to light mode</value>
+  </data>
+  <data name="LightSwitch_ConfigurePowerScriptButton.Content" xml:space="preserve">
+    <value>Configure</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_Title" xml:space="preserve">
+    <value>Configure {0}</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_Description" xml:space="preserve">
+    <value>These values are saved and reused whenever Light Switch runs this script. No prompt is shown during a theme change.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_Browse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParametersDialog_SelectFile" xml:space="preserve">
+    <value>Select a file</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_Required" xml:space="preserve">
+    <value>{0} is required.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_Integer" xml:space="preserve">
+    <value>{0} must be an integer.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_Minimum" xml:space="preserve">
+    <value>{0} must be at least {1}.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_Maximum" xml:space="preserve">
+    <value>{0} must be at most {1}.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_Choice" xml:space="preserve">
+    <value>Select a valid value for {0}.</value>
+  </data>
+  <data name="LightSwitch_PowerScriptParameter_File" xml:space="preserve">
+    <value>The file selected for {0} does not exist.</value>
   </data>
   <data name="LightSwitch_NavigatePowerDisplaySettings.Content" xml:space="preserve">
     <value>Open PowerDisplay settings</value>

@@ -12,19 +12,17 @@ using System.Text.Json;
 namespace Microsoft.CmdPal.Ext.PowerScripts;
 
 /// <summary>
-/// Thin client over the PowerScripts host CLI. Reuses the same host so parameter prompts, trust and
-/// runtime handling stay consistent with the other PowerScripts surfaces (Keyboard Manager, Explorer,
-/// Advanced Paste). Parsing uses <see cref="JsonDocument"/> (no reflection) to stay AOT/trim friendly.
+/// Thin client over the PowerScripts host CLI. Parameter presentation belongs to this extension;
+/// trust and runtime handling remain centralized in the Host.
 /// </summary>
 internal static class PowerScriptHostClient
 {
     private const string HostExeName = "PowerScripts.Host.exe";
-    private const string CommandPaletteSurface = "commandPalette";
 
     /// <summary>Environment override pointing directly at the host executable (useful in dev builds).</summary>
     private const string HostPathEnvVar = "POWERSCRIPTS_HOST";
 
-    /// <summary>Lists the scripts whose manifest declares the Command Palette surface.</summary>
+    /// <summary>Lists the no-input action scripts that Command Palette can invoke.</summary>
     public static IReadOnlyList<PowerScriptInfo> ListCommandPaletteScripts()
     {
         var hostPath = ResolveHostPath();
@@ -63,10 +61,9 @@ internal static class PowerScriptHostClient
     }
 
     /// <summary>
-    /// Runs a script by id via the host. The host handles the (optional) WinUI 3 parameter prompt,
-    /// trust-on-first-use and the correct runtime, so nothing extra is needed here.
+    /// Runs a script by id via the host with values collected by Command Palette.
     /// </summary>
-    public static void Run(string id)
+    public static void Run(string id, IReadOnlyDictionary<string, string?>? parameters = null)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
@@ -84,10 +81,19 @@ internal static class PowerScriptHostClient
             var psi = new ProcessStartInfo
             {
                 FileName = hostPath,
-                Arguments = $"run \"{id}\"",
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+            psi.ArgumentList.Add("run");
+            psi.ArgumentList.Add(id);
+            if (parameters is not null)
+            {
+                foreach (var (name, value) in parameters)
+                {
+                    psi.ArgumentList.Add("--set");
+                    psi.ArgumentList.Add($"{name}={value ?? string.Empty}");
+                }
+            }
 
             Process.Start(psi);
         }
@@ -113,7 +119,7 @@ internal static class PowerScriptHostClient
 
         foreach (var element in document.RootElement.EnumerateArray())
         {
-            if (!DeclaresCommandPalette(element))
+            if (!AcceptsNoInput(element))
             {
                 continue;
             }
@@ -127,28 +133,85 @@ internal static class PowerScriptHostClient
             var name = GetString(element, "name");
             var description = GetString(element, "description");
 
-            scripts.Add(new PowerScriptInfo(id, string.IsNullOrEmpty(name) ? id : name, description));
+            scripts.Add(new PowerScriptInfo(
+                id,
+                string.IsNullOrEmpty(name) ? id : name,
+                description,
+                ParseParameters(element)));
         }
 
         return scripts;
     }
 
-    private static bool DeclaresCommandPalette(JsonElement element)
+    private static bool AcceptsNoInput(JsonElement element)
     {
-        if (!element.TryGetProperty("surfaces", out var surfaces) || surfaces.ValueKind != JsonValueKind.Array)
+        if (!element.TryGetProperty("io", out var io) ||
+            io.ValueKind != JsonValueKind.Object ||
+            !io.TryGetProperty("input", out var input) ||
+            input.ValueKind != JsonValueKind.String)
         {
             return false;
         }
 
-        return surfaces.EnumerateArray().Any(surface =>
-            surface.ValueKind == JsonValueKind.String &&
-            string.Equals(surface.GetString(), CommandPaletteSurface, StringComparison.OrdinalIgnoreCase));
+        return string.Equals(input.GetString(), "none", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string GetString(JsonElement element, string propertyName) =>
         element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString() ?? string.Empty
             : string.Empty;
+
+    private static IReadOnlyList<PowerScriptParameterInfo> ParseParameters(JsonElement element)
+    {
+        if (!element.TryGetProperty("parameters", out var parameters) ||
+            parameters.ValueKind != JsonValueKind.Array)
+        {
+            return Array.Empty<PowerScriptParameterInfo>();
+        }
+
+        var results = new List<PowerScriptParameterInfo>();
+        foreach (var parameter in parameters.EnumerateArray())
+        {
+            var name = GetString(parameter, "name");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                continue;
+            }
+
+            results.Add(new PowerScriptParameterInfo(
+                name,
+                GetString(parameter, "type"),
+                parameter.TryGetProperty("isRequired", out var required) && required.ValueKind == JsonValueKind.True,
+                GetNullableString(parameter, "label"),
+                GetNullableString(parameter, "description"),
+                GetNullableString(parameter, "default"),
+                GetStringArray(parameter, "options"),
+                GetNullableInt(parameter, "min"),
+                GetNullableInt(parameter, "max")));
+        }
+
+        return results;
+    }
+
+    private static string? GetNullableString(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
+
+    private static IReadOnlyList<string> GetStringArray(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var values) && values.ValueKind == JsonValueKind.Array
+            ? values.EnumerateArray()
+                .Where(value => value.ValueKind == JsonValueKind.String)
+                .Select(value => value.GetString()!)
+                .ToArray()
+            : Array.Empty<string>();
+
+    private static int? GetNullableInt(JsonElement element, string propertyName) =>
+        element.TryGetProperty(propertyName, out var value) &&
+        value.ValueKind == JsonValueKind.Number &&
+        value.TryGetInt32(out var number)
+            ? number
+            : null;
 
     private static string ResolveHostPath()
     {

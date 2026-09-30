@@ -64,6 +64,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     EnableLightModeProfile = new BoolProperty(Properties.EnableLightModeProfile.Value),
                     DarkModeProfile = new StringProperty(Properties.DarkModeProfile.Value),
                     LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
+                    EnableDarkModePowerScript = new BoolProperty(Properties.EnableDarkModePowerScript.Value),
+                    EnableLightModePowerScript = new BoolProperty(Properties.EnableLightModePowerScript.Value),
+                    DarkModePowerScript = new StringProperty(Properties.DarkModePowerScript.Value),
+                    LightModePowerScript = new StringProperty(Properties.LightModePowerScript.Value),
+                    DarkModePowerScriptParameters = new StringProperty(Properties.DarkModePowerScriptParameters.Value),
+                    LightModePowerScriptParameters = new StringProperty(Properties.LightModePowerScriptParameters.Value),
                 },
             };
         }

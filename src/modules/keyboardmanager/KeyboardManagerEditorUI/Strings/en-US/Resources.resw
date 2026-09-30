@@ -501,4 +501,25 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
+  <data name="PowerScriptDescription.Text" xml:space="preserve">
+    <value>Run a PowerScript when this shortcut is pressed.</value>
+  </data>
+  <data name="PowerScriptComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select a PowerScript</value>
+  </data>
+  <data name="PowerScriptEmptyHint.Text" xml:space="preserve">
+    <value>No PowerScripts found. Enable the PowerScripts module and add a system script.</value>
+  </data>
+  <data name="PowerScriptRequiredParameter_Title" xml:space="preserve">
+    <value>Required parameter</value>
+  </data>
+  <data name="PowerScriptRequiredParameter_Message" xml:space="preserve">
+    <value>Enter a value for the required parameter "{0}".</value>
+  </data>
+  <data name="PowerScriptBrowseFileButton_Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="PowerScriptIntegerParameter_Message" xml:space="preserve">
+    <value>Enter a whole number for the parameter "{0}".</value>
+  </data>
 </root>

@@ -9,6 +9,37 @@
 
 using namespace std;
 
+namespace
+{
+    std::map<std::wstring, std::wstring> parse_power_script_parameters(
+        const std::optional<std::wstring>& serializedParameters)
+    {
+        std::map<std::wstring, std::wstring> parameters;
+        if (!serializedParameters || serializedParameters->empty())
+        {
+            return parameters;
+        }
+
+        try
+        {
+            const auto object = json::JsonValue::Parse(*serializedParameters).GetObjectW();
+            for (const auto& entry : object.GetView())
+            {
+                if (entry.Value().ValueType() == json::JsonValueType::String)
+                {
+                    parameters.emplace(entry.Key(), entry.Value().GetString());
+                }
+            }
+        }
+        catch (...)
+        {
+            Logger::warn(L"[LightSwitchSettings] Ignoring malformed PowerScript parameters.");
+        }
+
+        return parameters;
+    }
+}
+
 LightSwitchSettings& LightSwitchSettings::instance()
 {
     static LightSwitchSettings inst;
@@ -287,6 +318,31 @@ void LightSwitchSettings::LoadSettings()
                 m_settings.lightModeProfile = val;
             }
         }
+
+        if (const auto jsonVal = values.get_bool_value(L"enableDarkModePowerScript"))
+        {
+            m_settings.enableDarkModePowerScript = *jsonVal;
+        }
+
+        if (const auto jsonVal = values.get_bool_value(L"enableLightModePowerScript"))
+        {
+            m_settings.enableLightModePowerScript = *jsonVal;
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"darkModePowerScript"))
+        {
+            m_settings.darkModePowerScript = *jsonVal;
+        }
+
+        if (const auto jsonVal = values.get_string_value(L"lightModePowerScript"))
+        {
+            m_settings.lightModePowerScript = *jsonVal;
+        }
+
+        m_settings.darkModePowerScriptParameters =
+            parse_power_script_parameters(values.get_string_value(L"darkModePowerScriptParameters"));
+        m_settings.lightModePowerScriptParameters =
+            parse_power_script_parameters(values.get_string_value(L"lightModePowerScriptParameters"));
 
         // For ChangeSystem/ChangeApps changes, log telemetry
         if (themeTargetChanged)

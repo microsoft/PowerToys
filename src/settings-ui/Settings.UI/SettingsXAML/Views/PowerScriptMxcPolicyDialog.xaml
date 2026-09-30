@@ -1,0 +1,91 @@
+﻿<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptMxcPolicyDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    Width="600"
+    MinWidth="560"
+    DefaultButton="Close"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    mc:Ignorable="d">
+
+    <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16">
+            <TextBlock Text="{x:Bind Script.RecommendationSummary, Mode=OneWay}" TextWrapping="Wrap" />
+
+            <InfoBar
+                x:Uid="PowerScripts_MxcPolicyDialog_RecommendationInfo"
+                IsClosable="False"
+                IsOpen="True"
+                Severity="Informational" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    x:Uid="PowerScripts_MxcPolicyDialog_UseRecommended"
+                    AutomationProperties.AutomationId="PowerScriptsUseRecommendedPolicyButton"
+                    Click="UseRecommendedPolicy_Click" />
+                <Button
+                    x:Uid="PowerScripts_MxcPolicyDialog_UseMaximum"
+                    AutomationProperties.AutomationId="PowerScriptsUseMaximumIsolationButton"
+                    Click="UseMaximumIsolation_Click" />
+                <Button
+                    x:Uid="PowerScripts_MxcPolicyDialog_UseGlobal"
+                    AutomationProperties.AutomationId="PowerScriptsUseGlobalPolicyButton"
+                    Click="UseGlobalPolicy_Click" />
+            </StackPanel>
+
+            <tkcontrols:SettingsCard x:Uid="PowerScripts_MxcPolicyDialog_ExecutionIsolation">
+                <ComboBox
+                    x:Name="MxcModeComboBox"
+                    MinWidth="180"
+                    AutomationProperties.AutomationId="PowerScriptsScriptMxcMode"
+                    SelectionChanged="PolicySelectionChanged">
+                    <ComboBoxItem x:Uid="PowerScripts_MxcPolicyDialog_ModeGlobal" />
+                    <ComboBoxItem x:Uid="PowerScripts_MxcPolicyDialog_ModeRequired" />
+                    <ComboBoxItem x:Uid="PowerScripts_MxcPolicyDialog_ModeDirect" />
+                </ComboBox>
+            </tkcontrols:SettingsCard>
+
+            <ItemsControl ItemsSource="{x:Bind Policies, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:PowerScriptMxcPolicyOption">
+                        <tkcontrols:SettingsCard
+                            Margin="0,0,0,8"
+                            Description="{x:Bind Description}"
+                            Header="{x:Bind Title}">
+                            <StackPanel MinWidth="180" Spacing="4">
+                                <ToggleSwitch
+                                    AutomationProperties.AutomationId="{x:Bind AutomationId}"
+                                    AutomationProperties.Name="{x:Bind Title}"
+                                    IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                    Toggled="PolicySelectionChanged" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind Recommendation}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <InfoBar
+                x:Name="ReducedIsolationWarning"
+                x:Uid="PowerScripts_MxcPolicyDialog_ReducedIsolationWarning"
+                IsClosable="False"
+                Severity="Warning">
+                <CheckBox
+                    x:Name="RiskAcceptanceCheckBox"
+                    x:Uid="PowerScripts_MxcPolicyDialog_RiskAcceptance"
+                    AutomationProperties.AutomationId="PowerScriptsMxcRiskAcceptance"
+                    Checked="RiskAcceptanceChanged"
+                    Unchecked="RiskAcceptanceChanged" />
+            </InfoBar>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

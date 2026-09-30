@@ -1,0 +1,9 @@
+{
+  "name": "volume_up",
+  "title": "Volume Up",
+  "description": "Raise the system volume a few steps.",
+  "inputSchema": { "type": "object", "properties": {} },
+  "x-powerscript": {
+    "capabilities": ["systemControl"]
+  }
+}

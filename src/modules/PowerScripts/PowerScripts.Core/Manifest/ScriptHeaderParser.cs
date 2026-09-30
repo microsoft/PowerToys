@@ -16,14 +16,14 @@ namespace PowerScripts.Core.Manifest;
 /// # @powerscript.id          copy-as-unc
 /// # @powerscript.name        Copy as UNC path
 /// # @powerscript.description  Resolve a mapped drive to its UNC path and copy it.
-/// # @powerscript.kind        file
+/// # @powerscript.input       files
 /// # @powerscript.extensions  *
 /// # @powerscript.capability  clipboard
 /// # @powerscript.param       name=name type=string label="Name" default=World
 /// </code>
 ///
 /// Only '#'-comment runtimes (PowerShell, Python) are supported, which covers both current runtimes.
-/// Repeatable keys (<c>extensions</c>, <c>capability</c>, <c>surface</c>, <c>param</c>) may appear
+/// Repeatable keys (<c>extensions</c>, <c>capability</c>, <c>param</c>) may appear
 /// multiple times or carry a comma/space-separated list. Returns <c>null</c> when the file declares
 /// no <c>@powerscript.*</c> directives, so an unrelated helper script is left untouched.
 /// </summary>
@@ -159,13 +159,6 @@ public static class ScriptHeaderParser
                 case "source":
                     manifest.Source = value.Trim();
                     break;
-                case "kind":
-                    if (TryParseKind(value, out var kind))
-                    {
-                        manifest.Kind = kind;
-                    }
-
-                    break;
                 case "runtime":
                     if (TryParseRuntime(value, out var runtime))
                     {
@@ -176,12 +169,12 @@ public static class ScriptHeaderParser
                 case "entry":
                     manifest.Entry = value.Trim();
                     break;
+                case "function":
+                case "entryfunction":
+                    manifest.EntryFunction = value.Trim();
+                    break;
                 case "elevation":
                     manifest.Elevation = value.Trim();
-                    break;
-                case "promptforparameters":
-                case "prompt":
-                    manifest.PromptForParameters = ParseBool(value);
                     break;
                 case "extension":
                 case "extensions":
@@ -215,9 +208,20 @@ public static class ScriptHeaderParser
                 case "capabilities":
                     manifest.Capabilities.AddRange(SplitList(value));
                     break;
-                case "surface":
-                case "surfaces":
-                    manifest.Surfaces.AddRange(SplitList(value));
+                case "input":
+                case "inputformat":
+                    if (ScriptIo.TryParse(value) is { } inputFormat)
+                    {
+                        manifest.InputFormat = inputFormat;
+                    }
+
+                    break;
+                case "outputformat":
+                    if (ScriptIo.TryParse(value) is { } outputFormat)
+                    {
+                        manifest.OutputFormat = outputFormat;
+                    }
+
                     break;
                 case "param":
                 case "parameter":
@@ -233,29 +237,6 @@ public static class ScriptHeaderParser
                     break;
             }
         }
-    }
-
-    private static bool TryParseKind(string value, out ScriptKind kind)
-    {
-        // "action" is accepted as a friendlier alias for a system (no file I/O) script.
-        if (value.Equals("system", StringComparison.OrdinalIgnoreCase) ||
-            value.Equals("action", StringComparison.OrdinalIgnoreCase))
-        {
-            kind = ScriptKind.System;
-            return true;
-        }
-
-        // "content" / "object" are accepted aliases for a file (input-driven) script.
-        if (value.Equals("file", StringComparison.OrdinalIgnoreCase) ||
-            value.Equals("content", StringComparison.OrdinalIgnoreCase) ||
-            value.Equals("object", StringComparison.OrdinalIgnoreCase))
-        {
-            kind = ScriptKind.File;
-            return true;
-        }
-
-        kind = ScriptKind.System;
-        return false;
     }
 
     private static bool TryParseRuntime(string value, out ScriptRuntime runtime)
@@ -364,6 +345,10 @@ public static class ScriptHeaderParser
                     break;
                 case "default":
                     parameter.Default = val;
+                    break;
+                case "required":
+                case "isrequired":
+                    parameter.IsRequired = ParseBool(val);
                     break;
                 case "options":
                     parameter.Options.AddRange(val.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 
 namespace KeyboardManagerEditorUI.Helpers
@@ -129,7 +131,10 @@ namespace KeyboardManagerEditorUI.Helpers
                 var systemScripts = new List<PowerScriptInfo>();
                 foreach (var script in all)
                 {
-                    if (string.Equals(script.Kind, "system", StringComparison.OrdinalIgnoreCase))
+                    // A hotkey-runnable script is an action: it consumes no input (io.input == none).
+                    // This replaces the old "kind == system" check now that the system/file kind is
+                    // fully derived from I/O and no longer emitted by the host.
+                    if (script.IsAction)
                     {
                         systemScripts.Add(script);
                     }
@@ -207,6 +212,62 @@ namespace KeyboardManagerEditorUI.Helpers
             return null;
         }
 
+        /// <summary>Builds the hidden Run Program arguments for a consumer-selected parameter set.</summary>
+        public static string BuildRunArguments(string scriptId, IReadOnlyDictionary<string, string?> parameters)
+        {
+            var builder = new StringBuilder($"run {scriptId} --no-consent");
+            foreach (var (name, value) in parameters)
+            {
+                builder.Append(" --set-base64 ");
+                builder.Append(Convert.ToBase64String(Encoding.UTF8.GetBytes(name + '\0' + (value ?? string.Empty))));
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>Reads parameter values from arguments previously produced by <see cref="BuildRunArguments"/>.</summary>
+        public static IReadOnlyDictionary<string, string?> ParseParameterValues(string? programArgs)
+        {
+            var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+            var tokens = TokenizeArguments(programArgs);
+            for (var index = 0; index + 1 < tokens.Count; index++)
+            {
+                var isPlain = string.Equals(tokens[index], "--set", StringComparison.OrdinalIgnoreCase);
+                var isBase64 = string.Equals(tokens[index], "--set-base64", StringComparison.OrdinalIgnoreCase);
+                if (!isPlain && !isBase64)
+                {
+                    continue;
+                }
+
+                var assignment = tokens[++index];
+                if (isBase64)
+                {
+                    try
+                    {
+                        var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(assignment));
+                        var separator = decoded.IndexOf('\0');
+                        if (separator > 0)
+                        {
+                            values[decoded.Substring(0, separator)] = decoded.Substring(separator + 1);
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                }
+                else
+                {
+                    var equals = assignment.IndexOf('=');
+                    if (equals > 0)
+                    {
+                        values[assignment.Substring(0, equals)] = assignment.Substring(equals + 1);
+                    }
+                }
+            }
+
+            return values;
+        }
+
         /// <summary>Resolves a script's display name from its id, falling back to the id itself.</summary>
         public static string GetScriptName(string id)
         {
@@ -220,5 +281,76 @@ namespace KeyboardManagerEditorUI.Helpers
 
             return id;
         }
+
+        private static string QuoteArgument(string value)
+        {
+            var quoted = new StringBuilder("\"");
+            var backslashes = 0;
+            foreach (var character in value)
+            {
+                if (character == '\\')
+                {
+                    backslashes++;
+                    continue;
+                }
+
+                if (character == '"')
+                {
+                    quoted.Append('\\', (backslashes * 2) + 1);
+                    quoted.Append(character);
+                    backslashes = 0;
+                    continue;
+                }
+
+                quoted.Append('\\', backslashes);
+                quoted.Append(character);
+                backslashes = 0;
+            }
+
+            quoted.Append('\\', backslashes * 2);
+            quoted.Append('"');
+            return quoted.ToString();
+        }
+
+        private static List<string> TokenizeArguments(string? arguments)
+        {
+            if (string.IsNullOrWhiteSpace(arguments))
+            {
+                return new List<string>();
+            }
+
+            var argv = CommandLineToArgvW(arguments, out var count);
+            if (argv == IntPtr.Zero)
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                var tokens = new List<string>(count);
+                for (var index = 0; index < count; index++)
+                {
+                    var item = Marshal.ReadIntPtr(argv, index * IntPtr.Size);
+                    if (item != IntPtr.Zero)
+                    {
+                        tokens.Add(Marshal.PtrToStringUni(item) ?? string.Empty);
+                    }
+                }
+
+                return tokens;
+            }
+            finally
+            {
+                LocalFree(argv);
+            }
+        }
+
+        [DllImport("shell32.dll", SetLastError = true)]
+        private static extern IntPtr CommandLineToArgvW(
+            [MarshalAs(UnmanagedType.LPWStr)] string commandLine,
+            out int argumentCount);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LocalFree(IntPtr memory);
     }
 }

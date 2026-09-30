@@ -1,0 +1,31 @@
+{
+  "name": "py_greet",
+  "title": "Greet (Python)",
+  "description": "Show a greeting. Demonstrates typed parameters passed to a Python PowerScript.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "greeting": {
+        "type": "string",
+        "enum": ["Hello", "Hi", "Hey", "Howdy"],
+        "default": "Hello",
+        "description": "Pick how to say hello."
+      },
+      "name": {
+        "type": "string",
+        "default": "World",
+        "description": "Who to greet."
+      },
+      "shout": {
+        "type": "boolean",
+        "default": false,
+        "description": "Shout (UPPERCASE)."
+      }
+    }
+  },
+  "x-powerscript": {
+    "capabilities": ["ui"],
+    "publisher": "PowerToys samples",
+    "version": "1.0.0"
+  }
+}

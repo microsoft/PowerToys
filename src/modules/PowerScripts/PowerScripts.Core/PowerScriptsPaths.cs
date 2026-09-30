@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core;
 
@@ -44,13 +45,22 @@ public static class PowerScriptsPaths
         }
     }
 
-    /// <summary>The user-settings file that persists the chosen scripts root.</summary>
+    /// <summary>
+    /// File-mode physical path of the module config blob (<c>config.json</c>). Persistence goes through
+    /// <see cref="Storage.SettingsStore.Current"/>; this path is the location the default file-backed
+    /// store writes to, kept for diagnostics and callers that read the file directly.
+    /// </summary>
     public static string ConfigFilePath => Path.Combine(ModuleDirectory, ConfigFileName);
 
     /// <summary>The trust store file name (records which script contents the user has approved).</summary>
     public const string TrustFileName = "trust.json";
 
-    /// <summary>The trust store: which (script id, content hash) pairs the user has approved to run.</summary>
+    /// <summary>
+    /// File-mode physical path of the trust blob (<c>trust.json</c>): which (script id, content hash)
+    /// pairs the user has approved to run. Persistence goes through
+    /// <see cref="Storage.SettingsStore.Current"/>; this path is where the default file-backed store
+    /// writes, kept for diagnostics.
+    /// </summary>
     public static string TrustFilePath => Path.Combine(ModuleDirectory, TrustFileName);
 
     /// <summary>
@@ -88,13 +98,13 @@ public static class PowerScriptsPaths
     {
         try
         {
-            if (!File.Exists(ConfigFilePath))
+            var text = SettingsStore.Current.ReadBlob(ConfigFileName);
+            if (string.IsNullOrEmpty(text))
             {
                 return null;
             }
 
-            using var stream = File.OpenRead(ConfigFilePath);
-            using var document = JsonDocument.Parse(stream);
+            using var document = JsonDocument.Parse(text);
             if (document.RootElement.TryGetProperty("scriptsRoot", out var value) &&
                 value.ValueKind == JsonValueKind.String)
             {
@@ -131,13 +141,13 @@ public static class PowerScriptsPaths
     {
         try
         {
-            if (!File.Exists(ConfigFilePath))
+            var text = SettingsStore.Current.ReadBlob(ConfigFileName);
+            if (string.IsNullOrEmpty(text))
             {
                 return null;
             }
 
-            using var stream = File.OpenRead(ConfigFilePath);
-            using var document = JsonDocument.Parse(stream);
+            using var document = JsonDocument.Parse(text);
             if (document.RootElement.TryGetProperty("enabled", out var value) &&
                 value.ValueKind is JsonValueKind.True or JsonValueKind.False)
             {
@@ -155,18 +165,17 @@ public static class PowerScriptsPaths
     /// <summary>Persists the module's enabled override to <see cref="ConfigFilePath"/>, preserving other keys.</summary>
     public static void SaveEnabled(bool enabled) => MergeConfigValue("enabled", JsonSerializer.SerializeToElement(enabled));
 
-    /// <summary>Merges a single top-level key into <see cref="ConfigFilePath"/> without clobbering the rest.</summary>
+    /// <summary>Merges a single top-level key into the module config blob without clobbering the rest.</summary>
     private static void MergeConfigValue(string key, JsonElement value)
     {
-        Directory.CreateDirectory(ModuleDirectory);
         var options = new JsonSerializerOptions { WriteIndented = true };
         var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         try
         {
-            if (File.Exists(ConfigFilePath))
+            var text = SettingsStore.Current.ReadBlob(ConfigFileName);
+            if (!string.IsNullOrEmpty(text))
             {
-                using var stream = File.OpenRead(ConfigFilePath);
-                using var existing = JsonDocument.Parse(stream);
+                using var existing = JsonDocument.Parse(text);
                 foreach (var property in existing.RootElement.EnumerateObject())
                 {
                     merged[property.Name] = property.Value.Clone();
@@ -179,6 +188,6 @@ public static class PowerScriptsPaths
         }
 
         merged[key] = value;
-        File.WriteAllText(ConfigFilePath, JsonSerializer.Serialize(merged, options));
+        SettingsStore.Current.WriteBlob(ConfigFileName, JsonSerializer.Serialize(merged, options));
     }
 }

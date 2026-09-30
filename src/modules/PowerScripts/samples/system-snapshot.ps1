@@ -1,11 +1,6 @@
-# @powerscript.id           system-snapshot
-# @powerscript.name         System Snapshot
-# @powerscript.description   Show computer name, OS and uptime.
-# @powerscript.kind         system
-# @powerscript.capability   systemInfo
-#
-# A "system" PowerScript (no file input). Surfaced via a Keyboard Manager hotkey or the Command
-# Palette (both inferred from the system kind).
+# System Snapshot — describe this PC. Metadata lives in the sibling system-snapshot.ps1.tool.json
+# descriptor (an MCP Tool). Its no-input contract makes it available to action consumers such as
+# Keyboard Manager, LightSwitch, and Command Palette.
 
 $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
 

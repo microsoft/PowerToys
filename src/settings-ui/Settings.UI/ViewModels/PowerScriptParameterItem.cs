@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         public string Name { get; set; } = string.Empty;
 
-        /// <summary>One of: "string", "int", "bool", "choice".</summary>
+        /// <summary>One of: "string", "int", "bool", "choice", "file".</summary>
         public string Type { get; set; } = "string";
 
         public string Label { get; set; }
@@ -26,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Description { get; set; }
 
         public string Default { get; set; }
+
+        public bool IsRequired { get; set; }
 
         public List<string> Options { get; set; } = new();
 
@@ -45,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "choice" => "Choice",
             "bool" => "On/off",
             "int" => "Number",
+            "file" => "File",
             _ => "Text",
         };
 
@@ -57,6 +60,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 var parts = new List<string> { TypeDisplay };
+
+                if (IsRequired)
+                {
+                    parts.Add("required");
+                }
 
                 if (Options is { Count: > 0 })
                 {

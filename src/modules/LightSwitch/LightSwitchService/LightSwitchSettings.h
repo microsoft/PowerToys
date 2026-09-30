@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <windows.h>
 #include <mutex>
@@ -72,6 +73,13 @@ struct LightSwitchConfig
     bool enableLightModeProfile = false;
     std::wstring darkModeProfile = L"";
     std::wstring lightModeProfile = L"";
+
+    bool enableDarkModePowerScript = false;
+    bool enableLightModePowerScript = false;
+    std::wstring darkModePowerScript = L"";
+    std::wstring lightModePowerScript = L"";
+    std::map<std::wstring, std::wstring> darkModePowerScriptParameters;
+    std::map<std::wstring, std::wstring> lightModePowerScriptParameters;
 };
 
 class LightSwitchSettings

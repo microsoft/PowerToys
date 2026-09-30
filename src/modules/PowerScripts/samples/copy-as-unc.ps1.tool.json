@@ -1,0 +1,20 @@
+{
+  "name": "copy-as-unc",
+  "title": "Copy as UNC path",
+  "description": "Resolve the selected item's mapped network drive to its UNC path (\\\\server\\share\\...) and copy it to the clipboard.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "contentMediaType": "application/octet-stream",
+        "description": "The file or folder whose UNC path to copy."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-powerscript": {
+    "extensions": ["*"],
+    "capabilities": ["clipboard"]
+  }
+}

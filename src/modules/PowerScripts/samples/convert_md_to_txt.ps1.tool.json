@@ -1,0 +1,20 @@
+{
+  "name": "convert_md_to_txt",
+  "title": "Convert Markdown to Text",
+  "description": "Convert the selected Markdown file(s) to a plain .txt file next to the original.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "file": {
+        "type": "string",
+        "contentMediaType": "text/markdown",
+        "description": "The Markdown file to convert."
+      }
+    },
+    "required": ["file"]
+  },
+  "x-powerscript": {
+    "extensions": [".md"],
+    "capabilities": ["fileRead", "fileWrite"]
+  }
+}

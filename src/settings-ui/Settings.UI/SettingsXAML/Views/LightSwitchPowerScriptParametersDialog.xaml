@@ -1,0 +1,21 @@
+<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPowerScriptParametersDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="600"
+    MinWidth="560"
+    DefaultButton="Primary"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    Style="{StaticResource DefaultContentDialogStyle}">
+
+    <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16">
+            <TextBlock x:Name="DescriptionText" TextWrapping="Wrap" />
+            <InfoBar
+                x:Name="ValidationInfoBar"
+                IsClosable="False"
+                Severity="Error" />
+            <StackPanel x:Name="ParameterPanel" Spacing="8" />
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

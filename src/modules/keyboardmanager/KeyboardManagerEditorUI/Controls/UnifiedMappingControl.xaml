@@ -212,7 +212,7 @@
                         <TextBlock x:Uid="ActionType_Disable_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem Tag="PowerScript">
+                <ComboBoxItem AutomationProperties.Name="PowerScript" Tag="PowerScript">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE756;" />
                         <TextBlock Text="PowerScript" />
@@ -408,19 +408,24 @@
                 <tkcontrols:Case Value="PowerScript">
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <TextBlock
+                            x:Uid="PowerScriptDescription"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Run a PowerScript when this shortcut is pressed."
                             TextWrapping="Wrap" />
                         <ComboBox
                             x:Name="PowerScriptComboBox"
+                            x:Uid="PowerScriptComboBox"
                             HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="KeyboardManagerPowerScriptPicker"
                             DisplayMemberPath="Name"
-                            PlaceholderText="Select a PowerScript"
                             SelectionChanged="PowerScriptComboBox_SelectionChanged" />
+                        <StackPanel
+                            x:Name="PowerScriptParametersPanel"
+                            Spacing="8"
+                            Visibility="Collapsed" />
                         <TextBlock
                             x:Name="PowerScriptEmptyHint"
+                            x:Uid="PowerScriptEmptyHint"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="No PowerScripts found. Enable the PowerScripts module and add a system script."
                             TextWrapping="Wrap"
                             Visibility="Collapsed" />
                     </StackPanel>

@@ -266,6 +266,61 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
+                        <tkcontrols:SettingsExpander
+                            x:Uid="LightSwitch_ApplyPowerScriptsExpander"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                            IsExpanded="True">
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard.Header>
+                                        <CheckBox
+                                            x:Uid="LightSwitch_DarkModePowerScriptCheckbox"
+                                            AutomationProperties.AutomationId="EnableDarkModePowerScript_LightSwitch"
+                                            IsChecked="{x:Bind ViewModel.EnableDarkModePowerScript, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.CanEnableDarkModePowerScript, Mode=OneWay}" />
+                                    </tkcontrols:SettingsCard.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ComboBox
+                                            AutomationProperties.AutomationId="DarkModePowerScript_LightSwitch"
+                                            MinWidth="200"
+                                            DisplayMemberPath="Name"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerScriptsAvailable, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.AvailablePowerScripts, Mode=OneWay}"
+                                            SelectedItem="{x:Bind ViewModel.SelectedDarkModePowerScript, Mode=TwoWay}" />
+                                        <Button
+                                            x:Uid="LightSwitch_ConfigurePowerScriptButton"
+                                            AutomationProperties.AutomationId="ConfigureDarkModePowerScript_LightSwitch"
+                                            Click="ConfigureDarkModePowerScript_Click"
+                                            IsEnabled="{x:Bind ViewModel.CanConfigureDarkModePowerScript, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.CanConfigureDarkModePowerScript, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard.Header>
+                                        <CheckBox
+                                            x:Uid="LightSwitch_LightModePowerScriptCheckbox"
+                                            AutomationProperties.AutomationId="EnableLightModePowerScript_LightSwitch"
+                                            IsChecked="{x:Bind ViewModel.EnableLightModePowerScript, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.CanEnableLightModePowerScript, Mode=OneWay}" />
+                                    </tkcontrols:SettingsCard.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ComboBox
+                                            AutomationProperties.AutomationId="LightModePowerScript_LightSwitch"
+                                            MinWidth="200"
+                                            DisplayMemberPath="Name"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerScriptsAvailable, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.AvailablePowerScripts, Mode=OneWay}"
+                                            SelectedItem="{x:Bind ViewModel.SelectedLightModePowerScript, Mode=TwoWay}" />
+                                        <Button
+                                            x:Uid="LightSwitch_ConfigurePowerScriptButton"
+                                            AutomationProperties.AutomationId="ConfigureLightModePowerScript_LightSwitch"
+                                            Click="ConfigureLightModePowerScript_Click"
+                                            IsEnabled="{x:Bind ViewModel.CanConfigureLightModePowerScript, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.CanConfigureLightModePowerScript, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard

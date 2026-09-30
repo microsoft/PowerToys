@@ -52,7 +52,9 @@
   </ItemGroup>
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
-    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll"
+             CopyToOutputDirectory="PreserveNewest"
+             TargetPath="AdaptiveCards.Rendering.WinUI3.dll" />
   </ItemGroup>
 
   <ItemGroup>

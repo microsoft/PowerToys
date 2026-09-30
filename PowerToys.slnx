@@ -834,6 +834,26 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/PowerScripts/">
+    <Project Path="src/modules/PowerScripts/PowerScripts.Core/PowerScripts.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerScripts/PowerScripts.Client/PowerScripts.Client.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerScripts/PowerScripts.Host/PowerScripts.Host.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/PowerScripts/Tests/">
+    <Project Path="src/modules/PowerScripts/PowerScripts.Core.Tests/PowerScripts.Core.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/powerrename/">
     <Project Path="src/modules/powerrename/dll/PowerRenameExt.vcxproj" Id="b25ac7a5-fb9f-4789-b392-d5c85e948670">
       <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
@@ -1146,5 +1166,4 @@
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
-
 

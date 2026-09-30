@@ -329,6 +329,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(powerScriptShortcut.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.PowerScript);
             UnifiedMappingControl.SelectPowerScript(powerScriptShortcut.ScriptId);
+            UnifiedMappingControl.SetPowerScriptParameterValues(powerScriptShortcut.ParameterValues);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -406,6 +407,16 @@ namespace KeyboardManagerEditorUI.Pages
                 if (validationError != ValidationErrorType.NoError)
                 {
                     UnifiedMappingControl.ShowValidationErrorFromType(validationError);
+                    args.Cancel = true;
+                    return;
+                }
+
+                if (UnifiedMappingControl.CurrentActionType == UnifiedMappingControl.ActionType.PowerScript &&
+                    !UnifiedMappingControl.TryValidatePowerScriptParameters(out var parameterError))
+                {
+                    UnifiedMappingControl.ShowValidationError(
+                        ResourceHelper.GetString("PowerScriptRequiredParameter_Title"),
+                        parameterError);
                     args.Cancel = true;
                     return;
                 }
@@ -742,7 +753,9 @@ namespace KeyboardManagerEditorUI.Pages
                 OriginalKeys = originalKeysString,
                 TargetKeys = originalKeysString,
                 ProgramPath = hostPath,
-                ProgramArgs = $"run {script.Id} --no-consent",
+                ProgramArgs = PowerScriptsCatalog.BuildRunArguments(
+                    script.Id,
+                    UnifiedMappingControl.GetPowerScriptParameterValues()),
                 StartInDirectory = string.Empty,
                 IfRunningAction = ProgramAlreadyRunningAction.StartAnother,
                 Visibility = StartWindowType.Hidden,
@@ -1117,6 +1130,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Shortcut = originalKeyNames,
                     ScriptId = scriptId,
                     ScriptName = PowerScriptsCatalog.GetScriptName(scriptId),
+                    ParameterValues = PowerScriptsCatalog.ParseParameterValues(mapping.ProgramArgs),
                     IsActive = shortcutSettings.IsActive,
                     Id = shortcutSettings.Id,
                     AppName = mapping.TargetApp ?? string.Empty,
