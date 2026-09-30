@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
@@ -19,6 +20,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -117,6 +119,8 @@ public sealed partial class DockWindow : WindowEx,
     /// </summary>
     private DockSide? _sideOverride;
 
+    internal bool HasKeyboardFocus => _hasKeyboardFocus;
+
     /// <summary>
     /// Gets the effective dock side for this window, respecting per-monitor overrides.
     /// </summary>
@@ -160,6 +164,7 @@ public sealed partial class DockWindow : WindowEx,
 
         InitializeComponent();
         Root.Children.Add(_dock);
+        Root.PreviewKeyDown += Root_PreviewKeyDown;
         _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {
@@ -837,42 +842,72 @@ public sealed partial class DockWindow : WindowEx,
     }
 
     /// <summary>
-    /// Handles the dock focus shortcut: pull focus in, or hand it back if we already have it.
+    /// Focuses a dock item, preserving the current focus when traversal reaches the end.
     /// </summary>
-    public void ToggleKeyboardFocus()
+    public bool TryFocusNextItem(bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus, DockWindow? previousDock = null)
     {
         if (_isDisposed)
         {
+            return false;
+        }
+
+        if (!viewModel.StartItems.Concat(viewModel.CenterItems).Concat(viewModel.EndItems).Any(band => band.Items.Count > 0))
+        {
+            return false;
+        }
+
+        // Check before activation can restore focus to the previous item.
+        restoreLastFocus &= _dock.HasRememberedFocus;
+        var acquiringFocus = !_hasKeyboardFocus;
+        if (acquiringFocus)
+        {
+            var foreground = PInvoke.GetForegroundWindow();
+
+            // Capture the return window before activation releases the previous dock's focus.
+            _windowBeforeKeyboardFocus = previousDock?._windowBeforeKeyboardFocus ?? (foreground == _hwnd ? HWND.Null : foreground);
+            _hasKeyboardFocus = true;
+
+            // Reveal immediately so the focused item is already visible.
+            RevealAutoHideDock(immediate: true);
+            StopCollapseTimer();
+
+            ActivateForKeyboardFocus();
+        }
+
+        if (_dock.TryFocusNextItem(moveFromCurrent, wrap, reverse, restoreLastFocus))
+        {
+            return true;
+        }
+
+        if (acquiringFocus)
+        {
+            // A dock without focusable items must not strand the user in its window.
+            ReleaseKeyboardFocus(restoreForeground: true);
+        }
+
+        return false;
+    }
+
+    internal void ResetRememberedFocus() => _dock.ResetRememberedFocus();
+
+    private void Root_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (_isDisposed || !_hasKeyboardFocus || e.Handled)
+        {
             return;
         }
 
-        if (_hasKeyboardFocus)
+        var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
+        if (DockFocusNavigation.IsReverseShortcut(_settingsService.Settings.DockFocusHotkey, chord))
         {
-            ReleaseKeyboardFocus(restoreForeground: true);
-            return;
-        }
-
-        var foreground = PInvoke.GetForegroundWindow();
-        _windowBeforeKeyboardFocus = foreground == _hwnd ? HWND.Null : foreground;
-        _hasKeyboardFocus = true;
-
-        // Skip the slide animation. Focus has to land on a band that is already where the
-        // user can see it, not one that is still sliding in.
-        RevealAutoHideDock(immediate: true);
-        StopCollapseTimer();
-
-        ActivateForKeyboardFocus();
-
-        if (!_dock.TryFocusFirstItem())
-        {
-            // An empty dock has nothing to focus, so don't strand the user in it.
-            ReleaseKeyboardFocus(restoreForeground: true);
+            e.Handled = true;
+            WeakReferenceMessenger.Default.Send(new FocusDockMessage(Reverse: true));
         }
     }
 
     /// <summary>
-    /// Gives focus back to whatever the user was in before, and lets an auto-hide dock
-    /// slide away again.
+    /// Ends keyboard traversal and lets an auto-hide dock slide away again.
     /// </summary>
     /// <param name="restoreForeground">
     /// False when focus already moved elsewhere on its own, so there is nothing to restore.
@@ -1806,6 +1841,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService?.SettingsChanged -= SettingsChangedHandler;
 
         Activated -= DockWindow_Activated;
+        Root.PreviewKeyDown -= Root_PreviewKeyDown;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 

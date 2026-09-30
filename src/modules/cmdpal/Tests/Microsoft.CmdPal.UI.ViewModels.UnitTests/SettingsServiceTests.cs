@@ -170,9 +170,28 @@ public class SettingsServiceTests
         Assert.AreEqual(7, settings.RecentCommandsDisplayLimit);
     }
 
+    [TestMethod]
+    public void ListItemAltNumberBehavior_DefaultsToRunAndRoundTripsSelect()
+    {
+        var defaults = System.Text.Json.JsonSerializer.Deserialize(
+            "{}",
+            JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(defaults);
+        Assert.AreEqual(AltNumberShortcutBehavior.Run, defaults.ListItemAltNumberBehavior);
+
+        var json = System.Text.Json.JsonSerializer.Serialize(
+            defaults with { ListItemAltNumberBehavior = AltNumberShortcutBehavior.Select },
+            JsonSerializationContext.Default.SettingsModel);
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.AreEqual(AltNumberShortcutBehavior.Select, settings.ListItemAltNumberBehavior);
+    }
+
     [DataTestMethod]
     [DataRow(-1, 0, 0, 1)]
-    [DataRow(100, 100, 9, 10)]
+    [DataRow(100, 100, 99, 10)]
     public void QuickAccessLimits_OutOfRangePersistedValuesAreClamped(
         int pinnedCommandLimit,
         int recentCommandLimit,

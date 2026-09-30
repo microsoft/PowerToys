@@ -5,9 +5,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -15,6 +18,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public partial class QuickAccessShelfResolverTests
 {
     [DataTestMethod]
+    [DataRow(-1, "")]
     [DataRow(0, "1")]
     [DataRow(8, "9")]
     [DataRow(9, "")]
@@ -22,6 +26,61 @@ public partial class QuickAccessShelfResolverTests
     public void IndexToShortcutDigit_MapsFirstNineItems(int index, string expectedDigit)
     {
         Assert.AreEqual(expectedDigit, QuickAccessShelfResolver.IndexToShortcutDigit(index));
+    }
+
+    [DataTestMethod]
+    [DataRow((int)VirtualKey.Number1, 0)]
+    [DataRow((int)VirtualKey.Number5, 4)]
+    [DataRow((int)VirtualKey.Number9, 8)]
+    [DataRow((int)VirtualKey.Number0, -1)]
+    [DataRow((int)VirtualKey.NumberPad1, -1)]
+    public void GetTopRowShortcutIndex_MapsOnlyOneThroughNine(int key, int expectedIndex)
+    {
+        Assert.AreEqual(expectedIndex, QuickAccessShelfShortcuts.GetTopRowShortcutIndex((VirtualKey)key));
+    }
+
+    [DataTestMethod]
+    [DataRow((int)VirtualKey.Number4, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
+    [DataRow((int)VirtualKey.Number4, (int)VirtualKeyModifiers.Menu, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
+    [DataRow((int)VirtualKey.Number4, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
+    [DataRow((int)VirtualKey.Number9, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 0, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
+    [DataRow((int)VirtualKey.Number4, (int)(VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.None)]
+    [DataRow((int)VirtualKey.Number0, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 0, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.None)]
+    public void ResolveSelectionShortcut_ReservesUnavailableTargets(
+        int key,
+        int modifiers,
+        int visibleItemCount,
+        int expectedTarget)
+    {
+        var target = QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            Chord((VirtualKey)key, (VirtualKeyModifiers)modifiers),
+            visibleItemCount,
+            isAccessKeyModeActive: false);
+
+        Assert.AreEqual((QuickAccessShelfShortcuts.SelectionShortcutTarget)expectedTarget, target);
+    }
+
+    [DataTestMethod]
+    [DataRow((int)VirtualKeyModifiers.None, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
+    [DataRow((int)VirtualKeyModifiers.Shift, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
+    [DataRow((int)VirtualKeyModifiers.None, 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
+    public void ResolveSelectionShortcut_UsesLatchedAccessKeyMode(int modifiers, int visibleItemCount, int expectedTarget)
+    {
+        var target = QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            Chord(VirtualKey.Number4, (VirtualKeyModifiers)modifiers),
+            visibleItemCount,
+            isAccessKeyModeActive: true);
+
+        Assert.AreEqual((QuickAccessShelfShortcuts.SelectionShortcutTarget)expectedTarget, target);
+    }
+
+    [TestMethod]
+    public void IsSelectionAccessKey_RequiresShiftWithoutCtrlOrWin()
+    {
+        Assert.IsTrue(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: false, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: true, shift: true, win: false));
+        Assert.IsFalse(QuickAccessShelfShortcuts.IsSelectionAccessKey(ctrl: false, shift: true, win: true));
     }
 
     [TestMethod]
@@ -76,6 +135,39 @@ public partial class QuickAccessShelfResolverTests
         Assert.IsTrue(recent.CanPin);
         Assert.IsTrue(pinned.IsPinned);
         Assert.IsFalse(pinned.CanPin);
+    }
+
+    [TestMethod]
+    public void GetContextMenuItem_PinnedItemUsesOriginalPresentation()
+    {
+        var item = new ListItem { Title = "Pinned" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse(
+            [],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: true);
+
+        Assert.AreSame(item, shelfItem.GetContextMenuItem());
+    }
+
+    [TestMethod]
+    public void GetContextMenuItem_RecentItemUsesRecentPresentation()
+    {
+        var item = new ListItem { Title = "Recent" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse(
+            [],
+            item,
+            shortcutIndex: 0,
+            startsNewSection: false,
+            isPinned: false);
+
+        var contextItem = shelfItem.GetContextMenuItem();
+
+        Assert.IsInstanceOfType<RecentCommandListItem>(contextItem);
+        var recentItem = (RecentCommandListItem)contextItem;
+        Assert.AreSame(item, recentItem.Source);
+        Assert.AreEqual(shelfItem.CommandId, recentItem.CommandId);
     }
 
     [TestMethod]
@@ -180,6 +272,9 @@ public partial class QuickAccessShelfResolverTests
             expectedCapacity,
             QuickAccessShelfResolver.CalculateVisibleCapacity(itemCount, availableWidth, itemWidth: 40, spacing: 4));
     }
+
+    private static KeyChord Chord(VirtualKey key, VirtualKeyModifiers modifiers) =>
+        new(modifiers, (int)key, 0);
 
     private sealed partial class CountingIconInfo : IconInfo
     {

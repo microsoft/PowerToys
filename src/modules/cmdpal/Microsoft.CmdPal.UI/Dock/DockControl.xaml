@@ -38,6 +38,7 @@
                             <local:DockItemControl
                                 Title="{x:Bind Title, Mode=OneWay}"
                                 ContextRequested="BandItem_ContextRequested"
+                                GotFocus="BandItem_GotFocus"
                                 LabelWidthConstraints="{x:Bind LabelWidthConstraints, Mode=OneWay}"
                                 PreviewKeyDown="BandItem_PreviewKeyDown"
                                 ShowSubtitle="{x:Bind ShowSubtitle, Mode=OneWay}"
