@@ -229,19 +229,16 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
-    public async Task AllAppsPage_TryGetCurrentItemUsesPublishedCatalogWithoutReloading()
+    public void AppListItemSnapshot_ResolvesPublishedItemWithoutReloading()
     {
-        var mockCache = new MockAppCache();
-        mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe"));
-        var page = new AllAppsPage(mockCache);
-        await Task.Delay(100);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
+        var snapshot = AppListItemSource.GetSnapshot();
+        var expected = snapshot.VisibleItems.Single();
 
-        var expected = page.GetItems().OfType<AppListItem>().Single();
-
-        Assert.IsTrue(page.TryGetCurrentItem(expected.Command.Id, out var actual));
-        Assert.AreSame(expected, actual);
-        Assert.IsFalse(page.TryGetCurrentItem("missing", out var missing));
-        Assert.IsNull(missing);
+        Assert.AreSame(expected, snapshot.GetVisibleApp(expected.Command!.Id));
+        Assert.IsNull(snapshot.GetVisibleApp("missing"));
+        Assert.AreSame(snapshot, AppListItemSource.GetSnapshot());
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
     }
 
     [TestMethod]
@@ -649,9 +646,10 @@ public class AllAppsPageTests : AppsTestBase
     {
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe"));
-        mockCatalog.Items[0].MatchTerms = ["LegacyAliasNeedle"];
-        mockCatalog.Items[0].FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
-        mockCatalog.Items[0].UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
+        var app = mockCatalog.GetSnapshot().Items[0];
+        app.MatchTerms = ["LegacyAliasNeedle"];
+        app.FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
+        app.UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);

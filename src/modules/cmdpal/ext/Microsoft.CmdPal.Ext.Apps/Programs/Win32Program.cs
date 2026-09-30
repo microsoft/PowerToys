@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Security;
 using System.Text.RegularExpressions;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Win32;
 
@@ -159,12 +160,6 @@ public partial class Win32Program
     public override string ToString()
     {
         return ExecutableName;
-    }
-
-    public string GetAppIdentifier()
-    {
-        // Use a combination of name and path to create a unique identifier
-        return $"{Name}|{FullPath}";
     }
 
     private static Win32Program CreateWin32Program(string path)
@@ -570,6 +565,11 @@ public partial class Win32Program
         }
 
         var expandedDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
+        if (!Path.IsPathFullyQualified(expandedDirectory))
+        {
+            return expandedDirectory;
+        }
+
         var normalizedDirectory = PathHelpers.NormalizePath(expandedDirectory);
         var expandedTarget = Environment.ExpandEnvironmentVariables(targetPath);
         if (Path.IsPathFullyQualified(expandedDirectory) && Path.IsPathFullyQualified(expandedTarget))
@@ -868,7 +868,7 @@ public partial class Win32Program
 
             return string.Equals(app1.Name, app2.Name, StringComparison.OrdinalIgnoreCase)
                    && string.Equals(app1.ExecutableName, app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
-                   && string.Equals(app1.FullPath, app2.FullPath, StringComparison.OrdinalIgnoreCase)
+                   && app1.Target.Equals(app2.Target)
                    && string.Equals(app1.Arguments, app2.Arguments, StringComparison.Ordinal)
                    && string.Equals(
                        GetDistinctWorkingDirectory(app1.AppExecutionAlias?.TargetPath ?? app1.FullPath, app1.WorkingDirectory, app1.ExplicitAppUserModelId),
@@ -881,7 +881,7 @@ public partial class Win32Program
             HashCode hash = default;
             hash.Add(app.Name, StringComparer.OrdinalIgnoreCase);
             hash.Add(app.ExecutableName, StringComparer.OrdinalIgnoreCase);
-            hash.Add(app.FullPath, StringComparer.OrdinalIgnoreCase);
+            hash.Add(app.Target);
             hash.Add(app.Arguments, StringComparer.Ordinal);
             hash.Add(GetDistinctWorkingDirectory(app.AppExecutionAlias?.TargetPath ?? app.FullPath, app.WorkingDirectory, app.ExplicitAppUserModelId), StringComparer.OrdinalIgnoreCase);
             return hash.ToHashCode();
@@ -912,4 +912,8 @@ public partial class Win32Program
         var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
         return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
     }
+
+    internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
+        ? LaunchTarget.Url(FullPath)
+        : LaunchTarget.FilePath(FullPath);
 }

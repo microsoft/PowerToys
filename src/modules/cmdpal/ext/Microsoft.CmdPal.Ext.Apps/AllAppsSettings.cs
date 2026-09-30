@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ public partial class AllAppsSettings : JsonSettingsManager
     private const int DefaultSearchResultLimit = 10;
     private const string DisabledProgramSourcesPropertyName = "DisabledProgramSources";
     private const string DisabledProgramUniqueIdentifierPropertyName = "UniqueIdentifier";
+    private const string AppCommandAliasesPropertyName = "AppCommandAliases";
 
     // "none" instead of "0": the original default was accidentally "0", so existing
     // users may have "0" stored. Using "none" lets us distinguish intentional "show
@@ -57,8 +59,16 @@ public partial class AllAppsSettings : JsonSettingsManager
     ];
 
     private readonly Lock _settingsWriterLock = new();
+    private readonly Lock _settingsFileLock = new();
     private readonly MEL.ILogger<AllAppsSettings> _logger;
     private FrozenSet<string> _disabledProgramIdentities = FrozenSet<string>.Empty;
+    private FrozenDictionary<string, string> _appCommandAliases = FrozenDictionary<string, string>.Empty;
+    private FrozenDictionary<string, string> _savedAppCommandAliases = FrozenDictionary<string, string>.Empty;
+    private FrozenSet<string> _savedHiddenIdentities = FrozenSet<string>.Empty;
+    private Task? _aliasSaveTask;
+    private bool _aliasSavePending;
+
+    internal event EventHandler? HiddenAppsChanged;
 
     public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
 
@@ -269,6 +279,15 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     public override void LoadSettings()
     {
+        WaitForAliasSavesAsync().GetAwaiter().GetResult();
+        lock (_settingsFileLock)
+        {
+            LoadSettingsUnderFileLock();
+        }
+    }
+
+    private void LoadSettingsUnderFileLock()
+    {
         lock (_settingsWriterLock)
         {
             if (string.IsNullOrEmpty(FilePath))
@@ -291,6 +310,7 @@ public partial class AllAppsSettings : JsonSettingsManager
                 }
 
                 LoadDisabledProgramSources(savedSettings);
+                LoadAppCommandAliases(savedSettings);
                 Settings.Update(content);
             }
             catch (Exception ex)
@@ -302,9 +322,17 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     public override void SaveSettings()
     {
+        lock (_settingsFileLock)
+        {
+            SaveSettingsUnderFileLock();
+        }
+    }
+
+    internal Task WaitForAliasSavesAsync()
+    {
         lock (_settingsWriterLock)
         {
-            SaveSettingsUnderLock();
+            return _aliasSaveTask ?? Task.CompletedTask;
         }
     }
 
@@ -314,23 +342,174 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     /// <summary>Updates the in-memory visibility preference for a canonical application identity.</summary>
     internal bool SetAppHidden(string identity, bool hidden)
+        => SetAppHidden([identity], hidden);
+
+    internal bool SetAppHidden(IEnumerable<string> identities, bool hidden)
     {
         lock (_settingsWriterLock)
         {
             var current = _disabledProgramIdentities;
-            if (current.Contains(identity) == hidden)
+            var updated = new HashSet<string>(current, StringComparer.OrdinalIgnoreCase);
+            if (hidden)
+            {
+                updated.UnionWith(identities);
+            }
+            else
+            {
+                var commandIds = identities.Select(Catalog.AppIdentity.ForCommand).ToHashSet(StringComparer.Ordinal);
+                updated.RemoveWhere(identity => commandIds.Contains(Catalog.AppIdentity.ForCommand(identity))
+                    || (_appCommandAliases.TryGetValue(Catalog.AppIdentity.ForCommand(identity), out var target) && commandIds.Contains(target)));
+            }
+
+            if (updated.SetEquals(current))
             {
                 return false;
             }
 
-            var updated = new HashSet<string>(current, StringComparer.OrdinalIgnoreCase);
-            _ = hidden ? updated.Add(identity) : updated.Remove(identity);
             Volatile.Write(ref _disabledProgramIdentities, updated.ToFrozenSet(StringComparer.OrdinalIgnoreCase));
             return true;
         }
     }
 
-    private void SaveSettingsUnderLock()
+    /// <summary>Retains saved command IDs independently of localized discovery-cache snapshots.</summary>
+    internal IReadOnlyDictionary<string, string> RetainAppCommandAliases(IEnumerable<AppItem> apps)
+    {
+        // Alias keys preserve persisted spelling; their typed command targets compare case-insensitively.
+        var observed = new Dictionary<string, string>(StringComparer.Ordinal);
+        var launchAliases = new HashSet<string>(StringComparer.Ordinal);
+        var identities = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var app in apps)
+        {
+            if (string.IsNullOrEmpty(app.CatalogId))
+            {
+                continue;
+            }
+
+            var commandId = Catalog.AppIdentity.ForCommand(app.CatalogId);
+            identities[commandId] = app.CatalogId;
+            var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath);
+            if (!string.IsNullOrEmpty(app.ExePath))
+            {
+                launchAliases.Add(legacyId);
+            }
+
+            foreach (var alias in app.CommandIds.Prepend(legacyId).Append(commandId))
+            {
+                // An ambiguous legacy ID cannot safely select either launch entry.
+                observed[alias] = observed.TryGetValue(alias, out var previous) && !string.Equals(previous, commandId, StringComparison.OrdinalIgnoreCase) ? string.Empty : commandId;
+            }
+        }
+
+        var hiddenChanged = false;
+        IReadOnlyDictionary<string, string> result;
+        lock (_settingsWriterLock)
+        {
+            var redirects = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var alias in observed)
+            {
+                if ((Catalog.AppIdentity.IsCommandId(alias.Key) || launchAliases.Contains(alias.Key))
+                    && !string.IsNullOrEmpty(alias.Value)
+                    && _appCommandAliases.TryGetValue(alias.Key, out var previous)
+                    && !string.IsNullOrEmpty(previous) && !string.Equals(previous, alias.Value, StringComparison.OrdinalIgnoreCase)
+                    && (!observed.TryGetValue(previous, out var target) || !string.Equals(target, previous, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // An unchanged launch entry can follow an install move, but never replace a current app.
+                    redirects[previous] = redirects.TryGetValue(previous, out var other) && !string.Equals(other, alias.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty : alias.Value;
+                }
+            }
+
+            foreach (var redirect in redirects)
+            {
+                observed[redirect.Key] = observed.TryGetValue(redirect.Key, out var target) && !string.Equals(target, redirect.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty : redirect.Value;
+            }
+
+            Dictionary<string, string>? updated = null;
+            foreach (var alias in _appCommandAliases)
+            {
+                if (observed.TryGetValue(alias.Value, out var commandId) && !string.Equals(commandId, alias.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    updated ??= new(_appCommandAliases, StringComparer.Ordinal);
+                    updated[alias.Key] = commandId;
+                }
+            }
+
+            foreach (var alias in observed)
+            {
+                if (alias.Key == alias.Value)
+                {
+                    continue;
+                }
+
+                var current = updated is null ? (IReadOnlyDictionary<string, string>)_appCommandAliases : updated;
+                var exists = current.TryGetValue(alias.Key, out var previous);
+                var commandId = exists && !string.Equals(previous, alias.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty : alias.Value;
+                if (!exists || previous != commandId)
+                {
+                    updated ??= new(_appCommandAliases, StringComparer.Ordinal);
+                    updated[alias.Key] = commandId;
+                }
+            }
+
+            if (updated is not null)
+            {
+                _appCommandAliases = updated.Where(pair => pair.Key != pair.Value).ToFrozenDictionary(StringComparer.Ordinal);
+            }
+
+            // Preserve path-only hides written by earlier builds when a proven identity move is observed.
+            foreach (var identity in _disabledProgramIdentities)
+            {
+                if (_appCommandAliases.TryGetValue(Catalog.AppIdentity.ForCommand(identity), out var target)
+                    && identities.TryGetValue(target, out var currentIdentity)
+                    && !_disabledProgramIdentities.Contains(currentIdentity))
+                {
+                    hiddenChanged |= SetAppHidden(currentIdentity, hidden: true);
+                }
+            }
+
+            if (updated is not null || hiddenChanged)
+            {
+                _aliasSavePending = true;
+                _aliasSaveTask ??= Task.Run(SavePendingAliases);
+            }
+
+            result = _appCommandAliases;
+        }
+
+        if (hiddenChanged)
+        {
+            HiddenAppsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        return result;
+    }
+
+    private void SavePendingAliases()
+    {
+        while (true)
+        {
+            lock (_settingsWriterLock)
+            {
+                if (!_aliasSavePending)
+                {
+                    _aliasSaveTask = null;
+                    return;
+                }
+
+                _aliasSavePending = false;
+            }
+
+            lock (_settingsFileLock)
+            {
+                if (!ReferenceEquals(Volatile.Read(ref _appCommandAliases), _savedAppCommandAliases)
+                    || !ReferenceEquals(Volatile.Read(ref _disabledProgramIdentities), _savedHiddenIdentities))
+                {
+                    SaveSettingsUnderFileLock();
+                }
+            }
+        }
+    }
+
+    private void SaveSettingsUnderFileLock()
     {
         string? temporaryPath = null;
 
@@ -341,7 +520,17 @@ public partial class AllAppsSettings : JsonSettingsManager
                 throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(SaveSettings)}");
             }
 
-            if (JsonNode.Parse(Settings.ToJson()) is not JsonObject currentSettings)
+            JsonObject? currentSettings;
+            FrozenDictionary<string, string> aliases;
+            FrozenSet<string> hiddenIdentities;
+            lock (_settingsWriterLock)
+            {
+                currentSettings = JsonNode.Parse(Settings.ToJson()) as JsonObject;
+                aliases = _appCommandAliases;
+                hiddenIdentities = _disabledProgramIdentities;
+            }
+
+            if (currentSettings is null)
             {
                 LogSettingsSerializationFailed(_logger);
                 return;
@@ -360,7 +549,7 @@ public partial class AllAppsSettings : JsonSettingsManager
             }
 
             var hiddenApps = new JsonArray();
-            foreach (var hiddenIdentity in _disabledProgramIdentities.Order(StringComparer.OrdinalIgnoreCase))
+            foreach (var hiddenIdentity in hiddenIdentities.Order(StringComparer.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(hiddenIdentity))
                 {
@@ -373,6 +562,17 @@ public partial class AllAppsSettings : JsonSettingsManager
 
             savedSettings[DisabledProgramSourcesPropertyName] = hiddenApps;
 
+            var commandAliases = new JsonObject();
+            foreach (var alias in aliases.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            {
+                commandAliases[alias.Key] = alias.Value;
+            }
+
+            savedSettings[AppCommandAliasesPropertyName] = commandAliases;
+
+            // Remove the grouped alias format written by earlier pre-release builds.
+            savedSettings.Remove("AppCommandAliasGroups");
+
             var directory = Path.GetDirectoryName(FilePath);
             if (!string.IsNullOrEmpty(directory))
             {
@@ -382,6 +582,8 @@ public partial class AllAppsSettings : JsonSettingsManager
             temporaryPath = $"{FilePath}.{Guid.NewGuid():N}.tmp";
             File.WriteAllText(temporaryPath, savedSettings.ToJsonString(_serializerOptions));
             File.Move(temporaryPath, FilePath, overwrite: true);
+            _savedAppCommandAliases = aliases;
+            _savedHiddenIdentities = hiddenIdentities;
         }
         catch (Exception ex)
         {
@@ -432,6 +634,28 @@ public partial class AllAppsSettings : JsonSettingsManager
         Volatile.Write(
             ref _disabledProgramIdentities,
             hiddenIdentities.ToFrozenSet(StringComparer.OrdinalIgnoreCase));
+    }
+
+    private void LoadAppCommandAliases(JsonObject savedSettings)
+    {
+        var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (savedSettings[AppCommandAliasesPropertyName] is JsonObject commandAliases)
+        {
+            foreach (var alias in commandAliases)
+            {
+                if (!string.IsNullOrWhiteSpace(alias.Key)
+                    && alias.Value is JsonValue value
+                    && value.TryGetValue<string>(out var commandId)
+                    && commandId is not null)
+                {
+                    aliases[alias.Key] = commandId;
+                }
+            }
+        }
+
+        _appCommandAliases = aliases.Where(pair => pair.Key != pair.Value).ToFrozenDictionary(StringComparer.Ordinal);
+        _savedAppCommandAliases = _appCommandAliases;
+        _savedHiddenIdentities = _disabledProgramIdentities;
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to parse the Apps settings file as a JSON object.")]

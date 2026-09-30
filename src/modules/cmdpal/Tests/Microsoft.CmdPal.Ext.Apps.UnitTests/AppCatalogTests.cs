@@ -16,6 +16,7 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 using MEL = Microsoft.Extensions.Logging;
 
@@ -107,8 +108,8 @@ public class AppCatalogTests
         });
         await initialization;
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("Fresh", catalog.Items[0].Name);
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("Fresh", catalog.GetSnapshot().Items[0].Name);
     }
 
     [TestMethod]
@@ -125,7 +126,7 @@ public class AppCatalogTests
         await catalog.InitializeAsync();
 
         Assert.AreEqual(0, source.LoadCount);
-        Assert.AreEqual("Cached", catalog.Items[0].Name);
+        Assert.AreEqual("Cached", catalog.GetSnapshot().Items[0].Name);
     }
 
     [TestMethod]
@@ -155,9 +156,9 @@ public class AppCatalogTests
         sourceLoad.SetResult([CreateCatalogItem("FreshFirst")]);
         await refresh.WaitAsync(TimeSpan.FromSeconds(5));
 
-        Assert.AreEqual(2, catalog.Items.Count);
-        Assert.IsTrue(ContainsApp(catalog.Items, "FreshFirst"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "CachedSecond"));
+        Assert.AreEqual(2, catalog.GetSnapshot().Items.Count);
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "FreshFirst"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "CachedSecond"));
         Assert.AreEqual(2, cache.LastSavedSnapshots!.Count);
         Assert.AreEqual("win32:CachedSecond", cache.LastSavedSnapshots["second"][0].Identity);
     }
@@ -171,14 +172,14 @@ public class AppCatalogTests
         var cache = new TestCache(null);
         using var catalog = CreateCatalog([source], cache);
         await catalog.InitializeAsync();
-        Assert.AreEqual(0, catalog.Items.Count);
+        Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
 
         source.Invalidate(AppSourceInvalidatedEventArgs.ForPath(new AppSourcePathChange(WatcherChangeTypes.Changed, @"C:\Apps\First.exe")));
         await WaitForConditionAsync(() => !catalog.IsRefreshing);
 
         Assert.AreEqual(2, source.LoadCount);
         Assert.AreEqual(0, source.IncrementalLoadCount);
-        Assert.AreEqual(2, catalog.Items.Count);
+        Assert.AreEqual(2, catalog.GetSnapshot().Items.Count);
         Assert.AreEqual(2, cache.LastSavedSnapshots!["test"].Count);
     }
 
@@ -196,14 +197,14 @@ public class AppCatalogTests
         first.SetItems([CreateCatalogItem("Obsolete")]);
         second.DeferNextLoad(secondLoad.Task);
         var publishedObsolete = false;
-        catalog.Changed += (_, _) => publishedObsolete |= ContainsApp(catalog.Items, "Obsolete");
+        catalog.Changed += (_, _) => publishedObsolete |= ContainsApp(catalog.GetSnapshot().Items, "Obsolete");
         var refresh = catalog.RefreshAsync();
         await WaitForConditionAsync(() => second.LoadCount == 2);
         provider.SetSources([replacement, second]);
         await WaitForConditionAsync(() => first.IsDisposed);
         secondLoad.SetResult([]);
         await refresh.WaitAsync(TimeSpan.FromSeconds(5));
-        await WaitForConditionAsync(() => ContainsApp(catalog.Items, "Replacement"));
+        await WaitForConditionAsync(() => ContainsApp(catalog.GetSnapshot().Items, "Replacement"));
 
         Assert.IsFalse(publishedObsolete);
     }
@@ -218,7 +219,7 @@ public class AppCatalogTests
         await catalog.InitializeAsync();
 
         Assert.AreEqual(1, source.LoadCount);
-        Assert.AreEqual("Fresh", catalog.Items[0].Name);
+        Assert.AreEqual("Fresh", catalog.GetSnapshot().Items[0].Name);
         Assert.AreEqual(1, cache.SaveCount);
     }
 
@@ -232,8 +233,6 @@ public class AppCatalogTests
         var firstSnapshot = catalog.GetSnapshot();
 
         Assert.AreSame(firstSnapshot, catalog.GetSnapshot());
-        Assert.AreSame(firstSnapshot.Items, catalog.Items);
-        Assert.AreSame(firstSnapshot.HiddenItems, catalog.HiddenItems);
 
         source.SetItems([CreateCatalogItem("Second")]);
         await catalog.RefreshAsync();
@@ -254,7 +253,7 @@ public class AppCatalogTests
         await catalog.InitializeAsync();
 
         Assert.AreEqual(1, source.LoadCount);
-        Assert.AreEqual(0, catalog.Items.Count);
+        Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
         Assert.AreEqual(1, cache.SaveCount);
         Assert.IsTrue(cache.LastSavedSnapshots?.ContainsKey(source.Id) == true);
     }
@@ -270,11 +269,11 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("Preferred", catalog.Items[0].Name);
-        Assert.AreEqual(2, catalog.Items[0].MatchTerms.Count);
-        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Preferred"));
-        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Duplicate"));
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("Preferred", catalog.GetSnapshot().Items[0].Name);
+        Assert.AreEqual(2, catalog.GetSnapshot().Items[0].MatchTerms.Count);
+        Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "Preferred"));
+        Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "Duplicate"));
     }
 
     [TestMethod]
@@ -294,17 +293,19 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(1, catalog.Items.Count);
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
         Assert.IsTrue(logger.HasEvent(10));
     }
 
     [TestMethod]
-    public async Task RefreshAsync_AppExecutionAlias_CoalescesPackagedAndExecutableRepresentations()
+    [DataRow("ubuntu")]
+    [DataRow("wt")]
+    public async Task RefreshAsync_AppExecutionAlias_CoalescesPackagedAndExecutableRepresentations(string aliasName)
     {
         const string aumid = "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc!ubuntu";
-        const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\ubuntu.exe";
+        var aliasPath = $@"C:\Users\test\AppData\Local\Microsoft\WindowsApps\{aliasName}.exe";
         const string targetPath = @"C:\Program Files\WindowsApps\CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc\ubuntu.exe";
-        var aliasProgram = CreateAppExecutionAliasProgram("ubuntu", aliasPath, targetPath, aumid);
+        var aliasProgram = CreateAppExecutionAliasProgram(aliasName, aliasPath, targetPath, aumid);
         var targetProgram = TestDataHelper.CreateTestWin32Program("ubuntu.exe", targetPath);
         var packagedIdentity = AppIdentity.ForPackaged(aumid);
         var aliasItem = CreateWin32CatalogItem(
@@ -337,13 +338,17 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("Ubuntu", catalog.Items[0].Name);
-        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
-        Assert.IsTrue(catalog.Items[0].IsPackaged);
-        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "ubuntu.exe"));
-        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Ubuntu"));
-        var row = new AppListItem(catalog.Items[0], useThumbnails: false);
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("Ubuntu", catalog.GetSnapshot().Items[0].Name);
+        Assert.AreEqual(packagedIdentity, catalog.GetSnapshot().Items[0].CatalogId);
+        Assert.IsTrue(catalog.GetSnapshot().Items[0].IsPackaged);
+        Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "ubuntu.exe"));
+        Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "Ubuntu"));
+        var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
+        var matcher = new Microsoft.CmdPal.Common.Text.PrecomputedFuzzyMatcher();
+        Assert.IsTrue(new AppSearch(aliasName, matcher).Evaluate(row).IsExactExecutableMatch);
+        Assert.IsTrue(new AppSearch($"{aliasName}.exe", matcher).Evaluate(row).IsExactExecutableMatch);
+        Assert.IsTrue(new AppSearch("ubuntu.exe", matcher).Evaluate(row).IsExactExecutableMatch);
         var snapshot = new AppListItemSnapshot([row], []);
         foreach (var representation in new[] { aliasItem, targetItem, packagedItem })
         {
@@ -378,13 +383,13 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("ubuntu", catalog.Items[0].Name);
-        Assert.AreEqual(aliasPath, catalog.Items[0].ExePath);
-        Assert.AreEqual(targetPath, catalog.Items[0].FullExecutablePath);
-        Assert.AreEqual(aumid, catalog.Items[0].UserModelId);
-        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
-        Assert.IsFalse(catalog.Items[0].IsPackaged);
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("ubuntu", catalog.GetSnapshot().Items[0].Name);
+        Assert.AreEqual(aliasPath, catalog.GetSnapshot().Items[0].ExePath);
+        Assert.AreEqual(targetPath, catalog.GetSnapshot().Items[0].FullExecutablePath);
+        Assert.AreEqual(aumid, catalog.GetSnapshot().Items[0].UserModelId);
+        Assert.AreEqual(packagedIdentity, catalog.GetSnapshot().Items[0].CatalogId);
+        Assert.IsFalse(catalog.GetSnapshot().Items[0].IsPackaged);
 
         var legacyCommand = new AppCommand(new AppItem
         {
@@ -392,7 +397,11 @@ public class AppCatalogTests
             Subtitle = aliasProgram.Description,
             ExePath = aliasPath,
         });
-        Assert.AreEqual(legacyCommand.Id, new AppCommand(catalog.Items[0]).Id);
+        var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
+        var snapshot = new AppListItemSnapshot([row], []);
+        Assert.AreNotEqual(legacyCommand.Id, row.Command!.Id);
+        Assert.AreSame(row, snapshot.GetVisibleApp(legacyCommand.Id));
+        Assert.AreEqual(legacyCommand.Id, snapshot.GetCommandItem(legacyCommand.Id)?.Command?.Id);
     }
 
     [TestMethod]
@@ -422,11 +431,11 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("3D Viewer", catalog.Items[0].Name);
-        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
-        Assert.IsTrue(catalog.Items[0].IsPackaged);
-        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "3D Viewer - Shortcut"));
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("3D Viewer", catalog.GetSnapshot().Items[0].Name);
+        Assert.AreEqual(packagedIdentity, catalog.GetSnapshot().Items[0].CatalogId);
+        Assert.IsTrue(catalog.GetSnapshot().Items[0].IsPackaged);
+        Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "3D Viewer - Shortcut"));
     }
 
     [TestMethod]
@@ -451,9 +460,9 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(2, catalog.Items.Count);
-        Assert.IsTrue(ContainsApp(catalog.Items, "app"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "App profile"));
+        Assert.AreEqual(2, catalog.GetSnapshot().Items.Count);
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "app"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "App profile"));
     }
 
     [TestMethod]
@@ -484,10 +493,10 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual(3, catalog.Items.Count);
-        Assert.IsTrue(ContainsApp(catalog.Items, "First alias"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "Second alias"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "Shared executable"));
+        Assert.AreEqual(3, catalog.GetSnapshot().Items.Count);
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "First alias"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Second alias"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Shared executable"));
     }
 
     [TestMethod]
@@ -506,13 +515,13 @@ public class AppCatalogTests
         var refresh = catalog.RefreshAsync();
 
         Assert.IsTrue(catalog.IsRefreshing);
-        Assert.AreEqual("Old", catalog.Items[0].Name);
+        Assert.AreEqual("Old", catalog.GetSnapshot().Items[0].Name);
 
         completion.SetResult([CreateCatalogItem("New")]);
         await refresh;
 
         Assert.IsFalse(catalog.IsRefreshing);
-        Assert.AreEqual("New", catalog.Items[0].Name);
+        Assert.AreEqual("New", catalog.GetSnapshot().Items[0].Name);
     }
 
     [TestMethod]
@@ -569,7 +578,7 @@ public class AppCatalogTests
 
         Assert.AreSame(refresh, queuedRefresh);
         Assert.AreEqual(2, source.LoadCount);
-        Assert.AreEqual("Second", catalog.Items[0].Name);
+        Assert.AreEqual("Second", catalog.GetSnapshot().Items[0].Name);
         Assert.IsFalse(catalog.IsRefreshing);
     }
 
@@ -583,7 +592,7 @@ public class AppCatalogTests
 
         await catalog.RefreshAsync();
 
-        Assert.AreEqual("First", catalog.Items[0].Name);
+        Assert.AreEqual("First", catalog.GetSnapshot().Items[0].Name);
         Assert.IsFalse(catalog.IsRefreshing);
 
         source.SetItems([CreateCatalogItem("Second")]);
@@ -591,7 +600,7 @@ public class AppCatalogTests
 
         Assert.AreEqual(2, source.LoadCount);
         Assert.AreEqual(2, cache.SaveCount);
-        Assert.AreEqual("Second", catalog.Items[0].Name);
+        Assert.AreEqual("Second", catalog.GetSnapshot().Items[0].Name);
         Assert.IsFalse(catalog.IsRefreshing);
     }
 
@@ -609,8 +618,8 @@ public class AppCatalogTests
 
         Assert.AreEqual(2, sourceA.LoadCount);
         Assert.AreEqual(1, sourceB.LoadCount);
-        Assert.IsTrue(ContainsApp(catalog.Items, "A2"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "B"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "A2"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "B"));
     }
 
     [TestMethod]
@@ -632,12 +641,12 @@ public class AppCatalogTests
 
         Assert.AreEqual(1, original.LoadCount);
         Assert.AreEqual(1, unchanged.LoadCount);
-        Assert.IsTrue(ContainsApp(catalog.Items, "A2"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "B"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "A2"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "B"));
 
         provider.SetSources([unchanged]);
-        await WaitForConditionAsync(() => !ContainsApp(catalog.Items, "A2"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "B"));
+        await WaitForConditionAsync(() => !ContainsApp(catalog.GetSnapshot().Items, "A2"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "B"));
     }
 
     [TestMethod]
@@ -663,7 +672,7 @@ public class AppCatalogTests
         var cache = new TestCache(null);
         using var catalog = CreateCatalog([source], cache);
         await catalog.RefreshAsync();
-        var originalApp = catalog.Items[0];
+        var originalApp = catalog.GetSnapshot().Items[0];
         var changedCount = 0;
         catalog.Changed += (_, _) => changedCount++;
         var updated = CreateCatalogItem("Same");
@@ -679,7 +688,7 @@ public class AppCatalogTests
         await catalog.RefreshAsync();
 
         Assert.AreEqual(0, changedCount);
-        Assert.AreSame(originalApp, catalog.Items[0]);
+        Assert.AreSame(originalApp, catalog.GetSnapshot().Items[0]);
         Assert.AreEqual(2, cache.SaveCount);
     }
 
@@ -711,9 +720,9 @@ public class AppCatalogTests
         Assert.AreEqual(1, source.IncrementalLoadCount);
         Assert.IsFalse(catalog.IsRefreshing);
         Assert.AreEqual("Full", (source.LastIncrementalBaseItems[0].Payload as Win32AppPayload)?.Name);
-        Assert.IsTrue(ContainsApp(catalog.Items, "Full"));
-        Assert.IsTrue(ContainsApp(catalog.Items, "Incremental"));
-        Assert.IsFalse(ContainsApp(catalog.Items, "Initial"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Full"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Incremental"));
+        Assert.IsFalse(ContainsApp(catalog.GetSnapshot().Items, "Initial"));
     }
 
     [TestMethod]
@@ -770,7 +779,7 @@ public class AppCatalogTests
         Assert.AreEqual(3, sourceA.LoadCount);
         Assert.AreEqual(0, sourceA.IncrementalLoadCount);
         Assert.AreEqual(2, sourceB.LoadCount);
-        Assert.IsTrue(ContainsApp(catalog.Items, "After flood"));
+        Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "After flood"));
     }
 
     [TestMethod]
@@ -784,7 +793,7 @@ public class AppCatalogTests
             visibility,
             invalidationDelay: TimeSpan.Zero);
         await catalog.RefreshAsync();
-        var originalItem = catalog.Items[0];
+        var originalItem = catalog.GetSnapshot().Items[0];
         var catalogId = originalItem.CatalogId;
         var catalogChangedCount = 0;
         var visibilityChangedCount = 0;
@@ -794,8 +803,8 @@ public class AppCatalogTests
         await catalog.SetAppHiddenAsync(catalogId, hidden: true);
 
         Assert.AreEqual(1, source.LoadCount);
-        Assert.AreEqual(0, catalog.Items.Count);
-        Assert.AreSame(originalItem, catalog.HiddenItems[0]);
+        Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
+        Assert.AreSame(originalItem, catalog.GetSnapshot().HiddenItems[0]);
         Assert.AreEqual(0, catalogChangedCount);
         Assert.AreEqual(1, visibilityChangedCount);
         Assert.AreEqual(1, visibility.PersistCount);
@@ -803,8 +812,8 @@ public class AppCatalogTests
         await catalog.SetAppHiddenAsync(catalogId, hidden: false);
 
         Assert.AreEqual(1, source.LoadCount);
-        Assert.AreSame(originalItem, catalog.Items[0]);
-        Assert.AreEqual(0, catalog.HiddenItems.Count);
+        Assert.AreSame(originalItem, catalog.GetSnapshot().Items[0]);
+        Assert.AreEqual(0, catalog.GetSnapshot().HiddenItems.Count);
         Assert.AreEqual(0, catalogChangedCount);
         Assert.AreEqual(2, visibilityChangedCount);
         Assert.AreEqual(2, visibility.PersistCount);
@@ -850,9 +859,9 @@ public class AppCatalogTests
         catalog.Changed += (_, _) => changedCount++;
 
         filter.Exclude("win32:Excluded");
-        await WaitForConditionAsync(() => catalog.Items.Count == 1 && changedCount == 1);
+        await WaitForConditionAsync(() => catalog.GetSnapshot().Items.Count == 1 && changedCount == 1);
 
-        Assert.AreEqual("Visible", catalog.Items[0].Name);
+        Assert.AreEqual("Visible", catalog.GetSnapshot().Items[0].Name);
         Assert.AreEqual(1, source.LoadCount);
         Assert.AreEqual(1, cache.SaveCount);
         Assert.AreEqual(1, changedCount);
@@ -874,8 +883,8 @@ public class AppCatalogTests
         filter.FailAndRaiseChanged();
         await WaitForConditionAsync(() => logger.HasEvent(9));
 
-        Assert.AreEqual(1, catalog.Items.Count);
-        Assert.AreEqual("Visible", catalog.Items[0].Name);
+        Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
+        Assert.AreEqual("Visible", catalog.GetSnapshot().Items[0].Name);
     }
 
     [TestMethod]
@@ -890,7 +899,7 @@ public class AppCatalogTests
             program.Name = "Legacy Editor";
             program.LnkFilePath = @"C:\Links\Legacy Editor.lnk";
             var legacy = CreateWin32CatalogItem(program, preferred.Identity, 10, "test");
-            var legacyId = new AppCommand(legacy.ToAppItem()).Id;
+            var legacyId = legacy.Payload.GetCommandId();
             using var source = new TestAppSource("test", [preferred.MergeProvenance(legacy)]);
             var settings = new AllAppsSettings(settingsPath);
             using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
@@ -917,7 +926,8 @@ public class AppCatalogTests
             await WaitForConditionAsync(() => subtitleChanged && resolved.Subtitle == string.Empty);
 
             await catalog.SetAppHiddenAsync(preferred.Identity, hidden: true);
-            Assert.IsNull(provider.GetCommandItem(legacyId));
+            Assert.AreEqual(legacyId, provider.GetCommandItem(legacyId)?.Command?.Id);
+            Assert.IsNull(list.GetSnapshot().GetVisibleApp(legacyId));
             Assert.AreSame(canonical.MoreCommands, resolved.MoreCommands);
             Assert.AreEqual(Properties.Resources.unhide_app, resolved.MoreCommands.OfType<CommandContextItem>().Last().Command!.Name);
             await catalog.SetAppHiddenAsync(preferred.Identity, hidden: false);
@@ -925,7 +935,8 @@ public class AppCatalogTests
 
             form.SubmitForm("{\"apps.ExcludedAppNames\":\"[\\\"*Editor*\\\"]\"}", string.Empty);
             await WaitForConditionAsync(() => list.GetSnapshot().PatternHiddenItems.Count == 1);
-            Assert.IsNull(provider.GetCommandItem(legacyId));
+            Assert.AreEqual(legacyId, provider.GetCommandItem(legacyId)?.Command?.Id);
+            Assert.IsNull(list.GetSnapshot().GetVisibleApp(legacyId));
             form.SubmitForm("{\"apps.ExcludedAppNames\":\"[]\"}", string.Empty);
             await WaitForConditionAsync(() => provider.GetCommandItem(legacyId) is not null);
         }
@@ -989,7 +1000,8 @@ public class AppCatalogTests
             Assert.AreSame(rows["Manual Updater"], list.GetSnapshot().PatternHiddenItems.Single(item => item.Title == "Manual Updater"));
             Assert.AreEqual("Visible", page.GetItems().Single().Title);
             var provider = new AllAppsCommandProvider(page, list, settings);
-            Assert.IsNull(provider.GetCommandItem(rows["Utility Updater"].Command!.Id));
+            Assert.AreSame(rows["Utility Updater"], provider.GetCommandItem(rows["Utility Updater"].Command!.Id));
+            Assert.IsNull(list.GetSnapshot().GetVisibleApp(rows["Utility Updater"].Command!.Id));
 
             page.Filters!.CurrentFilterId = AllAppsFilters.HiddenFilterId;
             CollectionAssert.AreEqual(
@@ -1047,18 +1059,388 @@ public class AppCatalogTests
             var settingsForm = (SettingsForm)settings.Settings.ToContent()[0];
 
             settingsForm.SubmitForm("{\"apps.HideUninstallers\":\"true\"}", string.Empty);
-            await WaitForConditionAsync(() => catalog.Items.Count == 1 && catalog.HiddenItems.Count == 0);
+            await WaitForConditionAsync(() =>
+            {
+                var snapshot = catalog.GetSnapshot();
+                return snapshot.Items.Count == 1 && snapshot.HiddenItems.Count == 0;
+            });
 
-            Assert.AreEqual("Visible", catalog.Items[0].Name);
+            Assert.AreEqual("Visible", catalog.GetSnapshot().Items[0].Name);
             Assert.AreEqual(1, source.LoadCount);
             Assert.AreEqual(1, cache.SaveCount);
 
             settingsForm.SubmitForm("{\"apps.HideUninstallers\":\"false\"}", string.Empty);
-            await WaitForConditionAsync(() => catalog.HiddenItems.Count == 1);
+            await WaitForConditionAsync(() => catalog.GetSnapshot().HiddenItems.Count == 1);
 
-            Assert.AreEqual("Uninstall Contoso", catalog.HiddenItems[0].Name);
+            Assert.AreEqual("Uninstall Contoso", catalog.GetSnapshot().HiddenItems[0].Name);
             Assert.AreEqual(1, source.LoadCount);
             Assert.AreEqual(1, cache.SaveCount);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CommandIds_RetainLegacyPinsAcrossRenamingAndSettingsReload(bool packaged)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"futureSetting\":\"preserved\"}");
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            program.LnkFilePath = @"C:\Links\Editor.lnk";
+            IAppCatalogPayload originalPayload = packaged
+                ? new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.Editor_123!app" }
+                : Win32AppPayload.From(program);
+            var identity = packaged ? "packaged:Contoso.Editor_123!app" : @"win32:C:\Apps\Editor.exe|args:";
+            var original = new AppCatalogItem(identity, 0, new AppCatalogSourceReference("test", "original"), [], originalPayload);
+            var legacyId = originalPayload.GetCommandId();
+            var stableId = new AppCommand(original.ToAppItem()).Id;
+            IAppCatalogPayload renamedPayload = packaged
+                ? ((PackagedAppSnapshot)originalPayload) with { Name = "Éditeur", Description = "Éditeur de texte" }
+                : ((Win32AppPayload)originalPayload) with { Name = "Renamed Editor", Description = "Updated description", LnkFilePath = @"C:\Links\Renamed Editor.lnk" };
+            var renamed = new AppCatalogItem(identity, 0, new AppCatalogSourceReference("test", "renamed"), [], renamedPayload);
+            var settings = new AllAppsSettings(settingsPath);
+
+            using (var source = new TestAppSource("test", [original]))
+            using (var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings)))
+            using (var list = new AppListItemSource(catalog, settings))
+            {
+                await catalog.InitializeAsync();
+                await WaitForConditionAsync(() => !list.IsLoading);
+                Assert.AreEqual(legacyId, list.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+                Assert.AreEqual(stableId, list.GetSnapshot().VisibleItems.Single().Command!.Id);
+
+                source.SetItems([renamed]);
+                await catalog.RefreshAsync();
+                Assert.AreEqual(stableId, list.GetSnapshot().VisibleItems.Single().Command!.Id);
+                Assert.AreEqual(renamedPayload.ToAppItem().Name, list.GetSnapshot().GetCommandItem(legacyId)?.Title);
+                Assert.AreEqual(legacyId, list.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+
+                await catalog.SetAppHiddenAsync(identity, hidden: true);
+                Assert.AreEqual(legacyId, list.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+                Assert.IsNull(list.GetSnapshot().GetVisibleApp(legacyId));
+                await catalog.SetAppHiddenAsync(identity, hidden: false);
+            }
+
+            // Start with a fresh catalog so compatibility does not depend on the discovery cache.
+            using var reloadedSource = new TestAppSource("test", [renamed]);
+            using var reloadedCatalog = CreateCatalog([reloadedSource], new TestCache(null));
+            using var reloadedList = new AppListItemSource(reloadedCatalog, new AllAppsSettings(settingsPath));
+            await reloadedCatalog.InitializeAsync();
+            await WaitForConditionAsync(() => !reloadedList.IsLoading);
+            Assert.AreEqual(stableId, reloadedList.GetSnapshot().GetCommandItem(stableId)?.Command?.Id);
+            Assert.AreEqual(legacyId, reloadedList.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+            Assert.AreEqual(renamedPayload.ToAppItem().Name, reloadedList.GetSnapshot().GetCommandItem(legacyId)?.Title);
+            Assert.IsNotNull(reloadedList.GetSnapshot().GetCommandItem(renamedPayload.GetCommandId()));
+            StringAssert.Contains(File.ReadAllText(settingsPath), "\"futureSetting\": \"preserved\"");
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public void ListItems_KeepAliasesAndRowsInTheSameCatalogPublication()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-snapshot-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            program.LnkFilePath = @"C:\Links\Editor.lnk";
+            var original = CreateWin32CatalogItem(program, @"win32:C:\Old\Editor.exe|args:", 0, "test").ToAppItem();
+            program.FullPath = @"D:\New\Editor.exe";
+            var moved = CreateWin32CatalogItem(program, @"win32:D:\New\Editor.exe|args:", 0, "test").ToAppItem();
+            var originalSnapshot = new AppCatalogSnapshot([original], []);
+            var movedSnapshot = new AppCatalogSnapshot([moved], []);
+            var currentSnapshot = originalSnapshot;
+            var catalog = new Mock<IAppCatalog>();
+            catalog.Setup(value => value.InitializeAsync()).Returns(Task.CompletedTask);
+            catalog.Setup(value => value.GetSnapshot()).Returns(() =>
+            {
+                var snapshot = currentSnapshot;
+                currentSnapshot = movedSnapshot;
+                return snapshot;
+            });
+            using var list = new AppListItemSource(catalog.Object, new AllAppsSettings(settingsPath));
+            var originalId = new AppCommand(original).Id;
+
+            Assert.AreSame(original, list.GetSnapshot().VisibleItems.Single().App);
+            Assert.AreSame(original, list.GetSnapshot().GetVisibleApp(original.CommandIds[0])?.App);
+
+            catalog.Raise(value => value.Changed += null, new AppCatalogChangedEventArgs(
+                [new AppCatalogItemChange(AppCatalogChangeKind.Updated, moved.CatalogId, moved, hidden: false)]));
+
+            Assert.AreSame(moved, list.GetSnapshot().VisibleItems.Single().App);
+            Assert.AreSame(moved, list.GetSnapshot().GetVisibleApp(originalId)?.App);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandIds_FollowInstallMovesAndRetainEarlierAliasesAfterRestart()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Program Files (x86)\Editor\Editor.exe");
+            program.LnkFilePath = @"C:\Links\Editor.lnk";
+            var original = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var legacyId = original.Payload.GetCommandId();
+            var originalId = new AppCommand(original.ToAppItem()).Id;
+            program.Name = "Renamed Editor";
+            var renamed = CreateWin32CatalogItem(program, original.Identity, 0, "test");
+            var renamedId = renamed.Payload.GetCommandId();
+            program.FullPath = @"C:\Program Files\Editor\Editor.exe";
+            var moved = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var movedId = new AppCommand(moved.ToAppItem()).Id;
+            Assert.AreNotEqual(originalId, movedId);
+
+            using (var source = new TestAppSource("test", [original]))
+            using (var catalog = CreateCatalog([source], new TestCache(null)))
+            using (var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath)))
+            {
+                await catalog.InitializeAsync();
+                await WaitForConditionAsync(() => !list.IsLoading);
+                source.SetItems([renamed]);
+                await catalog.RefreshAsync();
+                source.SetItems([moved]);
+                await catalog.RefreshAsync();
+                foreach (var id in new[] { originalId, legacyId, renamedId })
+                {
+                    Assert.AreEqual(movedId, list.GetSnapshot().GetVisibleApp(id)?.Command?.Id);
+                    Assert.AreEqual(id, list.GetSnapshot().GetCommandItem(id)?.Command?.Id);
+                }
+            }
+
+            // A second install move after a restart must redirect the entire saved alias group again.
+            program.FullPath = @"D:\Apps\Editor\Editor.exe";
+            var movedAgain = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            using var freshSource = new TestAppSource("test", [movedAgain]);
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null));
+            using var freshList = new AppListItemSource(freshCatalog, new AllAppsSettings(settingsPath));
+            await freshCatalog.InitializeAsync();
+            await WaitForConditionAsync(() => !freshList.IsLoading);
+            foreach (var id in new[] { originalId, movedId, legacyId, renamedId })
+            {
+                Assert.AreEqual("Renamed Editor", freshList.GetSnapshot().GetCommandItem(id)?.Title);
+                Assert.AreEqual(program.FullPath, freshList.GetSnapshot().GetVisibleApp(id)?.App.FullExecutablePath);
+            }
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task HiddenApps_FollowInstallMovesAndUnhideEarlierIdentities(bool legacyHide)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-hidden-app-move-{Guid.NewGuid():N}.json");
+        try
+        {
+            const string shortcut = @"C:\Links\Editor.lnk";
+            const string launchIdentity = @"win32:C:\Links\Editor.lnk|args:";
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            program.LnkFilePath = shortcut;
+            var originalPayload = Win32AppPayload.From(program);
+            var original = new AppCatalogItem(
+                @"win32:C:\Old\Editor.exe|args:",
+                0,
+                new AppCatalogSourceReference("test", shortcut),
+                [],
+                originalPayload,
+                identityAliases: [launchIdentity]);
+            var moved = new AppCatalogItem(
+                @"win32:D:\New\Editor.exe|args:",
+                0,
+                new AppCatalogSourceReference("test", shortcut),
+                [],
+                originalPayload with { Name = "Renamed Editor", FullPath = @"D:\New\Editor.exe" },
+                identityAliases: [launchIdentity]);
+            var settings = new AllAppsSettings(settingsPath);
+            if (legacyHide)
+            {
+                settings.SetAppHidden(original.Identity, hidden: true);
+                settings.SaveSettings();
+            }
+
+            using (var source = new TestAppSource("test", [original]))
+            using (var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings)))
+            using (var list = new AppListItemSource(catalog, settings))
+            {
+                await catalog.InitializeAsync();
+                await WaitForConditionAsync(() => !list.IsLoading);
+                if (!legacyHide)
+                {
+                    await catalog.SetAppHiddenAsync(original.Identity, hidden: true);
+                    Assert.IsTrue(settings.IsAppHidden(launchIdentity));
+                }
+
+                source.SetItems([moved]);
+                await catalog.RefreshAsync();
+                await WaitForConditionAsync(() => list.GetSnapshot().VisibleItems.Count == 0
+                    && list.GetSnapshot().HiddenItems.SingleOrDefault()?.App.CatalogId == moved.Identity);
+                Assert.AreEqual(0, list.GetSnapshot().VisibleItems.Count);
+                Assert.AreEqual(moved.Identity, list.GetSnapshot().HiddenItems.Single().App.CatalogId);
+                var savedId = new AppCommand(original.ToAppItem()).Id;
+                Assert.AreEqual(savedId, list.GetSnapshot().GetCommandItem(savedId)?.Command?.Id);
+                Assert.AreEqual(moved.Identity, list.GetSnapshot().GetApp(savedId)?.App.CatalogId);
+                Assert.IsNull(list.GetSnapshot().GetVisibleApp(savedId));
+            }
+
+            using var freshSource = new TestAppSource("test", [moved]);
+            var reloaded = new AllAppsSettings(settingsPath);
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null), new SettingsAppVisibilityStore(reloaded));
+            using var freshList = new AppListItemSource(freshCatalog, reloaded);
+            await freshCatalog.InitializeAsync();
+            await WaitForConditionAsync(() => !freshList.IsLoading);
+            Assert.AreEqual(moved.Identity, freshList.GetSnapshot().HiddenItems.Single().App.CatalogId);
+            await freshCatalog.SetAppHiddenAsync(moved.Identity, hidden: false);
+            Assert.AreEqual(moved.Identity, freshList.GetSnapshot().VisibleItems.Single().App.CatalogId);
+            Assert.IsFalse(reloaded.IsAppHidden(original.Identity));
+            Assert.IsFalse(reloaded.IsAppHidden(launchIdentity));
+
+            freshSource.SetItems([original]);
+            await freshCatalog.RefreshAsync();
+            Assert.AreEqual(original.Identity, freshList.GetSnapshot().VisibleItems.Single().App.CatalogId);
+            Assert.AreEqual(0, freshList.GetSnapshot().HiddenItems.Count);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandIds_DoNotRedirectAnInstallationThatStillExistsButIsHidden()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            program.LnkFilePath = @"C:\Links\Editor.lnk";
+            var original = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var originalId = new AppCommand(original.ToAppItem()).Id;
+            program.FullPath = @"C:\New\Editor.exe";
+            var replacement = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var settings = new AllAppsSettings(settingsPath);
+            using var source = new TestAppSource("test", [original]);
+            using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
+            using var list = new AppListItemSource(catalog, settings);
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !list.IsLoading);
+            await catalog.SetAppHiddenAsync(original.Identity, hidden: true);
+            source.SetItems([original, replacement]);
+            await catalog.RefreshAsync();
+            Assert.AreEqual(originalId, list.GetSnapshot().GetCommandItem(originalId)?.Command?.Id);
+            Assert.IsNull(list.GetSnapshot().GetVisibleApp(originalId));
+            Assert.IsNull(list.GetSnapshot().GetCommandItem(original.Payload.GetCommandId()));
+            Assert.AreEqual(new AppCommand(replacement.ToAppItem()).Id, list.GetSnapshot().VisibleItems.Single().Command!.Id);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task CommandIds_RetainAliasesWhenWin32RepresentationBecomesPackaged()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            var win32 = CreateWin32CatalogItem(program, @"win32:C:\Apps\Editor.exe|args:", 0, "test");
+            var legacyId = win32.Payload.GetCommandId();
+            var win32Id = new AppCommand(win32.ToAppItem()).Id;
+            var packaged = new AppCatalogItem(
+                "packaged:Contoso.Editor_123!app",
+                0,
+                new AppCatalogSourceReference("test", "packaged"),
+                [],
+                new PackagedAppSnapshot { Name = "Packaged Editor", UserModelId = "Contoso.Editor_123!app" });
+            using (var source = new TestAppSource("test", [win32]))
+            using (var catalog = CreateCatalog([source], new TestCache(null)))
+            using (var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath)))
+            {
+                await catalog.InitializeAsync();
+                await WaitForConditionAsync(() => !list.IsLoading);
+                source.SetItems([packaged.MergeProvenance(win32.WithIdentity(packaged.Identity))]);
+                await catalog.RefreshAsync();
+                Assert.AreEqual(win32Id, list.GetSnapshot().GetCommandItem(win32Id)?.Command?.Id);
+                Assert.AreEqual(legacyId, list.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+            }
+
+            using var freshSource = new TestAppSource("test", [packaged]);
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null));
+            using var freshList = new AppListItemSource(freshCatalog, new AllAppsSettings(settingsPath));
+            await freshCatalog.InitializeAsync();
+            await WaitForConditionAsync(() => !freshList.IsLoading);
+            Assert.AreEqual(win32Id, freshList.GetSnapshot().GetCommandItem(win32Id)?.Command?.Id);
+            Assert.AreEqual(legacyId, freshList.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
+            Assert.AreEqual("Packaged Editor", freshList.GetSnapshot().GetCommandItem(legacyId)?.Title);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CommandIds_DistinguishPackagedAppsWithIdenticalDisplayMetadata(bool coexist)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            var first = new AppCatalogItem(
+                "packaged:Contoso.First_123!app",
+                0,
+                new AppCatalogSourceReference("test", "first"),
+                [],
+                new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.First_123!app" });
+            var second = new AppCatalogItem(
+                "packaged:Contoso.Second_123!app",
+                0,
+                new AppCatalogSourceReference("test", "second"),
+                [],
+                new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.Second_123!app" });
+            Assert.AreEqual(first.Payload.GetCommandId(), second.Payload.GetCommandId());
+            using var source = new TestAppSource("test", [first]);
+            using var catalog = CreateCatalog([source], new TestCache(null));
+            using var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath));
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !list.IsLoading);
+            var firstId = new AppCommand(first.ToAppItem()).Id;
+            var secondId = new AppCommand(second.ToAppItem()).Id;
+            Assert.AreNotEqual(firstId, secondId);
+            source.SetItems(coexist ? [first, second] : [second]);
+            await catalog.RefreshAsync();
+            var rows = list.GetSnapshot().VisibleItems;
+            Assert.AreEqual(coexist ? 2 : 1, rows.Count);
+            Assert.AreEqual(coexist, list.GetSnapshot().GetCommandItem(firstId) is not null, "A matching display name cannot redirect an absent AUMID to a different application.");
+            Assert.IsNotNull(list.GetSnapshot().GetCommandItem(secondId));
+            foreach (var row in rows)
+            {
+                Assert.AreSame(row, list.GetSnapshot().GetVisibleApp(row.Command!.Id));
+            }
+
+            Assert.IsNull(list.GetSnapshot().GetCommandItem(first.Payload.GetCommandId()), "An ambiguous old ID must not launch an arbitrary application.");
+            source.SetItems([first]);
+            await catalog.RefreshAsync();
+            Assert.IsNull(list.GetSnapshot().GetCommandItem(first.Payload.GetCommandId()));
         }
         finally
         {
@@ -1422,6 +1804,102 @@ public class AppCatalogTests
         {
             IsDisposed = true;
             Invalidated = null;
+        }
+    }
+
+    [TestMethod]
+    public void HaveSamePersistedContent_IgnoresItemOrderAndIdentityCasing()
+    {
+        var first = CreateCatalogItem("First");
+        var second = CreateCatalogItem("Second");
+        var caseVariant = CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant());
+
+        Assert.IsTrue(AppCatalogItem.HaveSamePersistedContent([first, second], [second, caseVariant]));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void HaveSamePersistedContent_RejectsDuplicateIdentities(bool duplicatesOnLeft)
+    {
+        var first = CreateCatalogItem("First");
+        var second = CreateCatalogItem("Second");
+        AppCatalogItem[] unique = [first, second];
+        AppCatalogItem[] duplicates = [first, CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant())];
+
+        Assert.IsFalse(duplicatesOnLeft
+            ? AppCatalogItem.HaveSamePersistedContent(duplicates, unique)
+            : AppCatalogItem.HaveSamePersistedContent(unique, duplicates));
+    }
+
+    [TestMethod]
+    public void HaveSamePersistedContent_DetectsProvenanceChangesWithoutPreventingRowReuse()
+    {
+        var first = CreateCatalogItem("First");
+        var updated = first.MergeProvenance(CreateCatalogItem("First", sourceId: "alternate"));
+
+        Assert.IsTrue(first.CanReuseMaterializedApp(updated));
+        Assert.IsFalse(AppCatalogItem.HaveSamePersistedContent([first], [updated]));
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_PartialCacheKeepsCachedRowsVisibleAndLoadingUntilMissingSourceCompletes()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-loading-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var desktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            var cachedPackage = new AppCatalogItem(
+                "packaged:Contoso.Cached_123!App",
+                priority: 0,
+                new AppCatalogSourceReference("packaged", "Contoso.Cached_123!App"),
+                [],
+                new PackagedAppSnapshot { Name = "Cached package", UserModelId = "Contoso.Cached_123!App" });
+            var cache = new TestCache(new AppCatalogCacheFile
+            {
+                Sources = [new AppCatalogSourceSnapshot { SourceId = "packaged", Items = [cachedPackage] }],
+            });
+            using var packagedSource = new TestAppSource("packaged", [cachedPackage]);
+            using var desktopSource = new TestAppSource("win32:desktop", []);
+            desktopSource.DeferNextLoad(desktopLoad.Task);
+            using var catalog = CreateCatalog([packagedSource, desktopSource], cache);
+            var cachedPublication = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            catalog.Changed += (_, _) =>
+            {
+                if (ContainsApp(catalog.GetSnapshot().Items, "Cached package"))
+                {
+                    cachedPublication.TrySetResult();
+                }
+            };
+            using var list = new AppListItemSource(catalog, settings);
+
+            var initialization = catalog.InitializeAsync();
+            await cachedPublication.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => desktopSource.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == 1);
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+
+            Assert.IsFalse(initialization.IsCompleted);
+            Assert.IsTrue(list.IsLoading);
+            Assert.AreEqual("Cached package", list.GetSnapshot().VisibleItems.Single().Title);
+            Assert.AreEqual(0, packagedSource.LoadCount);
+
+            desktopLoad.SetResult([CreateCatalogItem("Fresh desktop", sourceId: "desktop")]);
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => !list.IsLoading);
+
+            var expectedTitles = new[] { "Cached package", "Fresh desktop" };
+            CollectionAssert.AreEquivalent(
+                expectedTitles,
+                list.GetSnapshot().VisibleItems.Select(item => item.Title).ToArray());
+            Assert.AreEqual(1, desktopSource.LoadCount);
+            Assert.AreEqual(0, packagedSource.LoadCount);
+        }
+        finally
+        {
+            desktopLoad.TrySetResult([]);
+            await settings.WaitForAliasSavesAsync();
+            File.Delete(settingsPath);
         }
     }
 }

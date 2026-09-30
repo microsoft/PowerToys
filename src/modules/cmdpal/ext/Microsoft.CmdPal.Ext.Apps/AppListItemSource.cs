@@ -216,21 +216,28 @@ public sealed partial class AppListItemSource : IAppListItemSource
             existingItems[item.App.CatalogId] = (item, AppVisibility.HiddenByPattern);
         }
 
+        var commandAliases = _settings.RetainAppCommandAliases(catalogSnapshot.Items.Concat(catalogSnapshot.HiddenItems).Concat(catalogSnapshot.PatternHiddenItems));
         var updated = new AppListItemSnapshot(
             BuildList(catalogSnapshot.Items, AppVisibility.Visible, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
             BuildList(catalogSnapshot.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems),
-            BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems));
+            BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems),
+            commandAliases);
+
+        var resolutionChanged = !updated.HasSameCommandResolution(snapshot);
 
         if (ReferenceEquals(updated.VisibleItems, snapshot.VisibleItems)
             && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems)
             && ReferenceEquals(updated.PatternHiddenItems, snapshot.PatternHiddenItems))
         {
-            if (!presentationChanged && state.ResultLimit == resultLimit)
+            if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit)
             {
                 return;
             }
 
-            updated = snapshot;
+            if (!resolutionChanged)
+            {
+                updated = snapshot;
+            }
         }
 
         lock (_stateLock)
@@ -356,6 +363,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
         _appCatalog.VisibilityChanged -= OnCatalogVisibilityChanged;
         _settings.Settings.SettingsChanged -= OnSettingsChanged;
         Changed = null;
+        _settings.WaitForAliasSavesAsync().GetAwaiter().GetResult();
         GC.SuppressFinalize(this);
     }
 

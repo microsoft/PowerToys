@@ -42,6 +42,11 @@ internal static class PathHelpers
     /// <summary>Removes shared discovery directories from ordinary application search terms.</summary>
     internal static string GetAppSearchPath(string path)
     {
+        if (!Path.IsPathFullyQualified(path))
+        {
+            return path;
+        }
+
         var normalized = NormalizePath(path);
         foreach (var root in AppSearchRoots)
         {

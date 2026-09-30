@@ -89,10 +89,6 @@ public sealed partial class AppCatalog : IAppCatalog
 
     public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
 
-    public IReadOnlyList<AppItem> Items => Volatile.Read(ref _publishedState).Snapshot.Items;
-
-    public IReadOnlyList<AppItem> HiddenItems => Volatile.Read(ref _publishedState).Snapshot.HiddenItems;
-
     public bool IsRefreshing
     {
         get
@@ -174,14 +170,14 @@ public sealed partial class AppCatalog : IAppCatalog
                 }
             }
 
-            if (missingSources.Count > 0)
-            {
-                _ = QueueFullRefresh(missingSources);
-            }
-
             if (cachedSourcesToReconcile.Count > 0)
             {
                 _ = ReconcileCachedSourcesAfterDelayAsync(cachedSourcesToReconcile);
+            }
+
+            if (missingSources.Count > 0)
+            {
+                await QueueFullRefresh(missingSources).ConfigureAwait(false);
             }
 
             return;
@@ -329,7 +325,7 @@ public sealed partial class AppCatalog : IAppCatalog
                         }
 
                         if (!updated.TryGetValue(refreshed.Source.Id, out var currentItems)
-                            || !HasSameSourceSnapshot(currentItems, refreshed.Items))
+                            || !AppCatalogItem.HaveSamePersistedContent(currentItems, refreshed.Items))
                         {
                             updated[refreshed.Source.Id] = refreshed.Items;
                             snapshotsChanged = true;
@@ -609,7 +605,6 @@ public sealed partial class AppCatalog : IAppCatalog
                 try
                 {
                     app = item.ToAppItem();
-                    app.CatalogId = item.Identity;
                 }
                 catch (Exception ex)
                 {
@@ -796,36 +791,6 @@ public sealed partial class AppCatalog : IAppCatalog
         }
 
         return item.WithIdentity(canonicalIdentity);
-    }
-
-    private static bool HasSameSourceSnapshot(
-        IReadOnlyList<AppCatalogItem> currentItems,
-        IReadOnlyList<AppCatalogItem> refreshedItems)
-    {
-        if (currentItems.Count != refreshedItems.Count)
-        {
-            return false;
-        }
-
-        var currentById = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in currentItems)
-        {
-            if (!currentById.TryAdd(item.Identity, item))
-            {
-                return false;
-            }
-        }
-
-        foreach (var item in refreshedItems)
-        {
-            if (!currentById.TryGetValue(item.Identity, out var current)
-                || !current.HasSamePersistedContent(item))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void OnSourceProviderChanged(object? sender, EventArgs e)

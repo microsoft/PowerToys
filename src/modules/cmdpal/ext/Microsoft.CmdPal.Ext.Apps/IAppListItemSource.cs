@@ -3,10 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
@@ -25,11 +22,6 @@ public interface IAppListItemSource : IDisposable
     event EventHandler? Changed;
 
     /// <summary>
-    /// Gets an atomic snapshot of visible and hidden application list items.
-    /// </summary>
-    AppListItemSnapshot GetSnapshot();
-
-    /// <summary>
     /// Gets a value indicating whether the initial catalog load or a user-requested refresh is active.
     /// </summary>
     bool IsLoading { get; }
@@ -40,72 +32,12 @@ public interface IAppListItemSource : IDisposable
     int TopLevelResultLimit { get; }
 
     /// <summary>
+    /// Gets an atomic snapshot of visible and hidden application list items.
+    /// </summary>
+    AppListItemSnapshot GetSnapshot();
+
+    /// <summary>
     /// Requests a full background refresh of the application catalog.
     /// </summary>
     Task RefreshAsync();
-}
-
-/// <summary>
-/// Represents one atomic publication of visible and hidden application list items.
-/// </summary>
-public sealed class AppListItemSnapshot
-{
-    private readonly Dictionary<string, AppListItem> _visibleByCommandId = new(StringComparer.Ordinal);
-
-    /// <summary>
-    /// Initializes an atomic visible and hidden list-item snapshot.
-    /// </summary>
-    /// <param name="visibleItems">Applications eligible for normal user-facing views.</param>
-    /// <param name="hiddenItems">Applications explicitly hidden by the user.</param>
-    /// <param name="patternHiddenItems">Applications hidden by global exclusion patterns.</param>
-    public AppListItemSnapshot(
-        IReadOnlyList<AppListItem> visibleItems,
-        IReadOnlyList<AppListItem> hiddenItems,
-        IReadOnlyList<AppListItem>? patternHiddenItems = null)
-    {
-        VisibleItems = visibleItems ?? throw new ArgumentNullException(nameof(visibleItems));
-        HiddenItems = hiddenItems ?? throw new ArgumentNullException(nameof(hiddenItems));
-        PatternHiddenItems = patternHiddenItems ?? [];
-        foreach (var item in VisibleItems)
-        {
-            if (item.Command is { } command)
-            {
-                _visibleByCommandId.TryAdd(command.Id, item);
-            }
-        }
-
-        foreach (var item in VisibleItems)
-        {
-            foreach (var id in item.App.CommandIds)
-            {
-                _visibleByCommandId.TryAdd(id, item);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets applications eligible for normal user-facing views.
-    /// </summary>
-    public IReadOnlyList<AppListItem> VisibleItems { get; }
-
-    /// <summary>
-    /// Gets applications explicitly hidden by the user.
-    /// </summary>
-    public IReadOnlyList<AppListItem> HiddenItems { get; }
-
-    /// <summary>Gets applications hidden by global name or path exclusion patterns.</summary>
-    public IReadOnlyList<AppListItem> PatternHiddenItems { get; }
-
-    /// <summary>Resolves an app command against this snapshot's visibility policy.</summary>
-    public AppListItem? GetVisibleApp(string commandId)
-        => _visibleByCommandId.GetValueOrDefault(commandId);
-
-    /// <summary>Resolves a visible app while preserving the requested persisted command ID.</summary>
-    public ICommandItem? GetCommandItem(string commandId)
-    {
-        var item = GetVisibleApp(commandId);
-        return item is null || string.Equals(item.Command!.Id, commandId, StringComparison.Ordinal)
-            ? item
-            : new AppCommandAlias(item, commandId);
-    }
 }
