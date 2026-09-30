@@ -37,7 +37,7 @@ Clipboard modes use the Win32/OLE clipboard so they do not require a foreground 
 
 Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
 
-`--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
+For `transform`, `--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). `actions list --json` emits a bare array of action objects (`name`, `kind`, optional `id`, and `requiresPrompt`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
 
 Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
 
