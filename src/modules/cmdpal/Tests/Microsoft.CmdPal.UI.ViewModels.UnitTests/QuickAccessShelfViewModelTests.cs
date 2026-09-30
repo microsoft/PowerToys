@@ -127,6 +127,8 @@ public class QuickAccessShelfViewModelTests
         // Keep the existing worker pending while the test requests the next configuration.
         typeof(QuickAccessShelfViewModel).GetField("_rebuildRunning", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(viewModel, 1);
         typeof(QuickAccessShelfViewModel).GetField("_visibleCapacity", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(viewModel, int.MaxValue);
+        typeof(QuickAccessShelfViewModel).GetField("_itemSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(viewModel, Array.Empty<QuickAccessShelfItem>());
         return viewModel;
     }
 
