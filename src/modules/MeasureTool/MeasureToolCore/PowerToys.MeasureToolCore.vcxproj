@@ -43,6 +43,11 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <GenerateManifest>false</GenerateManifest>
     <DesktopCompatible>true</DesktopCompatible>
+    <!--
+      Keep a private static UCRT rather than the Hybrid CRT from Cpp.Build.props: Core calls InitUnhandledExceptionHandler,
+      whose signal(SIGABRT) would otherwise replace the abort handler of every module that shares the UCRT in MeasureToolUI.
+    -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
