@@ -1636,6 +1636,7 @@ litigation is filed.
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
+- HtmlAgilityPack
 - hyjiacan.pinyin4net
 - Interop.Microsoft.Office.Interop.OneNote
 - LazyCache
@@ -1647,6 +1648,7 @@ litigation is filed.
 - MSTest
 - MSTest.TestFramework
 - NJsonSchema
+- Newtonsoft.Json
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema
