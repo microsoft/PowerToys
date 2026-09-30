@@ -590,13 +590,15 @@ public class ProgramTests
     }
 
     [TestMethod]
-    public void DisabledByPolicy_WritesStableJsonError()
+    public async Task DisabledByPolicy_WritesStableJsonError()
     {
-        var stderr = new StringWriter();
+        var result = await RunAsync(
+            ["transform", "--action", "plain-text", "--stdin", "--json"],
+            "hello",
+            runtime: new ExceptionRuntime(new CliPolicyDisabledException()));
 
-        Assert.IsTrue(Program.TryWritePolicyDisabledError(isEnabledByPolicy: false, ["transform", "--json"], stderr));
-
-        using var document = JsonDocument.Parse(stderr.ToString());
+        Assert.AreEqual(1, result.ExitCode);
+        using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
     }
 

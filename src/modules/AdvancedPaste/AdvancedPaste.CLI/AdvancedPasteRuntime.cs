@@ -50,7 +50,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
     {
         if (!_isAdvancedPasteEnabled())
         {
-            throw new CliActionUnavailableException("Advanced Paste is disabled by policy.");
+            throw new CliPolicyDisabledException();
         }
 
         var formats = await input.GetAvailableFormatsAsync();

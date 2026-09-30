@@ -51,7 +51,7 @@ public class AdvancedPasteRuntimeTests
         var executor = new TestPasteFormatExecutor();
         var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: true), isAdvancedPasteEnabled: () => false);
 
-        await Assert.ThrowsExactlyAsync<CliActionUnavailableException>(
+        await Assert.ThrowsExactlyAsync<CliPolicyDisabledException>(
             () => runtime.ExecuteAsync(new CliActionRequest("plain-text", null, null, null), package.GetView(), CancellationToken.None));
 
         Assert.IsFalse(executor.WasCalled);

@@ -71,18 +71,6 @@ public static partial class Program
         {
             Console.CancelKeyPress += cancelHandler;
             loggerInitialized = TryInitializeLogger(() => Logger.InitializeLogger("\\AdvancedPaste\\CLI\\Logs"));
-            if (!AdvancedPastePolicy.IsAdvancedPasteEnabled)
-            {
-                if (loggerInitialized)
-                {
-                    Logger.LogWarning("Advanced Paste CLI is disabled by policy.");
-                }
-
-                TryWritePolicyDisabledError(isEnabledByPolicy: false, args, Console.Error);
-                exitCode = RuntimeErrorExitCode;
-                return exitCode;
-            }
-
             AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
 
             using var host = Host.CreateDefaultBuilder()
@@ -339,6 +327,12 @@ public static partial class Program
             WriteError(stderr, json, "action_unavailable", ex.Message);
             return RuntimeErrorExitCode;
         }
+        catch (CliPolicyDisabledException ex)
+        {
+            Logger.LogWarning(ex.Message);
+            WriteError(stderr, json, "disabled_by_policy", $"{ex.Message}.");
+            return RuntimeErrorExitCode;
+        }
         catch (Exception ex)
         {
             Logger.LogError("Advanced Paste transformation failed.", ex);
@@ -355,17 +349,6 @@ public static partial class Program
 
     internal static void WriteStartupError(string[] args, TextWriter stderr)
         => WriteError(stderr, IsJsonRequested(args), "internal_error", "Advanced Paste CLI failed.");
-
-    internal static bool TryWritePolicyDisabledError(bool isEnabledByPolicy, string[] args, TextWriter stderr)
-    {
-        if (isEnabledByPolicy)
-        {
-            return false;
-        }
-
-        WriteError(stderr, IsJsonRequested(args), "disabled_by_policy", "Advanced Paste is disabled by policy.");
-        return true;
-    }
 
     internal static bool TryInitializeLogger(Action initializeLogger)
     {
@@ -452,7 +435,7 @@ public static partial class Program
     {
         internal Option<string?> Action { get; } = new(ActionAliases, $"Run a built-in action. Supported values: {SupportedActions}. --format is a compatibility alias.");
 
-        internal Option<string?> CustomAction { get; } = new(CustomActionAliases, "Run a saved custom action by numeric ID or exact name.");
+        internal Option<string?> CustomAction { get; } = new(CustomActionAliases, "Run a saved custom action by numeric ID or case-insensitive name.");
 
         internal Option<string?> Prompt { get; } = new(PromptAliases, "Instructions for the paste-with-ai action.");
 
