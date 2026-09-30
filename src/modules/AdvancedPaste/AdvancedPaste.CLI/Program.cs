@@ -33,7 +33,8 @@ public static partial class Program
     internal const int ArgumentErrorExitCode = 2;
     internal const int MaximumInputCharacters = 16 * 1024 * 1024;
     private const string SupportedActions = "plain-text, markdown, json, fix-spelling-and-grammar, image-to-text, paste-as-txt-file, paste-as-png-file, paste-as-html-file, transcode-to-mp3, transcode-to-mp4, or paste-with-ai";
-    private const string Usage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) (--input <path>|--stdin|--clipboard) [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
+    private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) (--input <path>|--stdin|--clipboard) [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
+    private const string ActionsListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe actions list [--json]";
 
     private static readonly string[] ActionAliases = ["--action", "--format"];
     private static readonly string[] CustomActionAliases = ["--custom-action"];
@@ -192,7 +193,7 @@ public static partial class Program
             parseResult.GetValueForOption(options.ListJson);
         if (args.SequenceEqual(["actions"], StringComparer.Ordinal))
         {
-            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.");
+            return WriteArgumentError(stderr, json, "incomplete_command", "Specify 'actions list' to inspect available actions.", ActionsListUsage);
         }
 
         if (parseResult.Errors.Count > 0 || parseResult.CommandResult.Command is RootCommand)
@@ -200,7 +201,10 @@ public static partial class Program
             var message = parseResult.Errors.Count > 0
                 ? string.Join("; ", parseResult.Errors.Select(error => error.Message))
                 : "The transform command is required.";
-            WriteError(stderr, json, "invalid_arguments", message, includeUsage: true);
+            var usage = args.Length > 0 && string.Equals(args[0], "actions", StringComparison.OrdinalIgnoreCase)
+                ? ActionsListUsage
+                : TransformUsage;
+            WriteError(stderr, json, "invalid_arguments", message, usage);
             return ArgumentErrorExitCode;
         }
 
@@ -343,9 +347,9 @@ public static partial class Program
         }
     }
 
-    private static int WriteArgumentError(TextWriter stderr, bool json, string code, string message)
+    private static int WriteArgumentError(TextWriter stderr, bool json, string code, string message, string usage = TransformUsage)
     {
-        WriteError(stderr, json, code, message, includeUsage: true);
+        WriteError(stderr, json, code, message, usage);
         return ArgumentErrorExitCode;
     }
 
@@ -440,18 +444,18 @@ public static partial class Program
     private static bool IsHelpArgument(string value)
         => value is "--help" or "-h" or "-?" or "/?";
 
-    private static void WriteError(TextWriter stderr, bool json, string code, string message, bool includeUsage = false)
+    private static void WriteError(TextWriter stderr, bool json, string code, string message, string? usage = null)
     {
         if (json)
         {
-            stderr.WriteLine(JsonSerializer.Serialize(new ErrorResult("error", code, message, includeUsage ? Usage : null), CliJsonContext.Default.ErrorResult));
+            stderr.WriteLine(JsonSerializer.Serialize(new ErrorResult("error", code, message, usage), CliJsonContext.Default.ErrorResult));
         }
         else
         {
             stderr.WriteLine($"Error: {message}");
-            if (includeUsage)
+            if (usage is not null)
             {
-                stderr.WriteLine(Usage);
+                stderr.WriteLine(usage);
             }
         }
     }

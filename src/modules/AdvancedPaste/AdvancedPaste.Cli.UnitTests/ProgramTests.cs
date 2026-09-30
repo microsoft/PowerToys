@@ -153,6 +153,8 @@ public class ProgramTests
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("error", document.RootElement.GetProperty("status").GetString());
+        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "actions list [--json]");
+        Assert.IsFalse(document.RootElement.GetProperty("usage").GetString()!.Contains(" transform ", StringComparison.Ordinal));
     }
 
     [TestMethod]
