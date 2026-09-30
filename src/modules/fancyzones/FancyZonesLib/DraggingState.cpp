@@ -21,6 +21,14 @@ void DraggingState::Enable()
     }
 
     m_ctrlKeyState.enable();
+
+    // m_shift is fed by raw input (FancyZones::OnKeyboardInput), which cannot
+    // observe Shift transitions delivered while the secure desktop, a detached
+    // session leg (RDP attach/detach), or an elevated foreground window owns
+    // input, so the latched value can go stale between drags. Re-seed it from
+    // the live key state at drag start, the same way KeyState::enable()
+    // re-seeds Ctrl above. Raw input still drives mid-drag transitions.
+    m_shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 }
 
 void DraggingState::Disable()

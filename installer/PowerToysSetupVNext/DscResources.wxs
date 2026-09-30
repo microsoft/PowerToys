@@ -28,7 +28,7 @@
           <RegistryValue Type="string" Name="SecureDSCModulesFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <CreateFolder>
-          <PermissionEx Sddl="D:PAI(A;OICI;GA;;;SY)(A;OICI;GA;;;BA)(A;OICI;GRGX;;;BU)(A;OICIIO;GA;;;CO)" />
+          <PermissionEx Sddl="$(var.MachinePathFolderSddl)" />
         </CreateFolder>
       </Component>
       <?endif?>

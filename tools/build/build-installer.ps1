@@ -383,6 +383,29 @@ try {
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
     }
 
+    $cliShimPath = Join-Path $buildOutputPath 'CliShim\PowerToys.CliShim.exe'
+    if (-not (Test-Path -LiteralPath $cliShimPath -PathType Leaf)) {
+        Write-Error "CLI shim not found at '$cliShimPath'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
+        exit 1
+    }
+
+    # Nothing else validates the target half of the shim manifest: CliShim.vcxproj only compares
+    # command names against CliShims.wxs, and the launcher tests fabricate their target at whatever
+    # path the manifest declares, so they cannot falsify it. The target CLIs are harvested into the
+    # MSI by directory glob rather than authored by hand, so moving or renaming one leaves every
+    # other gate green and ships a shim that exits 9010 for every user. This is the first point where
+    # the whole product tree exists, so resolve each mapping here exactly the way the shim will at
+    # run time - relative to its own bin folder - against the layout the build output mirrors.
+    $cliShimBinDir = Join-Path $buildOutputPath 'bin'
+    $cliShimManifest = [xml](Get-Content -LiteralPath (Join-Path $repoRoot 'tools\CliShim\CliShimManifest.props') -Raw)
+    foreach ($shim in $cliShimManifest.Project.ItemGroup.CliShim) {
+        $resolvedTarget = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($cliShimBinDir, $shim.RelativeTarget))
+        if (-not (Test-Path -LiteralPath $resolvedTarget -PathType Leaf)) {
+            Write-Error "CLI shim '$($shim.Include)' maps to '$($shim.RelativeTarget)', which resolves to '$resolvedTarget' and does not exist. Update tools\CliShim\CliShimManifest.props to match where that CLI is built."
+            exit 1
+        }
+    }
+
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
     if (-not $env:NUGET_PACKAGES) {
         $env:NUGET_PACKAGES = Join-Path $env:USERPROFILE ".nuget\packages"

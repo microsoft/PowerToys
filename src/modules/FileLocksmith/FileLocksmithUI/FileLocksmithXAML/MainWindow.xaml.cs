@@ -4,7 +4,7 @@
 
 using System;
 using ManagedCommon;
-using Microsoft.UI.Windowing;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using PowerToys.FileLocksmithUI.Helpers;
@@ -17,9 +17,16 @@ namespace FileLocksmithUI
         public MainWindow(bool isElevated)
         {
             InitializeComponent();
+
+            const string fallbackTitle = "File Locksmith";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             mainPage.ViewModel.IsElevated = isElevated;
             SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
@@ -31,7 +38,7 @@ namespace FileLocksmithUI
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "File Locksmith";
+                title = fallbackTitle;
             }
 
             Title = title;

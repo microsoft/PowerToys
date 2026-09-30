@@ -83,7 +83,23 @@ public sealed partial class Settings : ICommandSettings
         return $"{{\n{content}\n}}";
     }
 
+    /// <summary>
+    /// Applies persisted values, as read from the settings file.
+    /// </summary>
     public void Update(string data)
+    {
+        Apply(data, static (setting, payload) => setting.Update(payload));
+    }
+
+    /// <summary>
+    /// Applies values submitted from the rendered settings card.
+    /// </summary>
+    internal void UpdateFromForm(string data)
+    {
+        Apply(data, static (setting, payload) => setting.UpdateFromForm(payload));
+    }
+
+    private void Apply(string data, Action<ISettingsForm, JsonObject> apply)
     {
         var formInput = JsonNode.Parse(data)?.AsObject();
         if (formInput is null)
@@ -93,10 +109,9 @@ public sealed partial class Settings : ICommandSettings
 
         foreach (var key in _settings.Keys)
         {
-            var value = _settings[key];
-            if (value is ISettingsForm f)
+            if (_settings[key] is ISettingsForm f)
             {
-                f.Update(formInput);
+                apply(f, formInput);
             }
         }
     }

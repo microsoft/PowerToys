@@ -3,11 +3,12 @@ This file contains documentation for all the methods involved in key/shortcut re
 
 ## Table of Contents:
 1. [HandleSingleKeyRemapEvent](#HandleSingleKeyRemapEvent)
-2. [HandleShortcutRemapEvent](#HandleShortcutRemapEvent)
-3. [HandleOSLevelShortcutRemapEvent](#HandleOSLevelShortcutRemapEvent)
-4. [HandleAppSpecificShortcutRemapEvent](#HandleAppSpecificShortcutRemapEvent)
-5. [HandleSingleKeyToggleToModEvent (Obsolete))](#HandleSingleKeyToggleToModEvent-(Obsolete---Code-from-PoC-which-is-commented-out))
-6. [Tests](#Tests)
+2. [HandleSingleKeyAloneRemapEvent](#HandleSingleKeyAloneRemapEvent)
+3. [HandleShortcutRemapEvent](#HandleShortcutRemapEvent)
+4. [HandleOSLevelShortcutRemapEvent](#HandleOSLevelShortcutRemapEvent)
+5. [HandleAppSpecificShortcutRemapEvent](#HandleAppSpecificShortcutRemapEvent)
+6. [HandleSingleKeyToggleToModEvent (Obsolete))](#HandleSingleKeyToggleToModEvent-(Obsolete---Code-from-PoC-which-is-commented-out))
+7. [Tests](#Tests)
     1. [MockedInput](#MockedInput)
     2. [Tests for single key remaps and shortcut remaps](#Tests-for-single-key-remaps-and-shortcut-remaps)
 
@@ -19,6 +20,20 @@ This file contains documentation for all the methods involved in key/shortcut re
 - If it is remapped to a key, we send the key down/up message for the target key and suppress the current key event. We have a check for filtering artificial keys, such as `VK_WIN` (which is a keycode added by us), so that it is translated to `VK_LWIN` instead.
 - If it is remapped to a shortcut, for key down we set the target modifiers first, followed by the target action key, and for key up we release the action key first, followed by the modifiers.
 - All the remapped key events that we send above are sent with `KEYBOARDMANAGER_SINGLEKEY_FLAG` on the `dwExtraInfo` field.
+
+## HandleSingleKeyAloneRemapEvent
+This method implements a "dual-key" single key remap (equivalent to Karabiner-Elements' `to_if_alone`): a key can carry an **Alone** action that is applied only when the key is *tapped alone*, while using it *in combination* with another key passes the original key through (e.g. Right Ctrl alone → IME On, but Right Ctrl + H → Ctrl+H). Alone remaps live in a separate `aloneSingleKeyReMap` table (distinct from `singleKeyReMap`), so the regular remap path is untouched. This handler is called **before** `HandleSingleKeyRemapEvent` in the hook dispatch (`KeyboardManager::HandleKeyboardHookEvent`) so it can decide first. The approach is "lazy + release-fire", which keeps the combination path at zero added latency:
+- Check the `KEYBOARDMANAGER_INJECTED_FLAG` bit (same as the other handlers) and ignore our own injected events.
+- **On key-down of a *different* key while any Alone key is held as a tap candidate:** those Alone keys are now being used in combination, so we inject their *original* key-down (as a real key/modifier, with `KEYBOARDMANAGER_SINGLEKEY_FLAG`) and promote them from "pending" to "combination". This promotion is factored into `PromotePendingAloneKeysToCombination`, shared with the mouse hook (below).
+- **On a mouse click or scroll while an Alone key is held (mouse hook):** a keyboard-only handler cannot see a `Ctrl+Click` or `Ctrl+Wheel`, because the mouse event never reaches the keyboard hook — so with a lazy Alone key the modifier would appear "not pressed" during the click. To fix this, `KeyboardManager` installs a companion low-level **mouse hook** (`WH_MOUSE_LL`, `MouseHookProc` → `HandleMouseHookEvent`) whenever Alone remaps exist. On a button-down or wheel event (but **not** mouse move — an incidental move must not cancel a tap) it calls the same `PromotePendingAloneKeysToCombination`, so the held Alone key is promoted to a real modifier before the click/scroll is delivered. The mouse event itself is never suppressed. The hook is installed/removed alongside the keyboard hook and only while `aloneSingleKeyReMap` is non-empty (reconciled on settings reload); `State::HasPendingAloneKeys()` gives it a cheap early-out so it does nothing on the common path.
+- **On key-down of an Alone-mapped key:** suppress the physical key-down (lazy — nothing is injected yet) and mark the key as a tap candidate ("pending"). Auto-repeat while already in a combination is simply suppressed. If *another* Alone key was already held (pending or in combination) when this one goes down, this key is being pressed **in combination**, not tapped alone, so it is promoted straight to "combination" (its real key-down injected) and will never fire its Alone action — this is what `State::HasOtherHeldAloneKey` checks.
+- **On key-up of an Alone-mapped key:**
+    - If it is still "pending" (no other key intervened) this was a tap: inject the Alone action as a tap and suppress the original key-up. A key-valued target is injected as target key down + up (a `VK_DISABLED` target injects nothing); a shortcut-valued target is injected as a full press-and-release (modifiers down, action-key down, then released in reverse), mirroring the key-to-shortcut path in `HandleSingleKeyRemapEvent`.
+    - If it is in "combination" (its original key-down was injected earlier), inject the matching original key-up to release the real key/modifier, and suppress the original key-up.
+- Because key-down and key-up arrive as separate hook invocations, the per-key "pending" vs "combination" state is tracked in `State` (`alonePendingKeys` / `aloneCombinationKeys`), which is only accessed from the serialized hook thread.
+- The Alone condition is loaded from an optional `condition` field on each single key remap in the settings (`"alone"` routes the entry to the Alone table; a missing field, or `"always"`, keeps the legacy unconditional behavior, so existing settings files load unchanged).
+- The WinUI3 editor exposes the condition via a "Condition" combo box (Always/Alone) on a single-key remap; the value round-trips through the editor wrapper (`GetSingleKeyAloneRemap` / `AddSingleKeyAloneRemap`) and the `condition` settings field. It can also be set by hand-editing a `remapKeys.inProcess` entry to `"condition": "alone"`.
+- **Out of scope for now:** timeout-based cancellation (holding the key too long should stop counting as a tap) requires an injectable clock to be unit-testable and is not yet implemented; text-valued Alone targets are also a later phase (key- and shortcut-valued targets are supported).
 
 ## HandleShortcutRemapEvent
 [This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/KeyboardEventHandlers.cpp#L178-L739) is used for handling the shortcut to shortcut and shortcut to key remapping logic. The general logic is as follows:

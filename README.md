@@ -97,7 +97,7 @@ To see what's new, check out the [release notes](https://github.com/microsoft/Po
 
 ## 🛣️ Roadmap
 
-We are planning some nice new features and improvements for the next releases – a brand-new Shortcut Guide experience, ensuring it's easier to find and install Command Palette extensions and so much more! Stay tuned for [v0.100][github-next-release-work]!
+For [v0.102][github-next-release-work], we're working on modernizing several utilities with WinUI 3, expanding Command Palette with tabs and JavaScript/TypeScript extensions, and adding new productivity improvements across PowerToys.
 
 ## ❤️ PowerToys Community
 
@@ -118,4 +118,4 @@ The application logs basic diagnostic data (telemetry). For more privacy informa
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.100%22
+[github-next-release-work]: https://github.com/microsoft/PowerToys/milestone/46

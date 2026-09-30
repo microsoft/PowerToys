@@ -2,6 +2,32 @@
 
 This document describes the conventions for implementing command-line interfaces (CLI) in PowerToys modules.
 
+## PATH-Visible Command Naming and Location
+
+- Name module CLI command shims `PowerToys.<ModuleName>.CLI.exe` (for example, `PowerToys.ImageResizer.CLI.exe`).
+- Install these shims in the `bin` subfolder of the PowerToys installation directory, which the installer adds to `PATH`.
+
+Every command is the same `PowerToys.CliShim.exe` payload (`tools/CliShim/`) installed under a different name. The shim resolves which CLI to launch from its own file name, forwards the raw argument tail unchanged, shares the caller's console, and returns the CLI's exit code. The CLI runs in a job object owned by the shim, so killing the shim kills the CLI with it; processes the CLI itself starts (the Settings window, for example) break away and survive.
+
+On a per-machine install the `bin` folder is created with a protected DACL (`MachinePathFolderSddl` in `installer/PowerToysSetupVNext/Common.wxi`) so that a custom installation root cannot leave a machine-`PATH` folder writable by standard users. Author that `<CreateFolder>` on the same component as the folder's `<Environment>` `PATH` entry, so the two cannot drift apart.
+
+### Adding a new shim
+
+1. Add a `<CliShim>` item to `tools/CliShim/CliShimManifest.props` with the command name and the target's path relative to `bin`. Write that path with `/` separators, and against the *installed* layout (see [Signing and Deployment](#signing-and-deployment)) - which is where the CLI ends up, not where it is built from.
+2. Add the matching `<Component>` and `<ComponentRef>` to `installer/PowerToysSetupVNext/CliShims.wxs`, using the command name as the `File/@Name`.
+
+`CliShim.vcxproj` fails the build if the command names in those two drift apart, `build-installer.ps1` fails the build if a `RelativeTarget` does not resolve to a real executable, and `CliShim.UnitTests` generates its expectations from the same manifest, so there is no third list to update.
+
+### Shim exit codes
+
+The shim returns the target CLI's exit code unchanged. It substitutes one of its own codes only when the CLI never ran, using values outside the range the CLIs use themselves:
+
+| Code | Meaning |
+| --- | --- |
+| `9009` | No CLI is mapped to the invoked command name (matches `cmd.exe`'s "command not found"). |
+| `9010` | The mapped target executable is missing from the installation. |
+| `9011` | The shim could not start the target, including when it cannot resolve its own path. |
+
 ## Library
 
 Use the **System.CommandLine** library for CLI argument parsing. This is already defined in `Directory.Packages.props`:
@@ -89,5 +115,5 @@ Reference implementations:
 
 - CLI executables are signed automatically in CI/CD.
 - **New CLI tools**: Add your executable and dll to `.pipelines/ESRPSigning_core.json` in the signing list.
-- CLI executables are deployed alongside their parent module (e.g., `C:\Program Files\PowerToys\modules\[ModuleName]\`).
+- CLI executables are deployed either to the installation root (e.g., `C:\Program Files\PowerToys\FancyZonesCLI.exe`) or, for WinUI 3 modules, next to their module in `WinUI3Apps\` (e.g., `C:\Program Files\PowerToys\WinUI3Apps\PowerToys.ImageResizerCLI.exe`). PATH-visible shims are deployed to `C:\Program Files\PowerToys\bin\`, and a shim's `RelativeTarget` is resolved from that `bin` folder against the *installed* layout - not against the source tree.
 - Use self-contained deployment (import `Common.SelfContained.props`).

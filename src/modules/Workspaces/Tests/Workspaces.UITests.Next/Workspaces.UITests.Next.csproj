@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.Workspaces.UITests</RootNamespace>
+    <AssemblyName>Workspaces.UITests.Next</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Workspaces.UITests.Next\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="..\Workspaces.TestApp\Workspaces.TestApp.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="StageFixture" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectDirectory)\..\Workspaces.TestApp\Workspaces.TestApp.csproj"
+             Targets="GetFixturePackage"
+             Properties="Configuration=$(Configuration);Platform=$(Platform)">
+      <Output TaskParameter="TargetOutputs" ItemName="_WorkspacesFixturePackage" />
+    </MSBuild>
+    <MSBuild Projects="$(MSBuildProjectDirectory)\..\Workspaces.TestApp\Workspaces.TestApp.csproj"
+             Targets="GetFixturePayload"
+             Properties="Configuration=$(Configuration);Platform=$(Platform)">
+      <Output TaskParameter="TargetOutputs" ItemName="_WorkspacesFixtureFile" />
+    </MSBuild>
+    <Copy SourceFiles="@(_WorkspacesFixturePackage)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_WorkspacesFixtureFile)"
+          DestinationFiles="@(_WorkspacesFixtureFile->'$(TargetDir)Fixture\%(RelativePath)')"
+          SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="$(TargetDir)Workspaces.TestApp.msix;@(_WorkspacesFixtureFile->'$(TargetDir)Fixture\%(RelativePath)')" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -18,7 +18,7 @@ namespace FancyZonesEditor.ViewModels
 
         public delegate void MonitorChangedEvent(MonitorChangedEventArgs args);
 
-        public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; set; }
+        public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; } = new ObservableCollection<MonitorInfoModel>();
 
         public static double DesktopPreviewMultiplier { get; private set; }
 
@@ -28,7 +28,6 @@ namespace FancyZonesEditor.ViewModels
         {
             SelectCommand = new RelayCommand<MonitorInfoModel>(SelectCommandExecute, SelectCommandCanExecute);
 
-            MonitorInfoForViewModel = new ObservableCollection<MonitorInfoModel>();
             double maxDimension = 0, minDimension = double.MaxValue;
 
             int i = 1;

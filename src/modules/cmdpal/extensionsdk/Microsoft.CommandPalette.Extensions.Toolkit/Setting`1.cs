@@ -74,7 +74,23 @@ public abstract class Setting<T> : ISettingsForm
         return json;
     }
 
+    /// <summary>
+    /// Applies a value for this setting. <paramref name="payload"/>[<see cref="Key"/>] holds the
+    /// value previously written by <see cref="ToState"/> when the settings file is loaded, and the
+    /// value produced by the input control when the settings card is submitted. Those two
+    /// representations are the same for every setting that does not override
+    /// <see cref="UpdateFromForm"/>.
+    /// </summary>
     public abstract void Update(JsonObject payload);
+
+    /// <summary>
+    /// Applies a value submitted from the rendered adaptive card.
+    /// <paramref name="payload"/>[<see cref="Key"/>] holds the value produced by the input control,
+    /// which uses the representation emitted by <see cref="ToDictionary"/>. The default is correct
+    /// for settings whose card representation and persisted representation are the same; override
+    /// it when they differ.
+    /// </summary>
+    public virtual void UpdateFromForm(JsonObject payload) => Update(payload);
 
     public abstract string ToState();
 }

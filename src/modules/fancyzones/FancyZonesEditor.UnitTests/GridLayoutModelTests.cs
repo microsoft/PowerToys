@@ -31,7 +31,7 @@ public class GridLayoutModelTests
         GridLayoutModel gridLayoutModel = new GridLayoutModel();
         gridLayoutModel.Rows = 1;
         gridLayoutModel.Columns = 1;
-        gridLayoutModel.RowPercents = new List<int> { 0 }; // Invalid percentage
+        gridLayoutModel.RowPercents.Add(0); // Invalid percentage
         Assert.IsFalse(gridLayoutModel.IsModelValid());
     }
 
@@ -41,7 +41,7 @@ public class GridLayoutModelTests
         GridLayoutModel gridLayoutModel = new GridLayoutModel();
         gridLayoutModel.Rows = 1;
         gridLayoutModel.Columns = 1;
-        gridLayoutModel.ColumnPercents = new List<int> { 0 }; // Invalid percentage
+        gridLayoutModel.ColumnPercents.Add(0); // Invalid percentage
         Assert.IsFalse(gridLayoutModel.IsModelValid());
     }
 
@@ -80,8 +80,8 @@ public class GridLayoutModelTests
 
         // Set valid percentages for rows and columns
         // Should add up to 10000
-        gridLayoutModel.RowPercents = new List<int> { 5000, 5000 };
-        gridLayoutModel.ColumnPercents = new List<int> { 5000, 5000 };
+        gridLayoutModel.RowPercents.AddRange(new List<int> { 5000, 5000 });
+        gridLayoutModel.ColumnPercents.AddRange(new List<int> { 5000, 5000 });
 
         // Set a valid CellChildMap
         gridLayoutModel.CellChildMap = new int[,]
@@ -91,5 +91,23 @@ public class GridLayoutModelTests
         }; // corresponds to 4 zones
 
         Assert.IsTrue(gridLayoutModel.IsModelValid(), "GridLayoutModel with valid properties should be valid.");
+    }
+
+    [TestMethod]
+    public void InitializingTemplateZonesPreservesPercentageCollections()
+    {
+        GridLayoutModel gridLayoutModel = new GridLayoutModel("Grid", LayoutType.Grid)
+        {
+            TemplateZoneCount = 4,
+        };
+        var rowPercents = gridLayoutModel.RowPercents;
+        var columnPercents = gridLayoutModel.ColumnPercents;
+
+        gridLayoutModel.InitTemplateZones();
+
+        Assert.AreSame(rowPercents, gridLayoutModel.RowPercents);
+        Assert.AreSame(columnPercents, gridLayoutModel.ColumnPercents);
+        Assert.AreEqual(GridLayoutModel.GridMultiplier, gridLayoutModel.RowPercents.Sum());
+        Assert.AreEqual(GridLayoutModel.GridMultiplier, gridLayoutModel.ColumnPercents.Sum());
     }
 }

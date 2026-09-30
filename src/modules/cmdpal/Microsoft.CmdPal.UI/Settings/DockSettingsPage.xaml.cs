@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
-using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
@@ -21,6 +20,8 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class DockSettingsPage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private readonly ISettingsService _settingsService;
+    private readonly IMonitorService? _monitorService;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -32,19 +33,76 @@ public sealed partial class DockSettingsPage : Page
 
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        var monitorService = App.Current.Services.GetService<IMonitorService>();
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        _monitorService = App.Current.Services.GetService<IMonitorService>();
 
-        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, monitorService);
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService, _monitorService);
+
+        Loaded += DockSettingsPage_Loaded;
+        Unloaded += DockSettingsPage_Unloaded;
 
         // Initialize UI state
         InitializeSettings();
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    private void DockSettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
-        base.OnNavigatedTo(e);
+        _settingsService.SettingsChanged += OnSettingsChanged;
+        if (_monitorService is not null)
+        {
+            _monitorService.MonitorsChanged += OnMonitorsChanged;
+        }
+
         ViewModel.PopulateMonitorConfigs();
+        UpdateMonitorOverridesInfoBars();
+    }
+
+    private void DockSettingsPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _settingsService.SettingsChanged -= OnSettingsChanged;
+        if (_monitorService is not null)
+        {
+            _monitorService.MonitorsChanged -= OnMonitorsChanged;
+        }
+    }
+
+    private void OnSettingsChanged(ISettingsService sender, SettingsModel settings)
+    {
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
+    }
+
+    private void OnMonitorsChanged(object? sender, EventArgs e)
+    {
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
+    }
+
+    private void UpdateMonitorOverridesInfoBars()
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        var settings = _settingsService.Settings;
+        var monitors = settings.EnableDock ? _monitorService?.GetMonitors() ?? [] : [];
+        DisabledDocksInfoBar.IsOpen = settings.EnableDock &&
+            settings.DockSettings.HasDisabledDocksForMonitors(monitors);
+        PositionOverridesInfoBar.IsOpen = settings.EnableDock &&
+            settings.DockSettings.HasPositionOverridesForMonitors(monitors);
+    }
+
+    private async void ManageMonitors_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            ViewModel.PopulateMonitorConfigs();
+            await SettingsPageTarget.NavigateAsync(this, "monitors", CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to navigate to dock monitor settings", ex);
+        }
     }
 
     private void InitializeSettings()

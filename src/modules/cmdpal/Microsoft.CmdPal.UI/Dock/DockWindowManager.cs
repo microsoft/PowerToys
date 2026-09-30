@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
+using Windows.Win32;
 using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -28,12 +29,11 @@ public sealed partial class DockWindowManager : IDisposable
     private int _syncing;
 
     /// <summary>
-    /// Debounces rapid-fire monitor-change notifications (several WM_DISPLAYCHANGE messages
-    /// during a Win+P switch or dock/undock). Without it, each intermediate topology
-    /// snapshot gets reconciled and persisted, which can permanently corrupt dock configs
-    /// even though things settle fine on their own a moment later.
+    /// Windows can briefly report a monitor as absent while the graphics stack re-enumerates
+    /// it during a display switch or Modern Standby resume. Waiting for the topology to settle
+    /// keeps us from disposing a dock that is about to come back.
     /// </summary>
-    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromSeconds(3);
     private readonly DispatcherQueueTimer _monitorsChangedDebounceTimer;
 
     private bool? _lastSyncedEnableDock;
@@ -113,8 +113,8 @@ public sealed partial class DockWindowManager : IDisposable
 
         var dockSettings = settings.DockSettings;
 
-        // Reconcile stale monitor device IDs with currently connected monitors
-        var monitors = _monitorService.GetMonitors();
+        // Discard snapshots read before the display topology settled.
+        var monitors = _monitorService.GetMonitors(forceRefresh: refreshDockWindows);
         var currentConfigs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
         var reconciled = MonitorConfigReconciler.Reconcile(currentConfigs, monitors);
         if (reconciled != currentConfigs)
@@ -188,6 +188,42 @@ public sealed partial class DockWindowManager : IDisposable
         {
             window.RefreshForMonitorChange();
         }
+    }
+
+    /// <summary>
+    /// Handles the dock focus shortcut. Picks the dock under the mouse cursor, since that is
+    /// where the user is looking, and hands the toggle decision to that window.
+    /// </summary>
+    public void FocusDock()
+    {
+        if (_docks.Count == 0)
+        {
+            return;
+        }
+
+        PInvoke.GetCursorPos(out var cursor);
+
+        var targetId = DockFocusTargetResolver.Resolve(
+            _monitorService.GetMonitors(),
+            _docks.Keys,
+            cursor.X,
+            cursor.Y);
+
+        if (targetId is null || !_docks.TryGetValue(targetId, out var target))
+        {
+            return;
+        }
+
+        // Only one dock holds keyboard focus at a time, so drop it everywhere else first.
+        foreach (var (id, (window, _)) in _docks)
+        {
+            if (!string.Equals(id, targetId, StringComparison.OrdinalIgnoreCase))
+            {
+                window.ReleaseKeyboardFocus(restoreForeground: false);
+            }
+        }
+
+        target.Window.ToggleKeyboardFocus();
     }
 
     public void Dispose()

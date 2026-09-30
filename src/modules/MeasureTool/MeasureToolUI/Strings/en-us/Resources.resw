@@ -69,6 +69,9 @@
     <data name="MeasurementUnitAbbrPixel" xml:space="preserve">
         <value>px</value>
     </data>
+    <data name="MeasurementUnitAbbrDip" xml:space="preserve">
+        <value>DIP</value>
+    </data>
     <data name="MeasurementUnitAbbrInch" xml:space="preserve">
         <value>in</value>
     </data>

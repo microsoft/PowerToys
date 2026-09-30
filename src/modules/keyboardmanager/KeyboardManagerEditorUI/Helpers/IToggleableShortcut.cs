@@ -19,5 +19,14 @@ namespace KeyboardManagerEditorUI.Helpers
         string Id { get; set; }
 
         string AppName { get; set; }
+
+        bool IsAllApps { get; set; }
+
+        // Raw virtual-key codes of the trigger (original) keys, kept so the search/filter
+        // bar can classify modifiers by VK code (locale-independent) instead of display name.
+        IReadOnlyList<int> TriggerKeyCodes { get; set; }
+
+        // Lowercased, pre-computed text used by the filter bar's text search.
+        string SearchableText { get; set; }
     }
 }
