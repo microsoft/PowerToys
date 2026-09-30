@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -19,7 +20,6 @@ public static class JsonConverter
     private static readonly Regex IniValueLineRegex = new(@"^([^=]+)\s*=\s*(.*)$");
     private static readonly char[] CsvDelimiters = [',', ';', '\t'];
     private static readonly Regex CsvSeparatorIdentifierRegex = new(@"^sep=(.)$", RegexOptions.IgnoreCase);
-    private static readonly string CsvDelimiterSeparatorRegex = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
     private static readonly Regex CsvRemoveSingleQuotationMarksRegex = new(@"^""(?!"")|(?<!"")""$|^""""$");
     private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
     private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new(@"""{2}");
@@ -160,8 +160,7 @@ public static class JsonConverter
         try
         {
             var lines = SplitLines(text);
-            GetCsvDelimiter(lines, out var delimiter, out var delimiterCount);
-            var delimiterPattern = GetCsvDelimiterPattern(delimiter);
+            GetCsvDelimiter(lines, cancellationToken, out var delimiter, out var delimiterCount);
             var csv = new List<IEnumerable<string>>();
             foreach (var line in lines)
             {
@@ -171,14 +170,13 @@ public static class JsonConverter
                     continue;
                 }
 
-                if (Regex.Count(line, delimiterPattern) != delimiterCount
-                    || !int.IsEvenInteger(line.Count(character => character == '"')))
+                var values = ParseCsvLine(line, delimiter, cancellationToken);
+                if (values.Count - 1 != delimiterCount)
                 {
                     throw new FormatException();
                 }
 
-                csv.Add(Regex.Split(line, delimiterPattern, RegexOptions.IgnoreCase)
-                    .Select(ReplaceQuotationMarksInCsvData));
+                csv.Add(values.Select(ReplaceQuotationMarksInCsvData));
             }
 
             jsonText = JsonConvert.SerializeObject(csv, Newtonsoft.Json.Formatting.Indented);
@@ -197,7 +195,7 @@ public static class JsonConverter
         }
     }
 
-    private static void GetCsvDelimiter(string[] csvLines, out char delimiter, out int delimiterCount)
+    private static void GetCsvDelimiter(string[] csvLines, CancellationToken cancellationToken, out char delimiter, out int delimiterCount)
     {
         delimiter = '\0';
         delimiterCount = 0;
@@ -207,7 +205,7 @@ public static class JsonConverter
             if (separator.Success)
             {
                 delimiter = separator.Groups[1].Value.Trim()[0];
-                delimiterCount = Regex.Count(csvLines[1], GetCsvDelimiterPattern(delimiter), RegexOptions.IgnoreCase);
+                delimiterCount = ParseCsvLine(csvLines[1], delimiter, cancellationToken).Count - 1;
             }
         }
 
@@ -215,10 +213,10 @@ public static class JsonConverter
         {
             foreach (var candidate in CsvDelimiters)
             {
-                var candidatePattern = GetCsvDelimiterPattern(candidate);
-                var firstLineCount = Regex.Count(csvLines[0], candidatePattern, RegexOptions.IgnoreCase);
+                cancellationToken.ThrowIfCancellationRequested();
+                var firstLineCount = ParseCsvLine(csvLines[0], candidate, cancellationToken).Count - 1;
                 var secondLineCount = csvLines.Length >= 2
-                    ? Regex.Count(csvLines[1], candidatePattern, RegexOptions.IgnoreCase)
+                    ? ParseCsvLine(csvLines[1], candidate, cancellationToken).Count - 1
                     : 0;
                 if (firstLineCount > delimiterCount && (secondLineCount == 0 || secondLineCount == firstLineCount))
                 {
@@ -234,8 +232,51 @@ public static class JsonConverter
         }
     }
 
-    private static string GetCsvDelimiterPattern(char delimiter)
-        => Regex.Escape(delimiter.ToString()) + CsvDelimiterSeparatorRegex;
+    private static IReadOnlyList<string> ParseCsvLine(string line, char delimiter, CancellationToken cancellationToken)
+    {
+        var values = new List<string>();
+        var value = new StringBuilder();
+        var insideQuotes = false;
+        for (var index = 0; index < line.Length; index++)
+        {
+            if ((index & 0xFFF) == 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            var character = line[index];
+            if (character == '"')
+            {
+                value.Append(character);
+                if (insideQuotes && index + 1 < line.Length && line[index + 1] == '"')
+                {
+                    value.Append(line[++index]);
+                }
+                else
+                {
+                    insideQuotes = !insideQuotes;
+                }
+            }
+            else if (character == delimiter && !insideQuotes)
+            {
+                values.Add(value.ToString());
+                value.Clear();
+            }
+            else
+            {
+                value.Append(character);
+            }
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (insideQuotes)
+        {
+            throw new FormatException();
+        }
+
+        values.Add(value.ToString());
+        return values;
+    }
 
     private static string ReplaceQuotationMarksInCsvData(string value)
     {

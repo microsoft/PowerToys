@@ -608,6 +608,16 @@ public class ProgramTests
         Assert.IsFalse(Program.TryInitializeLogger(() => throw new UnauthorizedAccessException()));
     }
 
+    [TestMethod]
+    public void CreateUtf8InputReader_PreservesRedirectedUnicodeInput()
+    {
+        const string input = "こんにちは PowerToys";
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(input));
+        using var reader = Program.CreateUtf8InputReader(stream);
+
+        Assert.AreEqual(input, reader.ReadToEnd());
+    }
+
     [DataTestMethod]
     [DataRow(new string[] { }, "help")]
     [DataRow(new[] { "transform", "--help" }, "help")]

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 
 using AdvancedPaste.Core;
@@ -44,6 +45,26 @@ public class HeadlessTransformServiceTests
 
         StringAssert.Contains(result, "\"Ada\"");
         Assert.IsFalse(result.Contains("age\\nAda", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void Json_ConvertsCommaDenseCsvInLinearTime()
+    {
+        var input = string.Join(',', Enumerable.Repeat("value", 10_000));
+
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input);
+
+        StringAssert.Contains(result, "\"value\"");
+    }
+
+    [TestMethod]
+    public void Json_ConvertsQuotedCsvDelimiterAndEscapedQuotes()
+    {
+        var result = HeadlessTransformService.Transform(
+            HeadlessTransformFormat.Json,
+            "name,note\nAda,\"Hello, \"\"PowerToys\"\"\"");
+
+        StringAssert.Contains(result, "\"Hello, \\\"PowerToys\\\"\"");
     }
 
     [TestMethod]

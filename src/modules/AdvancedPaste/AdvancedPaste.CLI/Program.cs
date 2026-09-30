@@ -49,6 +49,7 @@ public static partial class Program
     public static async Task<int> Main(string[] args)
     {
         TrySetUtf8Output();
+        TrySetUtf8RedirectedInput();
         if (args.Length == 0 || args.Any(IsHelpArgument))
         {
             var root = CreateRootCommand(out _);
@@ -395,6 +396,28 @@ public static partial class Program
         {
         }
     }
+
+    private static void TrySetUtf8RedirectedInput()
+    {
+        if (!Console.IsInputRedirected)
+        {
+            return;
+        }
+
+        try
+        {
+            Console.SetIn(CreateUtf8InputReader(Console.OpenStandardInput()));
+        }
+        catch (IOException)
+        {
+        }
+        catch (SecurityException)
+        {
+        }
+    }
+
+    internal static TextReader CreateUtf8InputReader(Stream stream)
+        => new StreamReader(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true);
 
     private static bool HasHelpToken(ParseResult parseResult)
         => parseResult.Tokens.Any(token => IsHelpArgument(token.Value));
