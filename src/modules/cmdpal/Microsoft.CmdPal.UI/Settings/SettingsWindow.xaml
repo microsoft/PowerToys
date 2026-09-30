@@ -85,6 +85,7 @@
                                             BorderThickness="0,1,0,0">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
+                                                AutomationProperties.AutomationId="SettingsSearchShowAllResults"
                                                 Text="{x:Bind Title}"
                                                 TextTrimming="CharacterEllipsis" />
                                         </Border>
@@ -94,6 +95,7 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="20" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <toolkit:SwitchPresenter
                                                 VerticalAlignment="Center"
@@ -125,6 +127,14 @@
                                                     Text="{x:Bind Breadcrumb}"
                                                     TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
+                                            <controls:Tag
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.Name="{x:Bind Category}"
+                                                FontSize="12"
+                                                IsHitTestVisible="False"
+                                                Text="{x:Bind Category}" />
                                         </Grid>
                                     </toolkit:Case>
                                 </toolkit:SwitchPresenter>

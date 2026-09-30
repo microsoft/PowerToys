@@ -14,9 +14,16 @@ public sealed partial record SettingsSearchResult(
     string Keywords = "",
     string IconGlyph = "\uE713",
     IconInfoViewModel? Icon = null,
-    bool IsShowAllResults = false)
+    bool IsShowAllResults = false,
+    string GroupName = "",
+    string AssignedHotkey = "",
+    string Category = "")
 {
     public bool HasIcon => Icon?.IsSet == true;
 
-    public override string ToString() => string.IsNullOrEmpty(Breadcrumb) ? Title : $"{Title}, {Breadcrumb}";
+    public override string ToString()
+    {
+        var text = string.IsNullOrEmpty(Breadcrumb) ? Title : $"{Title}, {Breadcrumb}";
+        return string.IsNullOrEmpty(Category) ? text : $"{text}, {Category}";
+    }
 }

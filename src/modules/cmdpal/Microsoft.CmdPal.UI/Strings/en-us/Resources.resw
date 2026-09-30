@@ -1798,16 +1798,45 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Shown when restarting Command Palette after a language change fails</comment>
   </data>
   <data name="SettingsWindow_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>Search settings and extensions (Ctrl+E)</value>
+    <value>Search settings, commands, and extensions (Ctrl+E)</value>
   </data>
   <data name="SettingsWindow_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Search settings and extensions</value>
+    <value>Search settings, commands, and extensions</value>
   </data>
   <data name="SettingsWindow_SearchNoResults" xml:space="preserve">
     <value>No results found</value>
   </data>
   <data name="SettingsWindow_SearchShowAllResults" xml:space="preserve">
-    <value>Show all results</value>
+    <value>Show all {0} results</value>
+    <comment>{0} is the total number of search results, including those not shown in the suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchShowOneResult" xml:space="preserve">
+    <value>Show {0} result</value>
+    <comment>{0} is the number of search results. Used when there is exactly one result.</comment>
+  </data>
+  <data name="SettingsWindow_SearchPagesGroup" xml:space="preserve">
+    <value>Pages</value>
+    <comment>Heading for settings pages in grouped search results.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryPage" xml:space="preserve">
+    <value>Page</value>
+    <comment>Compact category tag for a settings page in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategorySettings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Compact category tag for an individual setting or settings section in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryExtension" xml:space="preserve">
+    <value>Extension</value>
+    <comment>Compact category tag for an extension in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryCommand" xml:space="preserve">
+    <value>Command</value>
+    <comment>Compact category tag for a configurable command in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchBreadcrumb" xml:space="preserve">
+    <value>{0} › {1}</value>
+    <comment>Search result location. {0} is the settings page title, {1} is the section title.</comment>
   </data>
   <data name="SettingsWindow_SearchResultsTitle" xml:space="preserve">
     <value>Search results</value>
@@ -1817,7 +1846,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>{0} is the search query.</comment>
   </data>
   <data name="SettingsWindow_SearchEmptyState.Text" xml:space="preserve">
-    <value>No settings or extensions found. Try a different search term.</value>
+    <value>No settings, commands, or extensions found. Try a different search term.</value>
   </data>
   <data name="SettingsSearch_Keywords_Shortcuts" xml:space="preserve">
     <value>hotkey shortcut keyboard keybinding key combination</value>

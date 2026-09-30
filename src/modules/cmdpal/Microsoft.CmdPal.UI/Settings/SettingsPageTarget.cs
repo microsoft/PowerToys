@@ -12,6 +12,8 @@ namespace Microsoft.CmdPal.UI.Settings;
 /// <summary>Declares a settings-page navigation anchor.</summary>
 public static class SettingsPageTarget
 {
+    internal const string CommandTargetPrefix = "command:";
+
     /// <summary>Identifies the current UI anchor attached to a settings element.</summary>
     public static readonly DependencyProperty IdProperty = DependencyProperty.RegisterAttached(
         "Id",
@@ -34,7 +36,10 @@ public static class SettingsPageTarget
         cancellationToken.ThrowIfCancellationRequested();
 
         root.UpdateLayout();
-        if (FindTarget(root, targetId) is not { } target)
+        var target = root is ExtensionPage extensionPage && targetId.StartsWith(CommandTargetPrefix, StringComparison.Ordinal)
+            ? extensionPage.FindCommandTarget(targetId[CommandTargetPrefix.Length..])
+            : FindTarget(root, targetId);
+        if (target is null)
         {
             return (null, false);
         }

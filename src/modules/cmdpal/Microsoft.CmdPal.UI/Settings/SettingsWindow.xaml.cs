@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
@@ -175,19 +176,52 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private SettingsSearchResult[] GetSettingsSearchResults(string query)
     {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
         var extensionsTitle = RS_.GetString("Settings_PageTitles_ExtensionsPage");
         var extensionsKeywords = RS_.GetString("SettingsSearch_Keywords_Extensions");
-        var extensions = _topLevelCommandManager.CommandProviders
-            .Where(provider => !string.IsNullOrWhiteSpace(provider.DisplayName))
-            .Select(provider => new SettingsSearchResult(
+        var commandsTitle = RS_.GetString("ExtensionCommandsHeader/Text");
+        var extensionCategory = RS_.GetString("SettingsWindow_SearchCategoryExtension");
+        var commandCategory = RS_.GetString("SettingsWindow_SearchCategoryCommand");
+        var breadcrumbFormat = RS_.GetString("SettingsWindow_SearchBreadcrumb");
+        var settings = _settingsService.Settings;
+        var aliases = settings.Aliases.Values.ToLookup(alias => alias.CommandId, StringComparer.Ordinal);
+        var hotkeys = settings.CommandHotkeys.ToLookup(hotkey => hotkey.CommandId, StringComparer.Ordinal);
+        var entries = _settingsSearchEntries.ToList();
+        foreach (var provider in _topLevelCommandManager.CommandProviders.Where(provider => !string.IsNullOrWhiteSpace(provider.DisplayName)))
+        {
+            entries.Add(new(
                 provider.DisplayName,
                 extensionsTitle,
                 new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: provider.ProviderId),
                 provider.Extension?.ExtensionDisplayName ?? string.Empty,
                 extensionsKeywords,
                 "\uEA86",
-                provider.Icon));
-        return SettingsSearchCatalog.Search(query, _settingsSearchEntries.Concat(extensions), _fuzzyMatcherProvider.Current);
+                provider.Icon,
+                GroupName: extensionsTitle,
+                Category: extensionCategory));
+
+            var providerBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, extensionsTitle, provider.DisplayName);
+            var commandBreadcrumb = string.Format(CultureInfo.CurrentCulture, breadcrumbFormat, providerBreadcrumb, commandsTitle);
+            foreach (var command in provider.TopLevelItems.Where(command => !string.IsNullOrWhiteSpace(command.Title) && !string.IsNullOrEmpty(command.Id)))
+            {
+                var hotkey = hotkeys[command.Id].FirstOrDefault()?.Hotkey;
+                entries.Add(new(
+                    command.Title,
+                    commandBreadcrumb,
+                    new OpenSettingsMessage(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Commands, ExtensionProviderId: provider.ProviderId) { CommandId = command.Id },
+                    Keywords: string.Join(" ", aliases[command.Id].Select(alias => alias.Alias)),
+                    Icon: command.IconViewModel,
+                    GroupName: commandsTitle,
+                    AssignedHotkey: hotkey is { Code: > 0 } ? hotkey.ToString() : string.Empty,
+                    Category: commandCategory));
+            }
+        }
+
+        return SettingsSearchCatalog.Search(query, entries, _fuzzyMatcherProvider.Current);
     }
 
     private void UpdateSettingsSearch()
@@ -207,7 +241,10 @@ public sealed partial class SettingsWindow : WindowEx,
 
         var suggestions = string.IsNullOrWhiteSpace(SettingsSearchBox.Text)
             ? []
-            : SettingsSearchCatalog.CreateSuggestions(results, RS_.GetString("SettingsWindow_SearchShowAllResults"), RS_.GetString("SettingsWindow_SearchNoResults"));
+            : SettingsSearchCatalog.CreateSuggestions(
+                results,
+                RS_.GetString(results.Length == 1 ? "SettingsWindow_SearchShowOneResult" : "SettingsWindow_SearchShowAllResults"),
+                RS_.GetString("SettingsWindow_SearchNoResults"));
         ListHelpers.InPlaceUpdateList(_settingsSearchSuggestions, suggestions, out _);
 
         var showSuggestions = !string.IsNullOrWhiteSpace(SettingsSearchBox.Text);
@@ -301,8 +338,11 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var selectedItem = args.InvokedItemContainer;
-        Navigate((selectedItem.Tag as string)!);
+        // Clearing selection for search results can invoke this event without an item container.
+        if (args.InvokedItemContainer?.Tag is string pageTag)
+        {
+            Navigate(pageTag);
+        }
     }
 
     private void RootElement_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
@@ -325,14 +365,16 @@ public sealed partial class SettingsWindow : WindowEx,
             message.SettingsPageTag,
             message.ExtensionGalleryId,
             message.SettingsLinkId,
-            message.ExtensionProviderId);
+            message.ExtensionProviderId,
+            message.CommandId);
     }
 
     internal void Navigate(
         string page,
         string? extensionGalleryId = null,
         string? settingsLinkId = null,
-        string? extensionProviderId = null)
+        string? extensionProviderId = null,
+        string? commandId = null)
     {
         CancelSettingsNavigation();
         SettingsLinkFallbackInfoBar.IsOpen = false;
@@ -379,6 +421,11 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 Logger.LogError($"Settings action '{settingsAction}' cannot target an extension provider.");
                 return;
+            }
+
+            if (commandId is not null)
+            {
+                settingsTarget = SettingsPageTarget.CommandTargetPrefix + commandId;
             }
 
             NavigateToExtensionSettings(extensionProviderId, settingsTarget, settingsLinkId!, settingsLinkFallback);

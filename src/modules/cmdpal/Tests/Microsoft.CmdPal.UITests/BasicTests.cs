@@ -242,12 +242,14 @@ public class BasicTests : CommandPaletteTestBase
     public void SettingsSearch_SubmissionOpensResults(bool showAllResults)
     {
         OpenSettingsWindow();
-        this.Find<TextBox>("Search settings and extensions", global: true).SetText("preview");
-        Assert.IsNotNull(this.Find("Show all results", global: true));
+        this.Find<NavigationViewItem>("General", global: true).Click();
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("preview");
+        var showAll = this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true);
+        StringAssert.StartsWith(showAll.Name, "Show ");
 
         if (showAllResults)
         {
-            this.Find("Show all results", global: true).Click();
+            showAll.Click();
         }
         else
         {
@@ -255,11 +257,51 @@ public class BasicTests : CommandPaletteTestBase
         }
 
         Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+        Assert.IsNotNull(this.Find("Personalization › Interaction", global: true));
 
-        this.Find<TextBox>("Search settings and extensions", global: true).SetText("zqxzqxzqx");
+        for (var visit = 0; visit < 2; visit++)
+        {
+            this.Find("Automatically expand app details", global: true).Click();
+            Assert.IsNotNull(this.Find<ToggleSwitch>(By.AccessibilityId("CmdPal_AppearancePage_ShowAppDetails"), global: true));
+
+            // Reinvoking the selected item makes WinUI invoke it again when search clears selection.
+            this.Find<NavigationViewItem>("Personalization", global: true).Click();
+            this.Find<Button>("Back", global: true).Click();
+            Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+            Assert.IsNotNull(this.Find("Personalization › Interaction", global: true));
+        }
+
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("zqxzqxzqx");
         SendKeys(Key.Enter);
         Assert.IsNotNull(this.Find("Results for 'zqxzqxzqx'", global: true));
-        Assert.IsNotNull(this.Find("No settings or extensions found. Try a different search term.", global: true));
+        Assert.IsNotNull(this.Find("No settings, commands, or extensions found. Try a different search term.", global: true));
+    }
+
+    [TestMethod]
+    public void SettingsSearch_CommandNameAndChangedAliasOpenCommandSettings()
+    {
+        OpenSettingsWindow();
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("calculator commands");
+        Assert.IsNotNull(this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true));
+        SendKeys(Key.Down);
+        SendKeys(Key.Enter);
+
+        var aliasBox = this.Find<TextBox>(By.AccessibilityId("CmdPal_ExtensionPage_AliasText"), global: true);
+        var originalAlias = aliasBox.Text;
+        try
+        {
+            aliasBox.SetText("cmdpal-settings-search-test");
+            this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("cmdpal-settings-search-test");
+            Assert.IsNotNull(this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true));
+            SendKeys(Key.Down);
+            SendKeys(Key.Enter);
+
+            Assert.AreEqual("cmdpal-settings-search-test", this.Find<TextBox>(By.AccessibilityId("CmdPal_ExtensionPage_AliasText"), global: true).Text);
+        }
+        finally
+        {
+            aliasBox.SetText(originalAlias);
+        }
     }
 
     [TestMethod]

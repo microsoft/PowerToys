@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -24,6 +25,24 @@ public sealed partial class ExtensionPage : Page
         ViewModel = e.Parameter is ProviderSettingsViewModel vm
             ? vm
             : throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
+    }
+
+    internal FrameworkElement? FindCommandTarget(string commandId)
+    {
+        if (ViewModel?.IsEnabled != true || CommandSettingsRepeater?.ItemsSource is not IReadOnlyList<TopLevelViewModel> commands)
+        {
+            return null;
+        }
+
+        for (var index = 0; index < commands.Count; index++)
+        {
+            if (string.Equals(commands[index].Id, commandId, StringComparison.Ordinal))
+            {
+                return CommandSettingsRepeater.GetOrCreateElement(index) as FrameworkElement;
+            }
+        }
+
+        return null;
     }
 
     private async void RankButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

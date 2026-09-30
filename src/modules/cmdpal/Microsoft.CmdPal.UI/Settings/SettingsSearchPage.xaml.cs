@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -29,7 +30,7 @@ public sealed partial class SettingsSearchPage : Page
         _navigate = navigate;
         Query = query;
         QueryText.Text = string.Format(CultureInfo.CurrentCulture, ResultsQueryFormat, query);
-        ResultsRepeater.ItemsSource = results;
+        ResultsRepeater.ItemsSource = SettingsSearchCatalog.GroupResults(results);
         EmptyState.Visibility = results.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 

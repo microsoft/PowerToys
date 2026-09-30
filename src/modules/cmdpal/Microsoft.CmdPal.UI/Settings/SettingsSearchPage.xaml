@@ -22,44 +22,60 @@
                 Visibility="Collapsed" />
             <ItemsRepeater x:Name="ResultsRepeater">
                 <ItemsRepeater.Layout>
-                    <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                    <StackLayout Spacing="24" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:SettingsSearchResult">
-                        <controls:SettingsCard
-                            Click="Result_Click"
-                            DataContext="{x:Bind}"
-                            Description="{x:Bind Breadcrumb}"
-                            Header="{x:Bind Title}"
-                            IsClickEnabled="True">
-                            <controls:SettingsCard.HeaderIcon>
-                                <cpControls:ContentIcon>
-                                    <cpControls:ContentIcon.Content>
-                                        <controls:SwitchPresenter
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            TargetType="x:Boolean"
-                                            Value="{x:Bind HasIcon}">
-                                            <controls:Case Value="True">
-                                                <cpControls:IconBox
-                                                    Width="20"
-                                                    Height="20"
-                                                    DiagnosticScope="SettingsSearch"
-                                                    RequestSite="Settings"
-                                                    SourceKey="{x:Bind Icon}"
-                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}">
-                                                    <cpControls:IconBox.FallbackSource>
-                                                        <FontIconSource Glyph="{x:Bind IconGlyph}" />
-                                                    </cpControls:IconBox.FallbackSource>
-                                                </cpControls:IconBox>
-                                            </controls:Case>
-                                            <controls:Case Value="False">
-                                                <FontIcon FontSize="20" Glyph="{x:Bind IconGlyph}" />
-                                            </controls:Case>
-                                        </controls:SwitchPresenter>
-                                    </cpControls:ContentIcon.Content>
-                                </cpControls:ContentIcon>
-                            </controls:SettingsCard.HeaderIcon>
-                        </controls:SettingsCard>
+                    <DataTemplate x:DataType="viewModels:SettingsSearchResultGroup">
+                        <StackPanel Spacing="8">
+                            <TextBlock
+                                AutomationProperties.HeadingLevel="Level2"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind Title}"
+                                TextWrapping="Wrap" />
+                            <ItemsRepeater ItemsSource="{x:Bind Results}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:SettingsSearchResult">
+                                        <controls:SettingsCard
+                                            Click="Result_Click"
+                                            DataContext="{x:Bind}"
+                                            Description="{x:Bind Breadcrumb}"
+                                            Header="{x:Bind Title}"
+                                            IsClickEnabled="True">
+                                            <controls:SettingsCard.HeaderIcon>
+                                                <cpControls:ContentIcon>
+                                                    <cpControls:ContentIcon.Content>
+                                                        <controls:SwitchPresenter
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            TargetType="x:Boolean"
+                                                            Value="{x:Bind HasIcon}">
+                                                            <controls:Case Value="True">
+                                                                <cpControls:IconBox
+                                                                    Width="20"
+                                                                    Height="20"
+                                                                    DiagnosticScope="SettingsSearch"
+                                                                    RequestSite="Settings"
+                                                                    SourceKey="{x:Bind Icon}"
+                                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}">
+                                                                    <cpControls:IconBox.FallbackSource>
+                                                                        <FontIconSource Glyph="{x:Bind IconGlyph}" />
+                                                                    </cpControls:IconBox.FallbackSource>
+                                                                </cpControls:IconBox>
+                                                            </controls:Case>
+                                                            <controls:Case Value="False">
+                                                                <FontIcon FontSize="20" Glyph="{x:Bind IconGlyph}" />
+                                                            </controls:Case>
+                                                        </controls:SwitchPresenter>
+                                                    </cpControls:ContentIcon.Content>
+                                                </cpControls:ContentIcon>
+                                            </controls:SettingsCard.HeaderIcon>
+                                        </controls:SettingsCard>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
