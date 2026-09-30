@@ -18,7 +18,11 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Cli;
 
-internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserSettings settings, Func<bool>? isAdvancedPasteEnabled = null) : IAdvancedPasteRuntime
+internal sealed class AdvancedPasteRuntime(
+    IPasteFormatExecutor executor,
+    IUserSettings settings,
+    Func<bool>? isAdvancedPasteEnabled = null,
+    Func<PasteAIProviderDefinition, bool>? isProviderAllowed = null) : IAdvancedPasteRuntime
 {
     internal static readonly IReadOnlyDictionary<string, PasteFormats> BuiltInActions =
         new Dictionary<string, PasteFormats>(StringComparer.OrdinalIgnoreCase)
@@ -38,6 +42,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
     private readonly IPasteFormatExecutor _executor = executor;
     private readonly IUserSettings _settings = settings;
     private readonly Func<bool> _isAdvancedPasteEnabled = isAdvancedPasteEnabled ?? (() => AdvancedPastePolicy.IsAdvancedPasteEnabled);
+    private readonly Func<PasteAIProviderDefinition, bool> _isProviderAllowed = isProviderAllowed ?? AdvancedPastePolicy.IsProviderAllowed;
 
     public IReadOnlyList<CliActionDescriptor> GetActions()
         => BuiltInActions.Keys
@@ -69,7 +74,9 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         {
             EnsureAIEnabled();
             var customAction = ResolveCustomAction(request.CustomAction);
-            var providerId = ResolveProviderId(string.IsNullOrWhiteSpace(request.ProviderId) ? customAction.ProviderId : request.ProviderId);
+            var providerId = string.IsNullOrWhiteSpace(request.ProviderId)
+                ? ResolveSavedProviderId(customAction.ProviderId)
+                : ResolveProviderId(request.ProviderId);
             EnsureProviderAllowed(providerId);
             return PasteFormat.CreateCustomAIFormat(
                 GetCustomAIFormat(providerId),
@@ -101,8 +108,10 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
             throw new CliActionResolutionException("Unsupported action.");
         }
 
-        var builtInProviderId = format == PasteFormats.FixSpellingAndGrammar && string.IsNullOrWhiteSpace(request.ProviderId)
-            ? _settings.FixSpellingAndGrammarProviderId
+        var builtInProviderId = format == PasteFormats.FixSpellingAndGrammar
+            ? string.IsNullOrWhiteSpace(request.ProviderId)
+                ? ResolveSavedProviderId(_settings.FixSpellingAndGrammarProviderId)
+                : ResolveProviderId(request.ProviderId)
             : request.ProviderId;
         if (PasteFormat.MetadataDict[format].RequiresAIService)
         {
@@ -136,6 +145,13 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
         }
 
         return configuration?.ActiveProvider?.Id ?? configuration?.Providers?.FirstOrDefault()?.Id;
+    }
+
+    private string? ResolveSavedProviderId(string? providerId)
+    {
+        var configuredProvider = _settings.PasteAIConfiguration?.Providers?
+            .FirstOrDefault(candidate => string.Equals(candidate.Id, providerId, StringComparison.OrdinalIgnoreCase));
+        return configuredProvider?.Id ?? ResolveProviderId(providerId: null);
     }
 
     private AdvancedPasteCustomAction ResolveCustomAction(string value)
@@ -177,7 +193,7 @@ internal sealed class AdvancedPasteRuntime(IPasteFormatExecutor executor, IUserS
             throw new CliActionUnavailableException("No AI provider is configured.");
         }
 
-        if (!AdvancedPastePolicy.IsProviderAllowed(provider))
+        if (!_isProviderAllowed(provider))
         {
             throw new CliActionUnavailableException("The selected AI provider is disabled by policy.");
         }

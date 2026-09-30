@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,9 +83,58 @@ public class AdvancedPasteRuntimeTests
         Assert.IsFalse(executor.WasCalled);
     }
 
+    [TestMethod]
+    public async Task SavedCustomAction_WithRemovedProvider_FallsBackToActiveProvider()
+    {
+        var action = new AdvancedPasteCustomAction { Id = 1, Name = "Saved", Prompt = "prompt", ProviderId = "removed" };
+        var configuration = CreateProviderConfiguration("active");
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: true, customActions: [action], configuration: configuration),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: _ => true);
+        var package = new DataPackage();
+        package.SetText("input");
+
+        await runtime.ExecuteAsync(new CliActionRequest(null, "1", null, null), package.GetView(), CancellationToken.None);
+
+        Assert.AreEqual("active", executor.LastPasteFormat?.ProviderId);
+    }
+
+    [TestMethod]
+    public async Task FixSpelling_WithRemovedSavedProvider_FallsBackToActiveProvider()
+    {
+        var configuration = CreateProviderConfiguration("active");
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(
+            executor,
+            new TestUserSettings(isAIEnabled: true, configuration: configuration, fixSpellingProviderId: "removed"),
+            isAdvancedPasteEnabled: () => true,
+            isProviderAllowed: _ => true);
+        var package = new DataPackage();
+        package.SetText("input");
+
+        await runtime.ExecuteAsync(new CliActionRequest("fix-spelling-and-grammar", null, null, null), package.GetView(), CancellationToken.None);
+
+        Assert.AreEqual("active", executor.LastPasteFormat?.ProviderId);
+    }
+
+    private static PasteAIConfiguration CreateProviderConfiguration(string providerId)
+        => new()
+        {
+            ActiveProviderId = providerId,
+            Providers = new ObservableCollection<PasteAIProviderDefinition>
+            {
+                new() { Id = providerId },
+            },
+        };
+
     private sealed class TestPasteFormatExecutor : IPasteFormatExecutor
     {
         public bool WasCalled { get; private set; }
+
+        public PasteFormat? LastPasteFormat { get; private set; }
 
         public Task<DataPackage> ExecutePasteFormatAsync(
             PasteFormat pasteFormat,
@@ -94,11 +144,16 @@ public class AdvancedPasteRuntimeTests
             IProgress<double> progress)
         {
             WasCalled = true;
+            LastPasteFormat = pasteFormat;
             return Task.FromResult(new DataPackage());
         }
     }
 
-    private sealed class TestUserSettings(bool isAIEnabled, IReadOnlyList<AdvancedPasteCustomAction>? customActions = null) : IUserSettings
+    private sealed class TestUserSettings(
+        bool isAIEnabled,
+        IReadOnlyList<AdvancedPasteCustomAction>? customActions = null,
+        PasteAIConfiguration? configuration = null,
+        string fixSpellingProviderId = "") : IUserSettings
     {
         public bool IsAIEnabled { get; } = isAIEnabled;
 
@@ -118,7 +173,7 @@ public class AdvancedPasteRuntimeTests
 
         public string FixSpellingAndGrammarSystemPrompt => string.Empty;
 
-        public string FixSpellingAndGrammarProviderId => string.Empty;
+        public string FixSpellingAndGrammarProviderId => fixSpellingProviderId;
 
         public bool FixSpellingAndGrammarCoachingEnabled => false;
 
@@ -130,7 +185,7 @@ public class AdvancedPasteRuntimeTests
 
         public string FixSpellingAndGrammarCoachingProviderId => string.Empty;
 
-        public PasteAIConfiguration PasteAIConfiguration { get; } = new();
+        public PasteAIConfiguration PasteAIConfiguration { get; } = configuration ?? new();
 
         public event EventHandler Changed
         {

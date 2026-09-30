@@ -79,30 +79,9 @@ public static class TransformHelpers
         Logger.LogTrace();
 
         var cfHtml = await clipboardData.GetHtmlContentAsync();
-        var html = RemoveHtmlMetadata(cfHtml);
+        var html = HtmlFormatHelper.GetStaticFragment(cfHtml);
 
         return await CreateDataPackageFromFileContentAsync(html, "html", cancellationToken);
-    }
-
-    /// <summary>
-    /// Removes leading CF_HTML metadata from HTML clipboard data.
-    /// See: https://learn.microsoft.com/en-us/windows/win32/dataxchg/html-clipboard-format
-    /// </summary>
-    private static string RemoveHtmlMetadata(string cfHtml)
-    {
-        int? GetIntTagValue(string tagName)
-        {
-            var tagNameWithColon = tagName + ":";
-            int tagStartPos = cfHtml.IndexOf(tagNameWithColon, StringComparison.InvariantCulture);
-
-            const int tagValueLength = 10;
-            return tagStartPos != -1 && int.TryParse(cfHtml.AsSpan(tagStartPos + tagNameWithColon.Length, tagValueLength), CultureInfo.InvariantCulture, out int result) ? result : null;
-        }
-
-        var startFragmentIndex = GetIntTagValue("StartFragment");
-        var endFragmentIndex = GetIntTagValue("EndFragment");
-
-        return (startFragmentIndex == null || endFragmentIndex == null) ? cfHtml : cfHtml[startFragmentIndex.Value..endFragmentIndex.Value];
     }
 
     private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(string data, string fileExtension, CancellationToken cancellationToken)
