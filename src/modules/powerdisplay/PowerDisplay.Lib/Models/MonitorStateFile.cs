@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace PowerDisplay.Common.Models
@@ -19,7 +20,8 @@ namespace PowerDisplay.Common.Models
         /// Key is the monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).
         /// </summary>
         [JsonPropertyName("monitors")]
-        public Dictionary<string, MonitorStateEntry> Monitors { get; init; } = new();
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "The JSON DTO setter preserves empty defaults for omitted members and existing explicit-null semantics during source-generated deserialization.")]
+        public Dictionary<string, MonitorStateEntry> Monitors { get; set; } = new();
 
         /// <summary>
         /// Gets or sets when the file was last updated.
