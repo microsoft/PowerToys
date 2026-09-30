@@ -15,6 +15,54 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 public sealed partial class PageCleanupTests
 {
+    [DataTestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task QueuedErrorsAreRetainedForSuspendedPagesAndIgnoredAfterDiscard(bool showException, bool discardPage)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var viewModel = new CleanupFailurePageViewModel(Mock.Of<IPage>(), scheduler, failStopHook: false);
+        const string errorMessage = "The requested page could not be opened.";
+
+        try
+        {
+            if (showException)
+            {
+                viewModel.ShowException(new InvalidOperationException(errorMessage));
+            }
+            else
+            {
+                viewModel.QueueErrorMessage(errorMessage);
+            }
+
+            Assert.AreEqual(string.Empty, viewModel.ErrorMessage);
+            if (discardPage)
+            {
+                await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+            }
+            else
+            {
+                viewModel.SuspendForNavigation();
+            }
+
+            scheduler.Drain();
+            if (discardPage)
+            {
+                Assert.AreEqual(string.Empty, viewModel.ErrorMessage);
+            }
+            else
+            {
+                StringAssert.Contains(viewModel.ErrorMessage, errorMessage);
+            }
+        }
+        finally
+        {
+            await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+        }
+    }
+
     [TestMethod]
     public async Task ContentInitializationFailureReleasesTheWholeUnpublishedBatch()
     {
@@ -115,6 +163,8 @@ public sealed partial class PageCleanupTests
         internal bool IsActive => IsPageActive;
 
         internal int CleanupRequestCount { get; private set; }
+
+        internal void QueueErrorMessage(string message) => ShowErrorMessage(message);
 
         protected override void OnCleanupRequested()
         {

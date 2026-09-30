@@ -20,7 +20,7 @@ public sealed partial class ExtensionsPage : Page
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-    private readonly SettingsViewModel? viewModel;
+    private readonly SettingsViewModel viewModel;
     private readonly Dictionary<string, WeakReference<SettingsCard>> _vmToCardMap = new();
     private readonly Dictionary<SettingsCard, ProviderSettingsViewModel> _cardToVmMap = new();
 
@@ -31,9 +31,25 @@ public sealed partial class ExtensionsPage : Page
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
 
         Unloaded += ExtensionsPage_Unloaded;
+    }
+
+    internal ProviderSettingsViewModel? FindProvider(string providerId) =>
+        viewModel.FindOrAddCommandProvider(providerId);
+
+    internal async Task ShowFallbackOrderDialogAsync()
+    {
+        try
+        {
+            await FallbackRankerDialog!.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error when showing FallbackRankerDialog", ex);
+        }
     }
 
     private void ExtensionsPage_Unloaded(object sender, RoutedEventArgs e)
@@ -114,13 +130,6 @@ public sealed partial class ExtensionsPage : Page
 
     private async void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            await FallbackRankerDialog!.ShowAsync();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Error when showing FallbackRankerDialog", ex);
-        }
+        await ShowFallbackOrderDialogAsync();
     }
 }

@@ -19,7 +19,11 @@
 
             <DataTemplate x:Key="LabelRunTemplate" x:DataType="coreVm:LabelRunViewModel">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Bottom" Text="{x:Bind Text, Mode=OneWay}" />
+                    <TextBlock
+                        VerticalAlignment="Bottom"
+                        FontFamily="{ThemeResource ContentControlThemeFontFamily}"
+                        FontSize="{ThemeResource ControlContentThemeFontSize}"
+                        Text="{x:Bind Text, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="ButtonParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
@@ -36,6 +40,7 @@
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
                     VerticalAlignment="Center"
+                    h:TextBoxCaretColor.SyncWithForeground="True"
                     KeyDown="StringParameter_KeyDown"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
                     Style="{StaticResource SearchParameterTextBoxStyle}"
@@ -47,6 +52,7 @@
                     <controls:Case Value="True">
                         <TextBox
                             VerticalAlignment="Center"
+                            h:TextBoxCaretColor.SyncWithForeground="True"
                             GotFocus="ListParameter_GotFocus"
                             Loaded="ListParameter_Loaded"
                             LostFocus="ListParameter_LostFocus"

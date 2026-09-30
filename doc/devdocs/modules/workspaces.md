@@ -107,11 +107,103 @@ evidence/cleanup behavior:
 
 ## Implementation Details
 
-TODO: Add implementation details
+### Elevated EXE signature warning
+
+For entries explicitly marked **Run as administrator**, Workspaces checks the
+actual EXE file selected by the existing launch routing. An EXE with a verified
+signature continues to the normal Windows elevation flow. An unsigned,
+untrusted, invalid, or inconclusive result shows **Skip this app** (the default)
+and **Run anyway** in the Workspaces launch UI. Enter initially selects Skip;
+Escape and closing the warning also skip that application. Other applications
+continue. **Cancel launch**
+still cancels the workspace. Choices are one-time, not a saved trust allowlist.
+
+**Only EXE file targets are checked.** MSIX/AppX activation, `shell:AppsFolder`,
+URI protocols, shortcuts, and other non-EXE targets keep their existing launch
+behavior without this warning. Bypassing the check does not mean that a target
+has been verified or is trusted. If normal routing falls back to an EXE, that
+EXE is checked before it is launched. Implicit elevation of entries not marked
+**Run as administrator** is also outside this feature.
+
+`WorkspacesLib\SignatureVerification` uses Windows Authenticode verification
+for embedded signatures (including secondary signatures) and installed
+SHA-256/SHA-1 catalogs. Signer and timestamp chains must terminate at
+machine-trusted roots; the publisher does not have to be Microsoft.
+Certificate and revocation retrieval are **cache-only**: missing or unusable
+cached revocation data produces a warning, not automatic approval.
+
+The checked executable is held open without write/delete sharing through
+`ShellExecuteEx`. This reduces file replacement races, but execution remains
+path-based: mutable parent directories, arguments, scripts, dependencies, and
+runtime behavior are not covered. A trusted signature establishes signing
+identity and signed-content integrity, not that an application is safe.
+
+### Warning lifecycle
+
+The warning uses the existing `IPCHelper` / `TwoWayPipeMessageIPCManaged` pipe
+pair. The launch-status payload and workspace cancellation message are
+unchanged. Additional application messages carry a warning, its display
+acknowledgement, its one-time decision, and dismissal, matched by request ID.
+This PR does not replace or authenticate that transport. The dialog is an
+advisory check, not an authorization boundary against other same-user processes;
+Windows UAC and execution policies remain in control.
+
+The launcher waits up to 10 seconds for the warning to be displayed. Once it
+is displayed, there is no human decision deadline while the UI process remains
+alive. No response, an exited UI, invalid messages, or a display timeout can
+approve the EXE. Skip and confirmation failure stop fallback for that
+application. Pending decisions are canceled before the launch worker is joined
+at shutdown. A keepalive on the existing Window Arranger channel prevents its
+normal launch timeout from expiring while elevation verification or consent is
+pending; it is not a UI transport heartbeat.
+
+### Localization
+
+Warning strings and translator comments are in the launcher's
+`Properties\Resources.resx`, with strongly typed access through
+`Resources.Designer.cs`. The existing Touchdown workflow collects these
+resources, and the installer includes Launcher UI satellite assemblies.
+Translated strings still require delivery through the normal localization
+process.
+
+The warning respects the selected language and right-to-left layout, with
+left-to-right technical values and wrapping action labels. Displayed application
+details escape control characters and bidi formatting controls to avoid
+misleading line breaks and direction overrides. **Copy details** preserves the
+raw path and arguments. These display escapes do not alter the launched values.
 
 ## Debugging
 
-TODO: Add debugging information
+Build `WorkspacesLib.UnitTests`, `WorkspacesLauncherUI.UnitTests`,
+`WorkspacesLauncher`, `WorkspacesLauncherUI`, and `WorkspacesWindowArranger`
+with the repository build wrapper, using the same configuration and platform:
+
+```powershell
+# Run from the project directory; $repo is the repository root.
+& "$repo\tools\build\build.ps1" -Platform x64 -Configuration Debug -ExtraArgs "/p:SolutionDir=$repo\"
+```
+
+After a successful build, use Visual Studio Test Explorer or
+`vstest.console.exe` for the unit-test assemblies. Native tests cover EXE target
+classification, signature outcomes, held-file behavior, and one-time
+approval/skip/cancel/failure. Managed tests cover the warning's actual lifecycle,
+display, default actions, and localization. There are no product command-line
+verification or warning-preview switches.
+
+Trust regressions compile the production verifier with test-only Windows API
+seams for signature/provider results, catalog discovery, and final-path forms.
+They exercise embedded/secondary signatures, catalog matches, chain failures,
+and timestamps. Windows chain and Authenticode policy evaluation use a private
+memory-only root store; no machine trust, installed catalogs, or network state
+is modified. These controlled tests are not end-to-end signed-binary acceptance.
+
+For end-to-end acceptance, use a harmless unsigned EXE in a saved workspace,
+mark it **Run as administrator**, and exercise Skip, Run anyway, Escape/close,
+and workspace cancellation. Also confirm that ordinary launches and MSIX/URI
+activation retain their original behavior. Use matching signed product binaries
+for Release Runner/Settings; this feature does not bypass their authentication.
+Installed Release, accessibility, and delivered-language acceptance remain
+separate from unit-test coverage.
 
 ## Settings
 

@@ -3,27 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-// shamelessly from https://github.com/PowerShell/PowerShell/blob/master/src/Microsoft.PowerShell.Commands.Management/commands/management/Clipboard.cs
+// This follows PowerShell's approach because extensions run without a foreground window.
 public static partial class ClipboardHelper
 {
-    private static readonly bool? _clipboardSupported = true;
-
-    // Used if an external clipboard is not available, e.g. if xclip is missing.
-    // This is useful for testing in CI as well.
-    private static string? _internalClipboard;
-
     public static string GetText()
     {
-        if (_clipboardSupported == false)
-        {
-            return _internalClipboard ?? string.Empty;
-        }
-
-        var tool = string.Empty;
-        var args = string.Empty;
         var clipboardText = string.Empty;
 
         ExecuteOnStaThread(() => GetTextImpl(out clipboardText));
@@ -32,16 +21,7 @@ public static partial class ClipboardHelper
 
     public static void SetText(string text)
     {
-        if (_clipboardSupported == false)
-        {
-            _internalClipboard = text;
-            return;
-        }
-
-        var tool = string.Empty;
-        var args = string.Empty;
         ExecuteOnStaThread(() => SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));
-        return;
     }
 
     public static void SetRtf(string plainText, string rtfText)
@@ -54,6 +34,34 @@ public static partial class ClipboardHelper
         ExecuteOnStaThread(() => SetClipboardData(
             Tuple.Create(plainText, CF_UNICODETEXT),
             Tuple.Create(rtfText, s_CF_RTF)));
+    }
+
+    public static void SetImage(RandomAccessStreamReference image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        var dataPackage = new DataPackage();
+        dataPackage.SetBitmap(image);
+        SetContent(dataPackage);
+    }
+
+    public static void SetContent(DataPackage content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        ExecuteOnStaThread(() =>
+        {
+            try
+            {
+                Clipboard.SetContent(content);
+                Clipboard.Flush();
+                return true;
+            }
+            catch (COMException)
+            {
+                return false;
+            }
+        });
     }
 
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -233,6 +241,10 @@ public static partial class ClipboardHelper
             {
                 // The clipboard owns this memory now, so don't free it.
                 hGlobal = IntPtr.Zero;
+            }
+            else
+            {
+                return false;
             }
         }
         catch

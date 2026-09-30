@@ -45,6 +45,15 @@ public class SettingsServiceTests
             .Returns(_testSettings);
     }
 
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Directory.Exists(_testDirectory))
+        {
+            Directory.Delete(_testDirectory, recursive: true);
+        }
+    }
+
     private static SettingsModel CreateMinimalSettingsModel()
     {
         // Bypass constructor by using deserialize from minimal JSON
@@ -89,6 +98,94 @@ public class SettingsServiceTests
 
         // Assert
         Assert.IsTrue(service.Settings.ShowAppDetails);
+    }
+
+    [TestMethod]
+    public void Constructor_DefaultsExternalCommandLinksToEnabled()
+    {
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void Constructor_DefaultsExternalCommandLinksToEnabled_WhenExistingFileOmitsSetting()
+    {
+        Directory.CreateDirectory(_testDirectory);
+        File.WriteAllText(Path.Combine(_testDirectory, "settings.json"), "{}");
+
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsTrue(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void Constructor_PreservesExplicitlyDisabledExternalCommandLinks()
+    {
+        Directory.CreateDirectory(_testDirectory);
+        File.WriteAllText(
+            Path.Combine(_testDirectory, "settings.json"),
+            "{\"EnableExternalCommandLinks\":false}");
+
+        var service = new SettingsService(new PersistenceService(), _mockAppInfo.Object);
+
+        Assert.IsFalse(service.Settings.EnableExternalCommandLinks);
+    }
+
+    [TestMethod]
+    public void QuickAccessShelf_DefaultsOffWhenSettingIsOmitted()
+    {
+        var settings = System.Text.Json.JsonSerializer.Deserialize(
+            "{}",
+            JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsFalse(settings.ShowQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.Hidden, settings.RecentCommandsOnQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.Hidden, settings.RecentCommandsOnHome);
+        Assert.AreEqual(SettingsModel.DefaultQuickAccessShelfPinnedCommandLimit, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(SettingsModel.DefaultRecentCommandsDisplayLimit, settings.RecentCommandsDisplayLimit);
+    }
+
+    [TestMethod]
+    public void QuickAccessShelf_ExplicitValueRoundTrips()
+    {
+        var source = CreateMinimalSettingsModel() with
+        {
+            ShowQuickAccessShelf = true,
+            RecentCommandsOnQuickAccessShelf = RecentCommandsPlacement.AfterPinned,
+            RecentCommandsOnHome = RecentCommandsPlacement.BeforePinned,
+            QuickAccessShelfPinnedCommandLimit = 4,
+            RecentCommandsDisplayLimit = 7,
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(source, JsonSerializationContext.Default.SettingsModel);
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.IsTrue(settings.ShowQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.AfterPinned, settings.RecentCommandsOnQuickAccessShelf);
+        Assert.AreEqual(RecentCommandsPlacement.BeforePinned, settings.RecentCommandsOnHome);
+        Assert.AreEqual(4, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(7, settings.RecentCommandsDisplayLimit);
+    }
+
+    [DataTestMethod]
+    [DataRow(-1, 0, 0, 1)]
+    [DataRow(100, 100, 9, 10)]
+    public void QuickAccessLimits_OutOfRangePersistedValuesAreClamped(
+        int pinnedCommandLimit,
+        int recentCommandLimit,
+        int expectedPinnedCommandLimit,
+        int expectedRecentCommandLimit)
+    {
+        var json = $"{{ \"QuickAccessShelfPinnedCommandLimit\": {pinnedCommandLimit}, " +
+            $"\"RecentCommandsDisplayLimit\": {recentCommandLimit} }}";
+        var settings = System.Text.Json.JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+
+        Assert.IsNotNull(settings);
+        Assert.AreEqual(expectedPinnedCommandLimit, settings.QuickAccessShelfPinnedCommandLimit);
+        Assert.AreEqual(expectedRecentCommandLimit, settings.RecentCommandsDisplayLimit);
     }
 
     [TestMethod]

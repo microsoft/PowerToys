@@ -16,7 +16,16 @@ public partial class CommandItemViewModelLifecycleTests
     {
         public Action? ReadIcon { get; set; }
 
-        public string Id => "test.command";
+        public Action? ReadId { get; set; }
+
+        public string Id
+        {
+            get
+            {
+                ReadId?.Invoke();
+                return "test.command";
+            }
+        }
 
         public string Name { get; set; } = string.Empty;
 
@@ -167,7 +176,9 @@ public partial class CommandItemViewModelLifecycleTests
     }
 
     [TestMethod]
-    public async Task CleanupDuringCommandGetter_DoesNotReplaceCleanedCommand()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CleanupDuringCommandGetter_DoesNotReplaceCleanedCommand(bool commandIdentity)
     {
         var context = new TestPageContext();
         var command = new TestCommand();
@@ -175,7 +186,10 @@ public partial class CommandItemViewModelLifecycleTests
         var viewModel = new CommandItemViewModel(new(item), new(context), null);
         var originalCommand = viewModel.Command;
 
-        await RunWithCleanup(viewModel, viewModel.FastInitializeProperties, block => item.ReadCommand = block);
+        Action<Action> configureBlock = commandIdentity
+            ? block => command.ReadId = block
+            : block => item.ReadCommand = block;
+        await RunWithCleanup(viewModel, viewModel.FastInitializeProperties, configureBlock);
 
         Assert.AreSame(originalCommand, viewModel.Command);
         Assert.AreEqual(0, command.SubscriberCount);
