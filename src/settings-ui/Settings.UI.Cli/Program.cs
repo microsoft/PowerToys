@@ -7,7 +7,9 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using PowerToys.Settings.Cli.Commands;
+using PowerToys.Settings.Cli.Telemetry;
 
 namespace PowerToys.Settings.Cli;
 
@@ -52,13 +54,50 @@ internal static class Program
                 Logger.LogInfo($"Settings CLI command completed: [{string.Join(", ", args)}]");
             }
 
+            LogCliTelemetry(GetTelemetryCommandName(args), exitCode == 0);
             return exitCode;
         }
         catch (Exception ex)
         {
             Logger.LogError("Unhandled Settings CLI exception.", ex);
             Console.Error.WriteLine($"Settings CLI failed: {ex.Message}");
+            LogCliTelemetry(GetTelemetryCommandName(args), successful: false);
             return 1;
+        }
+    }
+
+    internal static string GetTelemetryCommandName(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return "none";
+        }
+
+        return args[0].ToLowerInvariant() switch
+        {
+            "list" => "list",
+            "status" => "status",
+            "enable" => "enable",
+            "disable" => "disable",
+            "--help" or "-h" or "-?" => "help",
+            "--version" => "version",
+            _ => "unknown",
+        };
+    }
+
+    private static void LogCliTelemetry(string commandName, bool successful)
+    {
+        try
+        {
+            PowerToysTelemetry.Log.WriteEvent(new SettingsCLICommandEvent
+            {
+                CommandName = commandName,
+                Successful = successful,
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to log Settings CLI telemetry.", ex);
         }
     }
 }

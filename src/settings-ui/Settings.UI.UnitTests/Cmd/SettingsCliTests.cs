@@ -175,6 +175,19 @@ public class SettingsCliTests
         Assert.IsTrue(parseResult.Errors.Count > 0);
     }
 
+    [DataTestMethod]
+    [DataRow(new string[] { "list" }, "list")]
+    [DataRow(new string[] { "status", "FancyZones" }, "status")]
+    [DataRow(new string[] { "enable", "FancyZones" }, "enable")]
+    [DataRow(new string[] { "disable", "FancyZones" }, "disable")]
+    [DataRow(new string[] { "--help" }, "help")]
+    [DataRow(new string[] { "unexpected", "sensitive-value" }, "unknown")]
+    [DataRow(new string[] { }, "none")]
+    public void TestTelemetryCommandNameDoesNotIncludeArguments(string[] args, string expected)
+    {
+        Assert.AreEqual(expected, Program.GetTelemetryCommandName(args));
+    }
+
     private sealed class FailingSaveSettingsUtils : SettingsUtils
     {
         public FailingSaveSettingsUtils()
