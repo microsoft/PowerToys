@@ -15,6 +15,158 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public class DockFocusNavigationTests
 {
     [TestMethod]
+    [DataRow(3, true, false, "start", 1)]
+    [DataRow(3, true, true, "start", 1)]
+    [DataRow(3, false, false, "next", 0)]
+    [DataRow(3, false, true, "next", 2)]
+    [DataRow(0, false, false, "next", 0)]
+    [DataRow(0, false, true, "next", 2)]
+    public void TryFocusAcrossDocks_RestoresOnlyStartingDock(int startingItemCount, bool startingDockCanFocus, bool reverse, string expectedDock, int expectedIndex)
+    {
+        string[] dockOrder = ["start", "next", "last"];
+        string? focusedDock = null;
+        var focusedIndex = -1;
+
+        var result = DockFocusNavigation.TryFocusAcrossDocks(
+            dockOrder,
+            "START",
+            moveFromCurrent: false,
+            restoreLastFocus: true,
+            (dockId, _, restore) => DockFocusNavigation.TryFocusNext(
+                dockId == "start" ? startingItemCount : 3,
+                -1,
+                index =>
+                {
+                    if (dockId == "start" && !startingDockCanFocus)
+                    {
+                        return false;
+                    }
+
+                    focusedDock = dockId;
+                    focusedIndex = index;
+                    return true;
+                },
+                wrap: false,
+                reverse: reverse,
+                rememberedIndex: restore ? 1 : -1));
+
+        Assert.IsTrue(result);
+        Assert.AreEqual(expectedDock, focusedDock);
+        Assert.AreEqual(expectedIndex, focusedIndex);
+    }
+
+    [TestMethod]
+    [DataRow(false, 0)]
+    [DataRow(true, 2)]
+    public void TryFocusAcrossDocks_LeavingFocusedDock_EntersNextDockFromDirectionalEdge(bool reverse, int expectedIndex)
+    {
+        string[] dockOrder = ["start", "next", "last"];
+        string? focusedDock = null;
+        var focusedIndex = -1;
+
+        var result = DockFocusNavigation.TryFocusAcrossDocks(
+            dockOrder,
+            "start",
+            moveFromCurrent: true,
+            restoreLastFocus: false,
+            (dockId, move, restore) => DockFocusNavigation.TryFocusNext(
+                3,
+                move ? reverse ? 0 : 2 : -1,
+                index =>
+                {
+                    focusedDock = dockId;
+                    focusedIndex = index;
+                    return true;
+                },
+                wrap: false,
+                reverse: reverse,
+                rememberedIndex: restore ? 1 : -1));
+
+        Assert.IsTrue(result);
+        Assert.AreEqual("next", focusedDock);
+        Assert.AreEqual(expectedIndex, focusedIndex);
+    }
+
+    [TestMethod]
+    [DataRow(false, 2, 0)]
+    [DataRow(true, 0, 2)]
+    public void TryFocusAcrossDocks_PassingBoundary_ResetsDepartedDockForNextVisit(bool reverse, int startingIndex, int expectedIndex)
+    {
+        string[] dockOrder = ["start", "next", "last"];
+        Dictionary<string, int> rememberedIndices = new()
+        {
+            ["start"] = startingIndex,
+            ["next"] = 1,
+            ["last"] = 1,
+        };
+        var focusedDock = "start";
+        var focusedIndex = startingIndex;
+
+        bool TryFocus(string dockId, bool move, bool restore) => DockFocusNavigation.TryFocusNext(
+            3,
+            move ? focusedIndex : -1,
+            index =>
+            {
+                focusedDock = dockId;
+                focusedIndex = index;
+                rememberedIndices[dockId] = index;
+                return true;
+            },
+            wrap: false,
+            reverse: reverse,
+            rememberedIndex: restore ? rememberedIndices[dockId] : -1);
+
+        void ResetFocus(string dockId) => rememberedIndices[dockId] = -1;
+
+        Assert.IsTrue(DockFocusNavigation.TryFocusAcrossDocks(dockOrder, "start", moveFromCurrent: true, restoreLastFocus: false, TryFocus, ResetFocus));
+        Assert.AreEqual("next", focusedDock);
+        Assert.AreEqual(-1, rememberedIndices["start"]);
+        Assert.AreEqual(expectedIndex, rememberedIndices["next"]);
+        Assert.AreEqual(1, rememberedIndices["last"]);
+
+        // Start a fresh cycle on the dock whose boundary was crossed.
+        Assert.IsTrue(DockFocusNavigation.TryFocusAcrossDocks(dockOrder, "start", moveFromCurrent: false, restoreLastFocus: true, TryFocus, ResetFocus));
+        Assert.AreEqual("start", focusedDock);
+        Assert.AreEqual(expectedIndex, focusedIndex);
+    }
+
+    [TestMethod]
+    [DataRow(false, 2)]
+    [DataRow(true, 0)]
+    public void TryFocusAcrossDocks_WithinBoundary_PreservesFocusForNextVisit(bool reverse, int expectedIndex)
+    {
+        string[] dockOrder = ["start", "next"];
+        var focusedIndex = 1;
+        var rememberedIndex = 1;
+
+        bool TryFocus(string dockId, bool move, bool restore)
+        {
+            Assert.AreEqual("start", dockId);
+            return DockFocusNavigation.TryFocusNext(
+                3,
+                move ? focusedIndex : -1,
+                index =>
+                {
+                    focusedIndex = index;
+                    rememberedIndex = index;
+                    return true;
+                },
+                wrap: false,
+                reverse: reverse,
+                rememberedIndex: restore ? rememberedIndex : -1);
+        }
+
+        void ResetFocus(string dockId) => Assert.Fail($"Dock {dockId} must keep its focus until traversal reaches a boundary.");
+
+        Assert.IsTrue(DockFocusNavigation.TryFocusAcrossDocks(dockOrder, "start", moveFromCurrent: true, restoreLastFocus: false, TryFocus, ResetFocus));
+        Assert.AreEqual(expectedIndex, rememberedIndex);
+
+        // Leaving for another app keeps the item available for restoration.
+        Assert.IsTrue(DockFocusNavigation.TryFocusAcrossDocks(dockOrder, "start", moveFromCurrent: false, restoreLastFocus: true, TryFocus, ResetFocus));
+        Assert.AreEqual(expectedIndex, focusedIndex);
+    }
+
+    [TestMethod]
     [DataRow(-1, 0)]
     [DataRow(0, 1)]
     [DataRow(1, 2)]

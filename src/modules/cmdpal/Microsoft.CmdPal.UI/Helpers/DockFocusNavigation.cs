@@ -21,6 +21,22 @@ internal static class DockFocusNavigation
         return chord.Vkey == reverseChord.Vkey && chord.Modifiers == reverseChord.Modifiers;
     }
 
+    internal static bool TryFocusAcrossDocks(IReadOnlyList<string> dockOrder, string startingDockId, bool moveFromCurrent, bool restoreLastFocus, Func<string, bool, bool, bool> tryFocus, Action<string>? resetFocus = null)
+    {
+        foreach (var dockId in dockOrder)
+        {
+            var isStartingDock = string.Equals(dockId, startingDockId, StringComparison.OrdinalIgnoreCase);
+            if (tryFocus(dockId, isStartingDock && moveFromCurrent, isStartingDock && restoreLastFocus))
+            {
+                return true;
+            }
+
+            resetFocus?.Invoke(dockId);
+        }
+
+        return false;
+    }
+
     internal static bool TryFocusNext(int itemCount, int focusedIndex, Func<int, bool> tryFocus, bool wrap = true, bool reverse = false, int rememberedIndex = -1)
     {
         var hasFocusedItem = focusedIndex >= 0 && focusedIndex < itemCount;

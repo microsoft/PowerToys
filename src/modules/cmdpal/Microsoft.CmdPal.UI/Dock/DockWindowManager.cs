@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -222,7 +223,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         var moveFromCurrent = focusedDockId is not null;
 
-        // Restore only at the start of a cycle so crossing docks still visits every item.
+        // Restore only on the starting dock so crossing docks still visits every item.
         var restoreLastFocus = !moveFromCurrent && _settingsService.Settings.DockRememberLastFocusedItem;
         if (!_settingsService.Settings.DockFocusAcrossMonitors)
         {
@@ -235,13 +236,15 @@ public sealed partial class DockWindowManager : IDisposable
         }
 
         var dockOrder = DockFocusTargetResolver.GetTraversalOrder(monitors, _docks.Keys, targetId, reverse);
-        for (var index = 0; index < dockOrder.Count; index++)
+        if (DockFocusNavigation.TryFocusAcrossDocks(
+            dockOrder,
+            targetId,
+            moveFromCurrent,
+            restoreLastFocus,
+            (monitorId, move, restore) => TryFocusDock(monitorId, move, wrap: false, reverse, restore),
+            monitorId => _docks[monitorId].Window.ResetRememberedFocus()))
         {
-            var isCurrentDock = string.Equals(dockOrder[index], targetId, StringComparison.OrdinalIgnoreCase);
-            if (TryFocusDock(dockOrder[index], moveFromCurrent: isCurrentDock && moveFromCurrent, wrap: false, reverse, restoreLastFocus))
-            {
-                return;
-            }
+            return;
         }
 
         // Complete the cycle within the dock where this press started.

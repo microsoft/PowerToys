@@ -856,6 +856,8 @@ public sealed partial class DockWindow : WindowEx,
             return false;
         }
 
+        // Check before activation can restore focus to the previous item.
+        restoreLastFocus &= _dock.HasRememberedFocus;
         var acquiringFocus = !_hasKeyboardFocus;
         if (acquiringFocus)
         {
@@ -885,6 +887,8 @@ public sealed partial class DockWindow : WindowEx,
 
         return false;
     }
+
+    internal void ResetRememberedFocus() => _dock.ResetRememberedFocus();
 
     private void Root_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {

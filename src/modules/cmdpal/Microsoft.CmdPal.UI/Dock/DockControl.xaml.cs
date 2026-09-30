@@ -42,6 +42,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     internal DockViewModel ViewModel => _viewModel;
 
+    internal bool HasRememberedFocus => _lastFocusedItem?.TryGetTarget(out _) == true;
+
     /// <summary>
     /// Gets or sets the HWND of the parent DockWindow that owns this control.
     /// Used to target palette-show messages to the correct DockWindow in multi-monitor setups.
@@ -317,6 +319,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             _lastFocusedItem = new(item);
         }
     }
+
+    internal void ResetRememberedFocus() => _lastFocusedItem = null;
 
     private void BandItem_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
