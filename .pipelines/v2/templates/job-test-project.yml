@@ -230,8 +230,10 @@ jobs:
         'AdvancedPaste.UITests.Next',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
+        'FileLocksmith.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
+        'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
@@ -239,6 +241,7 @@ jobs:
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
+        'ScreenRuler.UITests.Next',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
       ) + $newPlusModules
