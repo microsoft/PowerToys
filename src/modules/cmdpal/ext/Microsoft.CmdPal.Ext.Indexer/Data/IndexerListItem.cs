@@ -38,6 +38,10 @@ internal sealed partial class IndexerListItem : ListItem
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
+        if (!string.IsNullOrEmpty(FilePath))
+        {
+            Icon = new IconInfo(ShellItemIconProtocol.Create(FilePath));
+        }
 
         DataPackage = DataPackageHelper.CreateDataPackageForPath(this, FilePath);
 

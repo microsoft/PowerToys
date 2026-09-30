@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text;
@@ -24,11 +25,13 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
@@ -59,15 +62,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<FocusDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
     IRecipient<ExpandCompactModeMessage>,
+    IRecipient<ClosePaletteContextMenuMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
-    private const double QuickAccessShelfButtonWidth = 44;
+    private const double QuickAccessShelfButtonWidth = 40;
     private const double QuickAccessShelfSpacing = 4;
+    private const double QuickAccessShelfDragThreshold = 4;
+    private const string QuickAccessShelfDragProperty = "Microsoft.CmdPal.UI.QuickAccessShelfItem";
+    private const string QuickAccessShelfDropIndicatorTag = "QuickAccessShelfDropIndicator";
 
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
     private readonly ItemActionController _itemActions;
+    private readonly ContextMenuHost _quickAccessShelfMenuHost;
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
@@ -79,10 +87,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly ToastWindow _toast = new();
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
+    private readonly string _quickAccessShelfChangeOrderDragCaption;
 
     private readonly ISettingsService _settingsService;
     private readonly ShellContentDialogHost _dialogHost;
     private readonly ExternalCommandLinkCoordinator _externalCommandLinks;
+
+    private readonly IContextMenuFactory _contextMenuFactory;
 
     // The last compact-layout settings we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when one of these settings changes.
@@ -102,6 +113,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // one-shot flag suppresses that select for the expand-driven load.
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
+    private QuickAccessShelfItem? _quickAccessShelfContextItem;
+    private ListItemViewModel? _quickAccessShelfContextViewModel;
+    private Task<ListItemViewModel?>? _quickAccessShelfContextTask;
+    private Button? _quickAccessShelfContextAnchor;
+    private long _quickAccessShelfContextVersion;
+    private ListViewModel? _quickAccessShelfContextPage;
+    private bool _quickAccessShelfContextVisibilityCheckPending;
+    private QuickAccessShelfItem? _draggedQuickAccessShelfItem;
+    private string? _quickAccessShelfDragToken;
+    private Grid? _quickAccessShelfDropTarget;
+    private bool _quickAccessShelfDropAfter;
+    private bool _quickAccessShelfDragStarted;
+    private Button? _quickAccessShelfPendingDragSource;
+    private uint? _quickAccessShelfPendingDragPointerId;
+    private Point _quickAccessShelfPendingDragStart;
+    private bool _quickAccessShelfStartDragPending;
     private bool _isDisposed;
     private IHostWindow? _hostWindow;
 
@@ -177,17 +204,30 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         ViewModel = viewModel;
         _settingsService = settingsService;
+        _contextMenuFactory = App.Current.Services.GetRequiredService<IContextMenuFactory>();
         var settings = _settingsService.Settings;
         _compactMode = settings.CompactMode;
         _quickAccessShelfEnabled = settings.ShowQuickAccessShelf;
         this.ExpandedMode = !_compactMode;
+        var recentCommandsOnQuickAccessShelf = settings.ShowQuickAccessShelf
+            ? settings.RecentCommandsOnQuickAccessShelf
+            : RecentCommandsPlacement.Hidden;
 
-        QuickAccessShelf = new(App.Current.Services.GetRequiredService<TopLevelCommandManager>(), _mainTaskScheduler);
+        QuickAccessShelf = new(
+            App.Current.Services.GetRequiredService<TopLevelCommandManager>(),
+            App.Current.Services.GetRequiredService<IAppStateService>(),
+            _settingsService,
+            recentCommandsOnQuickAccessShelf,
+            settings.QuickAccessShelfPinnedCommandLimit,
+            settings.RecentCommandsDisplayLimit,
+            _mainTaskScheduler);
         QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
 
         this.InitializeComponent();
+        QuickAccessShelf.VisibleItems.CollectionChanged += QuickAccessShelfVisibleItems_CollectionChanged;
         UpdateQuickAccessShelfOverflowButton();
 
+        _quickAccessShelfMenuHost = new ContextMenuHost(GetDefaultContextMenuAnchor, QuickAccessShelfContextMenuFlyout);
         _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
         _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
         _itemActions = new ItemActionController(
@@ -221,6 +261,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ClosePaletteContextMenuMessage>(this);
 
         // The compact-mode setting can be toggled while the palette is open. React to the
         // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
@@ -230,12 +271,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), false);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
+        AddHandler(PointerMovedEvent, new PointerEventHandler(ShellPage_OnPointerMoved), true);
+        AddHandler(PointerReleasedEvent, new PointerEventHandler(ShellPage_OnPointerReleased), true);
+        AddHandler(PointerCanceledEvent, new PointerEventHandler(ShellPage_OnPointerCanceled), true);
+        AddHandler(PointerCaptureLostEvent, new PointerEventHandler(ShellPage_OnPointerCaptureLost), true);
         AddHandler(LosingFocusEvent, new TypedEventHandler<UIElement, LosingFocusEventArgs>(ShellPage_LosingFocus), false);
 
         RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+        _quickAccessShelfChangeOrderDragCaption = ResourceLoaderInstance.GetString("QuickAccessShelfChangeOrderDragCaption");
 
         if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
         {
@@ -775,8 +821,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void HostWindow_IsVisibleToUserChanged(object? sender, EventArgs e)
     {
-        if (HostWindow?.IsVisibleToUser == true &&
-            _pendingTopBarFocusRestore &&
+        if (HostWindow?.IsVisibleToUser != true)
+        {
+            ReleaseQuickAccessShelfContext();
+            return;
+        }
+
+        if (_pendingTopBarFocusRestore &&
             ViewModel.CurrentPage?.HasSearchBox == true)
         {
             _pendingTopBarFocusRestore = false;
@@ -1069,9 +1120,523 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfItem_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: QuickAccessShelfItem item } button)
+        {
+            // Match list-item selection: hydrate the command context in the background once the
+            // user reaches an item, so the first shortcut/context request does not block the UI.
+            _ = EnsureQuickAccessShelfContextAsync(button, item);
+        }
+    }
+
+    private void QuickAccessShelfItem_AccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
+    {
+        var modifiers = KeyModifiers.GetCurrent();
+        if (!QuickAccessShelfShortcuts.IsSelectionAccessKey(modifiers.Ctrl, modifiers.Shift, modifiers.Win))
+        {
+            // Leave plain Alt+# unhandled so the Button performs its normal access-key action.
+            return;
+        }
+
+        // WinUI resolves Alt+Shift+# through this same native access key as Alt+#. Handle the
+        // shifted form at the target so it only moves focus and cannot activate the Button.
+        args.Handled = true;
+        if (sender is Button button)
+        {
+            _ = button.Focus(FocusState.Keyboard);
+        }
+    }
+
+    private async void QuickAccessShelfItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        if (sender is not Button { Tag: QuickAccessShelfItem item } button)
+        {
+            return;
+        }
+
+        if (!e.TryGetPosition(button, out var position))
+        {
+            position = new Point(0, button.ActualHeight);
+        }
+
+        e.Handled = true;
+        try
+        {
+            await OpenQuickAccessShelfContextMenuAsync(button, item, position);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open a quick access item context menu", ex);
+        }
+    }
+
+    private void QuickAccessShelfItem_ContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        ReleaseQuickAccessShelfContext();
+    }
+
+    private void QuickAccessShelfItem_DragStarting(UIElement sender, DragStartingEventArgs args)
+    {
+        try
+        {
+            if (sender is not Button { Tag: QuickAccessShelfItem item })
+            {
+                args.Cancel = true;
+                return;
+            }
+
+            _draggedQuickAccessShelfItem = item;
+            _quickAccessShelfDragToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            if (item.DataPackage is not null)
+            {
+                DataPackageTransfer.Copy(item.DataPackage, args.Data);
+            }
+            else
+            {
+                args.Data.RequestedOperation = DataPackageOperation.Move;
+            }
+
+            args.Data.Properties[QuickAccessShelfDragProperty] = _quickAccessShelfDragToken;
+            args.Data.SetData(QuickAccessShelfDragProperty, _quickAccessShelfDragToken);
+            args.AllowedOperations =
+                args.Data.RequestedOperation |
+                DataPackageOperation.Move |
+                (item.DataPackage is null ? DataPackageOperation.None : DataPackageOperation.Copy);
+
+            QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+            QuickAccessShelfRemoveDropTarget.Visibility = Visibility.Visible;
+            QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+            QuickAccessShelfPinDropTarget.Visibility = item.CanPin && !QuickAccessShelf.VisibleItems.Any(visibleItem => visibleItem.IsPinned)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            _quickAccessShelfDragStarted = true;
+            WeakReferenceMessenger.Default.Send(new DragStartedMessage());
+        }
+        catch (Exception ex)
+        {
+            args.Cancel = true;
+            CompleteQuickAccessShelfDrag();
+            Logger.LogError("Failed to start dragging a quick access item", ex);
+        }
+    }
+
+    private void QuickAccessShelfItem_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+    {
+        CompleteQuickAccessShelfDrag();
+    }
+
+    private void QuickAccessShelfItem_DragOver(object sender, DragEventArgs e)
+    {
+        if (sender is not Grid { Tag: QuickAccessShelfItem target } targetGrid ||
+            !TryGetDraggedQuickAccessShelfItem(e, out var source) ||
+            !target.IsPinned ||
+            (!source.IsPinned && !source.CanPin) ||
+            (source.ProviderId == target.ProviderId && source.CommandId == target.CommandId))
+        {
+            return;
+        }
+
+        var placeAfter = e.GetPosition(targetGrid).X >= targetGrid.ActualWidth / 2;
+        SetQuickAccessShelfDropTarget(targetGrid, placeAfter);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = _quickAccessShelfChangeOrderDragCaption;
+        e.DragUIOverride.IsCaptionVisible = true;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfItem_DragLeave(object sender, DragEventArgs e)
+    {
+        if (ReferenceEquals(sender, _quickAccessShelfDropTarget))
+        {
+            SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        }
+    }
+
+    private void QuickAccessShelfItem_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is not Grid { Tag: QuickAccessShelfItem target } targetGrid ||
+            !TryGetDraggedQuickAccessShelfItem(e, out var source) ||
+            !target.IsPinned ||
+            (!source.IsPinned && !source.CanPin))
+        {
+            return;
+        }
+
+        var placeAfter = e.GetPosition(targetGrid).X >= targetGrid.ActualWidth / 2;
+        if (QuickAccessShelf.TryPlacePinnedItem(source, target, placeAfter))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_DragOver(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out _))
+        {
+            return;
+        }
+
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(2);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = AutomationProperties.GetName(QuickAccessShelfRemoveDropTarget);
+        e.DragUIOverride.IsCaptionVisible = true;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfPinDropTarget_DragOver(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item) || !item.CanPin)
+        {
+            return;
+        }
+
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(2);
+        e.AcceptedOperation = DataPackageOperation.Move;
+        e.DragUIOverride.Caption = AutomationProperties.GetName(QuickAccessShelfPinDropTarget);
+        e.DragUIOverride.IsCaptionVisible = true;
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfPinDropTarget_DragLeave(object sender, DragEventArgs e)
+    {
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+    }
+
+    private void QuickAccessShelfPinDropTarget_Drop(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item) || !item.CanPin)
+        {
+            return;
+        }
+
+        if (QuickAccessShelf.TryPinItem(item))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        e.Handled = true;
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_DragLeave(object sender, DragEventArgs e)
+    {
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+    }
+
+    private void QuickAccessShelfRemoveDropTarget_Drop(object sender, DragEventArgs e)
+    {
+        if (!TryGetDraggedQuickAccessShelfItem(e, out var item))
+        {
+            return;
+        }
+
+        if (QuickAccessShelf.TryRemoveItem(item))
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        e.Handled = true;
+    }
+
+    private bool TryGetDraggedQuickAccessShelfItem(DragEventArgs e, out QuickAccessShelfItem item)
+    {
+        item = null!;
+        if (_draggedQuickAccessShelfItem is null ||
+            _quickAccessShelfDragToken is null ||
+            !e.DataView.Properties.TryGetValue(QuickAccessShelfDragProperty, out var token) ||
+            token is not string tokenText ||
+            !string.Equals(tokenText, _quickAccessShelfDragToken, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        item = _draggedQuickAccessShelfItem;
+        return true;
+    }
+
+    private void SetQuickAccessShelfDropTarget(Grid? target, bool placeAfter)
+    {
+        if (ReferenceEquals(_quickAccessShelfDropTarget, target) &&
+            (_quickAccessShelfDropTarget is null || _quickAccessShelfDropAfter == placeAfter))
+        {
+            return;
+        }
+
+        if (_quickAccessShelfDropTarget is not null)
+        {
+            GetQuickAccessShelfDropIndicator(_quickAccessShelfDropTarget).Visibility = Visibility.Collapsed;
+        }
+
+        _quickAccessShelfDropTarget = target;
+        _quickAccessShelfDropAfter = placeAfter;
+        if (target is not null)
+        {
+            var indicator = GetQuickAccessShelfDropIndicator(target);
+            indicator.HorizontalAlignment = placeAfter ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            indicator.Visibility = Visibility.Visible;
+        }
+    }
+
+    private static Border GetQuickAccessShelfDropIndicator(Grid target)
+    {
+        return target.Children
+            .OfType<Border>()
+            .First(border => string.Equals(border.Tag as string, QuickAccessShelfDropIndicatorTag, StringComparison.Ordinal));
+    }
+
+    private void CompleteQuickAccessShelfDrag()
+    {
+        SetQuickAccessShelfDropTarget(null, placeAfter: false);
+        QuickAccessShelfPinDropTarget.Visibility = Visibility.Collapsed;
+        QuickAccessShelfPinDropTarget.BorderThickness = new Thickness(1);
+        QuickAccessShelfRemoveDropTarget.Visibility = Visibility.Collapsed;
+        QuickAccessShelfRemoveDropTarget.BorderThickness = new Thickness(1);
+        _draggedQuickAccessShelfItem = null;
+        _quickAccessShelfDragToken = null;
+
+        if (_quickAccessShelfDragStarted)
+        {
+            _quickAccessShelfDragStarted = false;
+            WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
+        }
+    }
+
     private static void InvokeQuickAccessShelfItem(QuickAccessShelfItem item)
     {
-        WeakReferenceMessenger.Default.Send(item.Command.GetPerformCommandMessage());
+        WeakReferenceMessenger.Default.Send(item.GetPerformCommandMessage());
+    }
+
+    private async Task HandleQuickAccessShelfItemKeyAsync(Button anchor, QuickAccessShelfItem item, KeyChord chord)
+    {
+        try
+        {
+            var context = await EnsureQuickAccessShelfContextAsync(anchor, item);
+            if (!IsCurrentQuickAccessShelfContext(anchor, item) || context is null)
+            {
+                return;
+            }
+
+            QuickAccessShelfItemActions.TryHandleKey(
+                context,
+                chord,
+                message => WeakReferenceMessenger.Default.Send(message),
+                submenu => ShowQuickAccessShelfContextMenu(anchor, item, position: null, submenu));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to handle a quick access item shortcut", ex);
+        }
+    }
+
+    private async Task OpenQuickAccessShelfContextMenuAsync(Button anchor, QuickAccessShelfItem item, Point? position)
+    {
+        var context = await EnsureQuickAccessShelfContextAsync(anchor, item);
+        if (!IsCurrentQuickAccessShelfContext(anchor, item) || context?.CanOpenContextMenu != true)
+        {
+            return;
+        }
+
+        ShowQuickAccessShelfContextMenu(anchor, item, position);
+    }
+
+    private void ShowQuickAccessShelfContextMenu(
+        Button anchor,
+        QuickAccessShelfItem item,
+        Point? position,
+        CommandContextItemViewModel? initialSubmenu = null)
+    {
+        _quickAccessShelfMenuHost.ShowAfterKeyEvent(() =>
+        {
+            if (!IsCurrentQuickAccessShelfContext(anchor, item) ||
+                _quickAccessShelfContextViewModel is not { CanOpenContextMenu: true } context)
+            {
+                return null;
+            }
+
+            return new ContextMenuRequest(context)
+            {
+                Anchor = new ContextMenuAnchor(anchor, position, FlyoutPlacementMode.BottomEdgeAlignedLeft, ContextMenuFilterLocation.Top),
+                InitialSubmenu = initialSubmenu,
+            };
+        });
+    }
+
+    public void Receive(ClosePaletteContextMenuMessage message) => ReleaseQuickAccessShelfContext();
+
+    private Task<ListItemViewModel?> EnsureQuickAccessShelfContextAsync(Button anchor, QuickAccessShelfItem item)
+    {
+        if (HostWindow?.IsVisibleToUser != true ||
+            !IsQuickAccessShelfVisible ||
+            !QuickAccessShelf.VisibleItems.Any(candidate => ReferenceEquals(candidate, item)) ||
+            ViewModel.CurrentPage is not ListViewModel { IsMainPage: true } pageContext)
+        {
+            return Task.FromResult<ListItemViewModel?>(null);
+        }
+
+        _quickAccessShelfContextAnchor = anchor;
+        if (ReferenceEquals(_quickAccessShelfContextItem, item) &&
+            ReferenceEquals(_quickAccessShelfContextPage, pageContext))
+        {
+            if (_quickAccessShelfContextViewModel is not null)
+            {
+                return Task.FromResult<ListItemViewModel?>(_quickAccessShelfContextViewModel);
+            }
+
+            if (_quickAccessShelfContextTask is not null)
+            {
+                return _quickAccessShelfContextTask;
+            }
+        }
+
+        ReleaseQuickAccessShelfContext();
+        _quickAccessShelfContextItem = item;
+        _quickAccessShelfContextAnchor = anchor;
+        _quickAccessShelfContextPage = pageContext;
+        var contextVersion = _quickAccessShelfContextVersion;
+        var contextItem = item.GetContextMenuItem();
+
+        var buildTask = Task.Run(() => BuildQuickAccessShelfContext(contextItem, pageContext));
+        var completionTask = buildTask.ContinueWith(
+            task => CompleteQuickAccessShelfContext(contextVersion, item, pageContext, task.Result),
+            CancellationToken.None,
+            TaskContinuationOptions.None,
+            _mainTaskScheduler);
+        _quickAccessShelfContextTask = completionTask;
+        return completionTask;
+    }
+
+    private ListItemViewModel? BuildQuickAccessShelfContext(IListItem item, IPageContext pageContext)
+    {
+        ListItemViewModel? context = null;
+        try
+        {
+            context = new ListItemViewModel(item, new WeakReference<IPageContext>(pageContext), _contextMenuFactory);
+            if (context.SafeFastInit() && context.SafeInitializeProperties() && context.SafeSlowInit())
+            {
+                return context;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to build a quick access item command context", ex);
+        }
+
+        context?.SafeCleanup();
+        return null;
+    }
+
+    private ListItemViewModel? CompleteQuickAccessShelfContext(
+        long contextVersion,
+        QuickAccessShelfItem item,
+        ListViewModel pageContext,
+        ListItemViewModel? context)
+    {
+        var isCurrent = !_isDisposed &&
+            HostWindow?.IsVisibleToUser == true &&
+            contextVersion == _quickAccessShelfContextVersion &&
+            ReferenceEquals(_quickAccessShelfContextItem, item) &&
+            ReferenceEquals(_quickAccessShelfContextPage, pageContext) &&
+            ReferenceEquals(ViewModel.CurrentPage, pageContext) &&
+            IsQuickAccessShelfVisible &&
+            QuickAccessShelf.VisibleItems.Any(candidate => ReferenceEquals(candidate, item));
+        if (!isCurrent)
+        {
+            if (contextVersion == _quickAccessShelfContextVersion && ReferenceEquals(_quickAccessShelfContextItem, item))
+            {
+                ReleaseQuickAccessShelfContext();
+            }
+
+            CleanupQuickAccessShelfContext(context);
+            return null;
+        }
+
+        _quickAccessShelfContextTask = null;
+        if (context is null)
+        {
+            return null;
+        }
+
+        _quickAccessShelfContextViewModel = context;
+        return context;
+    }
+
+    private bool IsCurrentQuickAccessShelfContext(Button anchor, QuickAccessShelfItem item) =>
+        !_isDisposed &&
+        IsLoaded &&
+        HostWindow?.IsVisibleToUser == true &&
+        !IsContentDialogActive &&
+        IsQuickAccessShelfVisible &&
+        ReferenceEquals(_quickAccessShelfContextAnchor, anchor) &&
+        ReferenceEquals(_quickAccessShelfContextItem, item) &&
+        ReferenceEquals(_quickAccessShelfContextPage, ViewModel.CurrentPage) &&
+        ViewModel.CurrentPage is ListViewModel { IsMainPage: true } &&
+        ReferenceEquals(anchor.Tag, item) &&
+        QuickAccessShelf.VisibleItems.Any(candidate => ReferenceEquals(candidate, item));
+
+    private void ReleaseQuickAccessShelfContext()
+    {
+        _quickAccessShelfMenuHost.Close();
+        _quickAccessShelfContextVersion++;
+        var context = _quickAccessShelfContextViewModel;
+        _quickAccessShelfContextItem = null;
+        _quickAccessShelfContextViewModel = null;
+        _quickAccessShelfContextTask = null;
+        _quickAccessShelfContextAnchor = null;
+        _quickAccessShelfContextPage = null;
+
+        QuickAccessShelfContextMenuFlyout.ViewModel.Close();
+        CleanupQuickAccessShelfContext(context);
+    }
+
+    private static void CleanupQuickAccessShelfContext(ListItemViewModel? context)
+    {
+        if (context is not null)
+        {
+            // Cleanup can release extension objects and must not run on the UI thread.
+            _ = Task.Run(context.SafeCleanup);
+        }
+    }
+
+    private bool TryHandleQuickAccessShelfItemKeyDown(KeyRoutedEventArgs e, KeyModifiers modifiers)
+    {
+        if (!IsQuickAccessShelfVisible ||
+            FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is not Button { Tag: QuickAccessShelfItem item } anchor)
+        {
+            return false;
+        }
+
+        switch (QuickAccessShelfShortcuts.ResolveSelectionShortcut(
+            e.Key,
+            modifiers.Ctrl,
+            modifiers.Alt,
+            modifiers.Shift,
+            modifiers.Win,
+            QuickAccessShelf.VisibleItemCount))
+        {
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible:
+                // Let the matching native access key move focus to the requested shelf item.
+                return false;
+            case QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable:
+                // Reserve shelf selection chords even when their targets are in overflow so
+                // they cannot invoke a context shortcut on the currently focused shelf item.
+                e.Handled = true;
+                return true;
+        }
+
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
+        if (QuickAccessShelfItemActions.ShouldHandleKey(chord))
+        {
+            // Claim the chord while its extension context initializes off the UI thread.
+            e.Handled = true;
+            _ = HandleQuickAccessShelfItemKeyAsync(anchor, item, chord);
+        }
+
+        // Leave native button keys unhandled without routing them to the main list's selection.
+        return true;
     }
 
     private void QuickAccessShelfItemsHost_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -1095,17 +1660,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         foreach (var item in QuickAccessShelf.OverflowItems)
         {
+            if (item.StartsNewSection && QuickAccessOverflowFlyout.Items.Count > 0)
+            {
+                QuickAccessOverflowFlyout.Items.Add(new MenuFlyoutSeparator());
+            }
+
             var iconBox = new IconBox
             {
                 Width = 16,
                 Height = 16,
-                SourceKey = item.Command.IconViewModel,
+                SourceKey = item.Icon,
             };
             iconBox.SourceRequested += IconProvider.SourceRequested16;
 
             var menuItem = new MenuFlyoutItem
             {
-                Text = item.Command.Title,
+                Text = item.Title,
                 Tag = item,
                 Icon = new ContentIcon { Content = iconBox },
             };
@@ -1132,8 +1702,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // invoke the current view model for the same command rather than the stale snapshot.
         foreach (var currentItem in QuickAccessShelf.Items)
         {
-            if (currentItem.Command.CommandProviderId == snapshotItem.Command.CommandProviderId &&
-                currentItem.Command.Id == snapshotItem.Command.Id)
+            if (currentItem.ProviderId == snapshotItem.ProviderId &&
+                currentItem.CommandId == snapshotItem.CommandId)
             {
                 InvokeQuickAccessShelfItem(currentItem);
                 return;
@@ -1170,9 +1740,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             case VirtualKey.Down when modifiers.None:
-                // In a collapsed compact palette, Down reveals the top-level items. Only swallow
-                // the key when we actually expand; otherwise retain normal list navigation.
-                if (shellPage.TryExpandCollapsedCompact())
+                // Preserve native shelf-button input while allowing Down to expand from the search box.
+                if (FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is null &&
+                    shellPage.TryExpandCollapsedCompact())
                 {
                     e.Handled = true;
                 }
@@ -1202,6 +1772,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
             default:
                 {
+                    if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
+                    {
+                        break;
+                    }
+
                     var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
                     e.Handled = shellPage._itemActions.TryHandleShortcut(chord);
 
@@ -1219,7 +1794,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var modifiers = KeyModifiers.GetCurrent();
         var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key, 0);
-        if (_itemActions.TryHandleKey(chord))
+        if (FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is null &&
+            _itemActions.TryHandleKey(chord))
         {
             e.Handled = true;
             return;
@@ -1246,19 +1822,116 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         try
         {
             var ptr = e.Pointer;
+            var ptrPt = e.GetCurrentPoint(this);
             if (ptr.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                var ptrPt = e.GetCurrentPoint(this);
                 if (ptrPt.Properties.IsXButton1Pressed)
                 {
                     WeakReferenceMessenger.Default.Send(new NavigateBackMessage());
+                    return;
                 }
+            }
+
+            var isPrimaryPointerPressed = ptr.PointerDeviceType == PointerDeviceType.Mouse
+                ? ptrPt.Properties.IsLeftButtonPressed
+                : ptrPt.IsInContact;
+            if (IsQuickAccessShelfVisible &&
+                isPrimaryPointerPressed &&
+                FindQuickAccessShelfButton(e.OriginalSource as DependencyObject) is Button dragSource)
+            {
+                _quickAccessShelfPendingDragSource = dragSource;
+                _quickAccessShelfPendingDragPointerId = ptr.PointerId;
+                _quickAccessShelfPendingDragStart = ptrPt.Position;
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    private void ShellPage_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (_quickAccessShelfStartDragPending ||
+            _quickAccessShelfPendingDragSource is not Button dragSource ||
+            _quickAccessShelfPendingDragPointerId != e.Pointer.PointerId)
+        {
+            return;
+        }
+
+        var pointerPoint = e.GetCurrentPoint(this);
+        var isPrimaryPointerPressed = e.Pointer.PointerDeviceType == PointerDeviceType.Mouse
+            ? pointerPoint.Properties.IsLeftButtonPressed
+            : pointerPoint.IsInContact;
+        if (!isPrimaryPointerPressed)
+        {
+            ClearQuickAccessShelfPendingDrag();
+            return;
+        }
+
+        var dragDistanceX = Math.Abs(pointerPoint.Position.X - _quickAccessShelfPendingDragStart.X);
+        var dragDistanceY = Math.Abs(pointerPoint.Position.Y - _quickAccessShelfPendingDragStart.Y);
+        if (dragDistanceX < QuickAccessShelfDragThreshold && dragDistanceY < QuickAccessShelfDragThreshold)
+        {
+            return;
+        }
+
+        var dragPointerPoint = e.GetCurrentPoint(dragSource);
+        ClearQuickAccessShelfPendingDrag();
+        _quickAccessShelfStartDragPending = true;
+        e.Handled = true;
+        _ = StartQuickAccessShelfDragAsync(dragSource, dragPointerPoint);
+    }
+
+    private void ShellPage_OnPointerReleased(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private void ShellPage_OnPointerCanceled(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private void ShellPage_OnPointerCaptureLost(object sender, PointerRoutedEventArgs e) => ClearQuickAccessShelfPendingDrag(e.Pointer.PointerId);
+
+    private async Task StartQuickAccessShelfDragAsync(Button dragSource, PointerPoint pointerPoint)
+    {
+        try
+        {
+            await dragSource.StartDragAsync(pointerPoint);
+        }
+        catch (Exception ex)
+        {
+            CompleteQuickAccessShelfDrag();
+            Logger.LogError("Failed to initiate dragging a quick access item", ex);
+        }
+        finally
+        {
+            _quickAccessShelfStartDragPending = false;
+            ClearQuickAccessShelfPendingDrag();
+        }
+    }
+
+    private static Button? FindQuickAccessShelfButton(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is Button { Tag: QuickAccessShelfItem } button)
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
+    private void ClearQuickAccessShelfPendingDrag(uint pointerId)
+    {
+        if (_quickAccessShelfPendingDragPointerId == pointerId)
+        {
+            ClearQuickAccessShelfPendingDrag();
+        }
+    }
+
+    private void ClearQuickAccessShelfPendingDrag()
+    {
+        _quickAccessShelfPendingDragSource = null;
+        _quickAccessShelfPendingDragPointerId = null;
     }
 
     public void Receive(ExpandCompactModeMessage message)
@@ -1285,8 +1958,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // state single-threaded regardless of which thread raises the event.
         var compactMode = args.CompactMode;
         var quickAccessShelfEnabled = args.ShowQuickAccessShelf;
+        var recentCommandsPlacement = args.ShowQuickAccessShelf
+            ? args.RecentCommandsOnQuickAccessShelf
+            : RecentCommandsPlacement.Hidden;
+        var pinnedCommandLimit = args.QuickAccessShelfPinnedCommandLimit;
+        var recentCommandLimit = args.RecentCommandsDisplayLimit;
         this.DispatcherQueue.TryEnqueue(() =>
         {
+            QuickAccessShelf.SetItemConfiguration(
+                recentCommandsPlacement,
+                pinnedCommandLimit,
+                recentCommandLimit);
+
             var compactModeChanged = compactMode != _compactMode;
             var quickAccessShelfChanged = quickAccessShelfEnabled != _quickAccessShelfEnabled;
             if (!compactModeChanged && !quickAccessShelfChanged)
@@ -1325,8 +2008,37 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void QuickAccessShelfVisibleItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (_quickAccessShelfContextVisibilityCheckPending || _isDisposed)
+        {
+            return;
+        }
+
+        _quickAccessShelfContextVisibilityCheckPending = true;
+        if (!_queue.TryEnqueue(
+            () =>
+            {
+                _quickAccessShelfContextVisibilityCheckPending = false;
+                if (_quickAccessShelfContextItem is QuickAccessShelfItem contextItem &&
+                    (!QuickAccessShelf.VisibleItems.Any(item => ReferenceEquals(item, contextItem)) ||
+                     !ReferenceEquals(_quickAccessShelfContextAnchor?.Tag, contextItem)))
+                {
+                    ReleaseQuickAccessShelfContext();
+                }
+            }))
+        {
+            _quickAccessShelfContextVisibilityCheckPending = false;
+        }
+    }
+
     private void NotifyQuickAccessShelfVisibilityChanged()
     {
+        if (!IsQuickAccessShelfVisible)
+        {
+            ReleaseQuickAccessShelfContext();
+        }
+
         PropertyChanged?.Invoke(this, new(nameof(IsQuickAccessShelfVisible)));
     }
 
@@ -1406,9 +2118,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _itemActions.Dispose();
         _externalCommandLinks.Dispose();
         _dialogHost.Dispose();
+        if (_quickAccessShelfDragStarted)
+        {
+            CompleteQuickAccessShelfDrag();
+        }
+
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
+        QuickAccessShelf.VisibleItems.CollectionChanged -= QuickAccessShelfVisibleItems_CollectionChanged;
         QuickAccessShelf.PropertyChanged -= QuickAccessShelf_PropertyChanged;
+        ReleaseQuickAccessShelfContext();
         QuickAccessShelf.Dispose();
 
         if (_hostWindow is not null)

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -35,6 +35,8 @@
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
             <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
             <cmdpalUI:QuickAccessShortcutTextConverter x:Key="QuickAccessShortcutTextConverter" />
+
+            <cpcontrols:ContextMenuFlyout x:Name="QuickAccessShelfContextMenuFlyout" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
@@ -450,7 +452,7 @@
             x:Uid="QuickAccessShelfSurface"
             Grid.Row="1"
             MinHeight="48"
-            Padding="12,4"
+            Padding="10,4"
             AutomationProperties.LandmarkType="Custom"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
@@ -479,6 +481,7 @@
 
             <Grid
                 x:Name="QuickAccessShelfItemsHost"
+                KeyTipPlacementMode="Bottom"
                 SizeChanged="QuickAccessShelfItemsHost_SizeChanged">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -491,36 +494,69 @@
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
-                            <Button
-                                Width="44"
+                            <Grid
+                                Width="40"
                                 Height="40"
-                                Padding="8"
-                                AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
-                                AutomationProperties.Name="{x:Bind Command.Title, Mode=OneWay}"
-                                Click="QuickAccessShelfItem_Click"
-                                Style="{StaticResource SubtleButtonStyle}"
-                                Tag="{x:Bind}"
-                                UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
-                                <ToolTipService.ToolTip>
-                                    <ToolTip>
-                                        <StackPanel Spacing="2">
-                                            <TextBlock Text="{x:Bind Command.Title, Mode=OneWay}" />
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
-                                                Visibility="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
-                                        </StackPanel>
-                                    </ToolTip>
-                                </ToolTipService.ToolTip>
-                                <cpcontrols:IconBox
-                                    Width="20"
-                                    Height="20"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    SourceKey="{x:Bind Command.IconViewModel, Mode=OneWay}"
-                                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
-                            </Button>
+                                AllowDrop="True"
+                                DragLeave="QuickAccessShelfItem_DragLeave"
+                                DragOver="QuickAccessShelfItem_DragOver"
+                                Drop="QuickAccessShelfItem_Drop"
+                                Tag="{x:Bind}">
+                                <Button
+                                    Width="40"
+                                    Height="40"
+                                    Padding="8"
+                                    AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
+                                    AccessKeyInvoked="QuickAccessShelfItem_AccessKeyInvoked"
+                                    AutomationProperties.HelpText="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                    AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
+                                    Click="QuickAccessShelfItem_Click"
+                                    ContextCanceled="QuickAccessShelfItem_ContextCanceled"
+                                    ContextRequested="QuickAccessShelfItem_ContextRequested"
+                                    DragStarting="QuickAccessShelfItem_DragStarting"
+                                    DropCompleted="QuickAccessShelfItem_DropCompleted"
+                                    GotFocus="QuickAccessShelfItem_GotFocus"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    Tag="{x:Bind}"
+                                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind Title, Mode=OneTime}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                                    Visibility="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind Icon, Mode=OneTime}"
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+                                </Button>
+                                <Border
+                                    Width="1"
+                                    Height="24"
+                                    Margin="-2,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+                                    IsHitTestVisible="False"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsNewSection), Mode=OneTime}" />
+                                <Border
+                                    Width="2"
+                                    Height="32"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    Canvas.ZIndex="2"
+                                    IsHitTestVisible="False"
+                                    Tag="QuickAccessShelfDropIndicator"
+                                    Visibility="Collapsed" />
+                            </Grid>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
@@ -529,7 +565,7 @@
                     x:Name="QuickAccessOverflowButton"
                     x:Uid="QuickAccessOverflowButton"
                     Grid.Column="1"
-                    Width="44"
+                    Width="40"
                     Height="40"
                     Padding="8"
                     AccessKey="0"
@@ -541,6 +577,53 @@
                     </Button.Flyout>
                     <FontIcon Glyph="&#xE712;" />
                 </Button>
+
+                <Border
+                    x:Name="QuickAccessShelfPinDropTarget"
+                    x:Uid="QuickAccessShelfPinDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    Margin="0,0,44,0"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfPinDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfPinDropTarget_DragOver"
+                    Drop="QuickAccessShelfPinDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                        Glyph="&#xE840;" />
+                </Border>
+
+                <Border
+                    x:Name="QuickAccessShelfRemoveDropTarget"
+                    x:Uid="QuickAccessShelfRemoveDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfRemoveDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfRemoveDropTarget_DragOver"
+                    Drop="QuickAccessShelfRemoveDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        Glyph="&#xE74D;" />
+                </Border>
             </Grid>
         </Grid>
 

@@ -39,6 +39,28 @@ public class IconProtocolRegistryTests
         }
     }
 
+    [TestMethod]
+    public async Task BuiltInRegistryFindsMetadataOnlyShellItemIconProcessor()
+    {
+        var value = ShellItemIconProtocol.Create("C:\\Files\\report.txt");
+
+        var processor = IconProtocolRegistry.Find(value);
+
+        Assert.IsNotNull(processor);
+        Assert.AreSame(ShellItemIconProtocolProcessor.Instance, processor);
+        Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+        Assert.AreEqual(IconLoadInputKind.ShellItemIcon, processor.ClassifyInput(value));
+        Assert.AreEqual(ElementTheme.Default, processor.GetCacheTheme(value, ElementTheme.Dark));
+        Assert.IsFalse(processor.TryPrepareSynchronously(
+            value,
+            20,
+            ElementTheme.Dark,
+            out var preparedIcon));
+        Assert.IsNull(preparedIcon);
+        using var processingResult = await processor.PrepareAsync(value, 20, ElementTheme.Dark);
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.Empty, processingResult.Kind);
+    }
+
     [DataTestMethod]
     [DataRow("|Swatch|#FF0067C0|", "GeneratedSwatch", true)]
     [DataRow("|Initials|CP|#FF0067C0|circle|", "GeneratedInitials", false)]
@@ -72,6 +94,7 @@ public class IconProtocolRegistryTests
     }
 
     [TestMethod]
+    [Timeout(5_000)]
     public async Task InitialsPreparationRunsThroughAsyncProcessorPath()
     {
         const string Value = "|Initials|CP|#FF0067C0|circle|";
@@ -89,6 +112,39 @@ public class IconProtocolRegistryTests
         using var preparedIcon = result.TakePreparedIcon();
         Assert.IsNotNull(preparedIcon);
         Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
+    }
+
+    [DataTestMethod]
+    [DataRow("|Svg|<svg/>", "SvgInline")]
+    [DataRow("|Svg|C:\\Icons\\sample.svg", "SvgFile")]
+    [DataRow("|ThemedSvg|warning|<svg/>", "ThemedSvgInline")]
+    [DataRow("|ThemedSvg|warning|C:\\Icons\\sample.svg", "ThemedSvgFile")]
+    public void BuiltInRegistryFindsSvgIconProcessor(string value, string inputKind)
+    {
+        var processor = IconProtocolRegistry.Find(value);
+
+        Assert.IsNotNull(processor);
+        Assert.AreSame(SvgIconProtocolProcessor.Instance, processor);
+        Assert.AreEqual(IconCachePartition.Other, processor.CachePartition);
+        Assert.AreEqual(inputKind, processor.ClassifyInput(value).ToString());
+    }
+
+    [TestMethod]
+    public void InlineSvgProtocolPreparesSynchronously()
+    {
+        const string Value = "|ThemedSvg|warning|<svg/>";
+        var processor = IconProtocolRegistry.Find(Value);
+
+        Assert.IsNotNull(processor);
+        Assert.IsTrue(processor.TryPrepareSynchronously(
+            Value,
+            20,
+            ElementTheme.Light,
+            out var preparedIcon));
+        using (preparedIcon)
+        {
+            Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, preparedIcon.Kind);
+        }
     }
 
     [DataTestMethod]
