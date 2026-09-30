@@ -54,6 +54,12 @@ public record SettingsModel
         init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
     }
 
+    public bool DockFocusPrimaryFirst { get; init; }
+
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
+
     public bool UseLowLevelGlobalHotkey { get; init; }
 
     public bool ShowAppDetails { get; init; }
@@ -242,7 +248,10 @@ public record SettingsModel
           ImmutableList<TopLevelHotkey>? commandHotkeys = null,
           bool enableExternalCommandLinks = true,
           int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
-          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit)
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -252,6 +261,9 @@ public record SettingsModel
         EnableExternalCommandLinks = enableExternalCommandLinks;
         QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
         RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
     }
 
     public SettingsModel()

@@ -447,6 +447,36 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool Dock_FocusPrimaryFirst
+    {
+        get => _settingsService.Settings.DockFocusPrimaryFirst;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusPrimaryFirst = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusPrimaryFirst)));
+        }
+    }
+
+    public bool Dock_FocusAcrossMonitors
+    {
+        get => _settingsService.Settings.DockFocusAcrossMonitors;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusAcrossMonitors = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusAcrossMonitors)));
+        }
+    }
+
+    public bool Dock_RememberLastFocusedItem
+    {
+        get => _settingsService.Settings.DockRememberLastFocusedItem;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockRememberLastFocusedItem = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_RememberLastFocusedItem)));
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
