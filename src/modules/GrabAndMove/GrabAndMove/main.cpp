@@ -102,7 +102,7 @@ struct SettingsSnapshot
     bool showGeometry = false;
     bool doNotActivateOnGameMode = true;
     bool useAltResize = true;
-    bool rightDragTitleBar = false;
+    bool rightDragTitleBar = true;
     std::shared_ptr<const std::vector<std::wstring>> excludedApps =
         std::make_shared<const std::vector<std::wstring>>();
     std::shared_ptr<const std::vector<std::wstring>> modifierExcludedApps =

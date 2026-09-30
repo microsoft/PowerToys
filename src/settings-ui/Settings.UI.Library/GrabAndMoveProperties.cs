@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DoNotActivateOnGameMode = new BoolProperty(true);
             ShowGeometry = new BoolProperty(false);
             UseAltResize = new BoolProperty(true);
-            RightDragTitleBar = new BoolProperty(false);
+            RightDragTitleBar = new BoolProperty(true);
             ExcludedApps = new StringProperty();
             ExcludedAppsForModifier = new StringProperty();
             ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
