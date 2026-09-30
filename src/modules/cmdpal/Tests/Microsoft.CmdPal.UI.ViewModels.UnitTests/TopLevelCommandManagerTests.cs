@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -289,7 +290,7 @@ public partial class TopLevelCommandManagerTests
     }
 
     [TestMethod]
-    public async Task PruneErroredTopLevelItem_KeepsPinnedDockSourceAliveUntilDockItemCleanup()
+    public async Task PruneErroredTopLevelItem_KeepsRecentShelfAndDockSourceAliveUntilCleanup()
     {
         var item = new Mock<ICommandItem>();
         item.SetupGet(commandItem => commandItem.Command).Returns(new NoOpCommand
@@ -331,6 +332,8 @@ public partial class TopLevelCommandManagerTests
         await manager.LoadExternalProvidersAsync();
 
         var sourceItem = manager.TopLevelCommands.Single();
+        var recentItem = new RecentCommandListItem(sourceItem, sourceItem.Id);
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], sourceItem, shortcutIndex: 0, startsNewSection: false);
         var dockBand = manager.DockBands.Single();
         var dockList = (IListPage)dockBand.CommandViewModel.Model.Unsafe!;
         Assert.AreSame(sourceItem, dockList.GetItems().Single());
@@ -356,10 +359,32 @@ public partial class TopLevelCommandManagerTests
         Assert.AreSame(sourceItem, dockList.GetItems().Single());
         Assert.AreSame(sourceItem, dockBandViewModel.Items.Single().Model.Unsafe);
 
+        dockBandViewModel.SafeCleanup();
+        Assert.AreEqual(0, eventRemovalCount);
+
+        var refreshedDockBandViewModel = new DockBandViewModel(
+            dockBand.ItemViewModel,
+            dockBand.ItemViewModel.PageContext,
+            new DockBandSettings
+            {
+                ProviderId = "test-provider",
+                CommandId = TestCommandProvider.NestedCommandId,
+            },
+            services.GetRequiredService<ISettingsService>(),
+            DefaultContextMenuFactory.Instance);
+        refreshedDockBandViewModel.InitializeProperties();
+        Assert.IsTrue(SpinWait.SpinUntil(() => refreshedDockBandViewModel.Items.Count == 1, TimeSpan.FromSeconds(5)));
+        Assert.AreSame(sourceItem, refreshedDockBandViewModel.Items.Single().Model.Unsafe);
+
         dockBand.Cleanup();
         Assert.AreEqual(0, eventRemovalCount);
 
-        dockBandViewModel.SafeCleanup();
+        refreshedDockBandViewModel.SafeCleanup();
+        Assert.AreEqual(0, eventRemovalCount);
+
+        recentItem.Dispose();
+        Assert.AreEqual(0, eventRemovalCount);
+        shelfItem.Dispose();
         await sourceCleaned.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.AreEqual(1, eventRemovalCount);

@@ -348,6 +348,16 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
             {
                 ApplyRebuild(task.Result);
             }
+            else if (task.IsCompletedSuccessfully)
+            {
+                foreach (var item in task.Result)
+                {
+                    if (!_itemSnapshot.Any(current => ReferenceEquals(current, item)))
+                    {
+                        item.Dispose();
+                    }
+                }
+            }
         }
         finally
         {
@@ -369,7 +379,7 @@ public sealed partial class QuickAccessShelfViewModel : ObservableObject, IDispo
         _itemSnapshot = [.. Items];
         foreach (var previousItem in previousItems)
         {
-            if (!_itemSnapshot.Contains(previousItem))
+            if (!_itemSnapshot.Any(item => ReferenceEquals(item, previousItem)))
             {
                 previousItem.Dispose();
             }

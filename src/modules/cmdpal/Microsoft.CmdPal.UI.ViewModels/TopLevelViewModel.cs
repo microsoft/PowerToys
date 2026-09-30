@@ -541,7 +541,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         lock (_lifetimeLock)
         {
-            ObjectDisposedException.ThrowIf(_ownerReleased || _resourcesCleaned, this);
+            ObjectDisposedException.ThrowIf(_resourcesCleaned, this);
 
             checked
             {

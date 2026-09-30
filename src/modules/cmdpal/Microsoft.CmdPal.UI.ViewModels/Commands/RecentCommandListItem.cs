@@ -70,6 +70,7 @@ public sealed partial class RecentCommandListItem : IListItem, IExtendedAttribut
             {
                 if (existingItem is RecentCommandListItem recentItem &&
                     ReferenceEquals(recentItem.Source, source) &&
+                    (source is not TopLevelViewModel || recentItem._sourceLease is not null) &&
                     string.Equals(recentItem.CommandId, commandId, StringComparison.Ordinal))
                 {
                     return recentItem;
