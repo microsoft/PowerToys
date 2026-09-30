@@ -14,6 +14,8 @@
             invisible arrow buttons.
         -->
         <Style x:Key="AccentScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Height" Value="12" />
+            <Setter Property="MinHeight" Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
@@ -79,10 +81,14 @@
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <ScrollContentPresenter
-                                x:Name="ScrollContentPresenter"
+                            <Grid
+                                Grid.RowSpan="2"
                                 Margin="{TemplateBinding Padding}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                Padding="0,0,0,4">
+                                <ScrollContentPresenter
+                                    x:Name="ScrollContentPresenter"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            </Grid>
                             <ScrollBar
                                 x:Name="HorizontalScrollBar"
                                 Grid.Row="1"
