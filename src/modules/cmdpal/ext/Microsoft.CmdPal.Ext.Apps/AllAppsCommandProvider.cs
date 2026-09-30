@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -22,7 +21,7 @@ public partial class AllAppsCommandProvider : CommandProvider
     private readonly IAppListItemSource _appListItemSource;
     private readonly AllAppsSettings _settings;
     private readonly CommandItem _listItem;
-    private IReadOnlyList<AppListItem> _visibleItems;
+    private AppListItemSnapshot _snapshot;
 
     public AllAppsCommandProvider(
         AllAppsPage page,
@@ -45,7 +44,7 @@ public partial class AllAppsCommandProvider : CommandProvider
                 new CommandContextItem(_settings.Settings.SettingsPage),
             ],
         };
-        _visibleItems = _appListItemSource.GetSnapshot().VisibleItems;
+        _snapshot = _appListItemSource.GetSnapshot();
         _appListItemSource.Changed += OnAppListChanged;
     }
 
@@ -55,9 +54,9 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     private void OnAppListChanged(object? sender, EventArgs args)
     {
-        var items = _appListItemSource.GetSnapshot().VisibleItems;
-        var previous = Interlocked.Exchange(ref _visibleItems, items);
-        if (!items.SequenceEqual(previous))
+        var snapshot = _appListItemSource.GetSnapshot();
+        var previous = Interlocked.Exchange(ref _snapshot, snapshot);
+        if (!snapshot.HasSameCommandResolution(previous))
         {
             RaiseItemsChanged();
         }

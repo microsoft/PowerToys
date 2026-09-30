@@ -221,37 +221,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
             if (!string.Equals(leftSource.SourceId, rightSource.SourceId, StringComparison.Ordinal)
                 || !string.Equals(leftSource.SourceKey, rightSource.SourceKey, StringComparison.Ordinal)
                 || leftSource.ValidatedAtUtc != rightSource.ValidatedAtUtc
-                || !HasSameItems(leftSource.Items, rightSource.Items))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool HasSameItems(
-        IReadOnlyList<AppCatalogItem> left,
-        IReadOnlyList<AppCatalogItem> right)
-    {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-
-        var leftById = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in left)
-        {
-            if (!leftById.TryAdd(item.Identity, item))
-            {
-                return false;
-            }
-        }
-
-        foreach (var item in right)
-        {
-            if (!leftById.TryGetValue(item.Identity, out var leftItem)
-                || !leftItem.HasSamePersistedContent(item))
+                || !AppCatalogItem.HaveSamePersistedContent(leftSource.Items, rightSource.Items))
             {
                 return false;
             }

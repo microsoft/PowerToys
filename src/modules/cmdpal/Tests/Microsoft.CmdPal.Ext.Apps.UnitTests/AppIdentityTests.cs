@@ -241,6 +241,35 @@ public class AppIdentityTests
     }
 
     [TestMethod]
+    public void PackagedCommandResolution_RetainsShortcutIdentityAfterPackagedFirstMerge()
+    {
+        const string shortcutAumid = "contoso.app_123!main";
+        const string packagedAumid = "Contoso.App_123!Main";
+        var shortcut = new AppCatalogItem(
+            AppIdentity.ForPackaged(shortcutAumid),
+            20,
+            new AppCatalogSourceReference("start-menu", @"C:\Start Menu\App.lnk"),
+            [],
+            new Win32AppPayload { Name = "App shortcut", LnkFilePath = @"C:\Start Menu\App.lnk", PackagedAppUserModelId = shortcutAumid });
+        var shortcutRow = new AppListItem(shortcut.ToAppItem(), useThumbnails: false);
+        var requestedId = shortcutRow.Command!.Id;
+        Assert.AreSame(shortcutRow, new AppListItemSnapshot([shortcutRow], []).GetVisibleApp(requestedId));
+        var packaged = new AppCatalogItem(
+            AppIdentity.ForPackaged(packagedAumid),
+            0,
+            new AppCatalogSourceReference("packaged", packagedAumid),
+            [],
+            new PackagedAppSnapshot { Name = "App", UserModelId = packagedAumid });
+        var mergedRow = new AppListItem(packaged.MergeProvenance(shortcut).ToAppItem(), useThumbnails: false);
+        var snapshot = new AppListItemSnapshot([mergedRow], []);
+
+        Assert.AreSame(mergedRow, snapshot.GetVisibleApp(requestedId));
+        Assert.AreEqual(requestedId, snapshot.GetCommandItem(requestedId)?.Command?.Id);
+        Assert.AreEqual(AppIdentity.ForCommand(packaged.Identity), mergedRow.Command!.Id);
+        Assert.AreEqual(packagedAumid, mergedRow.App.UserModelId);
+    }
+
+    [TestMethod]
     [DataRow(false, false)]
     [DataRow(true, false)]
     [DataRow(false, true)]

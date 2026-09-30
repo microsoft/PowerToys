@@ -364,10 +364,11 @@ internal sealed partial class Win32AppSource : IAppSource
                     return;
                 }
 
-                var workingDirectory = AppIdentity.GetDistinctWorkingDirectory(program.AppExecutionAlias?.TargetPath ?? program.FullPath, program.WorkingDirectory, program.ExplicitAppUserModelId);
+                var workingDirectory = Win32Program.GetDistinctWorkingDirectory(program.AppExecutionAlias?.TargetPath ?? program.FullPath, program.WorkingDirectory, program.ExplicitAppUserModelId);
                 var target = string.IsNullOrWhiteSpace(program.FullPath) ? LaunchTarget.FilePath(path) : program.Target;
-                var identity = AppIdentity.ForWin32(target, program.Arguments, workingDirectory);
-                var launchIdentity = AppIdentity.ForWin32(LaunchTarget.FilePath(path), program.Arguments, workingDirectory);
+
+                var identity = CreateCatalogIdentity(target.IdentityToken, program.Arguments, workingDirectory);
+                var launchIdentity = CreateCatalogIdentity(LaunchTarget.FilePath(path).IdentityToken, program.Arguments, workingDirectory);
                 indexedItems.Add(new AppCatalogItem(
                     identity,
                     GetRepresentationPriority(program, path) + _source.Priority,
@@ -403,12 +404,9 @@ internal sealed partial class Win32AppSource : IAppSource
             ? RawExecutablePriorityOffset
             : 0;
 
-    private static string CreateCatalogIdentity(Win32Program program, string workingDirectory)
+    private static string CreateCatalogIdentity(string target, string? arguments, string workingDirectory)
     {
-        var target = Win32Program.UsesExecutableTargetIdentity(program.AppType) && !string.IsNullOrWhiteSpace(program.FullPath)
-            ? PathHelpers.NormalizePath(program.FullPath)
-            : program.GetAppIdentifier();
-        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(program.Arguments ?? string.Empty));
+        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(arguments ?? string.Empty));
         var identity = $"win32:{target}|args:{encodedArguments}";
         return string.IsNullOrEmpty(workingDirectory)
             ? identity

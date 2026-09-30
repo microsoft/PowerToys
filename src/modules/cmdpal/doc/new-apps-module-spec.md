@@ -244,7 +244,7 @@ not change which apps a query finds.
 
 ### 4.3 Home
 
-- Reevaluate the complete visible catalog, including pinned apps.
+- Reevaluate the complete visible catalog and explicitly pinned apps, including hidden pins.
 - Preserve rank tiers, provider weights and usage ranking. Exact executable matches rank
   in the generic `ExactMetadata` tier, above title prefixes and below exact titles and user aliases.
   Selected execution-alias owners rank in `PreferredExecutionAlias`, above ordinary executable
@@ -349,10 +349,14 @@ and keeps existing pins working without retaining an alias for every capitalizat
 
 - Merged apps retain contributing catalog and shortcut launch identities as `IdentityAliases`.
 - Discovery does not synthesize obsolete catalog identities from earlier unreleased builds.
-- Saved legacy aliases resolve to current visible commands, including supported install moves.
+- Saved legacy aliases resolve to current commands, including supported install moves.
 - Retain the released name-based IDs generated from name, subtitle and launch path.
 - Reject ambiguous aliases.
-- Hidden commands do not resolve through the visible snapshot.
+- A unique visible claimant of a live command ID or alias takes precedence over hidden
+  claimants, including typed IDs that differ only in case. Saved ambiguity markers remain
+  blocked regardless of current visibility.
+- Hiding filters discovery; explicit Home pins, dock references and command links still resolve
+  hidden apps. Provider enablement and command-link permission checks continue to apply.
 
 Existing pins and dock references must survive the ID migration. Retained shortcut launch
 identities can bridge supported install moves. Released name-based IDs remain supported;
@@ -361,9 +365,15 @@ been used. An ambiguous alias must fail rather than launch an arbitrary app. Sav
 not pruned: only the host knows which references are still saved, including references needed
 after reinstall. The accepted cost is a growing alias file.
 
+Hiding an app does not remove a saved reference. Home pins and dock items keep the current
+app's presentation and actions while it remains indexed, including manual and pattern-based
+hides. The user removes those references explicitly. Hidden apps stay out of ordinary discovery.
+Command links use the same explicit lookup and may launch hidden apps without a pin or dock
+reference. Hiding is a discovery preference; an explicitly requested command still resolves.
+
 ### 6.5 Usage history
 
-- Home caches a ranking projection merging legacy/current app usage.
+- Home caches a ranking projection merging legacy/current app usage, including hidden pins.
 - New uses record canonical command IDs without rewriting existing history.
 - History storage remains command-ID-only.
 
