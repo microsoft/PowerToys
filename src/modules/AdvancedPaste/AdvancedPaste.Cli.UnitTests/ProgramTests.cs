@@ -606,6 +606,27 @@ public class ProgramTests
         Assert.IsFalse(Program.TryInitializeLogger(() => throw new UnauthorizedAccessException()));
     }
 
+    [DataTestMethod]
+    [DataRow(new string[] { }, "help")]
+    [DataRow(new[] { "transform", "--help" }, "help")]
+    [DataRow(new[] { "transform", "--action", "plain-text" }, "transform")]
+    [DataRow(new[] { "actions", "list", "--json" }, "actions list")]
+    [DataRow(new[] { "unexpected", "--prompt", "sensitive prompt" }, "unknown")]
+    public void TelemetryCommandName_IsBounded(string[] args, string expected)
+    {
+        Assert.AreEqual(expected, Program.GetTelemetryCommandName(args));
+    }
+
+    [TestMethod]
+    public void CreateCLITelemetryEvent_SetsBoundedCommandAndSuccessStatus()
+    {
+        var telemetryEvent = Program.CreateCLITelemetryEvent("transform", successful: true);
+
+        Assert.AreEqual("AdvancedPaste_CLICommand", telemetryEvent.EventName);
+        Assert.AreEqual("transform", telemetryEvent.CommandName);
+        Assert.IsTrue(telemetryEvent.Successful);
+    }
+
     private static async Task<RunResult> RunAsync(
         string[] args,
         string input = "",

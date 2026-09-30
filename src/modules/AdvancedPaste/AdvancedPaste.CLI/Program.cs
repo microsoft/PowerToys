@@ -17,9 +17,11 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Services;
 using AdvancedPaste.Settings;
+using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 
 namespace AdvancedPaste.Cli;
 
@@ -50,10 +52,14 @@ public static partial class Program
         if (args.Length == 0 || args.Any(IsHelpArgument))
         {
             var root = CreateRootCommand(out _);
-            return await root.InvokeAsync(args);
+            var helpExitCode = await root.InvokeAsync(args);
+            LogCLITelemetry("help", helpExitCode == SuccessExitCode, loggerInitialized: false);
+            return helpExitCode;
         }
 
         using var cancellationSource = new CancellationTokenSource();
+        var exitCode = RuntimeErrorExitCode;
+        var telemetryCommandName = GetTelemetryCommandName(args);
         ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
         {
             eventArgs.Cancel = true;
@@ -73,7 +79,8 @@ public static partial class Program
                 }
 
                 TryWritePolicyDisabledError(isEnabledByPolicy: false, args, Console.Error);
-                return RuntimeErrorExitCode;
+                exitCode = RuntimeErrorExitCode;
+                return exitCode;
             }
 
             AdvancedPasteTempFileManager.CleanupStaleDirectories(TimeSpan.FromDays(1));
@@ -86,7 +93,8 @@ public static partial class Program
                 host.Services.GetRequiredService<IPasteFormatExecutor>(),
                 host.Services.GetRequiredService<IUserSettings>());
 
-            return await RunAsync(args, Console.In, Console.Out, Console.Error, new SystemClipboardAdapter(), runtime, cancellationSource.Token);
+            exitCode = await RunAsync(args, Console.In, Console.Out, Console.Error, new SystemClipboardAdapter(), runtime, cancellationSource.Token);
+            return exitCode;
         }
         catch (Exception ex)
         {
@@ -96,13 +104,56 @@ public static partial class Program
             }
 
             WriteStartupError(args, Console.Error);
-            return RuntimeErrorExitCode;
+            exitCode = RuntimeErrorExitCode;
+            return exitCode;
         }
         finally
         {
             Console.CancelKeyPress -= cancelHandler;
+            LogCLITelemetry(telemetryCommandName, exitCode == SuccessExitCode, loggerInitialized);
         }
     }
+
+    internal static string GetTelemetryCommandName(string[] args)
+    {
+        if (args.Length == 0 || args.Any(IsHelpArgument))
+        {
+            return "help";
+        }
+
+        if (args.Length > 1 &&
+            string.Equals(args[0], "actions", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(args[1], "list", StringComparison.OrdinalIgnoreCase))
+        {
+            return "actions list";
+        }
+
+        return args.Length > 0 && string.Equals(args[0], "transform", StringComparison.OrdinalIgnoreCase)
+            ? "transform"
+            : "unknown";
+    }
+
+    internal static void LogCLITelemetry(string commandName, bool successful, bool loggerInitialized)
+    {
+        try
+        {
+            PowerToysTelemetry.Log.WriteEvent(CreateCLITelemetryEvent(commandName, successful));
+        }
+        catch (Exception ex)
+        {
+            if (loggerInitialized)
+            {
+                Logger.LogError("Failed to log Advanced Paste CLI telemetry.", ex);
+            }
+        }
+    }
+
+    internal static AdvancedPasteCLICommandEvent CreateCLITelemetryEvent(string commandName, bool successful)
+        => new()
+        {
+            CommandName = commandName,
+            Successful = successful,
+        };
 
     private static RootCommand CreateRootCommand(out CliOptions options)
     {
