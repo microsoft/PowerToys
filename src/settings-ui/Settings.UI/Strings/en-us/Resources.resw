@@ -6700,9 +6700,6 @@ Text uses the current drawing color.</value>
     <value>Move windows by right-dragging the title bar</value>
     <comment>Drag a window's title bar with the right mouse button to move it, with no modifier key</comment>
   </data>
-  <data name="GrabAndMove_RightDragTitleBar.Description" xml:space="preserve">
-    <value>Drag a title bar with the right mouse button to move the window without bringing it to the front. A right-click without dragging still opens the title bar menu</value>
-  </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
