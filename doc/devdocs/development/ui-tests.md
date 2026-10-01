@@ -39,6 +39,15 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
+#### Command Palette (`Microsoft.CmdPal.UITests.Next`)
+
+- Build Command Palette and the test project as **Release**. A Debug Command Palette build is not a
+  supported target for these tests.
+- The test project builds `SamplePagesExtension` and copies its loose package layout next to the test
+  executable. `SamplePagesTests` registers it in development mode and removes it after the class, so
+  the machine must have **Developer Mode** enabled.
+- Indexer tests create temporary files under `Downloads` and need Windows Search indexing enabled.
+
 ### Legacy tests
 
 - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)

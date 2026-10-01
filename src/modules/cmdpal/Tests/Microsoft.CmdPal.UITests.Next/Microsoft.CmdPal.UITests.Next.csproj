@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.CmdPal.UITests</RootNamespace>
+    <AssemblyName>Microsoft.CmdPal.UITests.Next</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <!-- SamplePagesExtension is a self-contained exe referenced for build order only. -->
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Microsoft.CmdPal.UITests.Next\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+
+    <!-- Build-order only: SamplePagesTests registers this extension's loose MSIX layout at run time. -->
+    <ProjectReference Include="..\..\ext\SamplePagesExtension\SamplePagesExtension.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--
+    Ship the SamplePagesExtension loose layout (AppxManifest.xml + binaries) next to the tests so the
+    suite can deploy it on any machine with Developer Mode. Debug layouts import the debug UCRT, which
+    clean test machines lack, so run these tests from a Release build.
+  -->
+  <Target Name="CopySamplePagesExtensionLayout" AfterTargets="Build">
+    <PropertyGroup>
+      <_SamplePagesLayoutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\SamplePagesExtension\</_SamplePagesLayoutDir>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_SamplePagesLayoutDir)AppxManifest.xml')" Text="SamplePagesExtension layout not found at $(_SamplePagesLayoutDir)." />
+    <ItemGroup>
+      <_SamplePagesLayoutFile Include="$(_SamplePagesLayoutDir)**\*" Exclude="$(_SamplePagesLayoutDir)**\*.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SamplePagesLayoutFile)" DestinationFiles="@(_SamplePagesLayoutFile->'$(OutDir)SamplePagesExtension\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
