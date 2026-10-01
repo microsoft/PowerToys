@@ -5,6 +5,7 @@
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -43,6 +44,24 @@ public sealed partial class ExtensionPage : Page, IDisposable
 
         // Navigation retains the shared provider, while each page owns its own settings view model.
         ViewModel = new ProviderSettingsViewModel(provider, providerSettings, settingsService);
+    }
+
+    internal FrameworkElement? FindCommandTarget(string commandId)
+    {
+        if (ViewModel?.IsEnabled != true || CommandSettingsRepeater?.ItemsSource is not IReadOnlyList<TopLevelViewModel> commands)
+        {
+            return null;
+        }
+
+        for (var index = 0; index < commands.Count; index++)
+        {
+            if (string.Equals(commands[index].Id, commandId, StringComparison.Ordinal))
+            {
+                return CommandSettingsRepeater.GetOrCreateElement(index) as FrameworkElement;
+            }
+        }
+
+        return null;
     }
 
     private async void RankButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

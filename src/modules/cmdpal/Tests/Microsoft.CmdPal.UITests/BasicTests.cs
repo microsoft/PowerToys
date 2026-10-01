@@ -237,6 +237,109 @@ public class BasicTests : CommandPaletteTestBase
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void SettingsSearch_SubmissionOpensResults(bool showAllResults)
+    {
+        OpenSettingsWindow();
+        this.Find<NavigationViewItem>("General", global: true).Click();
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("preview");
+        var showAll = this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true);
+        StringAssert.StartsWith(showAll.Name, "Show ");
+
+        if (showAllResults)
+        {
+            showAll.Click();
+        }
+        else
+        {
+            SendKeys(Key.Enter);
+        }
+
+        Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+        Assert.IsNotNull(this.Find("Personalization › Interaction", global: true));
+        Assert.IsFalse(bool.Parse(this.Find<TextBox>("Search settings, commands, and extensions", global: true).GetAttribute("HasKeyboardFocus")));
+
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("preview");
+        if (showAllResults)
+        {
+            this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true).Click();
+        }
+        else
+        {
+            SendKeys(Key.Enter);
+        }
+
+        Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+        this.Find<Button>("Back", global: true).Click();
+        Assert.IsNotNull(this.Find(By.AccessibilityId("CmdPal_GeneralPage_ActivationKey"), global: true));
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("preview");
+        SendKeys(Key.Enter);
+        Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+
+        for (var visit = 0; visit < 2; visit++)
+        {
+            this.Find("Automatically expand app details", global: true).Click();
+            Assert.IsNotNull(this.Find<ToggleSwitch>(By.AccessibilityId("CmdPal_AppearancePage_ShowAppDetails"), global: true));
+
+            // Reinvoking the selected item makes WinUI invoke it again when search clears selection.
+            this.Find<NavigationViewItem>("Personalization", global: true).Click();
+            this.Find<Button>("Back", global: true).Click();
+            Assert.IsNotNull(this.Find("Results for 'preview'", global: true));
+            Assert.IsNotNull(this.Find("Personalization › Interaction", global: true));
+        }
+
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("zqxzqxzqx");
+        SendKeys(Key.Enter);
+        Assert.IsNotNull(this.Find("Results for 'zqxzqxzqx'", global: true));
+        Assert.IsNotNull(this.Find("No settings, commands, or extensions found. Try a different search term.", global: true));
+    }
+
+    [TestMethod]
+    [DataRow("General", "CmdPal_GeneralPage_ActivationKey")]
+    [DataRow("Calculator", "CmdPal_ExtensionPage_Enable")]
+    public void SettingsSearch_PageAndProviderSuggestionsMoveFocus(string query, string destinationId)
+    {
+        OpenSettingsWindow();
+        this.Find<NavigationViewItem>("Personalization", global: true).Click();
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText(query);
+        Assert.IsNotNull(this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true));
+        SendKeys(Key.Down);
+        SendKeys(Key.Enter);
+
+        Assert.IsNotNull(this.Find(By.AccessibilityId(destinationId), global: true));
+        Assert.IsFalse(bool.Parse(this.Find<TextBox>("Search settings, commands, and extensions", global: true).GetAttribute("HasKeyboardFocus")));
+    }
+
+    [TestMethod]
+    public void SettingsSearch_CommandNameAndChangedAliasOpenCommandSettings()
+    {
+        OpenSettingsWindow();
+        this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("calculator commands");
+        Assert.IsNotNull(this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true));
+        SendKeys(Key.Down);
+        SendKeys(Key.Enter);
+
+        var aliasBox = this.Find<TextBox>(By.AccessibilityId("CmdPal_ExtensionPage_AliasText"), global: true);
+        Assert.IsFalse(bool.Parse(this.Find<TextBox>("Search settings, commands, and extensions", global: true).GetAttribute("HasKeyboardFocus")));
+        var originalAlias = aliasBox.Text;
+        try
+        {
+            aliasBox.SetText("cmdpal-settings-search-test");
+            this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("cmdpal-settings-search-test");
+            Assert.IsNotNull(this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true));
+            SendKeys(Key.Down);
+            SendKeys(Key.Enter);
+
+            Assert.AreEqual("cmdpal-settings-search-test", this.Find<TextBox>(By.AccessibilityId("CmdPal_ExtensionPage_AliasText"), global: true).Text);
+        }
+        finally
+        {
+            aliasBox.SetText(originalAlias);
+        }
+    }
+
+    [TestMethod]
     public void DockSettingsAutoHideToggleTest()
     {
         OpenSettingsWindow();
