@@ -123,6 +123,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+    private bool _isShowing;
 
     // While a modal dialog (e.g. a confirmation) is showing, the card is forced to fill the
     // whole window so the dialog — which renders in the window's popup layer and is clipped to
@@ -856,6 +857,21 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
     {
+        // Showing can activate the window before visibility is committed.
+        var wasShowing = _isShowing;
+        _isShowing = true;
+        try
+        {
+            ShowHwndCore(hwndValue, positionWindow);
+        }
+        finally
+        {
+            _isShowing = wasShowing;
+        }
+    }
+
+    private void ShowHwndCore(IntPtr hwndValue, Action<HWND>? positionWindow)
+    {
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
@@ -1527,12 +1543,10 @@ public sealed partial class MainWindow : WindowEx,
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
-        else if (!IsVisibleToUser)
+        else if (!IsVisibleToUser && !_isShowing)
         {
-            // Something outside of our own summon path handed us focus while we were
-            // cloaked (e.g. the shell activating us for the Copilot key). Treat that as a
-            // request to show: position, uncloak and bring the window to the foreground.
-            WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(_hwnd));
+            // External activation (e.g. the Copilot key) must restore search selection and focus.
+            Summon(string.Empty);
         }
 
         if (RootElement is not null)
