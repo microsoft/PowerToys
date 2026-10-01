@@ -531,6 +531,17 @@ namespace EnvironmentVariablesUILib
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
+        private void RemoveDuplicatePathEntriesButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var variable = EditVariableDialog.DataContext as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            EditVariableDialogValueTxtBox.Text = EnvironmentVariableComparisonHelper.RemoveDuplicatePathEntries(variable.Values);
+        }
+
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;

@@ -50,7 +50,7 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Returns profiles that have a usable stable id.
+        /// Returns profiles with usable stable ids in their persisted array order.
         /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
         /// </summary>
         public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
@@ -59,9 +59,8 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Adds or updates a profile, keyed by its stable id. When the incoming profile has no id
-        /// (Id == 0) a new one is assigned from the monotonic NextId counter. Names are not required
-        /// to be unique.
+        /// Adds or updates a profile by its stable id. New profiles receive an id from the monotonic
+        /// NextId counter and are displayed last. Updating preserves the profile's display order.
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
         {
@@ -70,6 +69,7 @@ namespace PowerDisplay.Models
                 throw new ArgumentException("Profile is invalid");
             }
 
+            var existingIndex = profile.Id >= 1 ? Profiles.FindIndex(p => p?.Id == profile.Id) : -1;
             if (profile.Id == 0)
             {
                 // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
@@ -80,23 +80,61 @@ namespace PowerDisplay.Models
                 profile.Id = next;
                 NextId = next + 1;
             }
-            else
+            else if (NextId <= profile.Id)
             {
-                var existing = GetById(profile.Id);
-                if (existing != null)
-                {
-                    Profiles.Remove(existing);
-                }
-
-                if (NextId <= profile.Id)
-                {
-                    NextId = profile.Id + 1;
-                }
+                NextId = profile.Id + 1;
             }
 
             profile.Touch();
-            Profiles.Add(profile);
+            if (existingIndex >= 0)
+            {
+                Profiles[existingIndex] = profile;
+            }
+            else
+            {
+                Profiles.Add(profile);
+            }
+
             LastUpdated = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Moves a profile before another id, or to the end when beforeProfileId is null.
+        /// Returns false without changing the collection when either id is invalid or missing,
+        /// or the profile is already at the requested position. Moves the existing array entry
+        /// without changing its stable id, contents, or timestamps.
+        /// </summary>
+        public bool MoveProfileBefore(int profileId, int? beforeProfileId)
+        {
+            if (profileId <= 0 || beforeProfileId is <= 0 || profileId == beforeProfileId)
+            {
+                return false;
+            }
+
+            var sourceIndex = Profiles.FindIndex(profile => profile?.Id == profileId);
+            var targetIndex = beforeProfileId.HasValue
+                ? Profiles.FindIndex(profile => profile?.Id == beforeProfileId.Value)
+                : Profiles.Count;
+            if (sourceIndex < 0 || targetIndex < 0)
+            {
+                return false;
+            }
+
+            if (targetIndex > sourceIndex)
+            {
+                targetIndex--;
+            }
+
+            if (sourceIndex == targetIndex)
+            {
+                return false;
+            }
+
+            var profile = Profiles[sourceIndex];
+            Profiles.RemoveAt(sourceIndex);
+            Profiles.Insert(targetIndex, profile);
+            LastUpdated = DateTime.UtcNow;
+            return true;
         }
 
         /// <summary>

@@ -106,6 +106,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private bool _isDynamic;
 
+    private bool _initializationStarted;
+
+    private ListPageLaunchOptions? _launchOptions;
+
     private Task? _initializeItemsTask;
     private ListItemInitializationCoordinator? _itemInitializationCoordinator;
 
@@ -151,6 +155,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
     }
 
+    internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
+    {
+        ArgumentNullException.ThrowIfNull(launchOptions);
+
+        if (_initializationStarted || _launchOptions is not null)
+        {
+            throw new InvalidOperationException("List page launch options must be set before initialization.");
+        }
+
+        if (launchOptions.IsEmpty)
+        {
+            throw new ArgumentException("List page launch options must contain a query or filter.", nameof(launchOptions));
+        }
+
+        _launchOptions = launchOptions;
+    }
+
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(FiltersViewModel.Filters))
@@ -176,6 +197,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -325,6 +352,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
         CancellationToken cancellationToken;
@@ -1051,6 +1084,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
+        _initializationStarted = true;
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -1075,7 +1115,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        InitialSearchText = SearchText = model.SearchText;
+        if (!TryApplyLaunchOptions(model, out var initialSearchText))
+        {
+            return;
+        }
+
+        InitialSearchText = SearchText = initialSearchText;
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
@@ -1096,6 +1141,45 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
+    }
+
+    private bool TryApplyLaunchOptions(IListPage model, out string initialSearchText)
+    {
+        initialSearchText = model.SearchText;
+        if (_launchOptions is not { } launchOptions)
+        {
+            return true;
+        }
+
+        if (launchOptions.FilterId is { } filterId)
+        {
+            var filters = model.Filters;
+            var filterExists = filters?.GetFilters()?
+                .OfType<IFilter>()
+                .Any(candidate => string.Equals(candidate.Id, filterId, StringComparison.Ordinal)) == true;
+            if (!filterExists)
+            {
+                _launchOptions = null;
+                ShowErrorMessage(Properties.Resources.list_page_requested_filter_unavailable);
+                return false;
+            }
+
+            filters!.CurrentFilterId = filterId;
+        }
+
+        if (launchOptions.Query is { } query)
+        {
+            if (model is IDynamicListPage dynamicListPage)
+            {
+                dynamicListPage.SearchText = query;
+            }
+
+            initialSearchText = query;
+            SetInitialSearchTextBox(query);
+        }
+
+        _launchOptions = null;
+        return true;
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
@@ -1218,7 +1302,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
@@ -1242,16 +1326,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // The shell serializes navigation transitions on the UI thread. Terminal
     // cleanup may race them, but resumption can only transition Suspended -> Active.
-    internal void SuspendForNavigation()
+    internal override void SuspendForNavigation()
     {
+        base.SuspendForNavigation();
         if (TryChangeWorkStatus(ListPageWorkStatus.Active, ListPageWorkStatus.Suspended) is not null)
         {
             CancelPendingWork();
         }
     }
 
-    internal Task ResumeAfterNavigation()
+    internal override Task ResumeAfterNavigation()
     {
+        base.ResumeAfterNavigation();
         var work = TryChangeWorkStatus(ListPageWorkStatus.Suspended, ListPageWorkStatus.Active);
         if (work is null)
         {
@@ -1436,6 +1522,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         CancelPendingWork();
     }
+
+    protected override void OnCleanupRequested() => StopWork();
 
     protected override void UnsafeCleanup()
     {

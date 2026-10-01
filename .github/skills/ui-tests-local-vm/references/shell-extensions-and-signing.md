@@ -70,8 +70,12 @@ all-module jobs pass their context-menu MSIX names through `-RequiredPackage`, s
 or untrusted setup fails at the prerequisite instead of surfacing later as a product-test failure.
 Jobs that do not exercise either modern context menu keep signing best-effort:
 
-PowerRename jobs also pass `PowerToys.exe` and `PowerToys.Settings.exe` through
-`-RequiredAuthenticodeFile` on every platform. Release IPC accepts only a Microsoft-named signer
+Any selected suite that changes module state through Settings and expects the Runner to react (for
+example, flipping a module's enable switch) must be listed by exact project stem in
+`$authenticatedSettingsIpcModules` in `job-test-project.yml`. That list is the source of truth; mirror
+it in `.pipelines/tests/uiTestSigningSelection.Tests.ps1`. Those jobs and all-module jobs also pass
+`PowerToys.exe` and `PowerToys.Settings.exe` through `-RequiredAuthenticodeFile` on every platform.
+Release IPC accepts only a Microsoft-named signer
 anchored in LocalMachine Root; unsigned PR binaries otherwise let the Settings toggle change
 visually while the runner rejects the command as `not-microsoft-signed`. The same disposable-agent
 test identity satisfies that authentication path without weakening the product policy. The job
