@@ -5,7 +5,6 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Sent when the dock focus hotkey fires. The dock decides whether that means
-/// "reveal and focus me" or "give focus back", since only it knows if it already has it.
+/// Reveals and focuses the dock, or cycles through items in a focused dock in either direction.
 /// </summary>
-public record FocusDockMessage;
+public record FocusDockMessage(bool Reverse = false);

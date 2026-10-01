@@ -35,7 +35,10 @@ public partial class SettingsSearchTests
         var expectedLinks = SettingsLinkResolver.Destinations.ToArray()
             .Where(destination => !destination.RequiresExtensionProvider && !navigationOnlyLinks.Contains(destination.LinkId))
             .Select(destination => destination.LinkId).ToArray();
-        CollectionAssert.AreEquivalent(expectedLinks, indexedLinks);
+        CollectionAssert.AreEquivalent(
+            expectedLinks,
+            indexedLinks,
+            $"Missing: {string.Join(", ", expectedLinks.Except(indexedLinks))}. Unexpected: {string.Join(", ", indexedLinks.Except(expectedLinks))}.");
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.Title) && !string.IsNullOrWhiteSpace(entry.Breadcrumb)));
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.IconGlyph)));
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.GroupName)));
@@ -62,11 +65,28 @@ public partial class SettingsSearchTests
     [DataRow("wallpaper", SettingsLinkIds.Appearance.Background)]
     [DataRow("dock theme", SettingsLinkIds.Dock.Theme)]
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
+    [DataRow("recent items", SettingsLinkIds.General.RecentItems)]
+    [DataRow("quick access shelf", SettingsLinkIds.Appearance.QuickAccessShelf)]
+    [DataRow("alt+number shortcuts in lists", SettingsLinkIds.Appearance.ListItemAltNumberBehavior)]
     public void Search_RanksExpectedSettingFirst(string query, string expectedLink)
     {
         var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
 
         Assert.AreEqual(expectedLink, new SettingsSearchCatalog(entries).Search(query, _matcher)[0].Destination!.SettingsLinkId);
+    }
+
+    [TestMethod]
+    [DataRow(SettingsLinkIds.General.RecentItems, "General")]
+    [DataRow(SettingsLinkIds.Appearance.HomeRecentCommands, "General › Recent items")]
+    [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "General › Recent items")]
+    [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "General › Recent items")]
+    [DataRow(SettingsLinkIds.Appearance.QuickAccessShelf, "Personalization › Layout and positioning")]
+    [DataRow(SettingsLinkIds.Appearance.ListItemAltNumberBehavior, "Personalization › Interaction")]
+    public void Catalog_UsesCurrentSettingsLocation(string linkId, string expectedBreadcrumb)
+    {
+        var entry = SettingsSearchCatalog.CreateEntries(LoadResources()).Single(entry => entry.Destination!.SettingsLinkId == linkId);
+
+        Assert.AreEqual(expectedBreadcrumb, entry.Breadcrumb);
     }
 
     [TestMethod]

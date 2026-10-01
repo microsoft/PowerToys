@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionsPage : Page
+public sealed partial class ExtensionsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -33,8 +33,6 @@ public sealed partial class ExtensionsPage : Page
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService, languageService);
-
-        Unloaded += ExtensionsPage_Unloaded;
     }
 
     internal ProviderSettingsViewModel? FindProvider(string providerId) =>
@@ -52,7 +50,7 @@ public sealed partial class ExtensionsPage : Page
         }
     }
 
-    private void ExtensionsPage_Unloaded(object sender, RoutedEventArgs e)
+    public void Dispose()
     {
         // ProviderSettingsViewModel subscribes to its CommandProviderWrapper (owned by the
         // singleton TopLevelCommandManager), so a live VM roots this page through the
@@ -65,6 +63,8 @@ public sealed partial class ExtensionsPage : Page
 
         _cardToVmMap.Clear();
         _vmToCardMap.Clear();
+        viewModel?.Dispose();
+        FallbackRankerDialog?.Dispose();
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
