@@ -1223,6 +1223,61 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [DataTestMethod]
+    [DataRow(true, false, true)]
+    [DataRow(false, false, false)]
+    [DataRow(false, true, true)]
+    [Timeout(15000)]
+    public void ReturningToFirstRowCancelsOnlyTheRefreshAlreadyInFlight(bool navigateBeforeFetch, bool supersedeFetch, bool expectedReset)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var alpha = CreateItem("Alpha");
+        var beta = CreateItem("Beta");
+        var gamma = CreateItem("Gamma");
+        var page = new SearchPage();
+        page.ReplaceItems([alpha, beta, gamma], notify: false);
+        var viewModel = CreateViewModel(page, scheduler);
+        viewModel.IsRootPage = false;
+        var updates = new List<ItemsUpdatedEventArgs>();
+        void OnItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args) => updates.Add(args);
+
+        try
+        {
+            viewModel.InitializeProperties();
+            scheduler.DrainUntil(() => viewModel.FilteredItems.Count == 3);
+            scheduler.Drain();
+            var first = viewModel.FilteredItems[0];
+            var second = viewModel.FilteredItems[1];
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+            viewModel.ItemsUpdated += OnItemsUpdated;
+
+            if (!navigateBeforeFetch)
+            {
+                page.ReplaceItems([beta, gamma, alpha]);
+            }
+
+            viewModel.UpdateSelectedItemCommand.Execute(second);
+            viewModel.UpdateSelectedItemCommand.Execute(first);
+
+            if (navigateBeforeFetch || supersedeFetch)
+            {
+                page.ReplaceItems([gamma, beta, alpha]);
+            }
+
+            scheduler.Drain();
+            Assert.AreEqual(1, updates.Count);
+            Assert.AreEqual(expectedReset, updates[0].ForceFirstItem, "Explicit navigation cancels an existing reset even when it ends on the old first row; a later fetch can request a new reset.");
+            Assert.AreSame(first, viewModel.FilteredItems[2]);
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= OnItemsUpdated;
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
     [DataRow(false)]
     [DataRow(true)]
     [Timeout(15000)]
