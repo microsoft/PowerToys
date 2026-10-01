@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private int _profileFocusRequestId;
         private Action _cancelPendingProfileFocus;
         private UIElement _profileInputRoot;
+        private ContentDialog _activeDialog;
 
         private PowerDisplayViewModel ViewModel { get; set; }
 
@@ -39,6 +40,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _profileKeyDownHandler = ProfileInputRoot_PreviewKeyDown;
             _profilePointerInputHandler = ProfileInputRoot_PointerInput;
+            CreateViewModel();
+            Loading += PowerDisplayPage_Loading;
+            InitializeComponent();
+            Loaded += PowerDisplayPage_Loaded;
+            SizeChanged += PowerDisplayPage_SizeChanged;
+            Unloaded += PowerDisplayPage_Unloaded;
+        }
+
+        private void CreateViewModel()
+        {
             var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerDisplayViewModel(
                 settingsUtils,
@@ -47,10 +58,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
-            InitializeComponent();
-            Loaded += PowerDisplayPage_Loaded;
-            SizeChanged += PowerDisplayPage_SizeChanged;
-            Unloaded += PowerDisplayPage_Unloaded;
+        }
+
+        private void PowerDisplayPage_Loading(FrameworkElement sender, object args)
+        {
+            if (ViewModel == null)
+            {
+                CreateViewModel();
+                Bindings.Update();
+            }
         }
 
         private async void PowerDisplayPage_Loaded(object sender, RoutedEventArgs e)
@@ -73,6 +89,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             CancelProfileFocusRestoration();
             DetachProfileInputHandlers();
+            _draggedProfileId = null;
+            _profileOrderBeforeDrag = null;
+            Bindings.StopTracking();
+            var viewModel = ViewModel;
+            ViewModel = null;
+            DataContext = null;
+            viewModel?.Dispose();
+            _activeDialog?.Hide();
+            _activeDialog = null;
         }
 
         private void DetachProfileInputHandlers()
@@ -106,12 +131,36 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async Task<bool> ShowDangerousFeatureDialogAsync(PowerDisplayWarningKind kind)
         {
             var dialog = new PowerDisplayWarningDialog(kind) { XamlRoot = XamlRoot };
-            return await dialog.ShowAsync() == ContentDialogResult.Primary;
+            return await ShowOwnedDialogAsync(dialog) == ContentDialogResult.Primary;
+        }
+
+        private async Task<ContentDialogResult> ShowOwnedDialogAsync(ContentDialog dialog)
+        {
+            var viewModel = ViewModel;
+            if (!IsLoaded || viewModel == null)
+            {
+                return ContentDialogResult.None;
+            }
+
+            var operation = dialog.ShowAsync();
+            _activeDialog = dialog;
+            try
+            {
+                var result = await operation;
+                return IsLoaded && ReferenceEquals(ViewModel, viewModel) ? result : ContentDialogResult.None;
+            }
+            finally
+            {
+                if (ReferenceEquals(_activeDialog, dialog))
+                {
+                    _activeDialog = null;
+                }
+            }
         }
 
         public void RefreshEnabledState()
         {
-            ViewModel.RefreshEnabledState();
+            ViewModel?.RefreshEnabledState();
         }
 
         private void CopyVcpCodes_Click(object sender, RoutedEventArgs e)
@@ -406,20 +455,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.Monitors == null || ViewModel.Monitors.Count == 0)
+            var viewModel = ViewModel;
+            if (viewModel.Monitors == null || viewModel.Monitors.Count == 0)
             {
                 return;
             }
 
             var defaultName = GenerateDefaultProfileName();
-            var dialog = new ProfileEditorDialog(ViewModel.Monitors, defaultName);
+            var dialog = new ProfileEditorDialog(viewModel.Monitors, defaultName);
             dialog.XamlRoot = this.XamlRoot;
 
-            var result = await dialog.ShowAsync();
+            var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultProfile != null)
             {
-                await ViewModel.CreateProfileAsync(dialog.ResultProfile);
+                await viewModel.CreateProfileAsync(dialog.ResultProfile);
             }
         }
 
@@ -428,17 +478,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
-                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name, profile.Id);
+                var viewModel = ViewModel;
+                var dialog = new ProfileEditorDialog(viewModel.Monitors, profile.Name, profile.Id);
                 dialog.XamlRoot = this.XamlRoot;
 
                 // Pre-fill with existing profile settings
                 dialog.PreFillProfile(profile);
 
-                var result = await dialog.ShowAsync();
+                var result = await ShowOwnedDialogAsync(dialog);
 
-                if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+                if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    await ViewModel.UpdateProfileAsync(dialog.ResultProfile);
+                    await viewModel.UpdateProfileAsync(dialog.ResultProfile);
                 }
             }
         }
@@ -448,6 +499,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
+                var viewModel = ViewModel;
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 var dialog = new ContentDialog
                 {
@@ -459,11 +511,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     DefaultButton = ContentDialogButton.Close,
                 };
 
-                var result = await dialog.ShowAsync();
+                var result = await ShowOwnedDialogAsync(dialog);
 
-                if (result == ContentDialogResult.Primary)
+                if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary)
                 {
-                    await ViewModel.DeleteProfileAsync(profile.Id);
+                    await viewModel.DeleteProfileAsync(profile.Id);
                 }
             }
         }
@@ -498,14 +550,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         // Custom VCP Mapping event handlers
         private async void AddCustomMapping_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            var viewModel = ViewModel;
+            var dialog = new CustomVcpMappingEditorDialog(viewModel.Monitors);
             dialog.XamlRoot = this.XamlRoot;
 
-            var result = await dialog.ShowAsync();
+            var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultMapping != null)
             {
-                ViewModel.AddCustomVcpMapping(dialog.ResultMapping);
+                viewModel.AddCustomVcpMapping(dialog.ResultMapping);
             }
         }
 
@@ -516,15 +569,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            var dialog = new CustomVcpMappingEditorDialog(ViewModel.Monitors);
+            var viewModel = ViewModel;
+            var dialog = new CustomVcpMappingEditorDialog(viewModel.Monitors);
             dialog.XamlRoot = this.XamlRoot;
             dialog.PreFillMapping(mapping);
 
-            var result = await dialog.ShowAsync();
+            var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary && dialog.ResultMapping != null)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary && dialog.ResultMapping != null)
             {
-                ViewModel.UpdateCustomVcpMapping(mapping, dialog.ResultMapping);
+                viewModel.UpdateCustomVcpMapping(mapping, dialog.ResultMapping);
             }
         }
 
@@ -535,6 +589,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            var viewModel = ViewModel;
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var dialog = new ContentDialog
             {
@@ -546,11 +601,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 DefaultButton = ContentDialogButton.Close,
             };
 
-            var result = await dialog.ShowAsync();
+            var result = await ShowOwnedDialogAsync(dialog);
 
-            if (result == ContentDialogResult.Primary)
+            if (IsLoaded && ReferenceEquals(ViewModel, viewModel) && result == ContentDialogResult.Primary)
             {
-                ViewModel.DeleteCustomVcpMapping(mapping);
+                viewModel.DeleteCustomVcpMapping(mapping);
             }
         }
 
@@ -621,7 +676,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return true;
             }
 
-            if (await ShowDangerousFeatureDialogAsync(kind))
+            var viewModel = ViewModel;
+            var confirmed = await ShowDangerousFeatureDialogAsync(kind);
+            if (!IsLoaded || !ReferenceEquals(ViewModel, viewModel))
+            {
+                return false;
+            }
+
+            if (confirmed)
             {
                 commit(true);
                 return true;

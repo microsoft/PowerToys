@@ -14,19 +14,22 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public partial class QuickAccessViewModel : Observable
+    public partial class QuickAccessViewModel : Observable, IDisposable
     {
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
 
         // Pulling in KBMSettingsRepository separately as we need to listen to changes in the
         // UseNewEditor property to determine the visibility of the KeyboardManager quick access item.
-        private readonly SettingsRepository<KeyboardManagerSettings> _kbmSettingsRepository;
+        private readonly ISettingsRepository<KeyboardManagerSettings> _kbmSettingsRepository;
         private readonly IQuickAccessLauncher _launcher;
         private readonly Func<ModuleType, bool> _isModuleGpoDisabled;
         private readonly Func<ModuleType, bool> _isModuleGpoEnabled;
-        private readonly ResourceLoader _resourceLoader;
-        private readonly DispatcherQueue _dispatcherQueue;
+        private readonly Func<string, string> _getString;
+        private readonly Func<ModuleType, string> _getModuleToolTip;
+        private readonly Action<Action> _enqueue;
+        private readonly Action _enabledChangedCallback;
         private GeneralSettings _generalSettings;
+        private volatile bool _isDisposed;
 
         public ObservableCollection<QuickAccessItem> Items { get; } = new();
 
@@ -36,35 +39,85 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Func<ModuleType, bool> isModuleGpoDisabled,
             Func<ModuleType, bool> isModuleGpoEnabled,
             ResourceLoader resourceLoader)
+            : this(
+                settingsRepository,
+                SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default),
+                launcher,
+                isModuleGpoDisabled,
+                isModuleGpoEnabled,
+                resourceLoader.GetString,
+                GetModuleToolTip,
+                CreateDispatcher())
+        {
+        }
+
+        internal QuickAccessViewModel(
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<KeyboardManagerSettings> kbmSettingsRepository,
+            IQuickAccessLauncher launcher,
+            Func<ModuleType, bool> isModuleGpoDisabled,
+            Func<ModuleType, bool> isModuleGpoEnabled,
+            Func<string, string> getString,
+            Func<ModuleType, string> getModuleToolTip,
+            Action<Action> enqueue)
         {
             _settingsRepository = settingsRepository;
+            _kbmSettingsRepository = kbmSettingsRepository;
             _launcher = launcher;
             _isModuleGpoDisabled = isModuleGpoDisabled;
             _isModuleGpoEnabled = isModuleGpoEnabled;
-            _resourceLoader = resourceLoader;
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            _getString = getString;
+            _getModuleToolTip = getModuleToolTip;
+            _enqueue = enqueue;
+            _enabledChangedCallback = ModuleEnabledChanged;
 
             _generalSettings = _settingsRepository.SettingsConfig;
-            _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
-            _settingsRepository.SettingsChanged += OnSettingsChanged;
-
-            _kbmSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default);
-            _kbmSettingsRepository.SettingsChanged += OnKbmSettingsChanged;
-
             InitializeItems();
+
+            _generalSettings.AddEnabledModuleChangeNotification(_enabledChangedCallback);
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged += OnKbmSettingsChanged;
+        }
+
+        private static Action<Action> CreateDispatcher()
+        {
+            var dispatcher = DispatcherQueue.GetForCurrentThread();
+            return action => dispatcher.TryEnqueue(() => action());
         }
 
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
-            if (_dispatcherQueue != null)
+            QueueRefresh();
+        }
+
+        private void QueueRefresh()
+        {
+            if (_isDisposed)
             {
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    _generalSettings = newSettings;
-                    _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
-                    RefreshItemsVisibility();
-                });
+                return;
             }
+
+            _enqueue(() =>
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                // A queued notification can be superseded by another snapshot or owner.
+                var settings = _settingsRepository.SettingsConfig;
+                if (!ReferenceEquals(_generalSettings, settings))
+                {
+                    var ownedCallback = _generalSettings.RemoveEnabledModuleChangeNotification(_enabledChangedCallback);
+                    _generalSettings = settings;
+                    if (ownedCallback)
+                    {
+                        _generalSettings.TryAddEnabledModuleChangeNotification(_enabledChangedCallback);
+                    }
+                }
+
+                RefreshItemsVisibility();
+            });
         }
 
         private void InitializeItems()
@@ -96,10 +149,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             Items.Add(new QuickAccessItem
             {
-                Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Title = _getString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 Tag = moduleType,
                 Visible = GetItemVisibility(moduleType),
-                Description = GetModuleToolTip(moduleType),
+                Description = _getModuleToolTip(moduleType),
                 Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 Command = new RelayCommand(() => _launcher.Launch(moduleType)),
             });
@@ -107,21 +160,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void ModuleEnabledChanged()
         {
-            if (_dispatcherQueue != null)
-            {
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    _generalSettings = _settingsRepository.SettingsConfig;
-                    _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
-                    RefreshItemsVisibility();
-                });
-            }
+            QueueRefresh();
         }
 
         private void RefreshItemsVisibility()
         {
             foreach (var item in Items)
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 if (item.Tag is ModuleType moduleType)
                 {
                     bool visible = GetItemVisibility(moduleType);
@@ -133,13 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void OnKbmSettingsChanged(KeyboardManagerSettings newSettings)
         {
-            if (_dispatcherQueue != null)
-            {
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    RefreshItemsVisibility();
-                });
-            }
+            QueueRefresh();
         }
 
         private bool GetItemVisibility(ModuleType moduleType)
@@ -156,7 +200,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return visible;
         }
 
-        private string GetModuleToolTip(ModuleType moduleType)
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged -= OnKbmSettingsChanged;
+            _generalSettings.RemoveEnabledModuleChangeNotification(_enabledChangedCallback);
+            GC.SuppressFinalize(this);
+        }
+
+        private static string GetModuleToolTip(ModuleType moduleType)
         {
             return moduleType switch
             {

@@ -114,6 +114,12 @@
     <ClCompile Include="ComObjectFactory.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>
+    <ClCompile Include="KeyboardHook.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\interop\KeyboardHook.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
     <ClCompile Include="HDropIterator.Tests.cpp">
       <Filter>Source Files\Integration</Filter>
     </ClCompile>

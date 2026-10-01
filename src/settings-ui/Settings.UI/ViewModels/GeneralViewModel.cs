@@ -66,52 +66,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
-        public Func<string, int> SendConfigMSG { get; }
+        public Func<string, int> SendConfigMSG { get; private set; }
 
-        public Func<string, int> SendRestartAsAdminConfigMSG { get; }
+        public Func<string, int> SendRestartAsAdminConfigMSG { get; private set; }
 
         public string RunningAsUserDefaultText { get; set; }
 
         public string RunningAsAdminDefaultText { get; set; }
 
-        private readonly Action _checkForUpdatesAction;
+        private readonly Action<Action> _enqueue;
+        private Action _checkForUpdatesAction;
 
         private string _settingsConfigFileFolder = string.Empty;
         private ISettingsRepository<GeneralSettings> _settingsRepository;
-        private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+        private volatile bool _isDisposed;
 
-        private Func<Task<string>> PickSingleFolderDialog { get; }
+        private Func<Task<string>> PickSingleFolderDialog { get; set; }
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
         private const string InstallScopeRegKey = @"Software\Classes\powertoys\";
 
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Action checkForUpdatesAction, string configFileSubfolder = "", Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
+            : this(settingsRepository, null, ipcMSGCallBackFunc, ipcMSGRestartAsAdminMSGCallBackFunc, checkForUpdatesAction, hideBackupAndRestoreMessageAreaAction, doBackupAndRestoreDryRun, pickSingleFolderDialog)
         {
-            RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
-            BackupConfigsEventHandler = new ButtonClickCommand(BackupConfigsClick);
-            SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
-            RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
-            RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
-            HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
-            DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
-            PickSingleFolderDialog = pickSingleFolderDialog;
             ResourceLoader = resourceLoader;
-
-            // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
-            ArgumentNullException.ThrowIfNull(settingsRepository);
-            ArgumentNullException.ThrowIfNull(checkForUpdatesAction);
-
-            _settingsRepository = settingsRepository;
-            _settingsRepository.SettingsChanged += OnSettingsChanged;
-            _dispatcherQueue = GetDispatcherQueue();
-            _checkForUpdatesAction = checkForUpdatesAction;
-
-            GeneralSettingsConfig = settingsRepository.SettingsConfig;
-
-            // set the callback functions value to handle outgoing IPC message.
-            SendConfigMSG = ipcMSGCallBackFunc;
-            SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;
 
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
@@ -158,12 +137,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
             _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
-            _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
-            _quickAccessShortcut = GeneralSettingsConfig.QuickAccessShortcut;
-            if (_quickAccessShortcut != null)
-            {
-                _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
-            }
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -197,6 +170,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
 
             InitializeLanguages();
+        }
+
+        internal GeneralViewModel(
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            Action<Action> enqueue,
+            Func<string, int> ipcMSGCallBackFunc,
+            Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc,
+            Action checkForUpdatesAction,
+            Action hideBackupAndRestoreMessageAreaAction = null,
+            Action<int> doBackupAndRestoreDryRun = null,
+            Func<Task<string>> pickSingleFolderDialog = null)
+        {
+            ArgumentNullException.ThrowIfNull(settingsRepository);
+            ArgumentNullException.ThrowIfNull(checkForUpdatesAction);
+
+            RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
+            BackupConfigsEventHandler = new ButtonClickCommand(BackupConfigsClick);
+            SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
+            RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
+            RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
+            HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
+            DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
+            PickSingleFolderDialog = pickSingleFolderDialog;
+            SendConfigMSG = ipcMSGCallBackFunc;
+            SendRestartAsAdminConfigMSG = ipcMSGRestartAsAdminMSGCallBackFunc;
+            _checkForUpdatesAction = checkForUpdatesAction;
+            _settingsRepository = settingsRepository;
+            if (enqueue == null)
+            {
+                var dispatcher = GetDispatcherQueue();
+                enqueue = action => dispatcher?.TryEnqueue(() => action());
+            }
+
+            _enqueue = enqueue;
+            GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
+            SetQuickAccessShortcut(GeneralSettingsConfig.QuickAccessShortcut);
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
         }
 
         // Supported languages. Taken from Resources.wxs + default + en-US
@@ -532,17 +543,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (_quickAccessShortcut != value)
+                if (!_isDisposed && !ReferenceEquals(_quickAccessShortcut, value))
                 {
-                    if (_quickAccessShortcut != null)
+                    SetQuickAccessShortcut(value);
+                    if (_isDisposed)
                     {
-                        _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
-                    }
-
-                    _quickAccessShortcut = value;
-                    if (_quickAccessShortcut != null)
-                    {
-                        _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+                        return;
                     }
 
                     GeneralSettingsConfig.QuickAccessShortcut = value;
@@ -553,7 +559,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void QuickAccessShortcut_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            NotifyPropertyChanged(nameof(QuickAccessShortcut));
+            if (!_isDisposed && ReferenceEquals(sender, _quickAccessShortcut))
+            {
+                NotifyPropertyChanged(nameof(QuickAccessShortcut));
+            }
+        }
+
+        private void SetQuickAccessShortcut(HotkeySettings shortcut)
+        {
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+
+                // Conflict metadata is not serialized; an equivalent snapshot must keep its warning.
+                if (shortcut != null &&
+                    shortcut.Win == _quickAccessShortcut.Win &&
+                    shortcut.Ctrl == _quickAccessShortcut.Ctrl &&
+                    shortcut.Alt == _quickAccessShortcut.Alt &&
+                    shortcut.Shift == _quickAccessShortcut.Shift &&
+                    shortcut.Code == _quickAccessShortcut.Code)
+                {
+                    shortcut.HasConflict = _quickAccessShortcut.HasConflict;
+                    shortcut.ConflictDescription = _quickAccessShortcut.ConflictDescription;
+                    shortcut.IsSystemConflict = _quickAccessShortcut.IsSystemConflict;
+                    shortcut.IgnoreConflict = _quickAccessShortcut.IgnoreConflict;
+                }
+            }
+
+            _quickAccessShortcut = shortcut;
+            if (!_isDisposed && _quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+            }
         }
 
         public bool SomeUpdateSettingsAreGpoManaged
@@ -623,7 +660,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _includePrereleaseUpdates = value;
                     GeneralSettingsConfig.IncludePrereleaseUpdates = value;
                     NotifyPropertyChanged();
-                    _checkForUpdatesAction();
+                    _checkForUpdatesAction?.Invoke();
                 }
             }
         }
@@ -1043,8 +1080,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null, bool reDoBackupDryRun = true)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             // Notify UI of property change
             OnPropertyChanged(propertyName);
+
+            if (_isDisposed)
+            {
+                return;
+            }
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
@@ -1061,11 +1108,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private async void SelectSettingBackupDir()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             var currentDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             var newPath = await PickSingleFolderDialog();
 
-            if (!string.IsNullOrEmpty(newPath))
+            if (!_isDisposed && !string.IsNullOrEmpty(newPath))
             {
                 SettingsBackupAndRestoreDir = newPath;
                 NotifyAllBackupAndRestoreProperties();
@@ -1074,7 +1126,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void RefreshBackupStatusEventHandlerClick()
         {
-            DoBackupAndRestoreDryRun(0);
+            if (!_isDisposed)
+            {
+                DoBackupAndRestoreDryRun(0);
+            }
         }
 
         /// <summary>
@@ -1082,6 +1137,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void RestoreConfigsClick()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
@@ -1117,6 +1177,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void BackupConfigsClick()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtils.GetSettingsBackupAndRestoreDir();
 
             if (string.IsNullOrEmpty(settingsBackupAndRestoreDir))
@@ -1179,6 +1244,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void RestartElevated()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             GeneralSettingsConfig.CustomActionName = "restart_elevation";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -1195,6 +1265,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </remarks>
         public void Restart()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             GeneralSettingsConfig.CustomActionName = "restart_maintain_elevation";
 
             OutGoingGeneralSettings outsettings = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -1213,6 +1288,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </remarks>
         public void HideBackupAndRestoreMessageArea()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             _settingsBackupRestoreMessageVisible = false;
             NotifyAllBackupAndRestoreProperties();
         }
@@ -1263,6 +1343,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifyLanguageChanged()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             OutGoingLanguageSettings outsettings = new OutGoingLanguageSettings(Languages[_languagesIndex].Tag);
 
             SendConfigMSG(outsettings.ToString());
@@ -1346,13 +1431,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
-            _dispatcherQueue?.TryEnqueue(() =>
+            if (_isDisposed)
             {
-                GeneralSettingsConfig = newSettings;
+                return;
+            }
 
-                if (_enableQuickAccess != newSettings.EnableQuickAccess)
+            _enqueue(() =>
+            {
+                if (_isDisposed)
                 {
-                    _enableQuickAccess = newSettings.EnableQuickAccess;
+                    return;
+                }
+
+                GeneralSettingsConfig = _settingsRepository.SettingsConfig;
+                if (!ReferenceEquals(_quickAccessShortcut, GeneralSettingsConfig.QuickAccessShortcut))
+                {
+                    SetQuickAccessShortcut(GeneralSettingsConfig.QuickAccessShortcut);
+                    if (_isDisposed)
+                    {
+                        return;
+                    }
+
+                    OnPropertyChanged(nameof(QuickAccessShortcut));
+                }
+
+                if (!_isDisposed && _enableQuickAccess != GeneralSettingsConfig.EnableQuickAccess)
+                {
+                    _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
                     OnPropertyChanged(nameof(EnableQuickAccess));
                 }
             });
@@ -1360,12 +1465,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public override void Dispose()
         {
-            base.Dispose();
-            if (_settingsRepository != null)
+            if (_isDisposed)
             {
-                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+                return;
             }
 
+            _isDisposed = true;
+            base.Dispose();
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+            }
+
+            HideBackupAndRestoreMessageAreaAction = null;
+            DoBackupAndRestoreDryRun = null;
+            PickSingleFolderDialog = null;
+            _checkForUpdatesAction = null;
+            SendConfigMSG = null;
+            SendRestartAsAdminConfigMSG = null;
             GC.SuppressFinalize(this);
         }
 

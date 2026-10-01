@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
@@ -634,7 +635,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         internal void AddEnabledModuleChangeNotification(Action callBack)
         {
-            notifyEnabledChangedAction = callBack;
+            Interlocked.Exchange(ref notifyEnabledChangedAction, callBack);
+        }
+
+        internal bool TryAddEnabledModuleChangeNotification(Action callBack)
+        {
+            return Interlocked.CompareExchange(ref notifyEnabledChangedAction, callBack, null) == null;
+        }
+
+        internal bool RemoveEnabledModuleChangeNotification(Action callBack)
+        {
+            // The single callback may already belong to a newer view model.
+            return ReferenceEquals(Interlocked.CompareExchange(ref notifyEnabledChangedAction, null, callBack), callBack);
         }
     }
 }

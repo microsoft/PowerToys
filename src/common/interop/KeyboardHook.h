@@ -3,6 +3,11 @@
 #include <mutex>
 #include <unordered_set>
 
+namespace UnitTestsCommonUtils
+{
+    class KeyboardHookTests;
+}
+
 namespace winrt::PowerToys::Interop::implementation
 {
     struct KeyboardHook : KeyboardHookT<KeyboardHook>
@@ -14,6 +19,8 @@ namespace winrt::PowerToys::Interop::implementation
         void Close();
 
     private:
+        friend class ::UnitTestsCommonUtils::KeyboardHookTests;
+
         winrt::PowerToys::Interop::KeyboardEventCallback keyboardEventCallback;
         winrt::PowerToys::Interop::IsActiveCallback isActiveCallback;
         winrt::PowerToys::Interop::FilterKeyboardEvent filterKeyboardEvent;

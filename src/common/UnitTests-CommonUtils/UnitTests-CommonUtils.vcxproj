@@ -5,9 +5,13 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{8B5CFB38-CCBA-40A8-AD7A-89C57B070884}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>UnitTestsCommonUtils</RootNamespace>
+    <!-- Match the source-linked keyboard hook's IDL when generating its implementation headers. -->
+    <RootNamespace>PowerToys.Interop</RootNamespace>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
     <ProjectName>Common.Utils.UnitTests</ProjectName>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -58,6 +62,10 @@
     <ClCompile Include="MsiUtils.Tests.cpp" />
     <ClCompile Include="HttpClient.Tests.cpp" />
     <ClCompile Include="ComObjectFactory.Tests.cpp" />
+    <ClCompile Include="KeyboardHook.Tests.cpp" />
+    <ClCompile Include="..\interop\KeyboardHook.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="AppMutex.Tests.cpp" />
     <ClCompile Include="Elevation.Tests.cpp" />
     <ClCompile Include="Exec.Tests.cpp" />
@@ -77,6 +85,9 @@
     <ClCompile Include="..\interop\two_way_pipe_message_ipc.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\interop\KeyboardHook.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
