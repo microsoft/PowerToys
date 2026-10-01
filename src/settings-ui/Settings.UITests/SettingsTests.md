@@ -15,6 +15,16 @@
  - [x] turn on all the module, all module are now working
  - [] restart PT and verify that all module are still on in the settings page and they are actually working
 
+**Checkbox rendering after enabling a module ([#50623](https://github.com/microsoft/PowerToys/issues/50623)):**
+
+ - [ ] On FancyZones, Always On Top, Advanced Paste, and PowerDisplay, leave at least one checkbox unchecked and one checked. Disable and re-enable the module repeatedly. Unchecked boxes must stay empty; checked boxes must retain their checkmarks and values. Include FancyZones' descriptive "Allow zones to span across monitors" checkbox.
+ - [ ] Hover over an unchecked box and move away, then check and uncheck using both the mouse and Space key. Verify the native check/uncheck animations, focus indicator, and input still work before and after the module cycle.
+ - [ ] Disable during interaction, rapidly repeat the module cycle, and open a page whose module is initially disabled. Verify there is no persistent glyph or unexpected setting change.
+ - [ ] In Quick Accent, verify the language select-all checkbox has distinct checked, unchecked, and mixed appearances, and selection remains correct after disabling and re-enabling the module.
+ - [ ] Repeat in light, dark, system-selected, and high-contrast themes, including theme changes while enabled and disabled. Borders, labels, and checked/mixed glyphs must remain readable.
+ - [ ] Navigate away and back, reopen Settings, and repeat with system animations disabled and representative display scaling. The result must not depend on refreshing the page.
+ - [ ] Record the tested revision/configuration and capture a short recording of the module cycle and the enabled check/uncheck animation. Inspect rendered glyphs; checking the logical checkbox value alone does not detect this defect. Restore any settings changed during testing.
+
 **Quick access tray icon flyout:**
  - [] Use left click on the system tray icon and verify the flyout appears.
  - [] Try to launch a module from the launch screen in the flyout.
