@@ -71,20 +71,21 @@ public sealed partial class ContentPage : Page,
         base.OnNavigatedTo(e);
     }
 
-    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        base.OnNavigatingFrom(e);
+        base.OnNavigatedFrom(e);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
-        // Clean-up event listeners
+        var viewModel = ViewModel;
+        Bindings.StopTracking();
+        ViewModel = null;
+        CleanupHelper.ClearItemsSources(this);
+
         if (e.NavigationMode != NavigationMode.New)
         {
-            ViewModel?.SafeCleanup();
-            CleanupHelper.Cleanup(this);
+            _ = viewModel?.CleanupAsync();
         }
-
-        ViewModel = null;
     }
 
     // this comes in on Enter keypresses in the SearchBox

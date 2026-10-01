@@ -301,7 +301,7 @@ public class FileExplorerAddonsTests : UITestBase
 
         var handlerLog = WaitForProviderLog(
             handlerLogDirectory,
-            $"Starting {handlerName}.exe",
+            $"Starting PowerToys.{handlerName}.exe",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
             handlerLog,
@@ -353,7 +353,7 @@ public class FileExplorerAddonsTests : UITestBase
 
         var providerLog = WaitForProviderLog(
             providerLogDirectory,
-            $"Start {providerName}.exe",
+            $"Start PowerToys.{providerName}.exe",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
             providerLog,

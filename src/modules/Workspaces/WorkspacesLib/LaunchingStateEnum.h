@@ -8,4 +8,5 @@ enum class LaunchingState
 	LaunchedAndMoved,
 	Failed,
 	Canceled,
+	Skipped,
 };

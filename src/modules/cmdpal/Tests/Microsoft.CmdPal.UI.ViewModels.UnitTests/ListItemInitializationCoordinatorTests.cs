@@ -71,7 +71,7 @@ public sealed partial class ListItemInitializationCoordinatorTests
         internal CleanupFailureListItemViewModel(IListItem model, CommandContextItemViewModel cleanupItem)
             : base(model, new(TestContext), DefaultContextMenuFactory.Instance)
         {
-            UnsafeMoreCommands.Add(cleanupItem);
+            UnsafeContextItems.Add(cleanupItem);
         }
     }
 
