@@ -1,18 +1,15 @@
 #include "pch.h"
 #include "AudioSampleGenerator.h"
 #include "AudioSamplePacer.h"
+#include "AudioQueueLimits.h"
 #include "CaptureFrameWait.h"
 #include "LoopbackCapture.h"
+#include "ZoomItMessages.h"
 #include <chrono>
 #include <wrl/client.h>
 
 extern TCHAR g_MicrophoneDeviceId[];
 extern HWND g_hWndMain;
-
-#ifndef WM_USER_RECORDING_AUDIO_UNAVAILABLE
-// Consider moving these WM_USER defines (all from ZoomIt.h) to their own header
-#define WM_USER_RECORDING_AUDIO_UNAVAILABLE (WM_USER + 114)
-#endif
 
 namespace
 {
@@ -533,9 +530,8 @@ void AudioSampleGenerator::DrainLoopbackSamples(bool flushRemaining)
     }
 
     const auto captureError = m_loopbackCapture->GetCaptureError();
-    if (m_audioInputNode && !m_systemAudioUnavailable && FAILED(captureError))
+    if (m_audioInputNode && FAILED(captureError) && !m_systemAudioUnavailable.exchange(true))
     {
-        m_systemAudioUnavailable = true;
         OutputDebugStringW((L"System audio capture stopped: " +
             std::to_wstring(static_cast<unsigned>(captureError)) + L"\n").c_str());
         if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
@@ -644,8 +640,8 @@ void AudioSampleGenerator::QueueSample(winrt::MediaStreamSample const& sample)
 {
     m_samples.push_back(sample);
     m_queuedSampleBytes += sample.Buffer().Length();
-    const auto maxBytes = static_cast<size_t>(m_graphSampleRate) * m_graphChannels * sizeof(float) * 2;
-    while (m_samples.size() > 1 && (m_samples.size() > 300 || m_queuedSampleBytes > maxBytes))
+    const auto maxBytes = audio_queue::MaxEncodedFloatBytes(m_graphSampleRate, m_graphChannels);
+    while (m_samples.size() > 1 && m_queuedSampleBytes > maxBytes)
     {
         m_queuedSampleBytes -= m_samples.front().Buffer().Length();
         m_samples.pop_front();
@@ -768,7 +764,7 @@ void AudioSampleGenerator::AppendResampledLoopbackSamples(std::vector<float> con
     if (!resampledSamples.empty())
     {
         auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
-        const size_t maxBufferSize = static_cast<size_t>(m_graphSampleRate) * m_graphChannels;
+        const size_t maxBufferSize = audio_queue::MaxLiveSampleCount(m_graphSampleRate, m_graphChannels);
 
         if (m_loopbackBuffer.size() + resampledSamples.size() > maxBufferSize)
         {

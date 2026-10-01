@@ -1,8 +1,36 @@
 #include <CppUnitTest.h>
 
 #include "AudioSamplePacer.h"
+#include "AudioQueueLimits.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+namespace AudioQueueLimitTests
+{
+    TEST_CLASS(DurationTests)
+    {
+    public:
+        TEST_METHOD(EncodedQueueHoldsTwentySecondsAndLiveBufferOneSecondAt48kStereo)
+        {
+            constexpr uint32_t sampleRate = 48000;
+            constexpr uint32_t channels = 2;
+            constexpr size_t samplesPerSecond = static_cast<size_t>(sampleRate) * channels;
+
+            Assert::AreEqual(samplesPerSecond * 20 * sizeof(float), audio_queue::MaxEncodedFloatBytes(sampleRate, channels));
+            Assert::AreEqual(samplesPerSecond, audio_queue::MaxLiveSampleCount(sampleRate, channels));
+        }
+
+        TEST_METHOD(LimitsFollowDeviceRateAndChannelCount)
+        {
+            constexpr uint32_t sampleRate = 44100;
+            constexpr uint32_t channels = 6;
+            constexpr size_t samplesPerSecond = static_cast<size_t>(sampleRate) * channels;
+
+            Assert::AreEqual(samplesPerSecond * 20 * sizeof(float), audio_queue::MaxEncodedFloatBytes(sampleRate, channels));
+            Assert::AreEqual(samplesPerSecond, audio_queue::MaxLiveSampleCount(sampleRate, channels));
+        }
+    };
+}
 
 namespace AudioSamplePacerTests
 {

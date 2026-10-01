@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "LoopbackCapture.h"
+#include "AudioQueueLimits.h"
 #include <functiondiscoverykeys_devpkey.h>
 
 #pragma comment(lib, "ole32.lib")
@@ -360,7 +361,7 @@ void LoopbackCapture::EnqueueSamples(std::vector<float>&& samples)
     m_queuedSampleCount += samples.size();
     m_sampleQueue.push_back(std::move(samples));
 
-    const auto maxSamples = static_cast<size_t>(m_pwfx->nSamplesPerSec) * m_pwfx->nChannels;
+    const auto maxSamples = audio_queue::MaxLiveSampleCount(m_pwfx->nSamplesPerSec, m_pwfx->nChannels);
     while (m_sampleQueue.size() > 1 && m_queuedSampleCount > maxSamples)
     {
         m_queuedSampleCount -= m_sampleQueue.front().size();

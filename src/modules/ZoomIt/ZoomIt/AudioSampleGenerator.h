@@ -19,8 +19,8 @@ public:
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
     winrt::Windows::Media::MediaProperties::AudioEncodingProperties GetEncodingProperties();
     bool HasAudio() const { return m_audioInputNode != nullptr || m_loopbackCapture != nullptr; }
-    bool MicrophoneUnavailable() const { return m_microphoneUnavailable; }
-    bool SystemAudioUnavailable() const { return m_systemAudioUnavailable; }
+    bool MicrophoneUnavailable() const { return m_microphoneUnavailable.load(); }
+    bool SystemAudioUnavailable() const { return m_systemAudioUnavailable.load(); }
 
     // Takes ownership of a generator whose InitializeAsync may still be in
     // flight and disposes of it without blocking the calling thread.
@@ -95,8 +95,8 @@ private:
     size_t m_droppedAudioSamples = 0;
     std::atomic<bool> m_initialized = false;
     std::atomic<bool> m_started = false;
-    bool m_microphoneUnavailable = false;
-    bool m_systemAudioUnavailable = false;
+    std::atomic<bool> m_microphoneUnavailable{ false };
+    std::atomic<bool> m_systemAudioUnavailable{ false };
     bool m_captureMicrophone = true;
     bool m_captureSystemAudio = true;
     bool m_mixMicrophoneMono = false;

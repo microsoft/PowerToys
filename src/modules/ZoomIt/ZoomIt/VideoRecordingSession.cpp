@@ -13,6 +13,7 @@
 void OutputDebug(const TCHAR* format, ...);
 #include "CaptureFrameWait.h"
 #include "Utility.h"
+#include "ZoomItMessages.h"
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <winrt/Windows.Media.h>
 #include <cstdlib>
@@ -39,17 +40,6 @@ extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
 extern HWND g_hWndMain;
-
-// Must match the definition in ZoomIt.h.
-#ifndef WM_USER_RECORDING_STARTED
-#define WM_USER_RECORDING_STARTED (WM_USER + 111)
-#endif
-#ifndef WM_USER_RECORDING_NO_FRAMES
-#define WM_USER_RECORDING_NO_FRAMES (WM_USER + 112)
-#endif
-#ifndef WM_USER_RECORDING_AUDIO_UNAVAILABLE
-#define WM_USER_RECORDING_AUDIO_UNAVAILABLE (WM_USER + 114)
-#endif
 
 HWND hDlgTrimDialog = nullptr;
 

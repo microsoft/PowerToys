@@ -5423,7 +5423,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         UpdateVersionFont();
         return TRUE;
 
-    case WM_USER+100:
+    case WM_USER_TRAY_ACTIVATE:
         BringWindowToTop( hDlg );
         SetFocus( hDlg );
         SetForegroundWindow( hDlg );
