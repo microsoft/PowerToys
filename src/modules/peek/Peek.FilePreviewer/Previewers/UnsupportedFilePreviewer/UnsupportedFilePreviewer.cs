@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -103,6 +104,9 @@ namespace Peek.FilePreviewer.Previewers
             Preview.DateModified = item.DateModified?.ToString(CultureInfo.CurrentCulture);
             Preview.FileType = null;
             Preview.FileSize = null;
+            Preview.FolderContents = null;
+            Preview.FolderScanState = FolderScanState.Idle;
+            Preview.IsFolder = item is FolderItem;
             Preview.IconPreview = DefaultIcon;
         }
 
@@ -204,12 +208,22 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        internal virtual async Task LoadIconPreviewAsync(IFileSystemItem item, CancellationToken cancellationToken)
+        internal async Task LoadIconPreviewAsync(IFileSystemItem item, CancellationToken cancellationToken)
         {
-            Preview.IconPreview = await ThumbnailHelper.GetThumbnailAsync(item.Path, cancellationToken) ??
-                await ThumbnailHelper.GetIconAsync(item.Path, cancellationToken) ??
-                DefaultIcon;
+            var icon = await GetIconPreviewAsync(item, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Shell image decoding may finish after cancellation or rebinding. Do not
+            // publish an old request into the data object shared by the new item.
+            if (Item == item)
+            {
+                Preview.IconPreview = icon ?? DefaultIcon;
+            }
         }
+
+        internal virtual async Task<ImageSource?> GetIconPreviewAsync(IFileSystemItem item, CancellationToken cancellationToken) =>
+            await ThumbnailHelper.GetThumbnailAsync(item.Path, cancellationToken) ??
+            await ThumbnailHelper.GetIconAsync(item.Path, cancellationToken);
 
         internal virtual async Task<string> GetContentTypeAsync(IFileSystemItem item, CancellationToken cancellationToken) =>
             await item.GetContentTypeAsync();

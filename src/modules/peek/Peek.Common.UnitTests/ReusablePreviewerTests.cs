@@ -12,7 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Peek.Common.Helpers;
 using Peek.Common.Models;
+using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
 using Windows.Foundation;
 using Windows.Storage;
@@ -35,7 +37,7 @@ namespace Peek.Common.UnitTests
 
             public DateTime? DateModified { get; set; } = DateTime.Now;
 
-            public long FileSizeBytes { get; set; } = 1024;
+            public ulong FileSizeBytes { get; set; } = 1024;
 
             public string FileType { get; set; } = "JPEG Image";
 
@@ -86,7 +88,7 @@ namespace Peek.Common.UnitTests
         {
             public Func<IFileSystemItem, CancellationToken, Task<string>>? ContentTypeResolver { get; set; }
 
-            public Func<IFileSystemItem, CancellationToken, Task>? IconLoader { get; set; }
+            public Func<IFileSystemItem, CancellationToken, Task<ImageSource?>>? IconResolver { get; set; }
 
             public TestableUnsupportedFilePreviewer(IFileSystemItem item)
                 : base(item)
@@ -98,10 +100,10 @@ namespace Peek.Common.UnitTests
                     ? ContentTypeResolver(item, cancellationToken)
                     : base.GetContentTypeAsync(item, cancellationToken);
 
-            internal override Task LoadIconPreviewAsync(IFileSystemItem item, CancellationToken cancellationToken) =>
-                IconLoader is not null
-                    ? IconLoader(item, cancellationToken)
-                    : Task.CompletedTask; // Skip disk shell icon lookup in unit tests
+            internal override Task<ImageSource?> GetIconPreviewAsync(IFileSystemItem item, CancellationToken cancellationToken) =>
+                IconResolver is not null
+                    ? IconResolver(item, cancellationToken)
+                    : Task.FromResult<ImageSource?>(null);
         }
 
         // UnsupportedFilePreviewer out-of-order completion tests
@@ -119,6 +121,15 @@ namespace Peek.Common.UnitTests
                 ContentTypeResolver = (item, cancellationToken) => item == itemA
                     ? tcsTypeA.Task // Item A's type resolution is delayed.
                     : Task.FromResult("Type B"),
+            };
+
+            var sizeLoaded = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            previewer.Preview.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(UnsupportedFilePreviewData.FileSize))
+                {
+                    sizeLoaded.TrySetResult(previewer.Preview.FileSize);
+                }
             };
 
             var ctsA = new CancellationTokenSource();
@@ -141,6 +152,81 @@ namespace Peek.Common.UnitTests
             // Stale Item A's type resolution should not overwrite Item B's metadata.
             Assert.AreEqual("itemB.abc", previewer.Preview.FileName);
             Assert.AreEqual("Type B", previewer.Preview.FileType);
+            Assert.AreEqual(PreviewState.Loaded, previewer.State);
+            Assert.AreEqual(1024UL, ((IFileSystemItem)itemB).FileSizeBytes);
+            Assert.AreEqual(
+                ReadableStringHelper.BytesToReadableString(1024),
+                await sizeLoaded.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task UnsupportedFilePreviewer_OldIconCompletesAfterItemB_DoesNotOverwriteIcon(bool cancelOldRequest)
+        {
+            var itemA = new MockFileSystemItem { Path = @"C:\test\itemA.xyz" };
+            var itemB = new MockFileSystemItem { Path = @"C:\test\itemB.xyz" };
+            var iconA = CreateDummyImageSource();
+            var iconB = CreateDummyImageSource();
+            var iconLoadedA = new TaskCompletionSource<ImageSource?>();
+            var previewer = new TestableUnsupportedFilePreviewer(itemA)
+            {
+                IconResolver = (item, token) => item == itemA
+                    ? iconLoadedA.Task
+                    : Task.FromResult<ImageSource?>(iconB),
+            };
+
+            using var ctsA = new CancellationTokenSource();
+            var taskA = previewer.LoadIconPreviewAsync(itemA, ctsA.Token);
+            if (cancelOldRequest)
+            {
+                ctsA.Cancel();
+            }
+
+            previewer.Rebind(itemB, 1.0);
+            await previewer.LoadIconPreviewAsync(itemB, CancellationToken.None);
+            Assert.AreSame(iconB, previewer.Preview.IconPreview);
+
+            iconLoadedA.SetResult(iconA);
+            if (cancelOldRequest)
+            {
+                await Assert.ThrowsExactlyAsync<OperationCanceledException>(() => taskA);
+            }
+            else
+            {
+                await taskA;
+            }
+
+            Assert.AreSame(iconB, previewer.Preview.IconPreview);
+        }
+
+        [TestMethod]
+        [DataRow(FolderScanState.Scanning)]
+        [DataRow(FolderScanState.PartialError)]
+        [DataRow(FolderScanState.Completed)]
+        public void UnsupportedFilePreviewer_Rebind_ResetsFolderMetadataBeforeLoading(FolderScanState previousState)
+        {
+            var folderA = new FolderItem(@"C:\test\folderA", "folderA", @"C:\test\folderA");
+            var folderB = new FolderItem(@"C:\test\folderB", "folderB", @"C:\test\folderB");
+            var previewer = new UnsupportedFilePreviewer(folderA) { State = PreviewState.Loaded };
+            previewer.Preview.IsFolder = true;
+            previewer.Preview.FolderContents = "Old folder counts";
+            previewer.Preview.FolderScanState = previousState;
+            previewer.Preview.FileSize = "100 MB";
+
+            previewer.Rebind(folderB, 1.0);
+
+            Assert.AreEqual("folderB", previewer.Preview.FileName);
+            Assert.IsTrue(previewer.Preview.IsFolder);
+            Assert.IsNull(previewer.Preview.FolderContents);
+            Assert.IsNull(previewer.Preview.FileSize);
+            Assert.AreEqual(FolderScanState.Idle, previewer.Preview.FolderScanState);
+            Assert.IsFalse(previewer.Preview.IsScanning);
+            Assert.IsFalse(previewer.Preview.IsError);
+            Assert.AreEqual(PreviewState.Loaded, previewer.State);
+
+            previewer.Rebind(new MockFileSystemItem(), 1.0);
+            Assert.IsFalse(previewer.Preview.IsFolder);
         }
 
         // ImagePreviewer out-of-order thumbnail test.
@@ -178,6 +264,7 @@ namespace Peek.Common.UnitTests
             // Complete B's load (succeeds instantly).
             await previewer.LoadPreviewAsync(CancellationToken.None);
             var previewB = previewer.Preview;
+            var frameB = previewer.Frame;
 
             // Now manually complete the delayed thumbnail load for the cancelled itemA.
             tcsThumbnailA.SetResult(dummyImageA);
@@ -195,6 +282,7 @@ namespace Peek.Common.UnitTests
                 previewB,
                 previewer.Preview,
                 "Delayed thumbnail from cancelled Item A must not overwrite the preview for Item B.");
+            Assert.AreSame(frameB, previewer.Frame);
         }
 
         // ImagePreviewer out-of-order size test.
@@ -248,22 +336,25 @@ namespace Peek.Common.UnitTests
 
         // ImagePreviewer rebind and state preservation test.
         [TestMethod]
-        public void ImagePreviewer_Rebind_TransitionsToLoading_AndPreservesImageSize()
+        public async Task ImagePreviewer_Rebind_TransitionsToLoading_AndPreservesImageSize()
         {
             var itemASize = new Size(800, 600);
 
-            // Rebinding a loaded image immediately enters Loading state and keeps old Preview and ImageSize.
+            // Rebinding retains the committed frame while its replacement loads.
             var itemA = new MockFileSystemItem { Path = @"C:\test\imageA.jpg", Name = "imageA.jpg" };
             var itemB = new MockFileSystemItem { Path = @"C:\test\imageB.jpg", Name = "imageB.jpg" };
 
-            var previewer = new ImagePreviewer(itemA)
+            var previewer = new TestableImagePreviewer(itemA)
             {
-                State = PreviewState.Loaded,
-                ImageSize = itemASize,
+                SizeCalculator = (item, token) => Task.FromResult<Size?>(itemASize),
+                FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(CreateDummyImageSource()),
             };
 
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+            var frame = previewer.Frame;
             previewer.Rebind(itemB, scalingFactor: 1.0);
 
+            Assert.AreSame(frame, previewer.Frame);
             Assert.AreEqual(
                 PreviewState.Loading,
                 previewer.State,
@@ -326,52 +417,131 @@ namespace Peek.Common.UnitTests
 
             var previewer = new TestableImagePreviewer(itemA)
             {
-                State = PreviewState.Loaded,
-                ImageSize = new Size(1920, 1080),
-                SizeCalculator = (item, token) => Task.FromResult<Size?>(new Size(800, 600)),
+                SizeCalculator = (item, token) => Task.FromResult<Size?>(item == itemA ? new Size(1920, 1080) : new Size(800, 600)),
                 FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(CreateDummyImageSource()),
             };
+
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+            var frame = previewer.Frame;
 
             // Rebind to a new item, which should transition the state to Loading.
             previewer.Rebind(itemB, scalingFactor: 1.0);
 
             var previewSize = await previewer.GetPreviewSizeAsync(CancellationToken.None);
 
+            Assert.AreSame(frame, previewer.Frame);
+            Assert.AreEqual(new Size(800, 600), previewSize.MonitorSize);
             Assert.AreEqual(
                 new Size(1920, 1080),
                 previewer.ImageSize,
-                "GetPreviewSizeAsync should return the preserved ImageSize when state is Loading.");
+                "GetPreviewSizeAsync must not replace the visible frame's dimensions with the next item's size.");
         }
 
         [TestMethod]
-        public async Task ImagePreviewer_GetPreviewSizeAsync_UpdatesImageSizeImmediately_WhenStateIsLoaded()
+        public async Task ImagePreviewer_GetPreviewSizeAsync_PreservesCommittedFrame_WhenStateIsLoaded()
         {
             var newSize = new Size(1200, 900);
 
-            // Simulate moving window from one display to another (DPI change) while
-            // displaying the same image.
+            // A later size calculation must not rewrite size data paired with the
+            // displayed source.
             var itemA = new MockFileSystemItem { Path = @"C:\test\imageA.jpg" };
 
             var previewer = new TestableImagePreviewer(itemA)
             {
-                State = PreviewState.Loaded,
-                ImageSize = new Size(800, 600),
-                SizeCalculator = (item, token) => Task.FromResult<Size?>(newSize), // Simulate a new size calculation
+                SizeCalculator = (item, token) => Task.FromResult<Size?>(new Size(800, 600)),
                 FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(CreateDummyImageSource()),
             };
 
-            // DPI change simulation.
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+            var frame = previewer.Frame;
+            previewer.SizeCalculator = (item, token) => Task.FromResult<Size?>(newSize);
+
             var previewSize = await previewer.GetPreviewSizeAsync(CancellationToken.None);
 
+            Assert.AreSame(frame, previewer.Frame);
+            Assert.AreEqual(newSize, previewSize.MonitorSize);
             Assert.AreEqual(
-                newSize,
+                new Size(800, 600),
                 previewer.ImageSize,
-                "ImageSize should be updated immediately when state is Loaded.");
+                "Window sizing must not rewrite the committed source's intrinsic dimensions.");
+        }
+
+        [TestMethod]
+        public async Task ImagePreviewer_FrameNotifications_ExposeCoherentQueryProperties()
+        {
+            var itemA = new MockFileSystemItem();
+            var itemB = new MockFileSystemItem();
+            var sourceA = CreateDummyImageSource();
+            var sourceB = CreateDummyImageSource();
+            var sizeA = new Size(800, 600);
+            var sizeB = new Size(32, 32);
+            var previewer = new TestableImagePreviewer(itemA)
+            {
+                SizeCalculator = (item, token) => Task.FromResult<Size?>(item == itemA ? sizeA : sizeB),
+                FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(item == itemA ? sourceA : sourceB),
+            };
+
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+            var oldFrame = previewer.Frame;
+            var notifications = 0;
+            previewer.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName is nameof(ImagePreviewer.Frame) or nameof(ImagePreviewer.Preview) or nameof(ImagePreviewer.ImageSize))
+                {
+                    notifications++;
+                    Assert.IsNotNull(previewer.Frame);
+                    Assert.AreSame(sourceB, previewer.Frame.Source);
+                    Assert.AreEqual(sizeB, previewer.Frame.PixelSize);
+                    Assert.AreSame(previewer.Frame.Source, previewer.Preview);
+                    Assert.AreEqual(previewer.Frame.PixelSize, previewer.ImageSize);
+                }
+            };
+
+            previewer.Rebind(itemB, 1.0);
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+
+            Assert.AreEqual(3, notifications);
+            Assert.IsNotNull(oldFrame);
+            Assert.AreSame(sourceA, oldFrame.Source);
+            Assert.AreEqual(sizeA, oldFrame.PixelSize);
+        }
+
+        [TestMethod]
+        public async Task ImagePreviewer_FailedReplacement_ClearsFrameAndQueryProperties()
+        {
+            var previewer = new TestableImagePreviewer(new MockFileSystemItem())
+            {
+                SizeCalculator = (item, token) => Task.FromResult<Size?>(null),
+                FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(CreateDummyImageSource()),
+                ThumbnailHandler = (item, token) => Task.FromResult<ImageSource?>(null),
+            };
+
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+            Assert.IsNotNull(previewer.Frame);
+            Assert.IsNull(previewer.ImageSize);
+            previewer.Rebind(new MockFileSystemItem(), 1.0);
+            previewer.FullQualityHandler = (item, token) => Task.FromResult<ImageSource?>(null);
+            previewer.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName is nameof(ImagePreviewer.Frame) or nameof(ImagePreviewer.Preview) or nameof(ImagePreviewer.ImageSize))
+                {
+                    Assert.IsNull(previewer.Frame);
+                    Assert.IsNull(previewer.Preview);
+                    Assert.IsNull(previewer.ImageSize);
+                }
+            };
+
+            await previewer.LoadPreviewAsync(CancellationToken.None);
+
+            Assert.IsNull(previewer.Frame);
+            Assert.IsNull(previewer.Preview);
+            Assert.IsNull(previewer.ImageSize);
+            Assert.AreEqual(PreviewState.Error, previewer.State);
         }
 
         // UnsupportedFilePreviewer race condition test.
         [TestMethod]
-        public async Task UnsupportedFilePreviewer_Rebind_ClearsAsyncPropertiesImmediately()
+        public void UnsupportedFilePreviewer_Rebind_ClearsAsyncPropertiesImmediately()
         {
             DateTime updatedDateModified = new(2024, 4, 4);
 

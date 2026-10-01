@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 using ManagedCommon;
 using Microsoft.UI.Xaml;
+using Peek.UI.Helpers;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -66,7 +67,11 @@ namespace Peek.UI.Extensions
             var left = cx - (w / 2);
             var top = cy - (h / 2);
 
-            SetWindowPosOrThrow(hwndToCenter, default(HWND), left, top, w, h, SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
+            var currentDpi = PInvoke_PeekUI.GetDpiForWindow(hwndToCenter);
+            WindowPlacementHelper.Apply(
+                currentDpi != dpi,
+                () => SetWindowPosOrThrow(hwndToCenter, default(HWND), left, top, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE),
+                () => SetWindowPosOrThrow(hwndToCenter, default(HWND), left, top, w, h, SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE));
         }
 
         private static void SetWindowPosOrThrow(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, SET_WINDOW_POS_FLAGS uFlags)

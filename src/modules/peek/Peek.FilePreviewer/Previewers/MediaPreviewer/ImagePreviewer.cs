@@ -27,8 +27,8 @@ using Windows.Graphics.Imaging;
 namespace Peek.FilePreviewer.Previewers
 {
     /// <summary>
-    /// Previews image files, resolving their intrinsic dimensions and committing the
-    /// decoded source, size and state together.
+    /// Previews image files and publishes decoded sources with their intrinsic dimensions
+    /// as coherent frame snapshots before transitioning to the loaded state.
     /// </summary>
     /// <remarks>
     /// All sizes exposed by this class (for example <see cref="ImageSize"/> and the
@@ -41,14 +41,10 @@ namespace Peek.FilePreviewer.Previewers
     /// </remarks>
     public partial class ImagePreviewer : ObservableObject, IImagePreviewer, IReusablePreviewer
     {
-        [ObservableProperty]
-        private ImageSource? preview;
+        private ImagePreviewFrame? _frame;
 
         [ObservableProperty]
         private PreviewState state = PreviewState.Uninitialized;
-
-        [ObservableProperty]
-        private Size? imageSize;
 
         [ObservableProperty]
         private double scalingFactor = 1.0;
@@ -69,6 +65,26 @@ namespace Peek.FilePreviewer.Previewers
 
         public IFileSystemItem Item { get; private set; }
 
+        /// <inheritdoc/>
+        public ImagePreviewFrame? Frame
+        {
+            get => _frame;
+            private set
+            {
+                if (SetProperty(ref _frame, value, ReferenceEqualityComparer.Instance))
+                {
+                    OnPropertyChanged(nameof(Preview));
+                    OnPropertyChanged(nameof(ImageSize));
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public ImageSource? Preview => Frame?.Source;
+
+        /// <inheritdoc/>
+        public Size? ImageSize => Frame?.PixelSize;
+
         private DispatcherQueue? Dispatcher { get; }
 
         public void Rebind(IFileSystemItem item, double scalingFactor)
@@ -76,8 +92,8 @@ namespace Peek.FilePreviewer.Previewers
             Item = item;
             ScalingFactor = scalingFactor;
 
-            // Transition to Loading so GetPreviewAsync for the new item does not
-            // prematurely update ImageSize while the old item is visible.
+            // Keep the committed frame while the replacement loads so both query
+            // properties continue to describe the image still visible to the user.
             State = PreviewState.Loading;
         }
 
@@ -115,8 +131,8 @@ namespace Peek.FilePreviewer.Previewers
                 : null;
 
         /// <summary>
-        /// Calculates preview dimensions. If the item is already loaded and active on-
-        /// screen (e.g. DPI/ScalingFactor changed), ImageSize is updated immediately.
+        /// Calculates the target item's requested window dimensions without changing
+        /// the committed frame's intrinsic pixel dimensions.
         /// </summary>
         public async Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
@@ -126,21 +142,12 @@ namespace Peek.FilePreviewer.Previewers
             Size? size = await CalculateImageSizeAsync(targetItem, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (Item == targetItem)
-            {
-                // Update ImageSize immediately if the item is loaded.
-                if (State == PreviewState.Loaded)
-                {
-                    ImageSize = size;
-                }
-            }
-
             return new PreviewSize { MonitorSize = size };
         }
 
         /// <summary>
-        /// Decodes the target item and commits <see cref="Preview"/>,
-        /// <see cref="ImageSize"/> and <see cref="State"/> together.
+        /// Decodes the target item and commits its source and dimensions as one
+        /// <see cref="Frame"/> snapshot before updating <see cref="State"/>.
         /// </summary>
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
@@ -161,19 +168,17 @@ namespace Peek.FilePreviewer.Previewers
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Commit on UI thread.
+            // Only publish if the previewer still targets the item whose frame was loaded.
             if (Item == targetItem)
             {
                 if (loadedSource is not null)
                 {
-                    ImageSize = resolvedSize;
-                    Preview = loadedSource;
+                    Frame = new ImagePreviewFrame(loadedSource, resolvedSize);
                     State = PreviewState.Loaded;
                 }
                 else
                 {
-                    Preview = null;
-                    ImageSize = null;
+                    Frame = null;
                     State = PreviewState.Error;
                 }
             }

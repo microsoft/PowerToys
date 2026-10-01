@@ -417,6 +417,8 @@ namespace Peek.FilePreviewer
 
         private void OnScalingFactorPropertyChanged()
         {
+            ImagePreview.ScalingFactor = ScalingFactor;
+
             if (Previewer is IImagePreviewer imagePreviewer)
             {
                 imagePreviewer.ScalingFactor = ScalingFactor;
@@ -442,20 +444,17 @@ namespace Peek.FilePreviewer
             var previewSize = await Previewer.GetPreviewSizeAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            await Previewer.LoadPreviewAsync(cancellationToken);
+            await imagePreviewer.LoadPreviewAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            ImagePreview.PrepareNextImage(imagePreviewer.Preview);
+            ImagePreview.ScalingFactor = ScalingFactor;
+            ImagePreview.PrepareNextImage(imagePreviewer.Frame);
 
             PreviewSizeChanged?.Invoke(this, new PreviewSizeChangedArgs(previewSize));
 
-            // Present the staged frame. NB: even with double-buffering, navigation that
-            // also resizes or repositions the window can briefly (1-2 frames) show the
-            // previous image: the window move goes through Win32/DWM while this swap is
-            // WinUI composition, and there is no way to guarantee both commit on the same
-            // frame. A settle-wait heuristic was tried and removed as unreliable; a real
-            // fix needs either WinUI-native window resize/reposition or a custom swap
-            // chain we control.
+            // The snapshot keeps source and bounds paired, but window moves and resizing
+            // use Win32/DWM independently of this WinUI swap. The previous frame may
+            // briefly remain visible while the window geometry changes.
             ImagePreview.InstantSwap();
         }
 

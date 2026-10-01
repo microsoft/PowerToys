@@ -29,11 +29,7 @@ namespace Peek.UI
         /// </summary>
         private const int NavigationThrottleDelayMs = 100;
 
-        /// <summary>
-        /// The direction of the most recent navigation request, buffered while the
-        /// pacing timer is running. <see langword="null"/> when no navigation is pending.
-        /// </summary>
-        private NavigationDirection? _pendingNavigationDirection;
+        private readonly NavigationPacer _navigationPacer;
 
         /// <summary>
         /// The delay in milliseconds before a delete operation begins, to allow for navigation
@@ -115,12 +111,6 @@ namespace Peek.UI
         [ObservableProperty]
         private bool _isErrorVisible = false;
 
-        private enum NavigationDirection
-        {
-            Forwards,
-            Backwards,
-        }
-
         /// <summary>
         /// The current direction in which the user is moving through the items collection.
         /// Determines how we act when a file is deleted.
@@ -129,15 +119,14 @@ namespace Peek.UI
 
         public NeighboringItemsQuery NeighboringItemsQuery { get; }
 
-        private readonly DispatcherTimer _navigationPacerTimer = new();
-
         public MainWindowViewModel(NeighboringItemsQuery query)
         {
             NeighboringItemsQuery = query;
             WindowTitle = _defaultWindowTitle;
 
-            _navigationPacerTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
-            _navigationPacerTimer.Tick += NavigationPacerTimer_Tick;
+            _navigationPacer = new NavigationPacer(
+                new DispatcherNavigationPacerTimer(TimeSpan.FromMilliseconds(NavigationThrottleDelayMs)),
+                direction => Navigate(direction));
         }
 
         public void Initialize(SelectedItem selectedItem)
@@ -185,8 +174,7 @@ namespace Peek.UI
 
         public void Uninitialize()
         {
-            _navigationPacerTimer.Stop();
-            _pendingNavigationDirection = null;
+            _navigationPacer.CancelPending();
             _currentIndex = DisplayIndex = 0;
             CurrentItem = null;
             _deletedItemIndexes.Clear();
@@ -200,6 +188,10 @@ namespace Peek.UI
 
         public void AttemptNextNavigation() => RequestNavigate(NavigationDirection.Forwards);
 
+        public void SuspendNavigation() => _navigationPacer.Suspend();
+
+        public void ResumeNavigation() => _navigationPacer.Resume();
+
         private void RequestNavigate(NavigationDirection direction)
         {
             if (_isFromCli || Items is null || Items.Count == _deletedItemIndexes.Count)
@@ -207,32 +199,7 @@ namespace Peek.UI
                 return;
             }
 
-            if (!_navigationPacerTimer.IsEnabled)
-            {
-                // First press or idle: Navigate immediately and start the cooldown timer.
-                Navigate(direction);
-                _navigationPacerTimer.Start();
-            }
-            else
-            {
-                // Coalesce rapid repeats/taps to a single pending navigation step.
-                _pendingNavigationDirection = direction;
-            }
-        }
-
-        private void NavigationPacerTimer_Tick(object? sender, object e)
-        {
-            if (_pendingNavigationDirection.HasValue)
-            {
-                var direction = _pendingNavigationDirection.Value;
-                _pendingNavigationDirection = null;
-
-                Navigate(direction);
-            }
-            else
-            {
-                _navigationPacerTimer.Stop();
-            }
+            _navigationPacer.Request(direction);
         }
 
         private void Navigate(NavigationDirection direction, bool isAfterDelete = false)
@@ -292,8 +259,7 @@ namespace Peek.UI
             }
 
             // Cancel any queued key-repeat navigation, as delete takes immediate priority.
-            _pendingNavigationDirection = null;
-            _navigationPacerTimer.Stop();
+            _navigationPacer.CancelPending();
 
             // Mark the item as deleted and update the displayed item count.
             int index = _currentIndex;
