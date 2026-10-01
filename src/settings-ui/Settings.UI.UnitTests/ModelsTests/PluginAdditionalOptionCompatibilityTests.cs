@@ -13,6 +13,8 @@ namespace CommonLibTest
     [TestClass]
     public class PluginAdditionalOptionCompatibilityTests
     {
+        private static readonly string[] MultilineLines = ["first", "second"];
+
         [TestMethod]
         [DataRow(nameof(PluginAdditionalOption.ComboBoxItems))]
         [DataRow(nameof(PluginAdditionalOption.TextValueAsMultilineList))]
@@ -38,7 +40,7 @@ namespace CommonLibTest
 
             Assert.AreEqual("First", option.ComboBoxItems[0].Key);
             Assert.AreEqual("first\rsecond", option.TextValue);
-            CollectionAssert.AreEqual(new[] { "first", "second" }, option.TextValueAsMultilineList);
+            CollectionAssert.AreEqual(MultilineLines, option.TextValueAsMultilineList);
             Assert.AreEqual("legacy-plugin", option.ComboBoxOptions[0]);
         }
     }
