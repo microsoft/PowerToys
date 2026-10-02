@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <returns>Theme that should be used.</returns>
         public static string GetTheme()
         {
-            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            return ManagedCommon.ThemeHelpers.GetWindowsBaseColor().ToLowerInvariant();
         }
 
         private static readonly SettingsUtils ModuleSettings = SettingsUtils.Default;

@@ -38,7 +38,7 @@ Each PowerToys utility is defined by a module interface (DLL) that provides a st
 - CPP Win RT (used by most utilities)
 - Common utilities in `common` folder for reuse across modules
 - Interop library for C++/C# communication (converted to C++ Win RT)
-- Common.UI library has WPF and WinForms dependencies
+- Common.UI library is UI-framework neutral (no WPF, WinForms or WinUI dependencies), so WPF, WinForms and WinUI 3 apps can all reference it without inheriting another UI stack
 
 ## Resource Management
 

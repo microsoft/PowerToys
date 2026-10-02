@@ -26,6 +26,7 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
   </ItemGroup>
 </Project>

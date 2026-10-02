@@ -5,14 +5,22 @@
 using System;
 using System.Threading;
 
-using Dispatcher = System.Windows.Threading.Dispatcher;
-
 namespace Common.UI
 {
     public static class NativeEventWaiter
     {
-        public static void WaitForEventLoop(string eventName, Action callback, Dispatcher dispatcher, CancellationToken cancel)
+        /// <summary>
+        /// Starts a thread that waits on the auto-reset named event <paramref name="eventName"/> and, each time it is
+        /// signaled, posts <paramref name="callback"/> to <paramref name="synchronizationContext"/>, until
+        /// <paramref name="cancel"/> is canceled. Pass the UI thread's context to run the callback on the UI thread,
+        /// e.g. a DispatcherSynchronizationContext (WPF), WindowsFormsSynchronizationContext (WinForms) or
+        /// DispatcherQueueSynchronizationContext (WinUI).
+        /// </summary>
+        public static void WaitForEventLoop(string eventName, Action callback, SynchronizationContext synchronizationContext, CancellationToken cancel)
         {
+            ArgumentNullException.ThrowIfNull(callback);
+            ArgumentNullException.ThrowIfNull(synchronizationContext);
+
             new Thread(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
@@ -20,7 +28,7 @@ namespace Common.UI
                 {
                     if (WaitHandle.WaitAny(new WaitHandle[] { cancel.WaitHandle, eventHandle }) == 1)
                     {
-                        dispatcher.BeginInvoke(callback);
+                        synchronizationContext.Post(_ => callback(), null);
                     }
                     else
                     {
