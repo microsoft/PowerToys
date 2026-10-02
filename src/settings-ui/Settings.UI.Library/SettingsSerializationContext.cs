@@ -58,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(FileLocksmithSettings))]
     [JsonSerializable(typeof(FindMyMouseSettings))]
     [JsonSerializable(typeof(HostsSettings))]
+    [JsonSerializable(typeof(TextExpanderSettings))]
     [JsonSerializable(typeof(ImageResizerSettings))]
     [JsonSerializable(typeof(KeyboardManagerSettings))]
     [JsonSerializable(typeof(LightSwitchSettings))]

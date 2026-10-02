@@ -148,6 +148,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredQuickAccentEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredTextExpanderEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredTextExpanderEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredRegistryPreviewEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRegistryPreviewEnabledValue());

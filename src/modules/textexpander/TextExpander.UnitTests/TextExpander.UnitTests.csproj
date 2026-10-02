@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <AssemblyName>PowerToys.TextExpander.UnitTests</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\TextExpander.UnitTests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TextExpander\TextExpander.csproj" />
+  </ItemGroup>
+</Project>

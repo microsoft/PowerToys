@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -42,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerRename: return GPOWrapper.GetConfiguredPowerRenameEnabledValue();
                 case ModuleType.PowerLauncher: return GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
                 case ModuleType.PowerAccent: return GPOWrapper.GetConfiguredQuickAccentEnabledValue();
+                case ModuleType.TextExpander: return GPOWrapper.GetConfiguredTextExpanderEnabledValue();
                 case ModuleType.Workspaces: return GPOWrapper.GetConfiguredWorkspacesEnabledValue();
                 case ModuleType.RegistryPreview: return GPOWrapper.GetConfiguredRegistryPreviewEnabledValue();
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
@@ -85,6 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.PowerRename => typeof(PowerRenamePage),
                 ModuleType.PowerLauncher => typeof(PowerLauncherPage),
                 ModuleType.PowerAccent => typeof(PowerAccentPage),
+                ModuleType.TextExpander => typeof(TextExpanderPage),
                 ModuleType.Workspaces => typeof(WorkspacesPage),
                 ModuleType.RegistryPreview => typeof(RegistryPreviewPage),
                 ModuleType.MeasureTool => typeof(MeasureToolPage),

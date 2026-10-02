@@ -1099,7 +1099,21 @@
     </Project>
     <Project Path="src/modules/peek/peek/peek.vcxproj" Id="a1425b53-3d61-4679-8623-e64a0d3d0a48" />
   </Folder>
-  <Folder Name="/modules/PowerAccent/">
+  <Folder Name="/modules/TextExpander/">
+    <Project Path="src/modules/textexpander/TextExpander/TextExpander.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.UnitTests/TextExpander.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpanderModuleInterface/TextExpanderModuleInterface.vcxproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+    <Folder Name="/modules/PowerAccent/">
     <Project Path="src/modules/poweraccent/PowerAccent.Common.UnitTests/PowerAccent.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

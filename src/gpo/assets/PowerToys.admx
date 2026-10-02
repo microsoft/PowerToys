@@ -32,6 +32,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_99_0" displayName="$(string.SUPPORTED_POWERTOYS_0_99_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_102_0" displayName="$(string.SUPPORTED_POWERTOYS_0_102_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -499,6 +500,16 @@
     <policy name="ConfigureEnabledUtilityQuickAccent" class="Both" displayName="$(string.ConfigureEnabledUtilityQuickAccent)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityQuickAccent">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityTextExpander" class="Both" displayName="$(string.ConfigureEnabledUtilityTextExpander)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityTextExpander">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_102_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

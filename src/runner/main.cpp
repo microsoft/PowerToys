@@ -271,6 +271,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.AutoHideCursor.dll",
             L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
+            L"PowerToys.TextExpanderModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
             L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
