@@ -293,12 +293,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
         _quickAccessShelfChangeOrderDragCaption = ResourceLoaderInstance.GetString("QuickAccessShelfChangeOrderDragCaption");
-
-        if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
-        {
-            _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
-            _dockWindowManager?.ShowDocks();
-        }
     }
 
     public void Receive(NavigateBackMessage message)
