@@ -53,6 +53,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_RightDragTitleBar" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.RightDragTitleBar, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_DoNotActivateOnGameMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

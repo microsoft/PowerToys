@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DoNotActivateOnGameMode = new BoolProperty(true);
             ShowGeometry = new BoolProperty(false);
             UseAltResize = new BoolProperty(true);
+            RightDragTitleBar = new BoolProperty(true);
             ExcludedApps = new StringProperty();
             ExcludedAppsForModifier = new StringProperty();
             ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
@@ -30,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("useAltResize")]
         public BoolProperty UseAltResize { get; set; }
+
+        [JsonPropertyName("rightDragTitleBar")]
+        public BoolProperty RightDragTitleBar { get; set; }
 
         [JsonPropertyName("doNotActivateOnGameMode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }
