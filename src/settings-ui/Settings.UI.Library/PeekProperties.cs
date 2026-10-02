@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ConfirmFileDelete = new BoolProperty(true);
             EnableSpaceToActivate = new BoolProperty(true); // Toggle is ON by default for new users. No impact on existing users.
             ShowFilePreviewTooltip = new BoolProperty(true);
+            AudioVolume = new DoubleProperty(1.0);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -40,6 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty EnableSpaceToActivate { get; set; }
 
         public BoolProperty ShowFilePreviewTooltip { get; set; }
+
+        [CmdConfigureIgnore]
+        public DoubleProperty AudioVolume { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PeekProperties);
     }

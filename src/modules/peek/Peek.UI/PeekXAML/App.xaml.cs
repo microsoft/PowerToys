@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Peek.Common;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers;
@@ -42,6 +43,7 @@ namespace Peek.UI
         private bool _disposed;
         private SelectedItem? _selectedItem;
         private bool _launchedFromCli;
+        private AudioSessionVolumeHelper? _audioSessionVolume;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -94,7 +96,7 @@ namespace Peek.UI
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPeekEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
@@ -102,6 +104,12 @@ namespace Peek.UI
                 Environment.Exit(0); // Current.Exit won't work until there's a window opened.
                 return;
             }
+
+            var userSettings = GetService<IUserSettings>();
+            _audioSessionVolume = await AudioSessionVolumeHelper.CreateAsync(
+                () => userSettings.AudioVolume,
+                volume => userSettings.AudioVolume = volume,
+                ex => Logger.LogError("Failed to preserve Peek's volume mixer level", ex));
 
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
@@ -181,6 +189,7 @@ namespace Peek.UI
                 if (disposing)
                 {
                     // dispose managed state (managed objects)
+                    _audioSessionVolume?.Dispose();
                 }
 
                 // free unmanaged resources (unmanaged objects) and override finalizer

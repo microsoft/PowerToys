@@ -27,6 +27,7 @@ namespace Peek.UI
         /// The current settings. Initially set to defaults.
         /// </summary>
         private PeekSettings _settings = new();
+        private double _audioVolume = 1.0;
 
         private PeekSettings Settings
         {
@@ -41,6 +42,8 @@ namespace Peek.UI
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
                     ShowFilePreviewTooltip = _settings.Properties.ShowFilePreviewTooltip.Value;
+                    var volume = _settings.Properties.AudioVolume?.Value ?? 1.0;
+                    _audioVolume = double.IsFinite(volume) ? Math.Clamp(volume, 0.0, 1.0) : 1.0;
                 }
 
                 Changed?.Invoke(this, EventArgs.Empty);
@@ -81,8 +84,7 @@ namespace Peek.UI
                     _confirmFileDelete = value;
 
                     // We write directly to the settings file. The Settings UI will detect
-                    // this change via its file watcher and update accordingly. This is the only
-                    // setting that is modified by Peek itself.
+                    // changes via its file watcher and update accordingly.
                     lock (_settingsLock)
                     {
                         _settings.Properties.ConfirmFileDelete.Value = _confirmFileDelete;
@@ -96,6 +98,39 @@ namespace Peek.UI
         /// Gets a value indicating whether the file metadata tooltip is shown when hovering over the Peek preview.
         /// </summary>
         public bool ShowFilePreviewTooltip { get; private set; }
+
+        /// <summary>
+        /// Gets or sets Peek's application volume in the Windows volume mixer.
+        /// </summary>
+        public double AudioVolume
+        {
+            get
+            {
+                lock (_settingsLock)
+                {
+                    return _audioVolume;
+                }
+            }
+
+            set
+            {
+                if (!double.IsFinite(value))
+                {
+                    return;
+                }
+
+                value = Math.Clamp(value, 0.0, 1.0);
+                lock (_settingsLock)
+                {
+                    if (_audioVolume != value)
+                    {
+                        _audioVolume = value;
+                        _settings.Properties.AudioVolume = new DoubleProperty(value);
+                        _settingsUtils.SaveSettings(_settings.ToJsonString(), PeekModuleName);
+                    }
+                }
+            }
+        }
 
         public UserSettings()
         {

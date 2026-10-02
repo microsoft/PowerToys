@@ -18,6 +18,8 @@ namespace Peek.UI
 
         public bool ShowFilePreviewTooltip { get; }
 
+        public double AudioVolume { get; set; }
+
         public event EventHandler? Changed;
     }
 }
