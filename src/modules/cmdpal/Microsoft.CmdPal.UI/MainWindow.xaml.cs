@@ -1852,7 +1852,7 @@ public sealed partial class MainWindow : WindowEx,
             case CopilotKeyRegistration.MessageId:
                 if (wParam.Value == CopilotKeyRegistration.SingleTap)
                 {
-                    Summon(string.Empty);
+                    HandleSummon(string.Empty);
                 }
 
                 return (LRESULT)0;
