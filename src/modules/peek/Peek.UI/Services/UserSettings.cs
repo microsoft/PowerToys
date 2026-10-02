@@ -152,6 +152,7 @@ namespace Peek.UI
                     {
                         Settings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekModuleName);
                     }
+
                     return;
                 }
                 catch (System.IO.IOException ex)
