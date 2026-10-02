@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -59,6 +59,23 @@ namespace ShortcutGuide.Helpers
         public static TasklistButton[] GetButtons()
         {
             var monitor = NativeMethods.MonitorFromWindow(WindowNative.GetWindowHandle(App.OverlayWindow), 0);
+            return GetButtons(monitor);
+        }
+
+        public static TasklistButton[] GetButtons(nint monitor)
+        {
+            if (monitor == nint.Zero)
+            {
+                monitor = TaskbarLayoutPolicy.ResolveMonitor(
+                    monitor,
+                    NativeMethods.MonitorFromWindow(WindowNative.GetWindowHandle(App.OverlayWindow), 0));
+            }
+
+            if (monitor == nint.Zero)
+            {
+                return [];
+            }
+
             nint ptr = NativeMethods.GetTasklistButtons(monitor, out int size);
             if (ptr == nint.Zero)
             {
