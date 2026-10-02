@@ -29,6 +29,9 @@
   <PropertyGroup>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.AutoHideCursor</TargetName>
+    <!-- Shares this folder and TargetName with AutoHideCursor.vcxproj (the DLL); a separate
+         IntDir keeps the two from sharing one .pch built with the DLL's defines (C4651/C2220). -->
+    <IntDir>$(Platform)\$(Configuration)\Worker\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
