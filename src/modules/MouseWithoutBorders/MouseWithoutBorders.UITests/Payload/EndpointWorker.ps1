@@ -39,6 +39,7 @@ $script:expectedPeerMapping = ''
 $script:receiver = $null
 $script:requestNumber = 0
 $script:commandStageNumber = 0
+$script:uiCommandTimings = @()
 $script:leaseNumber = 0
 $script:lastLease = $null
 $script:stopping = $false

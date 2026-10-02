@@ -49,7 +49,9 @@ $parameters = @{
     Platform = $Platform; BuildLabel = $BuildLabel; StandardUser = $StandardUser
     CredentialPath = $CredentialPath
     ProductArchive = $ProductArchive; TestsArchive = $TestsArchive
-    SuiteTimeout = '45m'; TimeoutMinutes = 60; StartupTimeoutMinutes = 15
+    SuiteTimeout = $(if ($backend -eq 'WinApp') { '75m' } else { '45m' })
+    TimeoutMinutes = $(if ($backend -eq 'WinApp') { 90 } else { 60 })
+    StartupTimeoutMinutes = 15
     ReuseStagedPayload = $ReuseStagedPayload
 }
 if ($Filter) { $parameters.Filter = $Filter }

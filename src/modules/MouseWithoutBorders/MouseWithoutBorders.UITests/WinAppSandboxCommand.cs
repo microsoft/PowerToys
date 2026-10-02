@@ -45,7 +45,7 @@ internal sealed class WinAppSandboxCommand : IDisposable
         }
     }
 
-    public static WinAppSandboxCommand Start(string executable, IEnumerable<string> arguments, string targetStateRoot, string workingDirectory)
+    public static WinAppSandboxCommand Start(string executable, IEnumerable<string> arguments, string targetStateRoot, string workingDirectory, Guid? workflowId = null)
     {
         var start = new ProcessStartInfo(executable)
         {
@@ -62,6 +62,13 @@ internal sealed class WinAppSandboxCommand : IDisposable
         start.Environment["WINAPP_TARGET_STATE_ROOT"] = targetStateRoot;
         start.Environment["WINAPP_CLI_TELEMETRY_OPTOUT"] = "1";
         start.Environment["WINAPP_CLI_UPDATE_CHECK"] = "0";
+        if (workflowId is { } id)
+        {
+            // v0.7.0 recordings pin their desktop turn. The attached worker and
+            // recorder must be one explicit workflow so guest UI actions can run.
+            start.Environment["WINAPP_UI_WORKFLOW_ID"] = id.ToString("D");
+        }
+
         foreach (var argument in arguments)
         {
             start.ArgumentList.Add(argument);

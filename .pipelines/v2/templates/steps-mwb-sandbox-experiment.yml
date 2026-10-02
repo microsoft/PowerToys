@@ -22,7 +22,7 @@ steps:
         -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
     displayName: Run MWB Sandbox MSTest once on the standard-user desktop
-    timeoutInMinutes: 48
+    timeoutInMinutes: 83
     env:
       platform: $(TestPlatform)
       WINAPP_CLI_PATH: $(WINAPP_CLI_PATH)

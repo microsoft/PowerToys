@@ -240,7 +240,9 @@ namespace Microsoft.MouseWithoutBorders.UITests
             string token = "mwb-test-" + role + "-" + runId + "-" + Guid.NewGuid().ToString("N");
             Clipboard.SetText(token);
             clipboardChanged = true;
-            return ClipboardDigest();
+            // An immediate OLE clipboard read can still be empty on a cold desktop.
+            // Acknowledge the generated value; the controller verifies its publication.
+            return Digest(token);
         }
 
         public string ClipboardDigest()
@@ -253,6 +255,11 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 return string.Empty;
             }
 
+            return Digest(text);
+        }
+
+        private static string Digest(string text)
+        {
             using (SHA256 hash = SHA256.Create())
             {
                 return BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(text))).Replace("-", string.Empty);

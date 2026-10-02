@@ -17,7 +17,7 @@ public sealed class ReceiverInfrastructureTests
     [TestCategory("MwbInfrastructure")]
     public void ReceiverInfrastructureRemainsResponsiveToUiAutomation()
     {
-        using var receiver = new ReceiverController("Probe", Guid.NewGuid().ToString());
+        using var receiver = new ReceiverController("Host", Guid.NewGuid().ToString());
         receiver.FocusInput();
         var session = Session.FromProcess(Environment.ProcessId.ToString(), timeoutMS: 10_000);
         var input = session.Find<Element>(By.AccessibilityId("InputReceiver"), timeoutMS: 10_000);
@@ -28,6 +28,17 @@ public sealed class ReceiverInfrastructureTests
         Assert.IsTrue(receiver.InputFocused);
         Assert.AreEqual(receiver.Handle, NativeSupport.GetForegroundWindow());
         Assert.IsTrue(Process.GetCurrentProcess().SessionId > 0);
+
+        try
+        {
+            var digest = receiver.PublishClipboard();
+            Assert.AreEqual(64, digest.Length, "Publication must acknowledge the generated token, not an empty transient read.");
+            RunFiles.Wait(() => receiver.ClipboardDigest() == digest, TimeSpan.FromSeconds(15), "The receiver did not publish its synthetic clipboard token.");
+        }
+        finally
+        {
+            receiver.RestoreClipboard();
+        }
 
         var evidenceRoot = RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory);
         Directory.CreateDirectory(evidenceRoot);

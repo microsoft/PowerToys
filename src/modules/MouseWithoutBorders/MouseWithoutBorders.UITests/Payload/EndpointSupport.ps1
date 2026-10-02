@@ -779,8 +779,49 @@ function Stop-Endpoint {
     Write-EndpointJournal
 }
 
+function Get-GuestUiWaitSnapshot {
+    param([Diagnostics.Process]$Process)
+    $result = @{
+        QueryStatus = 'Unavailable'; WorkflowConfigured = -not [string]::IsNullOrEmpty($env:WINAPP_UI_WORKFLOW_ID)
+        OwnerMatchesWorkflow = $null; ChildOwnsTurn = $null; ChildWaitingForTurn = $null; RecordingOwnsTurn = $null
+        ChildCpuSeconds = $null; SettingsCpuSeconds = $null; SettingsResponding = $null
+        QueryErrorHResult = $null
+    }
+    $settingsProcess = $null
+    try {
+        $Process.Refresh()
+        $result.ChildCpuSeconds = $Process.TotalProcessorTime.TotalSeconds
+        $settingsProcess = Get-Process -Id $script:settingsPid -ErrorAction Stop
+        $result.SettingsCpuSeconds = $settingsProcess.CPU
+        $result.SettingsResponding = $settingsProcess.Responding
+        $statePath = Join-Path $env:USERPROFILE ".winapp\state\ui\interactive-desktop-$($Process.SessionId).state.json"
+        if (-not (Test-Path -LiteralPath $statePath) -or (Get-Item -LiteralPath $statePath).Length -gt 65536) { return $result }
+        $state = Read-RunJson $statePath
+        $result.ChildOwnsTurn = @($state.OwnerCommands | Where-Object Pid -eq $Process.Id).Count -gt 0
+        $result.ChildWaitingForTurn = @($state.Waiters | Where-Object Pid -eq $Process.Id).Count -gt 0
+        $result.RecordingOwnsTurn = @($state.OwnerCommands | Where-Object Operation -eq 'ui record').Count -gt 0
+        if ($result.WorkflowConfigured -and $state.Owner) {
+            $hash = [Security.Cryptography.SHA256]::Create()
+            try {
+                $expected = [BitConverter]::ToString($hash.ComputeHash(
+                    [Text.Encoding]::UTF8.GetBytes("winapp-ui-workflow-v1`0$env:WINAPP_UI_WORKFLOW_ID"))).Replace('-', '').ToLowerInvariant()
+                $result.OwnerMatchesWorkflow = $state.Owner.Key -ceq $expected
+            }
+            finally { $hash.Dispose() }
+        }
+        $result.QueryStatus = 'Succeeded'
+    }
+    catch {
+        $result.QueryStatus = 'Failed'
+        $result.QueryErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
+    }
+    finally { if ($settingsProcess) { $settingsProcess.Dispose() } }
+    # Never export the coordination owner key, raw workflow token, or command arguments.
+    $result
+}
+
 function Invoke-GuestUi {
-    param([string[]]$Arguments)
+    param([string[]]$Arguments, [ValidateSet(90, 180)][int]$TimeoutSeconds = 90)
     $launchWatch = [Diagnostics.Stopwatch]::StartNew()
     Write-EndpointCommandStage 'UiPreparing' $Arguments[0] $script:requestNumber
     $start = [Diagnostics.ProcessStartInfo]::new()
@@ -798,16 +839,22 @@ function Invoke-GuestUi {
     Write-EndpointCommandStage 'UiProcessStarting' $Arguments[0] $script:requestNumber
     $process = [Diagnostics.Process]::Start($start)
     $watch = [Diagnostics.Stopwatch]::StartNew()
+    $waitSamples = @()
     try {
         Write-EndpointCommandStage 'UiProcessStarted' $Arguments[0] $script:requestNumber $process.Id $launchWatch.ElapsedMilliseconds
         $stdout = $process.StandardOutput.ReadToEndAsync()
         $stderr = $process.StandardError.ReadToEndAsync()
         Write-EndpointCommandStage 'UiWaiting' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         if (-not $process.WaitForExit(90000)) {
+            $waitSamples += @{ ElapsedMilliseconds = $watch.ElapsedMilliseconds; State = Get-GuestUiWaitSnapshot $process }
+            $remainingMilliseconds = ($TimeoutSeconds * 1000) - $watch.ElapsedMilliseconds
+            if ($remainingMilliseconds -gt 0) { $null = $process.WaitForExit([int]$remainingMilliseconds) }
+        }
+        if (-not $process.HasExited) {
             $process.Kill()
             $null = $process.WaitForExit(5000)
             Write-EndpointCommandStage 'UiTimedOut' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
-            throw "Guest winapp $($Arguments[0]) exceeded 90 seconds."
+            throw "Guest winapp $($Arguments[0]) exceeded $TimeoutSeconds seconds."
         }
         Write-EndpointCommandStage 'UiProcessExited' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($stdout, $stderr), 5000)) {
@@ -826,10 +873,14 @@ function Invoke-GuestUi {
         return $data
     }
     finally {
-        Write-RunJson "$OutputRoot\last-ui-command.json" @{
+        $timing = @{
             Verb = $Arguments[0]; ElapsedMilliseconds = $watch.ElapsedMilliseconds
-            Exited = $process.HasExited; TimestampUtc = [DateTime]::UtcNow.ToString('o')
+            Exited = $process.HasExited; ExitCode = $(if ($process.HasExited) { $process.ExitCode } else { $null })
+            TimestampUtc = [DateTime]::UtcNow.ToString('o'); WaitSamples = $waitSamples
         }
+        Write-RunJson "$OutputRoot\last-ui-command.json" $timing
+        $script:uiCommandTimings = @($script:uiCommandTimings | Select-Object -Last 63) + @($timing)
+        Write-RunJson "$OutputRoot\ui-command-timings.json" @{ Commands = $script:uiCommandTimings }
         $process.Dispose()
     }
 }
@@ -857,8 +908,8 @@ function Connect-Guest {
         Save-SettingsDiagnostics 'navigation-failed'
         throw 'Guest Settings navigation did not become ready.'
     }
-    if ($nav.matchCount -eq 0) { $null = Invoke-GuestUi @('invoke', 'InputOutputNavItem') }
-    $null = Invoke-GuestUi @('invoke', 'MouseWithoutBordersNavItem')
+    if ($nav.matchCount -eq 0) { $null = Invoke-GuestUi -Arguments @('invoke', 'InputOutputNavItem') -TimeoutSeconds 180 }
+    $null = Invoke-GuestUi -Arguments @('invoke', 'MouseWithoutBordersNavItem') -TimeoutSeconds 180
     $fieldWait = [Diagnostics.Stopwatch]::StartNew()
     do {
         $field = Invoke-GuestUi @('search', 'ConnectPCNameTextBox')

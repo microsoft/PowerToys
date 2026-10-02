@@ -42,11 +42,17 @@ internal sealed class EndpointChannel
             new { RunId = runId, Sequence = number, TimestampUtc = DateTime.UtcNow });
     }
 
-    public void BeginBootstrap()
+    public void BeginBootstrap(bool modern = false)
     {
-        bootstrapDeadlineUtc = DateTime.UtcNow.AddMinutes(15);
         var path = Path.Combine(InputRoot, "bootstrap.json");
         var configuration = RunFiles.Read(path);
+        if (configuration["HardDeadlineUtc"] is not JsonValue value || !value.TryGetValue<DateTime>(out var hardDeadline))
+        {
+            throw new WinAppSandboxException("bootstrap_deadline_invalid");
+        }
+
+        hardDeadline = hardDeadline.ToUniversalTime();
+        bootstrapDeadlineUtc = SandboxTimeouts.BootstrapDeadline(DateTime.UtcNow, hardDeadline, modern);
         configuration["BootstrapDeadlineUtc"] = bootstrapDeadlineUtc;
         RunFiles.Write(path, configuration);
     }

@@ -96,6 +96,29 @@ public sealed class WinAppSandboxCommandTests
     }
 
     [TestMethod]
+    public void RecordingAndWorkerCommandsShareOnlyTheirExplicitRunWorkflow()
+    {
+        var originalWorkflow = Environment.GetEnvironmentVariable("WINAPP_UI_WORKFLOW_ID");
+        var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
+        const string script = "[Console]::WriteLine($env:WINAPP_UI_WORKFLOW_ID)";
+        var runId = Guid.NewGuid();
+        var otherRunId = Guid.NewGuid();
+        foreach (var workflow in new[] { runId, runId, otherRunId })
+        {
+            using var command = WinAppSandboxCommand.Start(
+                executable,
+                ["-NoProfile", "-NonInteractive", "-Command", script],
+                Environment.CurrentDirectory,
+                Environment.CurrentDirectory,
+                workflow);
+            var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess().Trim();
+            Assert.AreEqual(workflow.ToString("D"), output);
+        }
+
+        Assert.AreEqual(originalWorkflow, Environment.GetEnvironmentVariable("WINAPP_UI_WORKFLOW_ID"));
+    }
+
+    [TestMethod]
     public void TimeoutRetainsItsCauseAndStopsOnlyTheOwnedCommand()
     {
         var root = Path.Combine(Path.GetTempPath(), "mwb-timeout-command-" + Guid.NewGuid().ToString("N"));

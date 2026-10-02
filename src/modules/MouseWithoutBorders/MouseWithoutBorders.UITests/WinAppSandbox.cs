@@ -124,7 +124,7 @@ internal sealed class WinAppSandbox : ISandboxSession
             creationAttempted = true;
             saveJournal();
             var result = Run(wsbPath, ["start", "--id", instanceId.ToString("D"), "--config", configuration.ToString(SaveOptions.DisableFormatting), "--raw"],
-                Budget(TimeSpan.FromMinutes(5), bootstrap: true));
+                Budget(SandboxTimeouts.ModernStart, bootstrap: true));
             WinAppSandboxProtocol.RequireStartResult(result, instanceId);
             WinAppSandboxProtocol.RequireExclusiveInstance(Inventory(Budget(InventoryTimeout, bootstrap: true)), instanceId);
             creationConfirmed = true;
@@ -132,10 +132,11 @@ internal sealed class WinAppSandbox : ISandboxSession
             ConnectOwnedClient();
 
             // The first target command also installs the released guest agent. Keep it
-            // within the original endpoint deadline, not a shorter transfer cap.
+            // within the endpoint deadline, not a shorter transfer cap. Released
+            // v0.7.0 enumerates firewall application filters individually on cold guests.
             // A single transfer avoids repeating target preparation for each part
             // of the same immutable bootstrap input.
-            Target(["push", "sandbox", stagedPayload, "MwbBootstrap", "--json"], TimeSpan.FromMinutes(15), bootstrap: true, firstBootstrap: true);
+            Target(["push", "sandbox", stagedPayload, "MwbBootstrap", "--json"], SandboxTimeouts.ModernBootstrap, bootstrap: true, firstBootstrap: true);
             Directory.Delete(stagedPayload, recursive: true);
 
             // No endpoint consumes these channels during SDK bootstrap. Keep the
@@ -498,7 +499,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
         hardDeadlineUtc = hard.ToUniversalTime();
         bootstrapDeadlineUtc = initial.ToUniversalTime();
-        if (bootstrapDeadlineUtc > DateTime.UtcNow.AddMinutes(15))
+        if (bootstrapDeadlineUtc > DateTime.UtcNow + SandboxTimeouts.ModernBootstrap || bootstrapDeadlineUtc > hardDeadlineUtc)
         {
             throw new WinAppSandboxException("bootstrap_deadline_invalid");
         }
@@ -596,7 +597,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         var timer = Stopwatch.StartNew();
         try
         {
-            using var command = WinAppSandboxCommand.Start(executable, arguments, targetStateRoot, controlRoot);
+            using var command = WinAppSandboxCommand.Start(executable, arguments, targetStateRoot, controlRoot, instanceId);
             var result = command.CompleteAndDispose(timeout);
             trace["ExitCode"] = result.ExitCode;
             observe?.Invoke(result);
@@ -671,7 +672,7 @@ internal sealed class WinAppSandbox : ISandboxSession
 
     private WinAppSandboxCommand StartAttached(string[] arguments)
     {
-        var command = WinAppSandboxCommand.Start(winappPath, arguments, targetStateRoot, controlRoot);
+        var command = WinAppSandboxCommand.Start(winappPath, arguments, targetStateRoot, controlRoot, instanceId);
         try
         {
             if (command.HasExited)

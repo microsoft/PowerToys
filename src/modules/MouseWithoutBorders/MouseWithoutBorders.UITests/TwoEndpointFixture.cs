@@ -277,7 +277,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             Assert.AreEqual(provision["GuestArchiveSha256"]!.GetValue<string>(),
                 Convert.ToHexString(SHA256.HashData(archive)), true, "The staged guest product archive changed.");
         }
-        var hardDeadlineUtc = DateTime.UtcNow.AddMinutes(40);
+        var hardDeadlineUtc = DateTime.UtcNow + (backend == "WinApp" ? SandboxTimeouts.ModernRun : SandboxTimeouts.LegacyRun);
         foreach (var endpoint in new[] { host, guest })
         {
             RunFiles.Write(Path.Combine(endpoint.InputRoot, "bootstrap.json"), new
@@ -380,7 +380,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 
         // Finish the expensive nested-VM boot before starting the host worker's
         // liveness watchdog. Both workers still enforce the same lease deadline.
-        guest!.BeginBootstrap();
+        guest!.BeginBootstrap(modern: sandbox!.Backend == "WinApp");
         sandbox!.Start(Path.Combine(runRoot, "run.wsb"), guestArchive, payloadRoot, Path.GetDirectoryName(winapp)!, guest);
         var guestReady = guest.WaitForReady(() =>
         {
@@ -673,7 +673,11 @@ internal sealed class TwoEndpointFixture : IDisposable
     {
         // MWB throttles clipboard copies, including changes received from its peer.
         Thread.Sleep(1500);
-        return endpoint.Request("PublishClipboard")["Digest"]!.GetValue<string>();
+        var digest = endpoint.Request("PublishClipboard")["Digest"]!.GetValue<string>();
+        Assert.AreEqual(64, digest.Length, "The source must acknowledge its generated synthetic clipboard digest.");
+        RunFiles.Wait(() => Observe(endpoint)["ClipboardDigest"]!.GetValue<string>() == digest,
+            TimeSpan.FromSeconds(15), "The source did not publish its acknowledged synthetic clipboard.");
+        return digest;
     }
 
     private JsonElement InspectSubtree(Element element) => WinappCli.InvokeJson(

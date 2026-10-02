@@ -11,6 +11,35 @@ namespace MouseWithoutBorders.UnitTests;
 public sealed class ExperimentChannelTests
 {
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("invalid")]
+    public void BootstrapRequiresAValidHardDeadline(string? hardDeadline)
+    {
+        WithChannel((channel, runId) =>
+        {
+            RunFiles.Write(Path.Combine(channel.InputRoot, "bootstrap.json"), new { RunId = runId, HardDeadlineUtc = hardDeadline });
+            var error = Assert.ThrowsExactly<WinAppSandboxException>(() => channel.BeginBootstrap(modern: true));
+            Assert.AreEqual("bootstrap_deadline_invalid", error.Code);
+        });
+    }
+
+    [TestMethod]
+    public void ModernBootstrapPersistsItsLongerBudgetWithoutExtendingTheRun()
+    {
+        WithChannel((channel, runId) =>
+        {
+            var path = Path.Combine(channel.InputRoot, "bootstrap.json");
+            var hardDeadline = DateTime.UtcNow.AddMinutes(20);
+            RunFiles.Write(path, new { RunId = runId, HardDeadlineUtc = hardDeadline });
+            channel.BeginBootstrap(modern: true);
+            var configuration = RunFiles.Read(path);
+            Assert.AreEqual(runId, configuration["RunId"]!.GetValue<string>());
+            Assert.AreEqual(hardDeadline, configuration["HardDeadlineUtc"]!.GetValue<DateTime>());
+            Assert.AreEqual(hardDeadline, configuration["BootstrapDeadlineUtc"]!.GetValue<DateTime>());
+        });
+    }
+
+    [TestMethod]
     public void CommittedReadinessBypassesDiscovery()
     {
         WithChannel((channel, runId) =>
@@ -140,7 +169,7 @@ public sealed class ExperimentChannelTests
         {
             var runId = Guid.NewGuid().ToString();
             var channel = new EndpointChannel(runId, Path.Combine(root, "input"), Path.Combine(root, "output"));
-            RunFiles.Write(Path.Combine(channel.InputRoot, "bootstrap.json"), new { RunId = runId });
+            RunFiles.Write(Path.Combine(channel.InputRoot, "bootstrap.json"), new { RunId = runId, HardDeadlineUtc = DateTime.UtcNow.AddMinutes(40) });
             channel.BeginBootstrap();
             action(channel, runId);
         }

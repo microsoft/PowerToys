@@ -400,8 +400,9 @@ if ($Mode -eq 'Run') {
     $env:POWERTOYS_INSTALL_DIR = $manifest.HostProductRoot
     $env:POWERTOYS_MWB_RUN_ROOT = Get-MwbPublicRunRoot $ResultsDirectory $RunId
     $env:useInstallerForTest = 'false'
+    $suiteTimeoutMinutes = if ($manifest.SandboxBackend -eq 'WinApp') { 80 } else { 45 }
     & "$PSScriptRoot\runUiTestAsUser.ps1" -TestExecutable $payload.TestExecutable `
-        -ResultsDirectory $ResultsDirectory -InteractiveUser $manifest.InteractiveUser -TimeoutMinutes 45 `
+        -ResultsDirectory $ResultsDirectory -InteractiveUser $manifest.InteractiveUser -TimeoutMinutes $suiteTimeoutMinutes `
         -TaskRunId $RunId -Filter 'FullyQualifiedName~AutonomousSandboxSmoke'
     exit $LASTEXITCODE
 }

@@ -1,8 +1,19 @@
 # Autonomous MWB nested-Sandbox Debug pilot
 
-**Status: official winappcli v0.7.0 is validated on Windows 10, but Windows 11
-hybrid sign-off is blocked.** The September 26, 2026 unfiltered Windows 10 run
-(`localvm-20260926-130232-41e08227`) passed 4/4 tests and all eight ordered phases:
+**Status: official winappcli v0.7.0 passed the full four-test pilot on both
+Windows 10 and Windows 11 on October 2, 2026.**
+Windows 11 run `localvm-20261002-155934-1014f42c` passed all eight
+ordered smoke phases in 21 minutes 6 seconds, including real pairing, physical
+remote input, clipboard-off isolation and both clipboard transfer directions.
+Both recordings finalized, settings and clipboard were restored, exact-GUID
+cleanup and external recovery succeeded, and evidence export had no errors.
+The retained VM used four vCPUs and 8 GB RAM; this is not a fresh-profile or
+physical-machine sign-off. See the bounded startup/cooperative recording section
+below for the measured delays and lifecycle changes.
+
+The unfiltered Windows 10 regression with the same test payload
+(`localvm-20261002-162428-16f32605`) passed 4/4 tests and all eight ordered phases
+in 22 minutes 20 seconds on its retained four-vCPU/24-GB VM:
 real New key/Connect, bidirectional owned TCP transport, local-input isolation,
 remote keyboard/mouse, clipboard-off isolation, clipboard transfer both ways,
 and cleanup. Both endpoints restored settings and clipboard; both recordings
@@ -13,7 +24,7 @@ R2R runtime
 endpoints. This is the selected ordered smoke scenario, not full module,
 Release, service, secure-desktop, or physical-machine sign-off.
 
-The official Windows 11 run (`localvm-20260926-132913-04f4638e`) passed the three
+The earlier official Windows 11 run (`localvm-20260926-132913-04f4638e`) passed the three
 infrastructure tests, but the smoke timed out in the initial target push at the
 unchanged 15-minute bootstrap deadline (778 seconds remained after provider
 startup). The released binary wrote schema-1 state with the exact adopted run
@@ -118,7 +129,7 @@ not `UITestBase` (whose generic startup/hygiene would interfere with two peers).
 
 Topology: **L1 Windows x64 is the host peer; its L2 Windows Sandbox is the guest
 peer. The physical development machine is never a peer.** This is experimental
-user-desktop coverage, not service, secure-desktop, physical-machine, Win11, or
+user-desktop coverage, not service, secure-desktop, physical-machine, or
 full module sign-off.
 
 ## Sandbox backends
@@ -221,8 +232,58 @@ administrator passwords.
 
 Local privileged setup uses the same protected stdout/stderr launcher and
 90-second initial-marker budget as CI. Raw logs remain under the administrator-
-only `provisioning-logs` directory, not public test attachments. Endpoint lease,
-bootstrap and scenario deadlines are unchanged.
+only `provisioning-logs` directory, not public test attachments.
+
+### Bounded modern startup and cooperative recording
+
+The released v0.7.0 cold guest-agent setup queries
+`Get-NetFirewallApplicationFilter` separately for every active firewall rule.
+Measured official target pushes completed in 650.6 and 744.3 seconds; the latter
+left too little of the former 15-minute bootstrap allowance for the endpoint
+worker. This is slow completion, not proof of a permanently hung query. The
+adapter retains that released, program-and-port-scoped firewall preparation;
+it does not disable the firewall, patch winapp, or bypass agent authentication.
+The final green run's push took 402.3 seconds. These are fresh Sandbox instances
+on a retained L1 VM, not evidence that increasing a timeout speeds up the query.
+
+Modern guest bootstrap now gets **35 minutes total**, including the bounded
+**10-minute provider start**, CLI preparation, transfer and worker readiness.
+The first push consumes only the remaining bootstrap allowance; it does not
+start another 35-minute clock. Modern runs have a **70-minute hard deadline**
+shared by both workers and their parent-bound lease publishers. Host and Legacy
+bootstrap remain **15 minutes**, capped by the same run hard deadline; Legacy
+runs retain **40 minutes**. Lease freshness remains **45 seconds**, with no grace
+period. Local suite/controller envelopes are **75/90 minutes** for WinApp and
+**45/60 minutes** for Legacy.
+
+All adapter CLI children receive the same run-derived `WINAPP_UI_WORKFLOW_ID`
+in their process environment only. This is the official cooperation contract:
+v0.7.0 recording pins its workflow's desktop turn, and unrelated anonymous UI
+actions wait until recording stops. `target exec` and target recording forward
+the same target/epoch-scoped workflow into the guest, allowing the recorded
+worker's real Settings actions to proceed. Neither the parent environment nor
+global coordination state is changed. Distinct runs remain distinct workflows,
+and GUID/process ownership and authenticated transport checks are unchanged.
+
+The two initial guest navigation invocations have a bounded **180-second**
+allowance after repeated 90-second timeouts; all other guest UI commands retain
+**90 seconds**, and the encompassing Connect request remains **600 seconds**.
+The green run used 6.0/10.8 seconds for those navigation actions, so it did not
+exercise the extra allowance. Its search calls still took 20–30 seconds each.
+`ui-command-timings.json` retains at most 64 command summaries; a command still
+waiting after 90 seconds includes CPU/readiness and coordination ownership
+booleans, never arguments, workflow tokens, owner hashes, or authentication state.
+This distinguishes future cold/UIA delays from actual desktop-turn contention
+without publishing a raw command line.
+
+Clipboard publication acknowledges the digest of the generated synthetic token,
+then requires that exact digest to be observed on its source endpoint before any
+negative or transfer assertion. A cold guest's immediate post-write OLE read
+returned empty once, although the next observation contained its own token (not
+the host's distinct digest). Accepting that transient empty read as the baseline
+caused a false isolation failure. The bounded source-readiness check neither
+retries the write nor substitutes a destination value; clipboard-off isolation
+and both real transfer directions remain mandatory.
 
 ## Before the test
 
@@ -335,7 +396,8 @@ The built executable is under
   MTP/native-recording process: a dedicated managed thread still stalled in CI.
   Each publishes only one endpoint instead of serializing host and mapped
   guest-file writes. Each retains the exact test-process handle, exits when that
-  process exits, and cannot outlive the existing 40-minute hard deadline.
+  process exits, and cannot outlive the run's hard deadline (40 minutes for
+  Legacy; 70 for WinApp).
   Correlated shutdown and identity-checked recovery stop only these publishers.
   `Host-lease-publisher.json` and `Guest-lease-publisher.json` record stage,
   sequence, write timing, maximum cycle gap and bounded stall history, including
@@ -494,7 +556,10 @@ snapshot: it returns nonzero with `RequiresBaselineReset: true`. The original
 clipboard is never persisted or guessed. Keep such runs failed and restore the
 clean VM baseline; do not turn cleanup into a pass fallback.
 
-CI should bound the MTP suite at **45 minutes**, publish TRX and the public run
+CI bounds the test process with a **45-minute Legacy / 80-minute WinApp**
+interactive launcher, enclosing the respective **40-/70-minute** run deadlines.
+The pipeline Run step allows **83 minutes**; Legacy's inner limits remain unchanged.
+CI publishes TRX and the public run
 directory (including `recovery-result.json`), and separately run the administrator's
 exact-rule cleanup on every outcome. Release compilation is supported; selecting
 or executing this nested Debug pilot remains behind the pipeline's default-off
