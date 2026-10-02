@@ -10,6 +10,8 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <!-- Run PowerRenameLib with the same CRT model as PowerRename.exe (see PowerRenameUI.vcxproj). -->
+    <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     

@@ -110,6 +110,34 @@
     </Link>
   </ItemDefinitionGroup>
 
+  <!--
+    Hybrid CRT: the RuntimeLibrary above statically links the VC++ runtime and STL (vcruntime, msvcp), but
+    instead of embedding a private copy of the Universal CRT (libucrt) in every DLL and EXE, link against
+    ucrtbase.dll, which is part of Windows 10 and later. No VC++ redistributable is needed. This is the model used
+    by the Windows App SDK, Windows Terminal and Command Palette:
+    https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md
+
+    Every module in a process now shares one UCRT, so process-wide CRT state (the C locale set by setlocale or
+    std::locale::global, the CRT copy of the environment, signal handlers, ...) is no longer private to a module.
+    Projects that use the DLL CRT, or must keep a private static UCRT, set EnableHybridCRT to false. Projects that
+    set Link IgnoreSpecificDefaultLibraries or AdditionalOptions must keep the inherited %(...) value.
+  -->
+  <PropertyGroup>
+    <EnableHybridCRT Condition="'$(EnableHybridCRT)' == ''">true</EnableHybridCRT>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(EnableHybridCRT)' == 'true' and '$(Configuration)' == 'Debug'">
+    <Link>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrtd.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrtd.lib</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EnableHybridCRT)' == 'true' and '$(Configuration)' == 'Release'">
+    <Link>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
   <!-- Global props OverrideWindowsTargetPlatformVersion-->
   <PropertyGroup Label="Globals">
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
