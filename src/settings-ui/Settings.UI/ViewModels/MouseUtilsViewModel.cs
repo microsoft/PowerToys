@@ -33,7 +33,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private CursorWrapSettings CursorWrapSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private LaserPointerSettings LaserPointerSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<LaserPointerSettings> laserPointerSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -141,6 +143,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to false
             _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
 
+            ArgumentNullException.ThrowIfNull(laserPointerSettingsRepository);
+
+            LaserPointerSettingsConfig = laserPointerSettingsRepository.SettingsConfig;
+
+            string laserColor = LaserPointerSettingsConfig.Properties.LaserColor.Value;
+            _laserPointerColor = !string.IsNullOrEmpty(laserColor) ? laserColor : LaserPointerProperties.DefaultLaserColor;
+            _laserPointerActivationButton = LaserPointerSettingsConfig.Properties.ActivationButton.Value;
+            _laserPointerAlwaysOnButtonIndex = AlwaysOnButtonValueToIndex(LaserPointerSettingsConfig.Properties.AlwaysOnButton.Value);
+            _laserPointerSuppressActivationButton = LaserPointerSettingsConfig.Properties.SuppressActivationButton.Value;
+            _laserPointerAutoActivate = LaserPointerSettingsConfig.Properties.AutoActivate.Value;
+            _laserPointerGlowEnabled = LaserPointerSettingsConfig.Properties.GlowEnabled.Value;
+            _laserPointerPenRenderWhenClose = LaserPointerSettingsConfig.Properties.PenRenderWhenClose.Value;
+            _laserPointerSize = LaserPointerSettingsConfig.Properties.LaserSize.Value;
+            _laserPointerDecayTimeMs = LaserPointerSettingsConfig.Properties.DecayTimeMs.Value;
+            _laserPointerDecayLength = LaserPointerSettingsConfig.Properties.DecayLength.Value;
+            _laserPointerStreamline = LaserPointerSettingsConfig.Properties.Streamline.Value;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -214,6 +233,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isCursorWrapEnabled = GeneralSettingsConfig.Enabled.CursorWrap;
             }
+
+            _laserPointerEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLaserPointerEnabledValue();
+            if (_laserPointerEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _laserPointerEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _laserPointerEnabledStateIsGPOConfigured = true;
+                _isLaserPointerEnabled = _laserPointerEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isLaserPointerEnabled = GeneralSettingsConfig.Enabled.LaserPointer;
+            }
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -227,6 +258,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GlidingCursorActivationShortcut],
                 [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
                 [CursorWrapSettings.ModuleName] = [CursorWrapActivationShortcut],
+                [LaserPointerSettings.ModuleName] = [
+                    LaserPointerActivationShortcut,
+                    LaserPointerPenActivationShortcut,
+                    LaserPointerPresenterActivationShortcut,
+                    LaserPointerPresenterStopShortcut],
             };
 
             return hotkeysDict;
@@ -1424,6 +1460,295 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(CursorWrapSettingsConfig.ToJsonString(), CursorWrapSettings.ModuleName);
         }
 
+        public bool IsLaserPointerEnabled
+        {
+            get => _isLaserPointerEnabled;
+            set
+            {
+                if (_laserPointerEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isLaserPointerEnabled != value)
+                {
+                    _isLaserPointerEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.LaserPointer = value;
+                    OnPropertyChanged(nameof(IsLaserPointerEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsLaserPointerEnabledGpoConfigured
+        {
+            get => _laserPointerEnabledStateIsGPOConfigured;
+        }
+
+        public HotkeySettings LaserPointerActivationShortcut
+        {
+            get
+            {
+                return LaserPointerSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (LaserPointerSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    LaserPointerSettingsConfig.Properties.ActivationShortcut = value ?? LaserPointerSettingsConfig.Properties.DefaultActivationShortcut;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings LaserPointerPresenterActivationShortcut
+        {
+            get
+            {
+                return LaserPointerSettingsConfig.Properties.PresenterActivationShortcut;
+            }
+
+            set
+            {
+                if (LaserPointerSettingsConfig.Properties.PresenterActivationShortcut != value)
+                {
+                    LaserPointerSettingsConfig.Properties.PresenterActivationShortcut = value ?? LaserPointerSettingsConfig.Properties.DefaultPresenterActivationShortcut;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings LaserPointerPresenterStopShortcut
+        {
+            get
+            {
+                return LaserPointerSettingsConfig.Properties.PresenterStopShortcut;
+            }
+
+            set
+            {
+                if (LaserPointerSettingsConfig.Properties.PresenterStopShortcut != value)
+                {
+                    LaserPointerSettingsConfig.Properties.PresenterStopShortcut = value ?? LaserPointerSettingsConfig.Properties.DefaultPresenterStopShortcut;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings LaserPointerPenActivationShortcut
+        {
+            get
+            {
+                return LaserPointerSettingsConfig.Properties.PenActivationShortcut;
+            }
+
+            set
+            {
+                if (LaserPointerSettingsConfig.Properties.PenActivationShortcut != value)
+                {
+                    LaserPointerSettingsConfig.Properties.PenActivationShortcut = value ?? LaserPointerSettingsConfig.Properties.DefaultPenActivationShortcut;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        // The always-on combo box offers a subset of the buttons, so its index is not the
+        // stored value. settings.json keeps the canonical numbering shared with the
+        // activation button; only the picker uses this compressed order.
+        private static readonly int[] AlwaysOnButtonValues =
+        {
+            LaserPointerProperties.ActivationButtonNone, // None
+            2, // Middle
+            3, // X1 (back)
+            4, // X2 (forward)
+        };
+
+        private static int AlwaysOnButtonValueToIndex(int value)
+        {
+            int index = Array.IndexOf(AlwaysOnButtonValues, value);
+            return index < 0 ? 0 : index;
+        }
+
+        // 0 = None, 1 = Middle, 2 = X1 (back), 3 = X2 (forward).
+        public int LaserPointerAlwaysOnButtonIndex
+        {
+            get => _laserPointerAlwaysOnButtonIndex;
+            set
+            {
+                if (_laserPointerAlwaysOnButtonIndex != value && value >= 0 && value < AlwaysOnButtonValues.Length)
+                {
+                    _laserPointerAlwaysOnButtonIndex = value;
+                    LaserPointerSettingsConfig.Properties.AlwaysOnButton.Value = AlwaysOnButtonValues[value];
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        // 0 = Left, 1 = Right, 2 = Middle, 3 = X1 (back), 4 = X2 (forward).
+        public int LaserPointerActivationButton
+        {
+            get => _laserPointerActivationButton;
+            set
+            {
+                if (_laserPointerActivationButton != value)
+                {
+                    _laserPointerActivationButton = value;
+                    LaserPointerSettingsConfig.Properties.ActivationButton.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public bool LaserPointerSuppressActivationButton
+        {
+            get => _laserPointerSuppressActivationButton;
+            set
+            {
+                if (_laserPointerSuppressActivationButton != value)
+                {
+                    _laserPointerSuppressActivationButton = value;
+                    LaserPointerSettingsConfig.Properties.SuppressActivationButton.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public bool LaserPointerAutoActivate
+        {
+            get => _laserPointerAutoActivate;
+            set
+            {
+                if (_laserPointerAutoActivate != value)
+                {
+                    _laserPointerAutoActivate = value;
+                    LaserPointerSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        // When off, the tip has to touch the screen; when on, the trail follows the pen
+        // as soon as the digitizer can see it.
+        public bool LaserPointerPenRenderWhenClose
+        {
+            get => _laserPointerPenRenderWhenClose;
+            set
+            {
+                if (_laserPointerPenRenderWhenClose != value)
+                {
+                    _laserPointerPenRenderWhenClose = value;
+                    LaserPointerSettingsConfig.Properties.PenRenderWhenClose.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public bool LaserPointerGlowEnabled
+        {
+            get => _laserPointerGlowEnabled;
+            set
+            {
+                if (_laserPointerGlowEnabled != value)
+                {
+                    _laserPointerGlowEnabled = value;
+                    LaserPointerSettingsConfig.Properties.GlowEnabled.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public string LaserPointerColor
+        {
+            get
+            {
+                return _laserPointerColor;
+            }
+
+            set
+            {
+                value = SettingsUtilities.ToARGBHex(value);
+                if (!value.Equals(_laserPointerColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _laserPointerColor = value;
+                    LaserPointerSettingsConfig.Properties.LaserColor.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public int LaserPointerSize
+        {
+            get => _laserPointerSize;
+            set
+            {
+                if (_laserPointerSize != value)
+                {
+                    _laserPointerSize = value;
+                    LaserPointerSettingsConfig.Properties.LaserSize.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public int LaserPointerDecayTimeMs
+        {
+            get => _laserPointerDecayTimeMs;
+            set
+            {
+                if (_laserPointerDecayTimeMs != value)
+                {
+                    _laserPointerDecayTimeMs = value;
+                    LaserPointerSettingsConfig.Properties.DecayTimeMs.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public int LaserPointerDecayLength
+        {
+            get => _laserPointerDecayLength;
+            set
+            {
+                if (_laserPointerDecayLength != value)
+                {
+                    _laserPointerDecayLength = value;
+                    LaserPointerSettingsConfig.Properties.DecayLength.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public int LaserPointerStreamline
+        {
+            get => _laserPointerStreamline;
+            set
+            {
+                if (_laserPointerStreamline != value)
+                {
+                    _laserPointerStreamline = value;
+                    LaserPointerSettingsConfig.Properties.Streamline.Value = value;
+                    NotifyLaserPointerPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyLaserPointerPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndLaserPointerSettings outsettings = new SndLaserPointerSettings(LaserPointerSettingsConfig);
+            SndModuleSettings<SndLaserPointerSettings> ipcMessage = new SndModuleSettings<SndLaserPointerSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(LaserPointerSettingsConfig.ToJsonString(), LaserPointerSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -1434,6 +1759,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
             OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
             OnPropertyChanged(nameof(IsCursorWrapEnabled));
+            OnPropertyChanged(nameof(IsLaserPointerEnabled));
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -1503,5 +1829,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
         private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
+
+        private GpoRuleConfigured _laserPointerEnabledGpoRuleConfiguration;
+        private bool _laserPointerEnabledStateIsGPOConfigured;
+        private bool _isLaserPointerEnabled;
+        private string _laserPointerColor;
+        private int _laserPointerActivationButton;
+        private int _laserPointerAlwaysOnButtonIndex;
+        private bool _laserPointerSuppressActivationButton;
+        private bool _laserPointerAutoActivate;
+        private bool _laserPointerGlowEnabled;
+        private bool _laserPointerPenRenderWhenClose;
+        private int _laserPointerSize;
+        private int _laserPointerDecayTimeMs;
+        private int _laserPointerDecayLength;
+        private int _laserPointerStreamline;
     }
 }

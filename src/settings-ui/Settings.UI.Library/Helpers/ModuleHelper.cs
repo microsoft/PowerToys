@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.AutoHideCursor => "MouseUtils_AutoHideCursor/Header",
                 ModuleType.FindMyMouse => "MouseUtils_FindMyMouse/Header",
                 ModuleType.MouseHighlighter => "MouseUtils_MouseHighlighter/Header",
+                ModuleType.LaserPointer => "MouseUtils_LaserPointer/Header",
                 ModuleType.MouseJump => "MouseUtils_MouseJump/Header",
                 ModuleType.MousePointerCrosshairs => "MouseUtils_MousePointerCrosshairs/Header",
                 ModuleType.CursorWrap => "MouseUtils_CursorWrap/Header",
@@ -66,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.KeyboardManager => generalSettingsConfig.Enabled.KeyboardManager,
                 ModuleType.LightSwitch => generalSettingsConfig.Enabled.LightSwitch,
                 ModuleType.MouseHighlighter => generalSettingsConfig.Enabled.MouseHighlighter,
+                ModuleType.LaserPointer => generalSettingsConfig.Enabled.LaserPointer,
                 ModuleType.MouseJump => generalSettingsConfig.Enabled.MouseJump,
                 ModuleType.MousePointerCrosshairs => generalSettingsConfig.Enabled.MousePointerCrosshairs,
                 ModuleType.MouseWithoutBorders => generalSettingsConfig.Enabled.MouseWithoutBorders,
@@ -109,6 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
                 case ModuleType.LightSwitch: generalSettingsConfig.Enabled.LightSwitch = isEnabled; break;
                 case ModuleType.MouseHighlighter: generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
+                case ModuleType.LaserPointer: generalSettingsConfig.Enabled.LaserPointer = isEnabled; break;
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                 case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
                 case ModuleType.MouseWithoutBorders: generalSettingsConfig.Enabled.MouseWithoutBorders = isEnabled; break;
@@ -155,6 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.KeyboardManager => KeyboardManagerSettings.ModuleName,
                 ModuleType.LightSwitch => LightSwitchSettings.ModuleName,
                 ModuleType.MouseHighlighter => MouseHighlighterSettings.ModuleName,
+                ModuleType.LaserPointer => LaserPointerSettings.ModuleName,
                 ModuleType.MouseJump => MouseJumpSettings.ModuleName,
                 ModuleType.MousePointerCrosshairs => MousePointerCrosshairsSettings.ModuleName,
                 ModuleType.MouseWithoutBorders => MouseWithoutBordersSettings.ModuleName,
