@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using static Peek.Common.Helpers.AudioSessionInterfaces;
@@ -27,6 +28,13 @@ namespace Peek.Common.Helpers
         private readonly Action<double> _saveVolume;
         private readonly Action<Exception> _reportError;
         private readonly List<ISessionControl> _sessions = [];
+        private readonly Channel<(nint Session, float Volume)> _notifications = Channel.CreateUnbounded<(nint Session, float Volume)>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            AllowSynchronousContinuations = false,
+        });
+
+        private readonly Task _notificationTask;
         private ISessionManager? _manager;
         private nint _mtaCookie;
         private bool _disposed;
@@ -36,6 +44,7 @@ namespace Peek.Common.Helpers
             _getVolume = getVolume;
             _saveVolume = saveVolume;
             _reportError = reportError;
+            _notificationTask = ProcessNotificationsAsync();
         }
 
         public static async Task<AudioSessionVolumeHelper?> CreateAsync(Func<double> getVolume, Action<double> saveVolume, Action<Exception> reportError)
@@ -165,15 +174,11 @@ namespace Peek.Common.Helpers
 
         void ISessionNotification.OnSessionCreated(nint session)
         {
-            try
+            // Keep the borrowed pointer alive until the worker consumes the notification.
+            Marshal.AddRef(session);
+            if (!_notifications.Writer.TryWrite((session, 0)))
             {
-                // The notification pointer is borrowed; AttachSession consumes a reference.
-                Marshal.AddRef(session);
-                AttachSession(session);
-            }
-            catch (COMException ex)
-            {
-                _reportError(ex);
+                Marshal.Release(session);
             }
         }
 
@@ -184,6 +189,33 @@ namespace Peek.Common.Helpers
                 return;
             }
 
+            _notifications.Writer.TryWrite((0, volume));
+        }
+
+        private async Task ProcessNotificationsAsync()
+        {
+            await foreach (var notification in _notifications.Reader.ReadAllAsync().ConfigureAwait(false))
+            {
+                try
+                {
+                    if (notification.Session != 0)
+                    {
+                        AttachSession(notification.Session);
+                    }
+                    else
+                    {
+                        SaveVolume(notification.Volume);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _reportError(ex);
+                }
+            }
+        }
+
+        private void SaveVolume(float volume)
+        {
             lock (_lock)
             {
                 if (_disposed)
@@ -252,6 +284,8 @@ namespace Peek.Common.Helpers
                 _mtaCookie = 0;
             }
 
+            _notifications.Writer.TryComplete();
+
             // Do not hold the callback lock while asking native code to unregister it.
             try
             {
@@ -285,6 +319,9 @@ namespace Peek.Common.Helpers
             }
             finally
             {
+                // Drain queued session references while the MTA is still available.
+                _notificationTask.GetAwaiter().GetResult();
+
                 if (manager != null)
                 {
                     Release(manager);
