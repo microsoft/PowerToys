@@ -58,5 +58,59 @@ namespace Awake.Core.Native
 
         // Attach Console
         internal const int ATTACH_PARENT_PROCESS = -1;
+
+        // Dialogs
+        internal const uint WM_INITDIALOG = 0x0110;
+        internal const int IDOK = 1;
+        internal const int IDCANCEL = 2;
+        internal const uint MB_OK = 0x00000000;
+        internal const uint MB_ICONWARNING = 0x00000030;
+
+        // Window and Dialog Styles
+        internal const uint WS_POPUP = 0x80000000;
+        internal const uint WS_CHILD = 0x40000000;
+        internal const uint WS_VISIBLE = 0x10000000;
+        internal const uint WS_CAPTION = 0x00C00000;
+        internal const uint WS_SYSMENU = 0x00080000;
+        internal const uint WS_TABSTOP = 0x00010000;
+        internal const uint WS_EX_APPWINDOW = 0x00040000;
+        internal const uint DS_SETFONT = 0x0040;
+        internal const uint DS_MODALFRAME = 0x0080;
+        internal const uint DS_SETFOREGROUND = 0x0200;
+        internal const uint DS_CENTER = 0x0800;
+        internal const uint BS_DEFPUSHBUTTON = 0x0001;
+
+        // Date and Time Picker
+        internal const uint ICC_DATE_CLASSES = 0x00000100;
+        internal const uint DTS_SHORTDATEFORMAT = 0x0000;
+        internal const uint DTS_TIMEFORMAT = 0x0009;
+        internal const uint DTM_GETSYSTEMTIME = 0x1001;
+        internal const uint DTM_SETSYSTEMTIME = 0x1002;
+        internal const uint DTM_SETRANGE = 0x1004;
+        internal const uint DTM_SETFORMAT = 0x1032;
+        internal const uint GDT_VALID = 0;
+        internal const uint GDTR_MIN = 0x0001;
+        internal const uint GDTR_MAX = 0x0002;
+        internal const uint DTM_GETIDEALSIZE = 0x100F;
+        internal const uint SWP_NOSIZE = 0x0001;
+        internal const uint SWP_NOZORDER = 0x0004;
+        internal const uint SWP_NOACTIVATE = 0x0010;
+        internal const uint LOCALE_SSHORTDATE = 0x0000001F;
+        internal const uint LOCALE_SSHORTTIME = 0x00000079;
+
+        // Dialog Painting and Input
+        internal const uint WM_ERASEBKGND = 0x0014;
+        internal const uint WM_NEXTDLGCTL = 0x0028;
+        internal const uint WM_NCDESTROY = 0x0082;
+        internal const uint WM_KEYDOWN = 0x0100;
+        internal const uint WM_CTLCOLORSTATIC = 0x0138;
+        internal const uint WM_MOUSEWHEEL = 0x020A;
+        internal const int WHEEL_DELTA = 120;
+        internal const nuint VK_UP = 0x26;
+        internal const nuint VK_DOWN = 0x28;
+        internal const int COLOR_WINDOW = 5;
+        internal const int COLOR_WINDOWTEXT = 8;
+        internal const int COLOR_BTNFACE = 15;
+        internal const int DWLP_MSGRESULT = 0;
     }
 }
