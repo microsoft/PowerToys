@@ -7,6 +7,8 @@
     <IsTestProject>true</IsTestProject>
     <!-- Match the self-contained extension executable referenced by these tests. -->
     <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RootNamespace>Microsoft.CmdPal.Ext.PowerToys.UnitTests</RootNamespace>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\PowerToys\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
