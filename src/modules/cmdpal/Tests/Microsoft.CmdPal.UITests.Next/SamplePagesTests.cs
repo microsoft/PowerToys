@@ -40,6 +40,27 @@ public class SamplePagesTests : CommandPaletteTestBase
             File.Exists(manifestPath),
             $"SamplePagesExtension layout is missing at '{manifestPath}'. Build the test project, which copies it.");
 
+        // Supply the Windows App Runtime framework the manifest depends on. Clean machines (for
+        // example Windows 10 without Store updates) lack it, and RegisterPackageAsync only accepts
+        // unpacked dependency layouts, so add the signed framework MSIX first. Deployment is a no-op
+        // when the same or a newer version is already installed.
+        var frameworkPath = Path.Combine(AppContext.BaseDirectory, "SamplePagesExtensionDependencies", "Microsoft.WindowsAppRuntime.2.msix");
+        Assert.IsTrue(
+            File.Exists(frameworkPath),
+            $"Windows App Runtime framework package is missing at '{frameworkPath}'. Build the test project, which copies it.");
+
+        var frameworkOperation = HasWindowsAppRuntimeFramework(packageManager)
+            ? null
+            : packageManager.AddPackageAsync(new Uri(frameworkPath), null, DeploymentOptions.None);
+        try
+        {
+            frameworkOperation?.AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"Installing the Windows App Runtime framework failed: {ex.Message} {TryGetErrorText(frameworkOperation!)}");
+        }
+
         var operation = packageManager.RegisterPackageAsync(
             new Uri(manifestPath),
             null,
@@ -51,7 +72,7 @@ public class SamplePagesTests : CommandPaletteTestBase
         catch (Exception ex)
         {
             Assert.Fail(
-                $"Registering SamplePagesExtension failed (Developer Mode must be enabled): {ex.Message} {TryGetErrorText(operation)}");
+                $"Registering SamplePagesExtension failed (Developer Mode must be enabled to register a loose layout): {ex.Message} {TryGetErrorText(operation)}");
         }
 
         registeredPackageFullName = FindInstalledPackage(packageManager)?.Id.FullName;
@@ -113,6 +134,19 @@ public class SamplePagesTests : CommandPaletteTestBase
 
     private static Windows.ApplicationModel.Package? FindInstalledPackage(PackageManager packageManager) =>
         packageManager.FindPackagesForUser(string.Empty, PackageName, PackagePublisher).FirstOrDefault();
+
+    private static bool HasWindowsAppRuntimeFramework(PackageManager packageManager)
+    {
+        var architecture = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture switch
+        {
+            System.Runtime.InteropServices.Architecture.Arm64 => Windows.System.ProcessorArchitecture.Arm64,
+            _ => Windows.System.ProcessorArchitecture.X64,
+        };
+
+        return packageManager
+            .FindPackagesForUser(string.Empty, "Microsoft.WindowsAppRuntime.2", PackagePublisher)
+            .Any(p => p.Id.Architecture == architecture && new Version(p.Id.Version.Major, p.Id.Version.Minor) >= new Version(2, 2));
+    }
 
     private static string TryGetErrorText(Windows.Foundation.IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> operation)
     {

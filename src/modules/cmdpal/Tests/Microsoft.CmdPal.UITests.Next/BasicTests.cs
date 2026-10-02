@@ -38,7 +38,9 @@ public class BasicTests : CommandPaletteTestBase
         DoubleClickResult(calculatorItem);
 
         SetCalculatorExtensionSearchBox("1+2");
-        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("3"));
+
+        // The first evaluation cold-starts the calculator engine, which can exceed the 5 s default.
+        Assert.IsNotNull(CommandPaletteSession.Find<NavigationViewItem>("3", timeoutMS: 20_000));
     }
 
     [TestMethod]

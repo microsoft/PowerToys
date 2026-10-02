@@ -173,7 +173,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         Step($"Double-clicking indexed file '{testFileName}'");
         var windowsBefore = SnapshotWindowHandles();
-        DoubleClickResult(CommandPaletteSession.Find<NavigationViewItem>(testFileName));
+        DoubleClickResult(testFileName);
         ChooseDefaultAppIfPrompted(windowsBefore);
 
         var notepadWindow = WindowsFinder.WaitForWindow(
@@ -190,7 +190,7 @@ public class IndexerTests : CommandPaletteTestBase
         EnterIndexerExtension();
         SetFilesExtensionSearchBox(TestFolderName);
 
-        CommandPaletteSession.Find<NavigationViewItem>(TestFolderName).Click();
+        FindExactResult(TestFolderName).Click();
         Step("Opening Downloads through the primary command");
         CommandPaletteSession.Find<Button>(By.AccessibilityId("PrimaryCommandButton")).Click();
 
@@ -205,7 +205,7 @@ public class IndexerTests : CommandPaletteTestBase
         SetFilesExtensionSearchBox(TestFolderName);
 
         Step("Double-clicking the Downloads result");
-        DoubleClickResult(CommandPaletteSession.Find<NavigationViewItem>(TestFolderName));
+        DoubleClickResult(TestFolderName);
         Assert.IsNotNull(WaitForExplorerWindow(), "File Explorer did not open Downloads.");
     }
 

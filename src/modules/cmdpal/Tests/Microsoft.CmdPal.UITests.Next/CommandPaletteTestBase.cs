@@ -101,18 +101,82 @@ public class CommandPaletteTestBase : UITestBase
     /// Double-click a result. Command Palette's double-tap handler invokes the list's current
     /// selection, so select the result first and wait until it is selected; otherwise, on a slow
     /// machine, the double-click can invoke a stale selection while the list is still updating.
+    /// A late in-place result update can also reorder the list or reset the selection to the first
+    /// item, so the result is re-resolved by its exact name on every step (an element's selector
+    /// can go stale across such updates), must stay selected for a short settle window, and is
+    /// reselected if the selection was reset.
     /// </summary>
-    protected void DoubleClickResult(Element item)
+    protected void DoubleClickResult(Element item) => DoubleClickResult(item.Name);
+
+    protected void DoubleClickResult(string resultName)
     {
-        item.Click();
-        var deadline = DateTime.UtcNow.AddSeconds(10);
-        while (!item.Selected && DateTime.UtcNow < deadline)
+        var settle = TimeSpan.FromMilliseconds(1500);
+        var deadline = DateTime.UtcNow.AddSeconds(20);
+        DateTime? selectedSince = null;
+        FindExactResult(resultName).Click();
+        while (DateTime.UtcNow < deadline)
         {
+            if (IsResultSelected(resultName))
+            {
+                selectedSince ??= DateTime.UtcNow;
+                if (DateTime.UtcNow - selectedSince >= settle)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (selectedSince is not null)
+                {
+                    Step($"Selection moved off '{resultName}'; reselecting it");
+                    FindExactResult(resultName).Click();
+                }
+
+                selectedSince = null;
+            }
+
             Thread.Sleep(250);
         }
 
-        Assert.IsTrue(item.Selected, $"Result '{item.Name}' did not become selected before double-clicking it.");
-        item.DoubleClick();
+        var target = FindExactResult(resultName);
+        Assert.IsTrue(
+            IsResultSelected(resultName) && selectedSince is not null && DateTime.UtcNow - selectedSince >= settle,
+            $"Result '{resultName}' did not stay selected before double-clicking it.");
+        target.DoubleClick();
+    }
+
+    private bool IsResultSelected(string resultName)
+    {
+        try
+        {
+            return FindExactResult(resultName).Selected;
+        }
+        catch (AssertFailedException)
+        {
+            // The result was re-created by a list update between the lookup and the property read.
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Find the first result whose name is exactly <paramref name="resultName"/>. Name lookups
+    /// substring-match, so a plain "Downloads" query would also match "Downloads.lnk" or
+    /// "Public Downloads".
+    /// </summary>
+    protected NavigationViewItem FindExactResult(string resultName, int timeoutMS = 5000)
+    {
+        NavigationViewItem? match = null;
+        CommandPaletteSession.WaitFor(
+            () =>
+            {
+                match = CommandPaletteSession
+                    .FindAll<NavigationViewItem>(By.Name(resultName), timeoutMS: 0)
+                    .FirstOrDefault(e => string.Equals(e.Name, resultName, StringComparison.OrdinalIgnoreCase));
+                return match is not null;
+            },
+            timeoutMS);
+        Assert.IsNotNull(match, $"No result named exactly '{resultName}' was found.");
+        return match;
     }
 
     protected void SetFilesExtensionSearchBox(string text) => SetSearchBox(text);

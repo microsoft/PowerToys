@@ -25,6 +25,9 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+
+    <!-- Supplies the Windows App Runtime framework MSIX that SamplePagesExtension depends on. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" GeneratePathProperty="true" ExcludeAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,5 +54,18 @@
       <_SamplePagesLayoutFile Include="$(_SamplePagesLayoutDir)**\*" Exclude="$(_SamplePagesLayoutDir)**\*.pdb" />
     </ItemGroup>
     <Copy SourceFiles="@(_SamplePagesLayoutFile)" DestinationFiles="@(_SamplePagesLayoutFile->'$(OutDir)SamplePagesExtension\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!--
+    SamplePagesExtension's manifest depends on the Microsoft.WindowsAppRuntime.2 framework package,
+    which clean machines (for example Windows 10 test agents) do not have. Ship the framework MSIX
+    so registration can supply it as a dependency.
+  -->
+  <Target Name="CopyWindowsAppRuntimeFramework" AfterTargets="Build">
+    <PropertyGroup>
+      <_WindowsAppRuntimeMsix>$(PkgMicrosoft_WindowsAppSDK_Runtime)\tools\MSIX\win10-$(Platform.ToLowerInvariant())\Microsoft.WindowsAppRuntime.2.msix</_WindowsAppRuntimeMsix>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_WindowsAppRuntimeMsix)')" Text="Windows App Runtime framework MSIX not found at $(_WindowsAppRuntimeMsix)." />
+    <Copy SourceFiles="$(_WindowsAppRuntimeMsix)" DestinationFolder="$(OutDir)SamplePagesExtensionDependencies" SkipUnchangedFiles="true" />
   </Target>
 </Project>

@@ -46,6 +46,10 @@ not on a working machine.
 - The test project builds `SamplePagesExtension` and copies its loose package layout next to the test
   executable. `SamplePagesTests` registers it in development mode and removes it after the class, so
   the machine must have **Developer Mode** enabled.
+- The extension depends on the `Microsoft.WindowsAppRuntime.2` framework package. The test project
+  copies its MSIX from the `Microsoft.WindowsAppSDK.Runtime` NuGet package, and `SamplePagesTests`
+  installs it for the current user when a compatible version is missing (for example on clean
+  Windows 10 machines).
 - Indexer tests create temporary files under `Downloads` and need Windows Search indexing enabled.
 
 ### Legacy tests
