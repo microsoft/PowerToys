@@ -40,6 +40,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly ExtensionObject<IListPage> _model;
 
+    // When both locks are needed, take the list lock before the fetch-state lock.
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
@@ -130,10 +131,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ListItemViewModel? _lastSelectedItem;
 
+    // Cache UI-owned selection position so background fetches never inspect FilteredItems.
+    private volatile bool _selectionIsFirstOrAbsent = true;
+
+    // Retain logical first-row selection until the view reports its deferred move.
+    private bool _awaitingFirstSelection;
+
+    private int _selectionNavigationVersion;
+
     // Persists across cancelled FetchItems calls so a forceFirstItem=true
     // intent is never lost when FetchItems(false) is cancelled by a
-    // subsequent FetchItems(true).
-    private volatile bool _forceFirstItemPending;
+    // subsequent FetchItems(true), unless the user selects a later row.
+    private int? _forceFirstItemSelectionVersion;
 
     // For cancelling a deferred SafeSlowInit when the user navigates rapidly
     private CancellationTokenSource? _selectedItemCts;
@@ -245,6 +254,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
+                _awaitingFirstSelection = true;
+                UpdateSelectionPosition();
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
@@ -370,9 +381,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             fetchGeneration = work.Generation;
-            if (!work.KeepSelection)
+
+            // Capture selection intent before reused items are reordered.
+            // Read the version first so newer navigation cannot pair its version with an old first-row position.
+            var selectionVersion = Volatile.Read(ref _selectionNavigationVersion);
+            if (!work.KeepSelection && (IsRootPage || _selectionIsFirstOrAbsent))
             {
-                _forceFirstItemPending = true;
+                _forceFirstItemSelectionVersion = selectionVersion;
             }
 
             // Capture the token before publishing its owner: navigation can cancel
@@ -489,11 +504,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
-            lock (_fetchStateLock)
+            lock (_listLock)
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                lock (_listLock)
+                lock (_fetchStateLock)
                 {
                     ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
@@ -567,15 +582,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         DoOnUiThread(() =>
         {
-            lock (_fetchStateLock)
+            lock (_listLock)
             {
-                if (!IsCurrentFetch(fetchGeneration))
+                lock (_fetchStateLock)
                 {
-                    return;
-                }
+                    if (!IsCurrentFetch(fetchGeneration))
+                    {
+                        return;
+                    }
 
-                lock (_listLock)
-                {
                     _pendingPublication = fetchGeneration;
                     RunFilteredItemsUpdate(() => ApplyFetchedItemsUnderLock(fetchGeneration));
                 }
@@ -608,21 +623,29 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void CompleteItemsPublication(int fetchGeneration)
     {
         UpdateEmptyContent();
-        var work = Volatile.Read(ref _workState);
-        if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+        ListPageWorkState work;
+        bool forceFirst;
+        lock (_fetchStateLock)
         {
-            return;
-        }
+            work = Volatile.Read(ref _workState);
+            if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+            {
+                return;
+            }
 
-        // Consume selection intent only when the retained snapshot reaches the
-        // UI, including a request originally received while suspended.
-        var forceFirst = _forceFirstItemPending || !work.KeepSelection;
-        _forceFirstItemPending = false;
+            // Consume selection intent only when the retained snapshot reaches the
+            // UI, including a request originally received while suspended.
+            forceFirst = (_forceFirstItemSelectionVersion == Volatile.Read(ref _selectionNavigationVersion)) ||
+                (IsRootPage && !work.KeepSelection);
+            _forceFirstItemSelectionVersion = null;
+            _awaitingFirstSelection |= forceFirst;
+            UpdateSelectionPosition();
+        }
 
         ItemsUpdated?.Invoke(
             this,
             new ItemsUpdatedEventArgs(
-                forceFirstItem: IsRootPage && forceFirst,
+                forceFirstItem: forceFirst,
                 ensureSelectionVisible: work.EnsureSelectionVisible));
         _isLoadingMore.Clear();
         AdvanceFetchPhase(fetchGeneration, ListPageFetchPhase.Published);
@@ -736,6 +759,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
                 else
                 {
+                    UpdateSelectionPosition();
                     break;
                 }
             }
@@ -917,6 +941,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    public void AcknowledgeSelection(ListItemViewModel? item)
+    {
+        if (!ReferenceEquals(_lastSelectedItem, item))
+        {
+            UpdateSelectedItem(item);
+        }
+        else if (Volatile.Read(ref _workState).Status != ListPageWorkStatus.Stopped)
+        {
+            _awaitingFirstSelection = false;
+            UpdateSelectionPosition();
+        }
+    }
+
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
@@ -932,7 +969,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         // Retain selection changes, including clearing selection, during navigation.
         // Only the active page may update the shared command bar and details.
+        var selectionChanged = !ReferenceEquals(_lastSelectedItem, item);
         _lastSelectedItem = item;
+        _awaitingFirstSelection = false;
+        UpdateSelectionPosition();
+        if (selectionChanged && !_selectionIsFirstOrAbsent)
+        {
+            // Publish the new position before invalidating older reset requests.
+            Interlocked.Increment(ref _selectionNavigationVersion);
+        }
+
         if (!IsWorkActive)
         {
             return;
@@ -947,6 +993,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ClearSelectedItem();
         }
     }
+
+    private void UpdateSelectionPosition()
+        => _selectionIsFirstOrAbsent = _awaitingFirstSelection || _lastSelectedItem is null ||
+            ReferenceEquals(_lastSelectedItem, FilteredItems.FirstOrDefault(item => item.IsInteractive));
 
     private void SetSelectedItem(ListItemViewModel item)
     {
