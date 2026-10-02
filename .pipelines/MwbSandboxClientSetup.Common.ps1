@@ -180,8 +180,8 @@ function Get-MwbClientDesktopProcesses {
     # Detection only: these names never grant ownership or authorize termination.
     @(Get-CimInstance Win32_Process -Filter (
         "Name='WindowsSandbox.exe' OR Name='WindowsSandboxClient.exe' OR Name='WindowsSandboxRemoteSession.exe' OR Name='vmmemWindowsSandbox' OR Name='vmmemWindowsSandbox.exe'") `
-        -Property ProcessId, CreationDate -OperationTimeoutSec 10 -ErrorAction Stop |
-        Select-Object ProcessId, CreationDate)
+        -Property Name, ProcessId, CreationDate -OperationTimeoutSec 10 -ErrorAction Stop |
+        Select-Object Name, ProcessId, CreationDate)
 }
 
 function Assert-MwbClientNoInstances {
@@ -303,11 +303,45 @@ function Complete-MwbClientFirstLaunch {
         $Process.Kill()
         $null = $Process.WaitForExit(2000)
     }
+    if ($Process.HasExited) {
+        try {
+            Assert-MwbClientNoInstances -ProbeProvider
+            return [ordered]@{ Status = 'Passed'; GuestObserved = $guestObserved; LauncherStopped = $true }
+        }
+        catch { $inventoryFailure = $_ }
+    }
     $failure = [InvalidOperationException]::new('FirstLaunchCleanupUnconfirmed')
     $failure.Data['GuestObserved'] = $guestObserved
     $failure.Data['LauncherStopped'] = $Process.HasExited
-    if ($inventoryFailure) { $failure.Data['SafeHResult'] = Get-MwbClientErrorHResult $inventoryFailure }
+    if ($inventoryFailure) {
+        $failure.Data['SafeHResult'] = Get-MwbClientErrorHResult $inventoryFailure
+        $failure.Data['InventoryError'] = if ($inventoryFailure.Exception.Message -cin @(
+            'ExistingSandboxDesktop', 'ExistingSandboxInstance', 'SandboxInventoryFailed', 'SandboxInventorySchemaMismatch')) {
+            $inventoryFailure.Exception.Message
+        } else { 'SandboxInventoryFailed' }
+    }
     throw $failure
+}
+
+function Save-MwbClientFailureDesktop {
+    param([string] $Directory)
+
+    $bitmap = $null
+    $graphics = $null
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $bounds = [Windows.Forms.SystemInformation]::VirtualScreen
+        $bitmap = [Drawing.Bitmap]::new($bounds.Width, $bounds.Height)
+        $graphics = [Drawing.Graphics]::FromImage($bitmap)
+        $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size)
+        $bitmap.Save((Join-Path $Directory 'client-setup-failure.png'), [Drawing.Imaging.ImageFormat]::Png)
+        @{ Status = 'Captured' }
+    }
+    catch { @{ Status = 'Failed'; ErrorHResult = Get-MwbClientErrorHResult $_ } }
+    finally {
+        if ($graphics) { $graphics.Dispose() }
+        if ($bitmap) { $bitmap.Dispose() }
+    }
 }
 
 function Invoke-MwbClientSetupWorker {
@@ -375,6 +409,7 @@ function Invoke-MwbClientSetupWorker {
                     ErrorHResult = Get-MwbClientErrorHResult $_
                     GuestObserved = $_.Exception.Data['GuestObserved']
                     LauncherStopped = $_.Exception.Data['LauncherStopped']
+                    InventoryError = $_.Exception.Data['InventoryError']
                 }
                 $Report.Status = 'Failed'
             }
@@ -387,6 +422,9 @@ function Invoke-MwbClientSetupWorker {
                 $Report.Status = 'Failed'
                 $Report.ErrorCode = 'FinalReadinessFailed'
             }
+        }
+        if ($Report.Status -eq 'Failed') {
+            $Report.FailureCapture = Save-MwbClientFailureDesktop $Directory
         }
         Save-MwbClientWorkerReport $Report $Directory
     }
@@ -434,19 +472,28 @@ function ConvertTo-MwbPublicClientSetup {
         'ManifestIdentityMismatch', 'UntrustedInboxLauncher', 'SandboxAssociationMissing', 'SandboxAssociationMismatch',
         'RegistrationTimeout', 'RegistrationFailed', 'RegistrationResponseInvalid', 'ClientSetupDeadlineExceeded', 'ClientSetupFailed',
         'FirstLaunchCleanupUnconfirmed', 'GuestMarkerMismatch', 'SetupWorkerFailed', 'FinalReadinessFailed')
-    foreach ($name in @('Action', 'ErrorCode', 'ErrorHResult', 'Before', 'After', 'Cleanup')) {
+    foreach ($name in @('Action', 'ErrorCode', 'ErrorHResult', 'Before', 'After', 'Cleanup', 'FailureCapture')) {
         $value = $Source[$name]
-        if ($name -in @('Before', 'After', 'Cleanup')) {
+    if ($name -eq 'FailureCapture' -and $null -eq $value) { continue }
+    if ($name -in @('Before', 'After', 'Cleanup', 'FailureCapture')) {
             $copy = [ordered]@{}
             if ($value -isnot [Collections.IDictionary]) { throw 'InvalidClientSetupReport' }
             foreach ($field in @('Status', 'PackageCount', 'Healthy', 'AliasExists', 'AliasIsReparsePoint',
                 'VersionExitCode', 'VersionTimedOut', 'VersionOutputComplete', 'Version', 'ErrorCode',
-                'ErrorHResult', 'GuestObserved', 'LauncherStopped')) {
+                'ErrorHResult', 'GuestObserved', 'LauncherStopped', 'InventoryError')) {
                 if (-not $value.Contains($field)) { continue }
                 $item = $value[$field]
                 if ($null -ne $item) {
                     if ($field -eq 'ErrorCode' -and $item -cnotin $errorCodes) { throw 'InvalidClientSetupReport' }
-                    if ($rules.ContainsKey($field)) {
+                    if ($field -eq 'InventoryError') {
+                        if ($item -cnotin @('ExistingSandboxDesktop','ExistingSandboxInstance','SandboxInventoryFailed','SandboxInventorySchemaMismatch')) {
+                            throw 'InvalidClientSetupReport'
+                        }
+                    }
+                    elseif ($field -eq 'Status' -and $name -eq 'FailureCapture') {
+                        if ($item -cnotin @('Captured','Failed')) { throw 'InvalidClientSetupReport' }
+                    }
+                    elseif ($rules.ContainsKey($field)) {
                         if ($item -isnot [string] -or $item -cnotmatch $rules[$field]) { throw 'InvalidClientSetupReport' }
                     }
                     elseif ($field -in @('PackageCount', 'VersionExitCode')) {

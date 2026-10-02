@@ -301,6 +301,7 @@ Describe 'Explicit setup policy and precise owned cleanup' {
         Mock Start-MwbClientFirstLaunch { $fakeLauncher }
         Mock Complete-MwbClientFirstLaunch { @{ Status = 'Passed'; GuestObserved = $true; LauncherStopped = $true } }
         Mock Start-Sleep { }
+        Mock Save-MwbClientFailureDesktop { @{ Status = 'Captured' } }
     }
 
     It 'no-ops for an already ready user without inventory, registration, launch or cleanup' {
@@ -437,6 +438,18 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
         $process.Killed | Should Be $true
     }
 
+    It 'accepts cleanup only after stopping its owned launcher and confirming no instances remain' {
+        $process.HasExited = $false
+        $process | Add-Member -Force ScriptMethod Kill { $this.Killed = $true; $this.HasExited = $true }
+        Mock Assert-MwbClientNoInstances {
+            if (-not $process.Killed) { throw 'ExistingSandboxDesktop' }
+        }
+        $result = Complete-MwbClientFirstLaunch $process $directory $id 0
+        $result.Status | Should Be 'Passed'
+        $result.LauncherStopped | Should Be $true
+        Assert-MockCalled Assert-MwbClientNoInstances -Times 1 -Exactly -Scope It -ParameterFilter { $ProbeProvider }
+    }
+
     It 'retains guest and launcher observations when the bounded cleanup fails' {
         Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
         Mock Assert-MwbClientNoInstances { throw 'ExistingSandboxInstance' }
@@ -448,6 +461,7 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
             $_.Exception.Message | Should Be 'FirstLaunchCleanupUnconfirmed'
             $_.Exception.Data['GuestObserved'] | Should Be $true
             $_.Exception.Data['LauncherStopped'] | Should Be $true
+            $_.Exception.Data['InventoryError'] | Should Be 'ExistingSandboxInstance'
         }
     }
 

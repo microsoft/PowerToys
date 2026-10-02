@@ -140,6 +140,9 @@ The task is unregistered and its protected per-job staging/DACL grants removed.
 
 `client-setup.json` contains allowlisted before/after current-user readiness,
 action, errors (codes/HRESULT only), guest/launcher cleanup and dispatch cleanup.
+Cleanup failures distinguish remaining desktops, remaining instances, and provider
+query failures. A setup failure also captures `client-setup-failure.png` from the
+Limited user's desktop; capture failures are reported explicitly.
 `client-setup-admin-before.json` and `client-setup-admin-after.json` contain the
 separate schema-3 inventory. These are in the existing `always()` prerequisite
 artifact even when installation fails before `Prepare` or no TRX exists.

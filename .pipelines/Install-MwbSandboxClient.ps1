@@ -266,6 +266,12 @@ finally {
                     Set-Acl -LiteralPath $path -AclObject $acl
                 }
             }
+            $screenshot = Join-Path $output 'client-setup-failure.png'
+            Assert-MwbCiPlainPath $screenshot
+            if (Test-Path -LiteralPath $screenshot -PathType Leaf) {
+                if ((Get-Item -LiteralPath $screenshot).Length -gt 32MB) { throw 'SetupScreenshotTooLarge' }
+                Copy-Item -LiteralPath $screenshot -Destination (Join-Path $published 'client-setup-failure.png')
+            }
             foreach ($item in Get-ChildItem -LiteralPath $runRoot -Force -Recurse) {
                 Assert-MwbCiPlainPath $item.FullName
             }
