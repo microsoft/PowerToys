@@ -83,6 +83,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}"
                     Tag="CropAndLock" />
                 <NavigationViewItem
+                    x:Uid="Shell_DEPiP"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/DEPiP.png}"
+                    Tag="DEPiP" />
+                <NavigationViewItem
                     x:Uid="Shell_EnvironmentVariables"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}"
                     Tag="EnvironmentVariables" />

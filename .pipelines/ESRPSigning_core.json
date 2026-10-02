@@ -258,6 +258,9 @@
             "PowerToys.GrabAndMove.exe",
             "PowerToys.GrabAndMoveModuleInterface.dll",
 
+            "PowerToys.DEPiP.exe",
+            "PowerToys.DEPiPModuleInterface.dll",
+
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
 

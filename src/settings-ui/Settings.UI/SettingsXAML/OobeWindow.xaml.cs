@@ -93,6 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     case "CmdPal": NavigationFrame.Navigate(typeof(OobeCmdPal)); break;
                     case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                     case "CropAndLock": NavigationFrame.Navigate(typeof(OobeCropAndLock)); break;
+                    case "DEPiP": NavigationFrame.Navigate(typeof(OobeDEPiP)); break;
                     case "EnvironmentVariables": NavigationFrame.Navigate(typeof(OobeEnvironmentVariables)); break;
                     case "FancyZones": NavigationFrame.Navigate(typeof(OobeFancyZones)); break;
                     case "FileLocksmith": NavigationFrame.Navigate(typeof(OobeFileLocksmith)); break;

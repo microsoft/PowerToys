@@ -612,6 +612,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool depip;
+
+        [JsonPropertyName("DEPiP")]
+        public bool DEPiP
+        {
+            get => depip;
+            set
+            {
+                if (depip != value)
+                {
+                    LogTelemetryEvent(value);
+                    depip = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

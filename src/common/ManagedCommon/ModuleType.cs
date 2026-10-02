@@ -15,6 +15,7 @@ namespace ManagedCommon
         CmdPal,
         CropAndLock,
         CursorWrap,
+        DEPiP,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,
