@@ -13,6 +13,8 @@
 #include <common/logger/logger_settings.h>
 #include <common/utils/language_helper.h>
 #include <common/utils/logger_helper.h>
+#include <common/utils/named_pipe_peer_auth.h>
+#include <common/utils/process_path.h>
 #include <common/utils/gpo.h>
 
 using namespace winrt;
@@ -160,7 +162,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             {
                 hStdin = CreateFile(
                     pipe_name.c_str(), // pipe name
-                    GENERIC_READ | GENERIC_WRITE, // read and write
+                    GENERIC_READ, // read-only input pipe
                     0, // no sharing
                     NULL, // default security attributes
                     OPEN_EXISTING, // opens existing pipe
@@ -169,7 +171,21 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
                 // Break if the pipe handle is valid.
                 if (hStdin != INVALID_HANDLE_VALUE)
+                {
+                    const named_pipe_peer_auth::Policy serverPolicy{
+                        {},
+                        {},
+                        {},
+                        named_pipe_peer_auth::Validation::TrustedSignedProcess,
+                    };
+                    if (!named_pipe_peer_auth::authenticate(hStdin, named_pipe_peer_auth::Peer::Server, serverPolicy))
+                    {
+                        CloseHandle(hStdin);
+                        hStdin = INVALID_HANDLE_VALUE;
+                        Logger::error(L"Rejected untrusted PowerRename named pipe server.");
+                    }
                     break;
+                }
 
                 // Exit if an error other than ERROR_PIPE_BUSY occurs.
                 auto error = GetLastError();

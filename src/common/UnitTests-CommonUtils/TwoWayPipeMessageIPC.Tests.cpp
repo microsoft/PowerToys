@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <interop/two_way_pipe_message_ipc.h>
+#include <utils/secure_named_pipe.h>
 #include <aclapi.h>
 #include "..\..\modules\Workspaces\WorkspacesLib\IPCHelper.h"
 
@@ -548,6 +549,138 @@ namespace UnitTestsCommonUtils
             server.end();
 
             Assert::IsFalse(available, L"the server must not join an existing pipe name");
+        }
+
+        TEST_METHOD(OutboundServerClaimsNameBeforeClientLaunch)
+        {
+            OccupiedPipe occupiedPipe;
+            Assert::IsTrue(occupiedPipe.Create(), L"failed to occupy the outbound pipe name");
+
+            SetLastError(ERROR_SUCCESS);
+            HANDLE server = secure_named_pipe::create_outbound_server(occupiedPipe.name, 4096, false);
+            const DWORD create_error = GetLastError();
+            if (server != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(server);
+            }
+
+            Assert::IsTrue(server == INVALID_HANDLE_VALUE,
+                           L"the outbound server must fail instead of joining an attacker-owned name");
+            Assert::AreEqual(static_cast<DWORD>(ERROR_ACCESS_DENIED), create_error);
+        }
+
+        TEST_METHOD(OutboundServerSupportsReadOnlySameLogonRoundTrip)
+        {
+            RestrictedClientToken restricted_client;
+            Assert::IsTrue(restricted_client.Create(), L"failed to create the restricted same-logon client token");
+
+            const std::wstring pipe_name = UniquePipeName();
+            HANDLE server = secure_named_pipe::create_outbound_server(pipe_name, 4096, false);
+            Assert::IsTrue(server != INVALID_HANDLE_VALUE, L"failed to create the secured outbound server");
+
+            HANDLE client = INVALID_HANDLE_VALUE;
+            DWORD client_error = ERROR_SUCCESS;
+            bool impersonated = false;
+            std::thread client_thread([&]() {
+                ScopedImpersonation impersonation(restricted_client.token);
+                impersonated = impersonation.active;
+                if (impersonated)
+                {
+                    client = CreateFileW(pipe_name.c_str(),
+                                         GENERIC_READ,
+                                         0,
+                                         nullptr,
+                                         OPEN_EXISTING,
+                                         two_way_pipe_message_ipc::ClientOpenFlags,
+                                         nullptr);
+                    client_error = GetLastError();
+                }
+            });
+
+            const BOOL connected = ConnectNamedPipe(server, nullptr) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+            client_thread.join();
+
+            Assert::IsTrue(impersonated, L"failed to impersonate the restricted same-logon token");
+            Assert::IsTrue(connected == TRUE && client != INVALID_HANDLE_VALUE,
+                           (L"the read-only same-logon client could not connect; error=" + std::to_wstring(client_error)).c_str());
+
+            constexpr wchar_t expected[] = L"roundtrip";
+            DWORD bytes_written = 0;
+            Assert::IsTrue(WriteFile(server,
+                                     expected,
+                                     (ARRAYSIZE(expected) - 1) * sizeof(wchar_t),
+                                     &bytes_written,
+                                     nullptr) == TRUE);
+
+            wchar_t actual[ARRAYSIZE(expected)]{};
+            DWORD bytes_read = 0;
+            Assert::IsTrue(ReadFile(client, actual, sizeof(actual), &bytes_read, nullptr) == TRUE);
+            Assert::AreEqual(std::wstring(expected), std::wstring(actual, bytes_read / sizeof(wchar_t)));
+
+            DWORD rejected_write_bytes = 0;
+            Assert::IsFalse(WriteFile(client,
+                                      expected,
+                                      (ARRAYSIZE(expected) - 1) * sizeof(wchar_t),
+                                      &rejected_write_bytes,
+                                      nullptr) == TRUE,
+                            L"an outbound-pipe client must not write into the server");
+
+            CloseHandle(client);
+            DisconnectNamedPipe(server);
+            CloseHandle(server);
+        }
+
+        TEST_METHOD(OutboundServerDaclExcludesWorldAndAnonymous)
+        {
+            const std::wstring pipe_name = UniquePipeName();
+            HANDLE server = secure_named_pipe::create_outbound_server(pipe_name, 4096, false);
+            Assert::IsTrue(server != INVALID_HANDLE_VALUE, L"failed to create the secured outbound server");
+
+            PSECURITY_DESCRIPTOR security_descriptor = nullptr;
+            PACL dacl = nullptr;
+            Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS),
+                             GetSecurityInfo(server,
+                                             SE_KERNEL_OBJECT,
+                                             DACL_SECURITY_INFORMATION,
+                                             nullptr,
+                                             nullptr,
+                                             &dacl,
+                                             nullptr,
+                                             &security_descriptor));
+
+            BYTE world_sid[SECURITY_MAX_SID_SIZE]{};
+            BYTE anonymous_sid[SECURITY_MAX_SID_SIZE]{};
+            DWORD world_sid_size = ARRAYSIZE(world_sid);
+            DWORD anonymous_sid_size = ARRAYSIZE(anonymous_sid);
+            Assert::IsTrue(CreateWellKnownSid(WinWorldSid, nullptr, world_sid, &world_sid_size) == TRUE);
+            Assert::IsTrue(CreateWellKnownSid(WinAnonymousSid, nullptr, anonymous_sid, &anonymous_sid_size) == TRUE);
+
+            for (DWORD index = 0; index < dacl->AceCount; ++index)
+            {
+                void* ace = nullptr;
+                Assert::IsTrue(GetAce(dacl, index, &ace) == TRUE);
+                const auto* header = static_cast<ACE_HEADER*>(ace);
+                if (header->AceType != ACCESS_ALLOWED_ACE_TYPE)
+                {
+                    continue;
+                }
+
+                auto* allowed_ace = static_cast<ACCESS_ALLOWED_ACE*>(ace);
+                PSID sid = &allowed_ace->SidStart;
+                Assert::IsFalse(EqualSid(sid, world_sid) == TRUE,
+                                L"the outbound pipe DACL must not grant access to Everyone");
+                Assert::IsFalse(EqualSid(sid, anonymous_sid) == TRUE,
+                                L"the outbound pipe DACL must not grant access to Anonymous");
+            }
+
+            LocalFree(security_descriptor);
+            CloseHandle(server);
+        }
+
+        TEST_METHOD(OutboundServerModeRejectsRemoteClients)
+        {
+            Assert::IsTrue((secure_named_pipe::OutboundPipeMode & PIPE_REJECT_REMOTE_CLIENTS) != 0,
+                           L"the shared outbound server mode must reject remote clients");
         }
 
         TEST_METHOD(CommonOutboundPipeClientUsesIdentificationQos)
