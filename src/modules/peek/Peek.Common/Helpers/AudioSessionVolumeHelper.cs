@@ -233,6 +233,9 @@ namespace Peek.Common.Helpers
 
         public void Dispose()
         {
+            ISessionManager? manager;
+            ISessionControl[] sessions;
+            nint cookie;
             lock (_lock)
             {
                 if (_disposed)
@@ -241,25 +244,62 @@ namespace Peek.Common.Helpers
                 }
 
                 _disposed = true;
-                if (_manager != null)
+                manager = _manager;
+                _manager = null;
+                sessions = _sessions.ToArray();
+                _sessions.Clear();
+                cookie = _mtaCookie;
+                _mtaCookie = 0;
+            }
+
+            // Do not hold the callback lock while asking native code to unregister it.
+            try
+            {
+                if (manager != null)
                 {
-                    _manager.UnregisterSessionNotification(this);
-                    foreach (var session in _sessions)
+                    try
+                    {
+                        manager.UnregisterSessionNotification(this);
+                    }
+                    catch (COMException ex)
+                    {
+                        _reportError(ex);
+                    }
+                }
+
+                foreach (var session in sessions)
+                {
+                    try
                     {
                         session.UnregisterAudioSessionNotification(this);
+                    }
+                    catch (COMException ex)
+                    {
+                        _reportError(ex);
+                    }
+                    finally
+                    {
                         Release(session);
                     }
-
-                    _sessions.Clear();
-                    Release(_manager);
-                    _manager = null;
                 }
-
-                if (_mtaCookie != 0)
+            }
+            finally
+            {
+                if (manager != null)
                 {
-                    CoDecrementMTAUsage(_mtaCookie);
-                    _mtaCookie = 0;
+                    Release(manager);
                 }
+
+                if (cookie != 0)
+                {
+                    var result = CoDecrementMTAUsage(cookie);
+                    if (result < 0)
+                    {
+                        _reportError(Marshal.GetExceptionForHR(result)!);
+                    }
+                }
+
+                GC.SuppressFinalize(this);
             }
         }
     }
