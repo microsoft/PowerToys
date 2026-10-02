@@ -16,8 +16,9 @@ public:
     HRESULT Initialize();
     HRESULT Start();
     void Stop();
+    HRESULT GetCaptureError() const { return m_captureError.load(); }
 
-    // Returns audio samples in the format: PCM float, stereo, 48kHz
+    // Returns interleaved float samples at the render device's mix rate/channels.
     bool TryGetSamples(std::vector<float>& samples);
 
     WAVEFORMATEX* GetFormat() const { return m_pwfx; }
@@ -27,6 +28,7 @@ public:
 private:
     void CaptureThread();
     void DrainCaptureClient();
+    void EnqueueSamples(std::vector<float>&& samples);
 
     winrt::com_ptr<IMMDeviceEnumerator> m_deviceEnumerator;
     winrt::com_ptr<IMMDevice> m_device;
@@ -40,7 +42,9 @@ private:
 
     wil::srwlock m_lock;
     std::deque<std::vector<float>> m_sampleQueue;
+    size_t m_queuedSampleCount = 0;
 
     std::atomic<bool> m_initialized{ false };
     std::atomic<bool> m_started{ false };
+    std::atomic<HRESULT> m_captureError{ S_OK };
 };

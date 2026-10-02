@@ -1726,6 +1726,49 @@ void EnableDisableTrayIcon( HWND hWnd, BOOLEAN Enable )
     Shell_NotifyIcon(Enable ? NIM_ADD : NIM_DELETE, &tNotifyIconData);
 }
 
+constexpr UINT_PTR RECORDING_NOTIFICATION_TIMER = 6;
+bool g_TemporaryRecordingNotificationIcon = false;
+
+void ShowRecordingAudioNotification(HWND hWnd, WPARAM unavailableAudio)
+{
+    NOTIFYICONDATA data{};
+    data.cbSize = sizeof(data);
+    data.hWnd = hWnd;
+    data.uID = 1;
+    data.uFlags = NIF_INFO;
+    data.dwInfoFlags = NIIF_WARNING;
+    lstrcpyn(data.szInfoTitle, APPNAME, ARRAYSIZE(data.szInfoTitle));
+
+    const wchar_t* message = nullptr;
+    if ((unavailableAudio & 3) == 3)
+        message = L"No microphone or system audio could be captured. Audio capture is disabled for this recording; screen recording continues.";
+    else if (unavailableAudio & 1)
+        message = L"No microphone could be captured. Microphone capture is disabled for this recording; screen recording continues.";
+    else
+        message = L"System audio could not be captured. System audio capture is disabled for this recording; screen recording continues.";
+    lstrcpyn(data.szInfo, message, ARRAYSIZE(data.szInfo));
+
+    if (Shell_NotifyIcon(NIM_MODIFY, &data))
+        return;
+
+    // The tray icon is optional; temporarily add one to deliver the banner.
+    data.uID = 2;
+    data.uFlags = NIF_ICON | NIF_TIP;
+    data.hIcon = LoadIcon(g_hInstance, L"APPICON");
+    lstrcpyn(data.szTip, APPNAME, ARRAYSIZE(data.szTip));
+    if (!g_TemporaryRecordingNotificationIcon && !Shell_NotifyIcon(NIM_ADD, &data))
+    {
+        OutputDebugStringW(L"Failed to add ZoomIt notification icon for audio warning\n");
+        return;
+    }
+    g_TemporaryRecordingNotificationIcon = true;
+    data.uFlags = NIF_INFO;
+    if (!Shell_NotifyIcon(NIM_MODIFY, &data))
+        OutputDebugStringW(L"Failed to show ZoomIt audio warning notification\n");
+    if (!SetTimer(hWnd, RECORDING_NOTIFICATION_TIMER, 15000, nullptr))
+        OutputDebugStringW(L"Failed to schedule ZoomIt notification icon cleanup\n");
+}
+
 //----------------------------------------------------------------------------
 //
 // EnableDisableOpacity
@@ -5380,7 +5423,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         UpdateVersionFont();
         return TRUE;
 
-    case WM_USER+100:
+    case WM_USER_TRAY_ACTIVATE:
         BringWindowToTop( hDlg );
         SetFocus( hDlg );
         SetForegroundWindow( hDlg );
@@ -10600,6 +10643,10 @@ LRESULT APIENTRY MainWndProc(
             APPNAME, MB_OK | MB_ICONWARNING );
         break;
 
+    case WM_USER_RECORDING_AUDIO_UNAVAILABLE:
+        ShowRecordingAudioNotification(hWnd, wParam);
+        break;
+
     case WM_USER_SAVE_CURSOR:
         if( g_Zoomed == TRUE )
         {
@@ -11508,6 +11555,19 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_TIMER:
         switch( wParam ) {
+        case RECORDING_NOTIFICATION_TIMER:
+            KillTimer(hWnd, RECORDING_NOTIFICATION_TIMER);
+            if (g_TemporaryRecordingNotificationIcon)
+            {
+                NOTIFYICONDATA data{};
+                data.cbSize = sizeof(data);
+                data.hWnd = hWnd;
+                data.uID = 2;
+                Shell_NotifyIcon(NIM_DELETE, &data);
+                g_TemporaryRecordingNotificationIcon = false;
+            }
+            break;
+
         case 0:
             //
             // Break timer
@@ -11805,6 +11865,16 @@ LRESULT APIENTRY MainWndProc(
         break;
 
     case WM_DESTROY:
+        KillTimer(hWnd, RECORDING_NOTIFICATION_TIMER);
+        if (g_TemporaryRecordingNotificationIcon)
+        {
+            NOTIFYICONDATA data{};
+            data.cbSize = sizeof(data);
+            data.hWnd = hWnd;
+            data.uID = 2;
+            Shell_NotifyIcon(NIM_DELETE, &data);
+            g_TemporaryRecordingNotificationIcon = false;
+        }
         // Restore screensaver settings on clean shutdown in case the
         // break screensaver was still active.
         if( HasOrphanedScreenSaverSettings() )

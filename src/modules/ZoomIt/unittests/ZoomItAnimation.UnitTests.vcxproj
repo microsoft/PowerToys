@@ -29,7 +29,10 @@
   <ItemGroup>
     <ClCompile Include="..\ZoomIt\ZoomAnimation.cpp" />
     <ClCompile Include="ZoomAnimationTests.cpp" />
+    <ClCompile Include="AudioSamplePacerTests.cpp" />
     <ClInclude Include="..\ZoomIt\ZoomAnimation.h" />
+    <ClInclude Include="..\ZoomIt\AudioSamplePacer.h" />
+    <ClInclude Include="..\ZoomIt\AudioQueueLimits.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
