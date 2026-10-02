@@ -1261,7 +1261,7 @@ public partial class CommandItemViewModelTests
 
         using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
         var adapter = new TopLevelViewModel(source, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, item, DefaultContextMenuFactory.Instance);
-        var wrapped = new ListItemViewModel(adapter, new(pageContext), DefaultContextMenuFactory.Instance);
+        var wrapped = new ListItemViewModel(adapter, new(pageContext), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette);
         wrapped.SlowInitializeProperties();
         var secondary = (CommandContextItemViewModel)wrapped.SecondaryCommand!;
         var reads = item.MenuReadCount;

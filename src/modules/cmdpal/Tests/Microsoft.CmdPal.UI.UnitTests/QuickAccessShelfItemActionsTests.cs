@@ -132,7 +132,7 @@ public class QuickAccessShelfItemActionsTests
 
     private ListItemViewModel CreateItem(params IContextItem[] commands)
     {
-        _item = new ListItemViewModel(new ListItem(new NoOpCommand()) { MoreCommands = commands }, new(_pageContext), DefaultContextMenuFactory.Instance);
+        _item = new ListItemViewModel(new ListItem(new NoOpCommand()) { MoreCommands = commands }, new(_pageContext), DefaultContextMenuFactory.Instance, ItemSurface.CommandPalette);
         _item.SlowInitializeProperties();
         return _item;
     }

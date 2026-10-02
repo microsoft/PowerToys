@@ -1658,7 +1658,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ListItemViewModel? context = null;
         try
         {
-            context = new ListItemViewModel(item, new WeakReference<IPageContext>(pageContext), _contextMenuFactory);
+            context = new ListItemViewModel(item, new WeakReference<IPageContext>(pageContext), _contextMenuFactory, ItemSurface.QuickAccessShelf);
             if (context.SafeFastInit() && context.SafeInitializeProperties() && context.SafeSlowInit())
             {
                 return context;

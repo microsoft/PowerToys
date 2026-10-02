@@ -53,9 +53,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     /// </summary>
     public List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
         IContextItem[] items,
-        CommandItemViewModel commandItem)
+        CommandItemViewModel commandItem,
+        ItemSurface? surface)
     {
-        var results = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(items, commandItem);
+        var results = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(items, commandItem, surface);
 
         IPageContext? page = null;
         var succeeded = commandItem.PageContext.TryGetTarget(out page);
@@ -145,8 +146,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         if (moreCommands.Count > 0)
         {
             moreCommands.Insert(0, new Separator());
-            var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
-            results.AddRange(moreResults);
+            var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem, surface: null);
+            var slotIndex = results.FindIndex(item => item is ContextMenuSlot);
+            results.InsertRange(slotIndex < 0 ? results.Count : slotIndex, moreResults);
         }
 
         return results;
