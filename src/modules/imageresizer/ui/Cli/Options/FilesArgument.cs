@@ -9,8 +9,9 @@ namespace ImageResizer.Cli.Options
     public sealed class FilesArgument : Argument<string[]>
     {
         public FilesArgument()
-            : base("files", Properties.Resources.CLI_Option_Files)
+            : base("files")
         {
+            Description = Properties.Resources.CLI_Option_Files;
             Arity = ArgumentArity.ZeroOrMore;
         }
     }

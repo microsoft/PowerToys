@@ -20,17 +20,22 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
     public PowerDisplayRootCommand()
         : base("PowerToys PowerDisplay - control monitor settings from the command line.")
     {
-        AddGlobalOption(CliOptions.Quiet);
-        AddGlobalOption(CliOptions.Json);
+        // Parse without the --help/--version options every RootCommand gets: Program detects help and
+        // version tokens itself (so "-h" stays a valid --monitor-id value) and adds the options back
+        // only to render help, version, and framework parse errors.
+        Options.Clear();
 
-        AddCommand(BuildList());
-        AddCommand(BuildCapabilities());
-        AddCommand(BuildGet());
-        AddCommand(BuildSet());
-        AddCommand(BuildProfiles());
-        AddCommand(BuildApplyProfile());
-        AddCommand(BuildUp());
-        AddCommand(BuildDown());
+        Options.Add(CliOptions.Quiet);
+        Options.Add(CliOptions.Json);
+
+        Subcommands.Add(BuildList());
+        Subcommands.Add(BuildCapabilities());
+        Subcommands.Add(BuildGet());
+        Subcommands.Add(BuildSet());
+        Subcommands.Add(BuildProfiles());
+        Subcommands.Add(BuildApplyProfile());
+        Subcommands.Add(BuildUp());
+        Subcommands.Add(BuildDown());
     }
 
     private static Command BuildList()
@@ -41,34 +46,34 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
     private static Command BuildCapabilities()
     {
         var cmd = new Command(CliCommandNames.Capabilities, "Print the VCP capabilities advertised by the monitor. Use --setting to restrict to one discrete setting (color-temperature, input-source, power-state).");
-        cmd.AddOption(CliOptions.MonitorNumber);
-        cmd.AddOption(CliOptions.MonitorId);
-        cmd.AddOption(CliOptions.SettingFilter);
+        cmd.Options.Add(CliOptions.MonitorNumber);
+        cmd.Options.Add(CliOptions.MonitorId);
+        cmd.Options.Add(CliOptions.SettingFilter);
         return cmd;
     }
 
     private static Command BuildGet()
     {
         var cmd = new Command(CliCommandNames.Get, "Read the current value of one or all settings for a monitor.");
-        cmd.AddOption(CliOptions.MonitorNumber);
-        cmd.AddOption(CliOptions.MonitorId);
-        cmd.AddOption(CliOptions.SettingFilter);
+        cmd.Options.Add(CliOptions.MonitorNumber);
+        cmd.Options.Add(CliOptions.MonitorId);
+        cmd.Options.Add(CliOptions.SettingFilter);
         return cmd;
     }
 
     private static Command BuildSet()
     {
         var cmd = new Command(CliCommandNames.Set, "Apply a single setting to a monitor. Exactly one --<setting> flag must be provided.");
-        cmd.AddOption(CliOptions.MonitorNumber);
-        cmd.AddOption(CliOptions.MonitorId);
-        cmd.AddOption(CliOptions.Brightness);
-        cmd.AddOption(CliOptions.Contrast);
-        cmd.AddOption(CliOptions.Volume);
-        cmd.AddOption(CliOptions.ColorTemperature);
-        cmd.AddOption(CliOptions.InputSource);
-        cmd.AddOption(CliOptions.PowerState);
-        cmd.AddOption(CliOptions.Orientation);
-        cmd.AddOption(CliOptions.ConfirmPowerOff);
+        cmd.Options.Add(CliOptions.MonitorNumber);
+        cmd.Options.Add(CliOptions.MonitorId);
+        cmd.Options.Add(CliOptions.Brightness);
+        cmd.Options.Add(CliOptions.Contrast);
+        cmd.Options.Add(CliOptions.Volume);
+        cmd.Options.Add(CliOptions.ColorTemperature);
+        cmd.Options.Add(CliOptions.InputSource);
+        cmd.Options.Add(CliOptions.PowerState);
+        cmd.Options.Add(CliOptions.Orientation);
+        cmd.Options.Add(CliOptions.ConfirmPowerOff);
         return cmd;
     }
 
@@ -80,7 +85,7 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
     private static Command BuildApplyProfile()
     {
         var cmd = new Command(CliCommandNames.ApplyProfile, "Apply a saved profile's per-monitor settings to the connected monitors.");
-        cmd.AddArgument(CliOptions.ProfileId);
+        cmd.Arguments.Add(CliOptions.ProfileId);
         return cmd;
     }
 
@@ -100,11 +105,11 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
 
     private static void AddAdjustOptions(Command cmd)
     {
-        cmd.AddOption(CliOptions.MonitorNumber);
-        cmd.AddOption(CliOptions.MonitorId);
-        cmd.AddOption(CliOptions.BrightnessFlag);
-        cmd.AddOption(CliOptions.ContrastFlag);
-        cmd.AddOption(CliOptions.VolumeFlag);
-        cmd.AddOption(CliOptions.Step);
+        cmd.Options.Add(CliOptions.MonitorNumber);
+        cmd.Options.Add(CliOptions.MonitorId);
+        cmd.Options.Add(CliOptions.BrightnessFlag);
+        cmd.Options.Add(CliOptions.ContrastFlag);
+        cmd.Options.Add(CliOptions.VolumeFlag);
+        cmd.Options.Add(CliOptions.Step);
     }
 }

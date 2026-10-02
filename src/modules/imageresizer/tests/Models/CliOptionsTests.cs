@@ -267,6 +267,19 @@ namespace ImageResizer.Tests.Models
             Assert.AreEqual(ResizeFit.Fit, options.Fit);
         }
 
+        [DataTestMethod]
+        [DataRow("--unit")]
+        [DataRow("--fit")]
+        public void Parse_WithInvalidEnumValue_ReturnsError(string option)
+        {
+            var options = CliOptions.ParseForCli([option, "Bogus", "test.jpg"]);
+
+            Assert.AreEqual(1, options.ParseErrors.Count);
+            StringAssert.Contains(options.ParseErrors[0], option);
+            Assert.IsNull(options.Unit);
+            Assert.IsNull(options.Fit);
+        }
+
         [TestMethod]
         public void Parse_WithUnknownLongOption_ReturnsError()
         {

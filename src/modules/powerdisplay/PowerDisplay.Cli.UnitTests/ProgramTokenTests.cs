@@ -18,7 +18,7 @@ namespace PowerDisplay.Cli.UnitTests;
 public class ProgramTokenTests
 {
     private static ParseResult Parse(params string[] args)
-        => new Parser(new PowerDisplayRootCommand()).Parse(args);
+        => new PowerDisplayRootCommand().Parse(args);
 
     [TestMethod]
     public void HelpFlag_IsDetected()
@@ -115,7 +115,7 @@ public class ProgramTokenTests
     {
         var parsed = Parse("up", "--brightness");
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.BrightnessFlag));
+        Assert.IsTrue(parsed.GetValue(CliOptions.BrightnessFlag));
     }
 
     [TestMethod]
@@ -137,8 +137,8 @@ public class ProgramTokenTests
         var parsed = Parse("apply-profile", "--quiet", "1");
 
         Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
-        Assert.AreEqual(1, parsed.GetValueForArgument(CliOptions.ProfileId));
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
+        Assert.AreEqual(1, parsed.GetValue(CliOptions.ProfileId));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Quiet), "a bare --quiet resolves to true");
     }
 
     [DataTestMethod]
@@ -150,8 +150,8 @@ public class ProgramTokenTests
         var parsed = Parse(first, second, third);
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
-        Assert.AreEqual(17, parsed.GetValueForArgument(CliOptions.ProfileId));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Json));
+        Assert.AreEqual(17, parsed.GetValue(CliOptions.ProfileId));
         Assert.AreEqual(ArgumentArity.Zero, CliOptions.Json.Arity);
     }
 
@@ -163,7 +163,7 @@ public class ProgramTokenTests
         var parsed = Parse(first, second);
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Json));
+        Assert.IsTrue(parsed.GetValue(CliOptions.Json));
     }
 
     [TestMethod]
@@ -205,8 +205,8 @@ public class ProgramTokenTests
         var parsed = Parse("set", "--power-state", "0x04", "--confirm-power-off");
 
         Assert.AreEqual(0, parsed.Errors.Count);
-        Assert.IsTrue(parsed.GetValueForOption(CliOptions.ConfirmPowerOff));
-        Assert.AreEqual("0x04", parsed.GetValueForOption(CliOptions.PowerState));
+        Assert.IsTrue(parsed.GetValue(CliOptions.ConfirmPowerOff));
+        Assert.AreEqual("0x04", parsed.GetValue(CliOptions.PowerState));
     }
 
     [TestMethod]
@@ -226,7 +226,7 @@ public class ProgramTokenTests
         var parse = Parse("apply-profile", "5");
 
         Assert.AreEqual(0, parse.Errors.Count);
-        Assert.AreEqual(5, parse.GetValueForArgument(CliOptions.ProfileId));
+        Assert.AreEqual(5, parse.GetValue(CliOptions.ProfileId));
     }
 
     [TestMethod]

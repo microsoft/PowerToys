@@ -52,7 +52,7 @@ public class BaseDscTest
             Console.SetOut(outSw);
             Console.SetError(errSw);
 
-            var executeResult = new T().Invoke(args);
+            var executeResult = new T().Parse(args).Invoke();
             var output = outSw.ToString();
             var errorOutput = errSw.ToString();
             return new(executeResult == 0, output, errorOutput);

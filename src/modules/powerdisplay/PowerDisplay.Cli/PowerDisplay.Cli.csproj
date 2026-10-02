@@ -17,6 +17,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
+    <!-- CA1010: System.CommandLine's Command implements only the non-generic IEnumerable. -->
+    <NoWarn>$(NoWarn);CA1010</NoWarn>
     <!-- Globalization is enabled (not invariant) so the human-readable text output can be localized
          via satellite resources. The machine contract (JSON keys, error codes, status strings, exit
          codes, VCP names) stays culture-independent because every parse/format site passes
