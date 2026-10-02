@@ -39,6 +39,44 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
+#### Command Palette (`Microsoft.CmdPal.UITests.Next`)
+
+- Build Command Palette and the test project as **Release**. A Debug Command Palette build is not a
+  supported target for these tests.
+- The test project builds `SamplePagesExtension` and packages its layout as an unsigned
+  `SamplePagesExtension.msix` next to the test executable. Sign this package and trust its signing
+  certificate on the test machine before running the suite. `SamplePagesTests` installs it for the
+  current user and removes it after the class; it preserves an extension installed beforehand.
+  **Developer Mode is not required for this extension deployment.** Windows policy must permit
+  sideloading trusted app packages; certificate trust does not override a policy that blocks it.
+- CI uses `.pipelines\signSparsePackages.ps1` to sign and trust the package during elevated setup,
+  with `.pipelines\removeTestSigningCertificates.ps1` in the always-running cleanup step. Missing or
+  untrusted sample packages fail setup for CmdPal jobs on both Windows 10 and Windows 11.
+- For a local host-desktop run, execute the same signing helper from an elevated terminal before
+  running the tests as the normal test user (replace `<test-output>` with the executable's directory):
+
+  ```powershell
+  .\.pipelines\signSparsePackages.ps1 -PackageRoot "<test-output>" `
+    -Include SamplePagesExtension.msix -RequiredPackage SamplePagesExtension.msix `
+    -CertificateMarkerPath "$env:TEMP\CmdPalUiTestSigning.txt"
+  ```
+
+  Afterwards, run `.pipelines\removeTestSigningCertificates.ps1` elevated with the same marker path.
+  For VM runs, sign on the host with `-SkipLocalTrust -ExportCertificatePath "<exchange>\cmdpal-test.cer"`,
+  using a host-side marker and omitting `-RequiredPackage` (it verifies local trust, which is
+  intentionally absent on the host). Verify the signature is `Valid` in the guest after importing
+  the certificate. Transfer only the signed MSIX and public `.cer` (never the private key).
+  Import the public certificate into `Cert:\LocalMachine\Root` and
+  `Cert:\LocalMachine\TrustedPeople` during elevated guest setup. Record its exact thumbprint in a
+  guest-side marker and use the cleanup helper in both environments after the run, including on
+  failure. Keep guest-side markers outside `C:\PowerToysUiTestRun`, which the VM runner replaces
+  when refreshing the payload. This is per-run test trust, not a change to the saved VM baseline.
+- The extension depends on the `Microsoft.WindowsAppRuntime.2` framework package. The test project
+  copies its MSIX from the `Microsoft.WindowsAppSDK.Runtime` NuGet package, and `SamplePagesTests`
+  installs it for the current user when a compatible version is missing (for example on clean
+  Windows 10 machines).
+- Indexer tests create temporary files under `Downloads` and need Windows Search indexing enabled.
+
 ### Legacy tests
 
 - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1 to the default directory (`C:\Program Files (x86)\Windows Application Driver`)
