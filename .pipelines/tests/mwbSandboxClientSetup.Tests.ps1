@@ -50,6 +50,23 @@ Describe 'Actual current-user modern client readiness' {
             -ParameterFilter { $Arguments[0] -eq '--version' -and $TimeoutSeconds -eq 15 }
     }
 
+    It 'accepts recognized three- or four-part version formats and strips banners' -TestCases @(
+        @{ Output = '0.8.107.0'; Expected = 'wsb 0.8.107.0' }
+        @{ Output = 'wsb 0.8.107.0'; Expected = 'wsb 0.8.107.0' }
+        @{ Output = 'Windows Sandbox CLI version: 0.8.107'; Expected = 'wsb 0.8.107' }
+        @{ Output = "Unrelated banner`r`n0.8.107.0`r`nUnrelated details"; Expected = 'wsb 0.8.107.0' }
+        @{ Output = 'wsb.exe v0.8.107.0'; Expected = 'wsb 0.8.107.0' }
+    ) {
+        param($Output, $Expected)
+        Mock Invoke-MwbClientCommand {
+            @{ ExitCode = 0; TimedOut = $false; OutputComplete = $true; Output = $Output }
+        }
+        $result = Get-MwbClientReadiness
+        $result.Status | Should Be 'Ready'
+        $result.Version | Should Be $Expected
+        ($result | ConvertTo-Json) | Should Not Match 'Unrelated'
+    }
+
     It 'does not equate an absent package with readiness' {
         Mock Get-MwbClientPackages { }
         (Get-MwbClientReadiness).PackageCount | Should Be 0

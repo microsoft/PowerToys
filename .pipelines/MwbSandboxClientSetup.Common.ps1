@@ -132,6 +132,16 @@ function Assert-MwbClientManifest {
     $manifest
 }
 
+function ConvertTo-MwbClientVersion {
+    param([string] $Output)
+
+    # Match the runtime report's numeric version allowlist, not localized banner text.
+    $match = [regex]::Match($Output,
+        '^[ \t]*(?:(?:Windows Sandbox(?: CLI)?|wsb(?:\.exe)?)[ \t]+)?(?:version[ \t]*:?[ \t]*)?v?([0-9]{1,5}(?:\.[0-9]{1,5}){2,3})[ \t]*\r?$',
+        [Text.RegularExpressions.RegexOptions]'Multiline,IgnoreCase,CultureInvariant')
+    if ($match.Success) { "wsb $($match.Groups[1].Value)" }
+}
+
 function Get-MwbClientReadiness {
     $state = [ordered]@{
         Status = 'NotReady'; PackageCount = $null; Healthy = $false
@@ -152,9 +162,7 @@ function Get-MwbClientReadiness {
             $state.VersionExitCode = $version.ExitCode
             $state.VersionTimedOut = $version.TimedOut
             $state.VersionOutputComplete = $version.OutputComplete
-            if ($version.Output.Trim() -cmatch '^wsb \d{1,5}(?:\.\d{1,5}){2,3}$') {
-                $state.Version = $version.Output.Trim()
-            }
+            $state.Version = ConvertTo-MwbClientVersion $version.Output
             if (-not $version.TimedOut -and $version.OutputComplete -and $version.ExitCode -eq 0 -and $state.Version) {
                 $state.Status = 'Ready'
             }
