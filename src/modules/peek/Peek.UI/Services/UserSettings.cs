@@ -147,7 +147,11 @@ namespace Peek.UI
             {
                 try
                 {
-                    Settings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekModuleName);
+                    // A mixer notification may be writing this file on another thread.
+                    lock (_settingsLock)
+                    {
+                        Settings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekModuleName);
+                    }
                     return;
                 }
                 catch (System.IO.IOException ex)
