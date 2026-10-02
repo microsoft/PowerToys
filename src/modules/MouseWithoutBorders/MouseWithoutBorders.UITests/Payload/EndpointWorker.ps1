@@ -173,6 +173,7 @@ try {
                     'FocusInput' {
                         $focusWatch = [Diagnostics.Stopwatch]::StartNew()
                         $stableFocus = 0
+                        $dismissalsBefore = $script:receiver.StartMenuDismissals
                         do {
                             $script:receiver.FocusInput()
                             $foreground = [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::GetForegroundWindow()
@@ -184,7 +185,10 @@ try {
                         if ($stableFocus -lt 2) {
                             throw "Receiver focus was refused: foreground=$($foreground.ToInt64()), receiver=$($script:receiver.Handle.ToInt64())."
                         }
-                        $response.Result = @{ Hwnd = $script:receiver.Handle.ToInt64(); ForegroundHwnd = $foreground.ToInt64(); InputFocused = $true }
+                        $response.Result = @{
+                            Hwnd = $script:receiver.Handle.ToInt64(); ForegroundHwnd = $foreground.ToInt64(); InputFocused = $true
+                            StartMenuDismissed = $script:receiver.StartMenuDismissals -gt $dismissalsBefore
+                        }
                     }
                     'ClearInput' { $script:receiver.ClearInput(); $response.Result = @{ Cleared = $true } }
                     'PublishClipboard' {

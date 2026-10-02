@@ -1,9 +1,10 @@
 # Autonomous MWB nested-Sandbox Debug pilot
 
-**Status: official winappcli v0.7.0 passed the full four-test pilot on both
+**Status: official winappcli v0.7.0 passed the full seven-test pilot on both
 Windows 10 and Windows 11 on October 2, 2026.**
-Windows 11 run `localvm-20261002-155934-1014f42c` passed all eight
-ordered smoke phases in 21 minutes 6 seconds, including real pairing, physical
+The Start-menu focus fix adds three infrastructure regressions. Windows 11 run
+`localvm-20261002-221219-4822b84c` passed 7/7 tests and all eight
+ordered smoke phases in 34 minutes 38 seconds, including real pairing, physical
 remote input, clipboard-off isolation and both clipboard transfer directions.
 Both recordings finalized, settings and clipboard were restored, exact-GUID
 cleanup and external recovery succeeded, and evidence export had no errors.
@@ -12,8 +13,8 @@ physical-machine sign-off. See the bounded startup/cooperative recording section
 below for the measured delays and lifecycle changes.
 
 The unfiltered Windows 10 regression with the same test payload
-(`localvm-20261002-162428-16f32605`) passed 4/4 tests and all eight ordered phases
-in 22 minutes 20 seconds on its retained four-vCPU/24-GB VM:
+(`localvm-20261002-214643-9264f3c0`) passed 7/7 tests and all eight ordered phases
+in 22 minutes 36 seconds on its retained four-vCPU/24-GB VM:
 real New key/Connect, bidirectional owned TCP transport, local-input isolation,
 remote keyboard/mouse, clipboard-off isolation, clipboard transfer both ways,
 and cleanup. Both endpoints restored settings and clipboard; both recordings
@@ -441,6 +442,18 @@ The built executable is under
   pointer activity precedes the keyboard-only switch to leave MWB's simulated-input guard.
   `FocusInput` must observe the exact receiver HWND and focused edit control twice;
   a successful `SetForegroundWindow` request alone is not an acknowledgement.
+  An open Start menu is dismissed before native activation only when its visible
+  `Windows.UI.Core.CoreWindow` belongs to the same session's exact OS-owned
+  StartMenuExperienceHost, Win11 SearchHost, or Win10 SearchApp path. The modern
+  Start panel can give foreground to its search process rather than its visual
+  Start process. The helper revalidates process/HWND identity and active Default
+  desktop, refuses held modifiers, sends one Escape, and requires foreground to
+  leave that shell window within three seconds. It does not send Escape to unknown
+  windows, inject a rescue click, toggle the Windows key, or extend the existing
+  ten-second focus deadline. `FocusInput` records `StartMenuDismissed` in its
+  correlated response. The focused regression deliberately opens Start, requires
+  one dismissal, then proves physical typing reaches the receiver with zero
+  mouse messages; separate cases reject other windows, paths and sessions.
 - Clipboard-sharing-off isolation and sharing-on transfer in both directions,
   with at least 1500 ms between copies. Each source creates its own random
   synthetic token. Only observed hashes cross the control channel; the destination

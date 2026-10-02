@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.MouseWithoutBorders.UITests
@@ -373,6 +375,97 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 CaptureWindow = available ? info.Capture.ToInt64() : 0,
                 LeftButtonDown = (GetAsyncKeyState(1 /* VK_LBUTTON */) & 0x8000) != 0,
             };
+        }
+
+        public static bool IsStartMenuWindow(IntPtr window)
+        {
+            return GetStartMenuIdentity(window) != null;
+        }
+
+        public static bool IsStartMenuIdentity(string className, string processPath, int sessionId, int currentSessionId)
+        {
+            if (className != "Windows.UI.Core.CoreWindow" || currentSessionId <= 0 || sessionId != currentSessionId)
+            {
+                return false;
+            }
+
+            var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            return string.Equals(processPath, Path.Combine(windows,
+                @"SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\StartMenuExperienceHost.exe"), StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(processPath, Path.Combine(windows,
+                @"SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\SearchHost.exe"), StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(processPath, Path.Combine(windows,
+                @"SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy\SearchApp.exe"), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ProcessIdentity GetStartMenuIdentity(IntPtr window)
+        {
+            if (window == IntPtr.Zero || !IsWindowVisible(window))
+            {
+                return null;
+            }
+
+            var className = new StringBuilder(256);
+            if (GetClassName(window, className, className.Capacity) == 0 || className.ToString() != "Windows.UI.Core.CoreWindow")
+            {
+                return null;
+            }
+
+            var identity = ProcessIdentity.Capture(WindowProcessId(window));
+            using (var current = Process.GetCurrentProcess())
+            {
+                return IsStartMenuIdentity(className.ToString(), identity.Path, identity.SessionId, current.SessionId) ? identity : null;
+            }
+        }
+
+        public static bool DismissForegroundStartMenu(Action sendEscape)
+        {
+            if (sendEscape == null)
+            {
+                throw new ArgumentNullException("sendEscape");
+            }
+
+            IntPtr foreground = GetForegroundWindow();
+            var identity = GetStartMenuIdentity(foreground);
+            if (identity == null)
+            {
+                return false;
+            }
+
+            if (!Desktop().Ready || !identity.IsCurrent() || GetForegroundWindow() != foreground ||
+                WindowProcessId(foreground) != identity.Id)
+            {
+                throw new InvalidOperationException("Start-menu identity changed before focus recovery.");
+            }
+
+            foreach (var key in new[] { 0x10, 0x11, 0x12, 0x5B, 0x5C })
+            {
+                if ((GetAsyncKeyState(key) & 0x8000) != 0)
+                {
+                    throw new InvalidOperationException("Refusing Start-menu dismissal while a keyboard modifier is held.");
+                }
+            }
+
+            // CoreWindow ignores posted keyboard messages. Send one Escape only while
+            // the verified, same-session OS launcher still owns the active desktop.
+            if (GetForegroundWindow() != foreground || WindowProcessId(foreground) != identity.Id)
+            {
+                throw new InvalidOperationException("Start-menu foreground changed before dismissal.");
+            }
+
+            sendEscape();
+            var watch = Stopwatch.StartNew();
+            while (GetForegroundWindow() == foreground && watch.Elapsed < TimeSpan.FromSeconds(3))
+            {
+                Thread.Sleep(25);
+            }
+
+            if (GetForegroundWindow() == foreground)
+            {
+                throw new TimeoutException("The identified Start menu did not release foreground after dismissal.");
+            }
+
+            return true;
         }
 
         public static void FocusWindow(IntPtr window)

@@ -68,6 +68,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public int Clicks { get { return Invoke(delegate { return receiver.Clicks; }); } }
 
+        public int StartMenuDismissals { get { return Invoke(delegate { return receiver.StartMenuDismissals; }); } }
+
         public Rectangle ClickBounds { get { return Invoke(delegate { return receiver.ClickBounds; }); } }
 
         public long ClickTargetHandle { get { return Invoke(delegate { return receiver.ClickTargetHandle; }); } }
@@ -221,8 +223,15 @@ namespace Microsoft.MouseWithoutBorders.UITests
             get { return input.ContainsFocus; }
         }
 
+        public int StartMenuDismissals { get; private set; }
+
         public void FocusInput()
         {
+            if (NativeSupport.DismissForegroundStartMenu(delegate { SendKeys.SendWait("{ESC}"); }))
+            {
+                StartMenuDismissals++;
+            }
+
             NativeSupport.ShowWindow(Handle, 3);
             NativeSupport.FocusWindow(Handle);
             Activate();
