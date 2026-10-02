@@ -304,6 +304,8 @@ function Complete-MwbClientFirstLaunch {
         $null = $Process.WaitForExit(2000)
     }
     $failure = [InvalidOperationException]::new('FirstLaunchCleanupUnconfirmed')
+    $failure.Data['GuestObserved'] = $guestObserved
+    $failure.Data['LauncherStopped'] = $Process.HasExited
     if ($inventoryFailure) { $failure.Data['SafeHResult'] = Get-MwbClientErrorHResult $inventoryFailure }
     throw $failure
 }
@@ -312,6 +314,7 @@ function Invoke-MwbClientSetupWorker {
     param([Collections.IDictionary] $Request, [Collections.IDictionary] $Report, [string] $Directory)
 
     $launcher = $null
+    $firstLaunchTimer = $null
     try {
         $Report.Before = Get-MwbClientReadiness
         $Report.After = $Report.Before
@@ -333,6 +336,7 @@ function Invoke-MwbClientSetupWorker {
             $Report.Action = 'InboxFirstLaunch'
             $Report.Cleanup.Status = 'Pending'
             Save-MwbClientWorkerReport $Report $Directory
+            $firstLaunchTimer = [Diagnostics.Stopwatch]::StartNew()
             $launcher = Start-MwbClientFirstLaunch $Directory ([guid]$Request.RunId)
         }
         $timer = [Diagnostics.Stopwatch]::StartNew()
@@ -357,12 +361,20 @@ function Invoke-MwbClientSetupWorker {
     }
     finally {
         if ($launcher) {
-            try { $Report.Cleanup = Complete-MwbClientFirstLaunch $launcher $Directory ([guid]$Request.RunId) }
+            try {
+                # Registration can finish before the cold guest reaches its self-shutdown
+                # logon command. Share an eight-minute launch budget instead of giving
+                # early registration only sixty seconds to finish guest startup.
+                $remaining = [Math]::Max(1, [int][Math]::Ceiling(480 - $firstLaunchTimer.Elapsed.TotalSeconds))
+                $Report.Cleanup = Complete-MwbClientFirstLaunch $launcher $Directory ([guid]$Request.RunId) $remaining
+            }
             catch {
                 $Report.Cleanup = [ordered]@{
                     Status = 'Failed'
                     ErrorCode = if ($_.Exception.Message -ceq 'GuestMarkerMismatch') { 'GuestMarkerMismatch' } else { 'FirstLaunchCleanupUnconfirmed' }
                     ErrorHResult = Get-MwbClientErrorHResult $_
+                    GuestObserved = $_.Exception.Data['GuestObserved']
+                    LauncherStopped = $_.Exception.Data['LauncherStopped']
                 }
                 $Report.Status = 'Failed'
             }

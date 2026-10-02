@@ -129,7 +129,9 @@ updates are not cancelled. A leftover instance requires image/operator inspectio
 not an automatic broad cleanup.
 
 Installation polling is bounded to 300 seconds, registration to 120 seconds,
-version probes to 15 seconds and first-launch cleanup to 60 seconds. The
+and version probes to 15 seconds. Cold first launch and guest self-shutdown
+share an eight-minute budget: package registration can finish before the guest
+reaches its logon command, so early readiness must not shorten that budget. The
 controller has a 600-second task deadline with a 630-second scheduler limit;
 the pipeline step has 12 minutes. Child output draining is separately bounded
 (including inherited pipes). These bounds do not increase the test/CLI performance

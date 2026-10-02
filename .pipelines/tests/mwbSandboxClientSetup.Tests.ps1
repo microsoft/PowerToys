@@ -349,6 +349,9 @@ Describe 'Explicit setup policy and precise owned cleanup' {
         $report.Action | Should Be 'InboxFirstLaunch'
         $report.Cleanup.Status | Should Be 'Passed'
         Assert-MockCalled Complete-MwbClientFirstLaunch -Times 1 -Exactly -Scope It
+        Assert-MockCalled Complete-MwbClientFirstLaunch -Times 1 -Exactly -Scope It -ParameterFilter {
+            $TimeoutSeconds -gt 400 -and $TimeoutSeconds -le 480
+        }
         Test-Path (Join-Path $directory 'worker-report.json') | Should Be $true
     }
 
@@ -432,6 +435,20 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
         $process.HasExited = $false
         { Complete-MwbClientFirstLaunch $process $directory $id 0 } | Should Throw 'FirstLaunchCleanupUnconfirmed'
         $process.Killed | Should Be $true
+    }
+
+    It 'retains guest and launcher observations when the bounded cleanup fails' {
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        Mock Assert-MwbClientNoInstances { throw 'ExistingSandboxInstance' }
+        try {
+            Complete-MwbClientFirstLaunch $process $directory $id 0
+            throw 'Expected cleanup failure'
+        }
+        catch {
+            $_.Exception.Message | Should Be 'FirstLaunchCleanupUnconfirmed'
+            $_.Exception.Data['GuestObserved'] | Should Be $true
+            $_.Exception.Data['LauncherStopped'] | Should Be $true
+        }
     }
 
     It 'does not accept a guest marker from another run' {
