@@ -9,9 +9,9 @@ using Windows.Management.Deployment;
 namespace Microsoft.CmdPal.UITests;
 
 /// <summary>
-/// Context-menu keyboard tests that drive pages from SamplePagesExtension. The class registers the
-/// extension's loose MSIX layout (shipped next to the test binaries) before Command Palette launches
-/// and removes it afterwards. Registering a loose layout requires Developer Mode.
+/// Context-menu keyboard tests that drive pages from SamplePagesExtension. The class installs the
+/// signed MSIX (shipped next to the test binaries) before Command Palette launches and removes it
+/// afterwards. The test agent must trust the signing certificate before running the tests.
 /// </summary>
 [TestClass]
 public class SamplePagesTests : CommandPaletteTestBase
@@ -35,10 +35,10 @@ public class SamplePagesTests : CommandPaletteTestBase
             return;
         }
 
-        var manifestPath = Path.Combine(AppContext.BaseDirectory, PackageName, "AppxManifest.xml");
+        var packagePath = Path.Combine(AppContext.BaseDirectory, $"{PackageName}.msix");
         Assert.IsTrue(
-            File.Exists(manifestPath),
-            $"SamplePagesExtension layout is missing at '{manifestPath}'. Build the test project, which copies it.");
+            File.Exists(packagePath),
+            $"SamplePagesExtension package is missing at '{packagePath}'. Build the test project, then sign its MSIX before running it.");
 
         // Supply the Windows App Runtime framework the manifest depends on. Clean machines (for
         // example Windows 10 without Store updates) lack it, and RegisterPackageAsync only accepts
@@ -61,10 +61,10 @@ public class SamplePagesTests : CommandPaletteTestBase
             Assert.Fail($"Installing the Windows App Runtime framework failed: {ex.Message} {TryGetErrorText(frameworkOperation!)}");
         }
 
-        var operation = packageManager.RegisterPackageAsync(
-            new Uri(manifestPath),
+        var operation = packageManager.AddPackageAsync(
+            new Uri(packagePath),
             null,
-            DeploymentOptions.DevelopmentMode | DeploymentOptions.ForceApplicationShutdown);
+            DeploymentOptions.ForceApplicationShutdown);
         try
         {
             operation.AsTask().GetAwaiter().GetResult();
@@ -72,12 +72,12 @@ public class SamplePagesTests : CommandPaletteTestBase
         catch (Exception ex)
         {
             Assert.Fail(
-                $"Registering SamplePagesExtension failed (Developer Mode must be enabled to register a loose layout): {ex.Message} {TryGetErrorText(operation)}");
+                $"Installing SamplePagesExtension failed. Sign the MSIX and trust its certificate on the test agent before running the suite: {ex.Message} {TryGetErrorText(operation)}");
         }
 
         registeredPackageFullName = FindInstalledPackage(packageManager)?.Id.FullName;
-        Assert.IsNotNull(registeredPackageFullName, "SamplePagesExtension is not installed after registration.");
-        context.WriteLine($"Registered {registeredPackageFullName} from {manifestPath}");
+        Assert.IsNotNull(registeredPackageFullName, "SamplePagesExtension is not installed after deployment.");
+        context.WriteLine($"Installed {registeredPackageFullName} from {packagePath}");
 
         WarmUpExtensionServer(context);
     }
