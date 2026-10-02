@@ -60,8 +60,30 @@ Describe 'MWB always-exported prerequisite evidence' {
         $admin.Reason | Should Be 'PrepareDidNotReachInventory'
         $user.Status | Should Be 'NotChecked'
         $user.Reason | Should Be 'PrepareDidNotReachInventory'
+        $setup = Get-Content (Join-Path $published 'client-setup.json') -Raw | ConvertFrom-Json
+        $setup.Status | Should Be 'NotChecked'
+        $setup.Before.Status | Should Be 'NotChecked'
         Test-Path (Join-Path $published 'summary.txt') | Should Be $true
         @(Get-ChildItem $root -Filter '*.trx' -Recurse).Count | Should Be 0
+    }
+
+    It 'preserves explicit setup failure evidence when no Prepare or TRX was produced' {
+        $null = New-Item -ItemType Directory -Path $published
+        @{ SchemaVersion = 1; Status = 'Failed'; ErrorCode = 'ClientSetupDeadlineExceeded' } |
+            ConvertTo-Json | Set-Content (Join-Path $published 'client-setup.json')
+        Export-MwbSandboxPrerequisites $root $id
+        $setup = Get-Content (Join-Path $published 'client-setup.json') -Raw | ConvertFrom-Json
+        $setup.ErrorCode | Should Be 'ClientSetupDeadlineExceeded'
+        $setup.Status | Should Be 'Failed'
+        @(Get-ChildItem $root -Filter '*.trx' -Recurse).Count | Should Be 0
+    }
+
+    It 'marks a missing setup report as Legacy-skipped on the Win10 tier' {
+        $null = New-Item -ItemType Directory -Path $published
+        @{ SchemaVersion = 3; Platform = 'x64Win10' } |
+            ConvertTo-Json | Set-Content (Join-Path $published 'prerequisite-admin.json')
+        Export-MwbSandboxPrerequisites $root $id
+        (Get-Content (Join-Path $published 'client-setup.json') -Raw | ConvertFrom-Json).Status | Should Be 'SkippedLegacy'
     }
 
     It 'exports a Limited-user failed preflight before the ordinary fixture run directory or TRX exists' {
@@ -81,7 +103,7 @@ Describe 'MWB always-exported prerequisite evidence' {
         $user.Stages.UserPackageRegistration.ErrorHResults[0] | Should Be '0x80004005'
         Get-Content (Join-Path $published 'summary.txt') -Raw | Should Match 'Interactive prerequisites: Failed'
         Test-Path (Join-Path $launcher "mwb-$id") | Should Be $false
-        @(Get-ChildItem $published -File).Count | Should Be 3
+        @(Get-ChildItem $published -File).Count | Should Be 4
         Get-Content (Join-Path $published 'prerequisite-user.json') -Raw | Should Not Match 'DO_NOT_PUBLISH|FIXTURE|ProcessId'
     }
 

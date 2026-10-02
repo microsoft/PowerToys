@@ -51,9 +51,11 @@ Limited interactive test user must have the modern Sandbox package registered
 and a trusted, responsive `wsb` provider.
 
 Missing prerequisites remain `BLOCKED_INFRASTRUCTURE`, never a Legacy fallback,
-feature enablement, reboot, client installation, UAC prompt or security-policy
-change. Scoped firewall rules, exact run identities, protected staging, standard
-user dispatch and bounded owned recovery are unchanged.
+feature enablement, reboot, UAC prompt or security-policy change. The opt-in Debug
+pilot now explicitly attempts modern client setup **before** `Prepare`; installation
+is not a fallback hidden in the tests. Win10 skips this step and keeps Legacy.
+Scoped firewall rules, exact run identities, protected staging, standard-user
+dispatch and the test's own prerequisite gates are unchanged.
 
 The elevated `mwbSandboxExperiment.ps1 -Mode Prepare` step captures read-only
 `prerequisite-admin.json` before artifact, feature or backend gates: feature/OS
@@ -82,18 +84,81 @@ private. Other-user registrations, staged-only, provisioned-only, and absent
 inventories remain distinguishable. Both reports must be considered
 before diagnosing image installation versus account registration. See
 `src/modules/MouseWithoutBorders/MouseWithoutBorders.UITests/README.md` for the
-full field list; this never itself installs, elevates, or enables features.
+full field list; collecting these diagnostics never itself installs, elevates, or enables features.
 
-For an image without the modern client, Microsoft's
+## Explicit modern client setup (Debug MWB pilot only)
+
+`Install-MwbSandboxClient.ps1` uses an already elevated controller to stage a
+read-only request and scripts, then dispatches a priority-4, `Interactive`,
+`Limited` scheduled task to the **exact currently logged-on account** (the pool's
+ShineTest account, including its actual suffix/SID). The worker rejects SYSTEM,
+elevation, session zero, another account, and a missing Explorer desktop. There
+are no passwords, UAC prompts, feature enablement, reboots, or Store/policy edits.
+
+An already healthy current-user package from family
+`MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy`, a reparse-point `wsb.exe` alias,
+and a successful, zero-exit `wsb --version` make the step a no-op. Otherwise:
+
+* An existing Store/System-signed, non-development, healthy package may be
+  [registered with `Add-AppxPackage -Register -DisableDevelopmentMode`](https://learn.microsoft.com/powershell/module/appx/add-appxpackage#example-3-add-a-disabled-app-package-in-development-mode).
+  Exact family/full name, manifest identity, WindowsApps location, OS ownership,
+  non-writable ACLs and absence of reparse points are checked. No downloaded or
+  arbitrarily unpacked manifest is accepted.
+* For an absent package, Microsoft's
 [upgrade instructions](https://learn.microsoft.com/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-versions#upgrading-to-the-newer-version)
-require launching Windows Sandbox from Start and completing its Store update,
-with access to Microsoft Store and Windows Update. Complete this during image
-preparation, then confirm registration and `wsb --version` under the actual test
-account. Registering an existing manifest alone cannot install a missing
-package; the diagnostic flow does not attempt client installation or alter
-Store/network policy.
+  describe first launch through Start on Windows 11 24H2 KB10D or later, with the
+  feature already enabled and Internet access to Microsoft Store/Windows Update.
+  The usual update duration is 30 seconds–2 minutes. The automation invokes the
+  Microsoft-signed inbox `WindowsSandbox.exe` with a fresh
+  [documented `.wsb` configuration](https://learn.microsoft.com/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-configure-using-wsb-file),
+  only after verifying that this is the installed `.wsb` open association.
+  **The docs do not promise an unattended install switch or that every image's
+  first-launch updater honors a `.wsb` launch.** This path requires live validation
+  on the selected pool image; registration/readiness, not launcher exit, proves
+  completion. No guessed Store URLs, third-party mirrors or signature bypasses
+  are used.
+
+Setup refuses an existing Sandbox desktop/instance before mutation. A first-launch
+guest receives only a job-private output mapping, writes the job GUID, then shuts
+**itself** down via its configured logon command. No user Sandbox is adopted or
+stopped. Cleanup waits for the exact launcher handle and an empty provider inventory;
+it can terminate only that owned launcher handle, never a process found by name,
+a broker, or an uncorrelated instance. Unconfirmed cleanup fails the step and
+blocks `Prepare`, even if the package became ready. Store-managed background
+updates are not cancelled. A leftover instance requires image/operator inspection,
+not an automatic broad cleanup.
+
+Installation polling is bounded to 300 seconds, registration to 120 seconds,
+version probes to 15 seconds and first-launch cleanup to 60 seconds. The
+controller has a 600-second task deadline with a 630-second scheduler limit;
+the pipeline step has 12 minutes. Child output draining is separately bounded
+(including inherited pipes). These bounds do not increase the test/CLI performance
+envelopes. Scheduler completion and exit code must corroborate the worker report.
+The task is unregistered and its protected per-job staging/DACL grants removed.
+
+`client-setup.json` contains allowlisted before/after current-user readiness,
+action, errors (codes/HRESULT only), guest/launcher cleanup and dispatch cleanup.
+`client-setup-admin-before.json` and `client-setup-admin-after.json` contain the
+separate schema-3 inventory. These are in the existing `always()` prerequisite
+artifact even when installation fails before `Prepare` or no TRX exists.
+An unreached setup produces a `NotChecked` placeholder. Process command lines,
+provider output, package paths, Store logs and authentication state are not published.
+
+On a disposable CI-equivalent **VM**, after ensuring there is no user Sandbox and
+logging in the standard test account, run from the elevated agent identity:
+
+```powershell
+& .\.pipelines\Install-MwbSandboxClient.ps1 -Platform x64Win11 `
+  -RunId ([guid]::NewGuid()) -ResultsDirectory C:\MwbSetupValidation
+```
+
+Check both zero task exit and `Status=Ready`, identity, before/after state, and
+cleanup in `client-setup.json`; repeat with a new run GUID to verify `Action=None`.
+Then run the unchanged MWB prerequisite/test flow. ARM64 uses `-Platform arm64`.
+Do not run this installation/guest-launch validation on a physical workstation.
 
 Focused inert Pester 3.4 coverage lives in
 `tests\winappCliRelease.Tests.ps1`, `tests\mwbSandboxCiPreparation.Tests.ps1`,
-`tests\mwbSandboxExperiment.Tests.ps1`, and `tests\mwbReadyToRun.Tests.ps1`.
+`tests\mwbSandboxExperiment.Tests.ps1`, `tests\mwbReadyToRun.Tests.ps1`, and
+`tests\mwbSandboxClientSetup.Tests.ps1`.
 Preparing dependencies does not authorize queueing CI or running product UI.

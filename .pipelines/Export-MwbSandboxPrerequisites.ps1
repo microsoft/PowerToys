@@ -215,6 +215,17 @@ function Export-MwbSandboxPrerequisites {
     }
     $user | ConvertTo-Json -Depth 10 |
         Set-Content -LiteralPath (Join-Path $directory 'prerequisite-user.json') -Encoding utf8
+    $setupPath = Join-Path $directory 'client-setup.json'
+    Assert-MwbCiPlainPath $setupPath
+    if (-not (Test-Path -LiteralPath $setupPath -PathType Leaf)) {
+        [ordered]@{
+            SchemaVersion = 1; RunId = $RunId.ToString()
+            Status = if ($admin.Platform -eq 'x64Win10') { 'SkippedLegacy' } else { 'NotChecked' }
+            Reason = 'ClientSetupStepNotReached'
+            Before = @{ Status = 'NotChecked' }; After = @{ Status = 'NotChecked' }
+            Cleanup = @{ Status = 'NotStarted' }
+        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $setupPath -Encoding utf8
+    }
     $summary = @(
         'Windows Sandbox prerequisites: administrator inventory and actual interactive-user checks are separate.'
         'winapp CLI does not install or register the MicrosoftWindows.WindowsSandbox client.'
@@ -222,6 +233,7 @@ function Export-MwbSandboxPrerequisites {
         "Package inventory: $(if ($admin.InventoryConclusion) { $admin.InventoryConclusion } else { 'NotChecked' })."
         "Interactive prerequisites: $(if ($user.Status) { $user.Status } else { $user.Overall })."
         'See prerequisite-admin.json and prerequisite-user.json for allowlisted evidence and unreached stages.'
+        'client-setup.json records the explicit Limited-user installation step, separate from test readiness.'
         'Raw provisioning logs, initializer markers, commands and authentication state are not published.'
     )
     $summary | Set-Content -LiteralPath (Join-Path $directory 'summary.txt') -Encoding utf8

@@ -1,6 +1,14 @@
 # Debug-only pilot. Do not retry the suite or suppress Win11 infrastructure failures.
 steps:
   - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\Install-MwbSandboxClient.ps1" `
+        -RunId "$(System.JobId)" -Platform "$(TestPlatform)" `
+        -ResultsDirectory "$(Common.TestResultsDirectory)"
+    displayName: Complete modern Sandbox client installation as the Limited interactive user
+    condition: and(succeeded(), ne(variables['TestPlatform'], 'x64Win10'))
+    timeoutInMinutes: 12
+
+  - pwsh: |
       & "$(Build.SourcesDirectory)\.pipelines\mwbSandboxExperiment.ps1" -Mode Prepare `
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
         -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
