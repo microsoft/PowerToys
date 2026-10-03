@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -61,11 +62,24 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Overview);
             DataContext = this;
+
+            // The full "Warp" intro plays once per OOBE window; later visits get a quick settle.
+            Hero.Playback = OobeWindow.WelcomeIntroPlayed ? WelcomeHeroPlayback.Settle : WelcomeHeroPlayback.Intro;
+            OobeWindow.WelcomeIntroPlayed = true;
+            Hero.RevealTargets.Add(WelcomeTitle);
+            Hero.RevealTargets.Add(WelcomeDescription);
+            Hero.RevealTargets.Add(WelcomeActions);
+            Hero.RevealTargets.Add(DataDiagnosticsCard);
         }
 
         private void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void Hero_ModuleInvoked(object sender, string navigationTag)
+        {
+            OobeWindow.NavigateToModuleCallback?.Invoke(navigationTag);
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
