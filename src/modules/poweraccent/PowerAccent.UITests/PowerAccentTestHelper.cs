@@ -559,6 +559,97 @@ internal static class PowerAccentTestHelper
             .ToList();
     }
 
+    internal static double MeasureCharacterListHeightDip(UITestBase testBase, Session toolbar)
+    {
+        var dpiScale = GetDpiForWindow(new IntPtr(toolbar.WindowHandle)) / 96d;
+        Assert.IsTrue(dpiScale > 0, "Could not determine Quick Accent window DPI.");
+        var previous = default((int X, int Y, int Width, int Height)?);
+        var result = WaitHelper.WaitForStable(
+            () => toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 1_000),
+            list =>
+            {
+                var bounds = (list!.X, list.Y, list.Width, list.Height);
+                var unchanged = previous == bounds;
+                previous = bounds;
+                return list.Width > 0 && list.Height > 0 && unchanged;
+            },
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100);
+
+        var list = result.LastObservation;
+        var details = $"Character list={list?.Width}x{list?.Height} physical pixels; " +
+                      $"DPI scale={dpiScale}.";
+        Step(testBase, details);
+        Assert.IsTrue(result.Succeeded, $"Quick Accent character list bounds did not stabilize. {details}");
+        return list!.Height / dpiScale;
+    }
+
+    internal static void AssertKeyboardNavigationScrollsIntoView(
+        UITestBase testBase,
+        Session toolbar,
+        IReadOnlyList<string> characters)
+    {
+        Assert.AreEqual(characters[0], GetSelectedCharacter(toolbar, [characters[0]]));
+        var viewport = toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 5_000);
+        var first = FindCharacterItem(toolbar, characters[0]);
+        var last = FindCharacterItem(toolbar, characters[^1]);
+        Assert.IsNotNull(first, "The first character should expose a list-item automation peer.");
+        Assert.IsNotNull(last, "The last character should expose a list-item automation peer.");
+        Assert.IsTrue(IsHorizontallyWithin(first, viewport), "The first character should initially be inside the viewport.");
+        if (IsHorizontallyWithin(last, viewport))
+        {
+            Assert.Inconclusive("The ALL-language E list fits this display; the scrolling prerequisite is not met.");
+        }
+
+        var initialFirstX = first.X;
+
+        // Wrapping backwards forces scrolling with one keypress.
+        KeyboardHelper.SendKey(Key.Left);
+
+        var result = WaitHelper.WaitForStable(
+            () => (
+                Viewport: toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 1_000),
+                First: FindCharacterItem(toolbar, characters[0]),
+                Last: FindCharacterItem(toolbar, characters[^1])),
+            observation => observation.Last is not null && observation.Last.Selected &&
+                           IsHorizontallyWithin(observation.Last, observation.Viewport) &&
+                           observation.First is not null && observation.First.X < initialFirstX - 1,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100);
+        var bounds = result.LastObservation;
+        var details = $"Viewport X={bounds.Viewport?.X}, width={bounds.Viewport?.Width}; " +
+                      $"selected last item X={bounds.Last?.X}, width={bounds.Last?.Width}; " +
+                      $"first item X={initialFirstX} -> {bounds.First?.X}.";
+        Step(testBase, details);
+        Assert.IsTrue(result.Succeeded, $"Keyboard navigation did not scroll the selected character into view. {details}");
+
+        KeyboardHelper.SendKey(Key.Right);
+        var returnResult = WaitHelper.WaitForStable(
+            () => (
+                Viewport: toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 1_000),
+                First: FindCharacterItem(toolbar, characters[0])),
+            observation => observation.First is not null && observation.First.Selected &&
+                           IsHorizontallyWithin(observation.First, observation.Viewport) &&
+                           observation.First.X > bounds.First!.X + 1,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            pollIntervalMS: 100);
+        var returnedBounds = returnResult.LastObservation;
+        var returnDetails = $"Viewport X={returnedBounds.Viewport?.X}, width={returnedBounds.Viewport?.Width}; " +
+                            $"selected first item X={returnedBounds.First?.X}, width={returnedBounds.First?.Width}; " +
+                            $"initial first item X={initialFirstX}.";
+        Step(testBase, returnDetails);
+        Assert.IsTrue(
+            returnResult.Succeeded,
+            $"Right from the last character did not scroll back to the selected first character. {returnDetails}");
+    }
+
+    private static bool IsHorizontallyWithin(Element item, Element viewport) =>
+        item.Width > 0 && item.Height > 0 &&
+        item.X >= viewport.X - 1 && item.X + item.Width <= viewport.X + viewport.Width + 1;
+
     internal static void AssertToolbarPlacement(
         UITestBase testBase,
         Session toolbar,
@@ -769,8 +860,9 @@ internal static class PowerAccentTestHelper
     private static Element? FindCharacterItem(Session toolbar, string character) =>
         toolbar.FindAll<Element>(By.Name(character), timeoutMS: 0)
             .FirstOrDefault(element =>
-                element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) ||
-                element.ClassName.Equals("ListViewItem", StringComparison.OrdinalIgnoreCase));
+                element.Name.Equals(character, StringComparison.Ordinal) &&
+                (element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase) ||
+                 element.ClassName.Equals("ListViewItem", StringComparison.OrdinalIgnoreCase)));
 
     private static string FormatObservation(OverlayObservation? observation) =>
         observation is null
