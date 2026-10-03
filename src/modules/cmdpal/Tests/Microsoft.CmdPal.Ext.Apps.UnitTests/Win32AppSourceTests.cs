@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -201,6 +202,46 @@ public class Win32AppSourceTests
             var syntheticIdentity = $"win32:{targetPath}|args:|cwd:{Path.GetDirectoryName(targetPath)}";
             CollectionAssert.DoesNotContain(merged.IdentityAliases.ToArray(), syntheticIdentity);
             Assert.IsNull(snapshot.GetVisibleApp(AppIdentity.ForCommand(syntheticIdentity)));
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_DefaultWorkingDirectoryDoesNotPersistSyntheticCommandAlias()
+    {
+        var root = CreateTemporaryDirectory("cmdpal-3dsmax-aliases");
+        try
+        {
+            const string targetPath = @"C:\Program Files\Autodesk\3ds Max 2026\3dsmax.exe";
+            const string shortcutPath = @"C:\Start Menu\3ds Max 2026.lnk";
+            var program = CreateExecutable("3ds Max 2026", targetPath, shortcutPath);
+            program.WorkingDirectory = Path.GetDirectoryName(targetPath)!;
+            using var source = new Win32AppSource(
+                new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, shortcutPath),
+                (_, _) => program,
+                createWatchers: false);
+            var item = (await source.LoadAsync(CancellationToken.None)).Single();
+            var syntheticId = AppIdentity.ForCommand($"win32:{targetPath}|args:|cwd:{program.WorkingDirectory}");
+            var shortcutId = AppIdentity.ForCommand($"win32:{shortcutPath}|args:");
+            var releasedId = item.Payload.GetCommandId();
+            var settings = new AllAppsSettings(Path.Combine(root, "settings.json"));
+            var aliases = settings.RetainAppCommandAliases([item.ToAppItem()]);
+            await settings.WaitForAliasSavesAsync();
+
+            Assert.AreEqual($"win32:{targetPath}|args:", item.Identity);
+            Assert.IsFalse(aliases.ContainsKey(syntheticId));
+            var savedAliases = JsonNode.Parse(File.ReadAllText(settings.AppCommandAliasesFilePath))!["AppCommandAliases"]!.AsObject();
+            Assert.IsFalse(savedAliases.ContainsKey(syntheticId));
+            Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[shortcutId]!.GetValue<string>());
+            Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[releasedId]!.GetValue<string>());
+            var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
+            Assert.IsNull(snapshot.GetCommandItem(syntheticId));
+            Assert.AreSame(row, snapshot.GetVisibleApp(shortcutId));
+            Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
         }
     }
 
@@ -471,7 +512,7 @@ public class Win32AppSourceTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -593,7 +634,7 @@ public class Win32AppSourceTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -655,7 +696,7 @@ public class Win32AppSourceTests
                 source.Dispose();
             }
 
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 

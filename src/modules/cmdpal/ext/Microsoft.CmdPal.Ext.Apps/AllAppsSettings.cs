@@ -25,6 +25,8 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsSettings : JsonSettingsManager
 {
     private const int DefaultSearchResultLimit = 10;
+    private const int AppCommandAliasesReadAttempts = 3;
+    private const int AppCommandAliasesReadRetryDelayMs = 25;
     private const string DisabledProgramSourcesPropertyName = "DisabledProgramSources";
     private const string DisabledProgramUniqueIdentifierPropertyName = "UniqueIdentifier";
     private const string AppCommandAliasesPropertyName = "AppCommandAliases";
@@ -67,6 +69,9 @@ public partial class AllAppsSettings : JsonSettingsManager
     private FrozenSet<string> _savedHiddenIdentities = FrozenSet<string>.Empty;
     private Task? _aliasSaveTask;
     private bool _aliasSavePending;
+    private bool _canSaveAppCommandAliases = true;
+    private bool _hasSavedAppCommandAliases;
+    private bool _legacyAppCommandAliasesPending;
 
     internal event EventHandler? HiddenAppsChanged;
 
@@ -230,6 +235,8 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     internal const char SuffixSeparator = ';';
 
+    internal string AppCommandAliasesFilePath => AppCommandAliasesPath(FilePath);
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -277,6 +284,18 @@ public partial class AllAppsSettings : JsonSettingsManager
         Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
 
+    internal static string AppCommandAliasesPath(string settingsPath)
+    {
+        var name = Path.GetFileNameWithoutExtension(settingsPath);
+        const string settingsSuffix = ".settings";
+        if (name.EndsWith(settingsSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            name = name[..^settingsSuffix.Length];
+        }
+
+        return Path.Combine(Path.GetDirectoryName(settingsPath) ?? string.Empty, $"{name}.aliases.json");
+    }
+
     public override void LoadSettings()
     {
         WaitForAliasSavesAsync().GetAwaiter().GetResult();
@@ -295,27 +314,47 @@ public partial class AllAppsSettings : JsonSettingsManager
                 throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(LoadSettings)}");
             }
 
-            if (!File.Exists(FilePath))
-            {
-                return;
-            }
-
+            JsonObject? savedSettings = null;
+            string? content = null;
             try
             {
-                var content = File.ReadAllText(FilePath);
-                if (JsonNode.Parse(content) is not JsonObject savedSettings)
+                if (File.Exists(FilePath))
                 {
-                    LogInvalidSettingsJson(_logger);
-                    return;
+                    content = File.ReadAllText(FilePath);
+                    savedSettings = JsonNode.Parse(content) as JsonObject;
+                    if (savedSettings is null)
+                    {
+                        LogInvalidSettingsJson(_logger);
+                    }
+                    else
+                    {
+                        LoadDisabledProgramSources(savedSettings);
+                        _savedHiddenIdentities = _disabledProgramIdentities;
+                    }
                 }
-
-                LoadDisabledProgramSources(savedSettings);
-                LoadAppCommandAliases(savedSettings);
-                Settings.Update(content);
             }
             catch (Exception ex)
             {
                 LogSettingsLoadFailed(_logger, ex);
+            }
+
+            LoadAppCommandAliases(savedSettings);
+            if (savedSettings is not null)
+            {
+                try
+                {
+                    Settings.Update(content!);
+                }
+                catch (Exception ex)
+                {
+                    LogSettingsLoadFailed(_logger, ex);
+                }
+            }
+
+            if (_legacyAppCommandAliasesPending && _canSaveAppCommandAliases)
+            {
+                _aliasSavePending = true;
+                _aliasSaveTask ??= Task.Run(SavePendingAliases);
             }
         }
     }
@@ -500,10 +539,17 @@ public partial class AllAppsSettings : JsonSettingsManager
 
             lock (_settingsFileLock)
             {
-                if (!ReferenceEquals(Volatile.Read(ref _appCommandAliases), _savedAppCommandAliases)
-                    || !ReferenceEquals(Volatile.Read(ref _disabledProgramIdentities), _savedHiddenIdentities))
+                if (!ReferenceEquals(Volatile.Read(ref _disabledProgramIdentities), _savedHiddenIdentities))
                 {
                     SaveSettingsUnderFileLock();
+                }
+                else
+                {
+                    SaveAppCommandAliasesUnderFileLock();
+                    if (_legacyAppCommandAliasesPending && _hasSavedAppCommandAliases && _canSaveAppCommandAliases)
+                    {
+                        RemoveLegacyAppCommandAliasesUnderFileLock();
+                    }
                 }
             }
         }
@@ -511,7 +557,7 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     private void SaveSettingsUnderFileLock()
     {
-        string? temporaryPath = null;
+        SaveAppCommandAliasesUnderFileLock();
 
         try
         {
@@ -521,12 +567,10 @@ public partial class AllAppsSettings : JsonSettingsManager
             }
 
             JsonObject? currentSettings;
-            FrozenDictionary<string, string> aliases;
             FrozenSet<string> hiddenIdentities;
             lock (_settingsWriterLock)
             {
                 currentSettings = JsonNode.Parse(Settings.ToJson()) as JsonObject;
-                aliases = _appCommandAliases;
                 hiddenIdentities = _disabledProgramIdentities;
             }
 
@@ -562,45 +606,102 @@ public partial class AllAppsSettings : JsonSettingsManager
 
             savedSettings[DisabledProgramSourcesPropertyName] = hiddenApps;
 
+            if (_hasSavedAppCommandAliases && _canSaveAppCommandAliases)
+            {
+                savedSettings.Remove(AppCommandAliasesPropertyName);
+            }
+
+            // Remove the grouped alias format written by earlier pre-release builds.
+            savedSettings.Remove("AppCommandAliasGroups");
+
+            WriteJsonAtomically(FilePath, savedSettings);
+            _savedHiddenIdentities = hiddenIdentities;
+            _legacyAppCommandAliasesPending = savedSettings.ContainsKey(AppCommandAliasesPropertyName);
+        }
+        catch (Exception ex)
+        {
+            LogSettingsSaveFailed(_logger, ex);
+        }
+    }
+
+    private void SaveAppCommandAliasesUnderFileLock()
+    {
+        var aliases = Volatile.Read(ref _appCommandAliases);
+        if (string.IsNullOrEmpty(FilePath) || !_canSaveAppCommandAliases
+            || (ReferenceEquals(aliases, _savedAppCommandAliases) && (!_legacyAppCommandAliasesPending || _hasSavedAppCommandAliases)))
+        {
+            return;
+        }
+
+        try
+        {
             var commandAliases = new JsonObject();
             foreach (var alias in aliases.OrderBy(pair => pair.Key, StringComparer.Ordinal))
             {
                 commandAliases[alias.Key] = alias.Value;
             }
 
-            savedSettings[AppCommandAliasesPropertyName] = commandAliases;
+            WriteJsonAtomically(AppCommandAliasesFilePath, new JsonObject { [AppCommandAliasesPropertyName] = commandAliases });
+            _savedAppCommandAliases = aliases;
+            _hasSavedAppCommandAliases = true;
+        }
+        catch (Exception ex)
+        {
+            LogAppCommandAliasesSaveFailed(_logger, ex);
+        }
+    }
 
-            // Remove the grouped alias format written by earlier pre-release builds.
-            savedSettings.Remove("AppCommandAliasGroups");
-
-            var directory = Path.GetDirectoryName(FilePath);
-            if (!string.IsNullOrEmpty(directory))
+    private void RemoveLegacyAppCommandAliasesUnderFileLock()
+    {
+        try
+        {
+            if (File.Exists(FilePath))
             {
-                Directory.CreateDirectory(directory);
+                if (JsonNode.Parse(File.ReadAllText(FilePath)) is not JsonObject savedSettings)
+                {
+                    LogInvalidSettingsJson(_logger);
+                    return;
+                }
+
+                var changed = savedSettings.Remove(AppCommandAliasesPropertyName);
+                changed |= savedSettings.Remove("AppCommandAliasGroups");
+                if (changed)
+                {
+                    WriteJsonAtomically(FilePath, savedSettings);
+                }
             }
 
-            temporaryPath = $"{FilePath}.{Guid.NewGuid():N}.tmp";
-            File.WriteAllText(temporaryPath, savedSettings.ToJsonString(_serializerOptions));
-            File.Move(temporaryPath, FilePath, overwrite: true);
-            _savedAppCommandAliases = aliases;
-            _savedHiddenIdentities = hiddenIdentities;
+            _legacyAppCommandAliasesPending = false;
         }
         catch (Exception ex)
         {
             LogSettingsSaveFailed(_logger, ex);
         }
+    }
+
+    private void WriteJsonAtomically(string path, JsonObject content)
+    {
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.WriteAllText(temporaryPath, content.ToJsonString(_serializerOptions));
+            File.Move(temporaryPath, path, overwrite: true);
+        }
         finally
         {
-            if (temporaryPath is not null)
+            try
             {
-                try
-                {
-                    File.Delete(temporaryPath);
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                {
-                    LogTemporarySettingsFileRemovalFailed(_logger, ex);
-                }
+                File.Delete(temporaryPath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                LogTemporarySettingsFileRemovalFailed(_logger, ex);
             }
         }
     }
@@ -636,10 +737,46 @@ public partial class AllAppsSettings : JsonSettingsManager
             hiddenIdentities.ToFrozenSet(StringComparer.OrdinalIgnoreCase));
     }
 
-    private void LoadAppCommandAliases(JsonObject savedSettings)
+    private void LoadAppCommandAliases(JsonObject? savedSettings)
     {
+        _legacyAppCommandAliasesPending = savedSettings?.ContainsKey(AppCommandAliasesPropertyName) == true
+            || savedSettings?.ContainsKey("AppCommandAliasGroups") == true;
+        _canSaveAppCommandAliases = true;
+        _hasSavedAppCommandAliases = false;
+        JsonObject? commandAliases = null;
+        try
+        {
+            var content = ReadAppCommandAliasesFile();
+
+            // Once present, the separate file is authoritative, including an empty alias map.
+            if (content is not null)
+            {
+                if (JsonNode.Parse(content) is not JsonObject aliasFile
+                    || aliasFile[AppCommandAliasesPropertyName] is not JsonObject savedAliases
+                    || savedAliases.Any(alias => string.IsNullOrWhiteSpace(alias.Key)
+                        || alias.Value is not JsonValue value || !value.TryGetValue<string>(out var target) || target is null))
+                {
+                    throw new JsonException("The Apps command alias file must contain a string-to-string AppCommandAliases object.");
+                }
+
+                commandAliases = savedAliases;
+                _hasSavedAppCommandAliases = true;
+            }
+            else
+            {
+                commandAliases = savedSettings?[AppCommandAliasesPropertyName] as JsonObject;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Do not overwrite unreadable alias history or revive stale settings-file aliases.
+            _canSaveAppCommandAliases = false;
+            LogAppCommandAliasesLoadFailed(_logger, ex);
+            return;
+        }
+
         var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (savedSettings[AppCommandAliasesPropertyName] is JsonObject commandAliases)
+        if (commandAliases is not null)
         {
             foreach (var alias in commandAliases)
             {
@@ -655,7 +792,27 @@ public partial class AllAppsSettings : JsonSettingsManager
 
         _appCommandAliases = aliases.Where(pair => pair.Key != pair.Value).ToFrozenDictionary(StringComparer.Ordinal);
         _savedAppCommandAliases = _appCommandAliases;
-        _savedHiddenIdentities = _disabledProgramIdentities;
+    }
+
+    private string? ReadAppCommandAliasesFile()
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return File.ReadAllText(AppCommandAliasesFilePath);
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                // An absent file can be populated from the legacy settings map.
+                return null;
+            }
+            catch (IOException ex) when (attempt < AppCommandAliasesReadAttempts)
+            {
+                LogAppCommandAliasesReadRetry(_logger, ex);
+                Thread.Sleep(AppCommandAliasesReadRetryDelayMs);
+            }
+        }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to parse the Apps settings file as a JSON object.")]
@@ -670,6 +827,15 @@ public partial class AllAppsSettings : JsonSettingsManager
     [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Failed to save Apps settings.")]
     private static partial void LogSettingsSaveFailed(MEL.ILogger logger, Exception exception);
 
-    [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Failed to remove a temporary Apps settings file.")]
+    [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Failed to remove a temporary Apps data file.")]
     private static partial void LogTemporarySettingsFileRemovalFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Failed to load Apps command aliases.")]
+    private static partial void LogAppCommandAliasesLoadFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 7, Level = LogLevel.Error, Message = "Failed to save Apps command aliases.")]
+    private static partial void LogAppCommandAliasesSaveFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = "Retrying Apps command alias read after an I/O failure.")]
+    private static partial void LogAppCommandAliasesReadRetry(MEL.ILogger logger, Exception exception);
 }

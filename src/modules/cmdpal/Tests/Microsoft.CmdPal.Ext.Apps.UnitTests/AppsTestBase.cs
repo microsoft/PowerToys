@@ -62,7 +62,7 @@ public abstract class AppsTestBase
         Page?.Dispose();
         AppListItemSource?.Dispose();
         MockCatalog?.Dispose();
-        File.Delete(_settingsPath);
+        TestDataHelper.DeleteSettingsFiles(_settingsPath);
     }
 
     /// <summary>

@@ -27,7 +27,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -50,7 +50,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -69,7 +69,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -86,7 +86,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -112,7 +112,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -135,7 +135,7 @@ public class UninstallerAppCatalogFilterTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
