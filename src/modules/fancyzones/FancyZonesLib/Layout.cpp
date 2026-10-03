@@ -342,3 +342,23 @@ RECT Layout::GetCombinedZonesRect(const ZoneIndexSet& zones)
 
     return size;
 }
+
+std::optional<ZoneIndexSet> Layout::ValidatedDefaultZoneIndexSet() const noexcept
+{
+    if (!m_data.defaultZoneIndexSet.has_value() || m_data.defaultZoneIndexSet->empty())
+    {
+        return std::nullopt;
+    }
+
+    for (ZoneIndex id : m_data.defaultZoneIndexSet.value())
+    {
+        if (!m_zones.contains(id))
+        {
+            // Stale relative to the zone count actually resolved on this work area
+            // (e.g. a per-monitor override on a built-in template), so skip it.
+            return std::nullopt;
+        }
+    }
+
+    return m_data.defaultZoneIndexSet;
+}
