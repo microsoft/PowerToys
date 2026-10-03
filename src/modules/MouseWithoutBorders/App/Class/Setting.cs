@@ -78,7 +78,7 @@ namespace MouseWithoutBorders.Class
 
                     _settings = settings;
 
-                    _properties = settings.Properties;
+                    var machineMatrixChanged = AdoptLoadedProperties(ref _properties, settings.Properties);
 
                     // Keep track of the need to resend the machine matrix.
                     bool shouldSendMachineMatrix = false;
@@ -100,9 +100,8 @@ namespace MouseWithoutBorders.Class
                             CustomCursor.ShowFakeMouseCursor(int.MinValue, int.MinValue);
                         }
 
-                        if (!Enumerable.SequenceEqual(last_properties.MachineMatrixString, _settings.Properties.MachineMatrixString))
+                        if (machineMatrixChanged)
                         {
-                            _properties.MachineMatrixString = _settings.Properties.MachineMatrixString;
                             MachineStuff.MachineMatrix = null; // Forces read next time it's needed.
                             shouldSendMachineMatrix = true;
                         }
@@ -141,6 +140,15 @@ namespace MouseWithoutBorders.Class
             }
 
             PauseInstantSaving = false;
+        }
+
+        // Keep adoption separate from file watching, network updates, and saving so it can be
+        // tested without touching the user's settings or connecting to other computers.
+        internal static bool AdoptLoadedProperties(ref MouseWithoutBordersProperties properties, MouseWithoutBordersProperties loaded)
+        {
+            var previous = properties;
+            properties = loaded;
+            return previous != null && !Enumerable.SequenceEqual(previous.MachineMatrixString, loaded.MachineMatrixString);
         }
 
         public void SaveSettings()
@@ -227,7 +235,8 @@ namespace MouseWithoutBorders.Class
             {
                 lock (_loadingSettingsLock)
                 {
-                    _properties.MachineMatrixString = new List<string>(value.Split(","));
+                    _properties.MachineMatrixString.Clear();
+                    _properties.MachineMatrixString.AddRange(value.Split(","));
                     if (!PauseInstantSaving)
                     {
                         SaveSettings();

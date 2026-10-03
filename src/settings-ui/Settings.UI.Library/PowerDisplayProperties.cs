@@ -11,6 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerDisplayProperties
     {
+        private List<MonitorInfo> _monitors = new List<MonitorInfo>();
+        private List<string> _excludedFromSyncMonitorIds = new List<string>();
+        private List<CustomVcpValueMapping> _customVcpMappings = new List<CustomVcpValueMapping>();
+
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x50); // Win+Ctrl+Shift+P (win, ctrl, alt, shift, code)
 
@@ -65,7 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public MouseWheelControlMode MouseWheelControlMode { get; set; }
 
         [JsonPropertyName("monitors")]
-        public List<MonitorInfo> Monitors { get; set; }
+        public List<MonitorInfo> Monitors
+        {
+            get => _monitors;
+            init => _monitors = value ?? new List<MonitorInfo>();
+        }
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
@@ -115,13 +123,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// including newly connected ones.
         /// </summary>
         [JsonPropertyName("excluded_from_sync_monitor_ids")]
-        public List<string> ExcludedFromSyncMonitorIds { get; set; }
+        public List<string> ExcludedFromSyncMonitorIds
+        {
+            get => _excludedFromSyncMonitorIds;
+            init => _excludedFromSyncMonitorIds = value ?? new List<string>();
+        }
 
         /// <summary>
         /// Gets or sets custom VCP value name mappings shared across all monitors.
         /// Allows users to define custom names for color temperature presets and input sources.
         /// </summary>
         [JsonPropertyName("custom_vcp_mappings")]
-        public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
+        public List<CustomVcpValueMapping> CustomVcpMappings
+        {
+            get => _customVcpMappings;
+            init => _customVcpMappings = value ?? new List<CustomVcpValueMapping>();
+        }
     }
 }
