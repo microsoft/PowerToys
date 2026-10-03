@@ -36,6 +36,7 @@ public sealed partial class PowerToysExtension : IExtension, IDisposable
     public void Dispose()
     {
         Logger.LogInfo("PowerToysExtension disposing; signalling exit.");
+        _provider.Dispose();
         this._extensionDisposedEvent.Set();
     }
 }

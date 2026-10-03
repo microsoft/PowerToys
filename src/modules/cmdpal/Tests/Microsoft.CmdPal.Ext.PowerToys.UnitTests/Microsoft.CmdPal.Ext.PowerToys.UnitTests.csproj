@@ -17,11 +17,36 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Commands\OpenPowerToysSettingsCommand.cs" Link="Commands\OpenPowerToysSettingsCommand.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Commands\PowerDisplay\ApplyPowerDisplayProfileCommand.cs" Link="Commands\PowerDisplay\ApplyPowerDisplayProfileCommand.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\IPowerDisplayCliService.cs" Link="Helpers\IPowerDisplayCliService.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\IPowerDisplayProcessRunner.cs" Link="Helpers\IPowerDisplayProcessRunner.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayCliFailureKind.cs" Link="Helpers\PowerDisplayCliFailureKind.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayCliResult`1.cs" Link="Helpers\PowerDisplayCliResult`1.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayCliService.cs" Link="Helpers\PowerDisplayCliService.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayCommandIds.cs" Link="Helpers\PowerDisplayCommandIds.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayProfileCommandResolver.cs" Link="Helpers\PowerDisplayProfileCommandResolver.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayProcessFailureKind.cs" Link="Helpers\PowerDisplayProcessFailureKind.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayProcessResult.cs" Link="Helpers\PowerDisplayProcessResult.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerDisplayProcessRunner.cs" Link="Helpers\PowerDisplayProcessRunner.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerToysResourcesHelper.cs" Link="Helpers\PowerToysResourcesHelper.cs" />
     <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerToysFallbackCommandItem.cs" Link="PowerToysFallbackCommandItem.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerToysPathResolver.cs" Link="Helpers\PowerToysPathResolver.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Pages\PowerDisplayProfilesPage.cs" Link="Pages\PowerDisplayProfilesPage.cs" />
+    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Properties\Resources.resx" Link="Properties\Resources.resx">
+      <LogicalName>PowerToysExtension.Properties.Resources.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
+    <ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\powerdisplay\PowerDisplay.Contracts\PowerDisplay.Contracts.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
   </ItemGroup>

@@ -16,8 +16,9 @@ internal sealed partial class OpenPowerToysSettingsCommand : InvokableCommand
 {
     private readonly string _moduleName;
     private readonly string _settingsKey;
+    private readonly bool _dismissAfterOpening;
 
-    internal OpenPowerToysSettingsCommand(string moduleName, string settingsKey)
+    internal OpenPowerToysSettingsCommand(string moduleName, string settingsKey, bool dismissAfterOpening = false)
     {
         if (string.IsNullOrWhiteSpace(moduleName))
         {
@@ -31,6 +32,7 @@ internal sealed partial class OpenPowerToysSettingsCommand : InvokableCommand
 
         _moduleName = moduleName;
         _settingsKey = settingsKey;
+        _dismissAfterOpening = dismissAfterOpening;
         Name = $"Open {_moduleName} settings";
     }
 
@@ -51,7 +53,7 @@ internal sealed partial class OpenPowerToysSettingsCommand : InvokableCommand
             };
 
             Process.Start(startInfo);
-            return CommandResult.Hide();
+            return _dismissAfterOpening ? CommandResult.Dismiss() : CommandResult.Hide();
         }
         catch (Exception ex)
         {
