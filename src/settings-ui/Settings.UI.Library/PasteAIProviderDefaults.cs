@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.Google => "gemini-1.5-pro",
                 AIServiceType.AzureAIInference => "gpt-4o-mini",
                 AIServiceType.Ollama => "llama3",
+                AIServiceType.Anthropic => "claude-3-5-sonnet-latest",
                 _ => string.Empty,
             };
         }

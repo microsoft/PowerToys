@@ -15,6 +15,18 @@ public static class AIServiceTypeRegistry
 {
     private static readonly Dictionary<AIServiceType, AIServiceTypeMetadata> MetadataMap = new()
     {
+        [AIServiceType.Anthropic] = new AIServiceTypeMetadata
+        {
+            ServiceType = AIServiceType.Anthropic,
+            DisplayName = "Anthropic",
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Anthropic.svg",
+            IsOnlineService = true,
+            LegalDescription = "AdvancedPaste_Anthropic_LegalDescription",
+            TermsLabel = "AdvancedPaste_Anthropic_TermsLabel",
+            TermsUri = new Uri("https://www.anthropic.com/legal/consumer-terms"),
+            PrivacyLabel = "AdvancedPaste_Anthropic_PrivacyLabel",
+            PrivacyUri = new Uri("https://www.anthropic.com/legal/privacy"),
+        },
         [AIServiceType.AzureAIInference] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.AzureAIInference,
