@@ -8,6 +8,7 @@ enum class SettingId
     MouseWheelLayoutSwitch,
     OverrideSnapHotkeys,
     MoveWindowAcrossMonitors,
+    CycleThroughAllZones,
     MoveWindowsBasedOnPosition,
     OverlappingZonesAlgorithm,
     DisplayOrWorkAreaChangeMoveWindows,
