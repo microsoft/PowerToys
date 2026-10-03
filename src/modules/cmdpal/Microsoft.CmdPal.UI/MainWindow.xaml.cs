@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
@@ -74,7 +73,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private readonly GlobalKeyboardListener _keyboardListener;
+    private readonly GlobalHotkeyService _globalHotkeys;
     private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly CopilotKeyRegistration? _copilotKeyRegistration;
@@ -83,7 +82,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly AccessKeyModeController _accessKeyMode;
-    private readonly List<long> _breakthroughTimestamps = [];
+    private readonly ShortcutBreakthroughDetector _breakthrough = new();
     private ShellIconCacheInvalidator? _shellIconCacheInvalidator;
 
     private bool _ignoreHotKeyWhenFullScreen = true;
@@ -92,6 +91,9 @@ public sealed partial class MainWindow : WindowEx,
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
     private bool _isRestarting;
+    private bool _isClosing;
+    private bool _initializationComplete;
+    private bool _pendingKeyboardHookWarning;
 
     // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
     // hot-reloads when a SettingsChanged notification touches settings this window doesn't
@@ -178,10 +180,18 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
-        _keyboardListener = new GlobalKeyboardListener(
-            HandleSummon,
-            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
-        StartKeyboardListener();
+        var dispatcherQueue = DispatcherQueue;
+        var keyboardListener = new GlobalKeyboardListener(
+            action => dispatcherQueue.TryEnqueue(() => action()),
+            (commandId, timestamp) => HandleSummon(commandId, timestamp),
+            GlobalKeyboardHookFailed,
+            static error => Logger.LogError("Global keyboard listener failed", error));
+        _globalHotkeys = new GlobalHotkeyService(
+            keyboardListener,
+            UnregisterHotkeys,
+            RegisterHotkey,
+            static error => Logger.LogError("Global keyboard hook failed; using standard shortcut registration", error),
+            ShowKeyboardHookWarning);
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
         var shellIconAssociationsChangedMessage = PInvoke.RegisterWindowMessage(
@@ -259,6 +269,9 @@ public sealed partial class MainWindow : WindowEx,
         {
             Logger.LogError("Failed to register Copilot key fast-path activation", ex);
         }
+
+        _initializationComplete = true;
+        ShowPendingKeyboardHookWarning();
     }
 
     private void OnAutoGoHomeTimerOnTick(object? s, object e)
@@ -1228,11 +1241,13 @@ public sealed partial class MainWindow : WindowEx,
 
         IsVisibleToUser = isVisibleToUser;
         IsVisibleToUserChanged?.Invoke(this, EventArgs.Empty);
+        ShowPendingKeyboardHookWarning();
     }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        _keyboardListener.Dispose();
+        _isClosing = true;
+        _globalHotkeys.Dispose();
         _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
 
@@ -1268,6 +1283,7 @@ public sealed partial class MainWindow : WindowEx,
         _isRestarting = true;
         try
         {
+            _globalHotkeys.Stop();
             try
             {
                 await Task.Run(() => Task.WhenAll(services.GetServices<IExtensionService>().Select(service => service.SignalStopAsync())))
@@ -1279,7 +1295,6 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             trayIcon.Destroy();
-            _keyboardListener.Stop();
             return AppInstance.Restart("--settings");
         }
         finally
@@ -1287,7 +1302,7 @@ public sealed partial class MainWindow : WindowEx,
             _isRestarting = false;
 
             // A successful restart terminates this process. Restore services if it returns or throws.
-            StartKeyboardListener();
+            SetupHotkey(services.GetRequiredService<ISettingsService>().Settings);
             trayIcon.SetupTrayIcon();
             WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
         }
@@ -1669,8 +1684,6 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UnregisterHotkeys()
     {
-        _keyboardListener.ClearHotkeys();
-
         while (_hotkeys.Count > 0)
         {
             PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
@@ -1678,53 +1691,76 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void StartKeyboardListener()
+    private void SetupHotkey(SettingsModel settings)
     {
-        if (_keyboardListener.Start(out var error))
+        if (_isClosing || _isRestarting)
         {
             return;
         }
 
-        Logger.LogError("Failed to register global keyboard hook", error);
-        var errorCode = error is Win32Exception nativeError ? nativeError.NativeErrorCode : error.HResult;
-        var message = FormattableString.Invariant($"SetWindowsHookEx: {error.Message} ({errorCode})");
-        _ = PInvoke.MessageBox(HWND.Null, message, RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
-    }
-
-    private void SetupHotkey(SettingsModel settings)
-    {
-        UnregisterHotkeys();
-
-        RegisterHotkey(settings, settings.Hotkey, string.Empty);
+        List<TopLevelHotkey> hotkeys = [new(settings.Hotkey, string.Empty)];
 
         // The dock shortcut rides the same registration path as command hotkeys. HandleSummon
         // peels it back off so nothing tries to summon a command with a dock ID. Skip it when
         // the dock is off so we don't hold a global shortcut that does nothing.
         if (settings.EnableDock)
         {
-            RegisterHotkey(settings, settings.DockFocusHotkey, DockHotkeyIds.FocusDock);
+            hotkeys.Add(new(settings.DockFocusHotkey, DockHotkeyIds.FocusDock));
         }
 
-        foreach (var commandHotkey in settings.CommandHotkeys)
+        hotkeys.AddRange(settings.CommandHotkeys);
+        if (_globalHotkeys.Configure(settings.UseLowLevelGlobalHotkey, hotkeys))
         {
-            RegisterHotkey(settings, commandHotkey.Hotkey, commandHotkey.CommandId);
+            _breakthrough.Reset();
         }
+
+        _pendingKeyboardHookWarning &= _globalHotkeys.IsUsingFallback;
     }
 
-    private void RegisterHotkey(SettingsModel settings, HotkeySettings? key, string commandId)
+    private void GlobalKeyboardHookFailed(Exception error) => _globalHotkeys.HandleHookFailure(error);
+
+    private void ShowKeyboardHookWarning(bool summonUnavailable)
     {
-        if (key is null)
+        if (summonUnavailable)
+        {
+            _pendingKeyboardHookWarning = false;
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (!_isClosing && _globalHotkeys.IsSummonHotkeyUnavailable)
+                {
+                    _ = PInvoke.MessageBox(HWND.Null, RS_.GetString("GlobalKeyboardHookFailed_SummonUnavailable"), RS_.GetString("AppName"), MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+                }
+            });
+            return;
+        }
+
+        _pendingKeyboardHookWarning = true;
+        ShowPendingKeyboardHookWarning();
+    }
+
+    private void ShowPendingKeyboardHookWarning()
+    {
+        if (!_initializationComplete || !_pendingKeyboardHookWarning || !IsVisibleToUser || _isClosing)
         {
             return;
         }
 
-        if (settings.UseLowLevelGlobalHotkey)
+        DispatcherQueue.TryEnqueue(() =>
         {
-            _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandId);
-            _hotkeys.Add(new(key, commandId));
-            return;
-        }
+            if (_pendingKeyboardHookWarning && _globalHotkeys.IsUsingFallback && IsVisibleToUser && !_isClosing)
+            {
+                _pendingKeyboardHookWarning = false;
+                WeakReferenceMessenger.Default.Send(new ShowToastMessage(RS_.GetString("GlobalKeyboardHookFailed_Message"))
+                {
+                    Duration = TimeSpan.FromSeconds(8),
+                });
+            }
+        });
+    }
 
+    private bool RegisterHotkey(TopLevelHotkey hotkey)
+    {
+        var key = hotkey.Hotkey!;
         var modifiers =
             (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
             (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
@@ -1733,17 +1769,22 @@ public sealed partial class MainWindow : WindowEx,
 
         if (PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)key.Code))
         {
-            _hotkeys.Add(new(key, commandId));
+            _hotkeys.Add(hotkey);
+            return true;
         }
-        else
-        {
-            // Usually means another app (or Windows itself) already owns this combo.
-            Logger.LogWarning($"Failed to register hotkey {key} for '{commandId}'. Error: {Marshal.GetLastWin32Error()}.");
-        }
+
+        // Usually means another app (or Windows itself) already owns this combo.
+        Logger.LogWarning($"Failed to register hotkey {key} for '{hotkey.CommandId}'. Error: {Marshal.GetLastWin32Error()}.");
+        return false;
     }
 
-    private void HandleSummon(string commandId)
+    private void HandleSummon(string commandId, long? timestamp = null)
     {
+        if (_isClosing || _isRestarting)
+        {
+            return;
+        }
+
         if (DockHotkeyIds.IsDockHotkey(commandId))
         {
             WeakReferenceMessenger.Default.Send<FocusDockMessage>(new());
@@ -1764,7 +1805,7 @@ public sealed partial class MainWindow : WindowEx,
 
         if (shouldSuppress)
         {
-            if (_allowBreakthroughShortcut && IsBreakthroughTriggered())
+            if (_allowBreakthroughShortcut && _breakthrough.RegisterPress(timestamp ?? Stopwatch.GetTimestamp()))
             {
                 // Rapid-press breakthrough: let it through
             }
@@ -1795,26 +1836,6 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         return isVisible;
-    }
-
-    private bool IsBreakthroughTriggered()
-    {
-        const int requiredPresses = 3;
-        var windowTicks = 2 * Stopwatch.Frequency; // 2 seconds
-        var now = Stopwatch.GetTimestamp();
-
-        _breakthroughTimestamps.Add(now);
-
-        // Prune timestamps outside the window
-        _breakthroughTimestamps.RemoveAll(t => now - t > windowTicks);
-
-        if (_breakthroughTimestamps.Count >= requiredPresses)
-        {
-            _breakthroughTimestamps.Clear();
-            return true;
-        }
-
-        return false;
     }
 
     private void HandleSummonCore(string commandId)
@@ -2092,7 +2113,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
-        _keyboardListener.Dispose();
+        _isClosing = true;
+        _globalHotkeys.Dispose();
         _accessKeyMode.Dispose();
         _copilotKeyRegistration?.Dispose();
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;

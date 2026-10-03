@@ -67,6 +67,10 @@ KBDLLHOOKSTRUCT
 SendInput
 WM_KEYDOWN
 WM_SYSKEYDOWN
+MsgWaitForMultipleObjectsEx
+PeekMessage
+TranslateMessage
+DispatchMessage
 
 GetWindowLong
 SetWindowLong
