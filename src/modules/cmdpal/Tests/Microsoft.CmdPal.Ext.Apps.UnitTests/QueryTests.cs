@@ -14,11 +14,14 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
+    private string _settingsPath = string.Empty;
+
     [TestMethod]
     public async Task QueryReturnsExpectedResults()
     {
         // Arrange
-        var settings = new AllAppsSettings(Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json"));
+        _settingsPath = Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(_settingsPath);
         using var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
@@ -46,5 +49,14 @@ public class QueryTests : CommandPaletteUnitTestBase
         var calculatorResult = Query("cal", allItems).FirstOrDefault();
         Assert.IsNotNull(calculatorResult);
         Assert.AreEqual("Calculator", calculatorResult.Title);
+    }
+
+    [TestCleanup]
+    public void CleanupSettingsFiles()
+    {
+        if (!string.IsNullOrEmpty(_settingsPath))
+        {
+            TestDataHelper.DeleteSettingsFiles(_settingsPath);
+        }
     }
 }

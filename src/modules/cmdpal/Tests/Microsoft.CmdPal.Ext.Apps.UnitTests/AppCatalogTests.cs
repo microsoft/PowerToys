@@ -837,7 +837,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -942,7 +942,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1030,7 +1030,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1078,7 +1078,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1141,7 +1141,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1181,7 +1181,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1237,7 +1237,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1318,7 +1318,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1350,7 +1350,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1393,7 +1393,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1444,7 +1444,7 @@ public class AppCatalogTests
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
@@ -1899,7 +1899,7 @@ public class AppCatalogTests
         {
             desktopLoad.TrySetResult([]);
             await settings.WaitForAliasSavesAsync();
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 }

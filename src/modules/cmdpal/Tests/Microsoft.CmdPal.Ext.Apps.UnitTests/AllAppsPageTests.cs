@@ -484,7 +484,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            File.Delete(settingsPath);
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
 
