@@ -18,11 +18,20 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </summary>
 internal sealed record PackagedAppSnapshot : IAppCatalogPayload
 {
+    private string _executable = string.Empty;
+
     public string Name { get; init; } = string.Empty;
 
     public string Description { get; init; } = string.Empty;
 
     public string UserModelId { get; init; } = string.Empty;
+
+    /// <summary>Gets the manifest-declared executable without assuming a resolved activation target.</summary>
+    public string Executable
+    {
+        get => _executable;
+        init => _executable = value ?? string.Empty;
+    }
 
     public string PackageFamilyName { get; init; } = string.Empty;
 
@@ -47,6 +56,7 @@ internal sealed record PackagedAppSnapshot : IAppCatalogPayload
             Name = app.Name,
             Description = app.Description,
             UserModelId = app.UserModelId,
+            Executable = app.Executable,
             PackageFamilyName = app.Package.FamilyName,
             PackageFullName = app.Package.FullName,
             PackageLocation = app.Package.Location,
