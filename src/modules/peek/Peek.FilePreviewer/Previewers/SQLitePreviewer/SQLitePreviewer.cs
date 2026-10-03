@@ -131,10 +131,8 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                 await Dispatcher.RunOnUiThread(() => Tables.Add(tableInfo));
             }
 
-            TableCountText = string.Format(
-                CultureInfo.CurrentCulture,
-                ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Table_Count"),
-                tableNames.Count);
+            TableCountText = ResourceLoaderInstance.FormatString(
+                "Sqlite_Table_Count", tableNames.Count);
 
             State = PreviewState.Loaded;
         }
@@ -183,7 +181,8 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                         else if (reader.GetFieldType(i) == typeof(byte[]))
                         {
                             using var blobStream = reader.GetStream(i);
-                            row[col.BindingKey] = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Blob_Value"), blobStream.Length);
+                            row[col.BindingKey] =
+                                ResourceLoaderInstance.FormatString("Sqlite_Blob_Value", blobStream.Length);
                         }
                         else
                         {
