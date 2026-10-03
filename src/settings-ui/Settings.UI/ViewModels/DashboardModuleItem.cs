@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
     public partial class DashboardModuleShortcutItem : DashboardModuleItem
     {
-        public List<object> Shortcut { get; set; }
+        public List<object> Shortcut { get; init; }
     }
 
     public partial class DashboardModuleActivationItem : DashboardModuleItem

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -37,6 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ModuleImageSourceProperty, value);
         }
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This XAML dependency property wrapper must remain publicly settable for compatibility.")]
         public ObservableCollection<PageLink> PrimaryLinks
         {
             get => (ObservableCollection<PageLink>)GetValue(PrimaryLinksProperty);
@@ -49,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(SecondaryLinksHeaderProperty, value); }
         }
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This XAML dependency property wrapper must remain publicly settable for compatibility.")]
         public ObservableCollection<PageLink> SecondaryLinks
         {
             get => (ObservableCollection<PageLink>)GetValue(SecondaryLinksProperty);

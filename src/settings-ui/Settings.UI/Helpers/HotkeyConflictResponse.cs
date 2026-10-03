@@ -17,6 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public bool HasConflict { get; set; }
 
-        public List<ModuleHotkeyData> AllConflicts { get; set; } = new List<ModuleHotkeyData>();
+        public List<ModuleHotkeyData> AllConflicts { get; init; } = new List<ModuleHotkeyData>();
     }
 }
