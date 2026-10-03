@@ -14,7 +14,8 @@ namespace
 {
     // Records every InjectUp (each is a lock release), including whether the engine asked for the
     // context-menu dismissal, and can be configured to report failure (e.g. a UIPI block on the
-    // injection).
+    // injection) either synchronously (succeed = false) or later, the way the production injector
+    // does for a posted injection whose SendInput is rejected (FailDeferred).
     class FakeInjector : public IButtonUpInjector
     {
     public:
@@ -26,11 +27,27 @@ namespace
 
         std::vector<UpCall> upCalls;
         bool succeed = true;
+        IDeferredFailureSink* sink = nullptr;
 
         bool InjectUp(MouseButton button, bool dismissContextMenu) override
         {
             upCalls.push_back({ button, dismissContextMenu });
             return succeed;
+        }
+
+        void SetDeferredFailureSink(IDeferredFailureSink* s) override
+        {
+            sink = s;
+        }
+
+        // Report that the accepted injection at upCalls[index] was rejected when it actually ran.
+        // Called from the test body (never from inside InjectUp), matching the production timing where
+        // the report comes from the hook thread's message loop after the engine call has returned.
+        void FailDeferred(size_t index)
+        {
+            Assert::IsNotNull(sink);
+            Assert::IsTrue(index < upCalls.size());
+            sink->OnDeferredInjectUpFailed(upCalls[index].button, upCalls[index].dismissContextMenu);
         }
     };
 
@@ -133,6 +150,141 @@ namespace MouseButtonLockEngineTests
             // Release tap, injection fails: don't suppress, and drop the lock so state can't disagree.
             Assert::IsFalse(e.OnButtonDown(MouseButton::Right, 1000, PointL{ 0, 0 }, s));
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
+        }
+    };
+
+    // The production injector only queues the release when InjectUp returns true; the SendInput runs
+    // later and can still be rejected (e.g. a UIPI block). By then the engine has already cleared the
+    // lock and, for a release tap, armed the swallow of the paired up. These cover the repair paths.
+    TEST_CLASS(DeferredInjectionFailure)
+    {
+    public:
+        TEST_METHOD(EngineRegistersAndClearsTheSink)
+        {
+            FakeInjector injector;
+            {
+                Engine e(injector);
+                Assert::IsNotNull(injector.sink);
+            }
+            // A late report after the engine is gone must have nowhere to go.
+            Assert::IsNull(injector.sink);
+        }
+
+        TEST_METHOD(TapReleaseFailureStopsSwallowingThePairedUp)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+
+            // The release tap is accepted (queued): DOWN suppressed, lock cleared, swallow armed.
+            Assert::IsTrue(e.OnButtonDown(MouseButton::Right, 1000, PointL{ 0, 0 }, s));
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+
+            // The deferred SendInput is rejected before the tap's physical UP arrives. The OS still
+            // holds the button, so that UP must now pass through: it is the release the injection
+            // failed to deliver. Swallowing it would leave the button stuck down.
+            injector.FailDeferred(0);
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Right, 1005, s));
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size()); // nothing re-injected
+        }
+
+        TEST_METHOD(TapReleaseFailureAfterPairedUpWasSwallowedRestoresTheLock)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+            Assert::IsTrue(e.OnButtonDown(MouseButton::Right, 1000, PointL{ 0, 0 }, s));
+            Assert::IsTrue(e.OnButtonUp(MouseButton::Right, 1005, s)); // paired up already swallowed
+
+            // Both physical events are gone and the OS still holds the button: the only consistent
+            // state is locked again, so the next tap retries the release.
+            injector.FailDeferred(0);
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+            Assert::IsTrue(e.OnButtonDown(MouseButton::Right, 2000, PointL{ 0, 0 }, s));
+            Assert::AreEqual(static_cast<size_t>(2), injector.upCalls.size());
+            Assert::IsTrue(e.OnButtonUp(MouseButton::Right, 2005, s));
+        }
+
+        TEST_METHOD(SettingsReleaseFailureRestoresTheLockForRetry)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+
+            s.rmbEnabled = false;
+            e.EnforceEnabled(s);
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+
+            // No physical event is coming to help here, so the logical lock comes back and the next
+            // cleanup pass (settings re-apply, any press, or shutdown) injects again.
+            injector.FailDeferred(0);
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+            e.EnforceEnabled(s);
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(2), injector.upCalls.size());
+            Assert::IsTrue(injector.upCalls[1].dismissContextMenu);
+        }
+
+        TEST_METHOD(CrossButtonReleaseFailureRestoresTheLockForRetry)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+            s.mmbEnabled = true;
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+
+            // A middle press releases the held right button (chorded, queued).
+            e.OnButtonDown(MouseButton::Middle, 500, PointL{ 0, 0 }, s);
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            injector.FailDeferred(0);
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+
+            // The middle button's own quick tap is unaffected by the repair.
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Middle, 550, s));
+            Assert::IsFalse(e.IsLocked(MouseButton::Middle));
+
+            // Shutdown retries the stuck release.
+            e.ReleaseAll();
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(2), injector.upCalls.size());
+        }
+
+        TEST_METHOD(SynchronousReleaseFailureKeepsTheLock)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+
+            // The inline (non-deferred) injector path rejects the up outright: same outcome as a
+            // deferred rejection, the lock stays so cleanup can be retried.
+            injector.succeed = false;
+            e.ReleaseAll();
+            Assert::IsTrue(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+
+            injector.succeed = true;
+            e.ReleaseAll();
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(2), injector.upCalls.size());
         }
     };
 

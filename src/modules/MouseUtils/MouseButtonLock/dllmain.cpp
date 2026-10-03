@@ -13,6 +13,7 @@
 
 #include <atomic>
 #include <cmath>
+#include <mutex>
 #include <thread>
 
 // Mouse Button Lock
@@ -101,12 +102,31 @@ namespace
             return Post(button, dismissContextMenu);
         }
 
+        // The engine registers itself here (and clears it in its destructor) to hear about a posted
+        // injection that SendInput later rejects.
+        void SetDeferredFailureSink(mousebuttonlock::IDeferredFailureSink* sink) override
+        {
+            m_sink.store(sink);
+        }
+
         // Runs the actual SendInput. Called from the hook thread's message loop when it drains a
         // WM_MOUSEBUTTONLOCK_INJECT it posted to itself (see HookThreadMain), i.e. after the triggering hook
-        // callback has returned and suppressed the physical event.
-        static void PerformDeferred(WPARAM packed)
+        // callback has returned and suppressed the physical event. Post() already returned true for
+        // this injection, so a rejection here (e.g. a UIPI block while an elevated window has the
+        // foreground) must be reported back, or the engine would believe a still-held button was
+        // released. The dismiss intent is handed back unchanged so the engine sees the release as it
+        // requested it.
+        void PerformDeferred(WPARAM packed)
         {
-            InjectUpNow(static_cast<mousebuttonlock::MouseButton>(packed >> 1), (packed & 1) != 0);
+            const auto button = static_cast<mousebuttonlock::MouseButton>(packed >> 1);
+            const bool dismissContextMenu = (packed & 1) != 0;
+            if (!InjectUpNow(button, dismissContextMenu))
+            {
+                if (auto* sink = m_sink.load())
+                {
+                    sink->OnDeferredInjectUpFailed(button, dismissContextMenu);
+                }
+            }
         }
 
     private:
@@ -183,6 +203,7 @@ namespace
         }
 
         std::atomic<DWORD> m_threadId{ 0 };
+        std::atomic<mousebuttonlock::IDeferredFailureSink*> m_sink{ nullptr };
     };
 }
 
@@ -205,6 +226,11 @@ private:
     std::atomic<bool> m_enabled{ false };
 
     // Settings. Read on the hook thread, written by set_config on the runner thread, so atomic.
+    // m_settingsMutex additionally makes a settings apply (parse + EnforceEnabled) atomic with
+    // respect to a hook event (snapshot + engine call): without it a button could be disabled and
+    // its held lock released, and then a hook callback that had already taken the older snapshot
+    // could latch the same button again afterwards.
+    std::mutex m_settingsMutex;
     std::atomic<bool> m_lmbLockEnabled{ false };
     std::atomic<bool> m_rmbLockEnabled{ true };
     std::atomic<bool> m_mmbLockEnabled{ false };
@@ -281,6 +307,8 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            // Hold the hook off while the new values land and are enforced; see m_settingsMutex.
+            std::lock_guard<std::mutex> lock(m_settingsMutex);
             parse_settings(values);
 
             // If a button's lock was just turned off while it was logically held, release it now.
@@ -490,7 +518,7 @@ void MouseButtonLock::HookThreadMain()
             // returned, keeps the suppressed physical event from leaking to applications.
             if (msg.message == WM_MOUSEBUTTONLOCK_INJECT)
             {
-                WinInjector::PerformDeferred(msg.wParam);
+                m_injector.PerformDeferred(msg.wParam);
                 continue;
             }
             TranslateMessage(&msg);
@@ -502,7 +530,7 @@ void MouseButtonLock::HookThreadMain()
     // a button held, then unhook.
     while (PeekMessage(&msg, nullptr, WM_MOUSEBUTTONLOCK_INJECT, WM_MOUSEBUTTONLOCK_INJECT, PM_REMOVE))
     {
-        WinInjector::PerformDeferred(msg.wParam);
+        m_injector.PerformDeferred(msg.wParam);
     }
 
     if (m_mouseHook)
@@ -541,6 +569,10 @@ bool MouseButtonLock::HandleMouseMessage(WPARAM wParam, const MSLLHOOKSTRUCT* da
         return false;
     }
 
+    // Taken for the snapshot and the engine call together, so a concurrent set_config can't slip in
+    // between them; see m_settingsMutex. set_config holds it only briefly (no I/O), well inside the
+    // low-level hook timeout.
+    std::lock_guard<std::mutex> lock(m_settingsMutex);
     const mousebuttonlock::Settings snapshot = SettingsSnapshot();
     const uint64_t tick = GetTickCount64();
     const mousebuttonlock::PointL pt{ data->pt.x, data->pt.y };

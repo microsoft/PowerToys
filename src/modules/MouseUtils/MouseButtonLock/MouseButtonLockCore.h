@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <mutex>
 
 // The per-button ClickLock state machine, deliberately decoupled from Win32 so it can be unit
 // tested. The caller (the module's low-level mouse hook) feeds it events with a monotonic
@@ -44,9 +45,24 @@ namespace mousebuttonlock
         int moveCancelPixels = 5;
     };
 
+    // Receives the outcome of an InjectUp that the injector accepted but performed later (see
+    // IButtonUpInjector). The engine implements this to repair its state when the deferred SendInput
+    // is rejected after the engine has already committed to the release.
+    struct IDeferredFailureSink
+    {
+        virtual ~IDeferredFailureSink() = default;
+        virtual void OnDeferredInjectUpFailed(MouseButton button, bool dismissContextMenu) = 0;
+    };
+
     // Abstraction over the synthetic button-up injection (SendInput in production, a recording fake in
-    // tests). Returns true if the OS accepted the synthetic event. A lock is held by suppressing the
-    // physical up, so the only injection the engine needs is the up that releases a lock.
+    // tests). Returns true if the injection was accepted. A lock is held by suppressing the physical
+    // up, so the only injection the engine needs is the up that releases a lock.
+    //
+    // An injector may defer the actual SendInput (the production one posts it back to the hook
+    // thread's message loop, see WinInjector). Then "accepted" only means "queued": if the deferred
+    // SendInput later fails, the injector must report it through the registered IDeferredFailureSink
+    // with the same button and dismissContextMenu it was given, so the engine can undo a release it
+    // already committed to. Synchronous injectors never need the sink; the default is a no-op.
     //
     // dismissContextMenu tells the injector whether this release will surface a context menu that
     // should be dismissed on the user's behalf (see WinInjector::InjectEscape). It is true for a
@@ -58,14 +74,28 @@ namespace mousebuttonlock
     {
         virtual ~IButtonUpInjector() = default;
         virtual bool InjectUp(MouseButton button, bool dismissContextMenu) = 0;
+        virtual void SetDeferredFailureSink(IDeferredFailureSink* /*sink*/) {}
     };
 
-    class Engine
+    // Every public operation takes m_mutex, so the engine can be driven from the hook thread
+    // (button events, deferred-failure reports) and the runner thread (settings enforcement,
+    // enable/disable) without a stale event interleaving with a settings change. The injector is
+    // called with the mutex held; it must not call back into the engine synchronously (the deferred
+    // failure report arrives later from the injector's own message loop).
+    class Engine : private IDeferredFailureSink
     {
     public:
         explicit Engine(IButtonUpInjector& injector) :
             m_injector(injector)
         {
+            m_injector.SetDeferredFailureSink(this);
+        }
+
+        ~Engine() override
+        {
+            // The injector may outlive the engine (or be destroyed after it, as a member declared
+            // earlier); either way a late report must not reach a dead engine.
+            m_injector.SetDeferredFailureSink(nullptr);
         }
 
         Engine(const Engine&) = delete;
@@ -81,6 +111,7 @@ namespace mousebuttonlock
         // is chorded, so releasing a right/middle lock this way fires no context menu.
         bool OnButtonDown(MouseButton button, uint64_t tick, PointL pt, const Settings& s)
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             ButtonState& st = State(button);
 
             // Tap-to-release the pressed button's own lock. exchange() claims the lock atomically so a
@@ -123,6 +154,7 @@ namespace mousebuttonlock
         // up, and the later clean release is a single injected up).
         bool OnButtonUp(MouseButton button, uint64_t tick, const Settings& s)
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             ButtonState& st = State(button);
 
             if (st.swallowNextRealUp)
@@ -162,6 +194,7 @@ namespace mousebuttonlock
         // so the button-up passes through normally instead of latching.
         void OnMove(uint64_t /*tick*/, PointL pt, const Settings& s)
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             const int pixels = s.moveCancelPixels < 0 ? 0 : s.moveCancelPixels;
             CheckMoveCancel(m_left, pixels, pt);
             CheckMoveCancel(m_right, pixels, pt);
@@ -172,6 +205,7 @@ namespace mousebuttonlock
         // pressed here, so the injected up is not chorded: request the context-menu dismissal.
         void EnforceEnabled(const Settings& s)
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             if (!s.lmbEnabled)
             {
                 ReleaseButton(m_left, MouseButton::Left, /*dismissContextMenu=*/true);
@@ -190,6 +224,7 @@ namespace mousebuttonlock
         // releases are not chorded, so a surfaced context menu should be dismissed.
         void ReleaseAll()
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             ReleaseButton(m_left, MouseButton::Left, /*dismissContextMenu=*/true);
             ReleaseButton(m_right, MouseButton::Right, /*dismissContextMenu=*/true);
             ReleaseButton(m_middle, MouseButton::Middle, /*dismissContextMenu=*/true);
@@ -199,6 +234,7 @@ namespace mousebuttonlock
         // disable/enable cycle can't produce a spurious lock or a swallowed later click.
         void ResetTransient()
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             ResetOne(m_left);
             ResetOne(m_right);
             ResetOne(m_middle);
@@ -206,10 +242,31 @@ namespace mousebuttonlock
 
         bool IsLocked(MouseButton button) const
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             return State(button).locked.load();
         }
 
     private:
+        // A release the engine already committed to (lock cleared, injection accepted) turned out not
+        // to reach the OS, so the button is still physically held there. Two cases, told apart by the
+        // swallow flag:
+        //  - A same-button release tap whose paired physical UP has not arrived yet: stop swallowing
+        //    it. The tap's DOWN was suppressed, so letting its UP through is exactly the release the
+        //    injection failed to deliver, and the OS resolves the button itself.
+        //  - Any other release (settings/lifecycle, cross-button, or a tap whose UP was already
+        //    swallowed): restore the logical lock, so the state matches the OS again and the next
+        //    press, settings change or shutdown retries the cleanup instead of leaving it stuck.
+        void OnDeferredInjectUpFailed(MouseButton button, bool /*dismissContextMenu*/) override
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            ButtonState& st = State(button);
+            if (st.swallowNextRealUp)
+            {
+                st.swallowNextRealUp = false;
+                return;
+            }
+            st.locked.store(true);
+        }
         struct ButtonState
         {
             bool physicalDown = false;
@@ -288,9 +345,15 @@ namespace mousebuttonlock
         void ReleaseButton(ButtonState& st, MouseButton button, bool dismissContextMenu)
         {
             // exchange() claims the lock atomically so among racing releasers exactly one injects.
+            // A synchronous rejection means the OS still holds the button: keep the logical lock so
+            // the cleanup is retried later (a deferred rejection takes the same path through
+            // OnDeferredInjectUpFailed).
             if (st.locked.exchange(false))
             {
-                m_injector.InjectUp(button, dismissContextMenu);
+                if (!m_injector.InjectUp(button, dismissContextMenu))
+                {
+                    st.locked.store(true);
+                }
             }
         }
 
@@ -322,6 +385,7 @@ namespace mousebuttonlock
             st.downTick = 0;
         }
 
+        mutable std::mutex m_mutex;
         IButtonUpInjector& m_injector;
         ButtonState m_left;
         ButtonState m_right;
