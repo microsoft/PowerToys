@@ -11,6 +11,7 @@
 #include "resource.h"
 #include "MouseButtonLockCore.h"
 
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <mutex>
@@ -71,6 +72,12 @@ namespace
     // in bits 1+ and the dismiss-context-menu intent in bit 0.
     constexpr UINT WM_MOUSEBUTTONLOCK_INJECT = WM_APP + 1;
 
+    // How long after a deferred SendInput reported success the injector waits before checking that the
+    // button really came up (see WinInjector::VerifyDeferred). Long enough for the raw input thread
+    // to have applied the injected event, short enough that a stuck button is repaired before the
+    // user notices. A physical re-press inside this window is told apart by the engine (physicalDown).
+    constexpr UINT INJECT_VERIFY_DELAY_MS = 50;
+
     // Default values mirror the C# MouseButtonLockProperties defaults.
     constexpr int DEFAULT_HOLD_DURATION_MS = 1200;
     constexpr int DEFAULT_MOVE_CANCEL_PIXELS = 5;
@@ -89,6 +96,16 @@ namespace
     class WinInjector : public mousebuttonlock::IButtonUpInjector
     {
     public:
+        WinInjector()
+        {
+            s_instance.store(this);
+        }
+
+        ~WinInjector() override
+        {
+            s_instance.store(nullptr);
+        }
+
         // Called on the hook thread once it starts, so deferred injections post back to that thread.
         void SetTargetThread(DWORD threadId)
         {
@@ -112,24 +129,148 @@ namespace
         // Runs the actual SendInput. Called from the hook thread's message loop when it drains a
         // WM_MOUSEBUTTONLOCK_INJECT it posted to itself (see HookThreadMain), i.e. after the triggering hook
         // callback has returned and suppressed the physical event. Post() already returned true for
-        // this injection, so a rejection here (e.g. a UIPI block while an elevated window has the
-        // foreground) must be reported back, or the engine would believe a still-held button was
-        // released. The dismiss intent is handed back unchanged so the engine sees the release as it
-        // requested it.
+        // this injection, so a failure here must be reported back, or the engine would believe a
+        // still-held button was released. Two failures are told apart:
+        //  - SendInput returns 0: report immediately.
+        //  - SendInput returns success but the event never takes effect. Windows does this silently
+        //    when input is blocked (BlockInput) or a higher-integrity window owns the foreground (UIPI);
+        //    neither the return value nor GetLastError says so. Schedule a check of the button's
+        //    physical state a little later (VerifyDeferred) and report if it is still down.
+        // The dismiss intent is handed back unchanged so the engine sees the release as it requested it.
         void PerformDeferred(WPARAM packed)
         {
             const auto button = static_cast<mousebuttonlock::MouseButton>(packed >> 1);
             const bool dismissContextMenu = (packed & 1) != 0;
             if (!InjectUpNow(button, dismissContextMenu))
             {
-                if (auto* sink = m_sink.load())
-                {
-                    sink->OnDeferredInjectUpFailed(button, dismissContextMenu);
-                }
+                ReportFailure(button, dismissContextMenu);
+                return;
             }
+            ScheduleVerify(button, dismissContextMenu);
         }
 
     private:
+        // Per-button verification pending for an injected up. Only touched on the hook thread (both
+        // PerformDeferred and the timer callback run there), so no synchronization is needed.
+        struct PendingVerify
+        {
+            UINT_PTR timerId = 0;
+            bool dismissContextMenu = false;
+        };
+
+        static size_t Index(mousebuttonlock::MouseButton button)
+        {
+            switch (button)
+            {
+            case mousebuttonlock::MouseButton::Left:
+                return 0;
+            case mousebuttonlock::MouseButton::Middle:
+                return 2;
+            case mousebuttonlock::MouseButton::Right:
+            default:
+                return 1;
+            }
+        }
+
+        static mousebuttonlock::MouseButton ButtonAt(size_t index)
+        {
+            switch (index)
+            {
+            case 0:
+                return mousebuttonlock::MouseButton::Left;
+            case 2:
+                return mousebuttonlock::MouseButton::Middle;
+            default:
+                return mousebuttonlock::MouseButton::Right;
+            }
+        }
+
+        void ReportFailure(mousebuttonlock::MouseButton button, bool dismissContextMenu)
+        {
+            if (auto* sink = m_sink.load())
+            {
+                sink->OnDeferredInjectUpFailed(button, dismissContextMenu);
+            }
+        }
+
+        // Arm a thread timer (no window: WM_TIMER lands in the hook thread's queue and DispatchMessage
+        // calls VerifyTimerProc). A second release of the same button before its check ran re-arms it.
+        void ScheduleVerify(mousebuttonlock::MouseButton button, bool dismissContextMenu)
+        {
+            if (m_sink.load() == nullptr)
+            {
+                return;
+            }
+            PendingVerify& pending = m_pending[Index(button)];
+            if (pending.timerId != 0)
+            {
+                KillTimer(nullptr, pending.timerId);
+            }
+            pending.dismissContextMenu = dismissContextMenu;
+            pending.timerId = SetTimer(nullptr, 0, INJECT_VERIFY_DELAY_MS, VerifyTimerProc);
+            if (pending.timerId == 0)
+            {
+                Logger::warn(L"Failed to arm the synthetic button-up verification timer, error: {}", GetLastError());
+            }
+        }
+
+        static void CALLBACK VerifyTimerProc(HWND, UINT, UINT_PTR timerId, DWORD)
+        {
+            KillTimer(nullptr, timerId);
+            if (auto* self = s_instance.load())
+            {
+                self->VerifyDeferred(timerId);
+            }
+        }
+
+        // The injected up was accepted INJECT_VERIFY_DELAY_MS ago. If the OS still reports the button
+        // down, the event was dropped: tell the engine so it can repair its state. (A physical re-press
+        // in the meantime also reads as down; the engine recognizes that case and ignores the report.)
+        void VerifyDeferred(UINT_PTR timerId)
+        {
+            for (size_t i = 0; i < m_pending.size(); ++i)
+            {
+                PendingVerify& pending = m_pending[i];
+                if (pending.timerId != timerId)
+                {
+                    continue;
+                }
+                pending.timerId = 0;
+                const auto button = ButtonAt(i);
+                if (IsPhysicallyDown(button))
+                {
+                    Logger::warn(L"Synthetic button-up was accepted but the button is still down; the injection was dropped (blocked input or a higher-integrity foreground window). Repairing state.");
+                    ReportFailure(button, pending.dismissContextMenu);
+                }
+                return;
+            }
+        }
+
+        // GetAsyncKeyState reports the PHYSICAL buttons, while the hook, SendInput and the engine all
+        // speak in logical buttons, so undo a primary/secondary swap before asking.
+        static bool IsPhysicallyDown(mousebuttonlock::MouseButton button)
+        {
+            int vk = VK_RBUTTON;
+            switch (button)
+            {
+            case mousebuttonlock::MouseButton::Left:
+                vk = VK_LBUTTON;
+                break;
+            case mousebuttonlock::MouseButton::Middle:
+                vk = VK_MBUTTON;
+                break;
+            case mousebuttonlock::MouseButton::Right:
+            default:
+                vk = VK_RBUTTON;
+                break;
+            }
+            if (vk != VK_MBUTTON && GetSystemMetrics(SM_SWAPBUTTON) != 0)
+            {
+                vk = (vk == VK_LBUTTON) ? VK_RBUTTON : VK_LBUTTON;
+            }
+            return (GetAsyncKeyState(vk) & 0x8000) != 0;
+        }
+
         // Defer the SendInput to the hook thread's message loop. If the thread id isn't known yet
         // (should not happen once the hook is running) fall back to an inline inject so a release is
         // never silently dropped. wParam layout matches WM_MOUSEBUTTONLOCK_INJECT's doc comment: button in
@@ -204,6 +345,10 @@ namespace
 
         std::atomic<DWORD> m_threadId{ 0 };
         std::atomic<mousebuttonlock::IDeferredFailureSink*> m_sink{ nullptr };
+        std::array<PendingVerify, 3> m_pending{};
+
+        // The timer callback has no context pointer; the module has exactly one injector.
+        static inline std::atomic<WinInjector*> s_instance{ nullptr };
     };
 }
 

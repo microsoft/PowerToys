@@ -239,6 +239,30 @@ namespace MouseButtonLockEngineTests
             Assert::IsTrue(injector.upCalls[1].dismissContextMenu);
         }
 
+        TEST_METHOD(FailureReportDuringANewPressIsIgnored)
+        {
+            FakeInjector injector;
+            Engine e(injector);
+            Settings s = DefaultSettings();
+
+            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Right, 400, s);
+            s.rmbEnabled = false;
+            e.EnforceEnabled(s); // release queued, lock cleared
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size());
+
+            // The user presses the (now disabled) button again before the injector's verification
+            // runs. The production injector judges failure from the button still reading as down,
+            // which this press explains, so the report must not restore the lock: the press's own up
+            // completes the release and the click behaves normally.
+            Assert::IsFalse(e.OnButtonDown(MouseButton::Right, 1000, PointL{ 0, 0 }, s));
+            injector.FailDeferred(0);
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Right, 1050, s));
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::AreEqual(static_cast<size_t>(1), injector.upCalls.size()); // nothing re-injected
+        }
+
         TEST_METHOD(CrossButtonReleaseFailureRestoresTheLockForRetry)
         {
             FakeInjector injector;

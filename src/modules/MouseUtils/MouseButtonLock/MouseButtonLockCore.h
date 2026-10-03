@@ -60,9 +60,11 @@ namespace mousebuttonlock
     //
     // An injector may defer the actual SendInput (the production one posts it back to the hook
     // thread's message loop, see WinInjector). Then "accepted" only means "queued": if the deferred
-    // SendInput later fails, the injector must report it through the registered IDeferredFailureSink
-    // with the same button and dismissContextMenu it was given, so the engine can undo a release it
-    // already committed to. Synchronous injectors never need the sink; the default is a no-op.
+    // SendInput later fails, or the injector later observes that the up never took effect (Windows
+    // drops an injection silently when input is blocked or a higher-integrity window owns the
+    // foreground), the injector must report it through the registered IDeferredFailureSink with the
+    // same button and dismissContextMenu it was given, so the engine can undo a release it already
+    // committed to. Synchronous injectors never need the sink; the default is a no-op.
     //
     // dismissContextMenu tells the injector whether this release will surface a context menu that
     // should be dismissed on the user's behalf (see WinInjector::InjectEscape). It is true for a
@@ -109,7 +111,9 @@ namespace mousebuttonlock
         // up swallowed); a different pressed button just releases the held button and then clicks
         // normally. Because that release happens while this button is physically down, the injected up
         // is chorded, so releasing a right/middle lock this way fires no context menu.
-        bool OnButtonDown(MouseButton button, uint64_t tick, PointL pt, const Settings& s)
+        // The settings are not consulted here (whether the button is enabled is decided by OnButtonUp,
+        // which is what locks); the parameter stays so every event carries the same snapshot.
+        bool OnButtonDown(MouseButton button, uint64_t tick, PointL pt, const Settings& /*s*/)
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             ButtonState& st = State(button);
@@ -135,11 +139,9 @@ namespace mousebuttonlock
             // A different button was pressed: release any held button, then let this press proceed.
             ReleaseAllExcept(button);
 
-            if (!Enabled(button, s))
-            {
-                return false;
-            }
-
+            // Track the press even for a disabled button (OnButtonUp re-checks Enabled before locking):
+            // a deferred-failure report that arrives mid-press must be able to tell that the held OS
+            // state is explained by this press, see OnDeferredInjectUpFailed.
             st.physicalDown = true;
             st.moveCancelled = false;
             st.downTick = tick;
@@ -248,11 +250,14 @@ namespace mousebuttonlock
 
     private:
         // A release the engine already committed to (lock cleared, injection accepted) turned out not
-        // to reach the OS, so the button is still physically held there. Two cases, told apart by the
-        // swallow flag:
+        // to reach the OS, so the button is still physically held there. Three cases:
         //  - A same-button release tap whose paired physical UP has not arrived yet: stop swallowing
         //    it. The tap's DOWN was suppressed, so letting its UP through is exactly the release the
         //    injection failed to deliver, and the OS resolves the button itself.
+        //  - A new physical press of this button is already in progress: the held OS state is
+        //    explained by that press, whose own UP will complete the release, so there is nothing to
+        //    repair. (The production injector detects failure by observing the button state shortly
+        //    after injecting, so a fast re-press can look like a failed injection.)
         //  - Any other release (settings/lifecycle, cross-button, or a tap whose UP was already
         //    swallowed): restore the logical lock, so the state matches the OS again and the next
         //    press, settings change or shutdown retries the cleanup instead of leaving it stuck.
@@ -263,6 +268,10 @@ namespace mousebuttonlock
             if (st.swallowNextRealUp)
             {
                 st.swallowNextRealUp = false;
+                return;
+            }
+            if (st.physicalDown)
+            {
                 return;
             }
             st.locked.store(true);
