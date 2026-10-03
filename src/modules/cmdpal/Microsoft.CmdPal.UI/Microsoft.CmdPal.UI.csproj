@@ -64,8 +64,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-    <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
-    <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
+    <!-- This lets us reference types from Microsoft.Terminal.UI. -->
+    <CsWinRTIncludes>Microsoft.Terminal.UI</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
@@ -189,11 +189,6 @@
     <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-      <Private>True</Private>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

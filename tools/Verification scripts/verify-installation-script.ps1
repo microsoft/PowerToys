@@ -442,8 +442,7 @@ function Test-CoreFiles {
         'PowerToys.ZoomItSettingsInterop.dll',
         
         # Command Palette
-        'PowerToys.CmdPalModuleInterface.dll',
-        'CmdPalKeyboardService.dll'
+        'PowerToys.CmdPalModuleInterface.dll'
     )
     
     # WinUI3Apps signed files (in WinUI3Apps subdirectory)
