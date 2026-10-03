@@ -29,7 +29,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
 
     for (const auto& path : paths)
     {
-        auto kernel_path = nt_ext.path_to_kernel_name(path.c_str());
+        auto kernel_path = nt_ext.path_to_canonical_name(path.c_str());
         if (!kernel_path.empty())
         {
             (is_directory(path) ? kernel_names_dirs : kernel_names_files)[kernel_path] = path;
@@ -68,7 +68,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
     {
         if (handle_info.type_name == L"File")
         {
-            auto path = kernel_paths_contain(handle_info.kernel_file_name);
+            auto path = kernel_paths_contain(handle_info.file_path);
             if (!path.empty())
             {
                 pid_files[handle_info.pid].insert(std::move(path));
@@ -83,7 +83,7 @@ std::vector<ProcessResult> find_processes_recursive(const std::vector<std::wstri
     {
         for (const auto& path : process.modules)
         {
-            auto kernel_name = nt_ext.path_to_kernel_name(path.c_str());
+            auto kernel_name = nt_ext.path_to_canonical_name(path.c_str());
 
             auto found_path = kernel_paths_contain(kernel_name);
             if (!found_path.empty())
