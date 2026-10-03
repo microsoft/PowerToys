@@ -54,7 +54,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
     private readonly IAppListItemSource _appListItemSource;
-    private readonly ScoringFunction<IListItem> _scoringFunction;
+    private readonly ScoringFunction<IListItem> _globalFallbackScoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
@@ -92,7 +92,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private bool _appItemsChangedWhileLoading;
-    private IReadOnlyList<AppListItem> _lastVisibleAppItems;
+    private AppListItemSnapshot _lastAppSnapshot;
     private int _lastAppResultLimit;
     private Tuple<RecentCommandsManager, AppListItemSnapshot, RecentCommandsManager>? _appHistoryCache;
 
@@ -137,11 +137,17 @@ public sealed partial class MainListPage : DynamicListPage,
         _appStateService = appStateService;
         _recentCommands = _appStateService.State.RecentCommands;
         _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
-        _lastVisibleAppItems = _appListItemSource.GetSnapshot().VisibleItems;
+        _lastAppSnapshot = _appListItemSource.GetSnapshot();
         _lastAppResultLimit = AppResultLimit;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
+        _globalFallbackScoringFunction = (in query, item) => ScoreTopLevelItem(
+            in query,
+            item,
+            _appStateService.State.RecentCommands,
+            _fuzzyMatcherProvider.Current,
+            null,
+            ResolveProviderSearchWeight);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -209,12 +215,13 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void AppListItemSource_Changed(object? sender, EventArgs e)
     {
-        var visibleAppItems = _appListItemSource.GetSnapshot().VisibleItems;
-        var appsChanged = !ReferenceEquals(_lastVisibleAppItems, visibleAppItems);
+        var appSnapshot = _appListItemSource.GetSnapshot();
+        var appsChanged = !ReferenceEquals(_lastAppSnapshot.VisibleItems, appSnapshot.VisibleItems)
+            || _lastAppSnapshot.ExecutableNameMatchMode != appSnapshot.ExecutableNameMatchMode;
         var resultLimit = AppResultLimit;
         var resultLimitChanged = _lastAppResultLimit != resultLimit;
         _lastAppResultLimit = resultLimit;
-        _lastVisibleAppItems = visibleAppItems;
+        _lastAppSnapshot = appSnapshot;
         _appItemsChangedWhileLoading |= appsChanged;
         IsLoading = ActuallyLoading();
         var shouldReapplyApps = !_appListItemSource.IsLoading && _appItemsChangedWhileLoading;
@@ -364,7 +371,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         // Score global fallbacks against their current titles so a fallback whose title
         // resolved after first paint gets the right score. Cheap: only a handful are configured.
-        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
+        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _globalFallbackScoringFunction);
 
         var validFallbacks = _fallbackItems?
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
@@ -754,7 +761,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // Precompute from the snapshotted newSearch, not the live SearchText, which a newer
         // keystroke may already have advanced past.
         var searchQuery = matcher.PrecomputeQuery(newSearch);
-        var appSearch = new AppSearch(newSearch, matcher);
+        var appSearch = new AppSearch(newSearch, matcher, appSnapshot.ExecutableNameMatchMode);
 
         // Every installed app belongs to the well-known AllApps provider, so its weight is constant
         // for the whole pass and we resolve it once instead of once per app.
@@ -768,12 +775,12 @@ public sealed partial class MainListPage : DynamicListPage,
                 item,
                 recent,
                 matcher,
+                appSearch,
                 commandsProviderLookup,
                 scoringNow,
-                appSearch,
                 item is TopLevelViewModel topLevel && IsAppCommand(topLevel) ? appSnapshot.GetApp(topLevel.Id) : null);
         ScoringFunction<IListItem> appsScorer = (in FuzzyQuery q, IListItem item) =>
-            ScoreTopLevelItem(in q, item, recent, matcher, appsProviderLookup, scoringNow, appSearch);
+            ScoreTopLevelItem(in q, item, recent, matcher, appSearch, appsProviderLookup, scoringNow);
 
         var scoredFilteredItems = InternalListHelpers.FilterListWithScores(itemsSource, searchQuery, commandsScorer, SearchResultComparer);
 
@@ -884,14 +891,15 @@ public sealed partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem. Fallbacks tier by the same title match as any
     // other item, except a non-match floors to FallbackFloor (see MainListRanker.ClassifyTier) so
     // the handler stays available instead of dropping.
+    // Apps require a prepared search carrying the captured query and executable-name policy.
     internal static int ScoreTopLevelItem(
         in FuzzyQuery query,
         IListItem topLevelOrAppItem,
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
+        AppSearch? appSearch,
         Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null,
         DateTimeOffset? now = null,
-        AppSearch? appSearch = null,
         AppListItem? app = null)
     {
         app ??= topLevelOrAppItem as AppListItem;
@@ -932,7 +940,7 @@ public sealed partial class MainListPage : DynamicListPage,
         var exactExecutableMatch = false;
         if (app is not null)
         {
-            appSearch ??= new AppSearch(query.Original, precomputedFuzzyMatcher);
+            ArgumentNullException.ThrowIfNull(appSearch);
             var match = appSearch.Evaluate(app);
             lexicalQuality = match.LexicalScore;
             matchedLexically = match.HasMatch;

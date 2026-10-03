@@ -329,4 +329,22 @@
   <data name="edit_exclusion_patterns" xml:space="preserve">
     <value>Edit exclusion patterns</value>
   </data>
+  <data name="executable_name_match_mode" xml:space="preserve">
+    <value>Prioritize exact executable names</value>
+  </data>
+  <data name="executable_name_match_mode_description" xml:space="preserve">
+    <value>Choose when exact executable names, such as cmd or cmd.exe, receive priority in All Apps and Home. Other search matches remain available.</value>
+  </data>
+  <data name="executable_name_match_mode_default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="executable_name_match_mode_filename_and_stem" xml:space="preserve">
+    <value>With or without extension</value>
+  </data>
+  <data name="executable_name_match_mode_filename_only" xml:space="preserve">
+    <value>Only with extension</value>
+  </data>
+  <data name="executable_name_match_mode_disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
 </root>

@@ -44,8 +44,8 @@ public sealed partial class ScoringParallelEquivalenceTests
         IPrecomputedFuzzyMatcher matcher,
         string query)
     {
-        var search = new AppSearch(query, matcher);
-        return (in FuzzyQuery q, IListItem item) => MainListPage.ScoreTopLevelItem(q, item, history, matcher, appSearch: search);
+        var search = new AppSearch(query, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        return (in FuzzyQuery q, IListItem item) => MainListPage.ScoreTopLevelItem(q, item, history, matcher, search);
     }
 
     private static void AssertOrderedResultsIdentical(
@@ -241,11 +241,11 @@ public sealed partial class ScoringParallelEquivalenceTests
         foreach (var raw in Queries)
         {
             var query = matcher.PrecomputeQuery(raw);
-            var search = new AppSearch(raw, matcher);
+            var search = new AppSearch(raw, matcher, ExecutableNameMatchMode.FilenameAndStem);
             ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery q, IListItem item) =>
-                MainListPage.ScoreTopLevelItem(q, item, history, matcher, perItemLookup, appSearch: search);
+                MainListPage.ScoreTopLevelItem(q, item, history, matcher, search, perItemLookup);
             ScoringFunction<IListItem> capturedContextScorer = (in FuzzyQuery q, IListItem item) =>
-                MainListPage.ScoreTopLevelItem(q, item, history, matcher, constantLookup, capturedNow, search);
+                MainListPage.ScoreTopLevelItem(q, item, history, matcher, search, constantLookup, capturedNow);
 
             var reference = InternalListHelpers.FilterListWithScores(source, query, liveReadScorer);
             var candidate = InternalListHelpers.FilterListWithScoresParallel(source, query, capturedContextScorer);
