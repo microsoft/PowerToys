@@ -13,7 +13,8 @@
 #include <utils/logger_helper.h>
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
-#include <NightLightRegistryObserver.h>
+#include "NightLightRegistryObserver.h"
+#include "BrightnessObserver.h"
 #include <trace.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
@@ -175,7 +176,13 @@ static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateMan
     if (s.scheduleMode == ScheduleMode::FollowNightLight)
     {
         shouldBeLight = !IsNightLightEnabled();
-    } 
+    }
+    else if (s.scheduleMode == ScheduleMode::FollowBrightness)
+    {
+        // External theme change detection doesn't apply to brightness mode;
+        // the BrightnessObserver drives those transitions directly.
+        return;
+    }
     else
     {
         shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
@@ -218,12 +225,14 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
     static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;
+    static std::unique_ptr<BrightnessObserver> g_brightnessWatcher;
 
     LightSwitchSettings::instance().LoadSettings();
     const auto& settings = LightSwitchSettings::instance().settings();
 
     // after loading settings:
     bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+    bool brightnessNeeded = (settings.scheduleMode == ScheduleMode::FollowBrightness);
 
     if (nightLightNeeded && !g_nightLightWatcher)
     {
@@ -242,6 +251,22 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
         g_nightLightWatcher->Stop();
         g_nightLightWatcher.reset();
+    }
+
+    if (brightnessNeeded && !g_brightnessWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Starting Brightness watcher...");
+        g_brightnessWatcher = std::make_unique<BrightnessObserver>(
+            [](int brightness) {
+                if (g_stateManagerPtr)
+                    g_stateManagerPtr->OnBrightnessChange(brightness);
+            });
+    }
+    else if (!brightnessNeeded && g_brightnessWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Stopping Brightness watcher...");
+        g_brightnessWatcher->Stop();
+        g_brightnessWatcher.reset();
     }
 
     SYSTEMTIME st;
@@ -312,6 +337,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
             const auto& settings = LightSwitchSettings::instance().settings();
             bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+            bool brightnessNeeded = (settings.scheduleMode == ScheduleMode::FollowBrightness);
 
             if (nightLightNeeded && !g_nightLightWatcher)
             {
@@ -334,6 +360,22 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 g_nightLightWatcher.reset();
             }
 
+            if (brightnessNeeded && !g_brightnessWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Starting Brightness watcher...");
+                g_brightnessWatcher = std::make_unique<BrightnessObserver>(
+                    [](int brightness) {
+                        if (g_stateManagerPtr)
+                            g_stateManagerPtr->OnBrightnessChange(brightness);
+                    });
+            }
+            else if (!brightnessNeeded && g_brightnessWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Stopping Brightness watcher...");
+                g_brightnessWatcher->Stop();
+                g_brightnessWatcher.reset();
+            }
+
             continue;
         }
     }
@@ -349,6 +391,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     {
         g_nightLightWatcher->Stop();
         g_nightLightWatcher.reset();
+    }
+    if (g_brightnessWatcher)
+    {
+        g_brightnessWatcher->Stop();
+        g_brightnessWatcher.reset();
     }
 
     Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
