@@ -224,12 +224,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FancyZones --input $config
 
 This example configures how windows behave when displays or zones change.
 
-```bash
-dsc config set --file fancyzones-window-behavior.dsc.yaml
-```
+Save the following configuration as `fancyzones-window-behavior.dsc.config.yaml`:
 
 ```yaml
-# fancyzones-window-behavior.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure FancyZones window behavior
@@ -245,17 +243,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file fancyzones-window-behavior.dsc.config.yaml
+```
+
 ### Example 3 - Customize zone appearance with WinGet
 
 This example installs PowerToys and configures custom zone colors and
 opacity.
 
-```bash
-winget configure winget-fancyzones-appearance.yaml
-```
+Save the following configuration as `fancyzones-appearance.dsc.config.winget`:
 
 ```yaml
-# winget-fancyzones-appearance.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -281,17 +283,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure fancyzones-appearance.dsc.config.winget
+```
+
 ### Example 4 - Override Windows Snap hotkeys
 
 This example configures FancyZones to replace Windows default snap
 functionality.
 
-```bash
-dsc config set --file fancyzones-snap-override.dsc.yaml
-```
+Save the following configuration as `fancyzones-snap-override.dsc.config.yaml`:
 
 ```yaml
-# fancyzones-snap-override.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Override Windows Snap
@@ -303,6 +309,12 @@ resources:
           fancyzones_moveWindowsBasedOnPosition: true
         name: FancyZones
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file fancyzones-snap-override.dsc.config.yaml
 ```
 
 ### Example 5 - Configure editor hotkey
@@ -334,8 +346,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FancyZones --input $config
 
 This example configures FancyZones to ignore specific applications.
 
+Save the following configuration as `fancyzones-exclusions.dsc.config.yaml`:
+
 ```yaml
-# fancyzones-exclusions.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Exclude apps from FancyZones
@@ -355,12 +369,10 @@ resources:
 
 This example configures FancyZones for optimal multi-monitor workflow.
 
-```bash
-dsc config set --file fancyzones-multimonitor.dsc.yaml
-```
+Save the following configuration as `fancyzones-multimonitor.dsc.config.yaml`:
 
 ```yaml
-# fancyzones-multimonitor.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Multi-monitor FancyZones setup
@@ -378,16 +390,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file fancyzones-multimonitor.dsc.config.yaml
+```
+
 ### Example 8 - Complete FancyZones configuration with WinGet
 
 This example shows a comprehensive FancyZones setup with installation.
 
-```bash
-winget configure winget-fancyzones-complete.yaml
-```
+Save the following configuration as `fancyzones-complete.dsc.config.winget`:
 
 ```yaml
-# winget-fancyzones-complete.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -438,6 +454,12 @@ resources:
           fancyzones_spanZonesAcrossMonitors: false
         name: FancyZones
         version: 1.0
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure fancyzones-complete.dsc.config.winget
 ```
 
 ### Example 9 - Test FancyZones configuration
@@ -531,8 +553,51 @@ resources:
         version: 1.0
 ```
 
+## Important notes
+
+> **Note:** The FancyZones module `settings` resource controls the enabled
+> state and the behavior options only. The layouts themselves (custom layouts,
+> layout templates, quick layout hotkeys and default layouts) are stored in
+> separate files and are managed by the dedicated [`layouts` resource][05]
+> (`Microsoft.PowerToys/FancyZonesLayouts`).
+
+To deploy layouts declaratively, combine both resources:
+
+```yaml
+resources:
+  - name: Configure FancyZones
+    type: Microsoft.PowerToys/FancyZonesSettings
+    properties:
+      settings:
+        properties:
+          fancyzones_shiftDrag: true
+        name: FancyZones
+        version: 1.0
+
+  - name: Deploy FancyZones layouts
+    type: Microsoft.PowerToys/FancyZonesLayouts
+    properties:
+      layouts:
+        custom:
+          - uuid: "{5C4F1A20-9B3E-4C7D-8E2F-1A2B3C4D5E6F}"
+            name: Two columns 70/30
+            grid:
+              rows: 1
+              columns: 2
+              rowsPercentage: [10000]
+              columnsPercentage: [7000, 3000]
+              cellChildMap: [[0, 1]]
+        hotkeys:
+          - { key: 1, layoutId: "{5C4F1A20-9B3E-4C7D-8E2F-1A2B3C4D5E6F}" }
+```
+
+Alternatively, layouts can still be created interactively in the FancyZones
+editor. Note that a section of the `layouts` resource replaces the whole
+corresponding layout file with the declared state.
+
 ## See also
 
+- [FancyZones Layouts Resource][05]
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
 - [Peek][03]
@@ -543,3 +608,4 @@ resources:
 [02]: ../overview.md
 [03]: ./Peek.md
 [04]: https://learn.microsoft.com/windows/powertoys/fancyzones
+[05]: ../layouts-resource.md

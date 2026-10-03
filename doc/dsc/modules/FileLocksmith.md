@@ -59,12 +59,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FileLocksmith `
 This example configures File Locksmith to appear only in the extended
 context menu.
 
-```bash
-dsc config set --file filelocksmith-extended.dsc.yaml
-```
+Save the following configuration as `filelocksmith-extended.dsc.config.yaml`:
 
 ```yaml
-# filelocksmith-extended.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure File Locksmith for extended menu
@@ -77,17 +75,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file filelocksmith-extended.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures File Locksmith for standard
 menu access.
 
-```bash
-winget configure winget-filelocksmith.yaml
-```
+Save the following configuration as `filelocksmith.dsc.config.winget`:
 
 ```yaml
-# winget-filelocksmith.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -109,16 +111,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure filelocksmith.dsc.config.winget
+```
+
 ### Example 4 - Minimize context menu clutter
 
 This example configures for extended menu to reduce clutter.
 
-```bash
-dsc config set --file filelocksmith-minimal.dsc.yaml
-```
+Save the following configuration as `filelocksmith-minimal.dsc.config.yaml`:
 
 ```yaml
-# filelocksmith-minimal.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Minimal context menu
@@ -129,6 +135,12 @@ resources:
           ExtendedContextMenuOnly: true
         name: FileLocksmith
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file filelocksmith-minimal.dsc.config.yaml
 ```
 
 ## Use cases

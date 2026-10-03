@@ -192,4 +192,12 @@
     <value>Keyboard Manager profile: {0}</value>
     <comment>{Locked="Keyboard Manager","{0}"}</comment>
   </data>
+  <data name="InvalidLayoutsError" xml:space="preserve">
+    <value>Invalid FancyZones layouts: {0}</value>
+    <comment>{Locked="FancyZones","{0}"}</comment>
+  </data>
+  <data name="LayoutsWarning" xml:space="preserve">
+    <value>FancyZones layouts: {0}</value>
+    <comment>{Locked="FancyZones","{0}"}</comment>
+  </data>
 </root>

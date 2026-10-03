@@ -113,12 +113,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FindMyMouse --input $config
 
 This example customizes the spotlight animation behavior.
 
-```bash
-dsc config set --file findmymouse-animation.dsc.yaml
-```
+Save the following configuration as `findmymouse-animation.dsc.config.yaml`:
 
 ```yaml
-# findmymouse-animation.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Find My Mouse animation
@@ -133,17 +131,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file findmymouse-animation.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Find My Mouse with custom
 colors.
 
-```bash
-winget configure winget-findmymouse.yaml
-```
+Save the following configuration as `findmymouse.dsc.config.winget`:
 
 ```yaml
-# winget-findmymouse.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -169,16 +171,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure findmymouse.dsc.config.winget
+```
+
 ### Example 4 - Subtle configuration
 
 This example creates a subtle, less intrusive spotlight effect.
 
-```bash
-dsc config set --file findmymouse-subtle.dsc.yaml
-```
+Save the following configuration as `findmymouse-subtle.dsc.config.yaml`:
 
 ```yaml
-# findmymouse-subtle.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Subtle spotlight
@@ -191,6 +197,12 @@ resources:
           AnimationDurationMs: 300
         name: FindMyMouse
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file findmymouse-subtle.dsc.config.yaml
 ```
 
 ### Example 5 - High visibility configuration
@@ -219,12 +231,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FindMyMouse --input $config
 
 This example ensures Find My Mouse doesn't interfere with games.
 
-```bash
-dsc config set --file findmymouse-gaming.dsc.yaml
-```
+Save the following configuration as `findmymouse-gaming.dsc.config.yaml`:
 
 ```yaml
-# findmymouse-gaming.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Gaming configuration
@@ -235,6 +245,12 @@ resources:
           DoNotActivateOnGameMode: true
         name: FindMyMouse
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file findmymouse-gaming.dsc.config.yaml
 ```
 
 ## Use cases

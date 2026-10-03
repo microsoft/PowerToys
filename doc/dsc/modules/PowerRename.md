@@ -84,12 +84,10 @@ PowerToys.DSC.exe set --resource 'settings' --module PowerRename --input $config
 This example configures Power Rename to appear in the extended context menu
 only.
 
-```bash
-dsc config set --file powerrename-context.dsc.yaml
-```
+Save the following configuration as `powerrename-context.dsc.config.yaml`:
 
 ```yaml
-# powerrename-context.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Power Rename context menu
@@ -103,16 +101,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file powerrename-context.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Power Rename.
 
-```bash
-winget configure winget-powerrename.yaml
-```
+Save the following configuration as `powerrename.dsc.config.winget`:
 
 ```yaml
-# winget-powerrename.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -137,16 +139,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure powerrename.dsc.config.winget
+```
+
 ### Example 4 - Clean context menu configuration
 
 This example minimizes context menu clutter.
 
-```bash
-dsc config set --file powerrename-minimal.dsc.yaml
-```
+Save the following configuration as `powerrename-minimal.dsc.config.yaml`:
 
 ```yaml
-# powerrename-minimal.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Minimal context menu
@@ -158,6 +164,12 @@ resources:
           ShowIcon: false
         name: PowerRename
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file powerrename-minimal.dsc.config.yaml
 ```
 
 ### Example 5 - Advanced regex configuration

@@ -105,7 +105,7 @@ Write-Host "DSC manifests will be generated to: '$dscOutputDir'"
 Write-Host "Cleaning previously generated DSC manifest files from '$dscOutputDir'."
 Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
 
-foreach ($resource in @('settings', 'profile')) {
+foreach ($resource in @('settings', 'profile', 'layouts')) {
     $arguments = @('manifest', '--resource', $resource, '--outputDir', $dscOutputDir)
     Write-Host "Invoking DSC manifest generator: '$exePath' $($arguments -join ' ')"
     & $exePath @arguments
