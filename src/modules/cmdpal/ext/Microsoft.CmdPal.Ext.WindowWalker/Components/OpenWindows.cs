@@ -37,7 +37,18 @@ internal sealed class OpenWindows
     /// <summary>
     /// Gets the list of all open windows
     /// </summary>
-    internal List<Window> Windows => [.._windows];
+    internal List<Window> Windows
+    {
+        get
+        {
+            // The Window Walker page and the main page fallback both refresh this list,
+            // so don't copy it while another enumeration is filling it.
+            lock (EnumWindowsLock)
+            {
+                return [.. _windows];
+            }
+        }
+    }
 
     /// <summary>
     /// Gets an instance property of this class that makes sure that
