@@ -18,6 +18,9 @@ public interface IUWPApplication
     /// <summary>Gets or sets the application user-model ID.</summary>
     string UserModelId { get; set; }
 
+    /// <summary>Gets or sets the manifest-declared executable, or an empty string when absent.</summary>
+    string Executable { get; set; }
+
     /// <summary>Gets or sets a value indicating whether discovery considers the application enabled.</summary>
     bool Enabled { get; set; }
 

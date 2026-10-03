@@ -32,6 +32,9 @@ public class MockUWPApplication : IUWPApplication
     /// </summary>
     public string UserModelId { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets the manifest-declared executable.</summary>
+    public string Executable { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the background color.
     /// </summary>

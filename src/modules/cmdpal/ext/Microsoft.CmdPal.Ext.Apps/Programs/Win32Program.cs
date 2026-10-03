@@ -620,16 +620,16 @@ public partial class Win32Program
     internal static IEnumerable<string> EnumeratePathEnvironmentPrograms(IList<string> suffixes)
         => PathEnvironmentProgramPaths(suffixes);
 
-    private static List<string> RegistryAppProgramPaths(IList<string> suffixes)
+    private static List<(string CommandName, string TargetPath)> RegistryAppPrograms(IList<string> suffixes)
     {
         // https://msdn.microsoft.com/library/windows/desktop/ee872121
         const string appPaths = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
-        var paths = new List<string>();
+        var programs = new List<(string CommandName, string TargetPath)>();
         using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
         {
             if (root is not null)
             {
-                paths.AddRange(GetPathsFromRegistry(root));
+                programs.AddRange(GetProgramsFromRegistry(root));
             }
         }
 
@@ -637,17 +637,17 @@ public partial class Win32Program
         {
             if (root is not null)
             {
-                paths.AddRange(GetPathsFromRegistry(root));
+                programs.AddRange(GetProgramsFromRegistry(root));
             }
         }
 
-        var returnedPaths = new List<string>();
-        foreach (var path in paths)
+        var returnedPrograms = new List<(string CommandName, string TargetPath)>();
+        foreach (var program in programs)
         {
             var matchesSuffix = false;
             foreach (var suffix in suffixes)
             {
-                if (path.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase))
+                if (program.TargetPath.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase))
                 {
                     matchesSuffix = true;
                     break;
@@ -656,23 +656,25 @@ public partial class Win32Program
 
             if (matchesSuffix)
             {
-                var expandedPath = ExpandEnvironmentVariables(path);
+                var expandedPath = ExpandEnvironmentVariables(program.TargetPath);
                 if (expandedPath is not null)
                 {
-                    returnedPaths.Add(expandedPath);
+                    returnedPrograms.Add((program.CommandName, expandedPath));
                 }
             }
         }
 
-        return returnedPaths;
+        return returnedPrograms;
     }
 
-    internal static IEnumerable<string> EnumerateRegistryPrograms(IList<string> suffixes)
-        => RegistryAppProgramPaths(suffixes);
-
-    private static IEnumerable<string> GetPathsFromRegistry(RegistryKey root)
+    internal static IEnumerable<(string CommandName, string TargetPath)> EnumerateRegistryPrograms(IList<string> suffixes)
     {
-        var result = new List<string>();
+        return RegistryAppPrograms(suffixes);
+    }
+
+    private static IEnumerable<(string CommandName, string TargetPath)> GetProgramsFromRegistry(RegistryKey root)
+    {
+        var result = new List<(string CommandName, string TargetPath)>();
 
         // Get all subkey names
         var subKeyNames = root.GetSubKeyNames();
@@ -683,7 +685,7 @@ public partial class Win32Program
             var path = GetPathFromRegistrySubkey(root, subkeyName);
             if (!string.IsNullOrEmpty(path))
             {
-                result.Add(path);
+                result.Add((subkeyName, path));
             }
         }
 
