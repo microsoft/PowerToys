@@ -44,13 +44,15 @@ public sealed partial class EarlyFrameRelevanceTests
 
     private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
 
-    private static ScoringFunction<IListItem> BuildScoringFunction(IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
-        => (in FuzzyQuery query, IListItem item) => MainListPage.ScoreTopLevelItem(query, item, history, matcher, null);
+    private static ScoringFunction<IListItem> BuildScoringFunction(IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher, AppSearch? appSearch)
+    {
+        return (in FuzzyQuery query, IListItem item) => MainListPage.ScoreTopLevelItem(query, item, history, matcher, appSearch);
+    }
 
     private static RoScored<IListItem>[] Score(IReadOnlyList<CatalogItem> apps, string rawQuery, IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
     {
         var query = matcher.PrecomputeQuery(rawQuery);
-        var fn = BuildScoringFunction(history, matcher);
+        var fn = BuildScoringFunction(history, matcher, null);
         return InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>().ToArray(), query, fn);
     }
 
@@ -174,6 +176,7 @@ public sealed partial class EarlyFrameRelevanceTests
         var items = apps.Select(app => new AppListItem(
             new AppItem { Name = app.Title, Subtitle = app.Subtitle, AppIdentifier = app.Id },
             useThumbnails: false)).ToArray();
-        return InternalListHelpers.FilterListWithScores<IListItem>(items, matcher.PrecomputeQuery(rawQuery), BuildScoringFunction(history, matcher));
+        var appSearch = new AppSearch(rawQuery, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        return InternalListHelpers.FilterListWithScores<IListItem>(items, matcher.PrecomputeQuery(rawQuery), BuildScoringFunction(history, matcher, appSearch));
     }
 }

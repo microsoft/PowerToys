@@ -156,6 +156,66 @@ public partial class MainListPageTests
     }
 
     [TestMethod]
+    [DataRow("cmd", false, false)]
+    [DataRow("CMD.EXE", true, false)]
+    [DataRow("cmd", false, true)]
+    [DataRow("CMD.EXE", true, true)]
+    public async Task Search_ExecutableModePublicationReranksActiveHomeQuery(string query, bool filenameMatches, bool pinned)
+    {
+        var apps = new[]
+        {
+            new AppItem
+            {
+                Name = "Command Prompt",
+                ExePath = @"C:\Start Menu\Command Prompt.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+            },
+            new AppItem
+            {
+                Name = "Developer Command Prompt",
+                ExePath = @"C:\Start Menu\Developer Command Prompt.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+                Arguments = "/k setup.bat",
+            },
+            new AppItem { Name = "cmd.exe helper", ExePath = @"C:\Tools\Helper.exe" },
+        };
+        var rows = apps.Select(app => new AppListItem(app, useThumbnails: false)).ToArray();
+        var snapshot = new AppListItemSnapshot(rows, []);
+        var commandPromptId = snapshot.VisibleItems[0].Command!.Id;
+        var helperId = snapshot.VisibleItems[2].Command!.Id;
+        var originalIds = snapshot.VisibleItems.Select(item => item.Command!.Id).ToArray();
+        var source = new Mock<IAppListItemSource>();
+        source.Setup(service => service.GetSnapshot()).Returns(() => snapshot);
+        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        await WithSearchPages(snapshot, pinned, appListItemSource: source, check: async (home, allApps, _) =>
+        {
+            home.SearchText = allApps.SearchText = query;
+            Assert.AreEqual(commandPromptId, home.GetItems().First(item => item is not Separator).Command!.Id);
+
+            foreach (var (mode, expectedFirstId) in new[]
+            {
+                (ExecutableNameMatchMode.FilenameOnly, filenameMatches ? commandPromptId : helperId),
+                (ExecutableNameMatchMode.Disabled, helperId),
+                (ExecutableNameMatchMode.FilenameAndStem, commandPromptId),
+            })
+            {
+                snapshot = new AppListItemSnapshot(rows, [], executableNameMatchMode: mode);
+                source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+                await WaitForConditionAsync(() => home.GetItems().First(item => item is not Separator).Command!.Id == expectedFirstId);
+
+                Assert.AreEqual(query, home.SearchText);
+                Assert.AreEqual(expectedFirstId, home.GetItems().First(item => item is not Separator).Command!.Id, mode.ToString());
+                Assert.AreEqual(expectedFirstId, allApps.GetItems().OfType<AppListItem>().First().Command!.Id, mode.ToString());
+                CollectionAssert.AreEquivalent(originalIds, home.GetItems().Where(item => originalIds.Contains(item.Command?.Id)).Select(item => item.Command!.Id).ToArray());
+                CollectionAssert.AreEqual(originalIds, snapshot.VisibleItems.Select(item => item.Command!.Id).ToArray());
+                Assert.AreSame(rows, snapshot.VisibleItems);
+            }
+
+            source.Verify(service => service.RefreshAsync(), Times.Never);
+        });
+    }
+
+    [TestMethod]
     [DataRow("cmd")]
     [DataRow("cmd.exe")]
     public async Task Search_ExactTitleKeepsPrecedenceOverExecutableOnBothPages(string query)
@@ -414,17 +474,60 @@ public partial class MainListPageTests
 
         var matcher = new PrecomputedFuzzyMatcher();
         var query = matcher.PrecomputeQuery("Needle");
-        var exactScore = MainListPage.ScoreTopLevelItem(query, exact, history, matcher);
-        var metadataScore = MainListPage.ScoreTopLevelItem(query, metadata, history, matcher);
+        var appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        var exactScore = MainListPage.ScoreTopLevelItem(query, exact, history, matcher, appSearch);
+        var metadataScore = MainListPage.ScoreTopLevelItem(query, metadata, history, matcher, appSearch);
         Assert.AreEqual(RankTier.ExactTitle, MainListRanker.TierOf(exactScore));
         Assert.AreEqual(RankTier.Fuzzy, MainListRanker.TierOf(metadataScore));
         Assert.IsTrue(exactScore > metadataScore);
-        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(matcher.PrecomputeQuery("zebra"), metadata, history, matcher));
+        query = matcher.PrecomputeQuery("zebra");
+        appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        Assert.AreEqual(0, MainListPage.ScoreTopLevelItem(query, metadata, history, matcher, appSearch));
 
         query = matcher.PrecomputeQuery("note");
-        Assert.IsTrue(new AppSearch("note", matcher).Evaluate(weakTitle).HasMatch);
-        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, weakTitle, history, matcher) > 0);
-        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, description, history, matcher) > 0);
+        appSearch = new AppSearch(query.Original, matcher, ExecutableNameMatchMode.FilenameAndStem);
+        Assert.IsTrue(appSearch.Evaluate(weakTitle).HasMatch);
+        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, weakTitle, history, matcher, appSearch) > 0);
+        Assert.IsTrue(MainListPage.ScoreTopLevelItem(query, description, history, matcher, appSearch) > 0);
+    }
+
+    [TestMethod]
+    [DataRow("cmd", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("cmd", ExecutableNameMatchMode.FilenameOnly, RankTier.Fuzzy)]
+    [DataRow("cmd", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.FilenameAndStem, RankTier.ExactMetadata)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.FilenameOnly, RankTier.ExactMetadata)]
+    [DataRow("cmd.exe", ExecutableNameMatchMode.Disabled, RankTier.Fuzzy)]
+    public void AppScores_PreparedSearchControlsExecutableMode(string queryText, ExecutableNameMatchMode mode, RankTier expectedTier)
+    {
+        var app = new AppListItem(
+            new AppItem
+            {
+                Name = "Shell",
+                ExePath = @"C:\Start Menu\Shell.lnk",
+                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+            },
+            useThumbnails: false);
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery(queryText);
+        var appSearch = new AppSearch(queryText, matcher, mode);
+
+        var score = MainListPage.ScoreTopLevelItem(query, app, new RecentCommandsManager(), matcher, appSearch);
+
+        Assert.AreEqual(expectedTier, MainListRanker.TierOf(score));
+        Assert.IsTrue(score > 0, "Executable metadata remains searchable when priority is disabled.");
+    }
+
+    [TestMethod]
+    public void AppScores_NonemptyQueryRequiresPreparedSearch()
+    {
+        var app = CreateApp("Editor");
+        var matcher = new PrecomputedFuzzyMatcher();
+        var query = matcher.PrecomputeQuery("Editor");
+
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(() => MainListPage.ScoreTopLevelItem(query, app, new RecentCommandsManager(), matcher, null));
+
+        Assert.AreEqual("appSearch", exception.ParamName);
     }
 
     [TestMethod]
@@ -503,7 +606,7 @@ public partial class MainListPageTests
         },
         useThumbnails: false);
 
-    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null)
+    private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null, Mock<IAppListItemSource>? appListItemSource = null)
     {
         var settings = new SettingsModel();
         if (pinFirstApp)
@@ -519,9 +622,13 @@ public partial class MainListPageTests
             .AddSingleton(TaskScheduler.Default)
             .AddSingleton(settingsService.Object)
             .BuildServiceProvider();
-        var source = new Mock<IAppListItemSource>();
-        source.Setup(service => service.GetSnapshot()).Returns(snapshot);
-        source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        var source = appListItemSource ?? new Mock<IAppListItemSource>();
+        if (appListItemSource is null)
+        {
+            source.Setup(service => service.GetSnapshot()).Returns(snapshot);
+            source.SetupGet(service => service.TopLevelResultLimit).Returns(10);
+        }
+
         var matcherProvider = new FuzzyMatcherProvider(new());
         using var allApps = new AllAppsPage(source.Object, matcherProvider);
         var wrapper = new CommandProviderWrapper(new AppsProvider(snapshot, allApps), TaskScheduler.Default);

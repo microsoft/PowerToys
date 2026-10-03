@@ -25,6 +25,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsSettings : JsonSettingsManager
 {
     private const int DefaultSearchResultLimit = 10;
+    private const ExecutableNameMatchMode DefaultExecutableNameMatchMode = ExecutableNameMatchMode.FilenameOnly;
     private const int AppCommandAliasesReadAttempts = 3;
     private const int AppCommandAliasesReadRetryDelayMs = 25;
     private const string DisabledProgramSourcesPropertyName = "DisabledProgramSources";
@@ -145,6 +146,20 @@ public partial class AllAppsSettings : JsonSettingsManager
     /// <summary>Gets the configured result limit, or the built-in default when no override is set.</summary>
     public int EffectiveSearchResultLimit => SearchResultLimit ?? DefaultSearchResultLimit;
 
+    private readonly ChoiceSetSetting _executableNameMatchMode = new(
+        Namespaced(nameof(ExecutableNameMatchMode)),
+        Resources.executable_name_match_mode,
+        Resources.executable_name_match_mode_description,
+        [
+            new(Resources.executable_name_match_mode_default, "default"),
+            new(Resources.executable_name_match_mode_filename_and_stem, "filenameAndStem"),
+            new(Resources.executable_name_match_mode_filename_only, "filenameOnly"),
+            new(Resources.executable_name_match_mode_disabled, "disabled"),
+        ])
+    {
+        IgnoreUnknownValue = true,
+    };
+
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
         Resources.enable_start_menu_source,
@@ -237,6 +252,16 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     internal string AppCommandAliasesFilePath => AppCommandAliasesPath(FilePath);
 
+    /// <summary>Gets when exact executable names receive priority in All Apps and Home search, resolving the default policy.</summary>
+    public ExecutableNameMatchMode ExecutableNameMatchMode => _executableNameMatchMode.Value switch
+    {
+        "default" => DefaultExecutableNameMatchMode,
+        "disabled" => ExecutableNameMatchMode.Disabled,
+        "filenameOnly" => ExecutableNameMatchMode.FilenameOnly,
+        "filenameAndStem" => ExecutableNameMatchMode.FilenameAndStem,
+        _ => DefaultExecutableNameMatchMode,
+    };
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -273,6 +298,7 @@ public partial class AllAppsSettings : JsonSettingsManager
         Settings.Add(_customShortcutFolders);
         Settings.Add(_portableAppFolders);
         Settings.Add(_searchResultLimitSource);
+        Settings.Add(_executableNameMatchMode);
         Settings.Add(_hideAppDescriptions);
         Settings.Add(_hideUninstallers);
         Settings.Add(_excludedAppNames);

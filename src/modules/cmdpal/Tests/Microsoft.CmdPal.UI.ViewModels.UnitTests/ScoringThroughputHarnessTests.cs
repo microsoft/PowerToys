@@ -37,9 +37,9 @@ public sealed partial class ScoringThroughputHarnessTests
         IPrecomputedFuzzyMatcher matcher,
         string query)
     {
-        var appSearch = new AppSearch(query, matcher);
+        var appSearch = new AppSearch(query, matcher, ExecutableNameMatchMode.FilenameAndStem);
         var now = DateTimeOffset.UtcNow;
-        return (in FuzzyQuery q, IListItem item) => MainListPage.ScoreTopLevelItem(q, item, history, matcher, now: now, appSearch: appSearch);
+        return (in FuzzyQuery q, IListItem item) => MainListPage.ScoreTopLevelItem(q, item, history, matcher, appSearch, now: now);
     }
 
     private static (double Milliseconds, long Bytes) Measure(Action action)

@@ -122,7 +122,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         var filterId = _filters.CurrentFilterId;
         var snapshot = _appListItemSource.GetSnapshot();
         var query = SearchText;
-        var search = string.IsNullOrWhiteSpace(query) ? null : new AppSearch(query, _fuzzyMatcherProvider.Current);
+        var search = string.IsNullOrWhiteSpace(query) ? null : new AppSearch(query, _fuzzyMatcherProvider.Current, snapshot.ExecutableNameMatchMode);
         if (filterId != AllAppsFilters.HiddenFilterId)
         {
             return FilterAppItems(snapshot.VisibleItems, filterId, search);

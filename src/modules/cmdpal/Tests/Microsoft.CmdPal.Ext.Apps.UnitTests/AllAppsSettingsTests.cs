@@ -22,6 +22,67 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 public class AllAppsSettingsTests
 {
     [TestMethod]
+    [DataRow("")]
+    [DataRow("unknown")]
+    [DataRow("default")]
+    public void ExecutableNameMatchMode_DefaultsForMissingOrUnknownSavedValues(string savedValue)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            if (!string.IsNullOrEmpty(savedValue))
+            {
+                File.WriteAllText(
+                    settingsPath,
+                    new JsonObject
+                    {
+                        ["apps.ExecutableNameMatchMode"] = savedValue,
+                    }.ToJsonString());
+            }
+
+            var settings = new AllAppsSettings(settingsPath);
+
+            Assert.AreEqual(ExecutableNameMatchMode.FilenameOnly, settings.ExecutableNameMatchMode);
+            Assert.AreEqual("default", JsonNode.Parse(settings.Settings.ToJson())!["apps.ExecutableNameMatchMode"]!.GetValue<string>());
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("default", ExecutableNameMatchMode.FilenameOnly)]
+    [DataRow("filenameAndStem", ExecutableNameMatchMode.FilenameAndStem)]
+    [DataRow("filenameOnly", ExecutableNameMatchMode.FilenameOnly)]
+    [DataRow("disabled", ExecutableNameMatchMode.Disabled)]
+    public void ExecutableNameMatchMode_FormSubmissionPersists(string value, ExecutableNameMatchMode expected)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"apps.ExecutableNameMatchMode\":\"filenameOnly\"}");
+            var settings = new AllAppsSettings(settingsPath);
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+
+            form.SubmitForm(
+                new JsonObject
+                {
+                    ["apps.ExecutableNameMatchMode"] = value,
+                }.ToJsonString(),
+                string.Empty);
+
+            Assert.AreEqual(expected, settings.ExecutableNameMatchMode);
+            Assert.AreEqual(expected, new AllAppsSettings(settingsPath).ExecutableNameMatchMode);
+            Assert.AreEqual(value, JsonNode.Parse(File.ReadAllText(settingsPath))!["apps.ExecutableNameMatchMode"]!.GetValue<string>());
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
     [DataRow("*updater*", "", "Contoso UPDATER", @"C:\Apps\Contoso.exe", true)]
     [DataRow("Contoso", "", "Contoso Updater", @"C:\Apps\Contoso.exe", false)]
     [DataRow(" App ? ", "", "App 1", @"C:\Apps\App.exe", true)]

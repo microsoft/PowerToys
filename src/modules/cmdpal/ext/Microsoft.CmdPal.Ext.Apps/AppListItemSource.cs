@@ -131,7 +131,9 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private void OnSettingsChanged(object sender, Settings args)
     {
         var state = Volatile.Read(ref _publishedState);
-        if (state.HideDescriptions != _settings.HideAppDescriptions || state.ResultLimit != _settings.EffectiveSearchResultLimit)
+        if (state.HideDescriptions != _settings.HideAppDescriptions
+            || state.ResultLimit != _settings.EffectiveSearchResultLimit
+            || state.Snapshot.ExecutableNameMatchMode != _settings.ExecutableNameMatchMode)
         {
             SynchronizeWithCatalog();
         }
@@ -199,6 +201,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
         var snapshot = state.Snapshot;
         var hideDescriptions = _settings.HideAppDescriptions;
         var resultLimit = _settings.EffectiveSearchResultLimit;
+        var executableNameMatchMode = _settings.ExecutableNameMatchMode;
         var presentationChanged = state.HideDescriptions != hideDescriptions;
         var existingItems = new Dictionary<string, (AppListItem Item, AppVisibility Visibility)>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in snapshot.VisibleItems)
@@ -221,7 +224,8 @@ public sealed partial class AppListItemSource : IAppListItemSource
             BuildList(catalogSnapshot.Items, AppVisibility.Visible, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
             BuildList(catalogSnapshot.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems),
             BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems),
-            commandAliases);
+            commandAliases,
+            executableNameMatchMode);
 
         var resolutionChanged = !updated.HasSameCommandResolution(snapshot);
 
@@ -229,12 +233,12 @@ public sealed partial class AppListItemSource : IAppListItemSource
             && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems)
             && ReferenceEquals(updated.PatternHiddenItems, snapshot.PatternHiddenItems))
         {
-            if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit)
+            if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit && snapshot.ExecutableNameMatchMode == executableNameMatchMode)
             {
                 return;
             }
 
-            if (!resolutionChanged)
+            if (!resolutionChanged && snapshot.ExecutableNameMatchMode == executableNameMatchMode)
             {
                 updated = snapshot;
             }

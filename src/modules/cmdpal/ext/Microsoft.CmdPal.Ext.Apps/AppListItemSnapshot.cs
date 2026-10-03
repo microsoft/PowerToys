@@ -32,6 +32,9 @@ public sealed class AppListItemSnapshot
     /// <summary>Gets applications hidden by global name or path exclusion patterns.</summary>
     public IReadOnlyList<AppListItem> PatternHiddenItems { get; }
 
+    /// <summary>Gets the exact executable-name priority policy for searches against this snapshot.</summary>
+    public ExecutableNameMatchMode ExecutableNameMatchMode { get; }
+
     /// <summary>
     /// Initializes an atomic visible and hidden list-item snapshot.
     /// </summary>
@@ -39,15 +42,18 @@ public sealed class AppListItemSnapshot
     /// <param name="hiddenItems">Applications explicitly hidden by the user.</param>
     /// <param name="patternHiddenItems">Applications hidden by global exclusion patterns.</param>
     /// <param name="commandAliases">Saved IDs mapped to the current application commands.</param>
+    /// <param name="executableNameMatchMode">Exact executable-name priority captured for this publication.</param>
     public AppListItemSnapshot(
         IReadOnlyList<AppListItem> visibleItems,
         IReadOnlyList<AppListItem> hiddenItems,
         IReadOnlyList<AppListItem>? patternHiddenItems = null,
-        IReadOnlyDictionary<string, string>? commandAliases = null)
+        IReadOnlyDictionary<string, string>? commandAliases = null,
+        ExecutableNameMatchMode executableNameMatchMode = ExecutableNameMatchMode.FilenameAndStem)
     {
         VisibleItems = visibleItems ?? throw new ArgumentNullException(nameof(visibleItems));
         HiddenItems = hiddenItems ?? throw new ArgumentNullException(nameof(hiddenItems));
         PatternHiddenItems = patternHiddenItems ?? [];
+        ExecutableNameMatchMode = executableNameMatchMode;
         _visibleItemSet = new(VisibleItems);
         _byCommandId = new(StringComparer.Ordinal);
         _byNormalizedCommandId = new(StringComparer.OrdinalIgnoreCase);

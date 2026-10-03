@@ -214,6 +214,60 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Prioritize exact executable names.
+        /// </summary>
+        internal static string executable_name_match_mode {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Default.
+        /// </summary>
+        internal static string executable_name_match_mode_default {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_default", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Choose when exact executable names, such as cmd or cmd.exe, receive priority in All Apps and Home. Other search matches remain available..
+        /// </summary>
+        internal static string executable_name_match_mode_description {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        internal static string executable_name_match_mode_disabled {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_disabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to With or without extension.
+        /// </summary>
+        internal static string executable_name_match_mode_filename_and_stem {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_filename_and_stem", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Only with extension.
+        /// </summary>
+        internal static string executable_name_match_mode_filename_only {
+            get {
+                return ResourceManager.GetString("executable_name_match_mode_filename_only", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         internal static string file {

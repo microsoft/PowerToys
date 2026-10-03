@@ -893,9 +893,9 @@ public class AppCatalogTests
         Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "Ubuntu"));
         var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
         var matcher = new Microsoft.CmdPal.Common.Text.PrecomputedFuzzyMatcher();
-        Assert.IsTrue(new AppSearch(aliasName, matcher).Evaluate(row).IsExactExecutableMatch);
-        Assert.IsTrue(new AppSearch($"{aliasName}.exe", matcher).Evaluate(row).IsExactExecutableMatch);
-        Assert.IsTrue(new AppSearch("ubuntu.exe", matcher).Evaluate(row).IsExactExecutableMatch);
+        Assert.IsTrue(new AppSearch(aliasName, matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(row).IsExactExecutableMatch);
+        Assert.IsTrue(new AppSearch($"{aliasName}.exe", matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(row).IsExactExecutableMatch);
+        Assert.IsTrue(new AppSearch("ubuntu.exe", matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(row).IsExactExecutableMatch);
         var snapshot = new AppListItemSnapshot([row], []);
         foreach (var representation in new[] { aliasItem, targetItem, packagedItem })
         {
