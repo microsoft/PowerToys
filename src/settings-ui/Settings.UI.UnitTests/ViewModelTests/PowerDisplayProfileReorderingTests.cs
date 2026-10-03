@@ -313,12 +313,13 @@ public class PowerDisplayProfileReorderingTests
     public async Task LoadProfiles_UsesArrayOrderInsteadOfIdOrder()
     {
         var store = new ProfileSession();
-        store.Data.Profiles = new List<PowerDisplayProfile>
-        {
+        store.Data.Profiles.Clear();
+        store.Data.Profiles.AddRange(
+        [
             CreateProfile(SecondId, "Second"),
             CreateProfile(ThirdId, "Third"),
             CreateProfile(FirstId, "First"),
-        };
+        ]);
         using var viewModel = CreateViewModel(store);
 
         await viewModel.InitializeProfilesAsync();
