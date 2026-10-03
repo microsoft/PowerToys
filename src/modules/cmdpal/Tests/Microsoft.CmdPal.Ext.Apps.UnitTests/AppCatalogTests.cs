@@ -113,7 +113,7 @@ public class AppCatalogTests
     }
 
     [TestMethod]
-    public async Task InitializeAsync_ValidCache_DoesNotLoadSources()
+    public async Task InitializeAsync_ValidCache_DoesNotWaitForSourceInitializationOrLoadSources()
     {
         var cachedItem = CreateCatalogItem("Cached");
         var cache = new TestCache(new AppCatalogCacheFile
@@ -122,11 +122,489 @@ public class AppCatalogTests
         });
         using var source = new TestAppSource("test", [CreateCatalogItem("Fresh")]);
         using var catalog = CreateCatalog([source], cache);
+        var sourceInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        source.DeferInitialization(sourceInitialization.Task);
 
-        await catalog.InitializeAsync();
+        try
+        {
+            await catalog.InitializeAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => source.InitializeCount == 1);
 
-        Assert.AreEqual(0, source.LoadCount);
-        Assert.AreEqual("Cached", catalog.GetSnapshot().Items[0].Name);
+            Assert.IsFalse(sourceInitialization.Task.IsCompleted);
+            Assert.AreEqual(0, source.LoadCount);
+            Assert.AreEqual("Cached", catalog.GetSnapshot().Items[0].Name);
+        }
+        finally
+        {
+            sourceInitialization.TrySetResult();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task InitializeAsync_CachedNotificationFailure_DoesNotInterruptStartup(bool partialCache)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-cached-notification-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var cacheRead = new TaskCompletionSource<AppCatalogCacheFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cachedInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var missingLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cachedItem = CreateCatalogItem("Cached", sourceId: "cached");
+        var cacheFile = new AppCatalogCacheFile
+        {
+            Sources = [new AppCatalogSourceSnapshot { SourceId = "cached", Items = [cachedItem] }],
+        };
+        using var cached = new TestAppSource("cached", [cachedItem]);
+        using var missing = new TestAppSource("missing", []);
+        cached.DeferInitialization(cachedInitialization.Task);
+        missing.DeferNextLoad(missingLoad.Task);
+        var logger = new RecordingLogger<AppCatalog>();
+        IAppSource[] sources = partialCache ? [cached, missing] : [cached];
+        using var catalog = CreateCatalog(sources, new TestCache(cacheFile) { DeferredLoad = cacheRead.Task }, logger: logger);
+        try
+        {
+            using var list = new AppListItemSource(catalog, settings);
+            catalog.Changed += (_, _) =>
+            {
+                throw new InvalidOperationException("Test cached notification failure.");
+            };
+            var initialization = catalog.InitializeAsync();
+            cacheRead.SetResult(cacheFile);
+            await WaitForConditionAsync(() => cached.InitializeCount == 1 && list.GetSnapshot().VisibleItems.Count == 1);
+
+            Assert.AreEqual("Cached", list.GetSnapshot().VisibleItems.Single().Title);
+            Assert.IsFalse(cachedInitialization.Task.IsCompleted);
+            Assert.AreEqual(0, cached.LoadCount);
+            Assert.IsTrue(logger.HasEvent(11));
+            Assert.IsFalse(logger.HasEvent(4));
+            if (partialCache)
+            {
+                await WaitForConditionAsync(() => missing.LoadCount == 1);
+                Assert.AreEqual(1, missing.InitializeCount);
+                Assert.IsTrue(list.IsLoading);
+                await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+                missingLoad.SetResult([CreateCatalogItem("Fresh", sourceId: missing.Id)]);
+            }
+
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => !list.IsLoading);
+            Assert.IsFalse(cachedInitialization.Task.IsCompleted, "Cached readiness must not wait for watcher setup or the delayed reconciliation.");
+            Assert.AreEqual(partialCache ? 2 : 1, list.GetSnapshot().VisibleItems.Count);
+            Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Cached"));
+            Assert.AreEqual(partialCache, ContainsApp(catalog.GetSnapshot().Items, "Fresh"));
+            Assert.IsFalse(logger.HasEvent(4));
+        }
+        finally
+        {
+            cacheRead.TrySetResult(cacheFile);
+            cachedInitialization.TrySetResult();
+            missingLoad.TrySetResult([]);
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_ThrowingFirstListener_DeliversToProjectorAndLaterListener()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-observer-isolation-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var cacheRead = new TaskCompletionSource<AppCatalogCacheFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var observedTitle = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cache = new TestCache(null) { DeferredLoad = cacheRead.Task };
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("test", [CreateCatalogItem("Fresh")]);
+        using var catalog = CreateCatalog([source], cache, logger: logger);
+        catalog.Changed += (_, _) =>
+        {
+            throw new InvalidOperationException("Test first change listener failure.");
+        };
+        try
+        {
+            using var list = new AppListItemSource(catalog, settings);
+            catalog.Changed += (_, _) =>
+            {
+                observedTitle.TrySetResult(list.GetSnapshot().VisibleItems.SingleOrDefault()?.Title);
+            };
+            var initialization = catalog.InitializeAsync();
+            cacheRead.SetResult(null);
+
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual("Fresh", await observedTitle.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            await WaitForConditionAsync(() => !list.IsLoading && cache.SaveCount == 1);
+
+            Assert.AreEqual("Fresh", list.GetSnapshot().VisibleItems.Single().Title);
+            Assert.AreEqual("Fresh", ((Win32AppPayload)cache.LastSavedSnapshots![source.Id].Single().Payload).Name);
+            Assert.IsTrue(logger.HasEvent(11));
+            Assert.IsFalse(logger.HasEvent(4));
+        }
+        finally
+        {
+            cacheRead.TrySetResult(null);
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task InitializeAsync_RetiredSourcesDoNotLogInitializationFailures(bool initializedBeforeRetirement, bool useCache)
+    {
+        var firstInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var retiredInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstItem = CreateCatalogItem("First", sourceId: "first");
+        using var first = new TestAppSource("first", [firstItem]);
+        using var retired = new TestAppSource("retired", []);
+        using var last = new TestAppSource("last", []);
+        first.DeferInitialization(firstInitialization.Task);
+        if (initializedBeforeRetirement)
+        {
+            retired.DeferInitialization(retiredInitialization.Task);
+        }
+
+        var cacheFile = new AppCatalogCacheFile
+        {
+            Sources =
+            [
+                new AppCatalogSourceSnapshot { SourceId = first.Id, Items = [firstItem] },
+                new AppCatalogSourceSnapshot { SourceId = retired.Id, Items = [] },
+                new AppCatalogSourceSnapshot { SourceId = last.Id, Items = [] },
+            ],
+        };
+        var logger = new RecordingLogger<AppCatalog>();
+        using var provider = new MutableSourceProvider([first, retired, last]);
+        using var catalog = new AppCatalog(provider, new TestCache(useCache ? cacheFile : null), new VisibleApps(), logger: logger, invalidationDelay: TimeSpan.Zero);
+        try
+        {
+            var initialization = catalog.InitializeAsync();
+            await WaitForConditionAsync(() => first.InitializeCount == 1);
+            if (initializedBeforeRetirement)
+            {
+                firstInitialization.SetResult();
+                await WaitForConditionAsync(() => retired.InitializeCount == 1);
+            }
+
+            provider.SetSources([first, last]);
+            await WaitForConditionAsync(() => retired.IsDisposed);
+            if (initializedBeforeRetirement)
+            {
+                retiredInitialization.SetException(new ObjectDisposedException(retired.Id));
+            }
+            else
+            {
+                firstInitialization.SetResult();
+            }
+
+            await WaitForConditionAsync(() => last.InitializeCount == 1);
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.AreEqual(initializedBeforeRetirement ? 1 : 0, retired.InitializeCount);
+            Assert.IsFalse(logger.HasEvent(1), "Expected source retirement must not log an initialization failure.");
+            Assert.AreEqual("First", catalog.GetSnapshot().Items.Single().Name);
+        }
+        finally
+        {
+            firstInitialization.TrySetResult();
+            retiredInitialization.TrySetResult();
+        }
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_ActiveSourceObjectDisposedExceptionIsLogged()
+    {
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("active", [CreateCatalogItem("Fresh", sourceId: "active")]);
+        source.DeferInitialization(Task.FromException(new ObjectDisposedException(source.Id)));
+        using var catalog = CreateCatalog([source], new TestCache(null), logger: logger);
+
+        await catalog.InitializeAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(source.IsDisposed);
+        Assert.IsTrue(logger.HasEvent(1), "An active source's initialization failure must remain diagnosable.");
+        Assert.AreEqual("Fresh", catalog.GetSnapshot().Items.Single().Name);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task InitializeAsync_ReplacedSourceWaitsForCurrentPublication(bool pendingRequest, bool partialCache)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-replacement-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var earlierLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var originalLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replacementInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replacementLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var earlier = new TestAppSource("earlier", []);
+        using var original = new TestAppSource("changing", []);
+        using var replacement = new TestAppSource("changing", []);
+        replacement.DeferInitialization(replacementInitialization.Task);
+        replacement.DeferNextLoad(replacementLoad.Task);
+        var cacheFile = new AppCatalogCacheFile
+        {
+            Sources = [new AppCatalogSourceSnapshot { SourceId = earlier.Id, Items = [] }],
+        };
+        using var provider = new MutableSourceProvider([earlier, original]);
+        using var catalog = new AppCatalog(provider, new TestCache(partialCache ? cacheFile : null), new VisibleApps(), invalidationDelay: TimeSpan.Zero);
+        try
+        {
+            if (pendingRequest)
+            {
+                earlier.DeferNextLoad(earlierLoad.Task);
+                _ = catalog.RefreshAsync();
+                await WaitForConditionAsync(() => earlier.LoadCount == 1);
+            }
+            else
+            {
+                original.DeferNextLoad(originalLoad.Task);
+            }
+
+            using var list = new AppListItemSource(catalog, settings);
+            var initialization = catalog.InitializeAsync();
+            await WaitForConditionAsync(() => pendingRequest ? original.InitializeCount == 1 : original.LoadCount == 1);
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+
+            provider.SetSources([earlier, replacement]);
+            await WaitForConditionAsync(() => original.IsDisposed && replacement.InitializeCount == 1);
+            earlierLoad.TrySetResult([]);
+            originalLoad.TrySetResult([CreateCatalogItem("Obsolete", sourceId: original.Id)]);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+
+            Assert.IsTrue(list.IsLoading, "An unpublished replacement must retain startup loading even while the refresh loop is idle.");
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+            Assert.IsFalse(ContainsApp(catalog.GetSnapshot().Items, "Obsolete"));
+
+            replacementInitialization.SetResult();
+            await WaitForConditionAsync(() => replacement.LoadCount == 1);
+            Assert.IsTrue(list.IsLoading);
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+
+            replacementLoad.SetResult([CreateCatalogItem("Replacement", sourceId: replacement.Id)]);
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => !list.IsLoading);
+            Assert.AreEqual("Replacement", list.GetSnapshot().VisibleItems.Single().Title);
+        }
+        finally
+        {
+            earlierLoad.TrySetResult([]);
+            originalLoad.TrySetResult([]);
+            replacementInitialization.TrySetResult();
+            replacementLoad.TrySetResult([]);
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task InitializeAsync_RemovedSourceDoesNotWaitForItsRetiredScan(bool throwingListener)
+    {
+        var originalLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var removalNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var original = new TestAppSource("removed", [CreateCatalogItem("Original", sourceId: "removed")]);
+        using var provider = new MutableSourceProvider([original]);
+        using var catalog = new AppCatalog(provider, new TestCache(null), new VisibleApps(), invalidationDelay: TimeSpan.Zero);
+        try
+        {
+            if (throwingListener)
+            {
+                await catalog.RefreshAsync();
+                catalog.Changed += (_, _) =>
+                {
+                    if (catalog.GetSnapshot().Items.Count == 0)
+                    {
+                        removalNotification.TrySetResult();
+                        throw new InvalidOperationException("Test removal notification failure.");
+                    }
+                };
+            }
+
+            original.DeferNextLoad(originalLoad.Task);
+            var initialLoadCount = original.LoadCount;
+            var initialization = catalog.InitializeAsync();
+            await WaitForConditionAsync(() => original.LoadCount == initialLoadCount + 1);
+            provider.SetSources([]);
+
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(original.IsDisposed);
+            Assert.IsFalse(originalLoad.Task.IsCompleted);
+            Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
+            if (throwingListener)
+            {
+                Assert.IsTrue(removalNotification.Task.IsCompletedSuccessfully);
+            }
+        }
+        finally
+        {
+            originalLoad.TrySetResult([]);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+        }
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_MixedRemovalAndReplacementContinuesAfterNotificationFailure()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-notification-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var originalLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replacementInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replacementLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cachedItem = CreateCatalogItem("Cached", sourceId: "cached");
+        using var cached = new TestAppSource("cached", [cachedItem]);
+        using var original = new TestAppSource("changing", []);
+        using var replacement = new TestAppSource("changing", []);
+        original.DeferNextLoad(originalLoad.Task);
+        replacement.DeferInitialization(replacementInitialization.Task);
+        replacement.DeferNextLoad(replacementLoad.Task);
+        var cacheFile = new AppCatalogCacheFile
+        {
+            Sources = [new AppCatalogSourceSnapshot { SourceId = cached.Id, Items = [cachedItem] }],
+        };
+        var logger = new RecordingLogger<AppCatalog>();
+        using var provider = new MutableSourceProvider([cached, original]);
+        using var catalog = new AppCatalog(provider, new TestCache(cacheFile), new VisibleApps(), logger: logger, invalidationDelay: TimeSpan.Zero);
+        try
+        {
+            using var list = new AppListItemSource(catalog, settings);
+            catalog.Changed += (_, _) =>
+            {
+                if (catalog.GetSnapshot().Items.Count == 0)
+                {
+                    throw new InvalidOperationException("Test removal notification failure.");
+                }
+            };
+            var initialization = catalog.InitializeAsync();
+            await WaitForConditionAsync(() => original.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == 1);
+
+            provider.SetSources([replacement]);
+            await WaitForConditionAsync(() => cached.IsDisposed && original.IsDisposed && replacement.InitializeCount == 1);
+            Assert.IsTrue(logger.HasEvent(11), "A failing change listener must be logged without interrupting replacement initialization.");
+            originalLoad.SetResult([CreateCatalogItem("Obsolete", sourceId: original.Id)]);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+            Assert.IsTrue(list.IsLoading);
+            Assert.AreEqual(0, list.GetSnapshot().VisibleItems.Count);
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+
+            replacementInitialization.SetResult();
+            await WaitForConditionAsync(() => replacement.LoadCount == 1);
+            Assert.IsFalse(initialization.IsCompleted);
+            Assert.IsTrue(list.IsLoading);
+            replacementLoad.SetResult([CreateCatalogItem("Replacement", sourceId: replacement.Id)]);
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => !list.IsLoading);
+            Assert.AreEqual("Replacement", list.GetSnapshot().VisibleItems.Single().Title);
+        }
+        finally
+        {
+            originalLoad.TrySetResult([]);
+            replacementInitialization.TrySetResult();
+            replacementLoad.TrySetResult([]);
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task InitializeAsync_FirstPublicationCompletesWhileSourceInvalidationsContinue(bool partialCache)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-loading-{Guid.NewGuid():N}.json");
+        var settings = new AllAppsSettings(settingsPath);
+        var desktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var laterDesktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cachedSourceInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            var cachedPackage = new AppCatalogItem(
+                "packaged:Contoso.Cached_123!App",
+                priority: 0,
+                new AppCatalogSourceReference("packaged", "Contoso.Cached_123!App"),
+                [],
+                new PackagedAppSnapshot { Name = "Cached package", UserModelId = "Contoso.Cached_123!App" });
+            var cacheFile = new AppCatalogCacheFile
+            {
+                Sources = [new AppCatalogSourceSnapshot { SourceId = "packaged", Items = [cachedPackage] }],
+            };
+            var cache = new TestCache(partialCache ? cacheFile : null);
+            using var packagedSource = new TestAppSource("packaged", [cachedPackage]);
+            using var desktopSource = new TestAppSource("win32:desktop", []);
+            if (partialCache)
+            {
+                packagedSource.DeferInitialization(cachedSourceInitialization.Task);
+            }
+
+            desktopSource.DeferNextLoad(desktopLoad.Task);
+            using var catalog = CreateCatalog([packagedSource, desktopSource], cache);
+            var cachedPublication = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            catalog.Changed += (_, _) =>
+            {
+                if (ContainsApp(catalog.GetSnapshot().Items, "Cached package"))
+                {
+                    cachedPublication.TrySetResult();
+                }
+
+                if (desktopSource.LoadCount == 1 && ContainsApp(catalog.GetSnapshot().Items, "Fresh desktop"))
+                {
+                    desktopSource.DeferNextLoad(laterDesktopLoad.Task);
+                    desktopSource.Invalidate();
+                }
+            };
+            using var list = new AppListItemSource(catalog, settings);
+
+            var initialization = catalog.InitializeAsync();
+            if (partialCache)
+            {
+                await cachedPublication.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
+            await WaitForConditionAsync(() => desktopSource.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == (partialCache ? 1 : 0));
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
+
+            Assert.IsFalse(initialization.IsCompleted);
+            Assert.IsTrue(list.IsLoading);
+            if (partialCache)
+            {
+                Assert.AreEqual("Cached package", list.GetSnapshot().VisibleItems.Single().Title);
+            }
+
+            Assert.AreEqual(partialCache ? 0 : 1, packagedSource.LoadCount);
+            for (var i = 0; i < 3; i++)
+            {
+                desktopSource.Invalidate();
+            }
+
+            desktopLoad.SetResult([CreateCatalogItem("Fresh desktop", sourceId: "desktop")]);
+            await WaitForConditionAsync(() => desktopSource.LoadCount == 2);
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => !list.IsLoading);
+
+            Assert.IsTrue(catalog.IsRefreshing);
+            Assert.IsFalse(laterDesktopLoad.Task.IsCompleted);
+            var expectedTitles = new[] { "Cached package", "Fresh desktop" };
+            CollectionAssert.AreEquivalent(
+                expectedTitles,
+                list.GetSnapshot().VisibleItems.Select(item => item.Title).ToArray());
+            Assert.AreEqual(partialCache ? 0 : 1, packagedSource.LoadCount);
+
+            laterDesktopLoad.SetResult([CreateCatalogItem("Later desktop", sourceId: "desktop")]);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing && list.GetSnapshot().VisibleItems.Any(item => item.Title == "Later desktop"));
+        }
+        finally
+        {
+            desktopLoad.TrySetResult([]);
+            laterDesktopLoad.TrySetResult([]);
+            cachedSourceInitialization.TrySetResult();
+            await settings.WaitForAliasSavesAsync();
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
     }
 
     [TestMethod]
@@ -217,10 +695,78 @@ public class AppCatalogTests
         using var catalog = CreateCatalog([source], cache);
 
         await catalog.InitializeAsync();
+        await WaitForConditionAsync(() => cache.SaveCount == 1);
 
         Assert.AreEqual(1, source.LoadCount);
         Assert.AreEqual("Fresh", catalog.GetSnapshot().Items[0].Name);
         Assert.AreEqual(1, cache.SaveCount);
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_FirstPublicationDoesNotWaitForCachePersistence()
+    {
+        var cacheSave = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cache = new TestCache(null) { DeferredSave = cacheSave.Task };
+        using var source = new TestAppSource("test", [CreateCatalogItem("Fresh")]);
+        using var catalog = CreateCatalog([source], cache);
+        try
+        {
+            await catalog.InitializeAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => cache.SaveCount == 1);
+
+            Assert.AreEqual("Fresh", catalog.GetSnapshot().Items.Single().Name);
+            Assert.IsTrue(catalog.IsRefreshing);
+            Assert.IsFalse(cacheSave.Task.IsCompleted);
+        }
+        finally
+        {
+            cacheSave.TrySetResult();
+        }
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_DisposeReleasesFirstPublicationWait()
+    {
+        var sourceLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var source = new TestAppSource("test", []);
+        source.DeferNextLoad(sourceLoad.Task);
+        using var catalog = CreateCatalog([source], new TestCache(null));
+        try
+        {
+            var initialization = catalog.InitializeAsync();
+            await WaitForConditionAsync(() => source.LoadCount == 1);
+
+            catalog.Dispose();
+            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsFalse(sourceLoad.Task.IsCompleted);
+        }
+        finally
+        {
+            sourceLoad.TrySetResult([]);
+        }
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_NotificationFailure_DoesNotSkipCachePersistence()
+    {
+        var cache = new TestCache(null);
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("test", [CreateCatalogItem("Original")]);
+        using var catalog = CreateCatalog([source], cache, logger: logger);
+        await catalog.RefreshAsync();
+        source.SetItems([CreateCatalogItem("Fresh")]);
+        catalog.Changed += (_, _) =>
+        {
+            throw new InvalidOperationException("Test refresh notification failure.");
+        };
+
+        await catalog.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual("Fresh", catalog.GetSnapshot().Items.Single().Name);
+        Assert.AreEqual(2, cache.SaveCount);
+        Assert.AreEqual("Fresh", ((Win32AppPayload)cache.LastSavedSnapshots![source.Id].Single().Payload).Name);
+        Assert.IsTrue(logger.HasEvent(11));
+        Assert.IsFalse(logger.HasEvent(4));
     }
 
     [TestMethod]
@@ -251,6 +797,7 @@ public class AppCatalogTests
         using var catalog = CreateCatalog([source], cache);
 
         await catalog.InitializeAsync();
+        await WaitForConditionAsync(() => cache.SaveCount == 1);
 
         Assert.AreEqual(1, source.LoadCount);
         Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
@@ -820,6 +1367,66 @@ public class AppCatalogTests
     }
 
     [TestMethod]
+    public async Task SetAppHidden_ThrowingFirstListener_DeliversLaterNotificationsAndPersists()
+    {
+        var item = CreateCatalogItem("Notepad", identity: "win32:notepad");
+        var visibility = new MutableVisibilityStore();
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("test", [item]);
+        using var catalog = CreateCatalog([source], new TestCache(null), visibility, logger: logger);
+        await catalog.RefreshAsync();
+        var originalItem = catalog.GetSnapshot().Items.Single();
+        var catalogId = originalItem.CatalogId;
+        var notifications = new List<AppVisibilityChangedEventArgs>();
+        catalog.VisibilityChanged += (_, _) =>
+        {
+            throw new InvalidOperationException("Test first visibility listener failure.");
+        };
+        catalog.VisibilityChanged += (_, args) => notifications.Add(args);
+
+        await catalog.SetAppHiddenAsync(catalogId, hidden: true).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
+        Assert.AreSame(originalItem, catalog.GetSnapshot().HiddenItems.Single());
+        Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(item));
+        Assert.AreEqual(1, visibility.PersistCount);
+        Assert.AreEqual(1, notifications.Count);
+        Assert.AreEqual(catalogId, notifications[0].CatalogId);
+        Assert.IsTrue(notifications[0].Hidden);
+        Assert.IsTrue(logger.HasEvent(11));
+
+        await catalog.SetAppHiddenAsync(catalogId, hidden: false).WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.AreSame(originalItem, catalog.GetSnapshot().Items.Single());
+        Assert.AreEqual(0, catalog.GetSnapshot().HiddenItems.Count);
+        Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(item));
+        Assert.AreEqual(2, visibility.PersistCount);
+        Assert.AreEqual(2, notifications.Count);
+        Assert.AreEqual(catalogId, notifications[1].CatalogId);
+        Assert.IsFalse(notifications[1].Hidden);
+    }
+
+    [TestMethod]
+    public async Task SetAppHidden_PersistenceFailure_RemainsFaulted()
+    {
+        var persistenceFailure = new IOException("Test visibility persistence failure.");
+        var visibility = new MutableVisibilityStore { PersistException = persistenceFailure };
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("test", [CreateCatalogItem("Notepad", identity: "win32:notepad")]);
+        using var catalog = CreateCatalog([source], new TestCache(null), visibility, logger: logger);
+        await catalog.RefreshAsync();
+        var catalogId = catalog.GetSnapshot().Items.Single().CatalogId;
+
+        var exception = await Assert.ThrowsExceptionAsync<IOException>(() =>
+            catalog.SetAppHiddenAsync(catalogId, hidden: true).WaitAsync(TimeSpan.FromSeconds(5)));
+
+        Assert.AreSame(persistenceFailure, exception);
+        Assert.AreEqual(1, visibility.PersistCount);
+        Assert.AreEqual(catalogId, catalog.GetSnapshot().HiddenItems.Single().CatalogId);
+        Assert.IsFalse(logger.HasEvent(11));
+    }
+
+    [TestMethod]
     public void SettingsVisibilityStore_HidesCatalogIdentity()
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
@@ -868,6 +1475,29 @@ public class AppCatalogTests
     }
 
     [TestMethod]
+    public async Task FilterChange_NotificationFailure_IsNotReportedAsReprojectionFailure()
+    {
+        var cache = new TestCache(null);
+        var filter = new MutableCatalogFilter();
+        var logger = new RecordingLogger<AppCatalog>();
+        using var source = new TestAppSource("test", [CreateCatalogItem("Visible"), CreateCatalogItem("Excluded")]);
+        using var catalog = CreateCatalog([source], cache, filters: [filter], logger: logger);
+        await catalog.RefreshAsync();
+        catalog.Changed += (_, _) =>
+        {
+            throw new InvalidOperationException("Test filter notification failure.");
+        };
+
+        filter.Exclude("win32:Excluded");
+        await WaitForConditionAsync(() => logger.HasEvent(11));
+
+        Assert.AreEqual("Visible", catalog.GetSnapshot().Items.Single().Name);
+        Assert.AreEqual(1, source.LoadCount);
+        Assert.AreEqual(1, cache.SaveCount);
+        Assert.IsFalse(logger.HasEvent(9));
+    }
+
+    [TestMethod]
     public async Task FilterReprojectionFailure_IsObservedAndKeepsPublishedState()
     {
         var filter = new ThrowingCatalogFilter();
@@ -885,6 +1515,7 @@ public class AppCatalogTests
 
         Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
         Assert.AreEqual("Visible", catalog.GetSnapshot().Items[0].Name);
+        Assert.IsFalse(logger.HasEvent(11));
     }
 
     [TestMethod]
@@ -983,6 +1614,7 @@ public class AppCatalogTests
             var rows = initial.VisibleItems.Concat(initial.PatternHiddenItems).ToDictionary(item => item.Title);
             await catalog.SetAppHiddenAsync(rows["Manual"].App.CatalogId, hidden: true);
             await catalog.SetAppHiddenAsync(rows["Manual Updater"].App.CatalogId, hidden: true);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
             var loadCount = source.LoadCount;
             var saveCount = cache.SaveCount;
             var form = (SettingsForm)settings.Settings.ToContent().Single();
@@ -1595,12 +2227,21 @@ public class AppCatalogTests
 
         public int PersistCount { get; private set; }
 
+        public Exception? PersistException { get; init; }
+
         public bool SetHidden(AppCatalogItem item, bool hidden)
         {
             return hidden ? _hiddenIds.Add(item.Identity) : _hiddenIds.Remove(item.Identity);
         }
 
-        public void Persist() => PersistCount++;
+        public void Persist()
+        {
+            PersistCount++;
+            if (PersistException is { } exception)
+            {
+                throw exception;
+            }
+        }
 
         public void Dispose()
         {
@@ -1692,6 +2333,8 @@ public class AppCatalogTests
 
         public Task<AppCatalogCacheFile?>? DeferredLoad { get; init; }
 
+        public Task? DeferredSave { get; init; }
+
         public IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>>? LastSavedSnapshots { get; private set; }
 
         public Task<AppCatalogCacheFile?> LoadAsync(AppCatalogCacheContext context, CancellationToken cancellationToken)
@@ -1708,8 +2351,9 @@ public class AppCatalogTests
         {
             LastSavedSnapshots = sourceSnapshots;
             var exception = Interlocked.Exchange(ref _nextSaveException, null);
-            var save = exception is not null ? Task.FromException(exception) : Task.CompletedTask;
+            var save = exception is not null ? Task.FromException(exception) : DeferredSave ?? Task.CompletedTask;
             // Publish the captured save state before a polling test observes the new count.
+            // The count signals that saving started, even when DeferredSave is still pending.
             Interlocked.Increment(ref _saveCount);
             return save;
         }
@@ -1740,19 +2384,15 @@ public class AppCatalogTests
     private sealed class TestAppSource : IAppSource
     {
         private IReadOnlyList<AppCatalogItem> _items;
+        private Task? _initialization;
         private Task<IReadOnlyList<AppCatalogItem>>? _nextLoad;
         private Func<IReadOnlyList<AppCatalogItem>, IReadOnlyList<AppCatalogItem>>? _incrementalFactory;
 
         // Tests poll these start signals across threads. Capture each operation before incrementing;
         // the volatile getters then make that captured state visible to the waiting test.
         private int _loadCount;
+        private int _initializeCount;
         private int _incrementalLoadCount;
-
-        public TestAppSource(string id, IReadOnlyList<AppCatalogItem> items)
-        {
-            Id = id;
-            _items = items;
-        }
 
         public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
 
@@ -1762,6 +2402,8 @@ public class AppCatalogTests
 
         public int LoadCount => Volatile.Read(ref _loadCount);
 
+        public int InitializeCount => Volatile.Read(ref _initializeCount);
+
         public int IncrementalLoadCount => Volatile.Read(ref _incrementalLoadCount);
 
         public bool IsDisposed { get; private set; }
@@ -1769,6 +2411,25 @@ public class AppCatalogTests
         public IReadOnlyList<AppCatalogItem> LastIncrementalBaseItems { get; private set; } = [];
 
         public IReadOnlyList<AppSourcePathChange> LastIncrementalChanges { get; private set; } = [];
+
+        public TestAppSource(string id, IReadOnlyList<AppCatalogItem> items)
+        {
+            Id = id;
+            _items = items;
+        }
+
+        public Task InitializeAsync(CancellationToken cancellationToken)
+        {
+            var initialization = _initialization;
+            Interlocked.Increment(ref _initializeCount);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+            return initialization?.WaitAsync(cancellationToken) ?? Task.CompletedTask;
+        }
+
+        public void DeferInitialization(Task initialization)
+        {
+            _initialization = initialization;
+        }
 
         public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken)
         {
@@ -1840,66 +2501,5 @@ public class AppCatalogTests
 
         Assert.IsTrue(first.CanReuseMaterializedApp(updated));
         Assert.IsFalse(AppCatalogItem.HaveSamePersistedContent([first], [updated]));
-    }
-
-    [TestMethod]
-    public async Task InitializeAsync_PartialCacheKeepsCachedRowsVisibleAndLoadingUntilMissingSourceCompletes()
-    {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-loading-{Guid.NewGuid():N}.json");
-        var settings = new AllAppsSettings(settingsPath);
-        var desktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
-        try
-        {
-            var cachedPackage = new AppCatalogItem(
-                "packaged:Contoso.Cached_123!App",
-                priority: 0,
-                new AppCatalogSourceReference("packaged", "Contoso.Cached_123!App"),
-                [],
-                new PackagedAppSnapshot { Name = "Cached package", UserModelId = "Contoso.Cached_123!App" });
-            var cache = new TestCache(new AppCatalogCacheFile
-            {
-                Sources = [new AppCatalogSourceSnapshot { SourceId = "packaged", Items = [cachedPackage] }],
-            });
-            using var packagedSource = new TestAppSource("packaged", [cachedPackage]);
-            using var desktopSource = new TestAppSource("win32:desktop", []);
-            desktopSource.DeferNextLoad(desktopLoad.Task);
-            using var catalog = CreateCatalog([packagedSource, desktopSource], cache);
-            var cachedPublication = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            catalog.Changed += (_, _) =>
-            {
-                if (ContainsApp(catalog.GetSnapshot().Items, "Cached package"))
-                {
-                    cachedPublication.TrySetResult();
-                }
-            };
-            using var list = new AppListItemSource(catalog, settings);
-
-            var initialization = catalog.InitializeAsync();
-            await cachedPublication.Task.WaitAsync(TimeSpan.FromSeconds(5));
-            await WaitForConditionAsync(() => desktopSource.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == 1);
-            await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
-
-            Assert.IsFalse(initialization.IsCompleted);
-            Assert.IsTrue(list.IsLoading);
-            Assert.AreEqual("Cached package", list.GetSnapshot().VisibleItems.Single().Title);
-            Assert.AreEqual(0, packagedSource.LoadCount);
-
-            desktopLoad.SetResult([CreateCatalogItem("Fresh desktop", sourceId: "desktop")]);
-            await initialization.WaitAsync(TimeSpan.FromSeconds(5));
-            await WaitForConditionAsync(() => !list.IsLoading);
-
-            var expectedTitles = new[] { "Cached package", "Fresh desktop" };
-            CollectionAssert.AreEquivalent(
-                expectedTitles,
-                list.GetSnapshot().VisibleItems.Select(item => item.Title).ToArray());
-            Assert.AreEqual(1, desktopSource.LoadCount);
-            Assert.AreEqual(0, packagedSource.LoadCount);
-        }
-        finally
-        {
-            desktopLoad.TrySetResult([]);
-            await settings.WaitForAliasSavesAsync();
-            TestDataHelper.DeleteSettingsFiles(settingsPath);
-        }
     }
 }
