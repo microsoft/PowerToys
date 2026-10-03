@@ -12,6 +12,21 @@ The retained VM used four vCPUs and 8 GB RAM; this is not a fresh-profile or
 physical-machine sign-off. See the bounded startup/cooperative recording section
 below for the measured delays and lifecycle changes.
 
+**CI is not yet fully green.** The six-run October 2 stabilization cycle ended
+with [build 159338297](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159338297),
+source `07ef8f8bf88bb9c6b6380c313c2fb83b8b2358d5`. The build and Win10 smoke
+passed. The new Win11 setup step installed the modern client from an absent
+package under the actual Limited test user, verified version 0.8.107.0, and
+completed owned cleanup with the controller's package proof verified.
+Modern provider start took 10.9 seconds and target push 76.5 seconds in that run.
+The Win11 smoke passed startup and the Settings pairing actions, then exhausted
+the 90-second transport-readiness wait: both owned MWB processes were listening,
+but neither had an established peer connection or the required routing slots.
+Cleanup and external recovery passed. This remaining pairing/transport failure
+is distinct from client installation, the resolved recording workflow contention,
+and the locally reproduced/fixed Start-menu focus blocker. Further CI work needs
+a new run budget; no transport assertion or timeout was weakened to report a pass.
+
 The unfiltered Windows 10 regression with the same test payload
 (`localvm-20261002-214643-9264f3c0`) passed 7/7 tests and all eight ordered phases
 in 22 minutes 36 seconds on its retained four-vCPU/24-GB VM:
