@@ -257,6 +257,8 @@ public class AppHiddenPinTests : AppsTestBase
         Assert.AreEqual(1, notifications);
         Assert.AreEqual(renamed.Title, provider.GetCommandItem(hidden.Command!.Id)?.Title);
 
+        snapshot = new AppListItemSnapshot([], [renamed], executableNameMatchMode: ExecutableNameMatchMode.Disabled);
+        source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
         source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
         Assert.AreEqual(1, notifications);
     }

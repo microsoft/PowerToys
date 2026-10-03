@@ -221,9 +221,14 @@ The **Prioritize exact executable names** setting applies to both All Apps and H
 
 | Mode                              | `cmd.exe`       | `cmd`           |
 |-----------------------------------|-----------------|-----------------|
-| With or without extension (default) | Exact priority | Exact priority  |
+| Default                           | Exact priority  | Ordinary scoring |
+| With or without extension         | Exact priority  | Exact priority  |
 | Only with extension               | Exact priority  | Ordinary scoring |
 | Disabled                          | Ordinary scoring | Ordinary scoring |
+
+The default currently requires the executable extension. The Default choice is
+saved as `default` and follows the built-in policy, which may change in future releases.
+Explicit mode choices keep their behavior across default-policy changes.
 
 All modes retain ordinary metadata and explicit-path matching. Requiring an extension gives
 users a way to distinguish precise filename intent from common words such as `Launcher` or

@@ -444,9 +444,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        var scoreA = MainListPage.ScoreTopLevelItem(q, new(items[0]), history, fuzzyMatcher);
-        var scoreB = MainListPage.ScoreTopLevelItem(q, new(items[1]), history, fuzzyMatcher);
-        var scoreC = MainListPage.ScoreTopLevelItem(q, new(items[2]), history, fuzzyMatcher);
+        var scoreA = MainListPage.ScoreTopLevelItem(q, new(items[0]), history, fuzzyMatcher, null);
+        var scoreB = MainListPage.ScoreTopLevelItem(q, new(items[1]), history, fuzzyMatcher, null);
+        var scoreC = MainListPage.ScoreTopLevelItem(q, new(items[2]), history, fuzzyMatcher, null);
 
         // Assert
         // All of these equally match the query, and they're all in the same bucket,
@@ -525,8 +525,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
 
         var q = fuzzyMatcher.PrecomputeQuery("C");
-        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), emptyHistory, fuzzyMatcher)).ToList();
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), emptyHistory, fuzzyMatcher, null)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher, null)).ToList();
         Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
@@ -570,7 +570,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("te");
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher, null)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -597,7 +597,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem(items[1].Id);
         }
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher, null)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -626,7 +626,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             history = history.WithHistoryItem(vsCodeId);
 
-            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher, null)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 
@@ -657,7 +657,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             history = history.WithHistoryItem("vscode");
         }
 
-        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
+        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher, null)).ToList();
 
         // Same tier for both, so the frequently-used one should not be below the other.
         Assert.IsTrue(
