@@ -121,9 +121,29 @@ and a successful, zero-exit `wsb --version` make the step a no-op. Otherwise:
 Setup refuses an existing Sandbox desktop/instance before mutation. A first-launch
 guest receives only a job-private output mapping, writes the job GUID, then shuts
 **itself** down via its configured logon command. No user Sandbox is adopted or
-stopped. Cleanup waits for the exact launcher handle and an empty provider inventory;
-it can terminate only that owned launcher handle, never a process found by name,
-a broker, or an uncorrelated instance. Unconfirmed cleanup fails the step and
+stopped. Setup samples client descendants during installation commands, readiness
+polling and cleanup, retaining process handles rather than reopening PIDs to stop
+them. Ownership requires the actual parent PID chain, births within each retained
+parent's lifetime (including its exit time), the launcher's session, matching
+snapshot/handle birth times, and exact Microsoft-signed System32 or verified
+Store/System package executable paths. Only `WindowsSandbox.exe`,
+`WindowsSandboxClient.exe` and `WindowsSandboxRemoteSession.exe` are eligible;
+a server broker, system host, vmmem or mere post-launch appearance never qualifies.
+Missing ancestry, inaccessible identity or unverified paths fail closed.
+
+The elevated controller verifies WindowsApps ownership/ACLs and the Store package
+manifest, then publishes an administrator-owned, read-only, run-bound package
+proof in private staging. The Limited worker uses that proof for registration and
+client image allowlisting; it does not need permission to read WindowsApps ACLs.
+The inbox launcher's session is inherited from the verified worker, since PID-based
+session queries can fail after that short-lived launcher exits.
+
+After the **correct guest GUID and an empty provider inventory**, cleanup may
+terminate retained, verified descendant client handles. The original owned
+launcher remains subject to its existing bounded cleanup. Success still requires
+both global desktop absence and an empty provider inventory after termination;
+neither a hidden window nor an owned process exit replaces these gates.
+Unconfirmed cleanup fails the step and
 blocks `Prepare`, even if the package became ready. Store-managed background
 updates are not cancelled. A leftover instance requires image/operator inspection,
 not an automatic broad cleanup.
@@ -141,7 +161,11 @@ The task is unregistered and its protected per-job staging/DACL grants removed.
 `client-setup.json` contains allowlisted before/after current-user readiness,
 action, errors (codes/HRESULT only), guest/launcher cleanup and dispatch cleanup.
 Cleanup failures distinguish remaining desktops, remaining instances, and provider
-query failures. A setup failure also captures `client-setup-failure.png` from the
+query failures. `Cleanup.RemainingProcesses` carries at most 64 remaining detection
+records: allowlisted `Name`, numeric `PID`, `ParentPID`, `SessionId`, UTC `StartTime`
+(or null when unavailable), and `VerifiedOwned`. This is detection evidence, not
+permission to adopt those processes; full image paths and retained handles stay
+private, and command lines are never queried. A setup failure also captures `client-setup-failure.png` from the
 Limited user's desktop; capture failures are reported explicitly.
 `client-setup-admin-before.json` and `client-setup-admin-after.json` contain the
 separate schema-3 inventory. These are in the existing `always()` prerequisite

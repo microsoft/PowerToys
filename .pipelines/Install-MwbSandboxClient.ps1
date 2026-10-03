@@ -59,6 +59,29 @@ function Test-MwbClientTaskCompletion {
     $true
 }
 
+function Write-MwbClientPackageProof {
+    param([string] $Directory, [guid] $RunId)
+
+    Assert-MwbClientProtectedDirectory $Directory
+    $packages = @(Get-MwbClientPackages -AllUsers | Sort-Object { [version]$_.Version } -Descending)
+    if (-not $packages.Count) { return $false }
+    $package = $packages[0]
+    $null = Assert-MwbClientManifest $package
+    $path = Join-Path $Directory 'package-trust.json'
+    Assert-MwbCiPlainPath $path
+    Assert-MwbCiPlainPath "$path.new"
+    @{
+        RunId = $RunId.ToString(); FullName = $package.FullName
+        Version = $package.Version; Location = Get-MwbClientPackageDirectory $package
+    } | ConvertTo-Json | Set-Content -LiteralPath "$path.new" -Encoding utf8
+    $acl = Get-Acl -LiteralPath "$path.new"
+    $acl.SetOwner([Security.Principal.SecurityIdentifier]::new('S-1-5-32-544'))
+    Set-Acl -LiteralPath "$path.new" -AclObject $acl
+    Assert-MwbClientProtectedDirectory "$path.new"
+    Move-Item -LiteralPath "$path.new" -Destination $path -Force
+    $true
+}
+
 if ($PSCmdlet.ParameterSetName -eq 'Worker') {
     $exitCode = 1
     $report = $null
@@ -130,6 +153,8 @@ $output = Join-Path $runRoot 'output'
 $registered = $false
 $created = $false
 $userSid = $null
+$packageProofReady = $false
+$packageProofError = $null
 $exitCode = 1
 try {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -172,6 +197,10 @@ try {
             Select-Object -First 1)
     }
     catch { $packageQueryFailed = $true }
+    if ($package.Count) {
+        try { $packageProofReady = Write-MwbClientPackageProof $runRoot $RunId }
+        catch { $packageProofError = Get-MwbDiagnosticError $_ 'PackageProofFailed' }
+    }
     $request = @{
         RunId = $RunId.ToString(); UserSid = $userSid; InstallTimeoutSeconds = $InstallTimeoutSeconds
         PackageQueryFailed = $packageQueryFailed
@@ -193,10 +222,19 @@ try {
     $registered = $true
     Start-ScheduledTask -TaskName $taskName
     $timer = [Diagnostics.Stopwatch]::StartNew()
+    $lastProofAttempt = -10
     $launched = $false
     $workerPath = Join-Path $output 'worker-report.json'
     while ($true) {
         Start-Sleep -Seconds 2
+        if (-not $packageProofReady -and $timer.Elapsed.TotalSeconds - $lastProofAttempt -ge 10) {
+            try {
+                $packageProofReady = Write-MwbClientPackageProof $runRoot $RunId
+                if ($packageProofReady) { $packageProofError = $null }
+            }
+            catch { $packageProofError = Get-MwbDiagnosticError $_ 'PackageProofFailed' }
+            $lastProofAttempt = $timer.Elapsed.TotalSeconds
+        }
         $task = Get-ScheduledTask -TaskName $taskName
         $info = Get-ScheduledTaskInfo -TaskName $taskName
         $launched = $launched -or $task.State -eq 'Running' -or $info.LastRunTime.Year -ge 2000
@@ -227,6 +265,10 @@ catch {
     $report.ErrorHResult = '0x{0:X8}' -f ($_.Exception.HResult -band 0xffffffffL)
 }
 finally {
+    $report.PackageProof = @{
+        Status = if ($packageProofReady) { 'Verified' } elseif ($packageProofError) { 'Failed' } else { 'NotRequired' }
+        Error = $packageProofError
+    }
     $report.DispatchCleanup = 'Passed'
     try {
         if ($registered) {

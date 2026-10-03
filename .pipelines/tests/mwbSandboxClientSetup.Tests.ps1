@@ -29,6 +29,30 @@ function New-MwbClientReportFixture {
     }
 }
 
+function New-MwbClientProcessFixture {
+    param([int] $ProcessId = 101, [int] $Seconds = 1, [string] $Name = 'WindowsSandboxRemoteSession.exe')
+
+    $process = [pscustomobject]@{
+        Id = $ProcessId; SessionId = 1; StartTime = ([datetime]'2026-10-03T00:00:00Z').AddSeconds($Seconds)
+        ExitTime = ([datetime]'2026-10-03T00:00:00Z').AddSeconds(3)
+        HasExited = $false; Killed = $false; Disposed = $false
+        ImagePath = Join-Path "$env:windir\System32" $Name
+    }
+    $process | Add-Member ScriptMethod Kill { $this.Killed = $true; $this.HasExited = $true }
+    $process | Add-Member ScriptMethod WaitForExit { param($Milliseconds) $this.HasExited }
+    $process | Add-Member ScriptMethod Dispose { $this.Disposed = $true }
+    $process
+}
+
+function New-MwbClientSnapshotFixture {
+    param($Process, [int] $ParentId = 100)
+
+    [pscustomobject]@{
+        Name = [IO.Path]::GetFileName($Process.ImagePath); ProcessId = $Process.Id
+        ParentProcessId = $ParentId; SessionId = $Process.SessionId; CreationDate = $Process.StartTime
+    }
+}
+
 Describe 'Actual current-user modern client readiness' {
     BeforeEach {
         Mock Get-MwbClientPackages { @{ Healthy = $true } }
@@ -144,6 +168,12 @@ Describe 'Trusted inbox Sandbox launch association' {
 }
 
 Describe 'Bounded modern client command capture without Sandbox or product execution' {
+    It 'queries the image through a retained native handle without process command lines' {
+        $process = Open-MwbClientProcess $PID
+        try { Get-MwbClientProcessImagePath $process | Should Be (Get-Process -Id $PID).Path }
+        finally { $process.Dispose() }
+    }
+
     It 'drains simultaneous stdout and stderr and preserves the real exit code' {
         $command = '[Console]::Out.Write(("x" * 100000)); [Console]::Error.Write(("y" * 100000)); exit 23'
         $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-Command', $command) 10
@@ -157,6 +187,15 @@ Describe 'Bounded modern client command capture without Sandbox or product execu
         $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-Command', 'Start-Sleep -Seconds 30') 1
         $result.TimedOut | Should Be $true
         ($timer.Elapsed.TotalSeconds -lt 6) | Should Be $true
+    }
+
+    It 'continues ancestry sampling while an installation command is waiting' {
+        Mock Update-MwbClientOwnedProcesses { }
+        $tracker = @{ TestTracker = $true }
+        $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @(
+            '-NoProfile', '-Command', 'Start-Sleep -Milliseconds 600') 5 $tracker
+        $result.ExitCode | Should Be 0
+        Assert-MockCalled Update-MwbClientOwnedProcesses -Times 2 -Scope It -ParameterFilter { $Tracker.TestTracker }
     }
 
     It 'does not block on pipes inherited by a surviving child' {
@@ -299,6 +338,9 @@ Describe 'Explicit setup policy and precise owned cleanup' {
         $fakeLauncher = [pscustomobject]@{ HasExited = $true }
         $fakeLauncher | Add-Member ScriptMethod Dispose { }
         Mock Start-MwbClientFirstLaunch { $fakeLauncher }
+        Mock New-MwbClientProcessTracker { @{ Records = [Collections.Generic.List[object]]::new() } }
+        Mock Update-MwbClientOwnedProcesses { }
+        Mock Get-MwbClientRemainingProcesses { }
         Mock Complete-MwbClientFirstLaunch { @{ Status = 'Passed'; GuestObserved = $true; LauncherStopped = $true } }
         Mock Start-Sleep { }
         Mock Save-MwbClientFailureDesktop { @{ Status = 'Captured' } }
@@ -353,6 +395,8 @@ Describe 'Explicit setup policy and precise owned cleanup' {
         Assert-MockCalled Complete-MwbClientFirstLaunch -Times 1 -Exactly -Scope It -ParameterFilter {
             $TimeoutSeconds -gt 400 -and $TimeoutSeconds -le 480
         }
+        Assert-MockCalled New-MwbClientProcessTracker -Times 1 -Exactly -Scope It
+        Assert-MockCalled Get-MwbClientReadiness -Times 1 -Exactly -Scope It -ParameterFilter { $null -ne $ProcessTracker }
         Test-Path (Join-Path $directory 'worker-report.json') | Should Be $true
     }
 
@@ -378,6 +422,26 @@ Describe 'Explicit setup policy and precise owned cleanup' {
         $report.Status | Should Be 'Failed'
         $report.Cleanup.ErrorCode | Should Be 'FirstLaunchCleanupUnconfirmed'
         ($report | ConvertTo-Json -Depth 8) | Should Not Match 'DO_NOT_PUBLISH'
+    }
+
+    It 'retains cleanup failure metadata through the worker report and public projection' {
+        Mock Complete-MwbClientFirstLaunch {
+            $failure = [InvalidOperationException]::new('FirstLaunchCleanupUnconfirmed')
+            $failure.Data['GuestObserved'] = $true
+            $failure.Data['LauncherStopped'] = $true
+            $failure.Data['InventoryError'] = 'ExistingSandboxDesktop'
+            $failure.Data['RemainingProcesses'] = @(@{
+                Name = 'WindowsSandboxClient.exe'; PID = 101; ParentPID = 100
+                SessionId = 1; StartTime = '2026-10-03T00:00:01.0000000Z'; VerifiedOwned = $false
+            })
+            throw $failure
+        }
+        Invoke-MwbClientSetupWorker $request $report $directory
+        $public = ConvertTo-MwbPublicClientSetup $report $report.RunId $report.UserSid
+        $public.Status | Should Be 'Failed'
+        $public.Cleanup.InventoryError | Should Be 'ExistingSandboxDesktop'
+        $public.Cleanup.RemainingProcesses[0].PID | Should Be 101
+        $public.Cleanup.RemainingProcesses[0].VerifiedOwned | Should Be $false
     }
 
     It 'does not silently fall back to first launch after staged registration fails' {
@@ -414,6 +478,7 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
         $null = New-Item -ItemType Directory -Path $directory
         $id = [guid]::NewGuid()
         Mock Start-Sleep { }
+        Mock Get-MwbClientDesktopProcesses { }
     }
 
     It 'confirms exact guest marker, launcher exit and empty instance inventory' {
@@ -424,6 +489,12 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
         $result.GuestObserved | Should Be $true
         $process.Killed | Should Be $false
         Assert-MockCalled Assert-MwbClientNoInstances -Times 1 -Exactly -Scope It -ParameterFilter { $ProbeProvider }
+    }
+
+    It 'does not accept an empty inventory before the configured guest has acknowledged startup' {
+        Mock Assert-MwbClientNoInstances {}
+        { Complete-MwbClientFirstLaunch $process $directory $id 0 } | Should Throw 'FirstLaunchCleanupUnconfirmed'
+        Assert-MockCalled Assert-MwbClientNoInstances -Times 0 -Exactly -Scope It
     }
 
     It 'fails without stopping an unknown remaining instance' {
@@ -439,6 +510,7 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
     }
 
     It 'accepts cleanup only after stopping its owned launcher and confirming no instances remain' {
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
         $process.HasExited = $false
         $process | Add-Member -Force ScriptMethod Kill { $this.Killed = $true; $this.HasExited = $true }
         Mock Assert-MwbClientNoInstances {
@@ -469,6 +541,352 @@ Describe 'Cleanup observes but never terminates an uncorrelated instance' {
         Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value ([guid]::NewGuid())
         { Complete-MwbClientFirstLaunch $process $directory $id 0 } | Should Throw 'GuestMarkerMismatch'
         $process.Killed | Should Be $false
+    }
+}
+
+Describe 'Retained process identity and bounded parent lifetime prove ownership' {
+    BeforeEach {
+        $root = New-MwbClientProcessFixture 100 0 'WindowsSandbox.exe'
+        $child = New-MwbClientProcessFixture
+        $candidate = New-MwbClientSnapshotFixture $child
+        Mock Get-MwbClientSessionId { 1 }
+        Mock Get-MwbClientProcessImagePath { $Process.ImagePath }
+        Mock Open-MwbClientProcess { $child }
+        Mock Get-MwbClientDesktopProcesses { $candidate }
+        Mock Assert-MwbCiPlainPath { }
+        Mock Get-AuthenticodeSignature {
+            @{ Status = 'Valid'; SignerCertificate = @{ Subject = 'CN=Microsoft Windows, O=Microsoft Corporation, C=US' } }
+        }
+        $tracker = New-MwbClientProcessTracker $root
+    }
+
+    It 'captures the actual same-session child and retains the precise process handle' {
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 1
+        $tracker.Records[0].Process | Should Be $child
+        $tracker.Records[0].ParentProcessId | Should Be 100
+        $tracker.Records[0].StartTime | Should Be $child.StartTime.ToUniversalTime()
+        $child.Disposed | Should Be $false
+    }
+
+    It 'captures an out-of-order multi-generation chain while parents are still identifiable' {
+        $grandchild = New-MwbClientProcessFixture 102 2 'WindowsSandboxClient.exe'
+        $grandchildCandidate = New-MwbClientSnapshotFixture $grandchild 101
+        Mock Open-MwbClientProcess { if ($ProcessId -eq 101) { $child } else { $grandchild } }
+        Mock Get-MwbClientDesktopProcesses { $grandchildCandidate; $candidate }
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 2
+        $tracker.Records[1].ParentProcessId | Should Be 101
+    }
+
+    It 'can prove a child born during a now-exited retained parents lifetime' {
+        $root.HasExited = $true
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 1
+    }
+
+    It 'rejects a reused parent PID whose child was born after that parent exited' {
+        $root.HasExited = $true
+        $child.StartTime = $child.StartTime.AddSeconds(3)
+        $candidate.CreationDate = $child.StartTime
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        $child.Disposed | Should Be $true
+    }
+
+    It 'rejects child PID reuse between the snapshot and handle capture' {
+        $child.StartTime = $child.StartTime.AddSeconds(1)
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        $child.Disposed | Should Be $true
+    }
+
+    It 'accounts only for CIM microsecond truncation, not a loose time window' {
+        $child.StartTime = $child.StartTime.AddTicks(9)
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 1
+    }
+
+    It 'rejects processes predating their recorded parent' {
+        $child.StartTime = $root.StartTime.AddSeconds(-1)
+        $candidate.CreationDate = $child.StartTime
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+    }
+
+    It 'rejects another session in either snapshot or retained process' -TestCases @(
+        @{ ChangeSnapshot = $true }; @{ ChangeSnapshot = $false }
+    ) {
+        param($ChangeSnapshot)
+        if ($ChangeSnapshot) { $candidate.SessionId = 2 } else { $child.SessionId = 2 }
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+    }
+
+    It 'does not adopt a post-launch process without a proven parent' {
+        $candidate.ParentProcessId = 999
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        Assert-MockCalled Open-MwbClientProcess -Times 0 -Exactly -Scope It
+    }
+
+    It 'rejects wrong images even for a same-session child' -TestCases @(
+        @{ RelativePath = 'Downloads\WindowsSandboxRemoteSession.exe' }
+        @{ RelativePath = 'System32\Other.exe' }
+        @{ RelativePath = 'System32\subdir\WindowsSandboxRemoteSession.exe' }
+    ) {
+        param($RelativePath)
+        $child.ImagePath = Join-Path $env:windir $RelativePath
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        $child.Disposed | Should Be $true
+    }
+
+    It 'rejects unsigned and non-Microsoft OS images' -TestCases @(
+        @{ Status = 'NotSigned'; Subject = 'O=Microsoft Corporation' }
+        @{ Status = 'Valid'; Subject = 'O=Other Corporation' }
+    ) {
+        param($Status, $Subject)
+        Mock Get-AuthenticodeSignature { @{ Status = $Status; SignerCertificate = @{ Subject = $Subject } } }
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+    }
+
+    It 'never captures a system host, server broker or vmmem' -TestCases @(
+        @{ Name = 'WindowsSandboxServer.exe' }; @{ Name = 'svchost.exe' }
+        @{ Name = 'vmmemWindowsSandbox' }; @{ Name = 'vmmemWindowsSandbox.exe' }
+    ) {
+        param($Name)
+        $candidate.Name = $Name
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        Assert-MockCalled Open-MwbClientProcess -Times 0 -Exactly -Scope It
+    }
+
+    It 'never terminates a broker even if a malformed record is supplied to the stop helper' {
+        $tracker.Records.Add([pscustomobject]@{
+            Process = $child; Name = 'WindowsSandboxServer.exe'; Path = $child.ImagePath
+            StartTime = $child.StartTime.ToUniversalTime(); SessionId = 1
+        })
+        Stop-MwbClientOwnedProcesses $tracker
+        $child.Killed | Should Be $false
+    }
+
+    It 'does not reopen retained descendants or replace them by PID on later scans' {
+        Update-MwbClientOwnedProcesses $tracker -Force
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 1
+        Assert-MockCalled Open-MwbClientProcess -Times 1 -Exactly -Scope It
+    }
+
+    It 'keeps scanning and discovery inert on a failed process snapshot' {
+        Mock Get-MwbClientDesktopProcesses { throw 'DO_NOT_PUBLISH' }
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        Assert-MockCalled Open-MwbClientProcess -Times 0 -Exactly -Scope It
+    }
+
+    It 'accepts only exact executable paths in a manifest-verified protected package' {
+        $package = @{ FullName = 'verified-test-package'; Location = Join-Path $TestDrive 'WindowsApps\verified-test-package' }
+        Mock Assert-MwbClientManifest { 'verified-manifest' }
+        Mock Test-Path { $true }
+        Add-MwbClientPackageProcessPaths $tracker $package
+        $child.ImagePath = Join-Path $package.Location $candidate.Name
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 1
+        Assert-MockCalled Assert-MwbClientManifest -Times 1 -Exactly -Scope It
+    }
+
+    It 'captures the observed packaged RemoteSession within the exited inbox launchers lifetime' {
+        $root = New-MwbClientProcessFixture 8820 0 'WindowsSandbox.exe'
+        $root.StartTime = [datetime]'2026-10-03T00:28:11.0251355Z'
+        $root.ExitTime = [datetime]'2026-10-03T00:28:11.4888443Z'
+        $root.HasExited = $true
+        $package = @{
+            Family = 'MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy'
+            FullName = 'MicrosoftWindows.WindowsSandbox_0.8.107.0_x64__cw5n1h2txyewy'
+            Version = '0.8.107.0'; Healthy = $true; Signature = 'Store'; Development = $false
+        }
+        $package.Location = Join-Path "$env:ProgramFiles\WindowsApps" $package.FullName
+        $child = New-MwbClientProcessFixture 2764
+        $child.StartTime = [datetime]'2026-10-03T00:28:11.452111Z'
+        $child.ImagePath = Join-Path $package.Location 'WindowsSandboxRemoteSession.exe'
+        $candidate = New-MwbClientSnapshotFixture $child 8820
+        $server = New-MwbClientSnapshotFixture (New-MwbClientProcessFixture 6028 -30 'WindowsSandboxServer.exe') 2052
+        $vmmem = New-MwbClientSnapshotFixture (New-MwbClientProcessFixture 10004 0 'vmmemWindowsSandbox') 2052
+        $vmmem.SessionId = 0
+        Mock Get-MwbClientDesktopProcesses { $server; $vmmem; $candidate }
+        Mock Open-MwbClientProcess {
+            $opened = New-MwbClientProcessFixture $ProcessId
+            $opened.StartTime = $child.StartTime
+            $opened.ImagePath = $child.ImagePath
+            $opened
+        }
+        Mock Assert-MwbClientManifest { 'verified-manifest' }
+        Mock Test-Path { $true }
+        $tracker = New-MwbClientProcessTracker $root
+
+        # Registration may finish after the inbox launcher exits. No path is trusted early.
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+        Add-MwbClientPackageProcessPaths $tracker $package
+        Update-MwbClientOwnedProcesses $tracker -Force
+
+        $tracker.Records.Count | Should Be 1
+        $tracker.Records[0].ProcessId | Should Be 2764
+        $tracker.Records[0].ParentProcessId | Should Be 8820
+        $tracker.Records[0].Path | Should Be $child.ImagePath
+        $tracker.Records[0].SessionId | Should Be 1
+        $tracker.Records[0].StartTime | Should Be $child.StartTime.ToUniversalTime()
+        Assert-MockCalled Open-MwbClientProcess -Times 0 -Exactly -Scope It -ParameterFilter {
+            $ProcessId -in @(6028, 10004)
+        }
+    }
+
+    It 'uses the controlled launchers inherited session when its exited PID can no longer provide metadata' {
+        $root.HasExited = $true
+        $root | Add-Member -Force ScriptProperty SessionId { throw 'Exited PID has no session metadata' }
+        $created = New-MwbClientProcessTracker $root
+        $created.Root.SessionId | Should Be 1
+    }
+
+    It 'does not authorize package paths if package verification failed' {
+        $package = @{ FullName = 'unverified-test-package'; Location = Join-Path $TestDrive 'WindowsApps\unverified-test-package' }
+        Mock Assert-MwbClientManifest { throw 'UntrustedStagedPackage' }
+        Add-MwbClientPackageProcessPaths $tracker $package
+        $child.ImagePath = Join-Path $package.Location $candidate.Name
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $tracker.Records.Count | Should Be 0
+    }
+
+    It 'accepts an exact controller-owned proof without querying protected WindowsApps ACLs as the Limited user' {
+        $package = @{ FullName = 'verified-test-package'; Version = '0.8.107.0'; Location = Join-Path $TestDrive 'WindowsApps\verified-test-package' }
+        $tracker.RunId = [guid]::NewGuid().ToString()
+        $tracker.PackageProofPath = Join-Path $TestDrive 'package-trust.json'
+        @{ RunId = $tracker.RunId; FullName = $package.FullName; Version = $package.Version; Location = $package.Location } |
+            ConvertTo-Json | Set-Content -LiteralPath $tracker.PackageProofPath
+        Mock Get-MwbClientPackageDirectory { $package.Location }
+        Mock Assert-MwbClientProtectedDirectory {}
+        Mock Assert-MwbClientManifest { throw 'Limited user must not read WindowsApps ACLs' }
+        Mock Test-Path { $true }
+        Add-MwbClientPackageProcessPaths $tracker $package
+        $tracker.Packages.ContainsKey($package.FullName) | Should Be $true
+        Assert-MockCalled Assert-MwbClientProtectedDirectory -Times 1 -Exactly -Scope It -ParameterFilter { $Path -eq $tracker.PackageProofPath }
+        Assert-MockCalled Assert-MwbClientManifest -Times 0 -Exactly -Scope It
+    }
+
+    It 'refuses a package proof from another setup run' {
+        $package = @{ FullName = 'verified-test-package'; Version = '0.8.107.0'; Location = Join-Path $TestDrive 'WindowsApps\verified-test-package' }
+        $tracker.RunId = [guid]::NewGuid().ToString()
+        $tracker.PackageProofPath = Join-Path $TestDrive 'package-trust-other.json'
+        @{ RunId = [guid]::NewGuid().ToString(); FullName = $package.FullName; Version = $package.Version; Location = $package.Location } |
+            ConvertTo-Json | Set-Content -LiteralPath $tracker.PackageProofPath
+        Mock Get-MwbClientPackageDirectory { $package.Location }
+        Mock Assert-MwbClientProtectedDirectory {}
+        Add-MwbClientPackageProcessPaths $tracker $package
+        $tracker.Packages.Count | Should Be 0
+        $tracker.TrackingError | Should Be 'PackageValidationFailed'
+    }
+
+    It 'emits only safe remaining identity and marks a mismatched PID birth unowned' {
+        Update-MwbClientOwnedProcesses $tracker -Force
+        $remaining = @(Get-MwbClientRemainingProcesses $tracker)
+        $remaining.Count | Should Be 1
+        $remaining[0].VerifiedOwned | Should Be $true
+        $candidate.CreationDate = $candidate.CreationDate.AddSeconds(1)
+        (@(Get-MwbClientRemainingProcesses $tracker))[0].VerifiedOwned | Should Be $false
+        ($remaining | ConvertTo-Json) | Should Not Match 'ImagePath|CommandLine|SafeHandle'
+    }
+}
+
+Describe 'First-launch descendant cleanup remains ownership and inventory gated' {
+    BeforeEach {
+        $root = New-MwbClientProcessFixture 100 0 'WindowsSandbox.exe'
+        $root.HasExited = $true
+        $child = New-MwbClientProcessFixture
+        $candidate = New-MwbClientSnapshotFixture $child
+        $directory = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $null = New-Item -ItemType Directory -Path $directory
+        $id = [guid]::NewGuid()
+        Mock Get-MwbClientSessionId { 1 }
+        Mock Get-MwbClientProcessImagePath { $Process.ImagePath }
+        Mock Open-MwbClientProcess { $child }
+        Mock Get-MwbClientDesktopProcesses { if (-not $child.HasExited) { $candidate } }
+        Mock Test-MwbClientProcessPath { $true }
+        Mock Assert-MwbClientEmptyProvider { }
+        Mock Start-Sleep { }
+        $tracker = New-MwbClientProcessTracker $root
+        Update-MwbClientOwnedProcesses $tracker -Force
+    }
+
+    It 'stops the captured client only after the exact marker and empty provider, then rechecks global emptiness' {
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        $result = Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker
+        $result.Status | Should Be 'Passed'
+        $child.Killed | Should Be $true
+        Assert-MockCalled Assert-MwbClientEmptyProvider -Times 2 -Exactly -Scope It
+    }
+
+    It 'does not stop the captured client without the guest marker' {
+        { Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker } | Should Throw 'FirstLaunchCleanupUnconfirmed'
+        $child.Killed | Should Be $false
+        Assert-MockCalled Assert-MwbClientEmptyProvider -Times 0 -Exactly -Scope It
+    }
+
+    It 'does not stop clients for a mismatched guest marker' {
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value ([guid]::NewGuid())
+        { Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker } | Should Throw 'GuestMarkerMismatch'
+        $child.Killed | Should Be $false
+    }
+
+    It 'never stops clients while provider inventory is nonempty or unknown' -TestCases @(
+        @{ Failure = 'ExistingSandboxInstance' }; @{ Failure = 'SandboxInventoryFailed' }
+        @{ Failure = 'SandboxInventorySchemaMismatch' }
+    ) {
+        param($Failure)
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        Mock Assert-MwbClientEmptyProvider { throw $Failure }
+        { Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker } | Should Throw 'FirstLaunchCleanupUnconfirmed'
+        $child.Killed | Should Be $false
+    }
+
+    It 'cannot succeed while another unowned desktop remains after owned termination' {
+        $foreign = New-MwbClientSnapshotFixture (New-MwbClientProcessFixture 999 2) 888
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        Mock Get-MwbClientDesktopProcesses { $foreign; if (-not $child.HasExited) { $candidate } }
+        try {
+            Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker
+            throw 'Expected cleanup failure'
+        }
+        catch {
+            $_.Exception.Message | Should Be 'FirstLaunchCleanupUnconfirmed'
+            $remaining = $_.Exception.Data['RemainingProcesses']
+            $remaining.Count | Should Be 1
+            $remaining[0].PID | Should Be 999
+            $remaining[0].ParentPID | Should Be 888
+            $remaining[0].VerifiedOwned | Should Be $false
+        }
+        $child.Killed | Should Be $true
+        Assert-MockCalled Open-MwbClientProcess -Times 0 -Exactly -Scope It -ParameterFilter { $ProcessId -eq 999 }
+    }
+
+    It 'rechecks retained identity and path before termination' -TestCases @(
+        @{ Field = 'StartTime'; Value = ([datetime]'2026-10-03T00:01:00Z') }
+        @{ Field = 'SessionId'; Value = 2 }
+        @{ Field = 'ImagePath'; Value = 'C:\Other\WindowsSandboxRemoteSession.exe' }
+    ) {
+        param($Field, $Value)
+        $child.$Field = $Value
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        { Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker } | Should Throw 'FirstLaunchCleanupUnconfirmed'
+        $child.Killed | Should Be $false
+    }
+
+    It 'still fails if the final provider recheck changes after stopping an owned client' {
+        Set-Content -LiteralPath (Join-Path $directory 'guest-started.txt') -Value $id
+        Mock Assert-MwbClientEmptyProvider { if ($child.Killed) { throw 'ExistingSandboxInstance' } }
+        { Complete-MwbClientFirstLaunch $root $directory $id 0 $tracker } | Should Throw 'FirstLaunchCleanupUnconfirmed'
+        $child.Killed | Should Be $true
     }
 }
 
@@ -510,6 +928,38 @@ Describe 'Corroborated task completion and public diagnostic boundaries' {
         $result = ConvertTo-MwbPublicClientSetup $report $report.RunId $report.UserSid
         ($result | ConvertTo-Json -Depth 8) | Should Not Match 'DO_NOT_PUBLISH|RawError|ProcessArguments|Password'
         $result.Before.Status | Should Be 'NotChecked'
+    }
+
+    It 'preserves allowlisted remaining process evidence while stripping paths and arguments' {
+        $report.Cleanup.RemainingProcesses = @(@{
+            Name = 'WindowsSandboxClient.exe'; PID = 101; ParentPID = 100; SessionId = 1
+            StartTime = '2026-10-03T00:00:01.0000000Z'; VerifiedOwned = $false
+            CommandLine = 'DO_NOT_PUBLISH'; Path = 'DO_NOT_PUBLISH'; Password = 'DO_NOT_PUBLISH'
+        })
+        $report = $report | ConvertTo-Json -Depth 8 | ConvertFrom-Json -AsHashtable
+        $result = ConvertTo-MwbPublicClientSetup $report $report.RunId $report.UserSid
+        $result.Cleanup.RemainingProcesses.Count | Should Be 1
+        $result.Cleanup.RemainingProcesses[0].ParentPID | Should Be 100
+        $result.Cleanup.RemainingProcesses[0].StartTime | Should Be '2026-10-03T00:00:01.0000000Z'
+        ($result | ConvertTo-Json -Depth 8) | Should Not Match 'DO_NOT_PUBLISH|CommandLine|Password'
+    }
+
+    It 'rejects non-allowlisted process evidence fields instead of publishing arbitrary text' -TestCases @(
+        @{ Field = 'Name'; Value = 'DO_NOT_PUBLISH' }
+        @{ Field = 'PID'; Value = 'DO_NOT_PUBLISH' }
+        @{ Field = 'SessionId'; Value = -1 }
+        @{ Field = 'ParentPID'; Value = 4294967296L }
+        @{ Field = 'StartTime'; Value = 'DO_NOT_PUBLISH' }
+        @{ Field = 'VerifiedOwned'; Value = 'true' }
+    ) {
+        param($Field, $Value)
+        $process = @{
+            Name = 'WindowsSandboxClient.exe'; PID = 101; ParentPID = 100; SessionId = 1
+            StartTime = '2026-10-03T00:00:01.0000000Z'; VerifiedOwned = $false
+        }
+        $process[$Field] = $Value
+        $report.Cleanup.RemainingProcesses = @($process)
+        { ConvertTo-MwbPublicClientSetup $report $report.RunId $report.UserSid } | Should Throw 'InvalidClientSetupReport'
     }
 
     It 'rejects non-allowlisted errors even if they look like safe identifier strings' {
@@ -569,5 +1019,7 @@ Describe 'Effective pipeline setup boundaries' {
         (Get-Command Start-MwbClientFirstLaunch).Definition | Should Match 'shutdown.exe /s /f /t 0'
         (Get-Command Start-MwbClientFirstLaunch).Definition | Should Match 'Get-MwbClientInboxLauncher'
         (Get-Command Get-MwbClientInboxLauncher).Definition | Should Match 'Get-AuthenticodeSignature'
+        (Get-Command Get-MwbClientDesktopProcesses).Definition | Should Not Match 'CommandLine'
+        (Get-Command Get-MwbClientDesktopProcesses).Definition | Should Match '-Property Name, ProcessId, ParentProcessId, SessionId, CreationDate'
     }
 }
