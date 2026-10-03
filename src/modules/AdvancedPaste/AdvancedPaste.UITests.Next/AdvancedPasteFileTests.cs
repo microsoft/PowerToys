@@ -53,7 +53,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
     [DataRow(true)]
     public async Task HtmlIsPastedAsHtmlFileWithoutClipboardMetadata(bool directShortcut)
     {
-        const string html = "<h2>Offline file</h2><p>alpha &amp; beta</p>";
+        const string html = "<h2>Offline file</h2><p>café 中文 &amp; beta</p>";
         SetHtmlClipboard(html);
         var output = await PasteFile(ProductStrings.PasteAsHtmlFile, Key.H, ".html", directShortcut);
         Assert.AreEqual(html, File.ReadAllText(output), "The HTML file changed the fragment or included CF_HTML metadata.");

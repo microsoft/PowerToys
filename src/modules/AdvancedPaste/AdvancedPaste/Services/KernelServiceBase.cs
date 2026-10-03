@@ -403,32 +403,9 @@ public abstract class KernelServiceBase(
 
     private string FormatChatMessage(ChatMessageContent chatMessage)
     {
-        static string Redact(object data) =>
-#if DEBUG
-            data?.ToString();
-#else
-            "[Redacted]";
-#endif
-
-        static string FormatKernelArguments(KernelArguments kernelArguments) =>
-            string.Join(", ", kernelArguments?.Select(argument => $"{argument.Key}: {Redact(argument.Value)}") ?? []);
-
-        static string FormatKernelContent(KernelContent kernelContent) =>
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            kernelContent switch
-            {
-                FunctionCallContent functionCallContent => $"{functionCallContent.FunctionName}({FormatKernelArguments(functionCallContent.Arguments)})",
-                FunctionResultContent functionResultContent => functionResultContent.FunctionName,
-                _ => kernelContent.ToString(),
-            };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        var role = chatMessage.Role;
-        var content = string.Join(" / ", chatMessage.Items.Select(FormatKernelContent));
-        var redactedContent = role == AuthorRole.System || role == AuthorRole.Tool ? content : Redact(content);
         var usage = GetAIServiceUsage(chatMessage);
         var usageString = usage.HasUsage ? $" [{usage}]" : string.Empty;
-        return $"-> {role}: {redactedContent}{usageString}";
+        return $"-> {chatMessage.Role}: [Redacted]{usageString}";
     }
 
     protected virtual bool ShouldModerateAdvancedAI(IKernelRuntimeConfiguration runtimeConfig)

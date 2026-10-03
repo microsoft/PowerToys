@@ -18,6 +18,29 @@ Advanced Paste is a PowerToys module that provides enhanced clipboard pasting wi
 
 TODO: Add implementation details
 
+### Headless CLI
+
+`PowerToys.AdvancedPaste.CLI.exe` runs Advanced Paste actions without starting the Advanced Paste UI or communicating with Runner. It loads the same shared action engine, a startup snapshot of settings, policy, credential-vault entries, AI providers, OCR, and media-transcoding implementation used by the UI; live settings-file watching is disabled for the one-shot CLI process.
+
+```powershell
+Get-Clipboard | PowerToys.AdvancedPaste.CLI.exe transform --action plain-text --stdin --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action markdown --input notes.html --output notes.md
+PowerToys.AdvancedPaste.CLI.exe transform --action image-to-text --input screenshot.png --stdout
+PowerToys.AdvancedPaste.CLI.exe transform --action transcode-to-mp3 --input recording.mp4 --output recording.mp3
+PowerToys.AdvancedPaste.CLI.exe transform --action paste-with-ai --prompt "Summarize this" --clipboard
+PowerToys.AdvancedPaste.CLI.exe transform --custom-action 3 --clipboard
+```
+
+Specify exactly one input source: `--input <path>`, `--stdin`, or `--clipboard`. Output defaults to the clipboard; use at most one of `--output <path>`, `--stdout`, or `--output-clipboard`. Clipboard output sets content but never simulates paste keys. Text inputs are limited to 16,777,216 characters and raw input, prompts, and output are never written to the CLI log. `--format` remains an alias for `--action`.
+
+Clipboard modes use the Win32/OLE clipboard so they do not require a foreground app window. Like the Windows clipboard itself, they require an interactive user session; use file or standard-stream modes for services and session-0 automation.
+
+Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
+
+For `transform`, `--json` emits one UTF-8 JSON result envelope on stdout (`status`, `action`, `resultKind`, `outputPath`, `outputClipboard`, and optional `output`) or one error envelope on stderr (`status`, `code`, `message`, and `usage` for argument errors). `actions list --json` emits a bare array of action objects (`name`, `kind`, optional `id`, and `requiresPrompt`). The stable exit codes are `0` for success, `1` for input, I/O, cancellation, provider, clipboard, or transformation failures, and `2` for parser/argument errors.
+
+Run `src\modules\AdvancedPaste\AdvancedPaste.CLI\SmokeTest.ps1` after building the CLI to exercise help, stdin/stdout, file input/output, JSON output, and failing argument paths against the built executable.
+
 ### Paste with AI Preview
 
 The "Show preview" setting (`ShowCustomPreview`) controls whether AI-generated results are displayed in a preview window before pasting. **The preview feature does not consume additional AI credits**—the preview displays the same AI response that was already generated, cached locally from a single API call.
