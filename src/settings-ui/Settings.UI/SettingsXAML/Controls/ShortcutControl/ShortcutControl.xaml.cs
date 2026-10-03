@@ -146,8 +146,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             control.UpdateTooltip();
         }
 
-        private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
+        // Lazily created on first "Edit" click: see EnsureDialogCreated. Every ShortcutControl instance
+        // appears on nearly every module settings page, so eagerly building these here parsed extra XAML
+        // and allocated a ContentDialog per page navigation that most users never open.
+        private ShortcutDialogContentControl c;
         private ContentDialog shortcutDialog;
+        private bool isLoaded;
 
         public bool AllowDisable
         {
@@ -238,7 +242,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     SetKeys();
-                    c.Keys = HotkeySettings?.GetKeysList();
+
+                    // Not updating the (possibly not-yet-created) dialog's Keys here: OpenDialogButton_Click
+                    // always refreshes it from the current HotkeySettings right before showing the dialog.
                 }
             }
         }
@@ -277,6 +283,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
 
+            AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
+
+            OnAllowDisableChanged(this, null);
+        }
+
+        // Builds the edit-shortcut dialog and its content control on first use instead of in the constructor.
+        // The dialog is only ever shown from OpenDialogButton_Click, so most pages never need it.
+        private void EnsureDialogCreated()
+        {
+            if (shortcutDialog != null)
+            {
+                return;
+            }
+
+            c = new ShortcutDialogContentControl();
             c.ResetClick += C_ResetClick;
             c.ClearClick += C_ClearClick;
             c.LearnMoreClick += C_LearnMoreClick;
@@ -293,9 +314,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             };
             shortcutDialog.RightTapped += ShortcutDialog_Disable;
 
-            AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
-
-            OnAllowDisableChanged(this, null);
+            // ShortcutControl_Loaded already ran (the control must be loaded and visible for the user to have
+            // clicked Edit), so wire the events it would have wired had the dialog existed at that point.
+            if (isLoaded)
+            {
+                shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+                shortcutDialog.Opened += ShortcutDialog_Opened;
+                shortcutDialog.Closing += ShortcutDialog_Closing;
+            }
         }
 
         private void C_LearnMoreClick(object sender, RoutedEventArgs e)
@@ -331,11 +357,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
-            shortcutDialog.Opened -= ShortcutDialog_Opened;
-            shortcutDialog.Closing -= ShortcutDialog_Closing;
+            isLoaded = false;
 
-            c.LearnMoreClick -= C_LearnMoreClick;
+            if (shortcutDialog != null)
+            {
+                shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
+                shortcutDialog.Opened -= ShortcutDialog_Opened;
+                shortcutDialog.Closing -= ShortcutDialog_Closing;
+            }
+
+            if (c != null)
+            {
+                c.LearnMoreClick -= C_LearnMoreClick;
+            }
 
             if (App.GetSettingsWindow() != null)
             {
@@ -356,14 +390,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void ShortcutControl_Loaded(object sender, RoutedEventArgs e)
         {
+            isLoaded = true;
+
             // These all belong here; because of virtualization in e.g. a ListView, the control can go through several Loaded / Unloaded cycles.
             hook?.Dispose();
 
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
 
-            shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
-            shortcutDialog.Opened += ShortcutDialog_Opened;
-            shortcutDialog.Closing += ShortcutDialog_Closing;
+            if (shortcutDialog != null)
+            {
+                shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+                shortcutDialog.Opened += ShortcutDialog_Opened;
+                shortcutDialog.Closing += ShortcutDialog_Closing;
+            }
 
             if (App.GetSettingsWindow() != null)
             {
@@ -686,6 +725,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _isDialogOpen = true;
             try
             {
+                EnsureDialogCreated();
+
                 List<object> newKeys = HotkeySettings?.GetKeysList() ?? new List<object>();
 
                 if (c.Keys == null || !c.JudgeIfKeyValueSame(newKeys))
