@@ -925,6 +925,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
     <value>Search extensions</value>
   </data>
+  <data name="GlobalKeyboardHookFailed_Message" xml:space="preserve">
+    <value>Low-level shortcuts are unavailable. Using standard shortcuts; some combinations may not work. See the Command Palette log for details.</value>
+  </data>
+  <data name="GlobalKeyboardHookFailed_SummonUnavailable" xml:space="preserve">
+    <value>Command Palette could not enable low-level shortcuts or register its activation shortcut. Open Command Palette from the Start menu to change its shortcut settings. See the Command Palette log for details.</value>
+  </data>
   <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
     <value>Command Palette has encountered a fatal error and must close.</value>
   </data>

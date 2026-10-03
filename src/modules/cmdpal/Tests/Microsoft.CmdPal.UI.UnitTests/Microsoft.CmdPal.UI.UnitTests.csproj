@@ -39,6 +39,9 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardListener.cs" Link="Helpers\GlobalKeyboardListener.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalKeyboardHook.cs" Link="Helpers\GlobalKeyboardHook.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\IGlobalKeyboardHook.cs" Link="Helpers\IGlobalKeyboardHook.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\IGlobalKeyboardListener.cs" Link="Helpers\IGlobalKeyboardListener.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\GlobalHotkeyService.cs" Link="Helpers\GlobalHotkeyService.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ShortcutBreakthroughDetector.cs" Link="Helpers\ShortcutBreakthroughDetector.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />
