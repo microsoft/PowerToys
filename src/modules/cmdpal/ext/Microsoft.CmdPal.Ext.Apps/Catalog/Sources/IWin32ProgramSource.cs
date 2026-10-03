@@ -41,6 +41,15 @@ internal interface IWin32ProgramSource
     /// <summary>Enumerates candidate paths from this origin.</summary>
     IEnumerable<string> GetPaths();
 
+    /// <summary>Enumerates candidate paths together with their search metadata.</summary>
+    IEnumerable<Win32ProgramCandidate> GetCandidates()
+    {
+        foreach (var path in GetPaths())
+        {
+            yield return new Win32ProgramCandidate(path, []);
+        }
+    }
+
     /// <summary>
     /// Enumerates candidates that currently exist at or below a dirty path, constrained by this
     /// origin's configured roots, suffixes, and maximum depth.

@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
@@ -11,11 +13,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 internal sealed class RegistryAppSource : IWin32ProgramSource
 {
     private readonly AllAppsSettings _settings;
-
-    public RegistryAppSource(AllAppsSettings settings)
-    {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    }
+    private readonly Func<IList<string>, IEnumerable<(string CommandName, string TargetPath)>> _enumeratePrograms;
 
     public string Id => "registry";
 
@@ -31,7 +29,53 @@ internal sealed class RegistryAppSource : IWin32ProgramSource
 
     public IReadOnlyList<string> WatchPaths => [];
 
-    public IEnumerable<string> GetPaths() => Win32Program.EnumerateRegistryPrograms(_settings.ProgramSuffixes);
+    public RegistryAppSource(AllAppsSettings settings)
+        : this(settings, Win32Program.EnumerateRegistryPrograms)
+    {
+    }
 
-    public bool IsRelevantPath(string path) => false;
+    internal RegistryAppSource(
+        AllAppsSettings settings,
+        Func<IList<string>, IEnumerable<(string CommandName, string TargetPath)>> enumeratePrograms)
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _enumeratePrograms = enumeratePrograms ?? throw new ArgumentNullException(nameof(enumeratePrograms));
+    }
+
+    public IEnumerable<string> GetPaths()
+    {
+        foreach (var candidate in GetCandidates())
+        {
+            yield return candidate.Path;
+        }
+    }
+
+    public IEnumerable<Win32ProgramCandidate> GetCandidates()
+    {
+        var termsByPath = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var program in _enumeratePrograms(_settings.ProgramSuffixes))
+        {
+            if (!termsByPath.TryGetValue(program.TargetPath, out var terms))
+            {
+                terms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                termsByPath.Add(program.TargetPath, terms);
+            }
+
+            if (!string.IsNullOrWhiteSpace(program.CommandName))
+            {
+                terms.Add(program.CommandName);
+                terms.Add(Path.GetFileNameWithoutExtension(program.CommandName));
+            }
+        }
+
+        foreach (var pair in termsByPath)
+        {
+            yield return new Win32ProgramCandidate(pair.Key, pair.Value.ToArray());
+        }
+    }
+
+    public bool IsRelevantPath(string path)
+    {
+        return false;
+    }
 }

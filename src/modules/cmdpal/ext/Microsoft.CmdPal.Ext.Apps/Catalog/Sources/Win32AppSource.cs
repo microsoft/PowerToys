@@ -112,11 +112,11 @@ internal sealed partial class Win32AppSource : IAppSource
             return [];
         }
 
-        List<string> paths = [];
-        var uniquePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var path in _source.GetPaths())
+        var candidates = new Dictionary<string, Win32ProgramCandidate>(StringComparer.OrdinalIgnoreCase);
+        foreach (var candidate in _source.GetCandidates())
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var path = candidate.Path;
             if (string.IsNullOrWhiteSpace(path)
                 || (!HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeRawExecutables)
                     && Win32Program.IsExecutablePath(path)))
@@ -124,14 +124,21 @@ internal sealed partial class Win32AppSource : IAppSource
                 continue;
             }
 
-            if (uniquePaths.Add(path))
+            if (candidates.TryGetValue(path, out var existing))
             {
-                paths.Add(path);
+                if (candidate.MatchTerms.Count > 0)
+                {
+                    candidates[path] = existing with { MatchTerms = [.. existing.MatchTerms, .. candidate.MatchTerms] };
+                }
+            }
+            else
+            {
+                candidates.Add(path, candidate);
             }
         }
 
-        var items = IndexPaths(paths, cancellationToken);
-        LogDiagnostic($"Full refresh indexed {paths.Count} candidate path(s) into {items.Count} item(s).");
+        var items = IndexCandidates([.. candidates.Values], cancellationToken);
+        LogDiagnostic($"Full refresh indexed {candidates.Count} candidate path(s) into {items.Count} item(s).");
         return items;
     }
 
@@ -340,16 +347,30 @@ internal sealed partial class Win32AppSource : IAppSource
         IReadOnlyList<string> paths,
         CancellationToken cancellationToken)
     {
+        var candidates = new Win32ProgramCandidate[paths.Count];
+        for (var index = 0; index < paths.Count; index++)
+        {
+            candidates[index] = new Win32ProgramCandidate(paths[index], []);
+        }
+
+        return IndexCandidates(candidates, cancellationToken);
+    }
+
+    private IReadOnlyList<AppCatalogItem> IndexCandidates(
+        IReadOnlyList<Win32ProgramCandidate> candidates,
+        CancellationToken cancellationToken)
+    {
         var indexedItems = new ConcurrentBag<AppCatalogItem>();
         Parallel.ForEach(
-            paths,
+            candidates,
             new ParallelOptions
             {
                 CancellationToken = cancellationToken,
                 MaxDegreeOfParallelism = IndexingMaxDegreeOfParallelism,
             },
-            path =>
+            candidate =>
             {
+                var path = candidate.Path;
                 var program = _programLoader(
                     path,
                     HasProfileOption(_source.Profile, Win32ProgramSourceProfile.LoadAsRunCommand));
@@ -373,7 +394,7 @@ internal sealed partial class Win32AppSource : IAppSource
                     identity,
                     GetRepresentationPriority(program, path) + _source.Priority,
                     new AppCatalogSourceReference(_source.Id, path),
-                    CreateMatchTerms(program, path),
+                    CreateMatchTerms(program, path, candidate.MatchTerms),
                     Win32AppPayload.From(program),
                     [launchIdentity]));
             });
@@ -413,7 +434,7 @@ internal sealed partial class Win32AppSource : IAppSource
             : $"{identity}|cwd:{workingDirectory}";
     }
 
-    private static List<string> CreateMatchTerms(Win32Program program, string sourcePath)
+    private static List<string> CreateMatchTerms(Win32Program program, string sourcePath, IReadOnlyList<string> sourceTerms)
     {
         List<string> terms = [];
         var uniqueTerms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -429,6 +450,11 @@ internal sealed partial class Win32AppSource : IAppSource
         AddMatchTerm(terms, uniqueTerms, program.LnkResolvedExecutableNameLocalized);
         AddMatchTerm(terms, uniqueTerms, program.ExplicitAppUserModelId);
         AddMatchTerm(terms, uniqueTerms, sourcePath);
+        foreach (var term in sourceTerms)
+        {
+            AddMatchTerm(terms, uniqueTerms, term);
+        }
+
         return terms;
     }
 

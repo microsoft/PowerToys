@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -125,6 +126,7 @@ public class AppCatalogCacheTests
                 {
                     Name = "Cached package",
                     PackageFullName = "Cached.Package_1.0.0.0_x64__publisher",
+                    Executable = @"Tools\Editor.exe",
                 });
             var cache = new AppCatalogCache(cachePath);
 
@@ -139,6 +141,56 @@ public class AppCatalogCacheTests
             var payload = loaded.Sources[0].Items[0].Payload;
             Assert.IsInstanceOfType<PackagedAppSnapshot>(payload);
             Assert.AreEqual("Cached package", payload.ToAppItem().Name);
+            Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppSnapshot)payload).Executable);
+            Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadAsync_PackagedPayloadWithMissingOrNullExecutableRemainsCompatible(bool explicitNull)
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var context = Context(DateTimeOffset.UtcNow, ("packaged", "package-key"));
+            var item = new AppCatalogItem(
+                "packaged:cached",
+                0,
+                new AppCatalogSourceReference("packaged", "Cached.Package!App"),
+                [],
+                new PackagedAppSnapshot { Name = "Cached package" });
+            var cache = new AppCatalogCache(cachePath);
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["packaged"] = [item] },
+                ["packaged"],
+                context,
+                CancellationToken.None);
+            var content = JsonNode.Parse(File.ReadAllText(cachePath))!;
+            var payload = content["Sources"]![0]!["Items"]![0]!["Payload"]!.AsObject();
+            if (explicitNull)
+            {
+                payload["Executable"] = null;
+            }
+            else
+            {
+                Assert.IsTrue(payload.Remove("Executable"));
+            }
+
+            File.WriteAllText(cachePath, content.ToJsonString());
+
+            var loaded = await cache.LoadAsync(context, CancellationToken.None);
+
+            Assert.IsNotNull(loaded);
+            var cachedPayload = (PackagedAppSnapshot)loaded.Sources.Single().Items.Single().Payload;
+            Assert.AreEqual(string.Empty, cachedPayload.Executable);
+            Assert.AreEqual(item.Payload.GetCommandId(), cachedPayload.GetCommandId());
+            Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources.Single().Items.Single()));
         }
         finally
         {

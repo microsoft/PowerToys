@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -61,14 +62,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                     try
                     {
                         app.UpdateLogoPath(theme);
-                        var snapshot = PackagedAppSnapshot.From(app);
-                        var identity = AppIdentity.ForPackaged(app.UserModelId);
-                        items.Add(new AppCatalogItem(
-                            identity,
-                            priority: 0,
-                            new AppCatalogSourceReference(SourceId, app.UserModelId),
-                            CreateMatchTerms(snapshot),
-                            snapshot));
+                        items.Add(CreateCatalogItem(app));
                     }
                     catch (Exception ex)
                     {
@@ -94,6 +88,17 @@ internal sealed partial class PackagedAppSource : IAppSource
             cancellationToken);
     }
 
+    internal static AppCatalogItem CreateCatalogItem(IUWPApplication app)
+    {
+        var snapshot = PackagedAppSnapshot.From(app);
+        return new AppCatalogItem(
+            AppIdentity.ForPackaged(snapshot.UserModelId),
+            priority: 0,
+            new AppCatalogSourceReference(SourceId, snapshot.UserModelId),
+            CreateMatchTerms(snapshot),
+            snapshot);
+    }
+
     private static List<string> CreateMatchTerms(PackagedAppSnapshot app)
     {
         List<string> terms = [];
@@ -104,6 +109,7 @@ internal sealed partial class PackagedAppSource : IAppSource
         AddMatchTerm(terms, uniqueTerms, app.PackageFamilyName);
         AddMatchTerm(terms, uniqueTerms, app.PackageFullName);
         AddMatchTerm(terms, uniqueTerms, app.PackageLocation);
+        AddMatchTerm(terms, uniqueTerms, Path.GetFileName(app.Executable));
         return terms;
     }
 
