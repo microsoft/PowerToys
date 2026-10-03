@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
@@ -14,16 +15,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
+[DoNotParallelize]
 public partial class ListViewModelTests
 {
     private sealed partial class TestAppExtensionHost : AppExtensionHost
     {
         public override string? GetExtensionDisplayName() => "Test Host";
-    }
-
-    private sealed class MessageRecipient
-    {
-        public int MessageCount { get; set; }
     }
 
     private sealed partial class RecursiveItemsChangedPage : ListPage
@@ -250,35 +247,51 @@ public partial class ListViewModelTests
     }
 
     [TestMethod]
-    public void InvokeItem_SectionHeaderWithSectionCommand_DoesNotInvokePrimaryCommand()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void InvokeItem_VisiblePrimaryCommand_SendsCommandWithItemContext(bool sectionHeader)
     {
-        var page = new RecursiveItemsChangedPage
-        {
-            Id = "list.page",
-            Name = "List Page",
-            Title = "List Page",
-        };
-        var listViewModel = CreateViewModel(page);
-        var separator = new Separator("Recent", new NoOpCommand { Name = "Show more..." });
-        var itemViewModel = new ListItemViewModel(separator, listViewModel.PageContext, DefaultContextMenuFactory.Instance);
-        var recipient = new MessageRecipient();
-        WeakReferenceMessenger.Default.Register<MessageRecipient, PerformCommandMessage>(recipient, static (r, _) => r.MessageCount++);
+        var command = new NoOpCommand { Name = "Open" };
+        IListItem item = sectionHeader ? new Separator("Recent", command) : new ListItem(command);
 
-        try
-        {
-            itemViewModel.InitializeProperties();
+        var messages = InvokeItemAndCaptureMessages(item);
 
-            listViewModel.InvokeItemCommand.Execute(itemViewModel);
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(item, messages[0].Context);
+    }
 
-            Assert.AreEqual(0, recipient.MessageCount);
-        }
-        finally
-        {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
-            itemViewModel.SafeCleanup();
-            listViewModel.SafeCleanup();
-            listViewModel.Dispose();
-        }
+    [TestMethod]
+    public void InvokeItem_UnnamedPrimaryCommand_SendsCommandWithItemContext()
+    {
+        var command = new NoOpCommand { Name = string.Empty };
+        var item = new ListItem(command) { Title = "Open an unnamed command" };
+
+        var messages = InvokeItemAndCaptureMessages(item);
+
+        Assert.AreEqual(1, messages.Count);
+        Assert.AreSame(command, messages[0].Command.Unsafe);
+        Assert.AreSame(item, messages[0].Context);
+    }
+
+    [TestMethod]
+    public void InvokeItem_UnnamedSectionCommand_DoesNotSendCommand()
+    {
+        var item = new Separator("Recent", new NoOpCommand { Name = string.Empty });
+
+        var messages = InvokeItemAndCaptureMessages(item);
+
+        Assert.AreEqual(0, messages.Count);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("Recent")]
+    public void InvokeItem_StructuralRowWithoutCommand_DoesNotSendCommand(string section)
+    {
+        var messages = InvokeItemAndCaptureMessages(new Separator(section));
+
+        Assert.AreEqual(0, messages.Count);
     }
 
     [TestMethod]
@@ -341,6 +354,28 @@ public partial class ListViewModelTests
         {
             viewModel.SafeCleanup();
             viewModel.Dispose();
+        }
+    }
+
+    private static List<PerformCommandMessage> InvokeItemAndCaptureMessages(IListItem item)
+    {
+        var listViewModel = CreateViewModel(new RecursiveItemsChangedPage());
+        var itemViewModel = new ListItemViewModel(item, listViewModel.PageContext, DefaultContextMenuFactory.Instance);
+        var messages = new List<PerformCommandMessage>();
+        WeakReferenceMessenger.Default.Register<List<PerformCommandMessage>, PerformCommandMessage>(messages, static (recipient, message) => recipient.Add(message));
+
+        try
+        {
+            itemViewModel.InitializeProperties();
+            listViewModel.InvokeItemCommand.Execute(itemViewModel);
+            return messages;
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(messages);
+            itemViewModel.SafeCleanup();
+            listViewModel.SafeCleanup();
+            listViewModel.Dispose();
         }
     }
 

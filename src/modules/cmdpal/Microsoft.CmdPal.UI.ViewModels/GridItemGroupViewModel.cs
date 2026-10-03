@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -32,9 +31,9 @@ public sealed partial class GridItemGroupViewModel : ObservableObject
 
     public string SectionCommandAccessibleName => HasSectionCommand ? $"{Title}, {SectionCommandName}" : Title;
 
-    public bool IsSectionCommandSelected { get; private set; }
+    private bool _isSectionCommandSelected;
 
-    public ICommand? SectionCommand => Header?.InvokeSectionCommandCommand;
+    public bool IsSectionCommandSelected => _isSectionCommandSelected && HasSectionCommand;
 
     public int FirstItemIndex { get; internal set; }
 
@@ -49,13 +48,12 @@ public sealed partial class GridItemGroupViewModel : ObservableObject
 
     public void SetSectionCommandSelected(bool value)
     {
-        value &= HasSectionCommand;
-        if (IsSectionCommandSelected == value)
+        if (_isSectionCommandSelected == value)
         {
             return;
         }
 
-        IsSectionCommandSelected = value;
+        _isSectionCommandSelected = value;
         OnPropertyChanged(nameof(IsSectionCommandSelected));
     }
 
@@ -102,11 +100,7 @@ public sealed partial class GridItemGroupViewModel : ObservableObject
             HasSectionCommand = hasSectionCommand;
             OnPropertyChanged(nameof(HasSectionCommand));
             OnPropertyChanged(nameof(SectionCommandAccessibleName));
-        }
-
-        if (!hasSectionCommand && IsSectionCommandSelected)
-        {
-            SetSectionCommandSelected(false);
+            OnPropertyChanged(nameof(IsSectionCommandSelected));
         }
     }
 }

@@ -38,8 +38,10 @@
             to ensure the virtualization works correctly.
         -->
         <x:Double x:Key="SingleRowListViewItemHeight">44</x:Double>
-        <x:Double x:Key="ListViewSectionHeight">28</x:Double>
+        <x:Double x:Key="ListViewSectionHeight">40</x:Double>
         <x:Double x:Key="ListViewSeparatorHeight">28</x:Double>
+        <Thickness x:Key="GridSectionHeaderMargin">0,2,0,2</Thickness>
+        <Thickness x:Key="GridSeparatorHeaderMargin">0,0,0,8</Thickness>
 
         <Style x:Key="NumberedShortcutCueBorderStyle" TargetType="Border">
             <Setter Property="HorizontalAlignment" Value="Left" />
@@ -196,8 +198,23 @@
             </Setter>
         </Style>
 
+        <Style
+            x:Key="SectionCommandButtonStyle"
+            BasedOn="{StaticResource SubtleButtonStyle}"
+            TargetType="Button">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0,0,12,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="{ThemeResource ListViewItemCornerRadius}" />
+        </Style>
+
         <Style x:Key="GridGroupHeaderStyle" TargetType="GridViewHeaderItem">
-            <Setter Property="IsHitTestVisible" Value="{Binding HasSectionCommand, Mode=OneWay}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0" />
@@ -217,54 +234,94 @@
 
         <DataTemplate x:Key="GridGroupHeaderTemplate" x:DataType="viewModels:GridItemGroupViewModel">
             <Grid
-                Height="{StaticResource ListViewSectionHeight}"
-                Margin="0,0,8,8"
+                Margin="0,0,8,0"
                 AutomationProperties.Name="{x:Bind SectionCommandAccessibleName, Mode=OneWay}"
+                Loaded="GridHeader_Loaded"
+                Unloaded="GridHeader_Unloaded"
                 Visibility="{x:Bind HasHeader}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock
-                    Grid.Column="0"
-                    Margin="4,8,12,0"
-                    VerticalAlignment="Bottom"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Title, Mode=OneWay}"
-                    Visibility="{x:Bind IsSectionHeader, Mode=OneWay}" />
-                <Rectangle
-                    Grid.ColumnSpan="2"
-                    Height="1"
-                    Margin="4,0,12,0"
-                    VerticalAlignment="Center"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-                    Visibility="{x:Bind IsSeparator, Mode=OneWay}" />
-                <Border
-                    Grid.Column="1"
-                    Margin="0,8,12,0"
-                    VerticalAlignment="Bottom"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}">
-                    <Grid>
-                        <Border
-                            Background="{ThemeResource ListViewItemBackgroundSelected}"
-                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                <Grid
+                    Height="{StaticResource ListViewSectionHeight}"
+                    Margin="{StaticResource GridSectionHeaderMargin}"
+                    Visibility="{x:Bind IsSectionHeader, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Grid.ColumnSpan="2"
+                        Background="{ThemeResource ListViewItemBackgroundSelected}"
+                        CornerRadius="{ThemeResource ListViewItemCornerRadius}"
+                        IsHitTestVisible="False"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
+                    <cpcontrols:SectionCommandButton
+                        x:Name="GridSectionCommandButton"
+                        Grid.ColumnSpan="2"
+                        Style="{StaticResource SectionCommandButtonStyle}"
+                        AutomationProperties.AutomationId="GridSectionCommand"
+                        AutomationProperties.Name="{x:Bind SectionCommandAccessibleName, Mode=OneWay}"
+                        Click="SectionCommandButton_Click"
+                        DoubleTapped="SectionCommandButton_DoubleTapped"
+                        IsSectionSelected="{x:Bind IsSectionCommandSelected, Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind SectionCommandName, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}" />
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Opacity="{x:Bind GridSectionCommandButton.ActionLabelOpacity, Mode=OneWay}"
+                            Text="{x:Bind SectionCommandName, Mode=OneWay}" />
+                        <cpcontrols:IconBox
+                            Width="16"
+                            Height="16"
+                            AutomationProperties.AccessibilityView="Raw"
+                            AutomationProperties.AutomationId="GridSectionActionIcon"
+                            DiagnosticScope="SectionHeader"
+                            FontSize="10"
                             IsHitTestVisible="False"
-                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
-                        <Button
-                            Style="{StaticResource SubtleButtonStyle}"
-                            MinWidth="0"
-                            MinHeight="0"
-                            Padding="4,0"
-                            AutomationProperties.Name="{x:Bind SectionCommandName, Mode=OneWay}"
-                            Command="{x:Bind SectionCommand, Mode=OneWay}">
-                            <TextBlock
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind SectionCommandName, Mode=OneWay}" />
-                        </Button>
-                    </Grid>
-                </Border>
+                            Opacity="{x:Bind GridSectionCommandButton.ActionIconOpacity, Mode=OneWay}"
+                            RequestSite="ListItem"
+                            SourceKey="{x:Bind Header.SectionCommand.Icon, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconProvider.SourceRequested16}">
+                            <cpcontrols:IconBox.FallbackSource>
+                                <FontIconSource
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="10"
+                                    Glyph="&#xE76C;"
+                                    MirroredWhenRightToLeft="True" />
+                            </cpcontrols:IconBox.FallbackSource>
+                        </cpcontrols:IconBox>
+                    </StackPanel>
+                    <TextBlock
+                        Margin="12,0,12,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsHitTestVisible="False"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        TextTrimming="CharacterEllipsis">
+                        <Run FontWeight="SemiBold" Text="{x:Bind Title, Mode=OneWay}" />
+                        <Run Text="  " />
+                        <Run Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{x:Bind Header.Subtitle, Mode=OneWay}" />
+                    </TextBlock>
+                </Grid>
+                <Grid
+                    Height="{StaticResource ListViewSeparatorHeight}"
+                    Margin="{StaticResource GridSeparatorHeaderMargin}"
+                    Visibility="{x:Bind IsSeparator, Mode=OneWay}">
+                    <Rectangle
+                        Height="1"
+                        Margin="4,0,12,0"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                </Grid>
             </Grid>
         </DataTemplate>
 
@@ -324,11 +381,7 @@
                 SelectionIndicatorVisualEnabled="False" />
         </ControlTemplate>
 
-        <!--
-            Section headers are structural. When they contain a command, the nested
-            borderless subtle button is the only interactive surface; the item container must
-            not present pointer-over, pressed, focused, or selected list-item chrome.
-        -->
+        <!-- Section actions use a full-width button for interaction and selection visuals. -->
         <ControlTemplate x:Key="ListSectionContainerTemplate" TargetType="ListViewItem">
             <ListViewItemPresenter
                 x:Name="Root"
@@ -393,18 +446,19 @@
             x:Key="ListSectionContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
-            <Setter Property="IsEnabled" Value="{Binding HasSectionCommand, Mode=OneWay}" />
+            <Setter Property="IsEnabled" Value="False" />
             <Setter Property="AllowFocusWhenDisabled" Value="False" />
             <Setter Property="AllowFocusOnInteraction" Value="False" />
-            <Setter Property="IsHitTestVisible" Value="{Binding HasSectionCommand, Mode=OneWay}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
             <Setter Property="CanDrag" Value="False" />
-            <Setter Property="Padding" Value="16,0,12,0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4,2,4,2" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
             <Setter Property="MinHeight" Value="{StaticResource ListViewSectionHeight}" />
             <Setter Property="Height" Value="{StaticResource ListViewSectionHeight}" />
             <Setter Property="Template" Value="{StaticResource ListSectionContainerTemplate}" />
@@ -549,46 +603,75 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
-            <Grid
-                Margin="0,8,0,0"
-                VerticalAlignment="Center"
-                ColumnSpacing="8"
-                IsTabStop="False"
-                IsTapEnabled="True">
+            <Grid IsTabStop="False">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock
-                    Grid.Column="0"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Section}" />
                 <Border
-                    Grid.Column="2"
+                    Grid.ColumnSpan="2"
+                    Background="{ThemeResource ListViewItemBackgroundSelected}"
+                    CornerRadius="{ThemeResource ListViewItemCornerRadius}"
+                    IsHitTestVisible="False"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
+                <cpcontrols:SectionCommandButton
+                    x:Name="ListSectionCommandButton"
+                    Grid.ColumnSpan="2"
+                    Style="{StaticResource SectionCommandButtonStyle}"
+                    AutomationProperties.AutomationId="ListSectionCommand"
+                    AutomationProperties.Name="{x:Bind SectionCommandAccessibleName, Mode=OneWay}"
+                    Click="SectionCommandButton_Click"
+                    DoubleTapped="SectionCommandButton_DoubleTapped"
+                    IsSectionSelected="{x:Bind IsSectionCommandSelected, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind SectionCommandName, Mode=OneWay}"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}" />
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="0,0,12,0"
                     VerticalAlignment="Center"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    IsHitTestVisible="False"
+                    Orientation="Horizontal"
+                    Spacing="8"
                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasSectionCommand), Mode=OneWay}">
-                    <Grid>
-                        <Border
-                            Background="{ThemeResource ListViewItemBackgroundSelected}"
-                            CornerRadius="{ThemeResource ControlCornerRadius}"
-                            IsHitTestVisible="False"
-                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsSectionCommandSelected), Mode=OneWay}" />
-                        <Button
-                            Style="{StaticResource SubtleButtonStyle}"
-                            MinWidth="0"
-                            MinHeight="0"
-                            Padding="4,0"
-                            AutomationProperties.Name="{x:Bind SectionCommandName, Mode=OneWay}"
-                            Command="{x:Bind InvokeSectionCommandCommand}">
-                            <TextBlock
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind SectionCommandName, Mode=OneWay}" />
-                        </Button>
-                    </Grid>
-                </Border>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Opacity="{x:Bind ListSectionCommandButton.ActionLabelOpacity, Mode=OneWay}"
+                        Text="{x:Bind SectionCommandName, Mode=OneWay}" />
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        AutomationProperties.AccessibilityView="Raw"
+                        AutomationProperties.AutomationId="ListSectionActionIcon"
+                        DiagnosticScope="SectionHeader"
+                        FontSize="10"
+                        IsHitTestVisible="False"
+                        Opacity="{x:Bind ListSectionCommandButton.ActionIconOpacity, Mode=OneWay}"
+                        RequestSite="ListItem"
+                        SourceKey="{x:Bind SectionCommand.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}">
+                        <cpcontrols:IconBox.FallbackSource>
+                            <FontIconSource
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                FontSize="10"
+                                Glyph="&#xE76C;"
+                                MirroredWhenRightToLeft="True" />
+                        </cpcontrols:IconBox.FallbackSource>
+                    </cpcontrols:IconBox>
+                </StackPanel>
+                <TextBlock
+                    Margin="16,0,12,0"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    IsHitTestVisible="False"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    TextTrimming="CharacterEllipsis">
+                    <Run FontWeight="SemiBold" Text="{x:Bind Section, Mode=OneWay}" />
+                    <Run Text="  " />
+                    <Run Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{x:Bind Subtitle, Mode=OneWay}" />
+                </TextBlock>
             </Grid>
         </DataTemplate>
 

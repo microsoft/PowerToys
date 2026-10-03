@@ -888,9 +888,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            if (item.IsInteractive)
+            if (item.PrimaryCommand is { Command.IsSet: true } primaryCommand)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(primaryCommand.Command.Model, item.Model));
             }
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)

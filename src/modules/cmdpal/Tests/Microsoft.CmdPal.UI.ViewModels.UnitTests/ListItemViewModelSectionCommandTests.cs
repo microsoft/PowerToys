@@ -4,8 +4,6 @@
 
 using System;
 using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,11 +22,6 @@ public class ListItemViewModelSectionCommandTests
         {
             throw new AssertFailedException($"Unexpected exception from view model: {ex}");
         }
-    }
-
-    private sealed class MessageRecipient
-    {
-        public PerformCommandMessage? Message { get; set; }
     }
 
     [TestMethod]
@@ -50,6 +43,8 @@ public class ListItemViewModelSectionCommandTests
             Assert.AreEqual("Recent, Show more...", viewModel.SectionCommandAccessibleName);
             Assert.AreEqual("Recent, Show more...", viewModel.ToString());
             Assert.AreSame(command, viewModel.SectionCommand?.Model.Unsafe);
+            Assert.AreSame(command, viewModel.PrimaryCommand?.Command.Model.Unsafe);
+            Assert.AreSame(separator, viewModel.PrimaryCommand?.Model.Unsafe);
         }
         finally
         {
@@ -133,31 +128,6 @@ public class ListItemViewModelSectionCommandTests
         }
         finally
         {
-            viewModel.SafeCleanup();
-            GC.KeepAlive(pageContext);
-        }
-    }
-
-    [TestMethod]
-    public void InvokeSectionCommand_SendsCommandWithSeparatorContext()
-    {
-        var command = new NoOpCommand { Name = "Show more..." };
-        var separator = new Separator("Recent", command);
-        var (viewModel, pageContext) = CreateViewModel(separator);
-        var recipient = new MessageRecipient();
-        WeakReferenceMessenger.Default.Register<MessageRecipient, PerformCommandMessage>(recipient, static (r, message) => r.Message = message);
-
-        try
-        {
-            viewModel.InvokeSectionCommandCommand.Execute(null);
-
-            Assert.IsNotNull(recipient.Message);
-            Assert.AreSame(command, recipient.Message.Command.Unsafe);
-            Assert.AreSame(separator, recipient.Message.Context);
-        }
-        finally
-        {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
             viewModel.SafeCleanup();
             GC.KeepAlive(pageContext);
         }

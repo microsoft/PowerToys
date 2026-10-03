@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading;
@@ -63,7 +64,7 @@ public class GridItemsViewModelTests
             Assert.IsTrue(sectionGrid.Groups[0].HasSectionCommand);
             Assert.AreEqual("Show more...", sectionGrid.Groups[0].SectionCommandName);
             Assert.AreEqual("Group, Show more...", sectionGrid.Groups[0].SectionCommandAccessibleName);
-            Assert.IsNotNull(sectionGrid.Groups[0].SectionCommand);
+            Assert.AreSame(command, sectionGrid.Groups[0].Header?.PrimaryCommand?.Command.Model.Unsafe);
 
             sectionGrid.Groups[0].SetSectionCommandSelected(true);
             Assert.IsTrue(sectionGrid.Groups[0].IsSectionCommandSelected);
@@ -380,6 +381,96 @@ public class GridItemsViewModelTests
 
         layout = new GridNavigationLayout([], columns: 4, itemHeight: 100, headerHeight: 36);
         Assert.AreEqual(-1, layout.MoveVertical(-1, down: true, column: 0, wrap: true));
+    });
+
+    [TestMethod]
+    public Task HeaderOffsets_IncludeEmptyGroupsAndMixedHeaderHeights() => OnPresentationThread(() =>
+    {
+        var headerless = Group(5);
+        var emptySection = Group(0, header: true);
+        var separator = new GridItemGroupViewModel(Header(), 0);
+        var section = Group(3, header: true);
+        var emptyHeaderless = Group(0);
+        var trailingSection = Group(0, header: true);
+        var layout = new GridNavigationLayout(
+            [headerless, emptySection, separator, section, emptyHeaderless, trailingSection],
+            columns: 2,
+            itemHeight: 100,
+            group => group.IsSeparator ? 36 : 44);
+
+        Assert.IsFalse(layout.TryGetHeaderOffset(headerless, out _));
+        Assert.IsFalse(layout.TryGetHeaderOffset(emptyHeaderless, out _));
+        Assert.IsFalse(layout.TryGetHeaderOffset(Group(0, header: true), out _));
+        Assert.IsTrue(layout.TryGetHeaderOffset(emptySection, out var emptySectionOffset));
+        Assert.AreEqual(300, emptySectionOffset);
+        Assert.IsTrue(layout.TryGetHeaderOffset(separator, out var separatorOffset));
+        Assert.AreEqual(344, separatorOffset);
+        Assert.IsTrue(layout.TryGetHeaderOffset(section, out var sectionOffset));
+        Assert.AreEqual(380, sectionOffset);
+        Assert.IsTrue(layout.TryGetHeaderOffset(trailingSection, out var trailingOffset));
+        Assert.AreEqual(624, trailingOffset);
+    });
+
+    [TestMethod]
+    public Task PageNavigation_UsesMixedHeaderHeights() => OnPresentationThread(() =>
+    {
+        var separator = new GridItemGroupViewModel(Header(), 0);
+        var layout = new GridNavigationLayout(
+            [Group(4, header: true), separator, Group(4, header: true)],
+            columns: 2,
+            itemHeight: 100,
+            group => group.IsSeparator ? 36 : 44);
+
+        Assert.AreEqual(4, layout.MovePage(0, down: true, column: 0, viewportHeight: 379));
+        Assert.AreEqual(6, layout.MovePage(0, down: true, column: 0, viewportHeight: 380));
+        Assert.AreEqual(2, layout.MovePage(6, down: false, column: 0, viewportHeight: 280));
+        Assert.AreEqual(0, layout.MovePage(6, down: false, column: 0, viewportHeight: 281));
+    });
+
+    [TestMethod]
+    [DataRow(-1.0)]
+    [DataRow(double.NaN)]
+    [DataRow(double.PositiveInfinity)]
+    [DataRow(double.NegativeInfinity)]
+    public Task Navigation_RejectsInvalidConstantHeaderHeightWithoutHeaders(double height) => OnPresentationThread(() =>
+    {
+        GridItemGroupViewModel[][] groups = [[], [Group(1)], [Group(0, header: true)]];
+        foreach (var source in groups)
+        {
+            var exception = Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+                () => _ = new GridNavigationLayout(source, columns: 2, itemHeight: 100, headerHeight: height));
+            Assert.AreEqual("headerHeight", exception.ParamName);
+        }
+    });
+
+    [TestMethod]
+    [DataRow(-1.0)]
+    [DataRow(double.NaN)]
+    [DataRow(double.PositiveInfinity)]
+    [DataRow(double.NegativeInfinity)]
+    public Task Navigation_RejectsInvalidPerGroupHeaderHeight(double height) => OnPresentationThread(() =>
+    {
+        var exception = Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => _ = new GridNavigationLayout([Group(0, header: true)], columns: 2, itemHeight: 100, _ => height));
+        Assert.AreEqual("getHeaderHeight", exception.ParamName);
+    });
+
+    [TestMethod]
+    public Task Navigation_OnlyRequestsHeightsForHeadersAndAllowsZero() => OnPresentationThread(() =>
+    {
+        var section = Group(0, header: true);
+        var requested = new List<GridItemGroupViewModel>();
+        var layout = new GridNavigationLayout([Group(1), section, Group(1)], columns: 2, itemHeight: 100, group =>
+        {
+            requested.Add(group);
+            return 0;
+        });
+
+        CollectionAssert.AreEqual(new[] { section }, requested);
+        Assert.IsTrue(layout.TryGetHeaderOffset(section, out var offset));
+        Assert.AreEqual(100, offset);
+        Assert.AreEqual(1, layout.MoveVertical(0, down: true, column: 0, wrap: false));
+        _ = new GridNavigationLayout([], columns: 2, itemHeight: 100, headerHeight: 0);
     });
 
     private static Task OnPresentationThread(Action action)

@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
@@ -62,6 +63,15 @@ public sealed partial class ListItemsView : UserControl,
     private ListItemViewModel? _lastPushedToVm;
     private ListItemViewModel? _selectedListSectionCommand;
     private GridItemGroupViewModel? _selectedGridSectionCommand;
+
+    private GridItemGroupViewModel? SelectedGridSectionCommand =>
+        ViewModel?.IsGridView == true &&
+        _selectedGridSectionCommand is { HasSectionCommand: true } group &&
+        GridItems.Groups.Contains(group) ? group : null;
+
+    private ListItemViewModel? SelectedCommandItem =>
+        SelectedGridSectionCommand?.Header ?? ItemView.SelectedItem as ListItemViewModel;
+
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
@@ -330,21 +340,11 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
 
-        // A transient null selection can happen during in-place updates.
-        // Page_ItemsUpdated will repair it without clearing the current VM selection.
-        if (li is null)
+        // In-place updates can transiently select null or a structural row; preserve the sticky target.
+        if (li?.IsKeyboardNavigable != true)
         {
-            return;
-        }
-
-        // Plain structural rows never participate in keyboard navigation. A section
-        // command is a distinct logical target even though IListItem.Command is unset.
-        if (!li.IsKeyboardNavigable)
-        {
-            RestoreSelectionAfterNonInteractiveItem(e);
             return;
         }
 
@@ -362,14 +362,8 @@ public sealed partial class ListItemsView : UserControl,
         // is superseded by the user's navigation.
         _forceFirstPending = false;
 
-        // Do not Task.Run (it reorders selection updates). A section command is not
-        // the IListItem primary command, so it must not flow into the command bar.
-        if (!li.IsInteractive)
-        {
-            _lastPushedToVm = null;
-        }
-
-        vm?.UpdateSelectedItemCommand.Execute(li.IsInteractive ? li : null);
+        // Keep command context updates in selection order.
+        PushSelectionToVm();
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)
@@ -378,29 +372,41 @@ public sealed partial class ListItemsView : UserControl,
             ScrollToItem(li);
         }
 
-        AnnounceSelection(li.IsInteractive ? li.Title : $"{li.Section}, {li.SectionCommandName}");
+        AnnounceSelection(li.IsInteractive ? li.Title : li.SectionCommandAccessibleName);
     }
 
-    private void RestoreSelectionAfterNonInteractiveItem(SelectionChangedEventArgs e)
+    private void SectionCommandButton_Click(object sender, RoutedEventArgs e)
     {
-        var previousItem = e.RemovedItems
-            .OfType<ListItemViewModel>()
-            .FirstOrDefault(item => item.IsKeyboardNavigable && ItemView.Items.Contains(item));
-
-        using (SuppressSelectionChangedScope())
+        if (sender is not FrameworkElement element ||
+            GetContextMenuItem(element.DataContext) is not { IsSectionCommandTarget: true } item ||
+            !SelectContextMenuItem(item))
         {
-            if (previousItem is not null)
-            {
-                ItemView.SelectedItem = previousItem;
-            }
-            else
-            {
-                ItemView.SelectedIndex = GetFirstSelectableIndex();
-            }
+            return;
         }
 
-        _scrollOnNextSelectionChange = false;
-        PushSelectionToVm();
+        _forceFirstPending = false;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (sender is Controls.SectionCommandButton { IsPointerInvocation: false } || settings.SingleClickActivates)
+        {
+            ViewModel?.InvokeItemCommand.Execute(item);
+        }
+        else
+        {
+            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        }
+    }
+
+    private void SectionCommandButton_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.SingleClickActivates &&
+            sender is FrameworkElement element &&
+            GetContextMenuItem(element.DataContext) is { IsSectionCommandTarget: true } item &&
+            SelectContextMenuItem(item))
+        {
+            ViewModel?.InvokeItemCommand.Execute(item);
+        }
     }
 
     private void AnnounceSelection(string text)
@@ -447,22 +453,12 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (e.OriginalSource is FrameworkElement element &&
-            element.DataContext is ListItemViewModel { IsInteractive: true } item)
+            GetContextMenuItem(element.DataContext) is { IsKeyboardNavigable: true } item &&
+            SelectContextMenuItem(item))
         {
-            if (ItemView.SelectedItem != item)
-            {
-                _scrollOnNextSelectionChange = true;
-
-                using (SuppressSelectionChangedScope())
-                {
-                    ItemView.SelectedItem = item;
-                }
-            }
-
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
-
             var pos = e.GetPosition(element);
             RequestContextMenuOpen(item, element, pos);
+            e.Handled = true;
         }
     }
 
@@ -551,6 +547,22 @@ public sealed partial class ListItemsView : UserControl,
             _realizedItems.Remove(container);
         }
 
+        if (ReferenceEquals(owner, ItemsList))
+        {
+            container.SetBinding(IsEnabledProperty, new Binding
+            {
+                Source = item,
+                Path = new PropertyPath(nameof(ListItemViewModel.IsKeyboardNavigable)),
+                Mode = BindingMode.OneWay,
+            });
+            container.SetBinding(IsHitTestVisibleProperty, new Binding
+            {
+                Source = item,
+                Path = new PropertyPath(nameof(ListItemViewModel.IsKeyboardNavigable)),
+                Mode = BindingMode.OneWay,
+            });
+        }
+
         var registration = item.BeginRealization();
         if (registration.IsValid)
         {
@@ -596,6 +608,12 @@ public sealed partial class ListItemsView : UserControl,
         {
             realized.Registration.Release();
         }
+
+        if (container is ListViewItem)
+        {
+            container.ClearValue(IsEnabledProperty);
+            container.ClearValue(IsHitTestVisibleProperty);
+        }
     }
 
     private void ReleaseRealizedItems(ListViewBase owner)
@@ -608,12 +626,10 @@ public sealed partial class ListItemsView : UserControl,
 
     private void ReleaseRealizedItems()
     {
-        foreach (var realized in _realizedItems.Values)
+        foreach (var container in _realizedItems.Keys.ToArray())
         {
-            realized.Registration.Release();
+            ReleaseRealizedItem(container);
         }
-
-        _realizedItems.Clear();
     }
 
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
@@ -635,7 +651,11 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     // Message-driven navigation should count as keyboard.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        _focusGridNavigationTarget = false;
+    }
 
     private void SetSectionCommandSelection(ListItemViewModel? listHeader, GridItemGroupViewModel? gridGroup)
     {
@@ -653,15 +673,16 @@ public sealed partial class ListItemsView : UserControl,
         {
             _selectedListSectionCommand?.SetSectionCommandSelected(false);
             _selectedListSectionCommand = listHeader;
-            _selectedListSectionCommand?.SetSectionCommandSelected(true);
         }
 
         if (!ReferenceEquals(_selectedGridSectionCommand, gridGroup))
         {
             _selectedGridSectionCommand?.SetSectionCommandSelected(false);
             _selectedGridSectionCommand = gridGroup;
-            _selectedGridSectionCommand?.SetSectionCommandSelected(true);
         }
+
+        _selectedListSectionCommand?.SetSectionCommandSelected(true);
+        _selectedGridSectionCommand?.SetSectionCommandSelected(true);
     }
 
     private void PushSelectionToVm()
@@ -671,17 +692,9 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        if (ViewModel.IsGridView &&
-            _selectedGridSectionCommand is { HasSectionCommand: true } selectedGridSection &&
-            GridItems.Groups.Contains(selectedGridSection))
-        {
-            _lastPushedToVm = null;
-            _stickySelectedItem = selectedGridSection.Header;
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
-            return;
-        }
-
-        if (ItemView.SelectedItem is not ListItemViewModel li || !li.IsKeyboardNavigable)
+        var selectedGridSection = SelectedGridSectionCommand;
+        var item = SelectedCommandItem;
+        if (item?.IsKeyboardNavigable != true)
         {
             SetSectionCommandSelection(null, null);
             _lastPushedToVm = null;
@@ -689,25 +702,18 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        if (li.IsSectionCommandTarget)
-        {
-            SetSectionCommandSelection(ViewModel.IsGridView ? null : li, null);
-            _lastPushedToVm = null;
-            _stickySelectedItem = li;
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
-            return;
-        }
+        SetSectionCommandSelection(
+            listHeader: !ViewModel.IsGridView && item.IsSectionCommandTarget ? item : null,
+            gridGroup: selectedGridSection);
+        _stickySelectedItem = item;
 
-        SetSectionCommandSelection(null, null);
-
-        if (ReferenceEquals(_lastPushedToVm, li))
+        if (ReferenceEquals(_lastPushedToVm, item))
         {
             return;
         }
 
-        _lastPushedToVm = li;
-        _stickySelectedItem = li;
-        ViewModel.UpdateSelectedItemCommand.Execute(li);
+        _lastPushedToVm = item;
+        ViewModel.UpdateSelectedItemCommand.Execute(item);
     }
 
     public void Receive(NavigateNextCommand message)
@@ -785,25 +791,9 @@ public sealed partial class ListItemsView : UserControl,
 
     public void Receive(ActivateSelectedListItemMessage message)
     {
-        if (ViewModel?.ShowEmptyContent ?? false)
+        if (ViewModel is { } viewModel)
         {
-            ViewModel?.InvokeItemCommand.Execute(null);
-        }
-        else if (ViewModel?.IsGridView == true &&
-                 _selectedGridSectionCommand is { HasSectionCommand: true, Header: not null } selectedGridSection)
-        {
-            selectedGridSection.Header.InvokeSectionCommandCommand.Execute(null);
-        }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
-        {
-            if (item.IsSectionCommandTarget)
-            {
-                item.InvokeSectionCommandCommand.Execute(null);
-            }
-            else
-            {
-                ViewModel?.InvokeItemCommand.Execute(item);
-            }
+            viewModel.InvokeItemCommand.Execute(viewModel.ShowEmptyContent ? null : SelectedCommandItem);
         }
     }
 
@@ -813,7 +803,7 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
         }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
+        else if (SelectedCommandItem is { } item)
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
         }
@@ -1485,15 +1475,28 @@ public sealed partial class ListItemsView : UserControl,
             return true;
         }
 
+        if (!forceFirstItem && vm.IsGridView && !selectedGridSectionIsCurrent &&
+            _stickySelectedItem is { IsSectionCommandTarget: true } stickyHeader &&
+            GridItems.Groups.FirstOrDefault(group => ReferenceEquals(group.Header, stickyHeader) && group.HasSectionCommand) is { } restoredGroup)
+        {
+            SelectGridSectionCommand(restoredGroup, 0, ensureSelectionVisible, announceSelection: false);
+            _forceFirstPending = false;
+            return true;
+        }
+
         if (vm.IsGridView && GridItems.ItemCount == 0 && firstGridSectionCommand is not null)
         {
             if (forceFirstItem || !selectedGridSectionIsCurrent)
             {
-                SelectGridSectionCommand(firstGridSectionCommand, 0);
+                SelectGridSectionCommand(firstGridSectionCommand, 0, announceSelection: false);
             }
             else
             {
                 PushSelectionToVm();
+                if (ensureSelectionVisible)
+                {
+                    ScrollGridToSectionCommand(selectedGridSection!);
+                }
             }
 
             _forceFirstPending = false;
@@ -1524,10 +1527,10 @@ public sealed partial class ListItemsView : UserControl,
 
         var shouldUpdateSelection = forceFirstItem;
 
-        if (!shouldUpdateSelection)
+        if (!shouldUpdateSelection && !selectedGridSectionIsCurrent)
         {
             // Check if selection needs repair (item gone, null, or separator).
-            if (ItemView.SelectedItem is null && !selectedGridSectionIsCurrent)
+            if (ItemView.SelectedItem is null)
             {
                 shouldUpdateSelection = true;
             }
@@ -1661,27 +1664,17 @@ public sealed partial class ListItemsView : UserControl,
         var (item, element) = e.OriginalSource switch
         {
             // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
-            SelectorItem selectorItem => (ItemView.ItemFromContainer(selectorItem) as ListItemViewModel, selectorItem),
+            SelectorItem selectorItem => (GetContextMenuItem(ItemView.ItemFromContainer(selectorItem)) ?? GetContextMenuItem(selectorItem.DataContext), selectorItem),
 
             // caused by right-click on the ListViewItem
-            FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
+            FrameworkElement frameworkElement => (GetContextMenuItem(frameworkElement.DataContext), frameworkElement),
 
             _ => (null, null),
         };
 
-        if (item is null || element is null || !item.IsInteractive)
+        if (item is null || element is null || !item.IsKeyboardNavigable || !SelectContextMenuItem(item))
         {
             return;
-        }
-
-        if (ItemView.SelectedItem != item)
-        {
-            _scrollOnNextSelectionChange = true;
-
-            using (SuppressSelectionChangedScope())
-            {
-                ItemView.SelectedItem = item;
-            }
         }
 
         if (!e.TryGetPosition(element, out var pos))
@@ -1689,9 +1682,37 @@ public sealed partial class ListItemsView : UserControl,
             pos = new(0, element.ActualHeight);
         }
 
-        ViewModel?.UpdateSelectedItemCommand.Execute(item);
         RequestContextMenuOpen(item, element, pos);
         e.Handled = true;
+    }
+
+    private static ListItemViewModel? GetContextMenuItem(object? context) => context switch
+    {
+        ListItemViewModel item => item,
+        GridItemGroupViewModel { HasSectionCommand: true } group => group.Header,
+        _ => null,
+    };
+
+    private bool SelectContextMenuItem(ListItemViewModel item)
+    {
+        if (ViewModel?.IsGridView == true && item.IsSectionCommandTarget)
+        {
+            var group = GridItems.Groups.FirstOrDefault(group => ReferenceEquals(group.Header, item));
+            return group is not null && SelectGridSectionCommand(group, 0);
+        }
+
+        if (!ReferenceEquals(ItemView.SelectedItem, item))
+        {
+            _scrollOnNextSelectionChange = true;
+            using (SuppressSelectionChangedScope())
+            {
+                ItemView.SelectedItem = item;
+            }
+        }
+
+        SetSectionCommandSelection(item.IsSectionCommandTarget ? item : null, null);
+        PushSelectionToVm();
+        return true;
     }
 
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
@@ -1703,6 +1724,7 @@ public sealed partial class ListItemsView : UserControl,
     private void TrackPointerInput(object sender, PointerRoutedEventArgs e)
     {
         _lastInputSource = InputSource.Pointer;
+        _focusGridNavigationTarget = false;
     }
 
     private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -1711,6 +1733,25 @@ public sealed partial class ListItemsView : UserControl,
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
             _lastInputSource = InputSource.Keyboard;
+            if (ViewModel?.IsGridView == true)
+            {
+                var modifiers = KeyModifiers.GetCurrent();
+                if (e.Key == VirtualKey.Enter || modifiers.None)
+                {
+                    e.Handled = true;
+
+                    // Use the search box's logical activation while grid focus catches up.
+                    if (modifiers.None)
+                    {
+                        Receive(new ActivateSelectedListItemMessage());
+                    }
+                    else if (modifiers.OnlyCtrl)
+                    {
+                        Receive(new ActivateSecondaryCommandMessage());
+                    }
+                }
+            }
+
             return;
         }
 
@@ -1875,7 +1916,7 @@ public sealed partial class ListItemsView : UserControl,
         // Ignore stale requests so rapid selection changes or cancelled opens
         // can't resurrect an old context menu on the wrong item.
         if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
-            !ReferenceEquals(ItemView.SelectedItem, item) ||
+            !ReferenceEquals(SelectedCommandItem, item) ||
             !IsContextMenuAnchorCurrent(item, element))
         {
             // Complete the request so its hydration listener is detached.
@@ -1891,7 +1932,7 @@ public sealed partial class ListItemsView : UserControl,
             () =>
             {
                 if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
-                    !ReferenceEquals(ItemView.SelectedItem, item) ||
+                    !ReferenceEquals(SelectedCommandItem, item) ||
                     !IsContextMenuAnchorCurrent(item, element))
                 {
                     return;
@@ -1919,7 +1960,9 @@ public sealed partial class ListItemsView : UserControl,
             return false;
         }
 
-        var anchorItem = element is SelectorItem container ? ItemView.ItemFromContainer(container) : element.DataContext;
+        var anchorItem = element is SelectorItem container
+            ? GetContextMenuItem(ItemView.ItemFromContainer(container)) ?? GetContextMenuItem(element.DataContext)
+            : GetContextMenuItem(element.DataContext);
         var scrollViewer = CurrentScrollViewer;
         var viewport = (FrameworkElement?)scrollViewer ?? ItemView;
         var viewportWidth = scrollViewer?.ViewportWidth ?? ItemView.ActualWidth;

@@ -4,16 +4,14 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
+[WinRT.GeneratedBindableCustomProperty([nameof(IsKeyboardNavigable)], [])]
 public partial class ListItemViewModel : CommandItemViewModel
 {
     private const int MaxVisibleTags = 3;
@@ -52,7 +50,9 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public bool IsKeyboardNavigable => IsInteractive || IsSectionCommandTarget;
 
-    public bool IsSectionCommandSelected { get; private set; }
+    private bool _isSectionCommandSelected;
+
+    public bool IsSectionCommandSelected => _isSectionCommandSelected && IsSectionCommandTarget;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -118,7 +118,8 @@ public partial class ListItemViewModel : CommandItemViewModel
         UpdateTags(li.Tags);
         Section = li.Section ?? string.Empty;
         Type = EvaluateType();
-        UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
+        UpdateSectionPrimaryCommand();
+        UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable), nameof(IsSectionCommandSelected));
 
         UpdateAccessibleName();
     }
@@ -181,20 +182,14 @@ public partial class ListItemViewModel : CommandItemViewModel
             case nameof(model.Section):
                 Section = model.Section ?? string.Empty;
                 Type = EvaluateType();
-                UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
-                if (!IsSectionCommandTarget)
-                {
-                    SetSectionCommandSelected(false);
-                }
+                UpdateSectionPrimaryCommand();
+                UpdateProperty(nameof(Section), nameof(SectionCommandAccessibleName), nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable), nameof(IsSectionCommandSelected));
 
                 break;
             case nameof(model.Command):
                 Type = EvaluateType();
-                UpdateProperty(nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable));
-                if (!IsSectionCommandTarget)
-                {
-                    SetSectionCommandSelected(false);
-                }
+                UpdateSectionPrimaryCommand();
+                UpdateProperty(nameof(Type), nameof(IsInteractive), nameof(IsSectionCommandTarget), nameof(IsKeyboardNavigable), nameof(IsSectionCommandSelected));
 
                 break;
             case nameof(SectionCommand):
@@ -239,23 +234,13 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public void SetSectionCommandSelected(bool value)
     {
-        value &= IsSectionCommandTarget;
-        if (IsSectionCommandSelected == value)
+        if (_isSectionCommandSelected == value)
         {
             return;
         }
 
-        IsSectionCommandSelected = value;
+        _isSectionCommandSelected = value;
         UpdateProperty(nameof(IsSectionCommandSelected));
-    }
-
-    [RelayCommand]
-    private void InvokeSectionCommand()
-    {
-        if (_sectionCommand?.Model.Unsafe is not null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(_sectionCommand.Model, Model));
-        }
     }
 
     private void UpdateSectionCommand(IDictionary<string, object?>? properties)
@@ -279,6 +264,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         var previous = _sectionCommand;
         _sectionCommand = replacement;
+        UpdateSectionPrimaryCommand();
         if (previous is not null)
         {
             previous.PropertyChanged -= SectionCommand_PropertyChanged;
@@ -291,28 +277,37 @@ public partial class ListItemViewModel : CommandItemViewModel
             nameof(HasSectionCommand),
             nameof(SectionCommandAccessibleName),
             nameof(IsSectionCommandTarget),
-            nameof(IsKeyboardNavigable));
-        if (!IsSectionCommandTarget)
-        {
-            SetSectionCommandSelected(false);
-        }
+            nameof(IsKeyboardNavigable),
+            nameof(IsSectionCommandSelected));
     }
 
     private void SectionCommand_PropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName == nameof(CommandViewModel.Name))
+        if (IsCleanedUp || !ReferenceEquals(sender, _sectionCommand))
         {
+            return;
+        }
+
+        if (args.PropertyName == nameof(CommandViewModel.Icon))
+        {
+            UpdateSectionPrimaryCommand();
+        }
+        else if (args.PropertyName == nameof(CommandViewModel.Name))
+        {
+            UpdateSectionPrimaryCommand();
             UpdateProperty(
                 nameof(SectionCommandName),
                 nameof(HasSectionCommand),
                 nameof(SectionCommandAccessibleName),
                 nameof(IsSectionCommandTarget),
-                nameof(IsKeyboardNavigable));
-            if (!IsSectionCommandTarget)
-            {
-                SetSectionCommandSelected(false);
-            }
+                nameof(IsKeyboardNavigable),
+                nameof(IsSectionCommandSelected));
         }
+    }
+
+    private void UpdateSectionPrimaryCommand()
+    {
+        SetPrimaryCommandOverride(IsSectionCommandTarget ? _sectionCommand : null);
     }
 
     private void AddShowDetailsCommands()
