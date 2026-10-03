@@ -45,6 +45,7 @@ extern "C"
     __declspec(dllexport) void* CreateMappingConfiguration();
     __declspec(dllexport) void DestroyMappingConfiguration(void* config);
     __declspec(dllexport) bool LoadMappingSettings(void* config);
+    __declspec(dllexport) MappingConfigurationLoadResult LoadMappingSettingsForEditor(void* config);
     __declspec(dllexport) bool MappingSettingsFileExists(void* config);
     __declspec(dllexport) bool MappingConfigurationNameWasResolved(void* config);
     __declspec(dllexport) wchar_t* GetMappingConfigurationName(void* config);
@@ -94,6 +95,15 @@ extern "C"
 
     __declspec(dllexport) bool IsShortcutIllegal(const wchar_t* shortcutKeys);
     __declspec(dllexport) bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort);
+
+    // Overlap checks, exposed so the managed editor can reuse the classic editor's rules instead of
+    // reimplementing them. Both return a ShortcutErrorType value (0 == NoError).
+    __declspec(dllexport) int DoKeysOverlap(int first, int second);
+    __declspec(dllexport) int DoShortcutsOverlap(const wchar_t* first, const wchar_t* second);
+
+    // Maps a side-specific modifier onto the combined key it belongs to (LCtrl -> Ctrl); returns
+    // the key itself for anything else.
+    __declspec(dllexport) int GetCombinedKey(int keyCode);
 
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyAloneRemap(void* config, int originalKey);

@@ -62,8 +62,44 @@ void KeyboardManagerState::SetCurrentUIWindow(HWND windowHandle)
 void KeyboardManagerState::SetUIState(KeyboardManagerUIState state, HWND windowHandle)
 {
     std::lock_guard<std::mutex> lock(uiState_mutex);
+    captureState.Reset();
     uiState = state;
     SetCurrentUIWindow(windowHandle);
+}
+
+bool KeyboardManagerState::ShouldSkipKeyboardEvent(const LowlevelKeyboardEvent& data)
+{
+    std::scoped_lock lock(uiState_mutex, currentUIWindow_mutex);
+    const bool recording = (uiState == KeyboardManagerUIState::DetectSingleKeyRemapWindowActivated ||
+                            uiState == KeyboardManagerUIState::DetectShortcutWindowInEditKeyboardWindowActivated ||
+                            uiState == KeyboardManagerUIState::DetectShortcutWindowActivated) &&
+                           currentUIWindow == GetForegroundWindow();
+    if (!recording)
+    {
+        // A key pressed while the recording window is out of focus belongs to the
+        // engine too, so returning to the recorder must drain that gesture again.
+        captureState.Reset();
+        return false;
+    }
+
+    bool engineReady = captureState.IsReady();
+    if (!engineReady)
+    {
+        // Do not retain the handle: an exited engine must not leave a stale busy
+        // event alive in the editor. Missing engine means recording can start.
+        HANDLE readyEvent = OpenEventW(SYNCHRONIZE, false, KeyboardManagerConstants::EditorCaptureReadyEventName.c_str());
+        if (readyEvent)
+        {
+            engineReady = WaitForSingleObject(readyEvent, 0) == WAIT_OBJECT_0;
+            CloseHandle(readyEvent);
+        }
+        else
+        {
+            engineReady = GetLastError() == ERROR_FILE_NOT_FOUND;
+        }
+    }
+
+    return !captureState.ShouldCapture(data, engineReady);
 }
 
 // Function to reset the UI state members

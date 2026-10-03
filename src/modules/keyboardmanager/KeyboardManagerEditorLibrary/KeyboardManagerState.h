@@ -3,6 +3,7 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/interop/keyboard_layout.h>
 
+#include <keyboardmanager/common/EditorCaptureState.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
 
@@ -51,6 +52,9 @@ namespace KBMEditor
         // State variable used to store which UI window is currently active that requires interaction with the hook
         KeyboardManagerUIState uiState;
         std::mutex uiState_mutex;
+
+        // Protected by uiState_mutex and reset when a recording session ends.
+        EditorCaptureState captureState;
 
         // Window handle for the current UI window which is active. Should be set to nullptr if UI is deactivated
         HWND currentUIWindow;
@@ -112,6 +116,9 @@ namespace KBMEditor
 
         // Function to set the UI state. When a window is activated, the handle to the window can be passed in the windowHandle argument.
         void SetUIState(KeyboardManagerUIState state, HWND windowHandle = nullptr);
+
+        // Pass through prior gestures and injected output before any recording backend handles them.
+        bool ShouldSkipKeyboardEvent(const LowlevelKeyboardEvent& data);
 
         // Function to set the textblock of the detect shortcut UI so that it can be accessed by the hook
         void ConfigureDetectShortcutUI(const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock1, const winrt::Windows::UI::Xaml::Controls::StackPanel& textBlock2);

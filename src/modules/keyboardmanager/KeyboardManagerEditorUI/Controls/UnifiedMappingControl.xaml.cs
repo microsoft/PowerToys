@@ -33,9 +33,12 @@ namespace KeyboardManagerEditorUI.Controls
 
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
+        private readonly HashSet<VirtualKey> _recordedKeysDown = new();
 
         private bool _disposed;
         private bool _internalUpdate;
+        private bool _updatingKeys;
+        private bool _recordingTriggerKeys;
 
         private KeyInputMode _currentInputMode = KeyInputMode.OriginalKeys;
 
@@ -150,18 +153,22 @@ namespace KeyboardManagerEditorUI.Controls
 
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
+            ConditionComboBox.SelectionChanged += (_, _) => RaiseValidationStateChanged();
 
             _triggerKeys.CollectionChanged += (_, _) =>
             {
-                UpdatePlaceholderVisibility();
-                UpdateConditionVisibility();
-                RaiseValidationStateChanged();
+                if (!_updatingKeys)
+                {
+                    RefreshKeyState();
+                }
             };
 
             _actionKeys.CollectionChanged += (_, _) =>
             {
-                UpdatePlaceholderVisibility();
-                RaiseValidationStateChanged();
+                if (!_updatingKeys)
+                {
+                    RefreshKeyState();
+                }
             };
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
@@ -233,6 +240,10 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void TriggerKeyToggleBtn_Unchecked(object sender, RoutedEventArgs e)
         {
+            _recordingTriggerKeys = false;
+            _recordedKeysDown.Clear();
+            UpdateAppSpecificCheckBoxState();
+
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
                 CleanupKeyboardHook();
@@ -372,8 +383,11 @@ namespace KeyboardManagerEditorUI.Controls
                         return;
                     }
 
-                    _triggerKeys[index] = e.NewKeyName;
-                    HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                    UpdateKeys(() =>
+                    {
+                        _triggerKeys[index] = e.NewKeyName;
+                        HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                    });
                 }
             }
         }
@@ -400,8 +414,11 @@ namespace KeyboardManagerEditorUI.Controls
                         return;
                     }
 
-                    _actionKeys[index] = e.NewKeyName;
-                    HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
+                    UpdateKeys(() =>
+                    {
+                        _actionKeys[index] = e.NewKeyName;
+                        HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
+                    });
                 }
             }
         }
@@ -410,11 +427,36 @@ namespace KeyboardManagerEditorUI.Controls
         /// Reverts a key selection by re-inserting the current value via the bound ObservableCollection,
         /// which forces the binding to refresh without breaking the binding expression.
         /// </summary>
-        private static void RevertKeySelection(ObservableCollection<string> keys, int index)
+        private void RevertKeySelection(ObservableCollection<string> keys, int index)
         {
             string current = keys[index];
-            keys.RemoveAt(index);
-            keys.Insert(index, current);
+            UpdateKeys(() =>
+            {
+                keys.RemoveAt(index);
+                keys.Insert(index, current);
+            });
+        }
+
+        private void UpdateKeys(Action update)
+        {
+            try
+            {
+                _updatingKeys = true;
+                update();
+            }
+            finally
+            {
+                _updatingKeys = false;
+                RefreshKeyState();
+            }
+        }
+
+        private void RefreshKeyState()
+        {
+            UpdatePlaceholderVisibility();
+            UpdateAppSpecificCheckBoxState();
+            UpdateConditionVisibility();
+            RaiseValidationStateChanged();
         }
 
         private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)
@@ -547,23 +589,49 @@ namespace KeyboardManagerEditorUI.Controls
             AppNameTextBox.Visibility = AppSpecificCheckBox.IsChecked == true
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            // Scoping a mapping to an app changes what counts as a duplicate, and an empty app name
+            // is itself an error, so the dialog's state has to be recomputed.
+            RaiseValidationStateChanged();
+        }
+
+        private void AppNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
+            RaiseValidationStateChanged();
         }
 
         private void UpdateAppSpecificCheckBoxState()
         {
-            // Only enable app-specific remapping for shortcuts (multiple keys).
-            bool isShortcut = _triggerKeys.Count > 1;
-            bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
+            // Only enable app-specific remapping for shortcuts (multiple keys). Count only the
+            // non-empty entries: auto-grow appends an empty placeholder after a modifier is picked,
+            // so a raw Count of 2 can still mean a single-key trigger.
+            bool isShortcut = _triggerKeys.Count(k => !string.IsNullOrEmpty(k)) > 1;
 
             try
             {
                 _internalUpdate = true;
 
-                AppSpecificCheckBox.IsEnabled = isShortcut || alreadyChecked;
-                if (!isShortcut && !alreadyChecked)
+                AppSpecificCheckBox.IsEnabled = isShortcut;
+                if (!isShortcut && !_recordingTriggerKeys)
                 {
                     AppSpecificCheckBox.IsChecked = false;
+                    AppNameTextBox.Text = string.Empty;
                     AppNameTextBox.Visibility = Visibility.Collapsed;
+                }
+
+                // Exact match only applies to shortcuts (multiple keys), matching the classic editor.
+                if (ExactMatchCheckBox != null)
+                {
+                    ExactMatchCheckBox.IsEnabled = isShortcut;
+                    if (!isShortcut && !_recordingTriggerKeys)
+                    {
+                        ExactMatchCheckBox.IsChecked = false;
+                    }
                 }
             }
             finally
@@ -695,21 +763,30 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
-                _triggerKeys.Clear();
-                foreach (var keyName in formattedKeys)
+                // A recording arrives one key at a time. Keep shortcut options while only its
+                // first modifier is present; commit their applicability once the gesture finishes.
+                _recordingTriggerKeys = true;
+                if (RemappingHelper.IsModifierKey(key))
                 {
-                    _triggerKeys.Add(keyName);
+                    int keyType = KeyboardManagerInterop.GetKeyType((int)key);
+                    _recordedKeysDown.RemoveWhere(existing => KeyboardManagerInterop.GetKeyType((int)existing) == keyType);
                 }
 
-                UpdateAppSpecificCheckBoxState();
+                _recordedKeysDown.Add(key);
+                SetTriggerKeys(formattedKeys);
             }
             else if (_currentInputMode == KeyInputMode.RemappedKeys)
             {
-                _actionKeys.Clear();
-                foreach (var keyName in formattedKeys)
-                {
-                    _actionKeys.Add(keyName);
-                }
+                SetActionKeys(formattedKeys);
+            }
+        }
+
+        public void OnKeyUp(VirtualKey key, List<string> formattedKeys)
+        {
+            if (_currentInputMode == KeyInputMode.OriginalKeys && _recordedKeysDown.Remove(key) && _recordedKeysDown.Count == 0)
+            {
+                _recordingTriggerKeys = false;
+                RefreshKeyState();
             }
         }
 
@@ -717,6 +794,8 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
+                _recordingTriggerKeys = true;
+                _recordedKeysDown.Clear();
                 _triggerKeys.Clear();
             }
             else
@@ -794,7 +873,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool GetIsAppSpecific()
         {
-            return AppSpecificCheckBox?.IsChecked ?? false;
+            return AppSpecificCheckBox?.IsChecked == true && AppSpecificCheckBox.IsEnabled;
         }
 
         /// <summary>
@@ -814,7 +893,9 @@ namespace KeyboardManagerEditorUI.Controls
         /// Gets the single-key remap condition (Always/Alone). Only meaningful for single-key remaps.
         /// </summary>
         public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>
-            (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox?.SelectedIndex ?? 0);
+            ConditionComboBox?.Visibility == Visibility.Visible
+                ? (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)ConditionComboBox.SelectedIndex
+                : KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition.Always;
 
         /// <summary>
         /// Gets the window visibility (for OpenApp action type).
@@ -861,16 +942,17 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetTriggerKeys(List<string> keys)
         {
-            _triggerKeys.Clear();
-            if (keys != null)
+            UpdateKeys(() =>
             {
-                foreach (var key in keys)
+                _triggerKeys.Clear();
+                if (keys != null)
                 {
-                    _triggerKeys.Add(key);
+                    foreach (var key in keys)
+                    {
+                        _triggerKeys.Add(key);
+                    }
                 }
-            }
-
-            UpdateAppSpecificCheckBoxState();
+            });
         }
 
         /// <summary>
@@ -878,13 +960,33 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionKeys(List<string> keys)
         {
-            _actionKeys.Clear();
-            if (keys != null)
+            UpdateKeys(() =>
             {
-                foreach (var key in keys)
+                _actionKeys.Clear();
+                if (keys != null)
                 {
-                    _actionKeys.Add(key);
+                    foreach (var key in keys)
+                    {
+                        _actionKeys.Add(key);
+                    }
                 }
+            });
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the origin shortcut requires an exact match
+        /// (i.e., no extra modifiers may be pressed). Only meaningful for shortcuts.
+        /// </summary>
+        public bool GetExactMatch() => ExactMatchCheckBox?.IsChecked == true && ExactMatchCheckBox?.IsEnabled == true;
+
+        /// <summary>
+        /// Sets the exact-match state for the origin shortcut.
+        /// </summary>
+        public void SetExactMatch(bool value)
+        {
+            if (ExactMatchCheckBox != null)
+            {
+                ExactMatchCheckBox.IsChecked = value;
             }
         }
 
@@ -1022,6 +1124,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetAppSpecific(bool isAppSpecific, string appName)
         {
+            isAppSpecific &= _triggerKeys.Count(k => !string.IsNullOrEmpty(k)) > 1;
             if (AppSpecificCheckBox != null)
             {
                 AppSpecificCheckBox.IsChecked = isAppSpecific;
@@ -1164,6 +1267,8 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void Reset()
         {
+            _recordingTriggerKeys = false;
+            _recordedKeysDown.Clear();
             _triggerKeys.Clear();
             _actionKeys.Clear();
 
@@ -1232,6 +1337,12 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 AppSpecificCheckBox.IsChecked = false;
                 AppSpecificCheckBox.IsEnabled = false;
+            }
+
+            if (ExactMatchCheckBox != null)
+            {
+                ExactMatchCheckBox.IsChecked = false;
+                ExactMatchCheckBox.IsEnabled = false;
             }
 
             // Reset app combo boxes
