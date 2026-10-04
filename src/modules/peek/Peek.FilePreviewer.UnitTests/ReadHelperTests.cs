@@ -101,10 +101,9 @@ namespace Peek.FilePreviewer.UnitTests
                 () => ReadHelper.Read(_tempFilePath, ReadHelper.MaxReadableFileSizeBytes, cts.Token));
         }
 
-        // Larger than the 64 KB charset-detection sample: the body must still be decoded to EOF,
-        // not just the sampled prefix.
+        // Larger than the read buffers: the body must still be decoded to EOF.
         [TestMethod]
-        public async Task Read_FileLargerThanCharsetSample_ShouldReturnFullContent()
+        public async Task Read_LargeFile_ShouldReturnFullContent()
         {
             string expected = new string('a', 200_000);
             File.WriteAllText(_tempFilePath, expected, Encoding.UTF8);
@@ -114,8 +113,8 @@ namespace Peek.FilePreviewer.UnitTests
             Assert.AreEqual(expected, content);
         }
 
-        // File larger than the sample, non-UTF-8 encoding identified from a BOM in the sampled prefix:
-        // the streamed decode must honour that encoding and strip the BOM for the whole body.
+        // Large file with a non-UTF-8 encoding identified from a BOM: the streamed decode must honour
+        // that encoding and strip the BOM for the whole body.
         [TestMethod]
         public async Task Read_LargeUtf16FileWithBom_ShouldDecodeFullContent()
         {
@@ -127,13 +126,39 @@ namespace Peek.FilePreviewer.UnitTests
             Assert.AreEqual(expected, content);
         }
 
-        // File larger than the sample, dense non-ASCII UTF-8 (no BOM) in the sampled prefix: detection
-        // should pick UTF-8 and every multi-byte character must survive the streamed decode.
+        // Large file with dense non-ASCII UTF-8 (no BOM) at the start: detection should pick UTF-8 and
+        // every multi-byte character must survive the streamed decode.
         [TestMethod]
         public async Task Read_LargeUtf8FileNoBom_ShouldDecodeCorrectly()
         {
             string prefix = string.Concat(Enumerable.Repeat("café résumé naïve piñata ", 400));
             string expected = prefix + new string('x', 200_000);
+            File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            string content = await ReadHelper.Read(_tempFilePath);
+
+            Assert.AreEqual(expected, content);
+        }
+
+        // Regression: a BOM-less UTF-8 file that is pure ASCII for its first 64 KB must not be detected as us-ascii,
+        // which would turn the later non-ASCII characters into question marks.
+        [TestMethod]
+        public async Task Read_Utf8NoBomWithNonAsciiAfterAsciiPrefix_ShouldDecodeCorrectly()
+        {
+            string expected = new string('a', 65_536) + "\n你好，世界。 café résumé naïve piñata";
+            File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+
+            string content = await ReadHelper.Read(_tempFilePath);
+
+            Assert.AreEqual(expected, content);
+        }
+
+        // Regression: a BOM-less UTF-8 file whose first multi-byte character straddles the 64 KB mark must not be
+        // detected as iso-8859-1 from a truncated sequence, which would produce mojibake.
+        [TestMethod]
+        public async Task Read_Utf8NoBomWithMultiByteCharStraddling64KB_ShouldDecodeCorrectly()
+        {
+            string expected = new string('a', 65_535) + "你好，世界。 café résumé naïve piñata";
             File.WriteAllText(_tempFilePath, expected, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
             string content = await ReadHelper.Read(_tempFilePath);

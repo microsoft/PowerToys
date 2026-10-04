@@ -19,12 +19,6 @@ namespace Peek.FilePreviewer.Previewers
         // can cause a large memory spike. The user-configurable limit lives in Peek preview settings.
         public const long MaxReadableFileSizeBytes = 10 * 1024 * 1024; // 10 MB
 
-        // Prefix size fed to the charset detector. Sampling keeps detection (and its scan) bounded
-        // regardless of file size; a file that is plain ASCII for its first CharsetSampleSizeBytes but
-        // carries non-ASCII content only later could be mis-detected, a trade-off that matches how
-        // editors and tools like git sniff encoding.
-        private const int CharsetSampleSizeBytes = 64 * 1024;
-
         public static async Task<string> Read(string path, long maxReadableFileSizeBytes = MaxReadableFileSizeBytes, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -35,13 +29,11 @@ namespace Peek.FilePreviewer.Previewers
                 throw new InvalidOperationException($"File '{path}' exceeds the maximum previewable size of {maxReadableFileSizeBytes} bytes.");
             }
 
-            // Detect the charset from a bounded prefix of the same file stream handle.
-            int sampleSize = (int)Math.Min(fs.Length, CharsetSampleSizeBytes);
-            var sample = new byte[sampleSize];
-            int sampleRead = await fs.ReadAtLeastAsync(sample, sampleSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
-
+            // Detect the charset from the whole file (bounded by maxReadableFileSizeBytes) using the same stream handle.
+            // Detecting from only a prefix can commit to the wrong decoder, e.g. us-ascii when the non-ASCII content
+            // starts later, or iso-8859-1 when the prefix ends partway through a multi-byte UTF-8 character.
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            DetectionResult result = CharsetDetector.DetectFromBytes(sampleRead == sample.Length ? sample : sample[..sampleRead]);
+            DetectionResult result = await CharsetDetector.DetectFromStreamAsync(fs, maxReadableFileSizeBytes, cancellationToken).ConfigureAwait(false);
 
             // Check if the detected encoding is not null; otherwise, default to UTF-8
             Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
