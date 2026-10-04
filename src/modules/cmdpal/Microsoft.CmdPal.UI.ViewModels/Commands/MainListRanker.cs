@@ -15,7 +15,7 @@ internal static class MainListRanker
 {
     // Each tier occupies a band of this width in the packed score. The within-tier score
     // is clamped to this range so it can never spill into an adjacent tier's band. With a
-    // 10M stride and 7 real tiers the maximum packed value (~80M) is far below int.MaxValue.
+    // 10M stride and 8 real tiers the maximum packed value (~90M) is far below int.MaxValue.
     internal const int TierStride = 10_000_000;
 
     // Scale factors that turn signals into within-tier points. These deliberately mirror
@@ -96,6 +96,7 @@ internal static class MainListRanker
     /// such items would be classified <see cref="RankTier.None"/> and silently dropped.</param>
     /// <param name="matchedLexically">Whether any fuzzy signal (title/subtitle/extension) matched.</param>
     /// <param name="isPrioritizedMetadataExact">Whether the query exactly matches metadata that the item contributor prioritizes.</param>
+    /// <param name="isPreferredExecutionAliasMatch">Whether the query exactly matches the current user's selected app execution alias.</param>
     public static RankTier ClassifyTier(
         string query,
         string title,
@@ -103,7 +104,8 @@ internal static class MainListRanker
         bool isAliasExact,
         bool isAliasSubstringMatch,
         bool matchedLexically,
-        bool isPrioritizedMetadataExact = false)
+        bool isPrioritizedMetadataExact = false,
+        bool isPreferredExecutionAliasMatch = false)
     {
         if (isAliasExact)
         {
@@ -114,6 +116,11 @@ internal static class MainListRanker
         if (isPrioritizedMetadataExact && lexicalTier < RankTier.ExactMetadata)
         {
             lexicalTier = RankTier.ExactMetadata;
+        }
+
+        if (isPreferredExecutionAliasMatch && lexicalTier < RankTier.PreferredExecutionAlias)
+        {
+            lexicalTier = RankTier.PreferredExecutionAlias;
         }
 
         // A fallback's title reflects the query, so tier it like anything else. Floor a non-match
@@ -291,10 +298,13 @@ public enum RankTier
     /// <summary>The query exactly matches prioritized metadata, such as an argument-free app's executable filename or stem.</summary>
     ExactMetadata = 5,
 
+    /// <summary>The query exactly matches the app execution alias selected by the current user in Windows.</summary>
+    PreferredExecutionAlias = 6,
+
     /// <summary>The title equals the query (case-insensitive).</summary>
-    ExactTitle = 6,
+    ExactTitle = 7,
 
     /// <summary>The query exactly equals a user-assigned alias. This is the strongest,
     /// most explicit signal of intent.</summary>
-    AliasExact = 7,
+    AliasExact = 8,
 }

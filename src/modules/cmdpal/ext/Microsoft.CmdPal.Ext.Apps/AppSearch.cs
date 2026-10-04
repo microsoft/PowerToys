@@ -18,11 +18,13 @@ public sealed class AppSearch
     private readonly bool _searchPaths;
     private readonly bool _matchExecutableNames;
     private readonly bool _matchExecutableStem;
+    private readonly string? _activeExecutionAliasAumid;
 
     public AppSearch(
         string query,
         IPrecomputedFuzzyMatcher matcher,
-        ExecutableNameMatchMode executableNameMatchMode)
+        ExecutableNameMatchMode executableNameMatchMode,
+        string? activeExecutionAliasAumid = null)
     {
         _matcher = matcher;
         _query = matcher.PrecomputeQuery(query.Trim());
@@ -32,6 +34,7 @@ public sealed class AppSearch
         _matchExecutableNames = executableNameMatchMode != ExecutableNameMatchMode.Disabled;
         _matchExecutableStem = executableNameMatchMode == ExecutableNameMatchMode.FilenameAndStem
             && !Win32Program.IsExecutablePath(_query.Original);
+        _activeExecutionAliasAumid = activeExecutionAliasAumid;
     }
 
     public int QueryLength => _query.Original.Length;
@@ -73,7 +76,10 @@ public sealed class AppSearch
         }
 
         var exactTitleMatch = string.Equals(_query.Original, targets.Title.Original, StringComparison.OrdinalIgnoreCase);
-        return new Match(titleScore, descriptionScore, metadataScore, _minimumMatchScore, exactMetadataMatch, exactExecutableMatch, exactTitleMatch);
+        var preferredExecutionAliasMatch = exactMetadataMatch
+            && !string.IsNullOrEmpty(_activeExecutionAliasAumid)
+            && string.Equals(_activeExecutionAliasAumid, item.App.UserModelId, StringComparison.OrdinalIgnoreCase);
+        return new Match(titleScore, descriptionScore, metadataScore, _minimumMatchScore, exactMetadataMatch, exactExecutableMatch, exactTitleMatch, preferredExecutionAliasMatch);
     }
 
     public readonly record struct Match(
@@ -83,13 +89,14 @@ public sealed class AppSearch
         int MinimumMatchScore,
         bool IsExactMetadataMatch,
         bool IsExactExecutableMatch,
-        bool IsExactTitleMatch)
+        bool IsExactTitleMatch,
+        bool IsPreferredExecutionAliasMatch = false)
     {
         public bool HasMetadataMatch => IsExactMetadataMatch || (MetadataScore > 0 && MetadataScore >= MinimumMatchScore);
 
         public bool HasMatch => TitleScore > 0 || DescriptionScore > 0 || HasMetadataMatch;
 
-        public double LexicalScore => Math.Max(TitleScore, IsExactExecutableMatch ? MetadataScore : (Math.Max(DescriptionScore, MetadataScore) - 4) / 2.0);
+        public double LexicalScore => Math.Max(TitleScore, IsExactExecutableMatch || IsPreferredExecutionAliasMatch ? MetadataScore : (Math.Max(DescriptionScore, MetadataScore) - 4) / 2.0);
     }
 
     internal sealed record Targets(uint SchemaId, FuzzyTarget Title, FuzzyTarget Description, FuzzyTarget[] Metadata, FuzzyTarget[] PathMetadata);

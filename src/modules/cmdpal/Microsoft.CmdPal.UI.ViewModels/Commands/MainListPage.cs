@@ -41,6 +41,12 @@ public sealed partial class MainListPage : DynamicListPage,
     // Throttle for raising items changed events from user input - we want this to feel more responsive, so a shorter throttle.
     private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
 
+    // Longest query to filter fuzzy app matches on. This prevents weak app matches on short queries.
+    private const int ShortQueryAppFilterMaxLength = 2;
+
+    // Minimum title tier for a short query without an explicit metadata or user-alias match.
+    private const RankTier ShortQueryAppFilterMinTier = RankTier.AcronymWordBoundary;
+
     private static readonly IComparer<RoScored<IListItem>> SearchResultComparer = Comparer<RoScored<IListItem>>.Create(static (left, right) =>
     {
         var scoreComparison = right.Score.CompareTo(left.Score);
@@ -102,12 +108,6 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private int AppResultLimit => _appListItemSource.TopLevelResultLimit;
 
-    // Longest query to filter fuzzy app matches on. This prevents weak app matches on short queries.
-    private const int ShortQueryAppFilterMaxLength = 2;
-
-    // Minimum title tier for a short query without an explicit metadata or user-alias match.
-    private const RankTier ShortQueryAppFilterMinTier = RankTier.AcronymWordBoundary;
-
     private InterlockedBoolean _fullRefreshRequested;
     private InterlockedBoolean _forceSearchReapply;
     private InterlockedBoolean _refreshRunning;
@@ -119,6 +119,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private DateTimeOffset _last = DateTimeOffset.UtcNow;
 #endif
 
+    /// <summary>Initializes a new instance of the <see cref="MainListPage"/> class. Creates Home over extension commands, shared Apps snapshots, aliases, preferences, and usage history.</summary>
     public MainListPage(
         TopLevelCommandManager topLevelCommandManager,
         AliasManager aliasManager,
@@ -127,6 +128,8 @@ public sealed partial class MainListPage : DynamicListPage,
         IAppStateService appStateService,
         IAppListItemSource appListItemSource)
     {
+        ArgumentNullException.ThrowIfNull(appListItemSource);
+
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
@@ -136,7 +139,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _aliasManager = aliasManager;
         _appStateService = appStateService;
         _recentCommands = _appStateService.State.RecentCommands;
-        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
+        _appListItemSource = appListItemSource;
         _lastAppSnapshot = _appListItemSource.GetSnapshot();
         _lastAppResultLimit = AppResultLimit;
         _tlcManager = topLevelCommandManager;
@@ -217,7 +220,8 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         var appSnapshot = _appListItemSource.GetSnapshot();
         var appsChanged = !ReferenceEquals(_lastAppSnapshot.VisibleItems, appSnapshot.VisibleItems)
-            || _lastAppSnapshot.ExecutableNameMatchMode != appSnapshot.ExecutableNameMatchMode;
+            || _lastAppSnapshot.ExecutableNameMatchMode != appSnapshot.ExecutableNameMatchMode
+            || !ReferenceEquals(_lastAppSnapshot.ExecutionAliasOwners, appSnapshot.ExecutionAliasOwners);
         var resultLimit = AppResultLimit;
         var resultLimitChanged = _lastAppResultLimit != resultLimit;
         _lastAppResultLimit = resultLimit;
@@ -434,6 +438,8 @@ public sealed partial class MainListPage : DynamicListPage,
     }
 
     // Admission happens during scoring, so rendering and telemetry count the same app results.
+
+    /// <summary>Limits the number of scored apps admitted to Home using the current app result limit.</summary>
     internal static int GetVisibleAppCount(RoScored<IListItem>[]? scoredApps, int appResultLimit)
         => Math.Min(scoredApps?.Length ?? 0, appResultLimit);
 
@@ -761,7 +767,12 @@ public sealed partial class MainListPage : DynamicListPage,
         // Precompute from the snapshotted newSearch, not the live SearchText, which a newer
         // keystroke may already have advanced past.
         var searchQuery = matcher.PrecomputeQuery(newSearch);
-        var appSearch = new AppSearch(newSearch, matcher, appSnapshot.ExecutableNameMatchMode);
+        AppSearch? appSearch = null;
+        if (includeAppsSnapshot)
+        {
+            _appListItemSource.RequestExecutionAliasRefresh();
+            appSearch = new AppSearch(newSearch, matcher, appSnapshot.ExecutableNameMatchMode, appSnapshot.GetExecutionAliasOwner(newSearch));
+        }
 
         // Every installed app belongs to the well-known AllApps provider, so its weight is constant
         // for the whole pass and we resolve it once instead of once per app.
@@ -892,6 +903,17 @@ public sealed partial class MainListPage : DynamicListPage,
     // other item, except a non-match floors to FallbackFloor (see MainListRanker.ClassifyTier) so
     // the handler stays available instead of dropping.
     // Apps require a prepared search carrying the captured query and executable-name policy.
+
+    /// <summary>Scores Home items by relevance tier, then usage history and provider weight within that tier.</summary>
+    /// <param name="query">The precomputed query shared by the current scoring pass.</param>
+    /// <param name="topLevelOrAppItem">The command row being scored.</param>
+    /// <param name="history">The usage history projected to current command IDs.</param>
+    /// <param name="precomputedFuzzyMatcher">The matcher used for non-app text targets.</param>
+    /// <param name="appSearch">The captured Apps search policy; required when scoring an app.</param>
+    /// <param name="providerWeightLookup">Optional provider preference applied within the relevance tier.</param>
+    /// <param name="now">Optional clock value for reproducible recency scoring.</param>
+    /// <param name="app">The underlying app for a wrapped saved command, or null for direct inference.</param>
+    /// <returns>A positive rank for an admitted result, or zero when the item should be excluded.</returns>
     internal static int ScoreTopLevelItem(
         in FuzzyQuery query,
         IListItem topLevelOrAppItem,
@@ -938,6 +960,7 @@ public sealed partial class MainListPage : DynamicListPage,
         bool matchedLexically;
         var exactMetadataMatch = false;
         var exactExecutableMatch = false;
+        var preferredExecutionAliasMatch = false;
         if (app is not null)
         {
             ArgumentNullException.ThrowIfNull(appSearch);
@@ -946,6 +969,7 @@ public sealed partial class MainListPage : DynamicListPage,
             matchedLexically = match.HasMatch;
             exactMetadataMatch = match.IsExactMetadataMatch;
             exactExecutableMatch = match.IsExactExecutableMatch;
+            preferredExecutionAliasMatch = match.IsPreferredExecutionAliasMatch;
         }
         else
         {
@@ -965,7 +989,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // reorder items that already share a tier. ClassifyTier returns None precisely when
         // nothing matched (no lexical, alias, or fallback signal), so this single gate also
         // filters non-matches - no separate pre-check is needed.
-        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, isAliasSubstringMatch, matchedLexically, exactExecutableMatch);
+        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, isAliasSubstringMatch, matchedLexically, exactExecutableMatch, preferredExecutionAliasMatch);
         if (tier == RankTier.None)
         {
             return 0;
@@ -1024,6 +1048,8 @@ public sealed partial class MainListPage : DynamicListPage,
         return finalScore;
     }
 
+    /// <summary>Gets a cached ranking view that merges legacy and current app history, including hidden pins.</summary>
+    /// <remarks>The stored history is not rewritten by this projection.</remarks>
     internal RecentCommandsManager GetAppHistory(RecentCommandsManager history, AppListItemSnapshot appSnapshot)
     {
         var cached = Volatile.Read(ref _appHistoryCache);

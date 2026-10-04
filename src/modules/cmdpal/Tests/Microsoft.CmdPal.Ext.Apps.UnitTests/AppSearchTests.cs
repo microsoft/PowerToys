@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,92 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class AppSearchTests
 {
+    [TestMethod]
+    [DataRow("wt", ExecutableNameMatchMode.FilenameAndStem)]
+    [DataRow("wt", ExecutableNameMatchMode.FilenameOnly)]
+    [DataRow("wt", ExecutableNameMatchMode.Disabled)]
+    [DataRow("wt.exe", ExecutableNameMatchMode.FilenameAndStem)]
+    [DataRow("wt.exe", ExecutableNameMatchMode.FilenameOnly)]
+    [DataRow("WT.EXE", ExecutableNameMatchMode.Disabled)]
+    public void Evaluate_CapturedExecutionAliasOwnerRanksFirst(string query, ExecutableNameMatchMode mode)
+    {
+        var stable = CreateExecutionAliasItem("Terminal", "Terminal_123!App");
+        var preview = CreateExecutionAliasItem("Terminal Preview", "TerminalPreview_123!App");
+        var owner = preview.App.UserModelId.ToUpperInvariant();
+        var matcher = new PrecomputedFuzzyMatcher();
+        var search = new AppSearch(query, matcher, mode, owner);
+        for (var i = 0; i < 5; i++)
+        {
+            Assert.IsTrue(search.Evaluate(stable).HasMatch);
+            Assert.IsTrue(search.Evaluate(preview).HasMatch);
+            Assert.IsFalse(search.Evaluate(stable).IsPreferredExecutionAliasMatch);
+            Assert.IsTrue(search.Evaluate(preview).IsPreferredExecutionAliasMatch);
+        }
+
+        var results = AllAppsPage.FilterAppItems([stable, preview], AllAppsFilters.AllFilterId, search);
+        Assert.AreEqual(2, results.Length);
+        Assert.AreSame(preview, results[0], "The active alias owner must beat ordinary title and metadata tie-breaks.");
+
+        owner = stable.App.UserModelId;
+        Assert.IsTrue(search.Evaluate(preview).IsPreferredExecutionAliasMatch, "One scoring pass must keep one captured owner.");
+        var nextSearch = new AppSearch(query, matcher, mode, owner);
+        results = AllAppsPage.FilterAppItems([stable, preview], AllAppsFilters.AllFilterId, nextSearch);
+        Assert.AreSame(stable, results[0], "The next search must pick up a Windows alias preference change.");
+    }
+
+    [TestMethod]
+    public void Evaluate_UnavailableExecutionAliasKeepsBothClaimantsSearchableWithoutPreference()
+    {
+        var stable = CreateExecutionAliasItem("Terminal", "Terminal_123!App");
+        var preview = CreateExecutionAliasItem("Terminal Preview", "TerminalPreview_123!App");
+        var search = new AppSearch("wt", new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.Disabled);
+
+        Assert.IsTrue(search.Evaluate(stable).HasMatch);
+        Assert.IsTrue(search.Evaluate(preview).HasMatch);
+        Assert.IsFalse(search.Evaluate(stable).IsPreferredExecutionAliasMatch);
+        Assert.IsFalse(search.Evaluate(preview).IsPreferredExecutionAliasMatch);
+        Assert.AreEqual(2, AllAppsPage.FilterAppItems([stable, preview], AllAppsFilters.AllFilterId, search).Length);
+    }
+
+    [TestMethod]
+    public void Evaluate_ExecutionAliasPreferenceRequiresExactMetadata()
+    {
+        var item = CreateExecutionAliasItem("Terminal", "Terminal_123!App");
+        var search = new AppSearch("w", new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem, item.App.UserModelId);
+
+        Assert.IsFalse(search.Evaluate(item).IsPreferredExecutionAliasMatch);
+    }
+
+    [TestMethod]
+    [DataRow("wt")]
+    [DataRow("wt.exe")]
+    [DataRow(" WT.EXE ")]
+    public void ExecutionAliasSnapshot_MatchesFilenameAndStemWithoutIo(string query)
+    {
+        var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase)
+            .Add("wt.exe", "Terminal_123!App");
+        var snapshot = new AppListItemSnapshot([], [], executionAliasOwners: owners);
+
+        Assert.AreEqual("Terminal_123!App", snapshot.GetExecutionAliasOwner(query));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(@"C:\Tools\wt.exe")]
+    [DataRow(@"..\wt.exe")]
+    [DataRow("folder/wt.exe")]
+    [DataRow("wt:exe")]
+    [DataRow("wt*")]
+    public void ExecutionAliasSnapshot_RejectsNonFilenameQueries(string query)
+    {
+        var alias = query.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? query : query + ".exe";
+        var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase).Add(alias, "Untrusted_123!App");
+        var snapshot = new AppListItemSnapshot([], [], executionAliasOwners: owners);
+
+        Assert.IsNull(snapshot.GetExecutionAliasOwner(query));
+    }
+
     [TestMethod]
     [DataRow("LegacyAliasNeedle")]
     [DataRow("ResolvedTargetNeedle")]
@@ -296,6 +383,13 @@ public class AppSearchTests
         Assert.AreSame(item.GetSearchTargets(foldedMatcher), item.GetSearchTargets(foldedMatcher));
 
         Parallel.For(0, 2000, i => Assert.AreEqual(expected[i % 2], searches[i % 2].Evaluate(item)));
+    }
+
+    private static AppListItem CreateExecutionAliasItem(string name, string aumid)
+    {
+        return new(
+            new AppItem { Name = name, UserModelId = aumid, IsPackaged = true, MatchTerms = ["wt.exe"] },
+            useThumbnails: false);
     }
 
     private static AppListItem CreateItem(params string[] terms) => new(

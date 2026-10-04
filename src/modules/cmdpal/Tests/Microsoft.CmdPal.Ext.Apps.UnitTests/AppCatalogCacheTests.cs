@@ -121,7 +121,7 @@ public class AppCatalogCacheTests
                 "packaged:cached",
                 priority: 0,
                 new AppCatalogSourceReference("packaged", "Cached.Package!App"),
-                [],
+                ["edit.exe"],
                 new PackagedAppSnapshot
                 {
                     Name = "Cached package",
@@ -142,6 +142,7 @@ public class AppCatalogCacheTests
             Assert.IsInstanceOfType<PackagedAppSnapshot>(payload);
             Assert.AreEqual("Cached package", payload.ToAppItem().Name);
             Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppSnapshot)payload).Executable);
+            CollectionAssert.Contains(loaded.Sources[0].Items[0].MatchTerms.ToArray(), "edit.exe");
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));
         }
         finally

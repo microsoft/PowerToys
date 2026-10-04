@@ -192,6 +192,7 @@ public partial class App : Application, IDisposable
             AppCatalogFactory.CreateDefault(
                 serviceProvider.GetRequiredService<AllAppsSettings>(),
                 serviceProvider.GetRequiredService<MEL.ILoggerFactory>()));
+        services.AddSingleton<AppExecutionAliasCache>();
         services.AddSingleton<IAppListItemSource, AppListItemSource>();
         services.AddSingleton<AllAppsPage>();
         services.AddSingleton<AllAppsCommandProvider>();

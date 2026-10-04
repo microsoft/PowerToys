@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions;
@@ -15,6 +17,9 @@ namespace Microsoft.CmdPal.Ext.Apps;
 /// </summary>
 public sealed class AppListItemSnapshot
 {
+    private static readonly char[] InvalidAliasNameCharacters = Path.GetInvalidFileNameChars();
+    private static readonly ImmutableDictionary<string, string> EmptyExecutionAliasOwners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase);
+
     private readonly HashSet<AppListItem> _visibleItemSet;
     private readonly Dictionary<string, AppListItem?> _byCommandId;
     private readonly Dictionary<string, AppListItem?> _byNormalizedCommandId;
@@ -35,25 +40,34 @@ public sealed class AppListItemSnapshot
     /// <summary>Gets the exact executable-name priority policy for searches against this snapshot.</summary>
     public ExecutableNameMatchMode ExecutableNameMatchMode { get; }
 
+    /// <summary>Gets the immutable execution-alias owners captured for this publication.</summary>
+    public ImmutableDictionary<string, string> ExecutionAliasOwners { get; }
+
     /// <summary>
-    /// Initializes an atomic visible and hidden list-item snapshot.
+    /// Initializes a new instance of the <see cref="AppListItemSnapshot"/> class. Initializes an atomic visible and hidden list-item snapshot.
     /// </summary>
     /// <param name="visibleItems">Applications eligible for normal user-facing views.</param>
     /// <param name="hiddenItems">Applications explicitly hidden by the user.</param>
     /// <param name="patternHiddenItems">Applications hidden by global exclusion patterns.</param>
     /// <param name="commandAliases">Saved IDs mapped to the current application commands.</param>
     /// <param name="executableNameMatchMode">Exact executable-name priority captured for this publication.</param>
+    /// <param name="executionAliasOwners">Cached execution-alias filename to AUMID preferences.</param>
     public AppListItemSnapshot(
         IReadOnlyList<AppListItem> visibleItems,
         IReadOnlyList<AppListItem> hiddenItems,
         IReadOnlyList<AppListItem>? patternHiddenItems = null,
         IReadOnlyDictionary<string, string>? commandAliases = null,
-        ExecutableNameMatchMode executableNameMatchMode = ExecutableNameMatchMode.FilenameAndStem)
+        ExecutableNameMatchMode executableNameMatchMode = ExecutableNameMatchMode.FilenameAndStem,
+        ImmutableDictionary<string, string>? executionAliasOwners = null)
     {
-        VisibleItems = visibleItems ?? throw new ArgumentNullException(nameof(visibleItems));
-        HiddenItems = hiddenItems ?? throw new ArgumentNullException(nameof(hiddenItems));
+        ArgumentNullException.ThrowIfNull(visibleItems);
+        ArgumentNullException.ThrowIfNull(hiddenItems);
+
+        VisibleItems = visibleItems;
+        HiddenItems = hiddenItems;
         PatternHiddenItems = patternHiddenItems ?? [];
         ExecutableNameMatchMode = executableNameMatchMode;
+        ExecutionAliasOwners = executionAliasOwners ?? EmptyExecutionAliasOwners;
         _visibleItemSet = new(VisibleItems);
         _byCommandId = new(StringComparer.Ordinal);
         _byNormalizedCommandId = new(StringComparer.OrdinalIgnoreCase);
@@ -97,6 +111,38 @@ public sealed class AppListItemSnapshot
                 }
             }
         }
+    }
+
+    private AppListItemSnapshot(AppListItemSnapshot previous, ImmutableDictionary<string, string> executionAliasOwners)
+    {
+        VisibleItems = previous.VisibleItems;
+        HiddenItems = previous.HiddenItems;
+        PatternHiddenItems = previous.PatternHiddenItems;
+        ExecutableNameMatchMode = previous.ExecutableNameMatchMode;
+        ExecutionAliasOwners = executionAliasOwners;
+        _visibleItemSet = previous._visibleItemSet;
+        _byCommandId = previous._byCommandId;
+        _byNormalizedCommandId = previous._byNormalizedCommandId;
+    }
+
+    /// <summary>Looks up a bare alias filename or stem using only this captured ownership map.</summary>
+    public string? GetExecutionAliasOwner(string query)
+    {
+        query = query.Trim();
+        if (query.Length == 0 || query.IndexOfAny(InvalidAliasNameCharacters) >= 0)
+        {
+            return null;
+        }
+
+        var alias = query.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? query : query + ".exe";
+        return ExecutionAliasOwners.GetValueOrDefault(alias);
+    }
+
+    /// <summary>Captures new alias ownership while reusing the existing rows and command-resolution indexes.</summary>
+    /// <returns>This snapshot when the ownership map is unchanged; otherwise, a snapshot sharing its rows.</returns>
+    internal AppListItemSnapshot WithExecutionAliasOwners(ImmutableDictionary<string, string> owners)
+    {
+        return ReferenceEquals(owners, ExecutionAliasOwners) ? this : new AppListItemSnapshot(this, owners);
     }
 
     private void AddCanonicalItems(IReadOnlyList<AppListItem> items)

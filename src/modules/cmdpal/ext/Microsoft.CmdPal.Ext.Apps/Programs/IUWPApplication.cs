@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 /// <summary>
@@ -20,6 +22,9 @@ public interface IUWPApplication
 
     /// <summary>Gets or sets the manifest-declared executable, or an empty string when absent.</summary>
     string Executable { get; set; }
+
+    /// <summary>Gets or sets this application's manifest-declared execution alias filenames for search.</summary>
+    IReadOnlyList<string> ExecutionAliases { get; set; }
 
     /// <summary>Gets or sets a value indicating whether discovery considers the application enabled.</summary>
     bool Enabled { get; set; }
