@@ -138,6 +138,27 @@ public class PackagedAppMetadataTests
     }
 
     [TestMethod]
+    public void CreateCatalogItem_ExecutionAliasesChangeOnlySearchMetadata()
+    {
+        var app = CreateApplication("WindowsTerminal.exe", "Terminal");
+        var original = PackagedAppSource.CreateCatalogItem(app);
+        var aliases = new[] { "wt.exe", "WT.EXE" };
+        app.ExecutionAliases = aliases;
+        var updated = PackagedAppSource.CreateCatalogItem(app);
+        var repeated = PackagedAppSource.CreateCatalogItem(app);
+        aliases[0] = "changed.exe";
+
+        Assert.AreEqual(original.Identity, updated.Identity);
+        Assert.AreEqual(new AppCommand(original.ToAppItem()).Id, new AppCommand(updated.ToAppItem()).Id);
+        CollectionAssert.AreEqual(original.CommandIds.ToArray(), updated.CommandIds.ToArray());
+        CollectionAssert.AreEqual(original.IdentityAliases.ToArray(), updated.IdentityAliases.ToArray());
+        Assert.IsFalse(original.HasSamePersistedContent(updated));
+        Assert.IsTrue(updated.HasSamePersistedContent(repeated), "Repeated discovery must not publish unchanged alias terms.");
+        Assert.AreEqual(1, updated.MatchTerms.Count(term => term.Equals("wt.exe", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(updated.MatchTerms.Contains("changed.exe"));
+    }
+
+    [TestMethod]
     public void CreateCatalogItem_AbsentExecutableRetainsPackagedApplication()
     {
         var app = TestDataHelper.CreateTestUWPApplication("Metadata application", "Contoso.Metadata_123!App");
@@ -174,6 +195,7 @@ public class PackagedAppMetadataTests
             Assert.AreEqual(1, package.Apps.Count, "The real typed manifest reader should retain the application even without Executable.");
             var app = package.Apps.Single();
             Assert.AreEqual(executable, app.Executable);
+            Assert.AreEqual(0, app.ExecutionAliases.Count);
             Assert.AreEqual("Manifest fixture", app.DisplayName);
             Assert.IsTrue(app.Enabled);
             StringAssert.EndsWith(app.UserModelId, "!App");
@@ -193,6 +215,83 @@ public class PackagedAppMetadataTests
         }
     }
 
+    [STATestMethod]
+    [DataRow("uap3", "desktop")]
+    [DataRow("uap5", "uap5")]
+    [DataRow("uap5", "uap8")]
+    public void InitializeAppInfo_ExecutionAliasNameAndStemUseOrdinaryMetadata(string extensionPrefix, string aliasPrefix)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-packaged-alias-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var extensions = CreateExecutionAliasExtension("wt.exe", extensionPrefix, aliasPrefix);
+            File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), CreateManifest("WindowsTerminal.exe", extensions));
+            var package = TestDataHelper.CreateTestUWPApplication("Manifest fixture").Package;
+            package.InitializeAppInfo(root);
+
+            Assert.AreEqual(1, package.Apps.Count);
+            var app = package.Apps.Single();
+            Assert.AreEqual("wt.exe", app.ExecutionAliases.Single());
+            var item = PackagedAppSource.CreateCatalogItem(app);
+            var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+            CollectionAssert.Contains(item.MatchTerms.ToArray(), "wt.exe");
+            Assert.AreEqual(AppIdentity.ForPackaged(app.UserModelId), item.Identity);
+            Assert.AreEqual(app.UserModelId, row.App.UserModelId);
+            Assert.AreEqual(string.Empty, row.App.ExePath);
+            Assert.IsNull(item.Payload.GetCanonicalTargetPath());
+            Assert.AreEqual(0, row.ExecutableNames.Count);
+            foreach (var mode in Enum.GetValues<ExecutableNameMatchMode>())
+            {
+                foreach (var query in new[] { "wt", "wt.exe", "WT.EXE" })
+                {
+                    var match = new AppSearch(query, new PrecomputedFuzzyMatcher(), mode).Evaluate(row);
+                    Assert.IsTrue(match.HasMatch, $"Execution alias '{query}' should match in mode {mode}.");
+                    Assert.IsTrue(match.IsExactMetadataMatch);
+                    Assert.IsFalse(match.IsExactExecutableMatch);
+                }
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [STATestMethod]
+    public void InitializeAppInfo_ExecutionAliasesStayWithTheirDeclaringApplication()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-packaged-alias-scope-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var otherApplication = $"""
+                <Application Id="Helper" Executable="Helper.exe" EntryPoint="CmdPal.Metadata.Helper">
+                  <uap:VisualElements DisplayName="Helper fixture" Description="Helper description"
+                                      BackgroundColor="transparent" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\Logo.png" />
+                  {CreateExecutionAliasExtension("assist.exe", "uap5", "uap5")}
+                </Application>
+                """;
+            File.WriteAllText(
+                Path.Combine(root, "AppxManifest.xml"),
+                CreateManifest("WindowsTerminal.exe", CreateExecutionAliasExtension("wt.exe", "uap3", "desktop"), otherApplication));
+            var package = TestDataHelper.CreateTestUWPApplication("Manifest fixture").Package;
+            package.InitializeAppInfo(root);
+
+            Assert.AreEqual(2, package.Apps.Count);
+            var main = package.Apps.Single(app => app.UserModelId.EndsWith("!App", StringComparison.Ordinal));
+            var helper = package.Apps.Single(app => app.UserModelId.EndsWith("!Helper", StringComparison.Ordinal));
+            Assert.AreEqual("wt.exe", main.ExecutionAliases.Single());
+            Assert.AreEqual("assist.exe", helper.ExecutionAliases.Single());
+            Assert.IsFalse(PackagedAppSource.CreateCatalogItem(main).MatchTerms.Contains("assist.exe"));
+            Assert.IsFalse(PackagedAppSource.CreateCatalogItem(helper).MatchTerms.Contains("wt.exe"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static MockUWPApplication CreateApplication(
         string executable,
         string name = "Metadata application",
@@ -203,7 +302,20 @@ public class PackagedAppMetadataTests
         return app;
     }
 
-    private static string CreateManifest(string executable)
+    private static string CreateExecutionAliasExtension(string alias, string extensionPrefix, string aliasPrefix)
+    {
+        return $"""
+            <Extensions>
+              <{extensionPrefix}:Extension Category="windows.appExecutionAlias" Executable="AliasHost.exe" EntryPoint="Windows.FullTrustApplication">
+                <{extensionPrefix}:AppExecutionAlias>
+                  <{aliasPrefix}:ExecutionAlias Alias="{alias}" />
+                </{extensionPrefix}:AppExecutionAlias>
+              </{extensionPrefix}:Extension>
+            </Extensions>
+            """;
+    }
+
+    private static string CreateManifest(string executable, string extensions = "", string additionalApplications = "")
     {
         var activationAttributes = string.IsNullOrEmpty(executable)
             ? "StartPage=\"default.html\""
@@ -212,7 +324,11 @@ public class PackagedAppMetadataTests
             <?xml version="1.0" encoding="utf-8"?>
             <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
                      xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-                     IgnorableNamespaces="uap">
+                     xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+                     xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+                     xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+                     xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+                     IgnorableNamespaces="uap uap3 uap5 uap8 desktop">
               <Identity Name="CmdPal.MetadataFixture" Publisher="CN=CmdPal" Version="1.0.0.0" ProcessorArchitecture="neutral" />
               <Properties>
                 <DisplayName>Manifest fixture</DisplayName>
@@ -229,7 +345,9 @@ public class PackagedAppMetadataTests
                 <Application Id="App" {activationAttributes}>
                   <uap:VisualElements DisplayName="Manifest fixture" Description="Manifest executable metadata"
                                       BackgroundColor="transparent" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\Logo.png" />
+                  {extensions}
                 </Application>
+                {additionalApplications}
               </Applications>
             </Package>
             """;

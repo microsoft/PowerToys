@@ -81,6 +81,31 @@ public class MainListRankerTests
     }
 
     [TestMethod]
+    [DataRow("python", "Store Python", false, false, RankTier.PreferredExecutionAlias)]
+    [DataRow("python", "Store Python", false, true, RankTier.PreferredExecutionAlias)]
+    [DataRow("python", "python", false, true, RankTier.ExactTitle)]
+    [DataRow("python", "Other App", true, true, RankTier.AliasExact)]
+    public void ClassifyTier_PreferredExecutionAliasKeepsExactTitlesAndAliasesAboveIt(
+        string query,
+        string title,
+        bool aliasExact,
+        bool prioritizedMetadataExact,
+        RankTier expected)
+    {
+        Assert.AreEqual(
+            expected,
+            MainListRanker.ClassifyTier(
+                query,
+                title,
+                isFallback: false,
+                isAliasExact: aliasExact,
+                isAliasSubstringMatch: false,
+                matchedLexically: false,
+                isPrioritizedMetadataExact: prioritizedMetadataExact,
+                isPreferredExecutionAliasMatch: true));
+    }
+
+    [TestMethod]
     public void Pack_HigherTierAlwaysOutranksLowerTier()
     {
         // The core invariant: a higher tier with the WORST possible within-tier score still
@@ -93,6 +118,7 @@ public class MainListRankerTests
             RankTier.AcronymWordBoundary,
             RankTier.Prefix,
             RankTier.ExactMetadata,
+            RankTier.PreferredExecutionAlias,
             RankTier.ExactTitle,
             RankTier.AliasExact,
         };
