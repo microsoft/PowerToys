@@ -39,10 +39,16 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
 
     private InterlockedBoolean _disposed;
 
+    public IContextItem[] MoreCommands { get; }
+
+    /// <summary>Initializes a new instance of the <see cref="AllAppsPage"/> class. Creates the searchable application page and subscribes to catalog and filter changes.</summary>
     public AllAppsPage(IAppListItemSource appListItemSource, IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
-        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
-        _fuzzyMatcherProvider = fuzzyMatcherProvider ?? throw new ArgumentNullException(nameof(fuzzyMatcherProvider));
+        ArgumentNullException.ThrowIfNull(appListItemSource);
+        ArgumentNullException.ThrowIfNull(fuzzyMatcherProvider);
+
+        _appListItemSource = appListItemSource;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _appListItemSource.Changed += OnAppListItemSourceChanged;
         var isSourceLoading = _appListItemSource.IsLoading;
         Name = Resources.all_apps;
@@ -68,8 +74,6 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         ];
     }
 
-    public IContextItem[] MoreCommands { get; }
-
     public override IListItem[] GetItems()
     {
         var appItems = GetFilteredAppItems();
@@ -88,6 +92,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
             : [_refreshingBanner, _allAppsSeparator, .. appItems];
     }
 
+    /// <inheritdoc />
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         if (!_disposed.Value && !string.Equals(oldSearch, newSearch, StringComparison.Ordinal))
@@ -122,7 +127,13 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         var filterId = _filters.CurrentFilterId;
         var snapshot = _appListItemSource.GetSnapshot();
         var query = SearchText;
-        var search = string.IsNullOrWhiteSpace(query) ? null : new AppSearch(query, _fuzzyMatcherProvider.Current, snapshot.ExecutableNameMatchMode);
+        AppSearch? search = null;
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            _appListItemSource.RequestExecutionAliasRefresh();
+            search = new AppSearch(query, _fuzzyMatcherProvider.Current, snapshot.ExecutableNameMatchMode, snapshot.GetExecutionAliasOwner(query));
+        }
+
         if (filterId != AllAppsFilters.HiddenFilterId)
         {
             return FilterAppItems(snapshot.VisibleItems, filterId, search);
@@ -146,7 +157,9 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         return [.. items];
     }
 
-    private static AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId, AppSearch? search)
+    /// <summary>Filters applications by type and, when supplied, ranks matches using the captured search policy.</summary>
+    /// <returns>Matching rows in search order, or their original order when no search is supplied.</returns>
+    internal static AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId, AppSearch? search)
     {
         if (search is null)
         {
@@ -185,6 +198,12 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
                 return titleComparison;
             }
 
+            var aliasComparison = right.Match.IsPreferredExecutionAliasMatch.CompareTo(left.Match.IsPreferredExecutionAliasMatch);
+            if (aliasComparison != 0)
+            {
+                return aliasComparison;
+            }
+
             var executableComparison = right.Match.IsExactExecutableMatch.CompareTo(left.Match.IsExactExecutableMatch);
             if (executableComparison != 0)
             {
@@ -217,10 +236,9 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
     }
 
     private static string GetTitle(bool isRefreshing)
-        => isRefreshing ? $"{Resources.all_apps} ({Resources.refreshing_page_title_suffix})" : Resources.all_apps;
-
-    /// <summary>Associates an application list item with its page-search score.</summary>
-    private readonly record struct ScoredAppListItem(AppListItem Item, AppSearch.Match Match);
+    {
+        return isRefreshing ? $"{Resources.all_apps} ({Resources.refreshing_page_title_suffix})" : Resources.all_apps;
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -234,4 +252,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         _filters.PropChanged -= OnFiltersChanged;
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>Associates an application list item with its page-search score.</summary>
+    private readonly record struct ScoredAppListItem(AppListItem Item, AppSearch.Match Match);
 }

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -258,6 +259,8 @@ public class AppHiddenPinTests : AppsTestBase
         Assert.AreEqual(renamed.Title, provider.GetCommandItem(hidden.Command!.Id)?.Title);
 
         snapshot = new AppListItemSnapshot([], [renamed], executableNameMatchMode: ExecutableNameMatchMode.Disabled);
+        source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
+        snapshot = snapshot.WithExecutionAliasOwners(ImmutableDictionary<string, string>.Empty.Add("hidden.exe", "Family!App"));
         source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
         source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
         Assert.AreEqual(1, notifications);

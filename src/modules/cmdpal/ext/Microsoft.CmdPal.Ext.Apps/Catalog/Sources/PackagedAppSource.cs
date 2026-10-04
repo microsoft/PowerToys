@@ -95,11 +95,11 @@ internal sealed partial class PackagedAppSource : IAppSource
             AppIdentity.ForPackaged(snapshot.UserModelId),
             priority: 0,
             new AppCatalogSourceReference(SourceId, snapshot.UserModelId),
-            CreateMatchTerms(snapshot),
+            CreateMatchTerms(snapshot, app.ExecutionAliases),
             snapshot);
     }
 
-    private static List<string> CreateMatchTerms(PackagedAppSnapshot app)
+    private static List<string> CreateMatchTerms(PackagedAppSnapshot app, IReadOnlyList<string> executionAliases)
     {
         List<string> terms = [];
         var uniqueTerms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -110,6 +110,11 @@ internal sealed partial class PackagedAppSource : IAppSource
         AddMatchTerm(terms, uniqueTerms, app.PackageFullName);
         AddMatchTerm(terms, uniqueTerms, app.PackageLocation);
         AddMatchTerm(terms, uniqueTerms, Path.GetFileName(app.Executable));
+        foreach (var alias in executionAliases)
+        {
+            AddMatchTerm(terms, uniqueTerms, alias);
+        }
+
         return terms;
     }
 
