@@ -302,13 +302,25 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (sender is not ListViewBase itemView || !ReferenceEquals(itemView, ItemView) || ViewModel is not { } viewModel)
         {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
+            return;
+        }
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var item = ListItemDoubleTapTarget.Resolve<DependencyObject, SelectorItem>(
+            e.OriginalSource as DependencyObject,
+            itemView,
+            settings.SingleClickActivates,
+            VisualTreeHelper.GetParent,
+            container => ReferenceEquals(ItemsControl.ItemsControlFromItemContainer(container), itemView)
+                ? itemView.ItemFromContainer(container) as ListItemViewModel
+                : null);
+
+        if (item is not null)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            e.Handled = true;
         }
     }
 
