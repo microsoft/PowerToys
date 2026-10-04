@@ -45,6 +45,15 @@ public class JumboShellIconTests
 
             var pixels = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4];
             bitmap.CopyToBuffer(pixels.AsBuffer());
+
+            using var directIcon = ShellItemImageFactoryIconExtractor.Extract(iconPath, requestedSize);
+            Assert.IsNotNull(directIcon);
+            Assert.AreEqual(directIcon.PixelWidth, bitmap.PixelWidth);
+            Assert.AreEqual(directIcon.PixelHeight, bitmap.PixelHeight);
+            var directPixels = new byte[directIcon.PixelWidth * directIcon.PixelHeight * 4];
+            directIcon.CopyToBuffer(directPixels.AsBuffer());
+            CollectionAssert.AreEqual(directPixels, pixels, "Shortcut hero rendering must preserve the configured icon without adding overlays or changing its frame.");
+
             for (var offset = 0; offset < pixels.Length; offset += 4)
             {
                 var alpha = pixels[offset + 3];

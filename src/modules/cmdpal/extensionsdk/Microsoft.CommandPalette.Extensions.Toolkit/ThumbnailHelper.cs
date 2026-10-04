@@ -259,7 +259,10 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(string path)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
+        if (NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX) == IntPtr.Zero)
+        {
+            return 0;
+        }
 
         var iID_IImageList = IID_IImageList;
         var imageListPtr = IntPtr.Zero;
@@ -281,7 +284,10 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(IntPtr pidl)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL);
+        if (NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL) == IntPtr.Zero)
+        {
+            return 0;
+        }
 
         var iID_IImageList = IID_IImageList;
         var imageListPtr = IntPtr.Zero;

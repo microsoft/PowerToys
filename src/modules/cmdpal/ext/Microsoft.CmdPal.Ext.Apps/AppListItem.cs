@@ -163,6 +163,13 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
                     : AppIconProtocol.CreateJumbo(app.JumboIconPath, app.IcoPath, fallbackPath));
         }
 
+        if (!app.IsPackaged && app.ExePath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
+        {
+            // Let Shell preserve the shortcut's configured icon and native padding.
+            // Direct jumbo resource extraction can enlarge small artwork to 256 pixels.
+            return new IconInfo(AppIconProtocol.CreateJumbo(app.ExePath, app.IcoPath, fallbackPath));
+        }
+
         if (!string.IsNullOrEmpty(app.IcoPath))
         {
             return new IconInfo(

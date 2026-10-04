@@ -93,6 +93,127 @@ public class AppIconProtocolProcessorTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public async Task ForwardSlashIconFileLoadsBeforeTheLaunchPathFallback(bool jumbo)
+    {
+        var iconPath = Path.Combine(Path.GetTempPath(), $"CmdPal-icon-{Guid.NewGuid():N}.ico");
+        try
+        {
+            using (var file = File.Create(iconPath))
+            {
+                System.Drawing.SystemIcons.Information.Save(file);
+            }
+
+            var primary = iconPath.Replace('\\', '/');
+            var fallback = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            var processor = new AppIconProtocolProcessor(
+                ThumbnailHelper.GetThumbnail,
+                ShellItemImageFactoryIconExtractor.Extract);
+
+            using var result = await processor.PrepareAsync(
+                jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
+                64,
+                ElementTheme.Default);
+
+            if (jumbo)
+            {
+                Assert.AreEqual(IconProtocolProcessingResult.ResultKind.PreparedIcon, result.Kind);
+                using var expected = ShellItemImageFactoryIconExtractor.Extract(iconPath, 64);
+                using var actual = result.TakePreparedIcon();
+                Assert.IsNotNull(expected);
+                Assert.IsNotNull(actual);
+                Assert.IsNotNull(actual.SoftwareBitmap);
+                AssertSamePixels(expected, actual.SoftwareBitmap);
+            }
+            else
+            {
+                Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
+                using var expected = await ThumbnailHelper.GetThumbnail(iconPath, false);
+                Assert.IsNotNull(expected);
+                Assert.IsNotNull(result.BitmapStream);
+                var expectedDecoder = await BitmapDecoder.CreateAsync(expected);
+                var actualDecoder = await BitmapDecoder.CreateAsync(result.BitmapStream);
+                using var expectedBitmap = await expectedDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                using var actualBitmap = await actualDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                AssertSamePixels(expectedBitmap, actualBitmap);
+            }
+        }
+        finally
+        {
+            File.Delete(iconPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("uplay://launch/42/0")]
+    [DataRow("shell:AppsFolder")]
+    [DataRow("relative/icons/game.ico")]
+    public async Task PreservesNonFilesystemCandidatesForNativeApisAndFallbacks(string candidate)
+    {
+        foreach (var jumbo in new[] { false, true })
+        {
+            var thumbnailAttempts = new List<string>();
+            var jumboAttempts = new List<string>();
+            var processor = new AppIconProtocolProcessor(
+                (path, _) =>
+                {
+                    thumbnailAttempts.Add(path);
+                    return Task.FromResult<IRandomAccessStream?>(null);
+                },
+                (path, _) =>
+                {
+                    jumboAttempts.Add(path);
+                    return null;
+                });
+
+            using var result = await processor.PrepareAsync(
+                jumbo ? AppIconProtocol.CreateJumbo(candidate) : AppIconProtocol.Create(candidate),
+                64,
+                ElementTheme.Default);
+
+            CollectionAssert.AreEqual(new[] { candidate }, thumbnailAttempts);
+            CollectionAssert.AreEqual(jumbo ? new[] { candidate } : Array.Empty<string>(), jumboAttempts);
+            Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
+            CollectionAssert.AreEqual(new[] { candidate }, result.FallbackIconStrings);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task NormalizesIndexedFilesystemCandidatesBeforeNativeApisAndFallbacks(bool jumbo)
+    {
+        const string primary = "C:/Icons/game.ico,0";
+        const string normalized = "C:\\Icons\\game.ico,0";
+        const string fallback = "uplay://launch/42/0";
+        var thumbnailAttempts = new List<string>();
+        var jumboAttempts = new List<string>();
+        var processor = new AppIconProtocolProcessor(
+            (path, _) =>
+            {
+                thumbnailAttempts.Add(path);
+                return Task.FromResult<IRandomAccessStream?>(null);
+            },
+            (path, _) =>
+            {
+                jumboAttempts.Add(path);
+                return null;
+            });
+
+        using var result = await processor.PrepareAsync(
+            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
+            64,
+            ElementTheme.Default);
+
+        var expected = new[] { normalized, fallback };
+        CollectionAssert.AreEqual(expected, thumbnailAttempts);
+        CollectionAssert.AreEqual(jumbo ? expected : Array.Empty<string>(), jumboAttempts);
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
+        CollectionAssert.AreEqual(expected, result.FallbackIconStrings);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public async Task ExistingFolderEndingInCommaAndNumberIsNotAnIconReference(bool jumbo)
     {
         var path = Path.Combine(Path.GetTempPath(), $"CmdPal-icons-{Guid.NewGuid():N},3");
@@ -180,6 +301,79 @@ public class AppIconProtocolProcessorTests
         Assert.IsNotNull(prepared.SoftwareBitmap);
         Assert.IsTrue(prepared.SoftwareBitmap.PixelWidth > 0);
         Assert.IsTrue(prepared.SoftwareBitmap.PixelHeight > 0);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public async Task ShortcutIconMissPreservesThumbnailFallback(bool jumbo, bool throws)
+    {
+        const string path = @"C:\Apps\Shortcut.LNK";
+        var shortcutAttempts = new List<string>();
+        var thumbnailAttempts = new List<(string Path, bool Jumbo)>();
+        var stream = new InMemoryRandomAccessStream();
+        var processor = new AppIconProtocolProcessor(
+            (candidate, useJumbo) =>
+            {
+                thumbnailAttempts.Add((candidate, useJumbo));
+                return Task.FromResult<IRandomAccessStream?>(stream);
+            },
+            getShortcutIcon: (candidate, size) =>
+            {
+                Assert.AreEqual(32, size);
+                shortcutAttempts.Add(candidate);
+                if (throws)
+                {
+                    throw new IOException("Base-icon extraction failed");
+                }
+
+                return null;
+            });
+
+        using var result = await processor.PrepareAsync(
+            jumbo ? AppIconProtocol.CreateJumbo(path) : AppIconProtocol.Create(path),
+            32,
+            ElementTheme.Default);
+
+        CollectionAssert.AreEqual(jumbo ? Array.Empty<string>() : new[] { path }, shortcutAttempts);
+        CollectionAssert.AreEqual(new[] { (path, jumbo) }, thumbnailAttempts);
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
+        Assert.AreSame(stream, result.BitmapStream);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task MissingShortcutUsesConfiguredIconFallback(bool jumbo)
+    {
+        var shortcutPath = Path.Combine(Path.GetTempPath(), $"CmdPal-missing-shortcut-{Guid.NewGuid():N}.lnk");
+        var fallback = $"{GetShell32DllPath()},1";
+        using var result = await AppIconProtocolProcessor.Instance.PrepareAsync(
+            jumbo ? AppIconProtocol.CreateJumbo(shortcutPath, fallback) : AppIconProtocol.Create(shortcutPath, fallback),
+            32,
+            ElementTheme.Default);
+
+        Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
+        Assert.IsNotNull(result.BitmapStream);
+        using var expectedStream = await ThumbnailHelper.GetThumbnail(fallback, jumbo);
+        Assert.IsNotNull(expectedStream);
+        var expectedDecoder = await BitmapDecoder.CreateAsync(expectedStream);
+        var actualDecoder = await BitmapDecoder.CreateAsync(result.BitmapStream);
+        using var expected = await expectedDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+        using var actual = await actualDecoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+        AssertSamePixels(expected, actual);
+    }
+
+    private static void AssertSamePixels(SoftwareBitmap expected, SoftwareBitmap actual)
+    {
+        Assert.AreEqual(expected.PixelWidth, actual.PixelWidth);
+        Assert.AreEqual(expected.PixelHeight, actual.PixelHeight);
+        var expectedPixels = new byte[expected.PixelWidth * expected.PixelHeight * 4];
+        var actualPixels = new byte[expectedPixels.Length];
+        expected.CopyToBuffer(expectedPixels.AsBuffer());
+        actual.CopyToBuffer(actualPixels.AsBuffer());
+        CollectionAssert.AreEqual(expectedPixels, actualPixels);
     }
 
     private static string GetShell32DllPath()
