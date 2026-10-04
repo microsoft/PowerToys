@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -48,8 +49,14 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
         IncludeFields = true,
     };
 
+    private static readonly JsonSerializerOptions _inputSerializerOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
     private Func<string> _originalLoadSettingsJson;
     private Action<string> _originalSaveSettingsJson;
+    private string _originalRefreshSettingsEventName;
     private string _store;
     private List<string> _saved;
 
@@ -60,6 +67,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
     {
         _originalLoadSettingsJson = ZoomItSettingsFunctionData.LoadSettingsJson;
         _originalSaveSettingsJson = ZoomItSettingsFunctionData.SaveSettingsJson;
+        _originalRefreshSettingsEventName = ZoomItSettingsFunctionData.RefreshSettingsEventName;
         _store = InteropSettingsJson;
         _saved = [];
         ZoomItSettingsFunctionData.LoadSettingsJson = () => _store;
@@ -68,6 +76,8 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
             _saved.Add(json);
             _store = json;
         };
+
+        ZoomItSettingsFunctionData.RefreshSettingsEventName = $"Local\\PowerToysDscTest-ZoomItRefreshSettingsEvent-{Guid.NewGuid()}";
     }
 
     [TestCleanup]
@@ -75,6 +85,7 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
     {
         ZoomItSettingsFunctionData.LoadSettingsJson = _originalLoadSettingsJson;
         ZoomItSettingsFunctionData.SaveSettingsJson = _originalSaveSettingsJson;
+        ZoomItSettingsFunctionData.RefreshSettingsEventName = _originalRefreshSettingsEventName;
     }
 
     [TestMethod]
@@ -215,7 +226,6 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
     {
         // Arrange: stand in for a running ZoomIt instance
         using var refreshEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ZoomItSettingsFunctionData.RefreshSettingsEventName);
-        refreshEvent.Reset();
         var input = CreateInput(properties => properties.BreakTimeout = new IntProperty(25));
 
         // Act
@@ -246,6 +256,6 @@ public sealed class SettingsResourceZoomItModuleTest : BaseDscTest
     {
         var settings = new ZoomItSettings();
         configure(settings.Properties);
-        return JsonSerializer.Serialize(new SettingsResourceObject<ZoomItSettings> { Settings = settings }, new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull });
+        return JsonSerializer.Serialize(new SettingsResourceObject<ZoomItSettings> { Settings = settings }, _inputSerializerOptions);
     }
 }

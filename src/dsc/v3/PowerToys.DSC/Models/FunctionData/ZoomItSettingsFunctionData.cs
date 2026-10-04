@@ -25,9 +25,12 @@ public sealed class ZoomItSettingsFunctionData : BaseFunctionData, ISettingsFunc
 {
     // Named event ZoomIt listens on to reload its settings; see
     // ZOOMIT_REFRESH_SETTINGS_EVENT in shared_constants.h.
-    public const string RefreshSettingsEventName = "Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
+    public const string ZoomItRefreshSettingsEventName = "Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
 
     private const string PropertiesJsonPropertyName = "properties";
+    private const string HotkeyValueJsonPropertyName = "value";
+    private const string HotkeyCodeJsonPropertyName = "code";
+    private const string HotkeyKeyJsonPropertyName = "key";
 
     // Match the options the Settings app uses to read the interop JSON.
     private static readonly JsonSerializerOptions _serializerOptions = new()
@@ -51,6 +54,13 @@ public sealed class ZoomItSettingsFunctionData : BaseFunctionData, ISettingsFunc
     /// ZoomIt settings interop, which writes the registry; tests replace it.
     /// </summary>
     public static Action<string> SaveSettingsJson { get; set; } = json => global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(json);
+
+    /// <summary>
+    /// Gets or sets the name of the event signaled after the settings are
+    /// written. Defaults to the event a running ZoomIt instance listens on;
+    /// tests replace it so they never signal a real ZoomIt instance.
+    /// </summary>
+    public static string RefreshSettingsEventName { get; set; } = ZoomItRefreshSettingsEventName;
 
     /// <inheritdoc/>
     public ISettingsResourceObject Input => _input;
@@ -95,8 +105,8 @@ public sealed class ZoomItSettingsFunctionData : BaseFunctionData, ISettingsFunc
     /// <inheritdoc/>
     public bool TestState()
     {
-        var input = JsonSerializer.SerializeToNode(_input.Settings, _serializerOptions);
-        var output = JsonSerializer.SerializeToNode(_output.Settings, _serializerOptions);
+        var input = WithoutDerivedHotkeyKeys(JsonSerializer.SerializeToNode(_input.Settings, _serializerOptions));
+        var output = WithoutDerivedHotkeyKeys(JsonSerializer.SerializeToNode(_output.Settings, _serializerOptions));
         return JsonNode.DeepEquals(input, output);
     }
 
@@ -145,6 +155,27 @@ public sealed class ZoomItSettingsFunctionData : BaseFunctionData, ISettingsFunc
         }
 
         return desiredNode.Deserialize<ZoomItSettings>(_serializerOptions) ?? desired;
+    }
+
+    /// <summary>
+    /// Removes the key name from every hotkey property. The interop derives
+    /// it from the key code and the current keyboard layout when reading and
+    /// ignores it when writing, so it is not part of the state to compare.
+    /// </summary>
+    private static JsonNode? WithoutDerivedHotkeyKeys(JsonNode? settings)
+    {
+        if (settings?[PropertiesJsonPropertyName] is JsonObject properties)
+        {
+            foreach (var (_, property) in properties)
+            {
+                if (property?[HotkeyValueJsonPropertyName] is JsonObject hotkey && hotkey.ContainsKey(HotkeyCodeJsonPropertyName))
+                {
+                    hotkey.Remove(HotkeyKeyJsonPropertyName);
+                }
+            }
+        }
+
+        return settings;
     }
 
     /// <summary>

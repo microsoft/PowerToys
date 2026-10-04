@@ -61,6 +61,7 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.ShortcutGuide),             CreateModuleFunctionData<ShortcutGuideSettings> },
             { nameof(ModuleType.PowerOCR),                  CreateModuleFunctionData<PowerOcrSettings> },
             { nameof(ModuleType.Workspaces),                CreateModuleFunctionData<WorkspacesSettings> },
+
             // ZoomIt stores its settings in the registry rather than in settings.json
             { nameof(ModuleType.ZoomIt),                    input => new ZoomItSettingsFunctionData(input) },
 
