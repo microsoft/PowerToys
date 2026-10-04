@@ -74,9 +74,13 @@
 
 ### C/C++ Runtime (Hybrid CRT)
 - Native projects link the C runtime as a "Hybrid CRT" (set up in `Cpp.Build.props`): the VC++ runtime and STL (`vcruntime`, `msvcp`) are linked statically (`/MT`, `/MTd`), and the Universal CRT comes from `ucrtbase.dll`, which is part of Windows 10 and later. No VC++ redistributable is needed. Windows App SDK, Windows Terminal and Command Palette use the same model.
-- All modules in a process share one Universal CRT, so process-wide CRT state is shared too. In DLLs that run inside other processes (Explorer, the runner, .NET apps), don't change the C locale (`setlocale`, `std::locale::global`; MSVC's STL also calls `setlocale` while constructing a named `std::locale`) or the CRT environment (`_putenv`). CRT handlers such as `signal` and `_set_invalid_parameter_handler` apply to the whole process. Use Win32 APIs such as `GetEnvironmentVariableW`, or the `_l` CRT functions that take an explicit locale.
-- The CRT's copy of the environment isn't updated by `SetEnvironmentVariableW`. Read values that were set with it using `GetEnvironmentVariableW`.
-- A project that uses the DLL CRT (`/MD`) or must keep a private static CRT sets `<EnableHybridCRT>false</EnableHybridCRT>`. The exceptions today are `BackgroundActivatorDLL` (`/MD`) and `PowerRename.FuzzingTest` (ASan). They also include the New+ shell extensions and PowerRename UI, test app and unit tests, which call `std::locale::global`, and `PowerToys.MeasureToolCore`, which installs a `SIGABRT` handler inside the MeasureToolUI process.
+- Every module in a process shares that `ucrtbase.dll`, including WinUI 3 and the .NET runtime. Don't change process-wide CRT state:
+  - Don't call `setlocale` or `std::locale::global`, and don't construct named `std::locale` objects such as `std::locale("")` or `std::locale("de-DE")`. MSVC's STL temporarily calls `setlocale` while it builds them. To use a specific locale, create one with `_create_locale` or `_wcreate_locale` and pass it to the `_l` CRT functions, or call a Win32 NLS API such as `LCMapStringEx` or `GetDateFormatEx` with a locale name.
+  - Don't install CRT handlers such as `signal` or `_set_invalid_parameter_handler` from a DLL. They apply to every module in the process.
+  - Read environment variables with `GetEnvironmentVariableW`. The CRT's copy of the environment is a snapshot, and `SetEnvironmentVariableW` doesn't update it.
+- A project that can't follow these rules yet sets `<EnableHybridCRT>false</EnableHybridCRT>` to keep a private static UCRT, with a comment that says why. The exceptions today:
+  - `PowerRenameUI` (`PowerToys.PowerRename.exe`): PowerRenameLib calls `std::locale::global(std::locale(""))`, which would change the C locale that WinUI 3 uses for functions such as `wcstod` and `swprintf`. `PowerRenameLibUnitTests` and `PowerRenameTest` also opt out, so PowerRenameLib is tested the way it ships.
+  - `PowerToys.MeasureToolCore`: it installs a `SIGABRT` handler, and it's loaded into the MeasureToolUI process.
 - Debug builds link the debug Universal CRT, `ucrtbased.dll`. It's installed with the Windows SDK but not on clean machines. To run PowerToys on a machine without the Windows SDK, such as a clean test VM, use a Release build.
 
 ## Testing Requirements

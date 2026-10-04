@@ -117,10 +117,11 @@
     by the Windows App SDK, Windows Terminal and Command Palette:
     https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md
 
-    Every module in a process now shares one UCRT, so process-wide CRT state (the C locale set by setlocale or
-    std::locale::global, the CRT copy of the environment, signal handlers, ...) is no longer private to a module.
-    Projects that use the DLL CRT, or must keep a private static UCRT, set EnableHybridCRT to false. Projects that
-    set Link IgnoreSpecificDefaultLibraries or AdditionalOptions must keep the inherited %(...) value.
+    Every module in a process shares that ucrtbase.dll, including WinUI 3 and the .NET runtime, so don't change
+    process-wide CRT state: no setlocale, std::locale::global or named std::locale objects (use _create_locale with
+    the _l functions), and no signal or _set_invalid_parameter_handler from a DLL. A project that can't follow this
+    yet sets EnableHybridCRT to false, with a comment that says why (see doc/devdocs/development/guidelines.md).
+    Projects that set Link IgnoreSpecificDefaultLibraries or AdditionalOptions must keep the inherited %(...) value.
   -->
   <PropertyGroup>
     <EnableHybridCRT Condition="'$(EnableHybridCRT)' == ''">true</EnableHybridCRT>
