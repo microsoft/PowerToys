@@ -1,97 +1,200 @@
+<#
+.SYNOPSIS
+    Validates that all *.deps.json files under the target directory reference the same
+    fileVersion for each dll.
+
+.DESCRIPTION
+    Recursively searches for all *.deps.json files under the target directory, and checks
+    that each dll is referenced with the same fileVersion across the solution. The goal is
+    to prevent different versions of the same module being copied into one directory at
+    build time, which can cause build issues.
+
+    If any dll is referenced with different versions, the script will exit with a non-zero
+    exit code and print the dlls and their versions.
+
+    Requires PowerShell 7+ (System.Text.Json).
+
+.PARAMETER targetDir
+    The root directory to search for *.deps.json files.
+
+.OUTPUTS
+    Writes the name of any dlls with mismatched versions, along with the versions and the
+    deps.json files that reference them. Exits with code 1 if any mismatches are found,
+    and with 0 if all dlls are referenced with the same version.
+#>
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$targetDir
 )
 
-# This script will check every deps.json file in the target directory to see if for each dll mentioned,
-#all the deps.json files that mention it will mention the same version.
-# The main goal is to catch when different versions for the same module might be copied to the same directory
-#at build time and might create flaky builds that get the wrong version of the dll sometimes.
+$references = @(
+    'System.Runtime',
+    'System.Collections',
+    'System.Memory',
+    'System.Linq',
+    'System.IO.FileSystem',
+    'System.Threading.Tasks.Parallel',
+    'System.Text.Json'
+)
 
-# A dictionary of dictionaries of lists to save which files reference each version of each dll.
-# Logic is DllName > fileVersion > list with deps.json files that reference it.
-# If for a specific dll there's more than one referenced file version, we have build collisions.
-$referencedFileVersionsPerDll = @{}
-$totalFailures = 0
+if (-not ("DepsJsonAudit" -as [type])) {
+    Add-Type -ReferencedAssemblies $references -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
-Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,EnvironmentVariablesUILib.UnitTests*,*.FuzzTests* | ForEach-Object {
-    # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies.
-    # MouseJump.Common.UnitTests and EnvironmentVariablesUILib.UnitTests are self-contained WinUI (CsWinRT) unit tests:
-    # each bundles its full runtime closure into an isolated tests\<name> output folder, so its private dll copies
-    # cannot collide with product binaries at runtime and are safe to skip in this cross-dependency version check.
-    $depsJsonFullFileName = $_.FullName
+public static class DepsJsonAudit
+{
+    // Name-based excludes. UI/Fuzzer tests are skipped because of Appium.WebDriver dependencies.
+    // MouseJump.Common.UnitTests and EnvironmentVariablesUILib.UnitTests are self-contained WinUI (CsWinRT)
+    // unit tests: each bundles its full runtime closure into an isolated output folder, so its private
+    // dll copies cannot collide with product binaries.
+    private static bool IsExcluded(string path, string name)
+    {
+        var cmp = StringComparison.OrdinalIgnoreCase;
 
-    if ($depsJsonFullFileName -like "*CmdPal*" -or $depsJsonFullFileName -like "*CommandPalette*") {
-        return
+        if (name.IndexOf("UITest", cmp) >= 0 ||
+            name.StartsWith("MouseJump.Common.UnitTests", cmp) ||
+            name.StartsWith("EnvironmentVariablesUILib.UnitTests", cmp) ||
+            name.IndexOf(".FuzzTests", cmp) >= 0)
+        {
+            return true;
+        }
+
+        // CmdPal / CommandPalette are skipped based on the full path.
+        return path.IndexOf("CmdPal", cmp) >= 0 || path.IndexOf("CommandPalette", cmp) >= 0;
     }
 
-    $depsJsonFileName = $_.Name
-    $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json
-
-    # We're doing a breadth first search to look for every runtime object.
-    $iterateThroughEveryField = New-Object System.Collections.Generic.Queue[System.Object]
-    $iterateThroughEveryField.Enqueue($depsJson)
-
-    while($iterateThroughEveryField.Count -gt 0)
+    private static List<KeyValuePair<string, string>> ReadFile(string path)
     {
-        $currentObject = $iterateThroughEveryField.Dequeue();
-        $currentObject.PSObject.Properties | ForEach-Object {
-            if($_.Name -ne 'SyncRoot') {
-                # Skip SyncRoot to avoid looping in array objects.
-                # Care only about objects, not value types.
-                $iterateThroughEveryField.Enqueue($_.Value)
-                if($_.Name -eq 'runtime')
-                {
-                    # Cycle through each dll.
-                    $_.Value.PSObject.Properties | ForEach-Object {
-                        if($_.Name.EndsWith('.dll')) {
-                            $dllName = Split-Path $_.Name -leaf
-                            if([bool]($_.Value.PSObject.Properties.name -match 'fileVersion')) {
-                                $dllFileVersion = $_.Value.fileVersion
-                                if (([string]::IsNullOrEmpty($dllFileVersion) -or ($dllFileVersion -eq '0.0.0.0')) -and $dllName.StartsWith('PowerToys.'))` {
-                                    # After VS 17.11 update some of PowerToys dlls have no fileVersion in deps.json even though the 
-                                    # version is correctly set. This is a workaround to skip our dlls as we are confident that all of
-                                    # our dlls share the same version across the dependencies.
-									# After VS 17.13 these error versions started appearing as 0.0.0.0 so we've added that case to the condition as well.
-                                    continue
-                                }
+        var result = new List<KeyValuePair<string, string>>();
 
-                                # Add the entry to the dictionary of dictionary of lists
-                                if(-Not $referencedFileVersionsPerDll.ContainsKey($dllName)) {
-                                    $referencedFileVersionsPerDll[$dllName] = @{ $dllFileVersion = New-Object System.Collections.Generic.List[System.String] }
-                                } elseif(-Not $referencedFileVersionsPerDll[$dllName].ContainsKey($dllFileVersion)) {
-                                    $referencedFileVersionsPerDll[$dllName][$dllFileVersion] = New-Object System.Collections.Generic.List[System.String]
-                                }
-                                $referencedFileVersionsPerDll[$dllName][$dllFileVersion].Add($depsJsonFileName)
-                            }
+        // File.OpenRead pipes a stream directly to JsonDocument without allocating a byte[] buffer.
+        using (var stream = File.OpenRead(path))
+        using (var doc = JsonDocument.Parse(stream))
+        {
+            if (doc.RootElement.ValueKind != JsonValueKind.Object ||
+                !doc.RootElement.TryGetProperty("targets", out var targets) ||
+                targets.ValueKind != JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            // targets.<tfm>.<package>.runtime.<dll>.fileVersion
+            foreach (var target in targets.EnumerateObject())
+            {
+                if (target.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                foreach (var package in target.Value.EnumerateObject())
+                {
+                    if (package.Value.ValueKind != JsonValueKind.Object ||
+                        !package.Value.TryGetProperty("runtime", out var runtime) ||
+                        runtime.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+
+                    foreach (var entry in runtime.EnumerateObject())
+                    {
+                        if (!entry.Name.EndsWith(".dll", StringComparison.Ordinal))
+                        {
+                            continue;
                         }
+
+                        if (entry.Value.ValueKind != JsonValueKind.Object ||
+                            !entry.Value.TryGetProperty("fileVersion", out var fv))
+                        {
+                            continue;
+                        }
+
+                        string version = fv.ValueKind == JsonValueKind.String ? fv.GetString() : string.Empty;
+                        string dllName = Path.GetFileName(entry.Name);
+
+                        // After VS 17.11 some PowerToys dlls have no fileVersion in deps.json even though the
+                        // version is set correctly; after VS 17.13 they appear as 0.0.0.0. All our dlls share
+                        // one version across dependencies, so skip them.
+                        if ((string.IsNullOrEmpty(version) || version == "0.0.0.0") &&
+                            dllName.StartsWith("PowerToys.", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        result.Add(new KeyValuePair<string, string>(dllName, version));
                     }
                 }
             }
         }
-    }
-}
 
-# Report on the files that are referenced for more than one version.
-$referencedFileVersionsPerDll.keys | ForEach-Object {
-    if($referencedFileVersionsPerDll[$_].Count -gt 1) {
-        $dllName = $_
-        Write-Host $dllName
-        $referencedFileVersionsPerDll[$dllName].keys | ForEach-Object {
-            Write-Host "`t" $_ 
-            $referencedFileVersionsPerDll[$dllName][$_] | ForEach-Object {
-                Write-Host "`t`t" $_
+        return result;
+    }
+
+    // Returns: DllName > fileVersion > deps.json file names that reference it.
+    public static SortedDictionary<string, SortedDictionary<string, List<string>>> Collect(string root)
+    {
+        var options = new EnumerationOptions { RecurseSubdirectories = true };
+        var files = new List<string>();
+        foreach (var f in Directory.EnumerateFiles(root, "*.deps.json", options))
+        {
+            if (!IsExcluded(f, Path.GetFileName(f))) files.Add(f);
+        }
+
+        // Parse in parallel, then merge sequentially in file order so output is deterministic.
+        var perFile = new List<KeyValuePair<string, string>>[files.Count];
+        Parallel.For(0, files.Count, i => perFile[i] = ReadFile(files[i]));
+
+        var all = new SortedDictionary<string, SortedDictionary<string, List<string>>>(StringComparer.Ordinal);
+        for (int i = 0; i < files.Count; i++)
+        {
+            string fileName = Path.GetFileName(files[i]);
+            foreach (var kv in perFile[i])
+            {
+                if (!all.TryGetValue(kv.Key, out var versions))
+                {
+                    versions = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+                    all[kv.Key] = versions;
+                }
+                if (!versions.TryGetValue(kv.Value, out var list))
+                {
+                    list = new List<string>();
+                    versions[kv.Value] = list;
+                }
+                list.Add(fileName);
             }
         }
-        $totalFailures++;
+
+        return all;
+    }
+}
+'@
+}
+
+$referencedFileVersionsPerDll = [DepsJsonAudit]::Collect((Resolve-Path $targetDir).Path)
+$totalFailures = 0
+
+# Report dlls referenced with more than one version.
+foreach ($dll in $referencedFileVersionsPerDll.GetEnumerator()) {
+    if ($dll.Value.Count -gt 1) {
+        Write-Host $dll.Key
+        foreach ($version in $dll.Value.GetEnumerator()) {
+            Write-Host "`t" $version.Key
+            foreach ($file in $version.Value) {
+                Write-Host "`t`t" $file
+            }
+        }
+        $totalFailures++
     }
 }
 
 if ($totalFailures -gt 0) {
-    Write-Host -ForegroundColor Red "Detected " $totalFailures " libraries that are mentioned with different version across the dependencies.`r`n"
+    Write-Host -ForegroundColor Red "Detected $totalFailures libraries that are mentioned with different version across the dependencies.`r`n"
     exit 1
 }
 
-Write-Host -ForegroundColor Green "All " $referencedFileVersionsPerDll.keys.Count " libraries are mentioned with the same version across the dependencies.`r`n"
+Write-Host -ForegroundColor Green "All $($referencedFileVersionsPerDll.Count) libraries are mentioned with the same version across the dependencies.`r`n"
 exit 0
