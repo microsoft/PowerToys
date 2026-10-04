@@ -168,6 +168,15 @@ public static class DepsJsonAudit
             }
         }
 
+        // Sort the file lists alphabetically before returning.
+        foreach (var versionDict in all.Values)
+        {
+            foreach (var list in versionDict.Values)
+            {
+                list.Sort(StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         return all;
     }
 }
