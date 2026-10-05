@@ -415,6 +415,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox.Text" xml:space="preserve">
     <value>Compact search box</value>
   </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_FullPalette_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Full palette</value>
+  </data>
+  <data name="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Compact search box</value>
+  </data>
   <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header" xml:space="preserve">
     <value>Quick access shelf</value>
   </data>
