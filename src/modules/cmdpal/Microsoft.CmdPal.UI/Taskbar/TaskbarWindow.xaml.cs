@@ -34,6 +34,10 @@ public sealed partial class TaskbarWindow : WindowEx,
     IRecipient<RequestShowPaletteAtMessage>,
     IDisposable
 {
+    // Vertical gap between the taskbar edge and our items, matching the system's app buttons.
+    private const double TaskbarItemInset = 4;
+    private const double CompactTaskbarItemInset = 2;
+
     private readonly uint wMTASKBARRESTART;
     private readonly HWND _hwnd;
     private readonly TaskbarMetrics _taskbarMetrics;
@@ -1065,9 +1069,13 @@ public sealed partial class TaskbarWindow : WindowEx,
             Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
             Microsoft.UI.Xaml.Controls.Grid.SetRow(MainContent, 0);
             Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(MainContent, 4);
+
+            // Fill the taskbar height so items size like the taskbar's own buttons,
+            // inset the same way the system insets its app buttons.
+            var inset = _taskbarMetrics.IsCompact ? CompactTaskbarItemInset : TaskbarItemInset;
             MainContent.HorizontalAlignment = HorizontalAlignment.Right;
-            MainContent.VerticalAlignment = VerticalAlignment.Center;
-            MainContent.Margin = new Thickness(0);
+            MainContent.VerticalAlignment = VerticalAlignment.Stretch;
+            MainContent.Margin = new Thickness(0, inset, 0, inset);
 
             if (forContent > 0)
             {
@@ -1150,21 +1158,30 @@ public sealed partial class TaskbarWindow : WindowEx,
         // aligns with the visible clip area.
         if (isCompact)
         {
+            var compactScale = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var rebarDips = _taskbarMetrics.RebarThicknessInPixels / compactScale;
+
             if (_taskbarMetrics.IsHorizontal)
             {
                 Root.VerticalAlignment = VerticalAlignment.Top;
                 Root.HorizontalAlignment = HorizontalAlignment.Stretch;
+
+                // Top-aligned Root would otherwise size to its content, leaving
+                // nothing for the items to stretch into.
+                Root.Height = rebarDips > 0 ? rebarDips : double.NaN;
             }
             else
             {
                 Root.VerticalAlignment = VerticalAlignment.Stretch;
                 Root.HorizontalAlignment = HorizontalAlignment.Left;
+                Root.Height = double.NaN;
             }
         }
         else
         {
             Root.VerticalAlignment = VerticalAlignment.Stretch;
             Root.HorizontalAlignment = HorizontalAlignment.Stretch;
+            Root.Height = double.NaN;
         }
     }
 }

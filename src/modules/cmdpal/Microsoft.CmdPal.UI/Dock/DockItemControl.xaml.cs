@@ -434,8 +434,9 @@ public sealed partial class DockItemControl : Control
         var side = _parentDock?.DockSide ?? DockSide.Top;
         var vertical = side is DockSide.Left or DockSide.Right;
 
-        // Compact trades the gap for height.
-        var edgeGap = IsCompact ? 0 : DockEdgeGap;
+        // Compact trades the gap for height. Outside the Dock (e.g. the taskbar) there's
+        // no screen edge to keep clear of; the host insets the items itself.
+        var edgeGap = IsCompact || _parentDock is null ? 0 : DockEdgeGap;
 
         InnerMargin = vertical
             ? new Thickness(

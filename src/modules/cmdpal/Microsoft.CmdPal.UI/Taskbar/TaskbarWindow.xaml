@@ -48,7 +48,8 @@
             Grid.RowSpan="4"
             Grid.Column="3"
             HorizontalAlignment="Right"
-            VerticalAlignment="Center"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
             SizeChanged="MainContent_SizeChanged" />
     </Grid>
 </winuiex:WindowEx>

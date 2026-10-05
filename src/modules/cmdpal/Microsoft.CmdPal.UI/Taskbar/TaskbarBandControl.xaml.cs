@@ -224,12 +224,19 @@ public sealed partial class TaskbarBandControl : UserControl,
             RootPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             RootPanel.VerticalAlignment = VerticalAlignment.Bottom;
             BandsListView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            ScrollViewer.SetVerticalScrollBarVisibility(BandsListView, ScrollBarVisibility.Auto);
+            ScrollViewer.SetVerticalScrollMode(BandsListView, ScrollMode.Enabled);
         }
         else
         {
             RootPanel.HorizontalAlignment = HorizontalAlignment.Right;
             RootPanel.VerticalAlignment = VerticalAlignment.Stretch;
             BandsListView.HorizontalAlignment = HorizontalAlignment.Stretch;
+
+            // Without vertical scrolling the items get a finite height and stretch
+            // to the taskbar height instead of sizing to their content.
+            ScrollViewer.SetVerticalScrollBarVisibility(BandsListView, ScrollBarVisibility.Disabled);
+            ScrollViewer.SetVerticalScrollMode(BandsListView, ScrollMode.Disabled);
         }
 
         // Reapply compact mode after orientation change since containers
@@ -387,6 +394,8 @@ public sealed partial class TaskbarBandControl : UserControl,
 
         AddBandButton.Visibility = isEditMode ? Visibility.Visible : Visibility.Collapsed;
         EditButtonsTeachingTip.IsOpen = isEditMode && showFlyout;
+
+        VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", false);
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)

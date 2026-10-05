@@ -240,11 +240,19 @@
         BorderThickness="{StaticResource DebugBorderThickness}"
         Orientation="Horizontal"
         RightTapped="RootPanel_RightTapped">
+        <Button
+            x:Name="AddBandButton"
+            MinHeight="30"
+            Click="AddBandButton_Click"
+            Style="{StaticResource SubtleButtonStyle}"
+            Visibility="Collapsed">
+            <FontIcon FontSize="12" Glyph="&#xE710;" />
+        </Button>
         <ListView
             x:Name="BandsListView"
             MinWidth="48"
             MinHeight="32"
-            VerticalAlignment="Center"
+            VerticalAlignment="Stretch"
             Background="Transparent"
             DragEnter="BandsListView_DragEnter"
             DragItemsCompleted="BandsListView_DragItemsCompleted"
@@ -256,16 +264,9 @@
             ItemContainerStyle="{StaticResource HorizontalBandListViewItemStyle}"
             ItemTemplate="{StaticResource TaskbarBandTemplate}"
             ItemsPanel="{StaticResource HorizontalBandsPanel}"
+            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+            ScrollViewer.VerticalScrollMode="Disabled"
             SelectionMode="None" />
-
-        <Button
-            x:Name="AddBandButton"
-            MinHeight="30"
-            Click="AddBandButton_Click"
-            Style="{StaticResource SubtleButtonStyle}"
-            Visibility="Collapsed">
-            <FontIcon FontSize="12" Glyph="&#xE710;" />
-        </Button>
 
         <Button
             x:Name="MoreButton"
@@ -320,5 +321,20 @@
                 </StackPanel>
             </TeachingTip.Content>
         </TeachingTip>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="EditModeStates">
+                <VisualState x:Name="EditModeOff" />
+                <VisualState x:Name="EditModeOn">
+                    <!--  Matches the editable region styling in DockContentControl  -->
+                    <VisualState.Setters>
+                        <Setter Target="RootPanel.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="RootPanel.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="RootPanel.BorderThickness" Value="1" />
+                        <Setter Target="RootPanel.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </StackPanel>
 </UserControl>
