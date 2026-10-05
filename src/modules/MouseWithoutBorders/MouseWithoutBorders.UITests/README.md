@@ -12,7 +12,20 @@ The retained VM used four vCPUs and 8 GB RAM; this is not a fresh-profile or
 physical-machine sign-off. See the bounded startup/cooperative recording section
 below for the measured delays and lifecycle changes.
 
-**CI is not yet fully green.** The six-run October 2 stabilization cycle ended
+**The ordered CI smoke is green on both OSes.** After the Settings IPC lifetime
+fix, [build 159456667](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159456667)
+and a fresh-agent confirmation
+[build 159461630](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159461630)
+both succeeded at source `90f5187c47af851fa6727fb763f5b80ba28bb187`.
+Each executed one Win10 and one Win11 smoke, with all eight phases passing,
+matching persisted pairing key/peer acknowledgement, no Settings
+`ConnectionLostException`, finalized recordings and clean recovery.
+The same refined local payload passed both unfiltered seven-test suites:
+Win10 `localvm-20261005-024048-1f7d3651` and
+Win11 `localvm-20261005-030720-3e958cce`.
+Two of the six newly authorized CI attempts were needed.
+
+The preceding six-run October 2 stabilization cycle ended
 with [build 159338297](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159338297),
 source `07ef8f8bf88bb9c6b6380c313c2fb83b8b2358d5`. The build and Win10 smoke
 passed. The new Win11 setup step installed the modern client from an absent
