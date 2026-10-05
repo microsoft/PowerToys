@@ -25,7 +25,7 @@ internal static class FancyZonesCliUsage
 
         Console.WriteLine(Properties.Resources.usage_options);
 
-        // Skip the built-in --help/--version options every RootCommand gets; they are covered by the examples below.
+        // Skip RootCommand's built-in --help/--version; the examples below cover them.
         foreach (var option in cmd.Options.Where(o => o is not HelpOption and not VersionOption))
         {
             var aliases = string.Join(", ", option.Aliases.Prepend(option.Name));

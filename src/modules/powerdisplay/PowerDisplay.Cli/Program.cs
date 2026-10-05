@@ -403,9 +403,7 @@ public static class Program
         }
     }
 
-    // PowerDisplayRootCommand parses without System.CommandLine's built-in --help/--version options
-    // (see its constructor); add them back to render help, version, and framework parse errors.
-    // Adding --version first keeps the existing help layout.
+    // Re-adds the built-in options PowerDisplayRootCommand removes; --version first keeps the help order.
     private static Task<int> InvokeWithDefaultsAsync(RootCommand root, string[] args)
     {
         root.Options.Add(new VersionOption());

@@ -104,7 +104,7 @@ public abstract class BaseCommand : Command
     public abstract int CommandHandlerInternal(ParseResult parseResult);
 
     /// <summary>
-    /// Resolves the resource from the provided resource name in the parse result.
+    /// Resolves the resource from the provided resource name in the context.
     /// </summary>
     /// <param name="parseResult">The parse result containing the parsed command options.</param>
     /// <returns>The resolved <see cref="BaseResource"/> instance.</returns>

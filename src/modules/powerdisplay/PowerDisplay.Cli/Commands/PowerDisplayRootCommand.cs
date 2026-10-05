@@ -20,9 +20,7 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
     public PowerDisplayRootCommand()
         : base("PowerToys PowerDisplay - control monitor settings from the command line.")
     {
-        // Parse without the --help/--version options every RootCommand gets: Program detects help and
-        // version tokens itself (so "-h" stays a valid --monitor-id value) and adds the options back
-        // only to render help, version, and framework parse errors.
+        // Program handles help/version itself so "-h" stays a valid option value (see InvokeWithDefaultsAsync).
         Options.Clear();
 
         Options.Add(CliOptions.Quiet);

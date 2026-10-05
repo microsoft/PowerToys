@@ -68,7 +68,6 @@ namespace Awake
 
             if (parseResult.Action != rootCommand.Action)
             {
-                // Print the version (or run a directive) and exit without starting Awake.
                 return parseResult.Invoke();
             }
 

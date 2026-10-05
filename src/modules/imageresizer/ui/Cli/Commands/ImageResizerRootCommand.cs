@@ -16,8 +16,7 @@ namespace ImageResizer.Cli.Commands
         public ImageResizerRootCommand()
             : base("PowerToys Image Resizer - Resize images from command line")
         {
-            // Drop the --help/--version options System.CommandLine adds to every RootCommand: this CLI
-            // defines its own help option, and -h is the short alias of --height.
+            // This CLI has its own help option and uses -h for --height, so drop RootCommand's built-ins.
             Options.Clear();
 
             HelpOption = new HelpOption();

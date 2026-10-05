@@ -308,8 +308,7 @@ namespace ImageResizer.Models
         {
             var tokenizerCommand = new System.CommandLine.RootCommand();
 
-            // Clear the default --help/--version options so parsing only expands response files and
-            // leaves every other argument as typed (for example, "-h100" stays a single token).
+            // Without built-in options, only response files expand; tokens such as "-h100" stay intact.
             tokenizerCommand.Options.Clear();
             var tokenizerArgument = new System.CommandLine.Argument<string[]>("tokens")
             {
