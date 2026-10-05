@@ -762,6 +762,7 @@ hres
 hresult
 hrgn
 HROW
+hrs
 hsb
 HSCROLL
 hsi
@@ -2171,6 +2172,7 @@ Withscript
 wixproj
 wixtoolset
 WIXUI
+wks
 WKSG
 Wlkr
 wmain
@@ -2240,6 +2242,7 @@ ycombinator
 yinle
 yinyue
 yoko
+yrs
 YVIRTUALSCREEN
 zamora
 Zenbook

@@ -357,7 +357,7 @@
     <value>Time and date</value>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_SupportedInput" xml:space="preserve">
-    <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value</value>
+    <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value{1}Date calculations:{2}'{0}today + 3d{0}' or '{0}2025-06-27 - 2w + 1d{0}' to add or subtract years ({0}y{0}), months ({0}mo{0}), weeks ({0}w{0}), days ({0}d{0}), hours ({0}h{0}), minutes ({0}m{0}) or seconds ({0}s{0}){2}'{0}2025-12-25 - today{0}' for the time between two dates</value>
     <comment>The placed holders are replaced with formatting syntax in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
@@ -567,5 +567,125 @@
   </data>
   <data name="timedate_custom_clock_timezone_current" xml:space="preserve">
     <value>Use current time zone</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_KeywordNow" xml:space="preserve">
+    <value>now</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_KeywordToday" xml:space="preserve">
+    <value>today</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_KeywordTomorrow" xml:space="preserve">
+    <value>tomorrow</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_KeywordYesterday" xml:space="preserve">
+    <value>yesterday</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitYears" xml:space="preserve">
+    <value>y;yr;yrs;year;years</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitMonths" xml:space="preserve">
+    <value>mo;mon;month;months</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitWeeks" xml:space="preserve">
+    <value>w;wk;wks;week;weeks</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitDays" xml:space="preserve">
+    <value>d;day;days</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitHours" xml:space="preserve">
+    <value>h;hr;hrs;hour;hours</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitMinutes" xml:space="preserve">
+    <value>m;min;mins;minute;minutes</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Calculation_UnitSeconds" xml:space="preserve">
+    <value>s;sec;secs;second;seconds</value>
+    <comment>Semicolon-separated list of names. The English names always work as well.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_CalculationOutOfRange" xml:space="preserve">
+    <value>The result of the date calculation is outside of the supported date range.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Difference" xml:space="preserve">
+    <value>Difference</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDifference" xml:space="preserve">
+    <value>Difference;Between;Duration</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TotalDays" xml:space="preserve">
+    <value>Total days</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TotalWeeks" xml:space="preserve">
+    <value>Total weeks</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TotalHours" xml:space="preserve">
+    <value>Total hours</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TotalMinutes" xml:space="preserve">
+    <value>Total minutes</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TotalSeconds" xml:space="preserve">
+    <value>Total seconds</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceYear" xml:space="preserve">
+    <value>{0} year</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceYears" xml:space="preserve">
+    <value>{0} years</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceMonth" xml:space="preserve">
+    <value>{0} month</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceMonths" xml:space="preserve">
+    <value>{0} months</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceDay" xml:space="preserve">
+    <value>{0} day</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceDays" xml:space="preserve">
+    <value>{0} days</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceHour" xml:space="preserve">
+    <value>{0} hour</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceHours" xml:space="preserve">
+    <value>{0} hours</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceMinute" xml:space="preserve">
+    <value>{0} minute</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceMinutes" xml:space="preserve">
+    <value>{0} minutes</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceSecond" xml:space="preserve">
+    <value>{0} second</value>
+    <comment>{0} is the number 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceSeconds" xml:space="preserve">
+    <value>{0} seconds</value>
+    <comment>{0} is a number other than 1</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_DifferenceSeparator" xml:space="preserve">
+    <value>, </value>
+    <comment>Separator between the parts of a difference, e.g. '1 year, 2 months'</comment>
   </data>
 </root>

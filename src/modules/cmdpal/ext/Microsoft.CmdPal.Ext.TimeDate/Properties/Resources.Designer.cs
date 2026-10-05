@@ -61,6 +61,105 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to now.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_KeywordNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_KeywordNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to today.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_KeywordToday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_KeywordToday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to tomorrow.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_KeywordTomorrow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_KeywordTomorrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to yesterday.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_KeywordYesterday {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_KeywordYesterday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to d;day;days.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitDays {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitDays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to h;hr;hrs;hour;hours.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitHours {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitHours", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to m;min;mins;minute;minutes.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitMinutes {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitMinutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to mo;mon;month;months.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitMonths {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitMonths", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to s;sec;secs;second;seconds.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitSeconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to w;wk;wks;week;weeks.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitWeeks {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitWeeks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to y;yr;yrs;year;years.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Calculation_UnitYears {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Calculation_UnitYears", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy failed.
         /// </summary>
         public static string Microsoft_plugin_timedate_copy_failed {
@@ -160,6 +259,132 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Difference.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Difference {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Difference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} day.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceDay {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} days.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceDays {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceDays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} hour.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceHour {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} hours.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceHours {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceHours", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} minute.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceMinute {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceMinute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} minutes.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceMinutes {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceMinutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} month.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceMonth {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} months.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceMonths {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceMonths", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} second.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceSecond {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceSecond", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} seconds.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceSeconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to , .
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceSeparator {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceSeparator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} year.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} years.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DifferenceYears {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DifferenceYears", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Era.
         /// </summary>
         public static string Microsoft_plugin_timedate_Era {
@@ -250,6 +475,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The result of the date calculation is outside of the supported date range..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_CalculationOutOfRange {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_CalculationOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Supported input.
         /// </summary>
         public static string Microsoft_plugin_timedate_InvalidInput_DetailsHeader {
@@ -277,7 +511,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}&apos;{0}u{0}&apos; for Unix Timestamp{2}&apos;{0}ums{0}&apos; for Unix Timestamp in milliseconds{2}&apos;{0}ft{0}&apos; for Windows file time{2}&apos;{0}oa{0}&apos; for OLE Automation Date{2}&apos;{0}exc{0}&apos; for Excel&apos;s 1900 date value{2}&apos;{0}exf{0}&apos; for Excel&apos;s 1904 date value.
+        ///   Looks up a localized string similar to A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}&apos;{0}u{0}&apos; for Unix Timestamp{2}&apos;{0}ums{0}&apos; for Unix Timestamp in milliseconds{2}&apos;{0}ft{0}&apos; for Windows file time{2}&apos;{0}oa{0}&apos; for OLE Automation Date{2}&apos;{0}exc{0}&apos; for Excel&apos;s 1900 date value{2}&apos;{0}exf{0}&apos; for Excel&apos;s 1904 date value{1}Date calculations:{2}&apos;{0}today + 3d{0}&apos; or &apos;{0}2025-06-27 - 2w + 1d{0}&apos; to add or subtract years ({0}y{0}), months ({0}mo{0}), weeks ({0}w{0}), days ({0}d{0}), hours ({0}h{0}),  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string Microsoft_plugin_timedate_InvalidInput_SupportedInput {
             get {
@@ -552,6 +786,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SearchTagDateNow {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDateNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Difference;Between;Duration.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagDifference {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDifference", resourceCulture);
             }
         }
         
@@ -849,6 +1092,51 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_ToolTipAlternativeSearchTag {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_ToolTipAlternativeSearchTag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total days.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_TotalDays {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TotalDays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total hours.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_TotalHours {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TotalHours", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total minutes.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_TotalMinutes {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TotalMinutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total seconds.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_TotalSeconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TotalSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total weeks.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_TotalWeeks {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_TotalWeeks", resourceCulture);
             }
         }
         
