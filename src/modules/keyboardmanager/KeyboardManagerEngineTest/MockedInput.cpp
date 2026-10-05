@@ -10,8 +10,14 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 }
 
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
-void MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
+bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
 {
+    // Simulate an injection failure (e.g. SendInput blocked) when configured.
+    if (sendVirtualInputShouldFail != nullptr && sendVirtualInputShouldFail(inputs))
+    {
+        return false;
+    }
+
     // Iterate over inputs
     for (const INPUT& input : inputs)
     {
@@ -107,6 +113,7 @@ void MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
             }
         }
     }
+    return true;
 }
 
 // Function to simulate keyboard hook behavior
@@ -129,6 +136,12 @@ bool MockedInput::GetVirtualKeyState(int key)
     return keyboardState[key];
 }
 
+// Function to set the state of a particular key for test setup
+void MockedInput::SetKeyboardState(int key, bool state)
+{
+    keyboardState[key] = state;
+}
+
 // Function to reset the mocked keyboard state
 void MockedInput::ResetKeyboardState()
 {
@@ -140,6 +153,12 @@ void MockedInput::SetSendVirtualInputTestHandler(std::function<bool(LowlevelKeyb
 {
     sendVirtualInputCallCount = 0;
     sendVirtualInputCallCondition = condition;
+}
+
+// Function to force SendVirtualInput to fail for calls matching a predicate
+void MockedInput::SetSendVirtualInputShouldFail(std::function<bool(const std::vector<INPUT>&)> condition)
+{
+    sendVirtualInputShouldFail = condition;
 }
 
 // Function to get SendVirtualInput call count

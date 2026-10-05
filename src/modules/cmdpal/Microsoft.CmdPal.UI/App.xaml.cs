@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
@@ -27,11 +28,14 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -79,11 +83,18 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var persistenceService = new PersistenceService();
+        var settingsService = new SettingsService(persistenceService, appInfoService);
+        var languageService = new LanguageService();
+        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
+        appInfoService.SetLanguageOverride(languageOverride);
+        Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
 
         IconProvider.Initialize(Services);
 
         this.InitializeComponent();
+
+        ContentFormControl.RegisterCustomElements();
 
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
@@ -123,12 +134,22 @@ public partial class App : Application, IDisposable
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+
+        // Initialize the palette window before creating dock windows.
+        if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
+        }
     }
 
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private static ServiceProvider ConfigureServices(
+        IApplicationInfoService appInfoService,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService,
+        ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -148,7 +169,9 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, persistenceService, settingsService);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
@@ -187,6 +210,11 @@ public partial class App : Application, IDisposable
             try
             {
                 var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.NotificationRequested += static (_, message) =>
+                    WeakReferenceMessenger.Default.Send(new ShowToastMessage(message)
+                    {
+                        Duration = TimeSpan.FromSeconds(4),
+                    });
                 winget.SetAllLookup(
                     query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
                     query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
@@ -246,18 +274,30 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, MonitorPowerCommandsProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService)
     {
         // Models & persistence services
-        services.AddSingleton<IPersistenceService, PersistenceService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton(persistenceService);
+        services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
+        services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
+        services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
+        services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<ExternalCommandLinkCoordinatorFactory>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
@@ -275,10 +315,16 @@ public partial class App : Application, IDisposable
         // Core services
         services.AddSingleton(appInfoService);
 
-        services.AddSingleton<IExtensionService, ExtensionService>();
+        // Load IExtensionServices here
+        services.AddSingleton<IExtensionService, BuiltInExtensionService>();
+        services.AddSingleton<IExtensionService, WinRTExtensionService>();
+
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 

@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using ManagedCommon;
+using ManagedCsWin32;
+using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
@@ -24,7 +25,7 @@ internal static class CommandLauncher
                 // You can notice the difference with Recycle Bin for example:
                 // - "explorer ::{645FF040-5081-101B-9F08-00AA002F954E}"
                 // - "::{645FF040-5081-101B-9F08-00AA002F954E}"
-                return ShellHelpers.OpenInShell("explorer.exe", classification.Target);
+                return ShellHelpers.OpenInShell("explorer.exe", ShellArgumentBuilder.BuildArguments(classification.Target));
 
             case LaunchMethod.ActivateAppId:
                 return ActivateAppId(classification.Target, classification.Arguments);
@@ -70,29 +71,10 @@ internal static class CommandLauncher
     {
         public static void ActivateApplication(string aumid, string? args, int options, out uint pid)
         {
-            var mgr = (IApplicationActivationManager)new _ApplicationActivationManager();
-            var hr = mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
-            if (hr < 0)
-            {
-                throw new Win32Exception(hr);
-            }
-        }
-
-        [ComImport]
-        [Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Private class")]
-        private class _ApplicationActivationManager;
-
-        [ComImport]
-        [Guid("2E941141-7F97-4756-BA1D-9DECDE894A3D")]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        private interface IApplicationActivationManager
-        {
-            int ActivateApplication(
-                [MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
-                [MarshalAs(UnmanagedType.LPWStr)] string arguments,
-                int options,
-                out uint processId);
+            var mgr = ComHelper.CreateComInstance<IApplicationActivationManager>(
+                ref Unsafe.AsRef(in CLSID.ApplicationActivationManager),
+                CLSCTX.InProcServer);
+            mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
         }
     }
 }

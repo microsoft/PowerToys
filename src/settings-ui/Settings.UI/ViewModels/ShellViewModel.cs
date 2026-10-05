@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -135,7 +136,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void Frame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw e.Exception;
+            // Mark the failure as handled so WinUI does not fail-fast the process.
+            // Re-throwing from a NavigationFailed handler propagates back through the
+            // WinRT marshalling layer as a stowed exception and terminates Settings.
+            e.Handled = true;
+
+            HandleNavigationFailure(e.SourcePageType, e.Exception);
+        }
+
+        // Pure, side-effect-free entry point for the failure-handling logic so the
+        // contract ("must not throw, regardless of null inputs") can be exercised by
+        // unit tests without standing up a real WinUI Frame.
+        public static void HandleNavigationFailure(Type sourcePageType, Exception exception)
+        {
+            var pageName = GetPageDisplayName(sourcePageType);
+            if (exception != null)
+            {
+                Logger.LogError($"Failed to navigate to page '{pageName}'.", exception);
+            }
+            else
+            {
+                Logger.LogError($"Failed to navigate to page '{pageName}'.");
+            }
+        }
+
+        public static string GetPageDisplayName(Type sourcePageType)
+        {
+            return sourcePageType?.FullName ?? "<unknown>";
         }
 
         private void Frame_Navigated(object sender, NavigationEventArgs e)

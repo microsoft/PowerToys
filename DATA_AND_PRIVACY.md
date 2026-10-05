@@ -99,6 +99,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AlwaysOnTop_PinWindow | Occurs when a window is pinned to stay on top of other windows. |
 | Microsoft.PowerToys.AlwaysOnTop_UnpinWindow | Triggered when a pinned window is unpinned, allowing it to be behind other windows. |
 
+### Auto Hide Cursor
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.AutoHideCursor_EnableAutoHideCursor | Records whether Auto Hide Cursor is enabled or disabled (`Enabled` boolean) to understand utility usage. Does not include keystrokes, typed text, or cursor positions. |
+
 ### Awake
 
 | Event Name | Description |
@@ -145,6 +151,8 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPalHotkeySummoned | Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys. |
 | Microsoft.PowerToys.CmdPalInvokeResult | Records the result type of a Command Palette invocation. |
 | Microsoft.PowerToys.CmdPalProcessStarted | Triggered when the Command Palette process is started. |
+| Microsoft.PowerToys.CmdPal_SearchResults | Triggered when a search is triggered on the main list, including query length, result count, and duration. |
+| Microsoft.PowerToys.CmdPal_SearchResultSelected | Triggered when a search result is selected, including query length, selection index, and result tier. |
 
 ### Crop and lock
 
@@ -205,6 +213,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FileLocksmith_Invoked | Occurs when File Locksmith is invoked. |
 | Microsoft.PowerToys.FileLocksmith_InvokedRet | Triggered when File Locksmith invocation returns a result. |
 | Microsoft.PowerToys.FileLocksmith_QueryContextMenuError | Occurs when there is an error querying the context menu for File Locksmith. |
+| Microsoft.PowerToys.FileLocksmith_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged File Locksmith context-menu surrogate. |
 | Microsoft.PowerToys.FileLocksmith_CLICommand | Triggered when a File Locksmith CLI command is executed, logging the operation mode (query, kill, query-wait, query-json, or help) and success status. |
 
 ### FileExplorerAddOns
@@ -267,6 +276,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ImageResizer_Invoked | Occurs when Image Resizer is invoked by the user. |
 | Microsoft.PowerToys.ImageResizer_InvokedRet | Fires when the Image Resizer operation is completed and returns a result. |
 | Microsoft.PowerToys.ImageResizer_QueryContextMenuError | Triggered when there is an error querying the context menu for Image Resizer. |
+| Microsoft.PowerToys.ImageResizer_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged Image Resizer context-menu surrogate. |
 | Microsoft.PowerToys.ImageResizer_CLICommand | Triggered when an Image Resizer CLI command is executed, logging the command name and success status. |
 
 ### Keyboard Manager
@@ -355,6 +365,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.NewPlus_EventOpenTemplates | Triggered when the templates folder is opened. |
 | Microsoft.PowerToys.NewPlus_EventShowTemplateItems | Triggered when the New+ context menu flyout is displayed. |
 | Microsoft.PowerToys.NewPlus_EventToggleOnOff | Triggered when New+ is enabled or disabled. |
+| Microsoft.PowerToys.NewPlus_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged New+ context-menu surrogate. |
 
 ### Peek
 
@@ -386,6 +397,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.PowerRename_Invoked | Occurs when PowerRename is invoked. |
 | Microsoft.PowerToys.PowerRename_InvokedRet | Triggered when the invocation of PowerRename returns a result. |
 | Microsoft.PowerToys.PowerRename_RenameOperation | Triggered during the rename operation within PowerRename. |
+| Microsoft.PowerToys.PowerRename_ServicingWindowInitialization | Records the HRESULT result of initializing the servicing window for the packaged PowerRename context-menu surrogate. |
 | Microsoft.PowerToys.PowerRename_SettingsChanged | Occurs when the settings for PowerRename are changed. |
 | Microsoft.PowerToys.PowerRename_UIShownRet | Triggered when the PowerRename user interface is shown. |
 

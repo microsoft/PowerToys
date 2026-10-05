@@ -33,16 +33,40 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 return null;
             }
 
-            var (workspaceEnv, machineName) = ParseVSCodeAuthority.GetWorkspaceEnvironment(authority ?? rfc3986Uri.Authority);
+            var isFileUri = string.Equals(
+                rfc3986Uri.Scheme,
+                Uri.UriSchemeFile,
+                StringComparison.OrdinalIgnoreCase);
+
+            var isUncFileUri =
+                isFileUri &&
+                string.IsNullOrEmpty(authority) &&
+                !string.IsNullOrEmpty(rfc3986Uri.Authority) &&
+                !string.Equals(
+                    rfc3986Uri.Authority,
+                    "localhost",
+                    StringComparison.OrdinalIgnoreCase);
+
+            // file://server/share is a local Windows UNC path, not a VS Code remote URI.
+            var effectiveAuthority =
+                isFileUri && string.IsNullOrEmpty(authority)
+                    ? string.Empty
+                    : authority ?? rfc3986Uri.Authority;
+
+            var (workspaceEnv, machineName) =
+                ParseVSCodeAuthority.GetWorkspaceEnvironment(effectiveAuthority);
+
             if (workspaceEnv is null)
             {
                 return null;
             }
 
-            var path = rfc3986Uri.Path;
+            var path = isUncFileUri
+                ? $@"\\{rfc3986Uri.Authority}{rfc3986Uri.Path.Replace('/', '\\')}"
+                : rfc3986Uri.Path;
 
-            // Remove preceding '/' from local (Windows) path
-            if (workspaceEnv == WorkspaceEnvironment.Local)
+            // file:///C:/... becomes C:/...
+            if (workspaceEnv == WorkspaceEnvironment.Local && !isUncFileUri)
             {
                 path = path[1..];
             }
@@ -97,6 +121,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                     // User/globalStorage/state.vscdb - history.recentlyOpenedPathsList - vscode v1.64 or later
                     var vscode_storage_db = Path.Combine(vscodeInstance.AppData, "User/globalStorage/state.vscdb");
+                    var vscode_shared_storage_db = vscodeInstance.SharedStorageDbPath;
 
                     if (File.Exists(vscode_storage))
                     {
@@ -104,15 +129,35 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                         results.AddRange(storageResults);
                     }
 
-                    if (File.Exists(vscode_storage_db))
+                    var storageDbPaths = new[] { vscode_storage_db, vscode_shared_storage_db }
+                        .Where(filePath => !string.IsNullOrEmpty(filePath))
+                        .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var storageDbPath in storageDbPaths)
                     {
-                        var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, vscode_storage_db);
-                        results.AddRange(storageDbResults);
+                        if (File.Exists(storageDbPath))
+                        {
+                            var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, storageDbPath);
+                            results.AddRange(storageDbResults);
+                        }
                     }
                 }
 
-                return results;
+                return results
+                    .Where(workspace => workspace != null)
+                    .GroupBy(GetWorkspaceKey, StringComparer.OrdinalIgnoreCase)
+                    .Select(workspaceGroup => workspaceGroup.First())
+                    .ToList();
             }
+        }
+
+        private static string GetWorkspaceKey(VSCodeWorkspace workspace)
+        {
+            return string.Join(
+                "|",
+                workspace.VSCodeInstance?.ExecutablePath ?? string.Empty,
+                workspace.WorkspaceType,
+                workspace.Path ?? string.Empty);
         }
 
         private List<VSCodeWorkspace> GetWorkspacesInJson(VSCodeInstance vscodeInstance, string filePath)

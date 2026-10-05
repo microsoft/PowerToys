@@ -8,7 +8,7 @@ namespace PowerDisplay.Helpers
 {
     /// <summary>
     /// PowerDisplay-local window helpers. Flyout positioning/sizing now lives in
-    /// <c>Microsoft.PowerToys.Common.UI.Flyout.FlyoutWindowHelper</c> (Common.UI.Controls).
+    /// <c>Microsoft.PowerToys.Common.UI.Controls.Window.FlyoutWindowHelper</c> (Common.UI.Controls).
     /// </summary>
     internal static partial class WindowHelper
     {

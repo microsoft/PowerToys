@@ -7,6 +7,8 @@ namespace PowerAccent.Common;
 public enum Language
 {
     SPECIAL,
+    BE,
+    BE_CYRL,
     BG,
     CA,
     CRH,
@@ -40,6 +42,7 @@ public enum Language
     PIE,
     PL,
     PT,
+    PJT,
     RO,
     ROM,
     SK,

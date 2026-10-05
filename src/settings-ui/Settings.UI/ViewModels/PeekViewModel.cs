@@ -197,6 +197,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AlwaysOnTop
+        {
+            get => _peekSettings.Properties.AlwaysOnTop.Value;
+            set
+            {
+                if (_peekSettings.Properties.AlwaysOnTop.Value != value)
+                {
+                    _peekSettings.Properties.AlwaysOnTop.Value = value;
+                    OnPropertyChanged(nameof(AlwaysOnTop));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ShowTaskbarIcon
+        {
+            get => _peekSettings.Properties.ShowTaskbarIcon.Value;
+            set
+            {
+                if (_peekSettings.Properties.ShowTaskbarIcon.Value != value)
+                {
+                    _peekSettings.Properties.ShowTaskbarIcon.Value = value;
+                    OnPropertyChanged(nameof(ShowTaskbarIcon));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool CloseAfterLosingFocus
         {
             get => _peekSettings.Properties.CloseAfterLosingFocus.Value;

@@ -29,22 +29,22 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDate", CultureInfo.CurrentCulture),
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDateNow", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDate", CultureInfo.CurrentCulture)!,
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDateNow", CultureInfo.CurrentCulture)!,
 
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagTime", CultureInfo.CurrentCulture),
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagTimeNow", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagTime", CultureInfo.CurrentCulture)!,
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagTimeNow", CultureInfo.CurrentCulture)!,
 
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagFormat", CultureInfo.CurrentCulture),
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagFormatNow", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagFormat", CultureInfo.CurrentCulture)!,
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagFormatNow", CultureInfo.CurrentCulture)!,
 
-            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", CultureInfo.CurrentCulture)!,
         };
     }
 
     public override void UpdateQuery(string query)
     {
-        if (!_settingsManager.EnableFallbackItems || string.IsNullOrWhiteSpace(query) || !IsValidQuery(query))
+        if (string.IsNullOrWhiteSpace(query) || !IsValidQuery(query))
         {
             Title = string.Empty;
             Subtitle = string.Empty;
@@ -53,7 +53,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
         }
 
         var availableResults = AvailableResultsList.GetList(false, _settingsManager, timestamp: _timestamp);
-        ListItem result = null;
+        ListItem? result = null;
         var maxScore = 0;
 
         foreach (var f in availableResults)

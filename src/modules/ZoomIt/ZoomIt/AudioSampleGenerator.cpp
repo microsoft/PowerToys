@@ -34,15 +34,17 @@ namespace winrt
     using namespace Windows::Devices::Enumeration;
 }
 
-AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio, bool micMonoMix)
+AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio, bool mixMicrophoneMono, bool useNoiseCancellation)
     : m_captureMicrophone(captureMicrophone)
     , m_captureSystemAudio(captureSystemAudio)
-    , m_micMonoMix(micMonoMix)
+    , m_mixMicrophoneMono(mixMicrophoneMono)
+    , m_useNoiseCancellation(useNoiseCancellation)
 {
     OutputDebugStringA(("AudioSampleGenerator created, captureMicrophone=" +
         std::string(captureMicrophone ? "true" : "false") +
         ", captureSystemAudio=" + std::string(captureSystemAudio ? "true" : "false") +
-        ", micMonoMix=" + std::string(micMonoMix ? "true" : "false") + "\n").c_str());
+        ", mixMicrophoneMono=" + std::string(mixMicrophoneMono ? "true" : "false") +
+        ", useNoiseCancellation=" + std::string(useNoiseCancellation ? "true" : "false") + "\n").c_str());
     m_audioEvent.create(wil::EventOptions::ManualReset);
     m_endEvent.create(wil::EventOptions::ManualReset);
     m_startEvent.create(wil::EventOptions::ManualReset);
@@ -63,6 +65,8 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
     auto expected = false;
     if (m_initialized.compare_exchange_strong(expected, true))
     {
+      try
+      {
         // Reset state in case this instance is reused.
         m_endEvent.ResetEvent();
         m_startEvent.ResetEvent();
@@ -76,17 +80,62 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         }
         m_audioGraph = audioGraphResult.Graph();
 
+        // The default graph format follows the audio engine's processing format
+        // for the default render device, which can be multichannel (e.g. 7.1
+        // when spatial sound is enabled). Feeding more than two channels into
+        // the AAC encoding profile produces a multichannel HE-AAC track that
+        // most decoders, including the Media Foundation AAC decoder (max 5.1),
+        // cannot play, so recordings sound silent. Re-create the graph with an
+        // explicit stereo format at the device sample rate.
+        if (m_audioGraph.EncodingProperties().ChannelCount() > 2)
+        {
+            auto defaultProps = m_audioGraph.EncodingProperties();
+            auto stereoProps = winrt::AudioEncodingProperties();
+            stereoProps.Subtype(defaultProps.Subtype());
+            stereoProps.SampleRate(defaultProps.SampleRate());
+            stereoProps.BitsPerSample(defaultProps.BitsPerSample());
+            stereoProps.ChannelCount(2);
+            stereoProps.Bitrate(defaultProps.SampleRate() * 2 * defaultProps.BitsPerSample());
+
+            auto stereoSettings = winrt::AudioGraphSettings(winrt::AudioRenderCategory::Media);
+            stereoSettings.EncodingProperties(stereoProps);
+            auto stereoResult = co_await winrt::AudioGraph::CreateAsync(stereoSettings);
+            if (stereoResult.Status() == winrt::AudioGraphCreationStatus::Success)
+            {
+                m_audioGraph.Close();
+                m_audioGraph = stereoResult.Graph();
+                OutputDebugStringA("AudioGraph re-created with stereo format\n");
+            }
+            else
+            {
+                OutputDebugStringA("WARNING: Failed to re-create AudioGraph with stereo format, keeping default\n");
+            }
+        }
+
         // Get AudioGraph encoding properties for resampling
         auto graphProps = m_audioGraph.EncodingProperties();
         m_graphSampleRate = graphProps.SampleRate();
-        m_graphChannels = graphProps.ChannelCount();
+
+        // Force the captured audio to stereo.  The default render device mix format
+        // is often multichannel (e.g. 7.1 / 8 channels), which produces a multichannel
+        // AAC track that plays back fine but cannot be re-encoded by the trim /
+        // MediaComposition transcode source reader (fails with 0xC00DA7FC /
+        // TranscodeFailureReason::Unknown).  Screen recordings only need stereo, so we
+        // build a stereo output-node format and let the graph downmix the multichannel
+        // mix automatically.  (Forcing the whole graph to stereo via
+        // AudioGraphSettings.EncodingProperties is rejected by many devices, so we only
+        // constrain the frame output node.)
+        auto outputProps = m_audioGraph.EncodingProperties();
+        outputProps.ChannelCount(2);
+        outputProps.Bitrate(outputProps.SampleRate() * 2 * outputProps.BitsPerSample());
+        m_graphChannels = 2;
 
         OutputDebugStringA(("AudioGraph initialized: " + std::to_string(m_graphSampleRate) +
             " Hz, " + std::to_string(m_graphChannels) + " ch\n").c_str());
 
         // Create submix node to mix microphone and loopback audio
         m_submixNode = m_audioGraph.CreateSubmixNode();
-        m_audioOutputNode = m_audioGraph.CreateFrameOutputNode();
+        m_audioOutputNode = m_audioGraph.CreateFrameOutputNode(outputProps);
         m_submixNode.AddOutgoingConnection(m_audioOutputNode);
 
         // Initialize WASAPI loopback capture for system audio (if enabled)
@@ -158,9 +207,39 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
             throw winrt::hresult_error(E_FAIL, L"Failed to initialize loopback audio capture!");
         }
 
+        // Initialize noise suppressor for microphone audio if enabled
+        if (m_useNoiseCancellation && m_captureMicrophone)
+        {
+            m_noiseSuppressor = std::make_unique<NoiseSuppressor>();
+            OutputDebugStringA("Noise cancellation enabled for microphone\n");
+        }
+
         m_audioGraph.QuantumStarted({ this, &AudioSampleGenerator::OnAudioQuantumStarted });
 
+        // Start the AudioGraph now so the microphone device begins warming up
+        // during the remaining recording initialization (transcoder setup, etc.).
+        // OnAudioQuantumStarted returns early while m_started is false, so audio
+        // samples are discarded until Start() is called.  The side-effect of
+        // starting the graph early is that the system mic-active icon appears
+        // sooner, which also triggers a desktop-content change that helps
+        // unblock the WGC frame pool wait in OnMediaStreamSourceStarting.
+        m_audioGraph.Start();
+
         m_asyncInitialized.SetEvent();
+      }
+      catch (...)
+      {
+          // Initialization failed partway through (common on headless /
+          // GPU-less VMs, cloud PCs, or machines without a usable audio
+          // capture device, where CreateDeviceInputNodeAsync throws).
+          // m_initialized was already set to true at the top, so unless we
+          // release these events here, Stop() would block forever on
+          // m_asyncInitialized.wait() and TryGetNextSample() would block
+          // forever on m_endEvent during teardown — deadlocking the recorder.
+          m_asyncInitialized.SetEvent();
+          m_endEvent.SetEvent();
+          throw;
+      }
     }
 }
 
@@ -168,6 +247,40 @@ winrt::AudioEncodingProperties AudioSampleGenerator::GetEncodingProperties()
 {
     CheckInitialized();
     return m_audioOutputNode.EncodingProperties();
+}
+
+winrt::fire_and_forget AudioSampleGenerator::DisposeAsync(
+    std::unique_ptr<AudioSampleGenerator> generator,
+    winrt::IAsyncAction initAction )
+{
+    if (!generator)
+    {
+        co_return;
+    }
+
+    // InitializeAsync signals m_asyncInitialized from its own continuation.
+    // While it is still suspended at a co_await, that continuation is queued
+    // back to the apartment that started it - normally the UI STA.  Destroying
+    // the generator there runs Stop(), which waits on m_asyncInitialized and so
+    // stops the thread from pumping, meaning the continuation can never be
+    // delivered: a self-deadlock.  Awaiting yields the thread instead of
+    // blocking it, so the pending initialization can complete (or fail).
+    if (initAction)
+    {
+        try
+        {
+            co_await initAction;
+        }
+        catch (...)
+        {
+            // Initialization failed; the object still has to be torn down.
+        }
+    }
+
+    // Keep the teardown (graph stop, device node close, buffer flush) off the
+    // calling thread.
+    co_await winrt::resume_background();
+    generator.reset();
 }
 
 std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
@@ -205,67 +318,65 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
         }
     }
 
+    // Wait for audio samples to become available, retrying on spurious wakes
+    // (e.g. when OnAudioQuantumStarted signals m_audioEvent but the quantum
+    // produced an empty buffer so m_samples is still empty).
+    for (;;)
     {
-        auto lock = m_lock.lock_exclusive();
-        if (m_samples.empty() && m_endEvent.is_signaled())
         {
+            auto lock = m_lock.lock_exclusive();
+            if (m_samples.empty() && m_endEvent.is_signaled())
+            {
+                return std::nullopt;
+            }
+            else if (!m_samples.empty())
+            {
+                std::optional result(m_samples.front());
+                m_samples.pop_front();
+                return result;
+            }
+        }
+
+        m_audioEvent.ResetEvent();
+        std::vector<HANDLE> events = { m_endEvent.get(), m_audioEvent.get() };
+        auto waitResult = WaitForMultipleObjectsEx(static_cast<DWORD>(events.size()), events.data(), false, INFINITE, false);
+        auto eventIndex = -1;
+        switch (waitResult)
+        {
+        case WAIT_OBJECT_0:
+        case WAIT_OBJECT_0 + 1:
+            eventIndex = waitResult - WAIT_OBJECT_0;
+            break;
+        }
+        WINRT_VERIFY(eventIndex >= 0);
+
+        auto signaledEvent = events[eventIndex];
+        if (signaledEvent == m_endEvent.get())
+        {
+            // End was signaled, but check for any remaining samples before returning nullopt
+            auto lock = m_lock.lock_exclusive();
+            if (!m_samples.empty())
+            {
+                std::optional result(m_samples.front());
+                m_samples.pop_front();
+                return result;
+            }
             return std::nullopt;
         }
-        else if (!m_samples.empty())
-        {
-            std::optional result(m_samples.front());
-            m_samples.pop_front();
-            return result;
-        }
-    }
-
-    m_audioEvent.ResetEvent();
-    std::vector<HANDLE> events = { m_endEvent.get(), m_audioEvent.get() };
-    auto waitResult = WaitForMultipleObjectsEx(static_cast<DWORD>(events.size()), events.data(), false, INFINITE, false);
-    auto eventIndex = -1;
-    switch (waitResult)
-    {
-    case WAIT_OBJECT_0:
-    case WAIT_OBJECT_0 + 1:
-        eventIndex = waitResult - WAIT_OBJECT_0;
-        break;
-    }
-    WINRT_VERIFY(eventIndex >= 0);
-
-    auto signaledEvent = events[eventIndex];
-    if (signaledEvent == m_endEvent.get())
-    {
-        // End was signaled, but check for any remaining samples before returning nullopt
-        auto lock = m_lock.lock_exclusive();
-        if (!m_samples.empty())
-        {
-            std::optional result(m_samples.front());
-            m_samples.pop_front();
-            return result;
-        }
-        return std::nullopt;
-    }
-    else
-    {
-        auto lock = m_lock.lock_exclusive();
-        if (m_samples.empty())
-        {
-            // Spurious wake or race - no samples available
-            // If end is signaled, return nullopt
-            return m_endEvent.is_signaled() ? std::nullopt : std::optional<winrt::MediaStreamSample>{};
-        }
-        std::optional result(m_samples.front());
-        m_samples.pop_front();
-        return result;
+        // m_audioEvent was signaled — loop back to check m_samples again.
+        // If the quantum produced an empty buffer, m_samples will still be
+        // empty and we'll wait for the next quantum.
     }
 }
 
-void AudioSampleGenerator::Start()
+void AudioSampleGenerator::Start(int64_t videoStartTimestamp)
 {
     CheckInitialized();
+    m_videoStartTimestamp = videoStartTimestamp;
     auto expected = false;
     if (m_started.compare_exchange_strong(expected, true))
     {
+        OutputDebugStringW( L"[AudioGen] Start(): m_started set to true, setting m_startEvent\n" );
         m_endEvent.ResetEvent();
         m_startEvent.SetEvent();
 
@@ -284,7 +395,7 @@ void AudioSampleGenerator::Start()
             m_loopbackCapture->Start();
         }
 
-        m_audioGraph.Start();
+        // AudioGraph was already started in InitializeAsync for mic warmup.
     }
 }
 
@@ -310,8 +421,13 @@ void AudioSampleGenerator::Stop()
     // Flush any remaining samples from the loopback capture before stopping the audio graph
     FlushRemainingAudio();
 
-    // Stop the audio graph - no more quantum callbacks will run
-    m_audioGraph.Stop();
+    // Stop the audio graph - no more quantum callbacks will run.
+    // Guard against partial initialization: if InitializeAsync failed before
+    // the graph was created, m_audioGraph is null.
+    if (m_audioGraph)
+    {
+        m_audioGraph.Stop();
+    }
 
     // Close the microphone input node to release the device so Windows no longer
     // reports the microphone as in use by ZoomIt.
@@ -531,6 +647,7 @@ void AudioSampleGenerator::FlushRemainingAudio()
             }
 
             auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp);
+            sample.Duration(duration);
             m_samples.push_back(sample);
             m_audioEvent.SetEvent();
 
@@ -604,6 +721,7 @@ void AudioSampleGenerator::CombineQueuedSamples()
     const uint32_t sampleCount = static_cast<uint32_t>(totalBytes) / sizeof(float);
     const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
     const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
+    combinedSample.Duration(winrt::Windows::Foundation::TimeSpan{ durationTicks });
     m_lastSampleTimestamp = firstTimestamp;
     m_lastSampleDuration = winrt::Windows::Foundation::TimeSpan{ durationTicks };
     m_hasLastSampleTimestamp = true;
@@ -611,11 +729,20 @@ void AudioSampleGenerator::CombineQueuedSamples()
 
 void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender, winrt::IInspectable const& args)
 {
-    // Don't process if we're not actively recording
+    // Don't process if we're not actively recording, but DO drain the
+    // output node so stale audio doesn't accumulate during mic warmup.
+    // Without this, the first GetFrame() after m_started becomes true
+    // would return several seconds of buffered audio, confusing the
+    // transcoder's A/V interleaving.
     if (!m_started.load())
     {
+        auto frame = m_audioOutputNode.GetFrame();
+        (void)frame;  // discard
         return;
     }
+
+    static int s_quantumCount = 0;
+    s_quantumCount++;
 
     {
         auto lock = m_lock.lock_exclusive();
@@ -628,6 +755,14 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         auto sampleBuffer = winrt::Buffer::CreateCopyFromMemoryBuffer(audioBuffer);
         sampleBuffer.Length(audioBuffer.Length());
 
+        if( s_quantumCount <= 5 )
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[AudioGen] quantum #%d: audioBuffer.Length=%u sampleBuffer.Length=%u started=%d\n",
+                         s_quantumCount, audioBuffer.Length(), sampleBuffer.Length(), m_started.load() ? 1 : 0 );
+            OutputDebugStringW( dbg );
+        }
+
         // Calculate expected samples per quantum (~10ms at graph sample rate)
         // AudioGraph uses 10ms quantums by default
         uint32_t expectedSamplesPerQuantum = (m_graphSampleRate / 100) * m_graphChannels;
@@ -636,7 +771,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         // Apply mono mixing to microphone audio if enabled
         // This converts stereo mic input (with same signal on both channels) to true mono
         // by averaging the channels and writing the result to both channels
-        if (m_micMonoMix && m_captureMicrophone && numMicSamples > 0 && m_graphChannels >= 2)
+        if (m_mixMicrophoneMono && m_captureMicrophone && numMicSamples > 0 && m_graphChannels >= 2)
         {
             float* micData = reinterpret_cast<float*>(sampleBuffer.data());
             uint32_t numFrames = numMicSamples / m_graphChannels;
@@ -655,6 +790,12 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
                     micData[i * m_graphChannels + ch] = mono;
                 }
             }
+        }
+        // Apply noise suppression to microphone audio before mixing with loopback
+        if (m_noiseSuppressor && m_captureMicrophone && numMicSamples > 0)
+        {
+            float* micData = reinterpret_cast<float*>(sampleBuffer.data());
+            m_noiseSuppressor->Process(micData, numMicSamples, m_graphChannels);
         }
 
         // Drain loopback samples regardless of whether we have mic audio
@@ -733,13 +874,26 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
 
         if (sampleBuffer.Length() > 0)
         {
-            auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp.value());
+            // Rebase audio timestamps to the video's SystemRelativeTime domain.
+            // AudioGraph RelativeTime starts near 0 (or a few hundred ms after
+            // warmup draining), while video uses absolute SRT (~hours since boot).
+            // Without rebasing, the transcoder sees audio far behind video and
+            // starves video while trying to fill the gap with audio.
+            if (!m_hasTimestampOffset && timestamp.has_value())
+            {
+                m_timestampOffset = m_videoStartTimestamp - timestamp.value().count();
+                m_hasTimestampOffset = true;
+            }
+            auto adjustedTs = winrt::TimeSpan{ timestamp.value().count() + m_timestampOffset };
+
+            auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, adjustedTs);
             m_samples.push_back(sample);
 
             const uint32_t sampleCount = sampleBuffer.Length() / sizeof(float);
             const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;
             const int64_t durationTicks = (m_graphSampleRate > 0) ? (static_cast<int64_t>(frames) * 10000000LL / m_graphSampleRate) : 0;
-            m_lastSampleTimestamp = timestamp.value();
+            sample.Duration(winrt::TimeSpan{ durationTicks });
+            m_lastSampleTimestamp = adjustedTs;
             m_lastSampleDuration = winrt::TimeSpan{ durationTicks };
             m_hasLastSampleTimestamp = true;
         }

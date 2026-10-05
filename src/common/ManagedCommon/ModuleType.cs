@@ -7,7 +7,9 @@ namespace ManagedCommon
     public enum ModuleType
     {
         AdvancedPaste,
+        AltWindowCycle,
         AlwaysOnTop,
+        AutoHideCursor,
         Awake,
         ColorPicker,
         CmdPal,

@@ -28,6 +28,7 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/util.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowKeyboardSnap.h>
 #include <FancyZonesLib/WindowMouseSnap.h>
@@ -66,14 +67,189 @@ namespace NonLocalizable
     const wchar_t FZEditorExecutablePath[] = L"PowerToys.FancyZonesEditor.exe";
 }
 
+namespace
+{
+    // Layouts the mouse wheel cycles through while dragging: the ones with quick-switch
+    // hotkeys assigned (in hotkey order); when fewer than two of those exist, all custom
+    // layouts in the order they appear in the editor.
+    std::vector<GUID> WheelCycleLayoutIds() noexcept
+    {
+        auto ids = LayoutHotkeys::instance().GetLayoutIds();
+        std::erase_if(ids, [](const GUID& id) { return !CustomLayouts::instance().GetCustomLayoutData(id).has_value(); });
+
+        if (ids.size() < 2)
+        {
+            ids = CustomLayouts::instance().GetLayoutIdsInOrder();
+        }
+
+        return ids;
+    }
+
+    constexpr UINT_PTR MonitorRotationCommitTimerId = 0x4D525443;
+    constexpr UINT MonitorRotationCommitDelayMillis = 760;
+
+    struct WindowRotationSnapshot
+    {
+        HWND window{};
+        HMONITOR sourceMonitor{};
+        RECT sourceRect{};
+    };
+
+    std::optional<size_t> FindMonitorIndex(HMONITOR monitor, const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept
+    {
+        const auto iter = std::find_if(monitors.begin(), monitors.end(), [monitor](const auto& entry) {
+            return entry.first == monitor;
+        });
+
+        if (iter == monitors.end())
+        {
+            return std::nullopt;
+        }
+
+        return static_cast<size_t>(std::distance(monitors.begin(), iter));
+    }
+
+    std::vector<WindowRotationSnapshot> CollectWindowRotationSnapshots()
+    {
+        std::vector<WindowRotationSnapshot> windows;
+        EnumWindows(
+            [](HWND window, LPARAM param) -> BOOL {
+                if (!FancyZonesWindowProcessing::IsProcessableManually(window))
+                {
+                    return TRUE;
+                }
+
+                RECT rect{};
+                if (!GetWindowRect(window, &rect) || rect.left == rect.right || rect.top == rect.bottom)
+                {
+                    return TRUE;
+                }
+
+                auto sourceMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+                if (!sourceMonitor)
+                {
+                    return TRUE;
+                }
+
+                auto& snapshots = *reinterpret_cast<std::vector<WindowRotationSnapshot>*>(param);
+                snapshots.push_back({ .window = window, .sourceMonitor = sourceMonitor, .sourceRect = rect });
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&windows));
+
+        return windows;
+    }
+
+    constexpr bool IsRotationPreviewReleaseKey(DWORD vkCode) noexcept
+    {
+        return vkCode == VK_LWIN || vkCode == VK_RWIN || vkCode == VK_CONTROL || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL || vkCode == VK_MENU || vkCode == VK_LMENU || vkCode == VK_RMENU || vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT;
+    }
+
+    constexpr bool IsWinKey(DWORD vkCode) noexcept
+    {
+        return vkCode == VK_LWIN || vkCode == VK_RWIN;
+    }
+
+    constexpr bool IsCtrlKey(DWORD vkCode) noexcept
+    {
+        return vkCode == VK_CONTROL || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL;
+    }
+
+    constexpr bool IsAltKey(DWORD vkCode) noexcept
+    {
+        return vkCode == VK_MENU || vkCode == VK_LMENU || vkCode == VK_RMENU;
+    }
+
+    constexpr bool IsShiftKey(DWORD vkCode) noexcept
+    {
+        return vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT;
+    }
+
+    size_t GetMonitorDisplayNumber(HMONITOR monitor, size_t fallback) noexcept
+    {
+        MONITORINFOEX monitorInfo{};
+        monitorInfo.cbSize = sizeof(MONITORINFOEX);
+        if (!GetMonitorInfoW(monitor, &monitorInfo))
+        {
+            return fallback;
+        }
+
+        std::wstring deviceName = monitorInfo.szDevice;
+        const auto digitStart = deviceName.find_last_not_of(L"0123456789");
+        if (digitStart == std::wstring::npos || digitStart + 1 >= deviceName.size())
+        {
+            return fallback;
+        }
+
+        try
+        {
+            return static_cast<size_t>(std::stoul(deviceName.substr(digitStart + 1)));
+        }
+        catch (...)
+        {
+            return fallback;
+        }
+    }
+}
+
+namespace MonitorRotation
+{
+    LONG ScaleCoordinate(LONG value, LONG sourceStart, LONG sourceSize, LONG targetStart, LONG targetSize) noexcept
+    {
+        if (sourceSize == 0)
+        {
+            return targetStart;
+        }
+
+        return targetStart + MulDiv(value - sourceStart, targetSize, sourceSize);
+    }
+
+    RECT MapRectBetweenMonitorWorkAreas(const RECT& windowRect, const RECT& sourceWorkArea, const RECT& targetWorkArea) noexcept
+    {
+        const LONG sourceWidth = sourceWorkArea.right - sourceWorkArea.left;
+        const LONG sourceHeight = sourceWorkArea.bottom - sourceWorkArea.top;
+        const LONG targetWidth = targetWorkArea.right - targetWorkArea.left;
+        const LONG targetHeight = targetWorkArea.bottom - targetWorkArea.top;
+
+        return RECT{
+            .left = ScaleCoordinate(windowRect.left, sourceWorkArea.left, sourceWidth, targetWorkArea.left, targetWidth),
+            .top = ScaleCoordinate(windowRect.top, sourceWorkArea.top, sourceHeight, targetWorkArea.top, targetHeight),
+            .right = ScaleCoordinate(windowRect.right, sourceWorkArea.left, sourceWidth, targetWorkArea.left, targetWidth),
+            .bottom = ScaleCoordinate(windowRect.bottom, sourceWorkArea.top, sourceHeight, targetWorkArea.top, targetHeight),
+        };
+    }
+
+    size_t GetRotatedMonitorIndex(size_t sourceIndex, size_t monitorCount, bool reverse) noexcept
+    {
+        if (reverse)
+        {
+            return sourceIndex == 0 ? monitorCount - 1 : sourceIndex - 1;
+        }
+
+        return (sourceIndex + 1) % monitorCount;
+    }
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
     FancyZones(HINSTANCE hinstance, std::function<void()> disableModuleCallbackFunction) noexcept :
-        SettingsObserver({ SettingId::EditorHotkey, SettingId::WindowSwitching, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors }),
+        SettingsObserver({ SettingId::EditorHotkey, SettingId::WindowSwitching, SettingId::PrevTabHotkey, SettingId::NextTabHotkey, SettingId::SpanZonesAcrossMonitors, SettingId::MonitorRotation, SettingId::MonitorRotationHotkey }),
         m_hinstance(hinstance),
         m_draggingState([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        },
+        [this](bool up) {
+            // Swallow the wheel event only when a switch is actually going to happen, otherwise
+            // the window under the cursor would become unscrollable for nothing
+            const auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+            if (!workArea || !NextWheelLayout(*workArea, up).has_value())
+            {
+                return false;
+            }
+
+            PostMessageW(m_window, WM_PRIV_WHEEL_LAYOUT_SWITCH, up ? 1 : 0, NULL);
+            return true;
         })
     {
         if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL))
@@ -129,6 +305,13 @@ public:
                 PostMessageW(m_window, WM_PRIV_WINDOWCREATED, wparam, lparam);
             }
             break;
+
+        case EVENT_OBJECT_DESTROY:
+            if (data->idObject == OBJID_WINDOW)
+            {
+                PostMessageW(m_window, WM_PRIV_WINDOWDESTROYED, wparam, lparam);
+            }
+            break;
         }
     }
 
@@ -136,10 +319,13 @@ public:
     VirtualDesktopChanged() noexcept;
     IFACEMETHODIMP_(bool)
     OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept;
+    IFACEMETHODIMP_(bool)
+    OnKeyUp(PKBDLLHOOKSTRUCT info) noexcept;
 
     void MoveSizeStart(HWND window, HMONITOR monitor);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen);
     void MoveSizeEnd();
+    void AbortMoveSize();
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
@@ -156,6 +342,13 @@ private:
     void UpdateWorkAreas(bool updateWindowPositions) noexcept;
     bool ShouldWorkAreasBeRecreated(const std::vector<FancyZonesDataTypes::MonitorId>& monitors, const GUID& virtualDesktop, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& workAreas) noexcept;
     void CycleWindows(bool reverse) noexcept;
+    void RotateWindowsAcrossMonitors(bool reverse) noexcept;
+    void ShowMonitorRotationPreview(std::optional<bool> reverse = std::nullopt, bool animateRotation = false) noexcept;
+    void HideMonitorRotationPreview() noexcept;
+    void EnsureMonitorRotationContentNumbers(const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept;
+    void RotateMonitorRotationContentNumbers(bool reverse) noexcept;
+    bool IsMonitorRotationActivatorKey(DWORD vkCode) const noexcept;
+    bool IsMonitorRotationChordDown() const noexcept;
 
     void SyncVirtualDesktops() noexcept;
 
@@ -166,6 +359,9 @@ private:
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    void CycleLayoutByWheel(bool reverse) noexcept;
+    std::optional<LayoutData> NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept;
+    void SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept;
     void FlashZones() noexcept;
 
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
@@ -179,6 +375,10 @@ private:
     WindowKeyboardSnap m_windowKeyboardSnapper{};
     WorkAreaConfiguration m_workAreaConfiguration;
     DraggingState m_draggingState;
+    bool m_monitorRotationPreviewActive = false;
+    MonitorRotation::KeyState m_monitorRotationKeyState;
+    std::optional<bool> m_pendingMonitorRotationReverse;
+    std::unordered_map<HMONITOR, size_t> m_monitorRotationContentNumbers;
 
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
@@ -342,9 +542,23 @@ void FancyZones::MoveSizeEnd()
     if (m_windowMouseSnapper)
     {
         m_windowMouseSnapper->MoveSizeEnd();
-        m_draggingState.Disable();
         m_windowMouseSnapper = nullptr;
     }
+
+    // Always disable dragging state, even if m_windowMouseSnapper was already null.
+    // This prevents stuck drag state when a window is destroyed mid-drag.
+    m_draggingState.Disable();
+}
+
+void FancyZones::AbortMoveSize()
+{
+    if (m_windowMouseSnapper)
+    {
+        m_windowMouseSnapper->Abort();
+        m_windowMouseSnapper = nullptr;
+    }
+
+    m_draggingState.Disable();
 }
 
 bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept
@@ -472,11 +686,50 @@ void FancyZones::WindowCreated(HWND window) noexcept
 IFACEMETHODIMP_(bool)
 FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 {
+    m_monitorRotationKeyState.Update(info->vkCode, true);
+
     // Return true to swallow the keyboard event
     bool const shift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
     bool const win = GetAsyncKeyState(VK_LWIN) & 0x8000 || GetAsyncKeyState(VK_RWIN) & 0x8000;
     bool const alt = GetAsyncKeyState(VK_MENU) & 0x8000;
     bool const ctrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+    if (IsMonitorRotationChordDown())
+    {
+        if (!m_monitorRotationPreviewActive)
+        {
+            m_monitorRotationPreviewActive = true;
+            PostMessageW(m_window, WM_PRIV_MONITOR_ROTATION_PREVIEW_SHOW, 0, 0);
+        }
+
+        if (info->vkCode == VK_LEFT || info->vkCode == VK_RIGHT)
+        {
+            if (!m_pendingMonitorRotationReverse.has_value())
+            {
+                const bool reverse = info->vkCode == VK_LEFT;
+                PostMessageW(m_window, WM_PRIV_MONITOR_ROTATION_PREVIEW_ROTATE, static_cast<WPARAM>(reverse), 0);
+            }
+
+            m_monitorRotationKeyState.Consume(info->vkCode);
+            return true;
+        }
+
+        if (IsMonitorRotationActivatorKey(info->vkCode))
+        {
+            m_monitorRotationKeyState.Consume(info->vkCode);
+            return true;
+        }
+
+        if (IsRotationPreviewReleaseKey(info->vkCode))
+        {
+            return false;
+        }
+    }
+    else if (m_monitorRotationPreviewActive)
+    {
+        m_monitorRotationPreviewActive = false;
+        PostMessageW(m_window, WM_PRIV_MONITOR_ROTATION_PREVIEW_HIDE, 0, 0);
+    }
+
     if ((win && !shift && !ctrl) || (win && ctrl && alt))
     {
         if ((info->vkCode == VK_RIGHT) || (info->vkCode == VK_LEFT) || (info->vkCode == VK_UP) || (info->vkCode == VK_DOWN))
@@ -505,7 +758,9 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
         bool dragging = m_draggingState.IsDragging();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
-        bool changeLayoutWhileDragging = dragging && digitPressed != -1;
+        // Require Win+Ctrl+Alt even while dragging to prevent accidental layout switches
+        // when drag state is stuck (root cause of #410 "steals number keys")
+        bool changeLayoutWhileDragging = dragging && win && ctrl && alt && digitPressed != -1;
 
         if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
         {
@@ -519,11 +774,60 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (m_draggingState.IsDragging() && shift)
+    // Only suppress the bare Shift key itself during drag (used for drag-toggle).
+    // Do NOT swallow Shift+<other key> combos - that steals keystrokes from apps.
+    if (m_windowMouseSnapper &&
+        (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
+        // Record the press before swallowing it. Returning 1 removes the key from the input stream
+        // for every listener - including this module's own WM_INPUT handler, which is what normally
+        // calls SetShiftState - so without this the zones could never be switched off with Shift.
+        m_draggingState.SetShiftState(true);
         return true;
     }
     return false;
+}
+
+IFACEMETHODIMP_(bool)
+FancyZones::OnKeyUp(PKBDLLHOOKSTRUCT info) noexcept
+{
+    const bool wasMonitorRotationPreviewActive = m_monitorRotationPreviewActive;
+    const bool isActivatorKey = IsMonitorRotationActivatorKey(info->vkCode);
+    const bool wasConsumed = m_monitorRotationKeyState.ReleaseWasConsumed(info->vkCode);
+    m_monitorRotationKeyState.Update(info->vkCode, false);
+
+    if (wasMonitorRotationPreviewActive && !IsMonitorRotationChordDown())
+    {
+        m_monitorRotationPreviewActive = false;
+        PostMessageW(m_window, WM_PRIV_MONITOR_ROTATION_PREVIEW_HIDE, 0, 0);
+        return isActivatorKey || wasConsumed;
+    }
+
+    return wasConsumed;
+}
+
+bool FancyZones::IsMonitorRotationChordDown() const noexcept
+{
+    if (!FancyZonesSettings::settings().monitorRotation)
+    {
+        return false;
+    }
+
+    const auto& hotkey = FancyZonesSettings::settings().monitorRotationHotkey;
+    const bool winDown = m_monitorRotationKeyState.IsAnyDown({ VK_LWIN, VK_RWIN });
+    const bool ctrlDown = m_monitorRotationKeyState.IsAnyDown({ VK_CONTROL, VK_LCONTROL, VK_RCONTROL });
+    const bool altDown = m_monitorRotationKeyState.IsAnyDown({ VK_MENU, VK_LMENU, VK_RMENU });
+    const bool shiftDown = m_monitorRotationKeyState.IsAnyDown({ VK_SHIFT, VK_LSHIFT, VK_RSHIFT });
+    return hotkey.win_pressed() == winDown &&
+           hotkey.ctrl_pressed() == ctrlDown &&
+           hotkey.alt_pressed() == altDown &&
+           hotkey.shift_pressed() == shiftDown &&
+           m_monitorRotationKeyState.IsDown(hotkey.get_code());
+}
+
+bool FancyZones::IsMonitorRotationActivatorKey(DWORD vkCode) const noexcept
+{
+    return vkCode == FancyZonesSettings::settings().monitorRotationHotkey.get_code();
 }
 
 void FancyZones::ToggleEditor() noexcept
@@ -581,6 +885,18 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
+    case WM_QUERYENDSESSION:
+        return TRUE;
+
+    case WM_ENDSESSION:
+        if (wparam)
+        {
+            // This window has no WM_DESTROY -> PostQuitMessage path, so it
+            // cannot use handle_stateless_session_end_message.
+            PostQuitMessage(0);
+        }
+        return 0;
+
     case WM_HOTKEY:
     {
         if (wparam == static_cast<WPARAM>(HotkeyId::Editor))
@@ -699,6 +1015,18 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             auto hwnd = reinterpret_cast<HWND>(wparam);
             WindowCreated(hwnd);
         }
+        else if (message == WM_PRIV_WINDOWDESTROYED)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            // If the destroyed window was being dragged, abort the drag without
+            // snapping. Calling MoveSizeEnd() here would snap the now-destroyed
+            // HWND into a zone and corrupt the layout state.
+            if (m_windowMouseSnapper && m_windowMouseSnapper->GetDraggedWindow() == hwnd)
+            {
+                Logger::info(L"Window destroyed during drag - aborting drag");
+                AbortMoveSize();
+            }
+        }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {
             LayoutHotkeys::instance().LoadData();
@@ -710,6 +1038,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
         {
             CustomLayouts::instance().LoadData();
+            RefreshLayouts();
         }
         else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
         {
@@ -723,6 +1052,46 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
+        }
+        else if (message == WM_PRIV_WHEEL_LAYOUT_SWITCH)
+        {
+            // wheel up cycles backwards, wheel down cycles forward
+            CycleLayoutByWheel(wparam != 0);
+        }
+        else if (message == WM_PRIV_MONITOR_ROTATION_PREVIEW_SHOW)
+        {
+            ShowMonitorRotationPreview();
+        }
+        else if (message == WM_PRIV_MONITOR_ROTATION_PREVIEW_HIDE)
+        {
+            HideMonitorRotationPreview();
+        }
+        else if (message == WM_PRIV_MONITOR_ROTATION_PREVIEW_ROTATE)
+        {
+            const bool reverse = static_cast<bool>(wparam);
+            m_pendingMonitorRotationReverse = reverse;
+            ShowMonitorRotationPreview(reverse, true);
+            if (SetTimer(m_window, MonitorRotationCommitTimerId, MonitorRotationCommitDelayMillis, nullptr) == 0)
+            {
+                m_pendingMonitorRotationReverse.reset();
+                ShowMonitorRotationPreview();
+            }
+        }
+        else if (message == WM_TIMER && wparam == MonitorRotationCommitTimerId)
+        {
+            KillTimer(m_window, MonitorRotationCommitTimerId);
+            if (m_pendingMonitorRotationReverse.has_value())
+            {
+                const bool reverse = *m_pendingMonitorRotationReverse;
+                const bool shouldShowCommitPreview = m_monitorRotationPreviewActive && IsMonitorRotationChordDown();
+                m_pendingMonitorRotationReverse.reset();
+                RotateWindowsAcrossMonitors(reverse);
+                RotateMonitorRotationContentNumbers(reverse);
+                if (shouldShowCommitPreview)
+                {
+                    ShowMonitorRotationPreview();
+                }
+            }
         }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
@@ -837,6 +1206,14 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         std::vector<FancyZonesDataTypes::MonitorId> monitors = { FancyZonesDataTypes::MonitorId{ .monitor = nullptr, .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } } };
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, m_workAreaConfiguration.GetAllWorkAreas()))
         {
+            // WindowMouseSnap caches a raw WorkArea* in m_currentWorkArea and the
+            // WorkArea map by reference. WorkAreaConfiguration::Clear() destroys
+            // every unique_ptr<WorkArea> (and hence the inner ZonesOverlay and
+            // its std::mutex). If a drag is in flight, the next MoveSizeUpdate
+            // would dereference that dangling WorkArea* and lock the freed
+            // mutex. Abort the active drag first so subsequent drag messages
+            // hit the snapper's `if (m_windowMouseSnapper)` guard and no-op.
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
 
             FancyZonesDataTypes::WorkAreaId workAreaId;
@@ -853,6 +1230,8 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
         {
+            // See comment above the matching Clear() in the span-zones branch.
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
             for (const auto& monitor : monitors)
             {
@@ -993,6 +1372,172 @@ void FancyZones::CycleWindows(bool reverse) noexcept
     }
 }
 
+void FancyZones::ShowMonitorRotationPreview(std::optional<bool> reverse, bool animateRotation) noexcept
+{
+    auto windows = CollectWindowRotationSnapshots();
+    std::unordered_map<HMONITOR, std::vector<RECT>> windowRectsByMonitor;
+    for (const auto& window : windows)
+    {
+        windowRectsByMonitor[window.sourceMonitor].push_back(window.sourceRect);
+    }
+
+    auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    FancyZonesUtils::OrderMonitors(monitors);
+    EnsureMonitorRotationContentNumbers(monitors);
+
+    if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
+    {
+        auto workArea = m_workAreaConfiguration.GetWorkArea(nullptr);
+        if (workArea)
+        {
+            std::vector<RECT> allWindowRects;
+            allWindowRects.reserve(windows.size());
+            for (const auto& window : windows)
+            {
+                allWindowRects.push_back(window.sourceRect);
+            }
+
+            workArea->ShowMonitorRotationPreview(allWindowRects, 1, reverse, animateRotation);
+        }
+
+        m_monitorRotationPreviewActive = true;
+        return;
+    }
+
+    for (const auto& [monitor, workArea] : m_workAreaConfiguration.GetAllWorkAreas())
+    {
+        if (!workArea)
+        {
+            continue;
+        }
+
+        const auto iter = windowRectsByMonitor.find(monitor);
+        const std::vector<RECT> emptyRects;
+        const auto monitorNumberIter = m_monitorRotationContentNumbers.find(monitor);
+        const size_t monitorNumber = monitorNumberIter != m_monitorRotationContentNumbers.end() ? monitorNumberIter->second : GetMonitorDisplayNumber(monitor, 1);
+        workArea->ShowMonitorRotationPreview(iter != windowRectsByMonitor.end() ? iter->second : emptyRects, monitorNumber, reverse, animateRotation);
+    }
+
+    m_monitorRotationPreviewActive = true;
+}
+
+void FancyZones::EnsureMonitorRotationContentNumbers(const std::vector<std::pair<HMONITOR, RECT>>& monitors) noexcept
+{
+    if (monitors.empty())
+    {
+        m_monitorRotationContentNumbers.clear();
+        return;
+    }
+
+    bool shouldReinitialize = m_monitorRotationContentNumbers.size() != monitors.size();
+    if (!shouldReinitialize)
+    {
+        for (const auto& [monitor, _] : monitors)
+        {
+            if (!m_monitorRotationContentNumbers.contains(monitor))
+            {
+                shouldReinitialize = true;
+                break;
+            }
+        }
+    }
+
+    if (!shouldReinitialize)
+    {
+        return;
+    }
+
+    m_monitorRotationContentNumbers.clear();
+    for (size_t monitorIndex = 0; monitorIndex < monitors.size(); monitorIndex++)
+    {
+        m_monitorRotationContentNumbers[monitors[monitorIndex].first] = GetMonitorDisplayNumber(monitors[monitorIndex].first, monitorIndex + 1);
+    }
+}
+
+void FancyZones::RotateMonitorRotationContentNumbers(bool reverse) noexcept
+{
+    auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    FancyZonesUtils::OrderMonitors(monitors);
+    EnsureMonitorRotationContentNumbers(monitors);
+
+    if (monitors.size() < 2)
+    {
+        return;
+    }
+
+    std::unordered_map<HMONITOR, size_t> rotatedContentNumbers;
+    for (size_t sourceIndex = 0; sourceIndex < monitors.size(); sourceIndex++)
+    {
+        const size_t targetIndex = MonitorRotation::GetRotatedMonitorIndex(sourceIndex, monitors.size(), reverse);
+        rotatedContentNumbers[monitors[targetIndex].first] = m_monitorRotationContentNumbers[monitors[sourceIndex].first];
+    }
+
+    m_monitorRotationContentNumbers = std::move(rotatedContentNumbers);
+}
+
+void FancyZones::HideMonitorRotationPreview() noexcept
+{
+    for (const auto& [_, workArea] : m_workAreaConfiguration.GetAllWorkAreas())
+    {
+        if (workArea)
+        {
+            workArea->HideZones();
+        }
+    }
+
+    m_monitorRotationPreviewActive = false;
+    if (!m_pendingMonitorRotationReverse.has_value())
+    {
+        KillTimer(m_window, MonitorRotationCommitTimerId);
+    }
+}
+
+void FancyZones::RotateWindowsAcrossMonitors(bool reverse) noexcept
+{
+    auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
+    FancyZonesUtils::OrderMonitors(monitors);
+    if (monitors.size() < 2)
+    {
+        Logger::info(L"Monitor rotation skipped: fewer than two monitors are available");
+        return;
+    }
+
+    auto windows = CollectWindowRotationSnapshots();
+    if (windows.empty())
+    {
+        Logger::info(L"Monitor rotation skipped: no processable windows found");
+        return;
+    }
+
+    size_t movedWindows = 0;
+    for (const auto& window : windows)
+    {
+        const auto sourceIndex = FindMonitorIndex(window.sourceMonitor, monitors);
+        if (!sourceIndex.has_value())
+        {
+            continue;
+        }
+
+        const size_t targetIndex = MonitorRotation::GetRotatedMonitorIndex(*sourceIndex, monitors.size(), reverse);
+        const RECT targetRect = MonitorRotation::MapRectBetweenMonitorWorkAreas(
+            window.sourceRect,
+            monitors[*sourceIndex].second,
+            monitors[targetIndex].second);
+        if (!FancyZonesWindowProperties::RetrieveZoneIndexProperty(window.window).empty())
+        {
+            if (auto workArea = m_workAreaConfiguration.GetWorkAreaFromWindow(window.window))
+            {
+                workArea->Unsnap(window.window);
+            }
+        }
+
+        FancyZonesWindowUtils::SizeWindowToRect(window.window, targetRect, false);
+        movedWindows++;
+    }
+
+    Logger::info(L"Rotated {} windows across {} monitors", movedWindows, monitors.size());
+}
+
 void FancyZones::SyncVirtualDesktops() noexcept
 {
     // Explorer persists current virtual desktop identifier to registry on a per session basis,
@@ -1063,8 +1608,23 @@ void FancyZones::SettingsUpdate(SettingId id)
         UpdateHotkey(static_cast<int>(HotkeyId::NextTab), FancyZonesSettings::settings().nextTabHotkey, FancyZonesSettings::settings().windowSwitching);
     }
     break;
+    case SettingId::MonitorRotation:
+    case SettingId::MonitorRotationHotkey:
+    {
+        m_pendingMonitorRotationReverse.reset();
+        KillTimer(m_window, MonitorRotationCommitTimerId);
+        m_monitorRotationKeyState.Reset();
+        if (m_monitorRotationPreviewActive && !IsMonitorRotationChordDown())
+        {
+            HideMonitorRotationPreview();
+        }
+    }
+    break;
     case SettingId::SpanZonesAcrossMonitors:
     {
+        // See UpdateWorkAreas() - same WindowMouseSnap dangling-WorkArea*
+        // hazard if the user toggles this setting mid-drag.
+        AbortMoveSize();
         m_workAreaConfiguration.Clear();
         PostMessageW(m_window, WM_PRIV_INIT, NULL, NULL);
     }
@@ -1152,12 +1712,76 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
     if (workArea)
     {
-        if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
+        SwitchLayout(workArea, layout.value());
+    }
+}
+
+void FancyZones::CycleLayoutByWheel(bool reverse) noexcept
+{
+    auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+    if (!workArea)
+    {
+        return;
+    }
+
+    const auto layout = NextWheelLayout(*workArea, reverse);
+    if (layout.has_value())
+    {
+        SwitchLayout(workArea, layout.value());
+    }
+}
+
+// The layout the wheel would switch the work area to, or nothing when no switch is possible
+std::optional<LayoutData> FancyZones::NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept
+{
+    const auto ids = WheelCycleLayoutIds();
+    if (ids.size() < 2)
+    {
+        return std::nullopt;
+    }
+
+    std::optional<GUID> currentId{};
+    if (const auto current = AppliedLayouts::instance().GetDeviceLayout(workArea.UniqueId()); current.has_value())
+    {
+        currentId = current->uuid;
+    }
+
+    const auto nextId = FancyZonesUtils::PickNextLayoutId(ids, currentId, reverse);
+    if (!nextId.has_value())
+    {
+        return std::nullopt;
+    }
+
+    return CustomLayouts::instance().GetLayout(nextId.value());
+}
+
+// Applies a custom layout picked by a quick switch (hotkey or wheel) to the given work area
+void FancyZones::SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept
+{
+    if (!AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout))
+    {
+        return;
+    }
+
+    RefreshLayouts();
+
+    // While dragging, the highlighted zones would keep reflecting the previous layout until the
+    // pointer moves, so recompute them against the new layout at the current cursor position
+    POINT ptScreen{};
+    if (m_windowMouseSnapper && GetPhysicalCursorPos(&ptScreen))
+    {
+        if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
         {
-            RefreshLayouts();
-            FlashZones();
-            AppliedLayouts::instance().SaveData();
+            MoveSizeUpdate(monitor, ptScreen);
         }
+    }
+
+    FlashZones();
+    AppliedLayouts::instance().SaveData();
+
+    if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(layout.uuid); layoutData.has_value())
+    {
+        workArea->ShowLayoutNameLabel(layoutData->name);
     }
 }
 

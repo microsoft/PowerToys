@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
-  <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
+  <!-- Make sure Inputs/Outputs are set correctly, so that we only regenerate
+  the version header when the version actually changes. Otherwise this will
+  dirty FastUpToDate checks for almost everything -->
+  <Target Name="GenerateVersionData"
+    BeforeTargets="PrepareForBuild"
+    Inputs="$(RepoRoot)src\Version.props"
+    Outputs="$(MSBuildProjectDirectory)\Generated Files\version_gen.h">
+    <PropertyGroup>
+      <VersionBuild>0</VersionBuild>
+      <VersionBuild Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(Version)', '^\d+\.\d+\.\d+\.\d+$'))">$([System.String]::Copy('$(Version)').Split('.')[3])</VersionBuild>
+      <VersionSourceCommit Condition="'$(SourceCommit)' != ''">$(SourceCommit)</VersionSourceCommit>
+      <VersionSourceCommit Condition="'$(VersionSourceCommit)' == '' and '$(BUILD_SOURCEVERSION)' != ''">$(BUILD_SOURCEVERSION)</VersionSourceCommit>
+      <VersionSourceCommit Condition="'$(VersionSourceCommit)' == '' and '$(GITHUB_SHA)' != ''">$(GITHUB_SHA)</VersionSourceCommit>
+      <VersionSourceCommit Condition="'$(VersionSourceCommit)' == ''">unknown</VersionSourceCommit>
+      <VersionChannel Condition="'$(VersionChannel)' == ''">private</VersionChannel>
+    </PropertyGroup>
     <ItemGroup>
       <HeaderLines Include="#pragma once" />
       <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
       <HeaderLines Include="#define VERSION_MINOR $(Version.Split('.')[1])" />
       <HeaderLines Include="#define VERSION_REVISION $(Version.Split('.')[2])" />
+      <HeaderLines Include="#define VERSION_BUILD $(VersionBuild)" />
+      <HeaderLines Include="#define VERSION_CHANNEL L&quot;$(VersionChannel)&quot;" />
+      <HeaderLines Include="#define VERSION_SOURCE_COMMIT L&quot;$(VersionSourceCommit)&quot;" />
     </ItemGroup>
     <WriteLinesToFile File="Generated Files\version_gen.h" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>

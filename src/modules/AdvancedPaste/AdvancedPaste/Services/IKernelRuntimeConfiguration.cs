@@ -11,6 +11,8 @@ namespace AdvancedPaste.Services;
 /// </summary>
 public interface IKernelRuntimeConfiguration
 {
+    string ProviderId { get; }
+
     AIServiceType ServiceType { get; }
 
     string ModelName { get; }

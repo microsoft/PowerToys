@@ -45,5 +45,12 @@
             TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
             TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+
+        <!--  Teaching tip shown while the Pin To Dock dialog is open, to identify this monitor  -->
+        <TeachingTip
+            x:Name="MonitorLabelTeachingTip"
+            IsLightDismissEnabled="False"
+            ShouldConstrainToRootBounds="False"
+            Target="{x:Bind Root}" />
     </Grid>
 </winuiex:WindowEx>

@@ -288,6 +288,12 @@
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
+                                Name="ZoomItRecordNoiseCancellation"
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
+                                <CheckBox x:Uid="ZoomIt_Record_NoiseCancellation" IsChecked="{x:Bind ViewModel.RecordNoiseCancellation, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicMonoMix"
                                 ContentAlignment="Left"
                                 Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
@@ -352,6 +358,35 @@
                                     <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_Circle" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBackground"
+                                x:Uid="ZoomIt_Record_WebcamBackground"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamBackgroundMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_None" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_Blur" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_Image" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBrightness"
+                                x:Uid="ZoomIt_Record_WebcamBrightness"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    TickFrequency="10"
+                                    TickPlacement="Outside"
+                                    Value="{x:Bind ViewModel.WebcamBrightness, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBackgroundImage"
+                                x:Uid="ZoomIt_Record_WebcamBackgroundImage"
+                                Description="{x:Bind ViewModel.WebcamBackgroundImage, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.WebcamBackgroundIsImage, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Record_WebcamBackgroundImage_BrowseButton" Command="{x:Bind ViewModel.SelectWebcamBackgroundImageCommand, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical" Spacing="4">
@@ -364,15 +399,41 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="ZoomIt_MirrorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="ZoomItMirrorShortcut"
+                        x:Uid="ZoomIt_Mirror_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.MirrorToggleKey, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="ZoomItMirrorTrackWindow" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Mirror_TrackWindow" IsChecked="{x:Bind ViewModel.MirrorTrackWindow, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_FullScreen}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_Crop}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_Window}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
-                        <tkcontrols:SettingsCard.Description>
-                            <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                        </tkcontrols:SettingsCard.Description>
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSnipSaveShortcut" x:Uid="ZoomIt_SnipSave_Shortcut">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipSaveToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSnipCopyToClipboard" x:Uid="ZoomIt_SnipCopyToClipboard">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SnipCopyToClipboard, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
@@ -380,20 +441,15 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipPanoramaToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Panorama_Shortcut_Save}" />
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItPanoramaSaveShortcut" x:Uid="ZoomIt_PanoramaSave_Shortcut">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipPanoramaSaveToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
@@ -401,7 +457,7 @@
             <controls:PageLink x:Uid="LearnMore_ZoomIt" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://learn.microsoft.com/sysinternals/downloads/zoomit" Text="Sysinternals ZoomIt by Mark Russinovich, Alex Mihaiuc, John Stephens" />
+            <controls:PageLink x:Uid="Attribution_ZoomIt" Link="https://learn.microsoft.com/sysinternals/downloads/zoomit" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigablePage>

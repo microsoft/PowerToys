@@ -492,7 +492,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Focus into Second Editor Group
         Shortcut:
         - Win: false
@@ -500,7 +500,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 2
+            - "<2>"
       - Name: Focus into Third Editor Group
         Shortcut:
         - Win: false
@@ -508,7 +508,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 3
+            - "<3>"
       - Name: Move Editor Left
         Shortcut:
         - Win: false

@@ -19,6 +19,9 @@ namespace PowerDisplay.Models
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
 
+        [JsonPropertyName("nextId")]
+        public int NextId { get; set; }
+
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
 
@@ -29,15 +32,35 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Gets the profile by name
+        /// Gets the first profile whose name matches a pre-ID persisted reference.
+        /// This lookup is only for legacy migration because profile names are not unique.
         /// </summary>
-        public PowerDisplayProfile? GetProfile(string name)
+        public PowerDisplayProfile? GetLegacyProfileByName(string name)
         {
-            return Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            return Profiles.FirstOrDefault(
+                profile => profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// Adds or updates a profile
+        /// Gets the profile by its stable id, or null when id is not positive or no profile has it.
+        /// </summary>
+        public PowerDisplayProfile? GetById(int id)
+        {
+            return id <= 0 ? null : Profiles.FirstOrDefault(p => p.Id == id);
+        }
+
+        /// <summary>
+        /// Returns profiles with usable stable ids in their persisted array order.
+        /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
+        /// </summary>
+        public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
+        {
+            return Profiles.Where(profile => profile is not null && profile.Id >= 1);
+        }
+
+        /// <summary>
+        /// Adds or updates a profile by its stable id. New profiles receive an id from the monotonic
+        /// NextId counter and are displayed last. Updating preserves the profile's display order.
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
         {
@@ -46,23 +69,80 @@ namespace PowerDisplay.Models
                 throw new ArgumentException("Profile is invalid");
             }
 
-            var existing = GetProfile(profile.Name);
-            if (existing != null)
+            var existingIndex = profile.Id >= 1 ? Profiles.FindIndex(p => p?.Id == profile.Id) : -1;
+            if (profile.Id == 0)
             {
-                Profiles.Remove(existing);
+                // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
+                // the highest id in use (mirrors EnsureIds). This guarantees a new profile never
+                // collides with an existing one even when SetProfile runs before EnsureIds.
+                var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+                var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+                profile.Id = next;
+                NextId = next + 1;
+            }
+            else if (NextId <= profile.Id)
+            {
+                NextId = profile.Id + 1;
             }
 
             profile.Touch();
-            Profiles.Add(profile);
+            if (existingIndex >= 0)
+            {
+                Profiles[existingIndex] = profile;
+            }
+            else
+            {
+                Profiles.Add(profile);
+            }
+
             LastUpdated = DateTime.UtcNow;
         }
 
         /// <summary>
-        /// Removes a profile by name
+        /// Moves a profile before another id, or to the end when beforeProfileId is null.
+        /// Returns false without changing the collection when either id is invalid or missing,
+        /// or the profile is already at the requested position. Moves the existing array entry
+        /// without changing its stable id, contents, or timestamps.
         /// </summary>
-        public bool RemoveProfile(string name)
+        public bool MoveProfileBefore(int profileId, int? beforeProfileId)
         {
-            var profile = GetProfile(name);
+            if (profileId <= 0 || beforeProfileId is <= 0 || profileId == beforeProfileId)
+            {
+                return false;
+            }
+
+            var sourceIndex = Profiles.FindIndex(profile => profile?.Id == profileId);
+            var targetIndex = beforeProfileId.HasValue
+                ? Profiles.FindIndex(profile => profile?.Id == beforeProfileId.Value)
+                : Profiles.Count;
+            if (sourceIndex < 0 || targetIndex < 0)
+            {
+                return false;
+            }
+
+            if (targetIndex > sourceIndex)
+            {
+                targetIndex--;
+            }
+
+            if (sourceIndex == targetIndex)
+            {
+                return false;
+            }
+
+            var profile = Profiles[sourceIndex];
+            Profiles.RemoveAt(sourceIndex);
+            Profiles.Insert(targetIndex, profile);
+            LastUpdated = DateTime.UtcNow;
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a profile by its stable id.
+        /// </summary>
+        public bool RemoveProfile(int id)
+        {
+            var profile = GetById(id);
             if (profile != null)
             {
                 Profiles.Remove(profile);
@@ -74,23 +154,33 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Checks if a profile name is valid and available
+        /// One-shot upgrade: assigns a stable id to every profile still missing one (Id == 0), in
+        /// list order, and advances NextId past the highest id in use (self-healing a corrupt or
+        /// legacy counter). Returns true when anything changed. Idempotent on subsequent calls.
         /// </summary>
-        public bool IsNameAvailable(string name, string? excludeName = null)
+        public bool EnsureIds()
         {
-            if (string.IsNullOrWhiteSpace(name))
+            var changed = false;
+
+            var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+            var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+
+            foreach (var p in Profiles)
             {
-                return false;
+                if (p is not null && p.Id == 0)
+                {
+                    p.Id = next++;
+                    changed = true;
+                }
             }
 
-            // Check if name is already used (excluding the profile being renamed)
-            var existing = GetProfile(name);
-            if (existing != null && (excludeName == null || !existing.Name.Equals(excludeName, StringComparison.OrdinalIgnoreCase)))
+            if (NextId != next)
             {
-                return false;
+                NextId = next;
+                changed = true;
             }
 
-            return true;
+            return changed;
         }
     }
 }

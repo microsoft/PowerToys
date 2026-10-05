@@ -22,6 +22,10 @@ namespace KeyboardManagerInput
         int sendVirtualInputCallCount = 0;
         std::function<bool(LowlevelKeyboardEvent*)> sendVirtualInputCallCondition;
 
+        // Optional predicate; when set and it returns true for a SendVirtualInput
+        // call, that call fails (returns false) to simulate a SendInput failure.
+        std::function<bool(const std::vector<INPUT>&)> sendVirtualInputShouldFail;
+
         std::wstring currentProcess;
 
     public:
@@ -34,7 +38,7 @@ namespace KeyboardManagerInput
         void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure);
 
         // Function to simulate keyboard input
-        void SendVirtualInput(const std::vector<INPUT>& inputs);
+        bool SendVirtualInput(const std::vector<INPUT>& inputs);
 
         // Function to simulate keyboard hook behavior
         intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);
@@ -42,11 +46,17 @@ namespace KeyboardManagerInput
         // Function to get the state of a particular key
         bool GetVirtualKeyState(int key);
 
+        // Function to set the state of a particular key for test setup
+        void SetKeyboardState(int key, bool state);
+
         // Function to reset the mocked keyboard state
         void ResetKeyboardState();
 
         // Function to set SendVirtualInput call count condition
         void SetSendVirtualInputTestHandler(std::function<bool(LowlevelKeyboardEvent*)> condition);
+
+        // Function to force SendVirtualInput to fail for calls matching a predicate
+        void SetSendVirtualInputShouldFail(std::function<bool(const std::vector<INPUT>&)> condition);
 
         // Function to get SendVirtualInput call count
         int GetSendVirtualInputCallCount();

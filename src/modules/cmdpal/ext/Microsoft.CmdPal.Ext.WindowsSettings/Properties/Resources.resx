@@ -373,18 +373,18 @@
   </data>
   <data name="BatterySaver" xml:space="preserve">
     <value>Battery Saver</value>
-    <comment>Area System, only available on devices that have a battery, such as a tablet</comment>
+    <comment>Area System, only available on devices that have a battery, such as a tablet. JA: translate "Battery" as "バッテリー" not "電池" when referring to built-in laptop/tablet batteries.</comment>
   </data>
   <data name="BatterySaverSettings" xml:space="preserve">
     <value>Battery Saver settings</value>
-    <comment>Area System, only available on devices that have a battery, such as a tablet</comment>
+    <comment>Area System, only available on devices that have a battery, such as a tablet. JA: translate "Battery" as "バッテリー" not "電池".</comment>
   </data>
   <data name="BatterySaverUsageDetails" xml:space="preserve">
     <value>Battery saver usage details</value>
   </data>
   <data name="BatteryUse" xml:space="preserve">
     <value>Battery use</value>
-    <comment>Area System, only available on devices that have a battery, such as a tablet</comment>
+    <comment>Area System, only available on devices that have a battery, such as a tablet. JA: translate "Battery" as "バッテリー" not "電池".</comment>
   </data>
   <data name="BiometricDevices" xml:space="preserve">
     <value>Biometric Devices</value>

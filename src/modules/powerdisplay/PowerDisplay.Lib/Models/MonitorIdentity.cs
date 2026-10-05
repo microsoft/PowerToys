@@ -36,39 +36,18 @@ public static class MonitorIdentity
     }
 
     /// <summary>
-    /// Extract the PnP hardware key from a DevicePath. The key identifies a physical
-    /// monitor across both QueryDisplayConfig (DevicePath) and WMI (InstanceName)
-    /// representations, so it is the right join key for pairing WMI brightness instances
-    /// with MonitorDisplayInfo entries.
+    /// Convert a WMI <c>WmiMonitorBrightness.InstanceName</c> (e.g.,
+    /// "DISPLAY\BOE0900\4&amp;...&amp;UID111_0") into the same canonical
+    /// <see cref="Monitor.Id"/> that <see cref="FromDevicePath"/> produces from the
+    /// matching QueryDisplayConfig DevicePath for the same physical monitor — e.g.,
+    /// "\\?\DISPLAY#BOE0900#4&amp;...&amp;UID111". Deriving the Id from each source and
+    /// comparing is the join key for pairing WMI brightness instances with
+    /// <c>MonitorDisplayInfo</c> entries; it stays unique even on dual-internal-panel
+    /// devices (Yoga Book 9i, Zenbook Duo) where two panels share an EdidId but differ
+    /// in PnP UID.
     /// </summary>
-    /// <param name="devicePath">DevicePath of the form "\\?\DISPLAY#BOE0900#4&amp;...&amp;UID111#{guid}".</param>
-    /// <returns>Canonical key "BOE0900#4&amp;...&amp;UID111", or empty string if extraction fails.</returns>
-    public static string PnpHardwareKeyFromDevicePath(string? devicePath)
-    {
-        if (string.IsNullOrEmpty(devicePath))
-        {
-            return string.Empty;
-        }
-
-        // Split: ["\\?\DISPLAY", "BOE0900", "4&...&UID111", "{guid}"]
-        var parts = devicePath.Split('#');
-        if (parts.Length < 3 || string.IsNullOrEmpty(parts[1]) || string.IsNullOrEmpty(parts[2]))
-        {
-            return string.Empty;
-        }
-
-        return $"{parts[1]}#{parts[2]}";
-    }
-
-    /// <summary>
-    /// Extract the PnP hardware key from a WMI InstanceName. Produces the same canonical
-    /// form as <see cref="PnpHardwareKeyFromDevicePath"/> for the same physical device,
-    /// enabling reliable one-step matching even on dual-internal-panel devices where
-    /// two panels share an EdidId but differ in PnP UID.
-    /// </summary>
-    /// <param name="instanceName">InstanceName of the form "DISPLAY\BOE0900\4&amp;...&amp;UID111_0".</param>
-    /// <returns>Canonical key "BOE0900#4&amp;...&amp;UID111", or empty string if extraction fails.</returns>
-    public static string PnpHardwareKeyFromInstanceName(string? instanceName)
+    /// <param name="instanceName">InstanceName of the form "DISPLAY\&lt;EdidId&gt;\&lt;instance&gt;_&lt;N&gt;". Null, empty, or not a three-segment InstanceName returns empty string.</param>
+    public static string FromInstanceName(string? instanceName)
     {
         if (string.IsNullOrEmpty(instanceName))
         {
@@ -82,7 +61,7 @@ public static class MonitorIdentity
             return string.Empty;
         }
 
-        // Strip the trailing "_N" WMI-instance suffix (e.g. "..._0").
+        // Strip the trailing "_N" WMI-instance suffix (e.g. "..._0", "..._12").
         var instanceSegment = parts[2];
         var underscore = instanceSegment.LastIndexOf('_');
         if (underscore > 0)
@@ -90,7 +69,11 @@ public static class MonitorIdentity
             instanceSegment = instanceSegment[..underscore];
         }
 
-        return $"{parts[1]}#{instanceSegment}";
+        // Reshape into the canonical DevicePath-style Monitor.Id: a WMI InstanceName uses
+        // "\" separators and omits the "\\?\" device-interface prefix, whereas a
+        // QueryDisplayConfig DevicePath uses "#" separators with that prefix. parts[0] is
+        // the enumerator ("DISPLAY"), reused rather than hardcoded.
+        return $@"\\?\{parts[0]}#{parts[1]}#{instanceSegment}";
     }
 
     /// <summary>

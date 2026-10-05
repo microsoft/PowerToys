@@ -10,15 +10,20 @@ namespace Microsoft.CmdPal.Ext.System;
 public sealed partial class ExecuteCommand : InvokableCommand
 {
     public ExecuteCommand(Action command)
+        : this(() =>
+        {
+            command();
+            return CommandResult.Dismiss();
+        })
+    {
+    }
+
+    public ExecuteCommand(Func<CommandResult> command)
     {
         _command = command;
     }
 
-    public override CommandResult Invoke()
-    {
-        _command();
-        return CommandResult.Dismiss();
-    }
+    public override CommandResult Invoke() => _command();
 
-    private Action _command;
+    private Func<CommandResult> _command;
 }

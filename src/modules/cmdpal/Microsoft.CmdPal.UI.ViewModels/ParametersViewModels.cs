@@ -521,8 +521,10 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     {
         base.UnsafeCleanup();
 
-        _listViewModel?.Dispose();
+        _ = _listViewModel?.CleanupAsync();
         _listViewModel = null;
+        _commandViewModel?.SafeCleanup();
+        _commandViewModel = null;
     }
 
     public void Dispose()
@@ -547,7 +549,17 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     public List<ParameterRunViewModel> Items { get; set; } = [];
 
-    public CommandItemViewModel Command { get; private set; }
+    /// <summary>
+    /// Gets the command shown once every parameter has a value.
+    /// </summary>
+    /// <remarks>
+    /// Mutate through <see cref="ReplaceCommand"/>. Assigning directly drops the
+    /// outgoing item without revoking its subscriptions, which strands it and its
+    /// extension command across the process boundary for good.
+    /// </remarks>
+    public CommandItemViewModel Command => _command;
+
+    private CommandItemViewModel _command;
 
     public bool ShowCommand =>
         IsInitialized &&
@@ -564,7 +576,13 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         {
             if (_activeListViewModel != value)
             {
+                _activeListViewModel?.SuspendForNavigation();
                 _activeListViewModel = value;
+                if (IsPageActive)
+                {
+                    _ = value?.ResumeAfterNavigation();
+                }
+
                 UpdateProperty(nameof(ActiveListViewModel));
                 UpdateProperty(nameof(HasActiveList));
             }
@@ -591,14 +609,32 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        Command = new(new(null), PageContext, _contextMenuFactory);
+        _command = new(new(null), PageContext, _contextMenuFactory);
     }
 
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
+    /// <summary>
+    /// Replaces <see cref="Command"/> with a newly built view-model, cleaning up the one being dropped.
+    /// </summary>
+    private void ReplaceCommand(ICommandItem? model)
+    {
+        var command = new CommandItemViewModel(new(model), PageContext, _contextMenuFactory);
+        var replaced = Interlocked.Exchange(ref _command, command);
+
+        if (!ReferenceEquals(replaced, command))
+        {
+            replaced.SafeCleanup();
+        }
+    }
 
     //// Run on background thread, from InitializeAsync
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -607,7 +643,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             return; // throw?
         }
 
-        Command = new(new(model.Command), PageContext, _contextMenuFactory);
+        ReplaceCommand(model.Command);
         Command.SlowInitializeProperties();
 
         FetchItems();
@@ -618,6 +654,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         // Collect all the items into new viewmodels
         Collection<ParameterRunViewModel> newViewModels = [];
+        var transferred = false;
+
         try
         {
             var newItems = _model.Unsafe!.Parameters;
@@ -635,12 +673,20 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 CoreLogger.LogDebug($"Parameter item was a {t}");
                 if (itemVm != null)
                 {
-                    itemVm.InitializeProperties();
+                    // Track before initializing, so we can cleanup in finally
                     newViewModels.Add(itemVm);
+
+                    itemVm.InitializeProperties();
                     itemVm.PropertyChanged += ItemPropertyChanged;
 
                     if (itemVm is CommandParameterRunViewModel cmdParamVm)
                     {
+                        // Lists load eagerly on entry; switching parameters suspends the previous list.
+                        if (!IsPageActive)
+                        {
+                            cmdParamVm.ListViewModel?.SuspendForNavigation();
+                        }
+
                         cmdParamVm.ValueChanged += ListParamValueChanged;
                     }
                 }
@@ -663,32 +709,33 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 // .Items
             }
 
+            transferred = true;
+
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)
             {
-                removedItem.PropertyChanged -= ItemPropertyChanged;
-                if (removedItem is CommandParameterRunViewModel removedCmdParam)
-                {
-                    removedCmdParam.ValueChanged -= ListParamValueChanged;
-
-                    // If the active list param is being removed, clear the
-                    // active references so we don't hold on to a disposed
-                    // ListViewModel.
-                    if (removedCmdParam == _activeListParam)
-                    {
-                        SetActiveListParameter(null);
-                    }
-                }
-
-                removedItem.SafeCleanup();
+                ReleaseItem(removedItem);
             }
         }
         catch (Exception ex)
         {
             CoreLogger.LogError($"Error fetching parameter items: {ex.Message}");
         }
+        finally
+        {
+            // Reading the extension's parameters can throw part-way through.
+            // Anything built so far already subscribed, so it has to be torn
+            // down rather than dropped.
+            if (!transferred)
+            {
+                foreach (var itemVm in newViewModels)
+                {
+                    ReleaseItem(itemVm);
+                }
+            }
+        }
 
-        DoOnUiThread(
+        DoOnActivePage(
             () =>
             {
                 CoreLogger.LogDebug($"raising parameter items changed, {Items.Count} parameters");
@@ -697,6 +744,28 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
                 WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
             });
+    }
+
+    /// <summary>
+    /// Detaches this page's handlers from an item it is giving up, and cleans it up.
+    /// </summary>
+    private void ReleaseItem(ParameterRunViewModel item)
+    {
+        item.PropertyChanged -= ItemPropertyChanged;
+
+        if (item is CommandParameterRunViewModel cmdParam)
+        {
+            cmdParam.ValueChanged -= ListParamValueChanged;
+
+            // If the active list param is going away, clear the active
+            // references so we don't hold on to a disposed ListViewModel.
+            if (cmdParam == _activeListParam)
+            {
+                SetActiveListParameter(null);
+            }
+        }
+
+        item.SafeCleanup();
     }
 
     private void UpdateCommand()
@@ -714,7 +783,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(Command));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
@@ -737,7 +806,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             // fires for NeedsValue, DisplayText, and Icon changes, so it
             // covers both first-pick and re-pick. Handling it here as well
             // would risk a double-advance race.
-            DoOnUiThread(() =>
+            DoOnActivePage(() =>
             {
                 UpdateCommand();
             });
@@ -748,21 +817,29 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged from {sender?.GetType().Name}, _activeListParam set: {_activeListParam != null}, same: {sender == _activeListParam}");
 
-        // Marshal to UI thread — ValueChanged is raised from the extension's
+        // Marshal to UI thread - ValueChanged is raised from the extension's
         // PropChanged callback on a background thread, but FocusNextParameter
         // sends a message that ultimately calls ContainerFromItem on a UI control.
         DoOnUiThread(() =>
         {
-            // The extension confirmed a value on a list param. If it's the
-            // active one (whether first pick or re-pick), clear the list and
-            // move focus forward.
+            using var operation = TryBeginPageOperation();
+            if (operation is null)
+            {
+                return;
+            }
+
+            // Reconcile a completed picker while suspended, but only advance focus on the active page.
             if (sender is CommandParameterRunViewModel cmdParam &&
                 cmdParam == _activeListParam &&
                 !cmdParam.NeedsValue)
             {
                 CoreLogger.LogDebug($"[ParametersPageVM] Clearing active list param after value change");
                 SetActiveListParameter(null);
-                FocusNextParameter(cmdParam);
+                if (IsPageActive)
+                {
+                    FocusNextParameter(cmdParam);
+                }
+
                 UpdateCommand();
             }
             else
@@ -838,6 +915,36 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         SafeCleanup();
     }
 
+    internal override void SuspendForNavigation()
+    {
+        base.SuspendForNavigation();
+        lock (_listLock)
+        {
+            foreach (var item in Items.OfType<CommandParameterRunViewModel>())
+            {
+                item.ListViewModel?.SuspendForNavigation();
+            }
+        }
+    }
+
+    internal override Task ResumeAfterNavigation()
+    {
+        base.ResumeAfterNavigation();
+        UpdateCommand();
+        return ActiveListViewModel?.ResumeAfterNavigation() ?? Task.CompletedTask;
+    }
+
+    protected override void OnCleanupRequested()
+    {
+        lock (_listLock)
+        {
+            foreach (var item in Items.OfType<CommandParameterRunViewModel>())
+            {
+                _ = item.ListViewModel?.CleanupAsync();
+            }
+        }
+    }
+
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
@@ -846,21 +953,19 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         // don't end up pointing at a disposed ListViewModel.
         SetActiveListParameter(null);
 
+        ParameterRunViewModel[] items;
         lock (_listLock)
         {
-            foreach (var item in Items)
-            {
-                item.PropertyChanged -= ItemPropertyChanged;
-                if (item is CommandParameterRunViewModel cmdParam)
-                {
-                    cmdParam.ValueChanged -= ListParamValueChanged;
-                }
-
-                item.SafeCleanup();
-            }
-
+            items = [.. Items];
             Items.Clear();
         }
+
+        foreach (var item in items)
+        {
+            ReleaseItem(item);
+        }
+
+        _command.SafeCleanup();
     }
 }
 

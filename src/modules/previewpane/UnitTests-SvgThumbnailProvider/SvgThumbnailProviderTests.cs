@@ -4,6 +4,7 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -220,6 +221,45 @@ namespace SvgThumbnailProviderUnitTests
             Bitmap bitmap = svgThumbnailProvider.GetThumbnail(8);
 
             Assert.IsTrue(bitmap != null);
+        }
+
+        [TestMethod]
+        public void ResizeImageShouldPreserveAlphaChannel()
+        {
+            Bitmap source = new Bitmap(64, 64, PixelFormat.Format32bppArgb);
+            using (var graphics = Graphics.FromImage(source))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.Clear(Color.FromArgb(128, 255, 0, 0));
+            }
+
+            using Bitmap resized = SvgThumbnailProvider.ResizeImage(source, 32, 32);
+
+            Assert.IsNotNull(resized);
+            Assert.AreEqual(PixelFormat.Format32bppArgb, resized.PixelFormat);
+
+            Color center = resized.GetPixel(resized.Width / 2, resized.Height / 2);
+            Assert.AreEqual(128, center.A, "Resizing must not force the output to be opaque.");
+        }
+
+        [TestMethod]
+        public void GetThumbnailShouldPreserveTransparentBackground()
+        {
+            var svgBuilder = new StringBuilder();
+            svgBuilder.AppendLine("<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">");
+            svgBuilder.AppendLine("\t<circle cx=\"50\" cy=\"50\" r=\"25\" fill=\"red\">");
+            svgBuilder.AppendLine("\t</circle>");
+            svgBuilder.AppendLine("</svg>");
+
+            SvgThumbnailProvider svgThumbnailProvider = new SvgThumbnailProvider(null);
+            svgThumbnailProvider.SvgContents = svgBuilder.ToString();
+            svgThumbnailProvider.SvgContentsReady.Set();
+
+            using Bitmap thumbnail = svgThumbnailProvider.GetThumbnail(256);
+
+            Assert.IsNotNull(thumbnail);
+            Assert.AreEqual(PixelFormat.Format32bppArgb, thumbnail.PixelFormat);
+            Assert.AreEqual(0, thumbnail.GetPixel(0, 0).A, "The thumbnail background must stay transparent.");
         }
     }
 }

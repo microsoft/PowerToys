@@ -1,0 +1,126 @@
+PackageName: Zoom.Zoom
+Name: Zoom Workspace
+WindowFilter: "zoom.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: Navigate between Zoom windows
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F6
+      - Name: Show or hide floating meeting controls
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - H
+  - SectionName: View
+    Properties:
+      - Name: Switch to active speaker view
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F1
+      - Name: Switch to gallery view
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F2
+      - Name: Enter or exit full screen
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F
+      - Name: View previous page in gallery
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - PageUp
+      - Name: View next page in gallery
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - PageDown
+  - SectionName: Meeting controls
+    Properties:
+      - Name: Mute or unmute audio
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - A
+      - Name: Start or stop video
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - V
+      - Name: Raise or lower hand
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Y
+      - Name: Open invite window
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - I
+      - Name: Open share screen window or stop sharing
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - S
+      - Name: Pause or resume screen sharing
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - T
+      - Name: Prompt to leave or end meeting
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Q

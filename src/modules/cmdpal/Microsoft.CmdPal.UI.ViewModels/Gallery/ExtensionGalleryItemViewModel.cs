@@ -105,6 +105,13 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
+    // Validated, browser-openable homepage uri. Null when the entry has no
+    // homepage or it is not a web uri. NavigateUri bindings must use this
+    // (a Uri) rather than the raw Homepage string: x:Bind evaluates bindings
+    // regardless of element visibility, and converting a null/invalid string
+    // to Uri throws and crashes the page.
+    public Uri? HomepageUri => _homepageHttpUri;
+
     public Uri IconUri { get; }
 
     public ImageSource IconSource

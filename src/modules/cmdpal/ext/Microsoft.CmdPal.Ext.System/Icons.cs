@@ -25,4 +25,6 @@ internal sealed class Icons
     internal static IconInfo ShutdownIcon { get; } = new IconInfo("\uE7E8");
 
     internal static IconInfo SleepIcon { get; } = new IconInfo("\uE708");
+
+    internal static IconInfo HibernateIcon { get; } = new IconInfo("\uE823");
 }

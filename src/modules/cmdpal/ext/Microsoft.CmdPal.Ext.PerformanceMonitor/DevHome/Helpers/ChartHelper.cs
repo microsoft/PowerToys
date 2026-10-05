@@ -17,6 +17,7 @@ internal sealed class ChartHelper
         GPU,
         Mem,
         Net,
+        Dis,
     }
 
     public const int ChartHeight = 86;
@@ -28,6 +29,7 @@ internal sealed class ChartHelper
     private const string GPULineStyle = "fill:none;stroke:rgb(222,104,242);stroke-width:1";
     private const string MemLineStyle = "fill:none;stroke:rgb(92,158,250);stroke-width:1";
     private const string NetLineStyle = "fill:none;stroke:rgb(245,98,142);stroke-width:1";
+    private const string DisLineStyle = "fill:none;stroke:rgb(103,153,24);stroke-width:1";
 
     private const string FillStyle = "fill:url(#gradientId);stroke:transparent";
 
@@ -42,6 +44,9 @@ internal sealed class ChartHelper
 
     private const string NetBrushStop1Style = "stop-color:rgb(245,98,142);stop-opacity:0.4";
     private const string NetBrushStop2Style = "stop-color:rgb(130,0,47);stop-opacity:0.25";
+
+    private const string DisBrushStop1Style = "stop-color:rgb(103,153,24);stop-opacity:0.4";
+    private const string DisBrushStop2Style = "stop-color:rgb(45,62,15);stop-opacity:0.25";
 
     private const string SvgElement = "svg";
     private const string RectElement = "rect";
@@ -174,6 +179,10 @@ internal sealed class ChartHelper
                 stop1Style = NetBrushStop1Style;
                 stop2Style = NetBrushStop2Style;
                 break;
+            case ChartType.Dis:
+                stop1Style = DisBrushStop1Style;
+                stop2Style = DisBrushStop2Style;
+                break;
             case ChartType.CPU:
             default:
                 stop1Style = CPUBrushStop1Style;
@@ -213,6 +222,7 @@ internal sealed class ChartHelper
             ChartType.GPU => GPULineStyle,
             ChartType.Mem => MemLineStyle,
             ChartType.Net => NetLineStyle,
+            ChartType.Dis => DisLineStyle,
             _ => CPULineStyle,
         };
 

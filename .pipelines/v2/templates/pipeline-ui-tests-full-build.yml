@@ -2,6 +2,11 @@
 parameters:
   - name: platform
     type: string
+  # buildNow = download the whole build artifact and run in place; buildNowSlim = download only the
+  # installer from this same full build and install it. Both build the full product in this template.
+  - name: buildSource
+    type: string
+    default: buildNow
   - name: enableMsBuildCaching
     type: boolean
     default: false
@@ -53,7 +58,7 @@ stages:
             platform: x64Win10
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            buildSource: 'buildNow'
+            buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
 
     - stage: Test_x64Win11_FullBuild
@@ -65,7 +70,7 @@ stages:
             platform: x64Win11
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            buildSource: 'buildNow'
+            buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}
 
   - ${{ if ne(parameters.platform, 'x64') }}:
@@ -78,5 +83,5 @@ stages:
             platform: ${{ parameters.platform }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            buildSource: 'buildNow'
+            buildSource: ${{ parameters.buildSource }}
             uiTestModules: ${{ parameters.uiTestModules }}

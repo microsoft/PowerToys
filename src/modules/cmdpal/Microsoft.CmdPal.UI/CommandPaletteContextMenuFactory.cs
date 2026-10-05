@@ -9,6 +9,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -23,12 +25,21 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 {
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly ICmdPalProtocolActivation _protocolActivation;
+    private readonly IAppStateService _appStateService;
     private readonly IMonitorService? _monitorService;
 
-    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IMonitorService? monitorService = null)
+    public CommandPaletteContextMenuFactory(
+        ISettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        ICmdPalProtocolActivation protocolActivation,
+        IAppStateService appStateService,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _protocolActivation = protocolActivation;
+        _appStateService = appStateService;
         _monitorService = monitorService;
     }
 
@@ -63,33 +74,28 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands = [];
         var itemId = commandItem.Command.Id;
         var providerContext = page.ProviderContext;
+        var model = commandItem.Model.Unsafe;
+        var sourceModel = model is RecentCommandListItem recentItem ? recentItem.Source : model;
 
         // AppListItems can be surfaced on the main page even though they still
         // belong to the All Apps provider.
         // MainListPage only returns our in-proc wrappers/items.
         if (providerContext.ProviderId != AllAppsCommandProvider.WellKnownId &&
             page is ListViewModel { IsMainPage: true } &&
-            commandItem.Model.Unsafe is AppListItem)
+            sourceModel is AppListItem)
         {
             providerContext = _topLevelCommandManager.LookupProvider(AllAppsCommandProvider.WellKnownId)?.GetProviderContext() ?? providerContext;
         }
 
         var supportsPinning = providerContext.SupportsPinning;
 
-        // Also bail early for ListItemViewModels that wrap a TopLevelViewModel.
-        // For those items, TopLevelViewModel.BuildContextMenu() already includes
-        // the correct pin commands by calling AddMoreCommandsToTopLevel with the
-        // item's own provider context. Adding them again here (using the page's
-        // potentially incorrect provider context) would produce duplicate pin
-        // entries such as two "Pin to Dock" buttons.
-        // Check SupportsPinning first to avoid the .Unsafe type-check in the
-        // common non-pinning case.
-        if (supportsPinning && commandItem.Model.Unsafe is TopLevelViewModel)
-        {
-            return results;
-        }
+        // TopLevelViewModel.BuildContextMenu() already includes the correct pin commands using the
+        // item's own provider context. Adding them again here would produce duplicate entries,
+        // including when a recent-section marker wraps the TopLevelViewModel.
+        var pinCommandsAlreadyAdded = sourceModel is TopLevelViewModel;
 
-        if (supportsPinning &&
+        if (!pinCommandsAlreadyAdded &&
+            supportsPinning &&
             !string.IsNullOrEmpty(itemId))
         {
             // Add pin/unpin commands for pinning items to the top-level or to
@@ -121,6 +127,19 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
             }
+        }
+
+        if (model is RecentCommandListItem recentCommandItem)
+        {
+            if (moreCommands.Count > 0)
+            {
+                moreCommands.Add(new Separator());
+            }
+
+            moreCommands.Add(new CommandContextItem(new RemoveFromRecentCommand(recentCommandItem.CommandId, _appStateService))
+            {
+                IsCritical = true,
+            });
         }
 
         if (moreCommands.Count > 0)
@@ -159,6 +178,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
         var providerId = providerContext.ProviderId;
+        if (_settingsService.Settings.EnableExternalCommandLinks)
+        {
+            TryAddCommandLink(topLevelItem, itemId, providerId, moreCommands);
+        }
+
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper)
         {
             TryAddMovePinnedCommands(itemId, providerId, commandItem, moreCommands);
@@ -175,6 +199,40 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
             contextItems.AddRange(moreCommands);
         }
+    }
+
+    private void TryAddCommandLink(
+        TopLevelViewModel topLevelItem,
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands)
+    {
+        if (topLevelItem.IsFallback ||
+            topLevelItem.IsDockBand ||
+            string.IsNullOrWhiteSpace(itemId) ||
+            string.IsNullOrWhiteSpace(providerId))
+        {
+            return;
+        }
+
+        Uri uri;
+        try
+        {
+            uri = _protocolActivation.CreateUri(new CmdPalProtocolRoute.ExecuteCommand(providerId, itemId));
+        }
+        catch (ArgumentException)
+        {
+            return;
+        }
+
+        var copyCommand = new CopyTextCommand(uri.AbsoluteUri)
+        {
+            Name = RS_.GetString("CommandLink_CopyCommand_Name"),
+            Icon = new IconInfo("\uE71B"),
+            Result = CommandResult.ShowToast(RS_.GetString("CommandLink_Toast_Copied")),
+        };
+
+        moreCommands.Add(new CommandContextItem(copyCommand));
     }
 
     private void TryAddPinToHomeCommand(
@@ -254,13 +312,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return;
         }
 
-        var inStartBands = _settingsService.Settings.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inCenterBands = _settingsService.Settings.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inEndBands = _settingsService.Settings.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
-        var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
-                            _settingsService.Settings.DockSettings.PinnedCommands.Contains(this.Id)**/
+        var dockCommandId = commandItem.DockCommandId ?? itemId;
+        var dockSettings = _settingsService.Settings.DockSettings;
+        var alreadyPinned = dockSettings.StartBands
+            .Concat(dockSettings.CenterBands)
+            .Concat(dockSettings.EndBands)
+            .Any(band => MatchesBand(band, dockCommandId, providerId));
         var pinToTopLevelCommand = new PinToCommand(
-            commandId: itemId,
+            commandId: dockCommandId,
             providerId: providerId,
             pin: !alreadyPinned,
             PinLocation.Dock,
@@ -300,8 +359,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void OnPinStateChanged(object? sender, EventArgs e)
         {
-            // update our MoreCommands
-            _commandItem.RefreshMoreCommands();
+            _commandItem.RefreshContextMenu();
         }
 
         ~PinToContextItem()
@@ -325,12 +383,43 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void OnMoveStateChanged(object? sender, EventArgs e)
         {
-            _commandItem.RefreshMoreCommands();
+            _commandItem.RefreshContextMenu();
         }
 
         ~MovePinnedContextItem()
         {
             _command.MoveStateChanged -= this.OnMoveStateChanged;
+        }
+    }
+
+    private sealed partial class RemoveFromRecentCommand : InvokableCommand
+    {
+        private readonly string _commandId;
+        private readonly IAppStateService _appStateService;
+
+        public override IconInfo Icon => Icons.DeleteIcon;
+
+        public override string Name => RS_.GetString("recent_commands_remove_name");
+
+        public RemoveFromRecentCommand(string commandId, IAppStateService appStateService)
+        {
+            _commandId = commandId;
+            _appStateService = appStateService;
+        }
+
+        public override CommandResult Invoke()
+        {
+            var current = _appStateService.State.RecentCommands;
+            if (ReferenceEquals(current, current.WithoutHistoryItem(_commandId)))
+            {
+                return CommandResult.KeepOpen();
+            }
+
+            _appStateService.UpdateState(state => state with
+            {
+                RecentCommands = state.RecentCommands.WithoutHistoryItem(_commandId),
+            });
+            return CommandResult.KeepOpen();
         }
     }
 
@@ -424,13 +513,72 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void PinToDock()
         {
-            var title = _commandItemViewModel?.Title ?? string.Empty;
-            var subtitle = _commandItemViewModel?.Subtitle ?? string.Empty;
-            var icon = _commandItemViewModel?.Icon;
-            var dockSide = _settingsService.Settings.DockSettings.Side;
-            IReadOnlyList<MonitorInfo>? monitors = _monitorService?.GetMonitors();
+            var (title, subtitle, icon) = GetDockPreview();
+            var dockSettings = _settingsService.Settings.DockSettings;
+            var dockSide = dockSettings.Side;
+            IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
+        }
+
+        private (string Title, string Subtitle, IconInfoViewModel? Icon) GetDockPreview()
+        {
+            var dockCommandItem = _topLevelCommandManager.LookupDockBand(_commandId)?.ItemViewModel;
+            if (dockCommandItem is not null)
+            {
+                try
+                {
+                    var items = DockBandViewModel.GetItemsForDisplay(dockCommandItem);
+                    if (items is [var item])
+                    {
+                        IconInfoViewModel? icon = null;
+                        var itemIcon = item.Icon;
+                        if (itemIcon is not null)
+                        {
+                            icon = new IconInfoViewModel(itemIcon);
+                            icon.InitializeProperties();
+                        }
+
+                        return (item.Title, item.Subtitle, icon);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to load dock preview for {_providerId}/{_commandId}: {ex.Message}");
+                }
+            }
+
+            var previewItem = dockCommandItem ?? _commandItemViewModel;
+            return (
+                previewItem?.Title ?? string.Empty,
+                previewItem?.Subtitle ?? string.Empty,
+                previewItem?.Icon);
+        }
+
+        // Only list monitors where the dock is currently enabled, so users can't
+        // pin a command to a display that has no dock visible.
+        private static IReadOnlyList<MonitorInfo>? GetDockEnabledMonitors(IMonitorService? monitorService, DockSettings dockSettings)
+        {
+            var monitors = monitorService?.GetMonitors();
+            if (monitors is null)
+            {
+                return null;
+            }
+
+            var configs = dockSettings.MonitorConfigs;
+
+            // When there are no per-monitor configs (legacy / first-run), the dock
+            // is only shown on the primary monitor.
+            if (configs.Count == 0)
+            {
+                return monitors.Where(m => m.IsPrimary).ToList();
+            }
+
+            return monitors
+                .Where(m => configs.Any(c =>
+                    string.Equals(c.MonitorDeviceId, m.StableId, System.StringComparison.OrdinalIgnoreCase) &&
+                    c.Enabled))
+                .ToList();
         }
 
         private void UnpinFromDock()

@@ -54,7 +54,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
+            _windowsKeyActionIndex = NormalizeWindowsKeyAction(Settings.Properties.WindowsKeyAction.Value);
+            bool settingsNormalized = Settings.Properties.WindowsKeyAction.Value != _windowsKeyActionIndex;
+            Settings.Properties.WindowsKeyAction.Value = _windowsKeyActionIndex;
+            _pressTime = Math.Clamp(
+                Settings.Properties.PressTime.Value,
+                ShortcutGuideProperties.MinimumPressTimeMs,
+                ShortcutGuideProperties.MaximumPressTimeMs);
+            Settings.Properties.PressTime.Value = _pressTime;
+            _closeOnWindowsKeyRelease = Settings.Properties.CloseOnWindowsKeyRelease.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
+
+            if (settingsNormalized)
+            {
+                NotifyPropertyChanged(nameof(WindowsKeyActionIndex));
+            }
 
             switch (Settings.Properties.Theme.Value)
             {
@@ -100,6 +114,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private int _themeIndex;
         private int _positionIndex;
+        private int _windowsKeyActionIndex;
+        private int _pressTime;
+        private bool _closeOnWindowsKeyRelease;
 
         public bool IsEnabled
         {
@@ -147,6 +164,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (Settings.Properties.OpenShortcutGuide != value)
                 {
                     Settings.Properties.OpenShortcutGuide = value ?? Settings.Properties.DefaultOpenShortcutGuide;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int WindowsKeyActionIndex
+        {
+            get => _windowsKeyActionIndex;
+
+            set
+            {
+                int normalizedValue = NormalizeWindowsKeyAction(value);
+                if (_windowsKeyActionIndex != normalizedValue)
+                {
+                    _windowsKeyActionIndex = normalizedValue;
+                    Settings.Properties.WindowsKeyAction.Value = normalizedValue;
+                    OnPropertyChanged(nameof(IsWindowsKeyHoldEnabled));
+                    OnPropertyChanged(nameof(IsOpenShortcutGuideWindowsKeyAction));
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsWindowsKeyHoldEnabled => _windowsKeyActionIndex != (int)ShortcutGuideWindowsKeyAction.Off;
+
+        public bool IsOpenShortcutGuideWindowsKeyAction => _windowsKeyActionIndex == (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide;
+
+        public int PressTime
+        {
+            get => _pressTime;
+
+            set
+            {
+                int clampedValue = Math.Clamp(
+                    value,
+                    ShortcutGuideProperties.MinimumPressTimeMs,
+                    ShortcutGuideProperties.MaximumPressTimeMs);
+                if (_pressTime != clampedValue)
+                {
+                    _pressTime = clampedValue;
+                    Settings.Properties.PressTime.Value = clampedValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool CloseOnWindowsKeyRelease
+        {
+            get => _closeOnWindowsKeyRelease;
+
+            set
+            {
+                if (_closeOnWindowsKeyRelease != value)
+                {
+                    _closeOnWindowsKeyRelease = value;
+                    Settings.Properties.CloseOnWindowsKeyRelease.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -236,6 +309,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        private static int NormalizeWindowsKeyAction(int value)
+        {
+            return value switch
+            {
+                (int)ShortcutGuideWindowsKeyAction.Off => value,
+                (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators => value,
+                (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide => value,
+                _ => (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators,
+            };
         }
     }
 }

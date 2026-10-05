@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -12,14 +13,13 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// </summary>
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
+    private readonly IRootPageAccessor _rootPageAccessor;
     private readonly OpenSettingsCommand openSettings = new();
     private readonly OpenGallerySettingsCommand openGallerySettings = new();
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
     private readonly NewExtensionPage _newExtension = new();
-
-    private readonly IRootPageService _rootPageService;
 
     public override ICommandItem[] TopLevelCommands() =>
         [
@@ -41,22 +41,18 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
             _fallbackLogItem,
         ];
 
-    public BuiltInsCommandProvider(IRootPageService rootPageService)
+    public BuiltInsCommandProvider(IRootPageAccessor rootPageAccessor)
     {
+        _rootPageAccessor = rootPageAccessor;
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
-
-        _rootPageService = rootPageService;
     }
 
     public override ICommandItem[]? GetDockBands()
     {
-        var rootPage = _rootPageService.GetRootPage();
-        List<ICommandItem> bandItems = new();
-        bandItems.Add(new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title));
-
-        return bandItems.ToArray();
+        var rootPage = _rootPageAccessor.GetRootPage();
+        return [new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title)];
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);

@@ -4,7 +4,7 @@
 
 using System;
 using ManagedCommon;
-using Microsoft.UI.Windowing;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using PowerToys.FileLocksmithUI.Helpers;
@@ -17,14 +17,30 @@ namespace FileLocksmithUI
         public MainWindow(bool isElevated)
         {
             InitializeComponent();
+
+            const string fallbackTitle = "File Locksmith";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             mainPage.ViewModel.IsElevated = isElevated;
             SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = fallbackTitle;
+            }
+
             Title = title;
             titleBar.Title = title;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -102,19 +102,18 @@ namespace ShortcutGuide.Helpers
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
         /// </summary>
+        /// <param name="foregroundWindowHandle">The window handle captured before Shortcut Guide UI takes focus.</param>
         /// <returns>
         /// A dictionary mapping each application ID to the full path of the executable
         /// that caused the match (used for icon extraction), or <c>null</c> when no
         /// specific executable is associated (for example, wildcard filters like the
         /// default shell).
         /// </returns>
-        public static Dictionary<string, string?> GetAllCurrentApplicationIds()
+        public static Dictionary<string, string?> GetAllCurrentApplicationIds(nint foregroundWindowHandle)
         {
-            nint handle = NativeMethods.GetForegroundWindow();
-
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
-            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out uint processId) > 0)
             {
                 string? name = null;
                 string? executablePath = null;
@@ -155,11 +154,6 @@ namespace ShortcutGuide.Helpers
             {
                 string filter = item.WindowFilter;
 
-                if (filter.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    filter = filter[..^4];
-                }
-
                 if (filter == "*")
                 {
                     foreach (var app in item.Apps)
@@ -170,32 +164,44 @@ namespace ShortcutGuide.Helpers
                     continue;
                 }
 
-                Process[] foundProcesses = [];
-
-                try
+                string[] filterParts = filter.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var filterPart in filterParts)
                 {
-                    foundProcesses = Process.GetProcessesByName(filter);
-                    if (foundProcesses.Length > 0)
+                    string targetFilter = filterPart;
+                    if (targetFilter.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        foreach (var app in item.Apps)
+                        targetFilter = targetFilter[..^4];
+                    }
+
+                    Process[] foundProcesses = [];
+
+                    try
+                    {
+                        foundProcesses = Process.GetProcessesByName(targetFilter);
+                        if (foundProcesses.Length > 0)
                         {
-                            applicationIds[app] = foundProcesses[0].MainModule?.FileName;
+                            foreach (var app in item.Apps)
+                            {
+                                applicationIds[app] = foundProcesses[0].MainModule?.FileName;
+                            }
+
+                            break;
                         }
                     }
-                }
-                catch (Win32Exception ex)
-                {
-                    Trace.WriteLine($"Failed to inspect background process '{filter}': {ex.Message}");
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Trace.WriteLine($"Failed to inspect background process '{filter}': {ex.Message}");
-                }
-                finally
-                {
-                    foreach (var process in foundProcesses)
+                    catch (Win32Exception ex)
                     {
-                        process.Dispose();
+                        Trace.WriteLine($"Failed to inspect background process '{targetFilter}': {ex.Message}");
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Trace.WriteLine($"Failed to inspect background process '{targetFilter}': {ex.Message}");
+                    }
+                    finally
+                    {
+                        foreach (var process in foundProcesses)
+                        {
+                            process.Dispose();
+                        }
                     }
                 }
             }
@@ -214,12 +220,22 @@ namespace ShortcutGuide.Helpers
                     input = input[..^4];
                 }
 
-                if (filter.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                string[] filterParts = filter.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var part in filterParts)
                 {
-                    filter = filter[..^4];
+                    string target = part;
+                    if (target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        target = target[..^4];
+                    }
+
+                    if (string.Equals(input, target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
                 }
 
-                return string.Equals(input, filter, StringComparison.OrdinalIgnoreCase);
+                return false;
             }
         }
     }

@@ -59,7 +59,7 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"PowerToys.PowerAccent.exe";
+        std::wstring application_path = L"WinUI3Apps\\PowerToys.PowerAccent.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys QuickAccent launching: " + full_command_path);
 
@@ -153,16 +153,31 @@ public:
             else
             {
                 Logger::trace(L"Signaled exit event for PowerToys QuickAccent.");
+                bool forceTerminate = false;
                 if (!SetEvent(exitEvent))
                 {
                     Logger::warn(L"Failed to signal exit event for PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
-
-                    // For some reason, we couldn't process the signal correctly, so we still
-                    // need to terminate the PowerAccent process.
-                    TerminateProcess(p_info.hProcess, 1);
+                    forceTerminate = true;
+                }
+                else if (WaitForSingleObject(p_info.hProcess, 1500) != WAIT_OBJECT_0)
+                {
+                    Logger::warn(L"PowerToys QuickAccent did not exit after the exit event; terminating it.");
+                    forceTerminate = true;
                 }
 
-                ResetEvent(exitEvent);
+                if (forceTerminate && p_info.hProcess)
+                {
+                    if (!TerminateProcess(p_info.hProcess, 1))
+                    {
+                        Logger::warn(L"Failed to terminate PowerToys QuickAccent. {}", get_last_error_or_default(GetLastError()));
+                    }
+                    else
+                    {
+                        WaitForSingleObject(p_info.hProcess, 500);
+                    }
+                }
+
+                // Auto-reset events clear when a waiter consumes the signal; resetting here can race the listener.
                 CloseHandle(exitEvent);
                 CloseHandle(p_info.hProcess);
             }

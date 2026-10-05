@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT license. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Single source of truth for the runtime mapping and installed command names. -->
+  <!-- RelativeTarget is resolved from the installed bin folder and must use '/' separators. -->
+  <ItemGroup>
+    <CliShim Include="PowerToys.FancyZones.CLI">
+      <RelativeTarget>../FancyZonesCLI.exe</RelativeTarget>
+    </CliShim>
+    <CliShim Include="PowerToys.ImageResizer.CLI">
+      <RelativeTarget>../WinUI3Apps/PowerToys.ImageResizerCLI.exe</RelativeTarget>
+    </CliShim>
+    <CliShim Include="PowerToys.FileLocksmith.CLI">
+      <RelativeTarget>../FileLocksmithCLI.exe</RelativeTarget>
+    </CliShim>
+    <CliShim Include="PowerToys.PowerDisplay.CLI">
+      <RelativeTarget>../WinUI3Apps/PowerToys.PowerDisplay.Cli.exe</RelativeTarget>
+    </CliShim>
+  </ItemGroup>
+
+  <!--
+    Emits the mapping above as a C++ initializer list. The shim and its unit tests both import
+    this file, so the tests always assert against the same table the shim was built from and a
+    new command cannot be added to one without the other picking it up.
+  -->
+  <Target Name="GenerateCliShimTargets"
+          BeforeTargets="ClCompile"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
+          Outputs="$(IntDir)CliShimTargets.g.inc">
+    <!--
+      RelativeTarget is emitted into a C++ string literal verbatim, so a Windows-style separator
+      becomes an escape sequence: "..\WinUI3Apps\x.exe" fails to compile as C4129 (promoted to an
+      error by TreatWarningAsError), and "..\bin\x.exe" compiles into control characters instead.
+      Both diagnostics would point at the generated file rather than at this one, so reject the
+      separator here, where the fix is.
+    -->
+    <Error Condition="$([System.String]::Copy('%(CliShim.RelativeTarget)').Contains('\'))"
+           Text="CliShim RelativeTarget must use '/' separators: '%(CliShim.Identity)' is mapped to '%(CliShim.RelativeTarget)'." />
+    <ItemGroup>
+      <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
+    </ItemGroup>
+    <MakeDir Directories="$(IntDir)" />
+    <WriteLinesToFile File="$(IntDir)CliShimTargets.g.inc"
+                      Lines="@(_CliShimTargetLine)"
+                      Overwrite="true" />
+  </Target>
+</Project>

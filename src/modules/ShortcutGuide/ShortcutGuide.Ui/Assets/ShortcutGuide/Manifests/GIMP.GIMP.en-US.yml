@@ -489,7 +489,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
   - SectionName: Edit
     Properties:
       - Name: Undo

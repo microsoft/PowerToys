@@ -36,6 +36,14 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
 
         var command = entry.Command;
 
+        // Control Panel task items enumerated from the shell have no
+        // executable command line and cannot be re-parsed by name — they are
+        // launched from the shell id list captured during enumeration.
+        if (entry.TaskIdList is { Length: > 0 })
+        {
+            return Helpers.ShellInterop.InvokeShellItemByIdList(entry.TaskIdList);
+        }
+
         if (command.Contains("%windir%", StringComparison.InvariantCultureIgnoreCase))
         {
             var windowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows);

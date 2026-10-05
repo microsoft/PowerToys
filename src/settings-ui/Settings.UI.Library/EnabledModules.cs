@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool shortcutGuide = true;
+        private bool shortcutGuide; // defaulting to off
 
         [JsonPropertyName("Shortcut Guide")]
         public bool ShortcutGuide
@@ -214,6 +214,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     findMyMouse = value;
+                }
+            }
+        }
+
+        private bool altWindowCycle; // defaulting to off
+
+        [JsonPropertyName("AltWindowCycle")]
+        public bool AltWindowCycle
+        {
+            get => altWindowCycle;
+            set
+            {
+                if (altWindowCycle != value)
+                {
+                    LogTelemetryEvent(value);
+                    altWindowCycle = value;
                 }
             }
         }
@@ -509,6 +525,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LogTelemetryEvent(value);
                     zoomIt = value;
                     NotifyChange();
+                }
+            }
+        }
+
+        private bool autoHideCursor; // defaulting to off
+
+        [JsonPropertyName("AutoHideCursor")]
+        public bool AutoHideCursor
+        {
+            get => autoHideCursor;
+            set
+            {
+                if (autoHideCursor != value)
+                {
+                    LogTelemetryEvent(value);
+                    autoHideCursor = value;
                 }
             }
         }

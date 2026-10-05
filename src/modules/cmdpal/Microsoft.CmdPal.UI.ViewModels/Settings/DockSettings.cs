@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -23,6 +24,8 @@ public record DockSettings
     public DockSize DockSize { get; init; } = DockSize.Default;
 
     public bool AlwaysOnTop { get; set; } = true;
+
+    public bool AutoHide { get; set; }
 
     // <Theme settings>
     public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;
@@ -46,7 +49,10 @@ public record DockSettings
     public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
-    private ImmutableList<DockBandSettings>? _startBands = ImmutableList.Create(
+
+    // Band lists use EquatableList backing fields so the compiler-synthesized record equality
+    // compares them by content, not by reference. See EquatableList<T> for why this matters.
+    private readonly EquatableList<DockBandSettings> _startBands = new(ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.core",
@@ -57,23 +63,23 @@ public record DockSettings
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
             ShowTitles = false,
-        });
+        }));
 
     public ImmutableList<DockBandSettings> StartBands
     {
-        get => _startBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _startBands = value;
+        get => _startBands.List;
+        init => _startBands = new(value);
     }
 
-    private ImmutableList<DockBandSettings>? _centerBands = ImmutableList<DockBandSettings>.Empty;
+    private readonly EquatableList<DockBandSettings> _centerBands = new(ImmutableList<DockBandSettings>.Empty);
 
     public ImmutableList<DockBandSettings> CenterBands
     {
-        get => _centerBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _centerBands = value;
+        get => _centerBands.List;
+        init => _centerBands = new(value);
     }
 
-    private ImmutableList<DockBandSettings>? _endBands = ImmutableList.Create(
+    private readonly EquatableList<DockBandSettings> _endBands = new(ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "PerformanceMonitor",
@@ -81,14 +87,19 @@ public record DockSettings
         },
         new DockBandSettings
         {
+            ProviderId = "PerformanceMonitor",
+            CommandId = "com.microsoft.cmdpal.performanceWidget.networkSpeed",
+        },
+        new DockBandSettings
+        {
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
-        });
+        }));
 
     public ImmutableList<DockBandSettings> EndBands
     {
-        get => _endBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _endBands = value;
+        get => _endBands.List;
+        init => _endBands = new(value);
     }
 
     public bool ShowLabels { get; init; } = true;
@@ -97,12 +108,12 @@ public record DockSettings
     /// Gets the per-monitor dock configurations. Each entry overrides global
     /// settings for a specific display. Empty by default (all monitors use global).
     /// </summary>
-    private ImmutableList<DockMonitorConfig>? _monitorConfigs = ImmutableList<DockMonitorConfig>.Empty;
+    private readonly EquatableList<DockMonitorConfig> _monitorConfigs = new(ImmutableList<DockMonitorConfig>.Empty);
 
     public ImmutableList<DockMonitorConfig> MonitorConfigs
     {
-        get => _monitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
-        init => _monitorConfigs = value ?? ImmutableList<DockMonitorConfig>.Empty;
+        get => _monitorConfigs.List;
+        init => _monitorConfigs = new(value);
     }
 
     /// <summary>
@@ -121,6 +132,34 @@ public record DockSettings
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks whether any connected monitor has a disabled dock.
+    /// </summary>
+    public bool HasDisabledDocksForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor => MonitorConfigs.Any(config =>
+            !config.Enabled &&
+            string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    /// <summary>
+    /// Checks whether any connected monitor has an enabled dock with a position override.
+    /// </summary>
+    public bool HasPositionOverridesForMonitors(IReadOnlyList<MonitorInfo> monitors)
+    {
+        return monitors.Any(monitor =>
+        {
+            return MonitorConfigs.Any(IsEnabledWithDifferentSettings);
+
+            bool IsEnabledWithDifferentSettings(DockMonitorConfig config)
+            {
+                return config.Enabled &&
+                       config.Side is not null &&
+                       string.Equals(config.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase);
+            }
+        });
     }
 
     [JsonIgnore]
@@ -153,6 +192,43 @@ public record DockSettings
             return result;
         }
     }
+
+    /// <summary>
+    /// Enables the dock on the given monitor. The first time a secondary monitor is
+    /// enabled without a layout of its own, it gets a copy of the primary monitor's
+    /// current bands (or the global bands when no primary config exists).
+    /// </summary>
+    public DockMonitorConfig EnableMonitor(DockMonitorConfig config)
+    {
+        if (config.Enabled || config.IsPrimary || config.HasOwnLayout)
+        {
+            return config with { Enabled = true };
+        }
+
+        DockMonitorConfig? primaryConfig = null;
+        var configs = MonitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
+        foreach (var candidate in configs)
+        {
+            if (candidate.IsPrimary)
+            {
+                primaryConfig = candidate;
+                break;
+            }
+        }
+
+        var startBands = primaryConfig?.ResolveStartBands(StartBands) ?? StartBands;
+        var centerBands = primaryConfig?.ResolveCenterBands(CenterBands) ?? CenterBands;
+        var endBands = primaryConfig?.ResolveEndBands(EndBands) ?? EndBands;
+
+        return config with
+        {
+            Enabled = true,
+            IsCustomized = true,
+            StartBands = ImmutableList.CreateRange(startBands),
+            CenterBands = ImmutableList.CreateRange(centerBands),
+            EndBands = ImmutableList.CreateRange(endBands),
+        };
+    }
 }
 
 /// <summary>
@@ -163,9 +239,29 @@ public record DockSettings
 public sealed record DockMonitorConfig
 {
     /// <summary>
-    /// Gets the monitor device identifier (e.g. <c>\\.\DISPLAY1</c>).
+    /// Gets the monitor's stable device path (see <see cref="MonitorInfo.StableId"/>).
+    /// Older settings may still hold a legacy GDI name (e.g. <c>\\.\DISPLAY1</c>).
     /// </summary>
     public required string MonitorDeviceId { get; init; }
+
+    /// <summary>
+    /// Gets the EDID-derived identifier of the monitor (see <see cref="MonitorInfo.HardwareId"/>).
+    /// Used as a fallback match when <see cref="MonitorDeviceId"/> changes because the monitor
+    /// moved to a different port, dock, or GPU.
+    /// </summary>
+    public string? MonitorHardwareId { get; init; }
+
+    /// <summary>
+    /// Gets the persistent ordinal used for fallback display labels (A, B, ...).
+    /// Independent of the Windows GDI display number. Zero means not yet assigned.
+    /// </summary>
+    public int FallbackDisplayNumber { get; init; }
+
+    /// <summary>
+    /// Gets the user-defined display name. When <c>null</c>, the display uses
+    /// its friendly hardware name or persistent fallback label.
+    /// </summary>
+    public string? DisplayNameOverride { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether the dock is enabled on this monitor. Defaults to <c>true</c>.
@@ -190,20 +286,41 @@ public sealed record DockMonitorConfig
     /// </summary>
     public bool IsCustomized { get; init; }
 
+    // Nullable EquatableList backing fields give the synthesized record equality structural
+    // comparison of the per-monitor bands while preserving null ("inherit global") vs. an
+    // explicit (possibly empty) list. See EquatableList<T>.
+    private readonly EquatableList<DockBandSettings>? _startBands;
+
     /// <summary>
     /// Gets the per-monitor start bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? StartBands { get; init; }
+    public ImmutableList<DockBandSettings>? StartBands
+    {
+        get => _startBands?.List;
+        init => _startBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
+
+    private readonly EquatableList<DockBandSettings>? _centerBands;
 
     /// <summary>
     /// Gets the per-monitor center bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? CenterBands { get; init; }
+    public ImmutableList<DockBandSettings>? CenterBands
+    {
+        get => _centerBands?.List;
+        init => _centerBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
+
+    private readonly EquatableList<DockBandSettings>? _endBands;
 
     /// <summary>
     /// Gets the per-monitor end bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? EndBands { get; init; }
+    public ImmutableList<DockBandSettings>? EndBands
+    {
+        get => _endBands?.List;
+        init => _endBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
 
     /// <summary>
     /// Gets the UTC timestamp when this monitor was last seen connected. Used for
@@ -237,6 +354,15 @@ public sealed record DockMonitorConfig
     /// </summary>
     public ImmutableList<DockBandSettings> ResolveEndBands(ImmutableList<DockBandSettings> globalBands) =>
         IsCustomized && EndBands is not null ? EndBands : globalBands;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor has at least one band of its own.
+    /// Older builds created secondary configs as customized with empty band lists, so
+    /// an empty customized layout is treated the same as no layout.
+    /// </summary>
+    [JsonIgnore]
+    public bool HasOwnLayout =>
+        IsCustomized && (StartBands?.Count > 0 || CenterBands?.Count > 0 || EndBands?.Count > 0);
 
     /// <summary>
     /// Creates a new <see cref="DockMonitorConfig"/> that is a customized fork of the

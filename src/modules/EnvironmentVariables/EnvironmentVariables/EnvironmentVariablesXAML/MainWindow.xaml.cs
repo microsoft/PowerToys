@@ -9,8 +9,8 @@ using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
@@ -25,12 +25,29 @@ namespace EnvironmentVariables
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Environment Variables";
+            Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+
+            // The WinUI TitleBar control reads the owning window's title (AppWindow.Title) during a
+            // deferred layout pass. If the native window title is empty at that instant, the windowing
+            // layer can fault while resolving it and terminate the process. ResourceLoader.GetString
+            // returns an empty string when the resource map can't be resolved at runtime, which would
+            // leave the title empty here, so fall back to a non-empty product name to keep the native
+            // window title populated.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = fallbackTitle;
+            }
 
             Title = title;
             titleBar.Title = title;
@@ -67,7 +84,7 @@ namespace EnvironmentVariables
             {
                 case NativeMethods.WindowMessage.WM_SETTINGSCHANGED:
                     {
-                        var lParamStr = Marshal.PtrToStringUTF8(lParam);
+                        var lParamStr = Marshal.PtrToStringUni(lParam);
                         if (lParamStr == "Environment")
                         {
                             // Do not react on self - not nice, re-check this

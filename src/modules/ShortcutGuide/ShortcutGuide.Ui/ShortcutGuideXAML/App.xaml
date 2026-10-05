@@ -29,6 +29,20 @@
                 TrueValue="Collapsed" />
             <tkconverters:StringVisibilityConverter x:Name="StringVisibilityConverter" />
             <converters:ShortcutDescriptionToKeysConverter x:Name="ShortcutDescriptionToKeysConverter" />
+
+            <!--
+                Path data for the 4-square Windows logo icon used by the "Windows" nav entry in MainWindow.
+                Sized for a 20x20 viewbox to match the icon slot in CustomNavigationViewStyle.
+                Same geometry as src/settings-ui/Settings.UI/SettingsXAML/Controls/Dashboard/ShortcutConflictWindow.xaml.
+                Defined here because the nav item is created in code-behind.
+            -->
+            <x:String x:Key="WindowsLogoPathData">M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z</x:String>
+
+            <!--
+                Path data for the PowerToys app icon (rounded square with menu bar and three dots) used in the apps nav list.
+                Scaled from the 64x64 source SVG to fit a 20x20 viewbox; F0 = even-odd fill so the frame strokes render correctly.
+            -->
+            <x:String x:Key="PowerToysLogoPathData">F0 M17.5 0C18.8807 0 20 1.1193 20 2.5V17.5C20 18.8807 18.8807 20 17.5 20H2.5C1.1193 20 0 18.8807 0 17.5V2.5C0 1.1193 1.1193 0 2.5 0H17.5ZM2.5 1.25C1.8096 1.25 1.25 1.8096 1.25 2.5V17.5C1.25 18.1903 1.8096 18.75 2.5 18.75H17.5C18.1903 18.75 18.75 18.1903 18.75 17.5V2.5C18.75 1.8096 18.1903 1.25 17.5 1.25H2.5ZM3.75 15a1.25 1.25 0 1 0 2.5 0a1.25 1.25 0 1 0 -2.5 0ZM8.75 15a1.25 1.25 0 1 0 2.5 0a1.25 1.25 0 1 0 -2.5 0ZM13.75 15a1.25 1.25 0 1 0 2.5 0a1.25 1.25 0 1 0 -2.5 0ZM15 3.75C15.6903 3.75 16.25 4.3097 16.25 5V10C16.25 10.6903 15.6903 11.25 15 11.25H5C4.3097 11.25 3.75 10.6903 3.75 10V5C3.75 4.3097 4.3097 3.75 5 3.75H15ZM5 5V10H15V5H5Z</x:String>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

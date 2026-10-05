@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
@@ -40,12 +41,28 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             this.Activated += Window_Activated_SetIcon;
 
+            const string fallbackTitle = "PowerToys shortcut conflicts";
+            this.Title = fallbackTitle;
+            titleBar.Title = fallbackTitle;
+
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
 
-            this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title");
+            var windowTitle = resourceLoader.GetString("ShortcutConflictWindow_Title");
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(windowTitle))
+            {
+                windowTitle = fallbackTitle;
+            }
+
+            this.Title = windowTitle;
+            titleBar.Title = windowTitle;
             this.CenterOnScreen();
 
             ViewModel.OnPageLoaded();

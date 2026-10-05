@@ -23,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private AutoHideCursorSettings AutoHideCursorSettingsConfig { get; set; }
+
         private FindMyMouseSettings FindMyMouseSettingsConfig { get; set; }
 
         private MouseHighlighterSettings MouseHighlighterSettingsConfig { get; set; }
@@ -31,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private CursorWrapSettings CursorWrapSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AutoHideCursorSettings> autoHideCursorSettingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -41,6 +43,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValues();
+
+            ArgumentNullException.ThrowIfNull(autoHideCursorSettingsRepository);
+
+            AutoHideCursorSettingsConfig = autoHideCursorSettingsRepository.SettingsConfig;
+            AutoHideCursorSettingsConfig.UpgradeSettingsConfiguration();
+            _autoHideCursorHideOnTyping = AutoHideCursorSettingsConfig.Properties.HideOnTyping.Value;
+            _autoHideCursorHideOnIdle = AutoHideCursorSettingsConfig.Properties.HideOnIdle.Value;
+            _autoHideCursorIdleDelaySeconds = Math.Clamp(
+                AutoHideCursorSettingsConfig.Properties.IdleDelayMs.Value,
+                AutoHideCursorProperties.MinimumIdleDelayMs,
+                AutoHideCursorProperties.MaximumIdleDelayMs) / 1000;
 
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
@@ -69,14 +82,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
             string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
-            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#a6FFFF00";
+            _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : MouseHighlighterProperties.DefaultLeftButtonClickColor;
 
             string rightClickColor = MouseHighlighterSettingsConfig.Properties.RightButtonClickColor.Value;
-            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : "#a60000FF";
+            _highlighterRightButtonClickColor = !string.IsNullOrEmpty(rightClickColor) ? rightClickColor : MouseHighlighterProperties.DefaultRightButtonClickColor;
 
             string alwaysColor = MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value;
             _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
             _isSpotlightModeEnabled = MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value;
+            _isRippleModeEnabled = MouseHighlighterSettingsConfig.Properties.RippleMode.Value;
+            _rippleSize = MouseHighlighterSettingsConfig.Properties.RippleSize.Value;
+            _rippleIntensity = MouseHighlighterSettingsConfig.Properties.RippleIntensity.Value;
+            _rippleDurationMs = MouseHighlighterSettingsConfig.Properties.RippleDurationMs.Value;
+            _rippleShowDragTrail = MouseHighlighterSettingsConfig.Properties.RippleShowDragTrail.Value;
+            _rippleShowReleasePulse = MouseHighlighterSettingsConfig.Properties.RippleShowReleasePulse.Value;
 
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
@@ -133,6 +152,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValues()
         {
+            _autoHideCursorEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAutoHideCursorEnabledValue();
+            _autoHideCursorEnabledStateIsGPOConfigured =
+                _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled ||
+                _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            if (_autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                _isAutoHideCursorEnabled = _autoHideCursorEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isAutoHideCursorEnabled = GeneralSettingsConfig.Enabled.AutoHideCursor;
+            }
+
             _findMyMouseEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredFindMyMouseEnabledValue();
             if (_findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _findMyMouseEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -608,6 +640,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsRippleModeEnabled
+        {
+            get => _isRippleModeEnabled;
+            set
+            {
+                if (_isRippleModeEnabled != value)
+                {
+                    _isRippleModeEnabled = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        // ComboBox index for the highlight mode selector.
+        // 0 = Spotlight, 1 = Circle, 2 = Ripple
+        public int HighlightModeIndex
+        {
+            get
+            {
+                if (_isSpotlightModeEnabled)
+                {
+                    return 0;
+                }
+
+                return _isRippleModeEnabled ? 2 : 1;
+            }
+
+            set
+            {
+                bool spotlight = value == 0;
+                bool ripple = value == 2;
+                bool changed = false;
+
+                if (_isSpotlightModeEnabled != spotlight)
+                {
+                    _isSpotlightModeEnabled = spotlight;
+                    MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value = spotlight;
+                    OnPropertyChanged(nameof(IsSpotlightModeEnabled));
+                    changed = true;
+                }
+
+                if (_isRippleModeEnabled != ripple)
+                {
+                    _isRippleModeEnabled = ripple;
+                    MouseHighlighterSettingsConfig.Properties.RippleMode.Value = ripple;
+                    OnPropertyChanged(nameof(IsRippleModeEnabled));
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    OnPropertyChanged(nameof(HighlightModeIndex));
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public int MouseHighlighterRadius
         {
             get
@@ -675,6 +765,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _highlighterAutoActivate = value;
                     MouseHighlighterSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int RippleSize
+        {
+            get => _rippleSize;
+            set
+            {
+                if (value != _rippleSize)
+                {
+                    _rippleSize = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleSize.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public double RippleIntensity
+        {
+            get => _rippleIntensity;
+            set
+            {
+                if (value != _rippleIntensity)
+                {
+                    _rippleIntensity = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleIntensity.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int RippleDurationMs
+        {
+            get => _rippleDurationMs;
+            set
+            {
+                if (value != _rippleDurationMs)
+                {
+                    _rippleDurationMs = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleDurationMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool RippleShowDragTrail
+        {
+            get => _rippleShowDragTrail;
+            set
+            {
+                if (value != _rippleShowDragTrail)
+                {
+                    _rippleShowDragTrail = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleShowDragTrail.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool RippleShowReleasePulse
+        {
+            get => _rippleShowReleasePulse;
+            set
+            {
+                if (value != _rippleShowReleasePulse)
+                {
+                    _rippleShowReleasePulse = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleShowReleasePulse.Value = value;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -991,6 +1151,91 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
         }
 
+        public bool IsAutoHideCursorEnabled
+        {
+            get => _isAutoHideCursorEnabled;
+            set
+            {
+                if (_autoHideCursorEnabledStateIsGPOConfigured)
+                {
+                    return;
+                }
+
+                if (_isAutoHideCursorEnabled != value)
+                {
+                    _isAutoHideCursorEnabled = value;
+                    GeneralSettingsConfig.Enabled.AutoHideCursor = value;
+                    OnPropertyChanged(nameof(IsAutoHideCursorEnabled));
+                    OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsAutoHideCursorEnabledGpoConfigured => _autoHideCursorEnabledStateIsGPOConfigured;
+
+        public bool AutoHideCursorHideOnTyping
+        {
+            get => _autoHideCursorHideOnTyping;
+            set
+            {
+                if (_autoHideCursorHideOnTyping != value)
+                {
+                    _autoHideCursorHideOnTyping = value;
+                    AutoHideCursorSettingsConfig.Properties.HideOnTyping.Value = value;
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool AutoHideCursorHideOnIdle
+        {
+            get => _autoHideCursorHideOnIdle;
+            set
+            {
+                if (_autoHideCursorHideOnIdle != value)
+                {
+                    _autoHideCursorHideOnIdle = value;
+                    AutoHideCursorSettingsConfig.Properties.HideOnIdle.Value = value;
+                    OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public int AutoHideCursorIdleDelaySeconds
+        {
+            get => _autoHideCursorIdleDelaySeconds;
+            set
+            {
+                int normalizedValue = Math.Clamp(
+                    value,
+                    AutoHideCursorProperties.MinimumIdleDelayMs / 1000,
+                    AutoHideCursorProperties.MaximumIdleDelayMs / 1000);
+                if (_autoHideCursorIdleDelaySeconds != normalizedValue)
+                {
+                    _autoHideCursorIdleDelaySeconds = normalizedValue;
+                    AutoHideCursorSettingsConfig.Properties.IdleDelayMs.Value = normalizedValue * 1000;
+                    NotifyAutoHideCursorPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsAutoHideCursorIdleDelayEnabled => _isAutoHideCursorEnabled && _autoHideCursorHideOnIdle;
+
+        private void NotifyAutoHideCursorPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndAutoHideCursorSettings outsettings = new SndAutoHideCursorSettings(AutoHideCursorSettingsConfig);
+            SndModuleSettings<SndAutoHideCursorSettings> ipcMessage = new SndModuleSettings<SndAutoHideCursorSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(AutoHideCursorSettingsConfig.ToJsonString(), AutoHideCursorSettings.ModuleName);
+        }
+
         public bool IsCursorWrapEnabled
         {
             get => _isCursorWrapEnabled;
@@ -1182,6 +1427,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
+            OnPropertyChanged(nameof(IsAutoHideCursorEnabled));
+            OnPropertyChanged(nameof(IsAutoHideCursorIdleDelayEnabled));
             OnPropertyChanged(nameof(IsFindMyMouseEnabled));
             OnPropertyChanged(nameof(IsMouseHighlighterEnabled));
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
@@ -1190,6 +1437,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private Func<string, int> SendConfigMSG { get; }
+
+        private GpoRuleConfigured _autoHideCursorEnabledGpoRuleConfiguration;
+        private bool _autoHideCursorEnabledStateIsGPOConfigured;
+        private bool _isAutoHideCursorEnabled;
+        private bool _autoHideCursorHideOnTyping;
+        private bool _autoHideCursorHideOnIdle;
+        private int _autoHideCursorIdleDelaySeconds;
 
         private GpoRuleConfigured _findMyMouseEnabledGpoRuleConfiguration;
         private bool _findMyMouseEnabledStateIsGPOConfigured;
@@ -1214,6 +1468,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _highlighterRightButtonClickColor;
         private string _highlighterAlwaysColor;
         private bool _isSpotlightModeEnabled;
+        private bool _isRippleModeEnabled;
+        private int _rippleSize;
+        private double _rippleIntensity;
+        private int _rippleDurationMs;
+        private bool _rippleShowDragTrail;
+        private bool _rippleShowReleasePulse;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;

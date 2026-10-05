@@ -19,10 +19,20 @@ public partial class SamplesListPage : ListPage
             Title = "List Page Sample Command",
             Subtitle = "Display a list of items",
         },
+        new ListItem(new SampleToastsPage())
+        {
+            Title = "Toast Notification Samples",
+            Subtitle = "Demonstrates CommandResult.ShowToast and lets you send custom toasts",
+        },
         new ListItem(new SampleListPageWithDetails())
         {
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
+        },
+        new ListItem(new SampleLiveDetailsPage())
+        {
+            Title = "Live Updating Details",
+            Subtitle = "Details pane updates in real time without reselecting",
         },
         new ListItem(new SectionsIndexPage())
         {
@@ -53,6 +63,26 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
+        },
+        new ListItem(new SampleSwatchIconPage())
+        {
+            Title = "Swatch Icon Palette",
+            Subtitle = "A 256-color circle and square swatch stress sample",
+        },
+        new ListItem(new SampleSvgIconPage())
+        {
+            Title = "SVG Icon Protocols",
+            Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
+        },
+        new ListItem(new SampleShellItemIconPage())
+        {
+            Title = "System32 Shell Icons",
+            Subtitle = "A large real-world list for Shell icon identity and cache testing",
+        },
+        new ListItem(new SampleShellItemIconPage(useLegacyIndexerIcons: true))
+        {
+            Title = "System32 Legacy Indexer Icons",
+            Subtitle = "The same System32 list using pre-protocol ThumbnailHelper streams",
         },
         new ListItem(new SlowListPage())
         {
@@ -120,8 +150,18 @@ public partial class SamplesListPage : ListPage
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
         },
+        new ListItem(new SampleListSettingsPage())
+        {
+            Title = "Path and list settings controls",
+            Subtitle = "Manage strings, file paths, and escaped key/value pairs",
+        },
 
         // Data package samples
+        new ListItem(new SampleClipboardPage())
+        {
+            Title = "Clipboard Helper Samples",
+            Subtitle = "Test text, RTF, images, and custom data packages with ClipboardHelper",
+        },
         new ListItem(new SampleDataTransferPage())
         {
             Title = "Clipboard and Drag-and-Drop Demo",
@@ -150,11 +190,16 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of a command that takes multiple types of parameters",
         },
 
-        // List parameters aren't yet supported
+        // List parameters
         new ListItem(new CreateNoteParametersPage())
         {
             Title = "Create note sample",
             Subtitle = "A parameter page with both a string and list parameter",
+        },
+        new ListItem(new CreateNoteParametersPage(gridProperties: new MediumGridLayout { ShowTitle = true }))
+        {
+            Title = "Create note sample (grid view)",
+            Subtitle = "A parameter page with a string and a grid of folders",
         },
 
         // Evil edge cases

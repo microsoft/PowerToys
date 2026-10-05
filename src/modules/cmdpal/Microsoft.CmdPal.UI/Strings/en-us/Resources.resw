@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -225,7 +225,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Command Palette settings</value>
     <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
   </data>
-  <data name="AboutSettingsHeader.Text" xml:space="preserve">
+  <data name="Settings_GeneralPage_AboutSettingsHeader.Text" xml:space="preserve">
     <value>About</value>
     <comment>A section header for information about the app</comment>
   </data>
@@ -277,11 +277,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Type here to search...</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
-    <value>Preferred monitor position</value>
-    <comment>as in Show Command Palette on primary monitor</comment>
-  </data>
-  <data name="Run_PositionHeader.Description" xml:space="preserve">
-    <value>If multiple monitors are in use, Command Palette can be launched on the desired monitor</value>
+    <value>Open Command Palette on</value>
     <comment>as in Show Command Palette on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
@@ -295,6 +291,27 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
     <value>Don't move</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_SettingsCard.Header" xml:space="preserve">
+    <value>On-screen indicator position</value>
+    <comment>Position where Command Palette confirmation messages and other indicators appear</comment>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink.Content" xml:space="preserve">
+    <value>Change position in Windows Settings</value>
+    <comment>Opens ms-settings:notifications, which hosts the "Position of on-screen indicators" setting</comment>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_UseSystemSettings.Content" xml:space="preserve">
+    <value>Use system settings</value>
+    <comment>Follows the Windows "Position of on-screen indicators" setting; keep wording matching Settings_GeneralPage_AppTheme_Mode_System</comment>
   </data>
   <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
     <value>Confirm</value>
@@ -323,6 +340,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
     <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
   </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.Header" xml:space="preserve">
+    <value>Search weight</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.Description" xml:space="preserve">
+    <value>Nudge this provider's results up or down among equally-relevant matches.</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search weight</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Lower.Content" xml:space="preserve">
+    <value>Lower</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Higher.Content" xml:space="preserve">
+    <value>Higher</value>
+  </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
     <value>Built-in</value>
   </data>
@@ -330,16 +365,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>These commands are built-in to the Windows Command Palette.</value>
   </data>
   <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Header" xml:space="preserve">
-    <value>Activation key</value>
-  </data>
-  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
-    <value>This key will open the Command Palette.</value>
+    <value>Activation shortcut</value>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
     <value>Use low-level keyboard hook</value>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
-    <value>Try this if there are issues with the shortcut (Command Palette might not get focus when triggered from an elevated window)</value>
+    <value>May fix shortcut issues, but won't work while an elevated app has focus</value>
   </data>
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
     <value>Ignore shortcut in fullscreen mode</value>
@@ -351,13 +383,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Ignore shortcut when the system heuristically detects fullscreen</value>
   </data>
   <data name="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard.Description" xml:space="preserve">
-    <value>Windows may detect that a fullscreen application is running or Presentation Settings are applied. Some applications (such as NVIDIA overlay) can trigger this incorrectly, preventing the shortcut from working</value>
+    <value>Windows may report fullscreen or presentation mode incorrectly; overlays such as NVIDIA can trigger it</value>
   </data>
   <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Header" xml:space="preserve">
-    <value>Allow breakthrough with rapid shortcut presses</value>
-  </data>
-  <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Description" xml:space="preserve">
-    <value>Press the activation shortcut 3 times within 2 seconds to bypass the fullscreen or busy state guard</value>
+    <value>Press the shortcut 3 times within 2 seconds to override suppression</value>
   </data>
   <data name="Settings_GeneralPage_NotificationState_InfoBar" xml:space="preserve">
     <value>Your activation shortcut might not work right now because {0}.</value>
@@ -375,34 +404,132 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Likely caused by: {0}.</value>
   </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
-    <value>Highlight search on activate</value>
+    <value>Select search text when opened</value>
   </data>
-  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
-    <value>Selects the previous search text at launch</value>
+  <data name="Settings_GeneralPage_CompactMode_SettingsCard.Header" xml:space="preserve">
+    <value>Open with a compact search box</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header" xml:space="preserve">
+    <value>Quick access shelf</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description" xml:space="preserve">
+    <value>Show pinned and recent items below the search box while compact mode is collapsed.</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Alt+number shortcuts in lists</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Choose whether Alt+1 through Alt+9 runs or selects the corresponding list item. Alt+Shift+1 through Alt+Shift+9 always selects.</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_Run.Content" xml:space="preserve">
+    <value>Run item</value>
+  </data>
+  <data name="Settings_GeneralPage_ListItemAltNumberBehavior_Select.Content" xml:space="preserve">
+    <value>Select item</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Header" xml:space="preserve">
+    <value>Maximum pinned items</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfPinnedCommandLimit_SettingsCard.Description" xml:space="preserve">
+    <value>Use 0 to hide pinned items.</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>Recent items</value>
+  </data>
+  <data name="Settings_GeneralPage_QuickAccessShelfRecentCommands_OpenRecentItemsSettings_Hyperlink.Content" xml:space="preserve">
+    <value>Manage recent items</value>
+    <comment>Link from the compact-mode shelf settings to the full Recent items section on the General settings page</comment>
+  </data>
+  <data name="Settings_GeneralPage_RecentItemsSettingsHeader.Text" xml:space="preserve">
+    <value>Recent items</value>
+  </data>
+  <data name="Settings_GeneralPage_HomeRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>Show on Home</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommands_Hidden.Content" xml:space="preserve">
+    <value>Don't show</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommands_BeforePinned.Content" xml:space="preserve">
+    <value>Before pinned</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommands_AfterPinned.Content" xml:space="preserve">
+    <value>After pinned</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Header" xml:space="preserve">
+    <value>Maximum items</value>
+  </data>
+  <data name="Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Description" xml:space="preserve">
+    <value>Applies to Home and the shelf.</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearRecentCommands_SettingsCard.Header" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearRecentCommandsButton.Content" xml:space="preserve">
+    <value>Clear history</value>
+  </data>
+  <data name="recent_commands_remove_name" xml:space="preserve">
+    <value>Remove from recent</value>
+  </data>
+  <data name="QuickAccessShelfSurface.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="QuickAccessShelf_ContextMenu_Settings.Text" xml:space="preserve">
+    <value>Shelf settings</value>
+  </data>
+  <data name="QuickAccessShelf_ContextMenu_Hide.Text" xml:space="preserve">
+    <value>Hide shelf</value>
+  </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.Title" xml:space="preserve">
+    <value>Your shelf is empty</value>
+    <comment>Teaching tip beside the search box after enabling an empty quick access shelf.</comment>
+  </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.Subtitle" xml:space="preserve">
+    <value>Pin a command to home or adjust which pinned and recent items appear in Shelf settings. Empty shelves stay hidden.</value>
+  </data>
+  <data name="QuickAccessShelf_EmptyTeachingTip.ActionButtonContent" xml:space="preserve">
+    <value>Shelf settings</value>
+  </data>
+  <data name="QuickAccessShelfShortcutTextFormat" xml:space="preserve">
+    <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
+    <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
+  </data>
+  <data name="ListItemNumberedShortcutAcceleratorFormat" xml:space="preserve">
+    <value>Alt+{0}</value>
+    <comment>UI Automation accelerator key for a numbered list item. {0} is a digit from 1 through 9. Localize the modifier key name and separator as appropriate.</comment>
+  </data>
+  <data name="QuickAccessShelfChangeOrderDragCaption" xml:space="preserve">
+    <value>Change order</value>
+    <comment>Drag-over caption shown when reordering commands on the quick access shelf.</comment>
+  </data>
+  <data name="QuickAccessOverflowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More quick access commands</value>
+  </data>
+  <data name="QuickAccessOverflowButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>More quick access commands</value>
+  </data>
+  <data name="QuickAccessShelfRemoveDropTarget.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove from quick access</value>
+  </data>
+  <data name="QuickAccessShelfPinDropTarget.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Pin to home</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Header" xml:space="preserve">
+    <value>Vertical search box position</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
+    <value>Move left to place it lower on the screen, or right to place it higher</value>
   </data>
   <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
-    <value>Keep previous query</value>
-  </data>
-  <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Description" xml:space="preserve">
-    <value>Preserves the last search text when Command Palette is reopened</value>
+    <value>Keep search text when reopened</value>
   </data>
   <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
-    <value>Show app details</value>
-  </data>
-  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Description" xml:space="preserve">
-    <value>Controls if app details are automatically expanded or not.</value>
+    <value>Automatically expand app details</value>
   </data>
   <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Header" xml:space="preserve">
-    <value>Backspace goes back</value>
-  </data>
-  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
-    <value>If the search field is empty, backspace returns to the previous page</value>
+    <value>Go back with Backspace when search is empty</value>
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
-    <value>Single-click activation</value>
-  </data>
-  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how to interact with list items: single-click to activate, or single-click to select and double-click to activate</value>
+    <value>Activate list items with a single click</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
     <value>Windows Command Palette</value>
@@ -437,11 +564,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings, shortcut Control plus comma</value>
   </data>
-  <data name="ActivationSettingsHeader.Text" xml:space="preserve">
+  <data name="Settings_GeneralPage_ActivationSettingsHeader.Text" xml:space="preserve">
     <value>Activation</value>
   </data>
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
+  </data>
+  <data name="Settings_GeneralPage_AppBehaviorSettingsHeader.Text" xml:space="preserve">
+    <value>App behavior</value>
   </data>
   <data name="DockAppearanceSettingsHeader.Text" xml:space="preserve">
     <value>Appearance</value>
@@ -453,16 +583,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Search commands...</value>
   </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
-    <value>Show system tray icon</value>
+    <value>Show Command Palette in system tray</value>
   </data>
-  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
-    <value>Choose if Command Palette is visible in the system tray</value>
+  <data name="Settings_GeneralPage_AllowAltF4_SettingsCard.Header" xml:space="preserve">
+    <value>Quit Command Palette with Alt+F4</value>
   </data>
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
-    <value>Disable animations</value>
-  </data>
-  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
-    <value>Disable animations when switching between pages</value>
+    <value>Disable page transition animations</value>
   </data>
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
     <value>Enable Dock</value>
@@ -470,14 +597,60 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
     <value>Enable a toolbar with quick access to commands</value>
   </data>
+  <data name="Settings_DockPage_FocusShortcut_SettingsCard.Header" xml:space="preserve">
+    <value>Dock navigation</value>
+  </data>
+  <data name="Settings_DockPage_FocusShortcut_SettingsCard.Description" xml:space="preserve">
+    <value>Focus the dock, then press again to cycle through items.</value>
+  </data>
+  <data name="Settings_DockPage_FocusPrimaryFirst_SettingsCard.Header" xml:space="preserve">
+    <value>Focus primary dock first</value>
+  </data>
+  <data name="Settings_DockPage_FocusPrimaryFirst_SettingsCard.Description" xml:space="preserve">
+    <value>Start navigation on the primary monitor.</value>
+  </data>
+  <data name="Settings_DockPage_FocusAcrossMonitors_SettingsCard.Header" xml:space="preserve">
+    <value>Cycle through all docks</value>
+  </data>
+  <data name="Settings_DockPage_FocusAcrossMonitors_SettingsCard.Description" xml:space="preserve">
+    <value>Continue on the next monitor after the last dock item, moving from left to right and wrapping around.</value>
+  </data>
+  <data name="Settings_DockPage_RememberLastFocusedItem_SettingsCard.Header" xml:space="preserve">
+    <value>Remember last focused item</value>
+  </data>
+  <data name="Settings_DockPage_RememberLastFocusedItem_SettingsCard.Description" xml:space="preserve">
+    <value>Resume from this item when returning to a dock.</value>
+  </data>
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Header" xml:space="preserve">
     <value>Always stay on top</value>
   </data>
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Description" xml:space="preserve">
     <value>Keep the dock above other windows, except while an app is fullscreen</value>
   </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Header" xml:space="preserve">
+    <value>Auto-hide dock</value>
+  </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Description" xml:space="preserve">
+    <value>Collapse the dock until you hover over its screen edge</value>
+  </data>
+  <data name="DockBehavior_AutoHideConflict_InfoBar.Title" xml:space="preserve">
+    <value>Auto-hide unavailable</value>
+  </data>
+  <data name="DockBehavior_AutoHideConflict_InfoBar.Message" xml:space="preserve">
+    <value>The taskbar or another application is using auto-hide on this edge. The dock is using pinned mode instead.</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
+  </data>
+  <data name="ContextMenu_Back" xml:space="preserve">
+    <value>Back from {0}</value>
+    <comment>Screen reader label for the back row in a submenu. {0} is the current submenu title.</comment>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="ContextMenuBackItem.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back (Alt + Left arrow)</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Back (Alt + Left arrow)</value>
@@ -488,6 +661,34 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
     <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>
+  </data>
+  <data name="SearchBoxContextMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Context menu item in the search box that opens the Command Palette settings</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShowShelf" xml:space="preserve">
+    <value>Show shelf</value>
+    <comment>Context menu item in the search box that enables the quick access shelf</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShelfEnabledToast" xml:space="preserve">
+    <value>Shelf enabled. It appears when the palette is collapsed.</value>
+    <comment>Toast after enabling the quick access shelf while the home page shows expanded search results.</comment>
+  </data>
+  <data name="SearchBoxContextMenu_ShelfHiddenToast" xml:space="preserve">
+    <value>Shelf hidden</value>
+    <comment>Toast after disabling the quick access shelf while the home page shows expanded search results.</comment>
+  </data>
+  <data name="SearchBoxContextMenu_HideShelf" xml:space="preserve">
+    <value>Hide shelf</value>
+    <comment>Context menu item in the search box that disables the quick access shelf</comment>
+  </data>
+  <data name="SearchBoxContextMenu_Settings_Shortcut" xml:space="preserve">
+    <value>Ctrl+,</value>
+    <comment>Keyboard shortcut hint shown next to the Settings context menu item. Localize the modifier key name (e.g. Ctrl) as appropriate for the language; the comma is the literal key.</comment>
+  </data>
+  <data name="SearchBoxContextMenu_Help" xml:space="preserve">
+    <value>Help</value>
+    <comment>Context menu item in the search box that opens the Command Palette documentation</comment>
   </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
@@ -520,20 +721,188 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NavigationPaneOpened" xml:space="preserve">
     <value>Navigation page opened</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
-    <value>Enable external reload</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Header" xml:space="preserve">
+    <value>Enable external command links</value>
   </data>
-  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
-    <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
+  <data name="Settings_GeneralPage_ExternalCommandLinks_SettingsExpander.Description" xml:space="preserve">
+    <value>Allow x-cmdpal links to request commands and extension reloads. New requests require your confirmation.</value>
   </data>
-  <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For developers</value>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Header" xml:space="preserve">
+    <value>Always allowed command links</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_SettingsCard.Description" xml:space="preserve">
+    <value>Review or revoke requests you previously allowed without confirmation.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Warning.Text" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened a link. Always allowed requests remain global until you revoke them.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_Empty.Text" xml:space="preserve">
+    <value>No command links are always allowed.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_DetailsFlyout_Title.Text" xml:space="preserve">
+    <value>Command link details</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_ProviderIdLabel.Text" xml:space="preserve">
+    <value>Provider ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_CommandIdLabel.Text" xml:space="preserve">
+    <value>Command ID</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.Content" xml:space="preserve">
+    <value>Revoke</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermission_RevokeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Revoke permission</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.Content" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove all remembered command link permissions</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Title" xml:space="preserve">
+    <value>Remove all command link permissions?</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_Description" xml:space="preserve">
+    <value>Command Palette will ask for confirmation the next time each external command link is opened.</value>
+  </data>
+  <data name="Settings_GeneralPage_ExternalCommandPermissions_ClearConfirmation_RemoveButton" xml:space="preserve">
+    <value>Remove all</value>
+  </data>
+  <data name="CommandLink_CopyCommand_Name" xml:space="preserve">
+    <value>Copy command link</value>
+  </data>
+  <data name="CommandLink_Toast_Copied" xml:space="preserve">
+    <value>Command link copied to clipboard</value>
+  </data>
+  <data name="SettingsLink_CopyPage_Name" xml:space="preserve">
+    <value>Copy link to page</value>
+  </data>
+  <data name="SettingsLink_CopySetting_Name" xml:space="preserve">
+    <value>Copy link to setting</value>
+  </data>
+  <data name="SettingsLink_CopyExtensionSettings_Name" xml:space="preserve">
+    <value>Copy link to extension settings</value>
+  </data>
+  <data name="SettingsLink_CopyFallbackOrder_Name" xml:space="preserve">
+    <value>Copy link to fallback order</value>
+  </data>
+  <data name="SettingsLink_Copied_Announcement" xml:space="preserve">
+    <value>Settings link copied to clipboard</value>
+  </data>
+  <data name="SettingsLink_Fallback_RedirectedTitle" xml:space="preserve">
+    <value>Settings link redirected</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnavailableTitle" xml:space="preserve">
+    <value>Setting unavailable</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownLink" xml:space="preserve">
+    <value>This settings link is no longer available. Opened the closest settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_UnknownProvider" xml:space="preserve">
+    <value>The extension provider is missing or unavailable. Opened the Extensions page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_HiddenTarget" xml:space="preserve">
+    <value>This setting is currently hidden. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_MissingTarget" xml:space="preserve">
+    <value>This setting isn't available on this page. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_DisabledProvider" xml:space="preserve">
+    <value>This setting is unavailable while the extension is disabled. Opened its settings page.</value>
+  </data>
+  <data name="SettingsLink_Fallback_Other" xml:space="preserve">
+    <value>Opened the closest available settings page.</value>
+  </data>
+  <data name="ExternalCommandLink_Consent_Title" xml:space="preserve">
+    <value>Allow this command link?</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Title" xml:space="preserve">
+    <value>Opening command link</value>
+  </data>
+  <data name="ExternalCommandLink_Loading_Description" xml:space="preserve">
+    <value>Loading command information...</value>
+  </data>
+  <data name="ExternalCommandLink_CommandConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this command.</value>
+  </data>
+  <data name="ExternalCommandLink_PageConsent_Description" xml:space="preserve">
+    <value>An external link is requesting this page.</value>
+  </data>
+  <data name="ExternalCommandLink_PageState_Label" xml:space="preserve">
+    <value>Page state:</value>
+  </data>
+  <data name="ExternalCommandLink_PageFilter_Description" xml:space="preserve">
+    <value>Filter: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_PageQuery_Description" xml:space="preserve">
+    <value>Search: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_FilterOneTime_Description" xml:space="preserve">
+    <value>Permission for links that select a filter is granted for this request only and cannot be remembered.</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadConsent_Description" xml:space="preserve">
+    <value>An external link is requesting that Command Palette reload all extensions.</value>
+  </data>
+  <data name="ExternalCommandLink_OriginWarning_Description" xml:space="preserve">
+    <value>Command Palette cannot identify which app or website opened the link. Continue only if you expected this request.</value>
+  </data>
+  <data name="ExternalCommandLink_Link_Description" xml:space="preserve">
+    <value>Link: {0}</value>
+  </data>
+  <data name="ExternalCommandLink_ShowMore_Button" xml:space="preserve">
+    <value>Show more...</value>
+  </data>
+  <data name="ExternalCommandLink_ShowLess_Button" xml:space="preserve">
+    <value>Show less</value>
+  </data>
+  <data name="ExternalCommandLink_RunOnce_Button" xml:space="preserve">
+    <value>Run once</value>
+  </data>
+  <data name="ExternalCommandLink_OpenOnce_Button" xml:space="preserve">
+    <value>Open once</value>
+  </data>
+  <data name="ExternalCommandLink_ReloadOnce_Button" xml:space="preserve">
+    <value>Reload once</value>
+  </data>
+  <data name="ExternalCommandLink_AlwaysAllow_Button" xml:space="preserve">
+    <value>Always allow</value>
+  </data>
+  <data name="ExternalCommandLink_Cancel_Button" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ExternalCommandLink_Close_Button" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Title" xml:space="preserve">
+    <value>Command unavailable</value>
+  </data>
+  <data name="ExternalCommandLink_Unavailable_Description" xml:space="preserve">
+    <value>The linked command is not installed, enabled, or available at the top level.</value>
+  </data>
+  <data name="ExternalCommandLink_Reload_Name" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="ExternalCommandLink_CommandPalette_Name" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="ExternalLinksSettingsHeader.Text" xml:space="preserve">
+    <value>External links</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
     <value>an untitled</value>
   </data>
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
+  </data>
+  <data name="ScreenReader_Announcement_ContextMenuOpened" xml:space="preserve">
+    <value>Menu, {0} commands. {1}, {2} of {0}.</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings (Ctrl+,)</value>
@@ -552,24 +921,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
     <value>Reloading extensions..</value>
-  </data>
-  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
-    <value>Discover more extensions</value>
-  </data>
-  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
-    <value>Find more extensions on the Microsoft Store or WinGet.</value>
-  </data>
-  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
-    <value>Learn how to create your own extensions</value>
-  </data>
-  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Find extensions on the Microsoft Store</value>
-  </data>
-  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Microsoft Store</value>
-  </data>
-  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore_Text.Text" xml:space="preserve">
-    <value>Microsoft Store</value>
   </data>
   <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
     <value>Search extensions</value>
@@ -608,10 +959,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>3 minutes</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
-    <value>Automatically return home</value>
-  </data>
-  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
-    <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
+    <value>Return home after closing</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
     <value>Personalization</value>
@@ -622,8 +970,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
     <value>Select which app theme to display</value>
   </data>
-  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+  <data name="Settings_AppearancePage_AppearanceSettingsHeader.Text" xml:space="preserve">
     <value>Appearance</value>
+  </data>
+  <data name="Settings_AppearancePage_LayoutSettingsHeader.Text" xml:space="preserve">
+    <value>Layout and positioning</value>
+  </data>
+  <data name="Settings_AppearancePage_InteractionSettingsHeader.Text" xml:space="preserve">
+    <value>Interaction</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
     <value>Use system settings</value>
@@ -702,9 +1056,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
     <value>Escape key behavior</value>
-  </data>
-  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how Escape key behaves</value>
   </data>
   <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
     <value>Settings</value>
@@ -944,6 +1295,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
+  </data>
+  <data name="DockSettings_DisabledDocks_InfoBar.Title" xml:space="preserve">
+    <value>Dock is turned off on some displays</value>
+    <comment>Shown when Dock is globally enabled but turned off on a connected display</comment>
+  </data>
+  <data name="DockSettings_DisabledDocks_InfoBar.Message" xml:space="preserve">
+    <value>Turn on Dock for these displays in Manage monitors. Per-display settings also apply when only one display is connected.</value>
+    <comment>Explains how to enable Dock on individual connected displays</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Title" xml:space="preserve">
+    <value>Some displays use their own Dock position</value>
+    <comment>Shown when an enabled Dock on a connected display uses its own position</comment>
+  </data>
+  <data name="DockAppearance_PositionOverrides_InfoBar.Message" xml:space="preserve">
+    <value>These displays won't follow changes to the default Dock position, even when their current positions match it. This also applies when only one display is connected.</value>
+    <comment>Explains why an explicit per-display position does not follow changes to the default</comment>
+  </data>
+  <data name="DockSettings_MonitorOverrides_ManageMonitors.Content" xml:space="preserve">
+    <value>Manage monitors</value>
+    <comment>Link to the per-monitor Dock settings on the same page</comment>
   </data>
   <data name="DockAppearance_DockSize_SettingsCard.Header" xml:space="preserve">
     <value>Size</value>
@@ -1341,5 +1712,340 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockMonitor_Position_SettingsCard.Header" xml:space="preserve">
     <value>Dock position</value>
     <comment>Per-monitor dock position settings card header</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Header" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Per-monitor setting for a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SettingsCard.Description" xml:space="preserve">
+    <value>Leave blank to use the default name.</value>
+    <comment>The default is the friendly hardware name or the automatically assigned display label.</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_TextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Display name</value>
+    <comment>Accessible name for the display name editor</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save a user-defined display name</comment>
+  </data>
+  <data name="DockMonitor_DisplayName_ResetButton.Content" xml:space="preserve">
+    <value>Restore default</value>
+    <comment>Remove the user-defined display name and use the automatic name again</comment>
+  </data>
+  <data name="AdaptiveListInput_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Button that adds an entry to a list in an adaptive-card form.</comment>
+  </data>
+  <data name="AdaptiveListInput_RemoveItem" xml:space="preserve">
+    <value>Remove {0}</value>
+    <comment>Accessible label for a button that removes an entry from a list. {0} is the entry text or path.</comment>
+  </data>
+  <data name="AdaptiveListInput_RequiredError" xml:space="preserve">
+    <value>Add at least one item.</value>
+    <comment>Validation error shown when a required list has no entries.</comment>
+  </data>
+  <data name="AdaptiveListInput_ItemValidationError" xml:space="preserve">
+    <value>One or more items have an invalid format.</value>
+    <comment>Validation error shown when a string-list entry does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveListInput_DuplicateItemError" xml:space="preserve">
+    <value>Each item must be unique.</value>
+    <comment>Validation error shown when duplicate string-list entries are not allowed.</comment>
+  </data>
+  <data name="AdaptiveStringListInput_Placeholder" xml:space="preserve">
+    <value>New item</value>
+    <comment>Placeholder in the text box used to add an entry to a string list.</comment>
+  </data>
+  <data name="AdaptiveFilePathListInput_AddFile" xml:space="preserve">
+    <value>Add file</value>
+    <comment>Button or menu item that opens a file picker to add a path.</comment>
+  </data>
+  <data name="AdaptiveFilePathListInput_AddFolder" xml:space="preserve">
+    <value>Add folder</value>
+    <comment>Button or menu item that opens a folder picker to add a path.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_Key" xml:space="preserve">
+    <value>Key</value>
+    <comment>Label for the key field of a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_Value" xml:space="preserve">
+    <value>Value</value>
+    <comment>Label for the value field of a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_KeyPlaceholder" xml:space="preserve">
+    <value>New key</value>
+    <comment>Placeholder in the key field used to add a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_ValuePlaceholder" xml:space="preserve">
+    <value>New value</value>
+    <comment>Placeholder in the value field used to add a key/value list entry.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_MissingKeyDisplay" xml:space="preserve">
+    <value>(missing key)</value>
+    <comment>Text displayed for a persisted key/value list entry that does not contain a key.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_MissingKeyError" xml:space="preserve">
+    <value>Each value must have a key.</value>
+    <comment>Validation error shown when a key/value list entry has no key.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_KeyValidationError" xml:space="preserve">
+    <value>One or more keys have an invalid format.</value>
+    <comment>Validation error shown when a key does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_ValueValidationError" xml:space="preserve">
+    <value>One or more values have an invalid format.</value>
+    <comment>Validation error shown when a value does not match its configured regular expression.</comment>
+  </data>
+  <data name="AdaptiveKeyValueListInput_DuplicateKeyError" xml:space="preserve">
+    <value>Each key must be unique.</value>
+    <comment>Validation error shown when duplicate keys are not allowed in a key/value list.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_Browse" xml:space="preserve">
+    <value>Browse...</value>
+    <comment>Button that opens a picker for a single file or folder path.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_BrowseFor" xml:space="preserve">
+    <value>Browse for {0}</value>
+    <comment>Accessible label for the browse button. {0} is the name of the path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FilePath" xml:space="preserve">
+    <value>File path</value>
+    <comment>Accessible name for a single-file path field without a developer-provided header.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FolderPath" xml:space="preserve">
+    <value>Folder path</value>
+    <comment>Accessible name for a single-folder path field without a developer-provided header.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FilePlaceholder" xml:space="preserve">
+    <value>Enter or select a file</value>
+    <comment>Default placeholder for a single-file path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_FolderPlaceholder" xml:space="preserve">
+    <value>Enter or select a folder</value>
+    <comment>Default placeholder for a single-folder path field.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_SelectFile" xml:space="preserve">
+    <value>Select file</value>
+    <comment>Commit button text in the single-file picker.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_SelectFolder" xml:space="preserve">
+    <value>Select folder</value>
+    <comment>Commit button text in the single-folder picker.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_RequiredError" xml:space="preserve">
+    <value>Select or enter a path.</value>
+    <comment>Validation error shown when a required single-path input is empty.</comment>
+  </data>
+  <data name="AdaptiveFilePathInput_ValidationError" xml:space="preserve">
+    <value>The path has an invalid format.</value>
+    <comment>Validation error shown when a single path does not match its configured regular expression.</comment>
+  </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Header" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_GeneralPage_Language_SettingsCard.Description" xml:space="preserve">
+    <value>Command Palette uses your Windows display language by default</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartInfo.Title" xml:space="preserve">
+    <value>A restart is needed for the language change to take effect</value>
+  </data>
+  <data name="Settings_GeneralPage_PseudoLocalizationInfo.Message" xml:space="preserve">
+    <value>Pseudolocalization (qps-PLOC) is not included in this build. Run .\Invoke-PseudoLocalization.ps1 -Path . from src\modules\cmdpal in PowerShell 7, then rebuild and deploy Command Palette.</value>
+    <comment>{Locked}Shown in development builds without pseudo resources</comment>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartButton.Content" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Settings_GeneralPage_LanguageRestartFailed" xml:space="preserve">
+    <value>Command Palette couldn't restart. Try again, or close and reopen Command Palette to apply the language change.</value>
+    <comment>Shown when restarting Command Palette after a language change fails</comment>
+  </data>
+  <data name="SettingsWindow_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search settings, commands, and extensions (Ctrl+E)</value>
+  </data>
+  <data name="SettingsWindow_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search settings, commands, and extensions</value>
+  </data>
+  <data name="SettingsWindow_SearchNoResults" xml:space="preserve">
+    <value>No results found</value>
+  </data>
+  <data name="SettingsWindow_SearchShowAllResults" xml:space="preserve">
+    <value>Show all {0} results</value>
+    <comment>{0} is the total number of search results, including those not shown in the suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchShowOneResult" xml:space="preserve">
+    <value>Show {0} result</value>
+    <comment>{0} is the number of search results. Used when there is exactly one result.</comment>
+  </data>
+  <data name="SettingsWindow_SearchPagesGroup" xml:space="preserve">
+    <value>Pages</value>
+    <comment>Heading for settings pages in grouped search results.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryPage" xml:space="preserve">
+    <value>Page</value>
+    <comment>Compact category tag for a settings page in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategorySettings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Compact category tag for an individual setting or settings section in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryExtension" xml:space="preserve">
+    <value>Extension</value>
+    <comment>Compact category tag for an extension in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchCategoryCommand" xml:space="preserve">
+    <value>Command</value>
+    <comment>Compact category tag for a configurable command in search suggestions.</comment>
+  </data>
+  <data name="SettingsWindow_SearchBreadcrumb" xml:space="preserve">
+    <value>{0} › {1}</value>
+    <comment>Search result location. {0} is the settings page title, {1} is the section title.</comment>
+  </data>
+  <data name="SettingsWindow_SearchResultsTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SettingsWindow_SearchResultsQuery" xml:space="preserve">
+    <value>Results for '{0}'</value>
+    <comment>{0} is the search query.</comment>
+  </data>
+  <data name="SettingsWindow_SearchEmptyState.Text" xml:space="preserve">
+    <value>No settings, commands, or extensions found. Try a different search term.</value>
+  </data>
+  <data name="SettingsSearch_Keywords_Shortcuts" xml:space="preserve">
+    <value>hotkey shortcut keyboard keybinding key combination</value>
+    <comment>Search aliases for keyboard shortcuts. Translate and add natural alternatives for your language; these words are not displayed.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoHome" xml:space="preserve">
+    <value>reset return home timeout delay</value>
+    <comment>Search aliases for automatically returning to the home page.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_PreviousQuery" xml:space="preserve">
+    <value>remember retain last previous search text query</value>
+    <comment>Search aliases for keeping the previous query.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_HighlightSearch" xml:space="preserve">
+    <value>select selection search text</value>
+    <comment>Search aliases for highlighting the search text on activation.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_TrayIcon" xml:space="preserve">
+    <value>taskbar notification area tray icon</value>
+    <comment>Search aliases for the system tray icon.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Quit" xml:space="preserve">
+    <value>quit exit close alt f4</value>
+    <comment>Search aliases for allowing Alt+F4 to close Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Language" xml:space="preserve">
+    <value>locale localization translation display language</value>
+    <comment>Search aliases for the display language.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Links" xml:space="preserve">
+    <value>deep link deeplink uri url protocol external permissions consent</value>
+    <comment>Search aliases for external command links and their permissions.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_About" xml:space="preserve">
+    <value>version build license credits</value>
+    <comment>Search aliases for information about Command Palette.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Feedback" xml:space="preserve">
+    <value>bug issue report suggestion feedback</value>
+    <comment>Search aliases for sending feedback.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Appearance" xml:space="preserve">
+    <value>personalization customise customize look style visuals</value>
+    <comment>Search aliases for appearance settings.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Theme" xml:space="preserve">
+    <value>light dark mode system theme</value>
+    <comment>Search aliases for the light, dark, and system themes.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Backdrop" xml:space="preserve">
+    <value>acrylic mica blur transparent transparency material</value>
+    <comment>Search aliases for the window or dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Background" xml:space="preserve">
+    <value>wallpaper picture image photo accent tint color colour colorization opacity</value>
+    <comment>Search aliases for background images and colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackdrop" xml:space="preserve">
+    <value>acrylic blur transparent transparency material</value>
+    <comment>Search aliases for the dock backdrop material.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockBackground" xml:space="preserve">
+    <value>accent tint color colour colorization opacity</value>
+    <comment>Search aliases for dock background colors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Animations" xml:space="preserve">
+    <value>motion movement transitions effects reduce</value>
+    <comment>Search aliases for disabling animations.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_CompactMode" xml:space="preserve">
+    <value>small mini minimal collapsed shelf quick access pinned</value>
+    <comment>Search aliases for compact mode and its quick access shelf.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_History" xml:space="preserve">
+    <value>history recently used recent commands</value>
+    <comment>Search aliases for recently used commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_ClearHistory" xml:space="preserve">
+    <value>history recently used clear delete remove erase reset</value>
+    <comment>Search aliases for clearing recent commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_LaunchPosition" xml:space="preserve">
+    <value>window location screen monitor display cursor mouse center centre remember position</value>
+    <comment>Search aliases for where the Command Palette window opens.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Toast" xml:space="preserve">
+    <value>notification popup pop-up toast message indicator</value>
+    <comment>Search aliases for the toast notification position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_SingleClick" xml:space="preserve">
+    <value>mouse click open run launch execute double-click</value>
+    <comment>Search aliases for activating commands with a single click.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AppDetails" xml:space="preserve">
+    <value>preview pane panel details information info expand sidebar</value>
+    <comment>Search aliases for automatically expanding app details, also known as the preview pane.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_GoBack" xml:space="preserve">
+    <value>back navigation previous page keyboard</value>
+    <comment>Search aliases for using Backspace to go back.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Escape" xml:space="preserve">
+    <value>esc dismiss hide close back keyboard</value>
+    <comment>Search aliases for Escape key behavior.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Extensions" xml:space="preserve">
+    <value>plugins plug-ins addons add-ons providers</value>
+    <comment>Search aliases for extensions and installed extension providers.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_FallbackOrder" xml:space="preserve">
+    <value>priority ranking reorder sort fallback commands</value>
+    <comment>Search aliases for ordering fallback commands.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockPosition" xml:space="preserve">
+    <value>location edge side top bottom left right</value>
+    <comment>Search aliases for the dock position.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_DockSize" xml:space="preserve">
+    <value>height width small compact large</value>
+    <comment>Search aliases for the dock size.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AlwaysOnTop" xml:space="preserve">
+    <value>foreground above windows overlay topmost</value>
+    <comment>Search aliases for keeping the dock above other windows.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_AutoHide" xml:space="preserve">
+    <value>automatic hide reveal hover show</value>
+    <comment>Search aliases for automatically hiding the dock.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Monitors" xml:space="preserve">
+    <value>screens displays multiple primary secondary overrides</value>
+    <comment>Search aliases for configuring the dock on individual monitors.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_Gallery" xml:space="preserve">
+    <value>browse discover download install extensions plugins plug-ins addons add-ons store marketplace</value>
+    <comment>Search aliases for finding new extensions in the gallery.</comment>
   </data>
 </root>

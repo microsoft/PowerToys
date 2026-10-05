@@ -2,122 +2,303 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// This file is a C# port of the C++ IconPathConverter from Microsoft.Terminal.UI.
-// It replaces the dependency on the native Microsoft.Terminal.UI.winmd/dll.
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-
-#pragma warning disable SA1310 // Field names should not contain underscore
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
-/// <summary>
-/// Pure C# implementation of IconPathConverter.IconSourceMUX from Microsoft.Terminal.UI.
-/// Converts an icon string (URI, glyph, or emoji) into a WinUI <see cref="IconSource"/>.
-/// </summary>
-internal static class IconPathConverter
+internal static partial class IconPathConverter
 {
-    // Fluent UI private-use-area glyph range (Segoe MDL2 Assets / Segoe Fluent Icons)
-    private const char FluentIconPuaStart = '\uE700';
-    private const char FluentIconPuaEnd = '\uF8FF';
+    private const string InvalidGlyph = "\u25CC";
+    private const int DefaultBinaryIconSize = 256;
 
-    // Variation selectors
-    private const char Vs15 = '\uFE0E'; // text variation selector
-    private const char Vs16 = '\uFE0F'; // emoji variation selector
-
-    /// <summary>
-    /// Creates a WinUI <see cref="IconSource"/> from a path/glyph/emoji string.
-    /// Mirrors the C++ IconPathConverter::IconSourceMUX method.
-    /// </summary>
-    /// <param name="iconPath">The icon path, glyph character, or emoji.</param>
-    /// <param name="fontFamily">Optional explicit font family for font icons.</param>
-    /// <param name="targetSize">Target pixel size for decoding/rasterizing.</param>
-    public static IconSource? IconSourceMUX(string iconPath, string? fontFamily, int targetSize)
+    public static PreparedIcon Prepare(
+        string iconPath,
+        string? fontFamily,
+        int targetSize,
+        ElementTheme theme = ElementTheme.Default)
     {
         if (string.IsNullOrEmpty(iconPath))
         {
-            return MakeNullBitmapIconSource();
+            return PreparedIcon.Empty();
         }
 
-        // Check for .exe / .dll icon extraction (path,index syntax)
-        var iconIndex = GetIconIndex(iconPath, out var pathWithoutIndex);
-        if (iconIndex.HasValue)
+        if (IconProtocolRegistry.Find(iconPath) is { } protocolProcessor)
         {
-            // For binary icon extraction we return a null-source BitmapIconSource.
-            // The WIC/HICON→SoftwareBitmap pipeline is not safely accessible from managed
-            // WinUI3 code without additional P/Invoke that would be fragile; the C++
-            // implementation itself falls back to a null-source on any failure.
-            return MakeNullBitmapIconSource();
+            try
+            {
+                return protocolProcessor.TryPrepareSynchronously(iconPath, targetSize, theme, out var protocolIcon)
+                    ? protocolIcon
+                    : PreparedIcon.Empty();
+            }
+            catch
+            {
+                // A claimed protocol must not fall through and become a glyph or URI.
+                return PreparedIcon.Empty();
+            }
         }
 
-        return GetIconSource(iconPath, fontFamily, targetSize);
+        if (IconPathParser.TryParseBinaryIconReference(iconPath, out var binaryIcon))
+        {
+            var bitmap = ExtractBinaryIcon(binaryIcon, targetSize >= 0 ? targetSize : DefaultBinaryIconSize);
+            return PreparedIcon.FromBinary(bitmap);
+        }
+
+        // Font glyphs start outside ASCII, while every supported URI starts inside it.
+        // Avoid using exception-based URI probing for the common Fluent glyph case.
+        if (iconPath[0] < 128 && Uri.TryCreate(iconPath, UriKind.Absolute, out var uri))
+        {
+            var isSvg = uri.AbsolutePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+            return PreparedIcon.FromUri(uri, isSvg, targetSize);
+        }
+
+        var glyphKind = FontIconGlyphClassifier.Classify(iconPath);
+        var glyph = glyphKind == FontIconGlyphKind.Invalid ? InvalidGlyph : iconPath;
+        var family = FontIconGlyphClassifier.GetFontFamily(glyphKind, fontFamily);
+        return PreparedIcon.FromGlyph(glyph, family, targetSize > 0 ? targetSize : 8);
     }
 
-    // -------------------------------------------------------------------------
-    // Internal helpers
-    // -------------------------------------------------------------------------
-    private static IconSource GetIconSource(string iconPath, string? fontFamily, int targetSize)
+    public static PreparedIcon PrepareFirstAvailable(
+        ReadOnlySpan<string> candidates,
+        string? fontFamily,
+        int targetSize,
+        ElementTheme theme = ElementTheme.Default)
     {
-        // Try treating iconPath as a URI (image file, SVG, …)
-        var bitmapIcon = TryGetBitmapIconSource(iconPath, targetSize);
-        if (bitmapIcon != null)
+        foreach (var candidate in candidates)
         {
-            return bitmapIcon;
+            PreparedIcon prepared;
+            try
+            {
+                prepared = Prepare(candidate, fontFamily, targetSize, theme);
+            }
+            catch
+            {
+                // Failed candidate must not prevent later candidates from being tried.
+                continue;
+            }
+
+            // Ordinary conversion can produce an empty source or a placeholder glyph.
+            // Neither should stop an ordered fallback search.
+            var isAvailable = prepared.Kind switch
+            {
+                PreparedIconKind.Empty => false,
+                PreparedIconKind.Binary => prepared.SoftwareBitmap is not null,
+                PreparedIconKind.Glyph => FontIconGlyphClassifier.IsGlyphCandidate(candidate),
+                PreparedIconKind.BitmapUri or PreparedIconKind.SvgUri => !prepared.Uri!.IsFile || File.Exists(prepared.Uri.LocalPath),
+                _ => false,
+            };
+
+            if (isAvailable)
+            {
+                return prepared;
+            }
+
+            prepared.Dispose();
         }
 
-        // Fall back to font icon (glyph / emoji)
-        var fontIcon = TryGetFontIconSource(iconPath, fontFamily, targetSize);
-        if (fontIcon != null)
-        {
-            return fontIcon;
-        }
-
-        return MakeNullBitmapIconSource();
+        return PreparedIcon.Empty();
     }
 
-    private static IconSource? TryGetBitmapIconSource(string path, int targetSize)
+    public static Task<IconSource> CreateIconSourceAsync(PreparedIcon icon)
     {
-        // FontIcon glyphs live in PUA and cannot form a valid URI.
-        // ASCII-only first character is a fast-reject for glyphs.
-        if (string.IsNullOrEmpty(path) || path[0] >= 128)
-        {
-            return null;
-        }
-
-        if (!Uri.TryCreate(path, UriKind.Absolute, out var iconUri))
-        {
-            return null;
-        }
-
         try
         {
-            var ext = System.IO.Path.GetExtension(iconUri.LocalPath);
-            if (string.Equals(ext, ".svg", StringComparison.OrdinalIgnoreCase))
+            if (TryCreateIconSourceSynchronously(icon, out var iconSource))
             {
-                var svgSource = new SvgImageSource(iconUri);
-                if (targetSize > 0)
-                {
-                    svgSource.RasterizePixelWidth = targetSize;
-                }
-
-                var imageIconSource = new ImageIconSource();
-                imageIconSource.ImageSource = svgSource;
-                return imageIconSource;
+                return Task.FromResult(iconSource);
             }
-            else
+
+            return CompleteIconSourceCreationAsync(icon);
+        }
+        catch (Exception exception)
+        {
+            // Preserve async exception delivery for invalid callers now that this
+            // entry point no longer has an async state machine.
+            return Task.FromException<IconSource>(exception);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to create an icon source without an asynchronous bitmap transfer.
+    /// </summary>
+    /// <returns>
+    /// <see langword="false"/> only when generated SVG data or a populated binary icon
+    /// must be transferred to its XAML image source asynchronously.
+    /// </returns>
+    public static bool TryCreateIconSourceSynchronously(
+        PreparedIcon icon,
+        [MaybeNullWhen(false)] out IconSource iconSource)
+    {
+        try
+        {
+            switch (icon.Kind)
             {
-                var bitmap = new BitmapImage(iconUri);
-                if (targetSize > 0)
-                {
-                    bitmap.DecodePixelWidth = targetSize;
-                }
+                case PreparedIconKind.BitmapUri:
+                    var bitmap = new BitmapImage
+                    {
+                        DecodePixelWidth = icon.TargetSize > 0 ? icon.TargetSize : 0,
+                        UriSource = icon.Uri!,
+                    };
+                    iconSource = new ImageIconSource { ImageSource = bitmap };
+                    return true;
 
-                var imageIconSource = new ImageIconSource();
-                imageIconSource.ImageSource = bitmap;
-                return imageIconSource;
+                case PreparedIconKind.SvgUri:
+                    var svg = new SvgImageSource(icon.Uri!);
+                    if (icon.TargetSize > 0)
+                    {
+                        svg.RasterizePixelWidth = icon.TargetSize;
+                    }
+
+                    iconSource = new ImageIconSource { ImageSource = svg };
+                    return true;
+
+                case PreparedIconKind.SvgData:
+                    iconSource = null!;
+                    return false;
+
+                case PreparedIconKind.Glyph:
+                    iconSource = new FontIconSource
+                    {
+                        FontFamily = new FontFamily(icon.FontFamily!),
+                        FontSize = icon.TargetSize,
+                        Glyph = icon.Glyph!,
+                    };
+                    return true;
+
+                case PreparedIconKind.Binary:
+                    if (icon.SoftwareBitmap is not null)
+                    {
+                        iconSource = null!;
+                        return false;
+                    }
+
+                    iconSource = new ImageIconSource();
+                    return true;
+
+                default:
+                    iconSource = CreateEmptyIconSource();
+                    return true;
             }
+        }
+        catch
+        {
+            iconSource = icon.Kind is PreparedIconKind.Binary or PreparedIconKind.SvgData
+                ? new ImageIconSource()
+                : CreateEmptyIconSource();
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Completes icon-source creation after <see cref="TryCreateIconSourceSynchronously"/>
+    /// returned <see langword="false"/> for the same prepared icon.
+    /// </summary>
+    public static Task<IconSource> CompleteIconSourceCreationAsync(PreparedIcon icon)
+    {
+        if (icon.Kind == PreparedIconKind.Binary)
+        {
+            return icon.TakeSoftwareBitmap() is { } softwareBitmap
+                ? CreateBinaryIconSourceAsync(softwareBitmap)
+                : Task.FromResult<IconSource>(new ImageIconSource());
+        }
+
+        return icon.Kind == PreparedIconKind.SvgData
+            ? CreateSvgIconSourceAsync(icon.SvgData!, icon.TargetSize)
+            : Task.FromResult<IconSource>(CreateEmptyIconSource());
+    }
+
+    private static async Task<IconSource> CreateSvgIconSourceAsync(byte[] svgData, int targetSize)
+    {
+        try
+        {
+            using var stream = new InMemoryRandomAccessStream();
+            using (var writer = new DataWriter(stream))
+            {
+                writer.WriteBytes(svgData);
+                await writer.StoreAsync();
+                writer.DetachStream();
+            }
+
+            stream.Seek(0);
+            var svg = new SvgImageSource();
+            if (targetSize > 0)
+            {
+                svg.RasterizePixelWidth = targetSize;
+                svg.RasterizePixelHeight = targetSize;
+            }
+
+            await svg.SetSourceAsync(stream);
+            return new ImageIconSource { ImageSource = svg };
+        }
+        catch
+        {
+            return new ImageIconSource();
+        }
+    }
+
+    internal static async Task<IconSource> CreateBinaryIconSourceAsync(SoftwareBitmap softwareBitmap)
+    {
+        var ownershipTransferred = false;
+        try
+        {
+            var bitmapSource = new SoftwareBitmapSource();
+            try
+            {
+                await bitmapSource.SetBitmapAsync(softwareBitmap);
+
+                var iconSource = new ImageIconSource { ImageSource = bitmapSource };
+
+                // SetBitmapAsync can finish before WinUI's AsyncCopyToSurfaceTask.
+                // Once XAML accepts the bitmap, explicitly closing either object can
+                // fail-fast that later copy with RO_E_CLOSED. Release both through
+                // their normal WinRT reference lifetimes instead.
+                ownershipTransferred = true;
+                return iconSource;
+            }
+            catch
+            {
+                // The source has not escaped to a caller or visual tree.
+                bitmapSource.Dispose();
+                throw;
+            }
+        }
+        catch
+        {
+            return new ImageIconSource();
+        }
+        finally
+        {
+            if (!ownershipTransferred)
+            {
+                softwareBitmap.Dispose();
+            }
+        }
+    }
+
+    // Keep the empty value non-null. A virtualized ListView can crash when a
+    // data-bound IconSourceElement alternates between null and non-null sources;
+    // a BitmapIconSource with a null URI remains visually empty without crossing
+    // that unstable boundary.
+    private static BitmapIconSource CreateEmptyIconSource() => new() { UriSource = null };
+
+    private static SoftwareBitmap? ExtractBinaryIcon(BinaryIconReference iconReference, int targetSize)
+    {
+        try
+        {
+            _ = NativeMethods.SHDefExtractIcon(
+                iconReference.Path,
+                iconReference.Index,
+                0,
+                out var iconHandle,
+                0,
+                (uint)targetSize);
+            return HIconSoftwareBitmapConverter.ConvertAndDestroy(iconHandle);
         }
         catch
         {
@@ -125,201 +306,87 @@ internal static class IconPathConverter
         }
     }
 
-    private static IconSource? TryGetFontIconSource(string text, string? explicitFontFamily, int targetSize)
+    internal sealed partial class PreparedIcon : IDisposable
     {
-        if (string.IsNullOrEmpty(text))
+        private SoftwareBitmap? _softwareBitmap;
+
+        private PreparedIcon(
+            PreparedIconKind kind,
+            Uri? uri = null,
+            string? glyph = null,
+            string? fontFamily = null,
+            byte[]? svgData = null,
+            SoftwareBitmap? softwareBitmap = null,
+            int targetSize = 0)
         {
-            return null;
+            Kind = kind;
+            Uri = uri;
+            Glyph = glyph;
+            FontFamily = fontFamily;
+            SvgData = svgData;
+            _softwareBitmap = softwareBitmap;
+            TargetSize = targetSize;
         }
 
-        var kind = ClassifyGlyph(text);
+        public PreparedIconKind Kind { get; }
 
-        string family;
-        if (kind == GlyphKind.Invalid)
-        {
-            // Multiple graphemes – treat as plain text with Segoe UI so at least
-            // something is rendered rather than crashing.
-            family = "Segoe UI";
-        }
-        else if (!string.IsNullOrEmpty(explicitFontFamily))
-        {
-            family = explicitFontFamily;
-        }
-        else if (kind == GlyphKind.FluentSymbol)
-        {
-            family = "Segoe Fluent Icons, Segoe MDL2 Assets";
-        }
-        else if (kind == GlyphKind.Emoji)
-        {
-            family = "Segoe UI Emoji, Segoe UI";
-        }
-        else
-        {
-            family = "Segoe UI";
-        }
+        public Uri? Uri { get; }
 
-        var glyph = kind == GlyphKind.Invalid ? "\u25CC" : text;
+        public string? Glyph { get; }
 
-        try
+        public string? FontFamily { get; }
+
+        public byte[]? SvgData { get; }
+
+        public SoftwareBitmap? SoftwareBitmap => _softwareBitmap;
+
+        public int TargetSize { get; }
+
+        public static PreparedIcon Empty() => new(PreparedIconKind.Empty);
+
+        public static PreparedIcon FromUri(Uri uri, bool isSvg, int targetSize) =>
+            new(isSvg ? PreparedIconKind.SvgUri : PreparedIconKind.BitmapUri, uri: uri, targetSize: targetSize);
+
+        public static PreparedIcon FromGlyph(string glyph, string fontFamily, int targetSize) =>
+            new(PreparedIconKind.Glyph, glyph: glyph, fontFamily: fontFamily, targetSize: targetSize);
+
+        public static PreparedIcon FromSvgData(byte[] svgData, int targetSize) =>
+            new(PreparedIconKind.SvgData, svgData: svgData, targetSize: targetSize);
+
+        public static PreparedIcon FromBinary(SoftwareBitmap? bitmap) =>
+            new(PreparedIconKind.Binary, softwareBitmap: bitmap);
+
+        // Asynchronous materialization takes ownership before the PreparedIcon is
+        // disposed. On success, XAML owns the bitmap's remaining lifetime.
+        public SoftwareBitmap? TakeSoftwareBitmap() =>
+            Interlocked.Exchange(ref _softwareBitmap, null);
+
+        public void Dispose()
         {
-            var fontIconSource = new FontIconSource();
-            fontIconSource.FontFamily = new FontFamily(family);
-            fontIconSource.FontSize = targetSize > 0 ? targetSize : 8;
-            fontIconSource.Glyph = glyph;
-            return fontIconSource;
-        }
-        catch
-        {
-            return null;
+            Interlocked.Exchange(ref _softwareBitmap, null)?.Dispose();
         }
     }
 
-    private static BitmapIconSource MakeNullBitmapIconSource()
+    internal enum PreparedIconKind
     {
-        var icon = new BitmapIconSource();
-        icon.UriSource = null;
-        return icon;
+        Empty,
+        BitmapUri,
+        SvgUri,
+        SvgData,
+        Glyph,
+        Binary,
     }
 
-    // -------------------------------------------------------------------------
-    // Glyph classification (mirrors FontIconGlyphClassifier::Classify)
-    // -------------------------------------------------------------------------
-    private enum GlyphKind
+    private static partial class NativeMethods
     {
-        None,
-        FluentSymbol,
-        Emoji,
-        Other,
-        Invalid,
-    }
-
-    private static GlyphKind ClassifyGlyph(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return GlyphKind.None;
-        }
-
-        // Fast path: two ASCII chars → definitely not a single glyph (file path, etc.)
-        if (text.Length >= 2 && text[0] <= 0x7F && text[1] <= 0x7F)
-        {
-            return GlyphKind.Invalid;
-        }
-
-        // Single UTF-16 code unit
-        if (text.Length == 1)
-        {
-            var ch = text[0];
-            if (char.IsHighSurrogate(ch))
-            {
-                return GlyphKind.Invalid;
-            }
-
-            if (ch >= FluentIconPuaStart && ch <= FluentIconPuaEnd)
-            {
-                return GlyphKind.FluentSymbol;
-            }
-
-            if (IsEmojiPresentation(ch))
-            {
-                return GlyphKind.Emoji;
-            }
-
-            return GlyphKind.Other;
-        }
-
-        // Surrogate pair (single emoji SMP codepoint)
-        if (text.Length == 2 && char.IsHighSurrogate(text[0]) && char.IsLowSurrogate(text[1]))
-        {
-            return GlyphKind.Emoji;
-        }
-
-        // Check for variation-selector sequences (e.g. "2️⃣" = digit + VS16)
-        if (text.Length == 2)
-        {
-            if (text[1] == Vs16)
-            {
-                return GlyphKind.Emoji;
-            }
-
-            if (text[1] == Vs15)
-            {
-                return GlyphKind.Other;
-            }
-        }
-
-        // Anything else with mixed ASCII is invalid (multi-word string etc.)
-        foreach (var c in text)
-        {
-            if (c <= 0x7F)
-            {
-                return GlyphKind.Invalid;
-            }
-        }
-
-        // Assume a single multi-byte emoji grapheme
-        return GlyphKind.Emoji;
-    }
-
-    private static bool IsEmojiPresentation(char ch)
-    {
-        // Quick subset of characters with default emoji presentation per Unicode 15.
-        return ch == 0x00A9 // ©
-            || ch == 0x00AE // ®
-            || ch == 0x203C // ‼
-            || ch == 0x2049 // ⁉
-            || ch == 0x2122 // ™
-            || (ch >= 0x231A && ch <= 0x231B) // ⌚⌛
-            || ch == 0x2328 // ⌨
-            || ch == 0x23CF // ⏏
-            || (ch >= 0x23E9 && ch <= 0x23F3) // ⏩…⏳
-            || (ch >= 0x23F8 && ch <= 0x23FA) // ⏸⏹⏺
-            || ch == 0x24C2 // Ⓜ
-            || (ch >= 0x25AA && ch <= 0x25AB) // ▪▫
-            || ch == 0x25B6 // ▶
-            || ch == 0x25C0 // ◀
-            || (ch >= 0x25FB && ch <= 0x25FE) // ◻◼◽◾
-            || (ch >= 0x2600 && ch <= 0x27FF) // misc symbols, dingbats
-            || (ch >= 0x2B05 && ch <= 0x2B07) // ⬅⬆⬇
-            || (ch >= 0x2B1B && ch <= 0x2B1C) // ⬛⬜
-            || ch == 0x2B50 // ⭐
-            || ch == 0x2B55 // ⭕
-            || ch == 0x3030 // 〰
-            || ch == 0x303D // 〽
-            || ch == 0x3297 // ㊗
-            || ch == 0x3299; // ㊙
-    }
-
-    // -------------------------------------------------------------------------
-    // .exe / .dll path detection (mirrors _getIconIndex)
-    // -------------------------------------------------------------------------
-    private static int? GetIconIndex(string iconPath, out string pathWithoutIndex)
-    {
-        pathWithoutIndex = iconPath;
-
-        var commaPos = iconPath.IndexOf(',', StringComparison.Ordinal);
-        var pathPart = commaPos >= 0 ? iconPath[..commaPos] : iconPath;
-        pathWithoutIndex = pathPart;
-
-        var ext = System.IO.Path.GetExtension(pathPart);
-        if (!string.Equals(ext, ".exe", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(ext, ".lnk", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
-        if (commaPos >= 0)
-        {
-            var indexStr = iconPath[(commaPos + 1)..];
-            if (int.TryParse(indexStr, out var idx))
-            {
-                return idx;
-            }
-
-            return null;
-        }
-
-        return 0;
+        [LibraryImport("shell32.dll", EntryPoint = "SHDefExtractIconW", StringMarshalling = StringMarshalling.Utf16)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        internal static partial int SHDefExtractIcon(
+            string iconFile,
+            int iconIndex,
+            uint flags,
+            out nint largeIcon,
+            nint smallIcon,
+            uint iconSize);
     }
 }

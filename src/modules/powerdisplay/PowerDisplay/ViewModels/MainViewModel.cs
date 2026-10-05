@@ -48,11 +48,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
     private readonly ISystemClock _clock;
+    private readonly SemaphoreSlim _profileOperationGate = new(1, 1);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
     [NotifyPropertyChangedFor(nameof(ShowNoMonitorsMessage))]
     [NotifyPropertyChangedFor(nameof(IsInteractionEnabled))]
+    [NotifyPropertyChangedFor(nameof(IsLinkedBrightnessSliderEnabled))]
     public partial bool IsScanning { get; set; }
 
     private bool _isInitialized;
@@ -65,6 +67,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HasProfiles))]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
     public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
+    public partial bool IsProfilesLoading { get; private set; }
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -89,19 +95,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         Monitors = new ObservableCollection<MonitorViewModel>();
         Profiles = new ObservableCollection<PowerDisplayProfile>();
-        IsScanning = true;
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
+        MouseWheelIncrement = 5;
+        MouseWheelControlMode = PowerDisplay.Models.MouseWheelControlMode.Disabled;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
         _stateManager = new MonitorStateManager();
 
         // Initialize the monitor manager
-        _monitorManager = new MonitorManager();
-
-        // Load profiles for quick apply feature
-        LoadProfiles();
+        _monitorManager = new MonitorManager(_stateManager);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -129,10 +133,130 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial bool ShowIdentifyMonitorsButton { get; set; }
 
     /// <summary>
-    /// Gets a value indicating whether to show the profile switcher button.
-    /// Combines settings value with HasProfiles check.
+    /// Gets or sets the per-mouse-wheel-notch step applied to every flyout slider. Loaded from
+    /// PowerDisplaySettings; defaults to 5 (the historical hardcoded step).
     /// </summary>
-    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && HasProfiles;
+    [ObservableProperty]
+    public partial int MouseWheelIncrement { get; set; }
+
+    /// <summary>
+    /// Gets or sets the mouse-wheel mode used for the tray icon, loaded from PowerDisplay settings.
+    /// </summary>
+    [ObservableProperty]
+    public partial MouseWheelControlMode MouseWheelControlMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
+    /// non-excluded monitors as one linked level. Persisted in <c>PowerDisplaySettings</c> so
+    /// the choice survives restarts. The toggle is meaningful only when two or more monitors
+    /// are connected — see <see cref="ShowLinkLevelsToggle"/> for the visibility gate.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowIndividualDisplays))]
+    [NotifyPropertyChangedFor(nameof(ShowLinkLevelsToggle))]
+    [NotifyPropertyChangedFor(nameof(ShowLinkLevelsInactiveIcon))]
+    public partial bool LinkedLevelsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets the brightness value driving the linked "All Displays" slider. Setter is
+    /// debounced and broadcasts on commit to every linked target: a
+    /// <see cref="MonitorViewModel.SupportsBrightness"/> monitor not excluded from sync (see
+    /// <c>OnLinkedBrightnessChanged</c>). Synchronously updates each linked monitor's brightness
+    /// value so it is correct if the monitor is later excluded or link mode is disabled — the
+    /// linked broadcast is the single source of hardware writes while link mode is active.
+    /// </summary>
+    [ObservableProperty]
+    public partial int LinkedBrightness { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the linked brightness slider has at least one linked
+    /// brightness-capable monitor to control.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLinkedBrightnessSliderEnabled))]
+    public partial bool IsLinkedBrightnessAvailable { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the linked "All Displays" brightness slider accepts input.
+    /// Disabled both when no linked target is available and while monitor discovery/restore is busy.
+    /// </summary>
+    public bool IsLinkedBrightnessSliderEnabled => IsLinkedBrightnessAvailable && IsInteractionEnabled;
+
+    /// <summary>
+    /// Gets the count of monitors that participate in linked brightness — used for the
+    /// "All Displays" card subtitle ("N linked"). Counts brightness-capable monitors the user
+    /// has not excluded (see <see cref="MonitorViewModel.IsExcludedFromSync"/>).
+    /// </summary>
+    public int LinkedMonitorsCount => Monitors.Count(m => m.SupportsBrightness && !IsMonitorExcludedFromSync(m.Id));
+
+    /// <summary>
+    /// Gets the count of brightness-capable monitors excluded from linked brightness.
+    /// </summary>
+    public int ExcludedMonitorsCount => Monitors.Count(m => m.SupportsBrightness && IsMonitorExcludedFromSync(m.Id));
+
+    /// <summary>
+    /// Gets a value indicating whether the "N excluded" subtitle fragment should be visible on
+    /// the "All displays" card.
+    /// </summary>
+    public bool HasExcludedMonitors => ExcludedMonitorsCount > 0;
+
+    /// <summary>
+    /// Gets the localized "N linked" subtitle shown on the "All Displays" card. Recomputed
+    /// alongside <see cref="LinkedMonitorsCount"/> via <c>RecomputeLinkedBrightnessAvailability</c>.
+    /// </summary>
+    public string LinkedMonitorsCountText =>
+        string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Helpers.ResourceLoaderInstance.ResourceLoader.GetString("AllDisplaysLinkedCountFormat"),
+            LinkedMonitorsCount);
+
+    /// <summary>
+    /// Gets the localized "N excluded" subtitle fragment shown on the "All Displays" card.
+    /// </summary>
+    public string ExcludedMonitorsCountText =>
+        string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Helpers.ResourceLoaderInstance.ResourceLoader.GetString("AllDisplaysExcludedCountFormat"),
+            ExcludedMonitorsCount);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the "Individual displays" section is expanded
+    /// while link mode is on. Collapsed by default so linked mode reads as a single master
+    /// slider; expanding reveals the per-monitor cards (with linked monitors' sliders disabled).
+    /// Ignored when link mode is off — see <see cref="ShowIndividualDisplays"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowIndividualDisplays))]
+    [NotifyPropertyChangedFor(nameof(ShowIndividualDisplaysCollapsedIcon))]
+    public partial bool IndividualDisplaysExpanded { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the per-monitor cards list is shown. Always shown when
+    /// link mode is off (the classic layout); when link mode is on the cards are tucked into the
+    /// collapsible "Individual displays" section and only shown once the user expands it.
+    /// </summary>
+    public bool ShowIndividualDisplays => !LinkedLevelsActive || IndividualDisplaysExpanded;
+
+    public bool ShowIndividualDisplaysCollapsedIcon => !IndividualDisplaysExpanded;
+
+    /// <summary>
+    /// Gets a value indicating whether the link-levels toggle should be visible. Shown when at
+    /// least two monitors report <see cref="MonitorViewModel.SupportsBrightness"/> (the entry-point
+    /// gate — counting raw entries would show the toggle even when only one display can actually be
+    /// driven), OR whenever link mode is already active. The second clause guarantees the user can
+    /// always turn link mode back off, even if monitors were unplugged down to one controllable
+    /// display while linked — otherwise the "All displays" card would strand them with no way out.
+    /// Recomputed by <see cref="UpdateMonitorList"/> and on <see cref="LinkedLevelsActive"/> change.
+    /// </summary>
+    public bool ShowLinkLevelsToggle => LinkedLevelsActive || Monitors.Count(m => m.SupportsBrightness) >= 2;
+
+    public bool ShowLinkLevelsInactiveIcon => !LinkedLevelsActive;
+
+    /// <summary>
+    /// Gets a value indicating whether to show the profile switcher button.
+    /// Combines the settings value with profile availability or loading state.
+    /// </summary>
+    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && (HasProfiles || IsProfilesLoading);
 
     // Custom VCP mappings - loaded from settings
     private List<CustomVcpValueMapping> _customVcpMappings = new();
@@ -173,6 +297,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             _isLoading = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsInteractionEnabled));
+            OnPropertyChanged(nameof(IsLinkedBrightnessSliderEnabled));
         }
     }
 
@@ -266,6 +391,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Cancel all async operations first
         _cancellationTokenSource?.Cancel();
 
+        // Stop the linked-brightness debounce timer so its Tick handler does not fire after
+        // we have already cleared Monitors below (broadcast would iterate an empty list).
+        try
+        {
+            _linkedBrightnessCommitTimer?.Stop();
+        }
+        catch
+        {
+        }
+
         // Dispose each resource independently to ensure all get cleaned up
         try
         {
@@ -328,25 +463,65 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Load profiles from disk for quick apply feature
+    /// Reloads profiles from disk for the quick-apply feature without blocking the UI thread.
     /// </summary>
-    private void LoadProfiles()
+    private async Task ReloadProfilesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var profilesData = ProfileService.LoadProfiles();
-            Profiles.Clear();
-            foreach (var profile in profilesData.Profiles)
-            {
-                Profiles.Add(profile);
-            }
-
-            OnPropertyChanged(nameof(HasProfiles));
-            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+            await RunProfileOperationAsync(
+                async token =>
+                {
+                    var profilesData = await ProfileHelper.LoadProfilesAsync(token);
+                    ReplaceProfiles(profilesData);
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
+            Profiles.Clear();
+            OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
+        }
+    }
+
+    private void ReplaceProfiles(PowerDisplayProfiles profilesData)
+    {
+        Profiles.Clear();
+        foreach (var profile in profilesData.GetAssignedProfiles())
+        {
+            Profiles.Add(profile);
+        }
+
+        OnPropertyChanged(nameof(HasProfiles));
+        OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+    }
+
+    private async Task RunProfileOperationAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        await _profileOperationGate.WaitAsync(cancellationToken);
+        try
+        {
+            IsProfilesLoading = true;
+            await operation(cancellationToken);
+        }
+        finally
+        {
+            try
+            {
+                IsProfilesLoading = false;
+            }
+            finally
+            {
+                _profileOperationGate.Release();
+            }
         }
     }
 
@@ -360,6 +535,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+            MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
+            MouseWheelControlMode = settings.Properties.MouseWheelControlMode.Normalize();
+
+            // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
+            // method runs after monitors are already discovered, the toggle hook can seed the master
+            // slider immediately and must see the persisted exclusions.
+            LoadExcludedMonitorIds(settings.Properties.ExcludedFromSyncMonitorIds);
+
+            LinkedLevelsActive = settings.Properties.LinkedLevelsActive;
 
             // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
             CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();
@@ -381,6 +565,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     private void OnDisplayChanging(object? sender, EventArgs e)
     {
+        CancelPendingLinkedBrightnessCommit();
+
         if (!IsScanning)
         {
             Logger.LogInfo("[MainViewModel] Display change detected — locking UI ahead of rediscovery");

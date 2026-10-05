@@ -4,9 +4,13 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ToastArgs : IToastArgs
+public partial class ToastArgs : IToastArgs, IToastArgs2
 {
     public string? Message { get; set; }
 
     public ICommandResult? Result { get; set; } = CommandResult.Dismiss();
+
+    public IIconInfo? Icon { get; set; }
+
+    public ICommand? Command { get; set; }
 }

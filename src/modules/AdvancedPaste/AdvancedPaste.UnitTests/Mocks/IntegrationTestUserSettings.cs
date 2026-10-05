@@ -47,6 +47,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public bool ShowCustomPreview => false;
 
+    public bool ShowAIPaste => true;
+
     public bool CloseAfterLosingFocus => false;
 
     public bool EnableClipboardPreview => true;
@@ -54,6 +56,22 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
     public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
     public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
+
+    public string FixSpellingAndGrammarPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarSystemPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarProviderId => string.Empty;
+
+    public bool FixSpellingAndGrammarCoachingEnabled => false;
+
+    public bool FixSpellingAndGrammarCoachingShortcutSet => false;
+
+    public string FixSpellingAndGrammarCoachingPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarCoachingSystemPrompt => string.Empty;
+
+    public string FixSpellingAndGrammarCoachingProviderId => string.Empty;
 
     public PasteAIConfiguration PasteAIConfiguration => _configuration;
 

@@ -12,6 +12,7 @@ namespace PowerToys
         };
         [default_interface] static runtimeclass GPOWrapper {
             static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
+            static GpoRuleConfigured GetConfiguredAltWindowCycleEnabledValue();
             static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
             static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue();
             static GpoRuleConfigured GetConfiguredCmdPalEnabledValue();
@@ -24,6 +25,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
             static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredMarkdownLocalImagesEnabledValue();
             static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
@@ -40,6 +42,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
             static GpoRuleConfigured GetConfiguredMouseJumpEnabledValue();
             static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
+            static GpoRuleConfigured GetConfiguredAutoHideCursorEnabledValue();
             static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
             static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
             static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
@@ -54,6 +57,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredPeekEnabledValue();
             static GpoRuleConfigured GetDisableNewUpdateToastValue();
             static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
+            static GpoRuleConfigured GetDisablePreviewUpdatesValue();
             static GpoRuleConfigured GetDisableShowWhatsNewAfterUpdatesValue();
             static GpoRuleConfigured GetAllowExperimentationValue();
             static GpoRuleConfigured GetRunPluginEnabledValue(String pluginID);

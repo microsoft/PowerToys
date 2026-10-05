@@ -11,11 +11,54 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record SettingsModel
 {
+    // LOAD BEARNING: Some SettingsChanged subscribers react selectively (e.g.
+    // MainWindow.MainWindowSettingsComparer, DockWindowManager.OnSettingsChanged). If a new
+    // setting needs a live reaction, add it there too - otherwise it won't take effect.
+
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
+    internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MinRecentCommandsDisplayLimit = 1;
+    internal const int MaxRecentCommandsDisplayLimit = 10;
+    internal const int DefaultRecentCommandsDisplayLimit = 5;
+
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
+    /// <summary>
+    /// Gets the default shortcut that focuses the dock: win+alt+J. It shares the
+    /// activation shortcut's modifiers so the two sit next to each other in muscle memory.
+    /// Win+Alt+D would read better, but Windows 11 already owns it for the taskbar clock.
+    /// </summary>
+    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
+
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
+
+    private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
+
+    /// <summary>
+    /// Gets the shortcut that reveals and focuses the dock. Lives here rather than in
+    /// <see cref="Settings.DockSettings"/> because a change to that record makes
+    /// DockWindowManager tear down and rebuild every dock window, and a keybinding
+    /// has no business doing that.
+    /// </summary>
+    /// <remarks>
+    /// The setter falls back to the default because settings files written before this
+    /// shortcut existed have no value for it, and the deserializer hands us a null
+    /// instead of leaving the property initializer alone.
+    /// </remarks>
+    public HotkeySettings? DockFocusHotkey
+    {
+        get => _dockFocusHotkey;
+        init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
+    }
+
+    public bool DockFocusPrimaryFirst { get; init; }
+
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
 
     public bool UseLowLevelGlobalHotkey { get; init; }
 
@@ -31,6 +74,8 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public string Language { get; init; } = string.Empty;
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }
@@ -40,7 +85,47 @@ public record SettingsModel
     public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
         = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public bool AllowExternalReload { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
+
+    public bool AllowAltF4 { get; init; }
+
+    public bool CompactMode { get; set; }
+
+    public bool ShowQuickAccessShelf { get; init; }
+
+    public AltNumberShortcutBehavior ListItemAltNumberBehavior { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
+
+    private int _quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit;
+
+    public int QuickAccessShelfPinnedCommandLimit
+    {
+        get => _quickAccessShelfPinnedCommandLimit;
+        init => _quickAccessShelfPinnedCommandLimit = Math.Clamp(
+            value,
+            MinQuickAccessShelfPinnedCommandLimit,
+            MaxQuickAccessShelfPinnedCommandLimit);
+    }
+
+    private int _recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit;
+
+    public int RecentCommandsDisplayLimit
+    {
+        get => _recentCommandsDisplayLimit;
+        init => _recentCommandsDisplayLimit = Math.Clamp(
+            value,
+            MinRecentCommandsDisplayLimit,
+            MaxRecentCommandsDisplayLimit);
+    }
+
+    // When compact mode is on and the palette is centered on launch, this is the relative
+    // height from the bottom of the screen (as a percentage) at which the collapsed search
+    // box is vertically centered. 75 places it in the upper portion of the display. Ignored
+    // when compact mode is off.
+    public int CompactCenterHeightPercentage { get; set; } = 75;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -78,6 +163,8 @@ public record SettingsModel
     }
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public ToastPosition ToastPosition { get; init; } = ToastPosition.UseSystemSettings;
 
     public bool DisableAnimations { get; init; } = true;
 
@@ -137,6 +224,18 @@ public record SettingsModel
 
     // </Gallery settings>
 
+    // Internal diagnostics settings
+
+    /// <summary>
+    /// Gets a value indicating whether the main window's HWND chrome (title bar, border,
+    /// system-drawn rounded corners) is visible. <strong>For internal debugging only.</strong>
+    /// Off by default. The setting is persisted but only honored in non-CI builds; release /
+    /// CI builds always force the borderless / transparent host window.
+    /// </summary>
+    public bool ShowHwndFrame { get; init; }
+
+    // </Internal diagnostics settings>
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
@@ -146,13 +245,25 @@ public record SettingsModel
           ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
           string[]? fallbackRanks = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
-          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null,
+          bool enableExternalCommandLinks = true,
+          int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
         FallbackRanks = fallbackRanks ?? [];
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        EnableExternalCommandLinks = enableExternalCommandLinks;
+        QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
+        RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
     }
 
     public SettingsModel()
@@ -346,11 +457,47 @@ public record SettingsModel
         return WithPinnedCommands(pinnedCommands);
     }
 
-    private int FindPinnedCommandIndex(string providerId, string commandId)
+    public SettingsModel TryPlacePinnedCommand(
+        string providerId,
+        string commandId,
+        string targetProviderId,
+        string targetCommandId,
+        bool placeAfter)
     {
-        for (var i = 0; i < PinnedCommands.Count; i++)
+        var sourceIndex = FindPinnedCommandIndex(providerId, commandId);
+        var targetIndex = FindPinnedCommandIndex(targetProviderId, targetCommandId);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
         {
-            var pinnedCommand = PinnedCommands[i];
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[sourceIndex];
+        var pinnedCommands = PinnedCommands.RemoveAt(sourceIndex);
+
+        targetIndex = FindPinnedCommandIndex(pinnedCommands, targetProviderId, targetCommandId);
+        if (targetIndex < 0)
+        {
+            return this;
+        }
+
+        var insertionIndex = targetIndex + (placeAfter ? 1 : 0);
+        pinnedCommands = pinnedCommands.Insert(insertionIndex, pinnedCommand);
+        return PinnedCommands.SequenceEqual(pinnedCommands)
+            ? this
+            : WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+        => FindPinnedCommandIndex(PinnedCommands, providerId, commandId);
+
+    private static int FindPinnedCommandIndex(
+        IReadOnlyList<PinnedCommandSettings> pinnedCommands,
+        string providerId,
+        string commandId)
+    {
+        for (var i = 0; i < pinnedCommands.Count; i++)
+        {
+            var pinnedCommand = pinnedCommands[i];
             if (pinnedCommand.ProviderId == providerId &&
                 pinnedCommand.CommandId == commandId)
             {
@@ -434,10 +581,31 @@ public enum MonitorBehavior
     ToLast = 4,
 }
 
+public enum ToastPosition
+{
+    UseSystemSettings = 0,
+    BottomCenter = 1,
+    TopLeft = 2,
+    TopCenter = 3,
+}
+
 public enum EscapeKeyBehavior
 {
     ClearSearchFirstThenGoBack = 0,
     AlwaysGoBack = 1,
     AlwaysDismiss = 2,
     AlwaysHide = 3,
+}
+
+public enum RecentCommandsPlacement
+{
+    Hidden = 0,
+    BeforePinned = 1,
+    AfterPinned = 2,
+}
+
+public enum AltNumberShortcutBehavior
+{
+    Run = 0,
+    Select = 1,
 }

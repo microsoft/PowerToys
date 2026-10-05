@@ -642,7 +642,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: Show document template
         Shortcut:
         - Win: false
@@ -810,7 +810,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 5
+            - "<5>"
       - Name: Release guides
         Shortcut:
         - Win: false
@@ -818,7 +818,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 5
+            - "<5>"
       - Name: Show/ hide smart guides
         Shortcut:
         - Win: false
@@ -925,7 +925,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 6
+            - "<6>"
       - Name: Select the object above the current selection
         Shortcut:
         - Win: false
@@ -965,7 +965,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 2
+            - "<2>"
       - Name: Unlock a selection
         Shortcut:
         - Win: false
@@ -973,7 +973,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Hide a selection
         Shortcut:
         - Win: false
@@ -981,7 +981,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 3
+            - "<3>"
       - Name: Show all selections
         Shortcut:
         - Win: false
@@ -989,7 +989,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: Move selection in user-defined increments
         Shortcut:
         - Win: false
@@ -1013,7 +1013,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Bring a selection forward
         Shortcut:
         - Win: false
@@ -1071,7 +1071,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 8
+            - "<8>"
       - Name: Release a compound path
         Shortcut:
         - Win: false
@@ -1079,7 +1079,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 8
+            - "<8>"
       - Name: Edit a pattern
         Shortcut:
         - Win: false
@@ -1261,7 +1261,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 4
+            - "<4>"
       - Name: Move an object
         Shortcut:
         - Win: false
@@ -1285,7 +1285,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 7
+            - "<7>"
       - Name: Release a clipping mask
         Shortcut:
         - Win: false
@@ -1293,7 +1293,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 7
+            - "<7>"
       - Name: Toggle between fill and stroke
         Shortcut:
         - Win: false
@@ -1641,7 +1641,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 8
+            - "<8>"
       - Name: Insert copyright symbol
         Shortcut:
         - Win: false
@@ -1665,7 +1665,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 7
+            - "<7>"
       - Name: Insert section symbol
         Shortcut:
         - Win: false
@@ -1673,7 +1673,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 6
+            - "<6>"
       - Name: Insert trademark symbol
         Shortcut:
         - Win: false
@@ -1681,7 +1681,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Insert registered trademark symbol
         Shortcut:
         - Win: false

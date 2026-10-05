@@ -135,6 +135,9 @@ public:
         return false;
     }
 
+    // Reserved ID used when the legacy Windows-key hold path invokes on_hotkey.
+    static constexpr size_t WIN_KEY_HOLD_HOTKEY_ID = static_cast<size_t>(-1);
+
     /* These are for enabling the legacy behavior of showing the shortcut guide after pressing the win key.
      * keep_track_of_pressed_win_key returns true if the module wants to keep track of the win key being pressed.
      * milliseconds_win_key_must_be_pressed returns the number of milliseconds the win key should be pressed before triggering the module.
