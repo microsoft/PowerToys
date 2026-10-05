@@ -1946,6 +1946,10 @@ public sealed partial class MainWindow : WindowEx,
                 _monitorService.NotifyMonitorsChanged();
                 break;
 
+            case PInvoke.WM_SETTINGCHANGE when wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETNONCLIENTMETRICS:
+                _shellIconCacheInvalidator?.OnNonClientMetricsChanged();
+                break;
+
             default:
                 if (_shellIconCacheInvalidator?.TryHandleMessage(
                         uMsg,

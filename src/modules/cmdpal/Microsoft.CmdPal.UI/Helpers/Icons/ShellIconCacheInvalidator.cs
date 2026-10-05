@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -69,6 +70,16 @@ internal sealed partial class ShellIconCacheInvalidator : IDisposable
         Invalidate(ShellIconCacheInvalidationReason.ShellRestarted);
         Deregister();
         Register();
+    }
+
+    public void OnNonClientMetricsChanged()
+    {
+        if (!ThumbnailHelper.RefreshShellIconCache())
+        {
+            Logger.LogWarning("Failed to refresh the Shell image lists after non-client metrics changed");
+        }
+
+        Invalidate(ShellIconCacheInvalidationReason.NonClientMetricsChanged);
     }
 
     public void Dispose() => Deregister();

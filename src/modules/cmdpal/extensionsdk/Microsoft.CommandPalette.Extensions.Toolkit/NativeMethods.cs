@@ -8,6 +8,12 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 internal static partial class NativeMethods
 {
+    // FileIconInit is exported only by ordinal.
+    [LibraryImport("shell32.dll", EntryPoint = "#660")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool FileIconInit([MarshalAs(UnmanagedType.Bool)] bool restoreCache);
+
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     internal static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
