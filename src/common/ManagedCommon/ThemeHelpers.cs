@@ -32,11 +32,7 @@ namespace ManagedCommon
             return (AppTheme)value;
         }
 
-        /// <summary>
-        /// Gets the Windows base color, "Light" or "Dark", without depending on WPF.
-        /// Same logic as ControlzEx 6.0.0 WindowsThemeHelper.GetWindowsBaseColor(): outside of high contrast it follows
-        /// the "AppsUseLightTheme" setting, in high contrast it uses the brightness of the high contrast window color.
-        /// </summary>
+        /// <summary>Returns "Light" or "Dark" like ControlzEx 6.0.0 WindowsThemeHelper.GetWindowsBaseColor(), without WPF.</summary>
         public static string GetWindowsBaseColor()
         {
             if (!IsHighContrastEnabled())
@@ -44,14 +40,10 @@ namespace ManagedCommon
                 return AppsUseLightTheme() ? BaseColorLight : BaseColorDark;
             }
 
-            // GetSysColor returns a COLORREF: red in the low-order byte, then green, then blue.
             uint windowColor = NativeMethods.GetSysColor(NativeMethods.COLOR_WINDOW);
             return GetBaseColorFromWindowColor((byte)windowColor, (byte)(windowColor >> 8), (byte)(windowColor >> 16));
         }
 
-        /// <summary>
-        /// Gets a value indicating whether a Windows high contrast theme is active.
-        /// </summary>
         public static bool IsHighContrastEnabled()
         {
             var highContrast = new NativeMethods.HIGHCONTRAST { cbSize = (uint)Marshal.SizeOf<NativeMethods.HIGHCONTRAST>() };
@@ -59,10 +51,7 @@ namespace ManagedCommon
                 && (highContrast.dwFlags & NativeMethods.HCF_HIGHCONTRASTON) != 0;
         }
 
-        /// <summary>
-        /// Classifies a window background color as "Light" or "Dark" by its HSL lightness,
-        /// the value System.Drawing.Color.GetBrightness() returns.
-        /// </summary>
+        /// <summary>Classifies a color by HSL lightness, the value System.Drawing.Color.GetBrightness() returns.</summary>
         public static string GetBaseColorFromWindowColor(byte red, byte green, byte blue)
         {
             int max = Math.Max(red, Math.Max(green, blue));

@@ -3,10 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
-  <!--
-    Keep this library UI-framework neutral (no UseWPF, UseWindowsForms, UseWinUI or UI packages): it is referenced by
-    WPF, WinForms and WinUI 3 apps, and a framework reference here would flow into every one of them.
-  -->
+  <!-- No UI framework here: WPF, WinForms and WinUI apps reference this, and framework references flow into all of them. -->
   <PropertyGroup>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>

@@ -28,4 +28,9 @@
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Flows to the preview handlers so the shared root folder gets WPF's WindowsBase.dll, not the .NET facade WPF apps can't load. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
 </Project>

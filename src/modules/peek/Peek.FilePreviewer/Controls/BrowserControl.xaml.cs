@@ -301,11 +301,10 @@ namespace Peek.FilePreviewer.Controls
                     contextMenu.Items.Add(menuItem);
                 }
 
-                // Complete the deferral after the current input is processed, so a clicked item's
-                // SelectedCommandId is always set before WebView2 resumes.
+                // Enqueued so a clicked item's handler sets SelectedCommandId before WebView2 resumes.
                 contextMenu.Closed += (_, _) => DispatcherQueue.TryEnqueue(deferral.Complete);
 
-                // args.Location is in raw pixels relative to the WebView2; the flyout is positioned in DIPs.
+                // args.Location is in physical pixels; flyout positions are in DIPs.
                 var scale = PreviewBrowser.XamlRoot?.RasterizationScale ?? 1.0;
                 contextMenu.ShowAt(PreviewBrowser, new FlyoutShowOptions
                 {

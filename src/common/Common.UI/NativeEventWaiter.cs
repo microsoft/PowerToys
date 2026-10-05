@@ -9,13 +9,7 @@ namespace Common.UI
 {
     public static class NativeEventWaiter
     {
-        /// <summary>
-        /// Starts a thread that waits on the auto-reset named event <paramref name="eventName"/> and, each time it is
-        /// signaled, posts <paramref name="callback"/> to <paramref name="synchronizationContext"/>, until
-        /// <paramref name="cancel"/> is canceled. Pass the UI thread's context to run the callback on the UI thread,
-        /// e.g. a DispatcherSynchronizationContext (WPF), WindowsFormsSynchronizationContext (WinForms) or
-        /// DispatcherQueueSynchronizationContext (WinUI).
-        /// </summary>
+        /// <summary>Posts <paramref name="callback"/> to the given context each time the named event is signaled, until canceled.</summary>
         public static void WaitForEventLoop(string eventName, Action callback, SynchronizationContext synchronizationContext, CancellationToken cancel)
         {
             ArgumentNullException.ThrowIfNull(callback);

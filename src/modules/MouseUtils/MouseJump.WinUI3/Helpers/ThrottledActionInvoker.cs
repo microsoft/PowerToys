@@ -19,7 +19,6 @@ internal sealed class ThrottledActionInvoker
 
     public ThrottledActionInvoker()
     {
-        // Must be created on the UI thread: the timer ticks on the thread whose DispatcherQueue created it.
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException($"{nameof(ThrottledActionInvoker)} must be created on a thread with a DispatcherQueue.");
         _timer = _dispatcherQueue.CreateTimer();
@@ -28,7 +27,7 @@ internal sealed class ThrottledActionInvoker
 
     public void ScheduleAction(Action action, int milliseconds)
     {
-        // Settings file change notifications arrive on thread pool threads; only use the timer on its own thread.
+        // File watcher callbacks run on thread pool threads, but the timer must be used on its own thread.
         if (!_dispatcherQueue.HasThreadAccess)
         {
             _dispatcherQueue.TryEnqueue(() => ScheduleAction(action, milliseconds));

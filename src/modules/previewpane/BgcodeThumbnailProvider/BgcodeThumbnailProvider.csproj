@@ -32,15 +32,6 @@
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
-  <!--
-    Keep WindowsBase.dll consistent in the shared root output folder until it is WPF-free. This app doesn't use WPF,
-    but without the WPF runtime pack it would copy the Microsoft.NETCore.App WindowsBase facade (assembly version 4.0.0.0)
-    over the WPF WindowsBase (10.0.0.0) that the WPF apps building into the same folder load.
-  -->
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\FilePreviewCommon\FilePreviewCommon.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
