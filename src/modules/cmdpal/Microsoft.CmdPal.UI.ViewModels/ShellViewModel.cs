@@ -293,12 +293,12 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var currentHost = message.SourceExtensionHost ?? CurrentPage.ExtensionHost;
-        var currentProviderContext = message.SourceProviderContext ?? CurrentPage.ProviderContext;
-        var host = _appHostService.GetHostForCommand(message.Context, currentHost);
+        var currentHost = message.Context?.ExtensionHost ?? CurrentPage.ExtensionHost;
+        var currentProviderContext = message.Context?.ProviderContext ?? CurrentPage.ProviderContext;
+        var host = _appHostService.GetHostForCommand(message.CommandContext, currentHost);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, currentProviderContext);
+            : _appHostService.GetProviderContextForCommand(message.CommandContext, currentProviderContext);
 
         try
         {
@@ -335,7 +335,7 @@ public partial class ShellViewModel : ObservableObject,
                 pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -404,13 +404,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
             }
         }
         catch (Exception ex)
@@ -460,7 +460,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.Context);
+                result = invokable.Invoke(message.CommandContext);
                 success = true;
             }
             finally
@@ -476,7 +476,7 @@ public partial class ShellViewModel : ObservableObject,
                 result,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
-                message.SourcePage);
+                message.Context?.Page);
 
             _handleInvokeTask = null;
         }
@@ -633,7 +633,7 @@ public partial class ShellViewModel : ObservableObject,
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,
             message.ResultHandler,
-            message.SourcePage);
+            message.Context?.Page);
     }
 
     public void Receive(WindowHiddenMessage message)

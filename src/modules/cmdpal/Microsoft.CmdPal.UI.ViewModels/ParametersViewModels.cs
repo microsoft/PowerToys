@@ -513,12 +513,8 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             return;
         }
 
-        var message = new PerformCommandMessage(this._commandViewModel.Model);
-        if (PageContext.TryGetTarget(out var pageContext) && pageContext is PageViewModel page)
-        {
-            page.PreparePerformCommandMessage(message);
-        }
-
+        var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
+        var message = new PerformCommandMessage(this._commandViewModel.Model, sourcePage);
         WeakReferenceMessenger.Default.Send(message);
     }
 
@@ -925,7 +921,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            var message = PreparePerformCommandMessage(new PerformCommandMessage(this.Command.Command.Model));
+            var message = new PerformCommandMessage(this.Command.Command.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }
