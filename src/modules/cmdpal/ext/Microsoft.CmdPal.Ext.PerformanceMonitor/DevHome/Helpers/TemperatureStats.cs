@@ -7,13 +7,11 @@ using System.Diagnostics;
 
 namespace CoreWidgetProvider.Helpers;
 
-// ACPI thermal zone temperature via PDH. Usually a motherboard/skin sensor, not the CPU die.
 internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, IDisposable
 {
     private const string CategoryName = "Thermal Zone Information";
     private const string CounterName = "High Precision Temperature";
 
-    // Counter reports tenths of Kelvin.
     private const double TenthsKelvinOffset = 2731.5;
 
     private const double MinPlausibleCelsius = -20.0;
@@ -24,7 +22,6 @@ internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, I
 
     public bool IsAvailable => _thermalCounter is not null;
 
-    /// <summary>Last reading in °C, or null if unavailable.</summary>
     public double? TemperatureCelsius { get; private set; }
 
     public TemperatureStats()
