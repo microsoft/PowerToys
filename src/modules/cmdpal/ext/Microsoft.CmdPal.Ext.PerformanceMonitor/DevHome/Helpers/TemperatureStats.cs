@@ -7,19 +7,15 @@ using System.Diagnostics;
 
 namespace CoreWidgetProvider.Helpers;
 
-// Reads temperature from the "Thermal Zone Information" PDH category (ACPI thermal zones).
-// Raw counter values are in tenths of Kelvin; we convert to Celsius on read.
-// Not available on all systems (e.g. VMs without ACPI thermal zones) - check IsAvailable first.
-// Note: ACPI thermal zones often reflect an ambient/skin/motherboard sensor, not a CPU die.
+// ACPI thermal zone temperature via PDH. Usually a motherboard/skin sensor, not the CPU die.
 internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, IDisposable
 {
     private const string CategoryName = "Thermal Zone Information";
     private const string CounterName = "High Precision Temperature";
 
-    // Tenths of Kelvin -> Celsius: (raw - 2731.5) / 10
+    // Counter reports tenths of Kelvin.
     private const double TenthsKelvinOffset = 2731.5;
 
-    // Plausibility range: reject readings outside this window as sensor noise or bad samples.
     private const double MinPlausibleCelsius = -20.0;
     private const double MaxPlausibleCelsius = 150.0;
 
@@ -28,7 +24,7 @@ internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, I
 
     public bool IsAvailable => _thermalCounter is not null;
 
-    /// <summary>Gets the last sampled thermal zone temperature in °C, or null if unavailable or out of the plausible range.</summary>
+    /// <summary>Last reading in °C, or null if unavailable.</summary>
     public double? TemperatureCelsius { get; private set; }
 
     public TemperatureStats()
@@ -47,7 +43,6 @@ internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, I
                 return;
             }
 
-            // Prefer standard ACPI thermal zone instances (_TZ.*), fall back to the first available.
             var preferred = Array.Find(instances, n => n.StartsWith("_TZ.", StringComparison.OrdinalIgnoreCase))
                 ?? instances[0];
 

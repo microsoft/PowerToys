@@ -1548,7 +1548,6 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
     private readonly DataManager _dataManager;
 
-    // Tracked explicitly so GetItemTitle doesn't have to string-compare display values.
     private bool _hasReading;
     private string _lastTemperatureString = string.Empty;
 
