@@ -38,7 +38,7 @@ public sealed class CanvasViewModel
         public List<DeviceViewModel.Builder>? DeviceLayouts
         {
             get;
-            set;
+            init;
         }
 
         public CanvasViewModel Build()

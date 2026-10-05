@@ -123,7 +123,6 @@
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '18.0'">v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!--

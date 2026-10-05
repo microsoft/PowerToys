@@ -44,7 +44,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        if (!_settingsManager.EnableFallbackItems || string.IsNullOrWhiteSpace(query) || !IsValidQuery(query))
+        if (string.IsNullOrWhiteSpace(query) || !IsValidQuery(query))
         {
             Title = string.Empty;
             Subtitle = string.Empty;

@@ -20,6 +20,7 @@ public sealed partial class DockItemControl : Control
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
+        RegisterPropertyChangedCallback(FlowDirectionProperty, OnFlowDirectionChanged);
     }
 
     public static readonly DependencyProperty ToolTipProperty =
@@ -55,6 +56,24 @@ public sealed partial class DockItemControl : Control
     {
         get => (string)GetValue(SubtitleProperty);
         set => SetValue(SubtitleProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowTitleProperty =
+        DependencyProperty.Register(nameof(ShowTitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowTitle
+    {
+        get => (bool)GetValue(ShowTitleProperty);
+        set => SetValue(ShowTitleProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowSubtitleProperty =
+        DependencyProperty.Register(nameof(ShowSubtitle), typeof(bool), typeof(DockItemControl), new PropertyMetadata(true, OnTextPropertyChanged));
+
+    public bool ShowSubtitle
+    {
+        get => (bool)GetValue(ShowSubtitleProperty);
+        set => SetValue(ShowSubtitleProperty, value);
     }
 
     public static readonly DependencyProperty IconProperty =
@@ -93,6 +112,42 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IsCompactProperty, value);
     }
 
+    public static readonly DependencyProperty UseTabularDigitsProperty =
+        DependencyProperty.Register(nameof(UseTabularDigits), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTabularDigitsPropertyChanged));
+
+    public bool UseTabularDigits
+    {
+        get => (bool)GetValue(UseTabularDigitsProperty);
+        set => SetValue(UseTabularDigitsProperty, value);
+    }
+
+    private static void OnUseTabularDigitsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTabularDigitsState();
+        }
+    }
+
+    public static readonly DependencyProperty UseTrailingLabelAlignmentProperty =
+        DependencyProperty.Register(nameof(UseTrailingLabelAlignment), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnUseTrailingLabelAlignmentPropertyChanged));
+
+    public bool UseTrailingLabelAlignment
+    {
+        get => (bool)GetValue(UseTrailingLabelAlignmentProperty);
+        set => SetValue(UseTrailingLabelAlignmentProperty, value);
+    }
+
+    private static void OnUseTrailingLabelAlignmentPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateTextAlignmentState();
+        }
+    }
+
+    private void OnFlowDirectionChanged(DependencyObject sender, DependencyProperty dp) => UpdateTextAlignmentState();
+
     private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DockItemControl control)
@@ -104,8 +159,8 @@ public sealed partial class DockItemControl : Control
     private void UpdateCompactState()
     {
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
-        UpdateSubtitleVisibilityState();
         UpdateInnerMargin();
+        UpdateTextVisibility();
     }
 
     private const string IconPresenterName = "IconPresenter";
@@ -147,9 +202,10 @@ public sealed partial class DockItemControl : Control
         }
     }
 
-    internal bool HasTitle => !string.IsNullOrEmpty(Title);
+    // Explicit row widths keep their slots when text is temporarily empty.
+    internal bool HasTitle => ShowTitle && (!string.IsNullOrEmpty(Title) || LabelWidthConstraints?.TitleWidth is not null);
 
-    internal bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+    internal bool HasSubtitle => ShowSubtitle && !IsCompact && (!string.IsNullOrEmpty(Subtitle) || LabelWidthConstraints?.SubtitleWidth is not null);
 
     internal bool HasText => HasTitle || HasSubtitle;
 
@@ -161,6 +217,7 @@ public sealed partial class DockItemControl : Control
         UpdateSubtitleVisibilityState();
         UpdateContentSpacingState();
         UpdateChromeSize();
+        UpdateLabelWidth();
     }
 
     private void UpdateTextVisibilityState()
@@ -187,8 +244,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateSubtitleVisibilityState()
     {
-        var showSubtitle = HasSubtitle && !IsCompact;
-        VisualStateManager.GoToState(this, showSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
+        VisualStateManager.GoToState(this, HasSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
     }
 
     private void UpdateIconVisibility()
@@ -267,9 +323,21 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextAlignmentState()
     {
+        if (UseTrailingLabelAlignment)
+        {
+            var trailingState = FlowDirection == FlowDirection.RightToLeft ? "TextLeftAligned" : "TextRightAligned";
+            VisualStateManager.GoToState(this, trailingState, true);
+            return;
+        }
+
         var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
         var shouldCenterText = verticalDock && !ShouldShowIcon();
         VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
+    }
+
+    private void UpdateTabularDigitsState()
+    {
+        VisualStateManager.GoToState(this, UseTabularDigits ? "TabularDigits" : "DefaultNumeralAlignment", true);
     }
 
     private void UpdateAllVisibility()
@@ -278,6 +346,7 @@ public sealed partial class DockItemControl : Control
         UpdateIconVisibility();
         UpdateToolTip();
         UpdateAlignment();
+        UpdateTabularDigitsState();
         UpdateCompactState();
     }
 
@@ -339,6 +408,8 @@ public sealed partial class DockItemControl : Control
             _backPlate.SizeChanged += BackPlate_SizeChanged;
         }
 
+        InitializeLabelWidth();
+
         // Set initial visibility
         UpdateAllVisibility();
     }
@@ -367,6 +438,7 @@ public sealed partial class DockItemControl : Control
                 OnParentDockSizeChanged);
         }
 
+        InvalidateLabelFont();
         UpdateToolTip();
     }
 
@@ -401,6 +473,7 @@ public sealed partial class DockItemControl : Control
 
         ToolTipService.SetToolTip(this, null);
         _toolTip = null;
+        StopWatchingLabelFont();
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
@@ -410,6 +483,7 @@ public sealed partial class DockItemControl : Control
             UpdateInnerMargin();
             UpdateAlignment();
             UpdateChromeSize();
+            UpdateLabelWidth();
         }
     }
 

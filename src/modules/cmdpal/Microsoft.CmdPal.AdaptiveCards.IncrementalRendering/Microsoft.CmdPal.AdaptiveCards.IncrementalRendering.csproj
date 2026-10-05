@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.CmdPal.AdaptiveCards.IncrementalRendering</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWinUI>true</UseWinUI>
+    <IsAotCompatible>true</IsAotCompatible>
+    <NoWarn>$(NoWarn);CA1720;SA1402;SA1518;SA1649</NoWarn>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>AdaptiveCards.ObjectModel.WinUI3;AdaptiveCards.Rendering.WinUI3</CsWinRTIncludes>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AdaptiveCards.Templating" />
+    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
+      <ExcludeAssets>compile</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="true">
+      <ExcludeAssets>compile</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
+    <CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
+  </ItemGroup>
+</Project>

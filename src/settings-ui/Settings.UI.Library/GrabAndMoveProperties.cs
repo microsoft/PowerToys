@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowGeometry = new BoolProperty(false);
             UseAltResize = new BoolProperty(true);
             ExcludedApps = new StringProperty();
+            ExcludedAppsForModifier = new StringProperty();
             ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
         }
 
@@ -35,5 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }
+
+        [JsonPropertyName("excluded_apps_for_modifier")]
+        public StringProperty ExcludedAppsForModifier { get; set; }
     }
 }

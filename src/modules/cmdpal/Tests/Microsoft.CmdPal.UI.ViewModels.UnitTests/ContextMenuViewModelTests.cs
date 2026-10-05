@@ -13,17 +13,17 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public sealed class ContextMenuViewModelTests
 {
     [TestMethod]
-    public void SetCommandContext_UpdatesOnlyThatContextMenu()
+    public void PrepareForOpen_UpdatesOnlyThatContextMenu()
     {
         var firstContext = CreateContext();
         var secondContext = CreateContext();
         var replacementContext = CreateContext();
         var firstMenu = new ContextMenuViewModel(Mock.Of<IFuzzyMatcherProvider>());
         var secondMenu = new ContextMenuViewModel(Mock.Of<IFuzzyMatcherProvider>());
-        firstMenu.SetCommandContext(firstContext);
-        secondMenu.SetCommandContext(secondContext);
+        firstMenu.PrepareForOpen(firstContext);
+        secondMenu.PrepareForOpen(secondContext);
 
-        firstMenu.SetCommandContext(replacementContext);
+        firstMenu.PrepareForOpen(replacementContext);
 
         Assert.AreSame(replacementContext, firstMenu.SelectedItem);
         Assert.AreSame(secondContext, secondMenu.SelectedItem);
@@ -33,7 +33,6 @@ public sealed class ContextMenuViewModelTests
     {
         var context = new Mock<ICommandBarContext>();
         context.SetupGet(x => x.AllCommands).Returns([]);
-        context.SetupGet(x => x.MoreCommands).Returns([]);
         return context.Object;
     }
 }

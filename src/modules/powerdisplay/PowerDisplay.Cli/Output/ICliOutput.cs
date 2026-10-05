@@ -7,10 +7,9 @@ using PowerDisplay.Contracts;
 namespace PowerDisplay.Cli.Output;
 
 /// <summary>
-/// Abstraction over CLI output rendering (today only <see cref="TextCliOutput"/>; the seam also
-/// lets tests capture output). Each command builds the typed result record and hands it to one of
-/// these methods. Errors are routed through <see cref="WriteError"/> regardless of which command
-/// produced them.
+/// Abstraction over human-readable and JSON Lines CLI output rendering. Each command builds the
+/// typed result record and hands it to one of these methods. Errors are routed through
+/// <see cref="WriteError"/> regardless of which command produced them.
 /// </summary>
 public interface ICliOutput
 {

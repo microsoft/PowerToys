@@ -17,6 +17,8 @@
       "src\\modules\\Workspaces\\WorkspacesCsharpLibrary\\WorkspacesCsharpLibrary.csproj",
       "src\\modules\\ZoomIt\\ZoomItSettingsInterop\\ZoomItSettingsInterop.vcxproj",
       "src\\modules\\awake\\Awake.ModuleServices\\Awake.ModuleServices.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.PowerToys.UnitTests\\Microsoft.CmdPal.Ext.PowerToys.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.UnitTestsBase\\Microsoft.CmdPal.Ext.UnitTestBase.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PowerToys\\Microsoft.CmdPal.Ext.PowerToys.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions.Toolkit\\Microsoft.CommandPalette.Extensions.Toolkit.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
