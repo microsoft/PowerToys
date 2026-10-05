@@ -591,7 +591,7 @@ public partial class CommandItemViewModelTests
 
                 Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(childMatch));
                 Assert.IsNotNull(invocation);
-                Assert.AreSame(child, invocation.Context);
+                Assert.AreSame(child, invocation.CommandContext);
                 string[] expected = ["invoking", "dispatch", "invoked"];
                 CollectionAssert.AreEqual(expected, events);
             }
@@ -723,7 +723,7 @@ public partial class CommandItemViewModelTests
 
             Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(secondary, navigateSubmenus: false));
             Assert.AreEqual(1, invocations.Count);
-            Assert.AreSame(inSubmenu ? child : parent, invocations[0].Context);
+            Assert.AreSame(inSubmenu ? child : parent, invocations[0].CommandContext);
             menu.Close();
             Assert.IsFalse(menu.CanPopContextStack());
             Assert.IsNull(menu.SecondaryCommand);

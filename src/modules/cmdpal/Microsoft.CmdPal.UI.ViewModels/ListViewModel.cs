@@ -888,14 +888,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            var message = PreparePerformCommandMessage(new PerformCommandMessage(item.Command.Model, item.Model));
+            var message = new PerformCommandMessage(item.Command.Model, item.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
-            var message = PreparePerformCommandMessage(new PerformCommandMessage(
+            var message = new PerformCommandMessage(
                 EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
+                EmptyContent.PrimaryCommand.Model,
+                this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }
@@ -908,15 +909,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             if (item.SecondaryCommand is not null)
             {
-                var message = PreparePerformCommandMessage(new PerformCommandMessage(item.SecondaryCommand.Command.Model, item.Model));
+                var message = new PerformCommandMessage(item.SecondaryCommand.Command.Model, item.Model, this);
                 WeakReferenceMessenger.Default.Send(message);
             }
         }
         else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
-            var message = PreparePerformCommandMessage(new PerformCommandMessage(
+            var message = new PerformCommandMessage(
                 EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
+                EmptyContent.SecondaryCommand.Model,
+                this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }

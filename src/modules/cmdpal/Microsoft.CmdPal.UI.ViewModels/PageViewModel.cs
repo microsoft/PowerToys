@@ -252,22 +252,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         // subclasses should override.
     }
 
-    internal PerformCommandMessage PreparePerformCommandMessage(PerformCommandMessage message)
-    {
-        message.SourcePage = this;
-        message.SourceExtensionHost = ExtensionHost;
-        message.SourceProviderContext = ProviderContext;
-        return message;
-    }
-
-    internal HandleCommandResultMessage PrepareHandleCommandResultMessage(HandleCommandResultMessage message)
-    {
-        message.SourcePage = this;
-        message.SourceExtensionHost = ExtensionHost;
-        message.SourceProviderContext = ProviderContext;
-        return message;
-    }
-
     protected void SendPageUiMessage<TMessage>(TMessage message)
         where TMessage : class
     {
