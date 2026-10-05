@@ -21,7 +21,7 @@ steps:
         -RunId "$(System.JobId)" -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
         -Platform "$(TestPlatform)" -SourceRevision "$(Build.SourceVersion)" `
         -ResultsDirectory "$(Common.TestResultsDirectory)"
-    displayName: Run MWB Sandbox MSTest once on the standard-user desktop
+    displayName: Run the complete MWB pilot suite once on the standard-user desktop
     timeoutInMinutes: 83
     env:
       platform: $(TestPlatform)

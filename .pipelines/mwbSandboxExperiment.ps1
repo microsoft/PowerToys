@@ -19,6 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 . "$PSScriptRoot\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\MwbPilotResults.Common.ps1"
 
 function Assert-MwbLocalPath {
     param([string] $Path)
@@ -403,8 +404,12 @@ if ($Mode -eq 'Run') {
     $suiteTimeoutMinutes = if ($manifest.SandboxBackend -eq 'WinApp') { 80 } else { 45 }
     & "$PSScriptRoot\runUiTestAsUser.ps1" -TestExecutable $payload.TestExecutable `
         -ResultsDirectory $ResultsDirectory -InteractiveUser $manifest.InteractiveUser -TimeoutMinutes $suiteTimeoutMinutes `
-        -TaskRunId $RunId -Filter 'FullyQualifiedName~AutonomousSandboxSmoke'
-    exit $LASTEXITCODE
+        -TaskRunId $RunId
+    $testExitCode = $LASTEXITCODE
+    if ($testExitCode -ne 0) { exit $testExitCode }
+    $counts = Assert-MwbPilotTestResults -ResultsDirectory $ResultsDirectory -RunId $RunId
+    Write-Host "MWB full-suite sign-off: $($counts.Passed)/$($counts.Total) passed; no skipped or incomplete tests."
+    exit 0
 }
 
 if ($Mode -eq 'Recover') {

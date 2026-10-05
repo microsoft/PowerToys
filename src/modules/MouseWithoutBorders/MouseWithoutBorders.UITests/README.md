@@ -1,5 +1,91 @@
 # Autonomous MWB nested-Sandbox Debug pilot
 
+## Supported operating contract
+
+This is a **default-off, dedicated-VM, x64 Debug pilot**, not complete MWB module
+or physical-device sign-off. CI selects exactly
+`mwbSandboxExperiment=true`, `buildSource=buildNow`,
+`buildPlatforms=[x64]`, `uiTestModules=[MouseWithoutBorders.UITests]`,
+and `useLatestWebView2=false`. The selection expands to fresh Win10 and Win11
+jobs; invalid or unvalidated selections fail before host mutation.
+Run the **entire test executable without a filter** for sign-off. The pipeline
+requires the current job's TRX to contain all required cases, with every test
+executed and passed. A green ordered smoke alone, an empty report, or a skipped
+infrastructure case is not full-suite evidence.
+
+| Boundary | Required contract |
+|---|---|
+| Windows 10 x64 | Legacy Sandbox backend; locally demonstrated on build 19045.6456 |
+| Windows 11 x64 | 24H2+ modern backend; locally demonstrated on build 26200.9457 |
+| Retained local resource profiles | Win10: four vCPUs/24 GB static RAM; Win11: four vCPUs/8 GB static RAM; nested virtualization enabled |
+| Modern client | `MicrosoftWindows.WindowsSandbox_cw5n1h2txyewy`, healthy and registered to the actual interactive test user; demonstrated version 0.8.107.0 |
+| UI/Sandbox CLI | Unmodified official winappcli v0.7.0; release and native-closure hashes checked using the shared repository pin |
+| Execution identity | Unlocked English standard-user Default desktop on L1, no pre-existing PowerToys or Sandbox; run-owned guest desktop, not service mode |
+| Payload | Same coherent self-contained Debug runtime for both endpoints; private ReadyToRun compilation does not change IL/MVID or bypass product checks |
+| Privileged boundary | Separate protected setup/cleanup; no feature enablement, reboot, GPO edit, or test-side elevation |
+
+The one-vCPU/4-GB generic `Constrained` profile is **not signed off for nested
+Sandbox**. The resource profiles above are the demonstrated pilot baselines,
+not measurements establishing the smallest possible configuration. Do not
+silently reduce resources or claim a smaller profile passed. Fresh CI images
+provide the clean-profile evidence; retained local VMs provide iteration and
+failure-injection evidence.
+
+| Deadline | Legacy | Modern |
+|---|---|---|
+| Guest bootstrap, including provider setup/transfer | 15 minutes | 35 minutes, including at most 10 minutes of provider start |
+| Fixture/worker hard run deadline | 40 minutes | 70 minutes |
+| Local suite/controller envelope | 45/60 minutes | 75/90 minutes |
+| CI interactive suite/outer Run step | 45/83 minutes | 80/83 minutes |
+| Lease freshness | 45 seconds, no grace | 45 seconds, no grace |
+
+The modern-client setup step precedes protected runtime preparation and is
+bounded to 12 minutes. Owned external recovery and privileged cleanup always
+run, even when setup or the suite fails. Their success cannot turn a failed
+test into a pass. Do not retry a whole suite in place or extend an individual
+operation past the enclosing hard deadline.
+
+### Recovery, evidence and reset runbook
+
+1. Record the exact source SHA, product/test/tool hashes, run/job GUID and OS
+   before starting. Use the local wrapper's `-PlanOnly` first; never launch the
+   fixture on the physical development host.
+2. Run once under the protected setup marker as the original Limited user.
+   Preserve full-suite TRX, phase/transport/pairing booleans, prerequisite and
+   recording manifests, sanitized logs, and `recovery-result.json`.
+3. After a failure or controller interruption, let the original parent-bound
+   leases expire and run `Payload\Recover-Host.ps1` through the original user's
+   Limited interactive task. Revalidate recorded PID/start/image/parent/session
+   and the exact provider GUID/epoch; never kill by name or stop a shared
+   virtualization service. Run the elevated exact-rule/task cleanup separately.
+4. Require zero cleanup/export errors and finalized nonempty videos where
+   recording started. Preserve the original failure even when recovery passes.
+   If recovery reports `RequiresBaselineReset`, stop: clipboard data was held
+   only in memory and cannot be reconstructed. Do not rerun on that profile.
+5. Retire the failed CI agent. Locally, use a freshly provisioned dedicated VM
+   or an explicitly verified clean nested-Sandbox checkpoint with current
+   credentials, feature/client registration, resource profile and no owned
+   leftovers. Do not restore an old generic `provisioned-baseline` that predates
+   nested setup or credential servicing.
+
+**Artifact access/retention:** full recordings are internal, access-controlled
+diagnostics and may display disposable pairing keys. Keep them in the existing
+Azure Test/pipeline artifact store under its build-retention policy, or the
+private local run archive; do not attach them to a public PR/issue or mirror them
+into a public file service. There is no additional indefinite repository copy.
+Delete only explicitly identified run-owned local artifacts when no longer
+needed. Never publish private control channels, bootstrap authentication, profile
+backups, original clipboard content, raw process dumps or Sandbox command lines.
+Public summaries may contain verdicts, timings, source SHAs and internal build
+links, not raw internal evidence.
+
+Release/installed builds, ARM64 live execution, service/secure-desktop behavior,
+physical two-PC networking and the remainder of the manual module checklist are
+**outside this pilot's sign-off**. ARM64 payload compilation is retained for
+future image work; it is not evidence of a working ARM64 Sandbox.
+
+## Recorded evidence
+
 **Status: official winappcli v0.7.0 passed the full seven-test pilot on both
 Windows 10 and Windows 11 on October 2, 2026.**
 The Start-menu focus fix adds three infrastructure regressions. Windows 11 run
@@ -269,7 +355,7 @@ as `winappcli.zip` for local UI commands):
   -ProductArchive powertoys-runtime-hybrid.zip `
   -GuestRuntimeArchive mwb-guest-runtime-hybrid.zip `
   -TestsArchive ui-tests-hybrid.zip `
-  -Filter 'FullyQualifiedName~AutonomousSandboxSmoke' -ReuseStagedPayload -PlanOnly
+  -ReuseStagedPayload -PlanOnly
 ```
 
 Inspect the plan, including `SandboxWinAppArchiveSha256`, then repeat without
@@ -388,7 +474,8 @@ An external privileged controller must:
    PRI/MUI resources. `.deps.json` and PE imports alone are insufficient.
    The guest copies the archive with a 4 MiB buffer, verifies its protected hash,
    then extracts locally before launching WinUI. Keep the source archive in its
-   own read-only mapping. The full L1 and lean L2 runtimes are separate archives.
+   own read-only mapping. The maintained pilot uses that same coherent lean runtime
+   archive for L1 and L2, with both copies verified against the protected bundle.
 
 ## Build and invoke
 
@@ -405,7 +492,6 @@ $env:WINAPP_CLI_PATH = 'C:\PowerToysUiTestRun\winappcli\winapp.exe'
 $env:POWERTOYS_MWB_PROVISIONING = 'C:\ProgramData\PowerToysMwbExperiment\host-provisioning.json'
 $env:POWERTOYS_MWB_RUN_ROOT = 'C:\PowerToysUiTestRun\Results\MwbRun'
 & 'C:\PowerToysUiTestRun\Tests\MouseWithoutBorders.UITests.exe' `
-  --filter 'FullyQualifiedName~AutonomousSandboxSmoke' `
   --report-trx --report-trx-filename mwb.trx `
   --results-directory 'C:\PowerToysUiTestRun\Results'
 ```
