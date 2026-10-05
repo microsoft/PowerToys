@@ -11,12 +11,18 @@ internal static partial class DockDropHelper
     private const string AppsFolderPrefix = "shell:AppsFolder\\";
     private const uint SigdnNormalDisplay = 0;
 
-    public static (string Name, string Target) GetBookmark(string path)
+    // Dropped bookmarks hide target subtitles by default; dock settings can show them.
+    public static (string Name, string Target, bool ShowSubtitles) GetBookmark(string path)
     {
         return GetBookmark(path, GetAppsFolderDisplayName);
     }
 
-    internal static (string Name, string Target) GetBookmark(string path, Func<string, string?> getAppDisplayName)
+    public static (string Name, string Target, bool ShowSubtitles) GetBookmark(Uri uri)
+    {
+        return (uri.Host, uri.AbsoluteUri, false);
+    }
+
+    internal static (string Name, string Target, bool ShowSubtitles) GetBookmark(string path, Func<string, string?> getAppDisplayName)
     {
         // Dropped AppsFolder items can expose an AUMID instead of a filesystem path.
         if (!Path.IsPathRooted(path))
@@ -28,11 +34,11 @@ internal static partial class DockDropHelper
             if (displayName is not null)
             {
                 var name = string.IsNullOrWhiteSpace(displayName) ? appUserModelId : displayName;
-                return (name, AppsFolderPrefix + appUserModelId);
+                return (name, AppsFolderPrefix + appUserModelId, false);
             }
         }
 
-        return (Path.GetFileNameWithoutExtension(path), path);
+        return (Path.GetFileNameWithoutExtension(path), path, false);
     }
 
     private static string? GetAppsFolderDisplayName(string appUserModelId)
