@@ -230,7 +230,13 @@ Read `IWidgetContent.Content` without using the WinUI form renderer:
 | --- | --- |
 | `TemplateJson` | `WidgetUpdateRequestOptions.Template` |
 | `DataJson` | `WidgetUpdateRequestOptions.Data` |
-| `Title` and `Icon` | Host-owned content/header where supported |
+| `Title` and `Icon` | Runtime `header.text` and `header.iconUrl` |
+
+The Windows adapter converts local raster/SVG images, image streams, and Fluent
+glyphs into 32x32 PNG data URLs; HTTPS images pass through. It initially uses the
+light icon variant, with a dark fallback when light is absent. Failed or
+unsupported icons use the packaged CmdPal logo. Icon conversion is cached per
+icon object and has a bounded wait so it cannot indefinitely block an update.
 
 Send the template and data separately; do not pre-expand the Adaptive Card.
 Support `$host.widgetSize` so one template can adapt to all sizes.
@@ -281,6 +287,13 @@ the composite widget key, enforces `AllowMultiple` across running and persisted
 instances, creates the serving instance, persists the binding, and replaces the
 selector. Loading, empty-catalog, unavailable-extension, unsupported-size, and
 invalid-content states all provide a refresh or reselection action.
+
+The COM provider publishes host-only runtimeclass metadata listing both
+`IWidgetProvider` and `IWidgetProvider2`. Advertising only one interface as the
+runtime class name prevents remote metadata-based marshaling from discovering
+the other. A packaged integration test must activate the provider and query both
+interfaces. Coordinator tests also cover Customize followed by Create, Activate,
+and resize callbacks after restart: none may replace the open dropdown.
 
 ### 6. Lifecycle
 
@@ -448,7 +461,7 @@ SDK/ABI test fixture.
 
 1. Whether the first SDK requires all widgets to support all three sizes.
 2. Exact template/data byte limits and update-rate limits.
-3. Which icon forms can be translated safely into a runtime widget header.
+3. Theme-specific header icons and additional icon formats beyond the initial adapter.
 4. Whether a user-initiated widget action may return `GoToPage` in v1.
 5. Whether lifecycle methods belong on the first `IWidgetContent` interface or
    a later linear `IWidgetContent2` revision.

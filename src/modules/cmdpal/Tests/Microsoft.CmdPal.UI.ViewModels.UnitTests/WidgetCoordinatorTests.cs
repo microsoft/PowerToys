@@ -2,16 +2,23 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using AdaptiveCards.Templating;
 using Microsoft.CmdPal.UI.ViewModels.Widgets;
+using Microsoft.CmdPal.UI.Widgets;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.ApplicationModel;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -153,6 +160,28 @@ public sealed partial class WidgetCoordinatorTests
     }
 
     [TestMethod]
+    public async Task CustomizationAfterRestartSurvivesHostLifecycleCallbacks()
+    {
+        var platform = new TestWidgetPlatform();
+        var entry = CreateEntry("saved");
+        platform.Update(new("instance", "{}", "{}", entry.Binding.Serialize()));
+        using var coordinator = new WidgetCoordinator(new TestWidgetCatalog(entry), platform);
+        await coordinator.ShowCustomizationAsync("instance");
+        var selector = platform.Updates.Last();
+        var updateCount = platform.Updates.Count;
+
+        await coordinator.CreateAsync("instance", "Small");
+        await coordinator.ActivateAsync("instance", "Small");
+        await coordinator.ContextChangedAsync("instance", "Large");
+
+        Assert.AreEqual(updateCount, platform.Updates.Count);
+        Assert.AreEqual(selector, platform.Updates.Last());
+        StringAssert.Contains(selector.TemplateJson, "Input.ChoiceSet");
+        await coordinator.ActionAsync("instance", "selectWidget", new JsonObject { ["widget"] = entry.Binding.Encode() }.ToJsonString(), selector.CustomState);
+        Assert.IsFalse(platform.Updates.Last().TemplateJson.Contains("Input.ChoiceSet"));
+    }
+
+    [TestMethod]
     public async Task RefreshRemovesUnavailableChoices()
     {
         var platform = new TestWidgetPlatform();
@@ -230,6 +259,150 @@ public sealed partial class WidgetCoordinatorTests
         Assert.AreEqual(1, form.SubmitCount);
         StringAssert.Contains(form.LastContext, "increment");
         StringAssert.Contains(platform.Updates.Last().DataJson, "updated");
+    }
+
+    [TestMethod]
+    public async Task BoundWidgetSuppliesHeaderMetadataButSelectorDoesNot()
+    {
+        var platform = new TestWidgetPlatform();
+        var entry = CreateEntry("header");
+        var widget = (WidgetContent)entry.Create("instance")!;
+        widget.Title = "CPU Usage";
+        widget.Icon = new IconInfo("\uE9D9");
+        using var coordinator = new WidgetCoordinator(new TestWidgetCatalog(entry), platform);
+        await coordinator.ActionAsync("instance", "selectWidget", new JsonObject { ["widget"] = entry.Binding.Encode() }.ToJsonString(), "{}");
+
+        Assert.AreEqual(widget.Title, platform.Updates.Last().HeaderTitle);
+        Assert.AreSame(widget.Icon, platform.Updates.Last().HeaderIcon);
+        await coordinator.ShowCustomizationAsync("instance");
+        Assert.IsNull(platform.Updates.Last().HeaderTitle);
+        Assert.IsNull(platform.Updates.Last().HeaderIcon);
+        StringAssert.Contains(platform.Updates.Last().TemplateJson, "Input.ChoiceSet");
+    }
+
+    [TestMethod]
+    public void HeaderCompositionPreservesCardBodyAndEncodesMetadata()
+    {
+        const string template = "{\"type\":\"AdaptiveCard\",\"body\":[{\"type\":\"TextBlock\",\"text\":\"${value}\"}],\"header\":null}";
+        const string title = "CPU \"Usage\"";
+        const string url = "https://example.com/icon.png";
+        var update = new WidgetPlatformUpdate("instance", template, "{}", "{}");
+        var result = JsonNode.Parse(update.TemplateWithHeader(title, url))!;
+        Assert.AreEqual(title, result["header"]!["text"]!.GetValue<string>());
+        Assert.AreEqual(url, result["header"]!["iconUrl"]!.GetValue<string>());
+        Assert.AreEqual("${value}", result["body"]![0]!["text"]!.GetValue<string>());
+        Assert.IsNull(JsonNode.Parse(template)!["header"]);
+        Assert.IsNull(JsonNode.Parse(update.TemplateWithHeader(title, null))!["header"]!["iconUrl"]);
+    }
+
+    [TestMethod]
+    [TestCategory("WidgetPlatform")]
+    public async Task HeaderGlyphRendersAsNonblankPng()
+    {
+        RequirePackageIdentity();
+        var url = await WindowsWidgetPlatform.RenderIconAsync(new IconInfo("\uE9D9"));
+        Assert.IsNotNull(url);
+        StringAssert.StartsWith(url, "data:image/png;base64,");
+        using var stream = new MemoryStream(Convert.FromBase64String(url["data:image/png;base64,".Length..]));
+        using var randomAccess = stream.AsRandomAccessStream();
+        var decoder = await BitmapDecoder.CreateAsync(randomAccess);
+        Assert.AreEqual(32u, decoder.PixelWidth);
+        Assert.AreEqual(32u, decoder.PixelHeight);
+        var pixels = (await decoder.GetPixelDataAsync()).DetachPixelData();
+        Assert.IsTrue(pixels.Any(value => value != 0));
+        Assert.IsTrue(pixels.Distinct().Count() > 4, "Icon must contain a glyph, not just a background.");
+    }
+
+    [TestMethod]
+    public async Task HeaderHttpsIconPassesThrough()
+    {
+        const string url = "https://example.com/icon.png";
+        Assert.AreEqual(url, await WindowsWidgetPlatform.RenderIconAsync(new IconInfo(url)));
+        Assert.IsNull(await WindowsWidgetPlatform.RenderIconAsync(new IconInfo("javascript:alert(1)")));
+    }
+
+    [TestMethod]
+    [TestCategory("WidgetPlatform")]
+    public async Task HeaderImageAndStreamRenderAsPng()
+    {
+        RequirePackageIdentity();
+        var glyphUrl = await WindowsWidgetPlatform.RenderIconAsync(new IconInfo("\uE9D9"));
+        Assert.IsNotNull(glyphUrl);
+        var png = Convert.FromBase64String(glyphUrl["data:image/png;base64,".Length..]);
+        using var stream = new InMemoryRandomAccessStream();
+        using (var writer = new DataWriter(stream))
+        {
+            writer.WriteBytes(png);
+            await writer.StoreAsync();
+            writer.DetachStream();
+        }
+
+        stream.Seek(0);
+        var streamUrl = await WindowsWidgetPlatform.RenderIconAsync(IconInfo.FromStream(stream));
+        Assert.IsNotNull(streamUrl);
+        StringAssert.StartsWith(streamUrl, "data:image/png;base64,");
+
+        var path = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllBytes(path, png);
+            var fileUrl = await WindowsWidgetPlatform.RenderIconAsync(new IconInfo(path));
+            Assert.IsNotNull(fileUrl);
+            StringAssert.StartsWith(fileUrl, "data:image/png;base64,");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("WidgetPlatform")]
+    public void PackagedHostCanQueryCustomizationInterface()
+    {
+        RequirePackageIdentity();
+        var clsid = new Guid("918F58B7-7E1A-4E1A-A53E-6B0D760D83A3");
+        var providerId = new Guid("5c5774cc-72a0-452d-b9ed-075c0dd25eed");
+        var activationResult = CoCreateInstance(in clsid, IntPtr.Zero, 4, in providerId, out var unknown);
+        Assert.AreEqual(0, activationResult, $"Widget provider activation returned 0x{activationResult:X8}");
+        try
+        {
+            foreach (var iidValue in new[] { "5c5774cc-72a0-452d-b9ed-075c0dd25eed", "38c3a963-dd93-479d-9276-04bf84ee1816" })
+            {
+                var iid = new Guid(iidValue);
+                var result = Marshal.QueryInterface(unknown, in iid, out var pointer);
+                try
+                {
+                    Assert.AreEqual(0, result, $"QueryInterface({iid}) returned 0x{result:X8}");
+                }
+                finally
+                {
+                    if (pointer != IntPtr.Zero)
+                    {
+                        Marshal.Release(pointer);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            Marshal.Release(unknown);
+        }
+    }
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    private static extern int CoCreateInstance(in Guid clsid, IntPtr outer, uint context, in Guid iid, out IntPtr instance);
+
+    private static void RequirePackageIdentity()
+    {
+        try
+        {
+            _ = Package.Current.Id;
+        }
+        catch (InvalidOperationException)
+        {
+            Assert.Inconclusive("Run with Invoke-CommandInDesktopPackage using the CmdPal development package.");
+        }
     }
 
     [TestMethod]

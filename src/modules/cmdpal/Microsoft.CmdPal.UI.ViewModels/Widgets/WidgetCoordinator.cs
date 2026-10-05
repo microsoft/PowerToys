@@ -33,11 +33,16 @@ public sealed partial class WidgetCoordinator : IDisposable
 
     public Task CreateAsync(string instanceId, string? size, CancellationToken cancellationToken = default)
     {
-        ShowLoading(instanceId);
         return ExecuteSerializedAsync(
             instanceId,
             async ct =>
             {
+                if (_selectors.ContainsKey(instanceId))
+                {
+                    return;
+                }
+
+                ShowLoading(instanceId);
                 var session = await RestoreAsync(instanceId, null, ct).ConfigureAwait(false);
                 if (session is null)
                 {
@@ -83,6 +88,11 @@ public sealed partial class WidgetCoordinator : IDisposable
             instanceId,
             async ct =>
             {
+                if (_selectors.ContainsKey(instanceId))
+                {
+                    return;
+                }
+
                 var session = await RestoreAsync(instanceId, null, ct).ConfigureAwait(false);
                 if (session is null)
                 {
@@ -119,6 +129,11 @@ public sealed partial class WidgetCoordinator : IDisposable
             instanceId,
             async ct =>
             {
+                if (_selectors.ContainsKey(instanceId))
+                {
+                    return;
+                }
+
                 var session = await RestoreAsync(instanceId, null, ct).ConfigureAwait(false);
                 if (session is null)
                 {
@@ -355,19 +370,30 @@ public sealed partial class WidgetCoordinator : IDisposable
 
     private void ScheduleUpdate(WidgetSession session)
     {
-        var next = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
-        if (_pendingUpdates.TryGetValue(session.InstanceId, out var previous))
+        CancellationTokenSource next;
+        CancellationToken token;
+        lock (_pendingUpdates)
         {
-            previous.Cancel();
-            previous.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+
+            next = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+            token = next.Token;
+            if (_pendingUpdates.TryGetValue(session.InstanceId, out var previous))
+            {
+                previous.Cancel();
+            }
+
+            _pendingUpdates[session.InstanceId] = next;
         }
 
-        _pendingUpdates[session.InstanceId] = next;
         _ = Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(UpdateDebounce, next.Token).ConfigureAwait(false);
+                await Task.Delay(UpdateDebounce, token).ConfigureAwait(false);
                 await ExecuteSerializedAsync(
                     session.InstanceId,
                     _ =>
@@ -380,15 +406,20 @@ public sealed partial class WidgetCoordinator : IDisposable
 
                         return Task.CompletedTask;
                     },
-                    next.Token).ConfigureAwait(false);
+                    token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
             }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to update extension widget content", ex);
+            }
             finally
             {
-                if (_pendingUpdates.TryRemove(new KeyValuePair<string, CancellationTokenSource>(session.InstanceId, next)))
+                lock (_pendingUpdates)
                 {
+                    _pendingUpdates.TryRemove(new KeyValuePair<string, CancellationTokenSource>(session.InstanceId, next));
                     next.Dispose();
                 }
             }
@@ -434,7 +465,13 @@ public sealed partial class WidgetCoordinator : IDisposable
             return;
         }
 
-        _platform.Update(new(session.InstanceId, template, data, session.Binding.Serialize()));
+        _platform.Update(new(
+            session.InstanceId,
+            template,
+            data,
+            session.Binding.Serialize(),
+            HeaderTitle: session.Widget.Title,
+            HeaderIcon: session.Widget.Icon));
     }
 
     private void ShowLoading(string instanceId, string? customState = null)
@@ -518,27 +555,24 @@ public sealed partial class WidgetCoordinator : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
+        lock (_pendingUpdates)
         {
-            return;
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        _disposed = true;
-        _shutdown.Cancel();
-        foreach (var pending in _pendingUpdates.Values)
-        {
-            pending.Cancel();
-            pending.Dispose();
+            _disposed = true;
+            _shutdown.Cancel();
+            foreach (var pending in _pendingUpdates.Values)
+            {
+                pending.Cancel();
+            }
         }
 
         foreach (var session in _sessions.Values)
         {
             session.Dispose();
-        }
-
-        foreach (var gate in _instanceGates.Values)
-        {
-            gate.Dispose();
         }
 
         _pendingUpdates.Clear();

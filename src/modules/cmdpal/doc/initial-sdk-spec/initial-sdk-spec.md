@@ -2490,6 +2490,15 @@ properties to the Windows widget update payload:
 * `TemplateJson` is the Adaptive Card template;
 * `DataJson` is the data used to expand that template.
 
+`IWidgetContent.Title` and `Icon` supply the bound widget's Windows header.
+CmdPal adds a `header` object with `text` and `iconUrl` to a copy of the form
+template; extensions do not need to author the header themselves. HTTPS image
+URLs can be passed through. Local raster/SVG images, image streams, and Fluent
+glyphs are converted to small PNG data URLs, so the Board does not need to read
+extension-local files or render icon-font characters. This initial adapter uses
+the light icon variant (falling back to dark if absent). Missing, unsupported,
+or failed icons fall back to CmdPal's logo. The dropdown remains text-only.
+
 `StateJson` remains part of the inherited `IFormContent` contract, but the
 widget host does not use it as an extension persistence mechanism. CmdPal only
 persists its own binding information: the extension, provider, and widget IDs
@@ -2502,7 +2511,7 @@ that surface. Templates should use `$host.widgetSize` when they need different
 layouts for small, medium, and large widgets.
 
 Widget actions should use `Action.Execute`. When Windows reports an action,
-CmdPal calls `SubmitForm` on the serving `IWidgetContent`:
+CmdPal calls `SubmitForm` on the serving widget's `Content` form:
 
 * `inputs` contains the JSON data supplied by the Widgets Board, including
     submitted input values; and

@@ -1,0 +1,7 @@
+namespace Microsoft.CmdPal.UI.Widgets
+{
+    runtimeclass CmdPalWidgetProvider : Microsoft.Windows.Widgets.Providers.IWidgetProvider,
+        Microsoft.Windows.Widgets.Providers.IWidgetProvider2
+    {
+    }
+}

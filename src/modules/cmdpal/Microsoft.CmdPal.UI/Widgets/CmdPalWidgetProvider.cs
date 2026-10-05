@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.UI.Widgets;
 [ComVisible(true)]
 [Guid(ClassId)]
 [ComDefaultInterface(typeof(IWidgetProvider))]
+[WinRT.WinRTRuntimeClassName("Microsoft.CmdPal.UI.Widgets.CmdPalWidgetProvider")]
 public sealed partial class CmdPalWidgetProvider : IWidgetProvider, IWidgetProvider2, IDisposable
 {
     public const string ClassId = "918F58B7-7E1A-4E1A-A53E-6B0D760D83A3";
@@ -63,6 +64,7 @@ public sealed partial class CmdPalWidgetProvider : IWidgetProvider, IWidgetProvi
     public void OnCustomizationRequested(WidgetCustomizationRequestedArgs customizationRequestedArgs)
     {
         var instanceId = customizationRequestedArgs.WidgetContext.Id;
+        Logger.LogDebug($"Widget customization requested: {instanceId}");
         Run(ct => _coordinator.ShowCustomizationAsync(instanceId, ct));
     }
 

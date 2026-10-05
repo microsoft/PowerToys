@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="WyHash" />
   </ItemGroup>
 
@@ -28,5 +29,9 @@
     <Content Include="..\..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip" Link="Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Widgets\WindowsWidgetPlatform.cs" Link="Widgets\WindowsWidgetPlatform.cs" />
   </ItemGroup>
 </Project>

@@ -68,6 +68,28 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="$(IntermediateOutputPath)WidgetMetadata\Microsoft.CmdPal.UI.Widgets.winmd"
+             Link="Microsoft.CmdPal.UI.Widgets.winmd"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="GenerateWidgetProviderMetadata"
+          BeforeTargets="CoreCompile"
+          Inputs="$(MSBuildProjectDirectory)\Widgets\Microsoft.CmdPal.UI.Widgets.idl;@(CsWinRTInputs)"
+          Outputs="$(IntermediateOutputPath)WidgetMetadata\Microsoft.CmdPal.UI.Widgets.winmd">
+    <PropertyGroup>
+      <WidgetMetadataToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">arm64</WidgetMetadataToolArchitecture>
+      <WidgetMetadataToolArchitecture Condition="'$(WidgetMetadataToolArchitecture)' == ''">x64</WidgetMetadataToolArchitecture>
+      <WidgetMetadataDirectory>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)WidgetMetadata</WidgetMetadataDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <WidgetPlatformMetadata Include="@(CsWinRTInputs)" Condition="'%(Filename)' == 'Microsoft.Windows.Widgets'" />
+    </ItemGroup>
+    <MakeDir Directories="$(WidgetMetadataDirectory)" />
+    <Exec Command="&quot;$(WindowsSdkPath)bin\$(TargetPlatformVersion)\$(WidgetMetadataToolArchitecture)\midlrt.exe&quot; /winrt /nomidl /nomidl_all /no_cpp /ns_prefix /I &quot;$(WindowsSdkPath)Include\$(TargetPlatformVersion)\winrt&quot; /I &quot;$(WindowsSdkPath)Include\$(TargetPlatformVersion)\shared&quot; /reference &quot;@(WidgetPlatformMetadata)&quot; /metadata_dir &quot;$(WindowsSdkPath)UnionMetadata\$(TargetPlatformVersion)&quot; /winmd &quot;$(WidgetMetadataDirectory)\Microsoft.CmdPal.UI.Widgets.winmd&quot; /h &quot;$(WidgetMetadataDirectory)\WidgetProvider.h&quot; /iid &quot;$(WidgetMetadataDirectory)\WidgetProvider_i.c&quot; &quot;$(MSBuildProjectDirectory)\Widgets\Microsoft.CmdPal.UI.Widgets.idl&quot;" />
+  </Target>
+
   <PropertyGroup>
     <!-- This disables the auto-generated main, so we can be single-instanced -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
