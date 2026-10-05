@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -25,6 +26,8 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
     public abstract bool IsEnabled { get; }
 
     public abstract Win32ProgramSourceProfile Profile { get; }
+
+    public bool SupportsIncrementalChanges => true;
 
     public virtual int MaximumDepth
         => (Profile & Win32ProgramSourceProfile.RecurseSubdirectories) != 0 ? int.MaxValue : 0;
@@ -72,19 +75,31 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
 
     public IEnumerable<string> GetPaths()
     {
+        foreach (var candidate in GetCandidates())
+        {
+            yield return candidate.Path;
+        }
+    }
+
+    public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
+    {
         foreach (var directory in WatchPaths)
         {
-            foreach (var path in Win32Program.EnumerateProgramPaths(directory, _suffixes, MaximumDepth))
+            foreach (var path in Win32Program.EnumerateProgramPaths(directory, _suffixes, MaximumDepth, onError, IsExcludedPath, cancellationToken))
             {
                 if (!IsExcludedPath(path))
                 {
-                    yield return path;
+                    yield return new Win32ProgramCandidate(path, []);
                 }
             }
         }
     }
 
-    public IEnumerable<string> GetPathsForChange(string path)
+    public IEnumerable<string> GetPathsForChange(
+        string path,
+        Action<string, Exception>? onError = null,
+        Action<string>? onMissing = null,
+        CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -97,7 +112,23 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
             yield break;
         }
 
-        if (File.Exists(normalizedPath))
+        FileAttributes attributes;
+        try
+        {
+            attributes = File.GetAttributes(normalizedPath);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            onMissing?.Invoke(normalizedPath);
+            yield break;
+        }
+        catch (Exception ex)
+        {
+            onError?.Invoke(normalizedPath, ex);
+            yield break;
+        }
+
+        if ((attributes & FileAttributes.Directory) == 0)
         {
             if (HasSupportedSuffix(normalizedPath) && IsCandidateFileInSource(normalizedPath))
             {
@@ -107,20 +138,10 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
             yield break;
         }
 
-        if (!Directory.Exists(normalizedPath))
-        {
-            yield break;
-        }
-
         var emittedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var configuredDirectory in _directories)
         {
             var sourceRoot = PathHelpers.NormalizePath(configuredDirectory);
-            if (!Directory.Exists(sourceRoot))
-            {
-                continue;
-            }
-
             string enumerationRoot;
             int maximumDepth;
             if (TryGetDirectoryDepth(sourceRoot, normalizedPath, out var dirtyDirectoryDepth))
@@ -145,7 +166,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
                 continue;
             }
 
-            foreach (var candidatePath in Win32Program.EnumerateProgramPaths(enumerationRoot, _suffixes, maximumDepth))
+            foreach (var candidatePath in Win32Program.EnumerateProgramPaths(enumerationRoot, _suffixes, maximumDepth, onError, IsExcludedPath, cancellationToken))
             {
                 if (!IsExcludedPath(candidatePath) && emittedPaths.Add(candidatePath))
                 {

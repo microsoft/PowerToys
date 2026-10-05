@@ -19,6 +19,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 internal sealed partial class AppCatalogCache : IAppCatalogCache
 {
     internal static readonly TimeSpan MaximumAge = TimeSpan.FromHours(36);
+    private static readonly TimeSpan ValidationWriteInterval = TimeSpan.FromHours(6);
 
     private readonly string _cachePath;
     private readonly MEL.ILogger<AppCatalogCache> _logger;
@@ -134,10 +135,33 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
             }
 
             var items = sourceSnapshots[sourceId];
-            var validatedAtUtc = context.NowUtc;
-            if (previousById.TryGetValue(sourceId, out var previous)
-                && !fullyReconciledSources.Contains(sourceId))
+            var fullyReconciled = fullyReconciledSources.Contains(sourceId);
+            previousById.TryGetValue(sourceId, out var previous);
+            if (!fullyReconciled)
             {
+                if (previous is null)
+                {
+                    // A partial first scan cannot establish the freshness of a new cache entry.
+                    continue;
+                }
+
+                if (!string.Equals(previous.SourceKey, sourceKey, StringComparison.Ordinal))
+                {
+                    // Validation belongs to the previous key until a complete source scan succeeds.
+                    cache.Sources.Add(previous);
+                    continue;
+                }
+            }
+
+            var validatedAtUtc = context.NowUtc;
+            if (previous is not null
+                && (!fullyReconciled
+                    || (string.Equals(previous.SourceKey, sourceKey, StringComparison.Ordinal)
+                        && AppCatalogItem.HaveSamePersistedContent(previous.Items, items)
+                        && context.NowUtc >= previous.ValidatedAtUtc
+                        && context.NowUtc - previous.ValidatedAtUtc < ValidationWriteInterval)))
+            {
+                // Keep the cache fresh without rewriting its entire contents for each unchanged background check.
                 validatedAtUtc = previous.ValidatedAtUtc;
             }
 
