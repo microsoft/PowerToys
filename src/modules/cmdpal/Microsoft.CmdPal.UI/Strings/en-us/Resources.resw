@@ -1993,11 +1993,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Search aliases for disabling animations.</comment>
   </data>
   <data name="SettingsSearch_Keywords_OpeningMode" xml:space="preserve">
-    <value>compact full mode expanded search box</value>
-    <comment>Search aliases for how Command Palette opens.</comment>
+    <value>compact full mode expanded search box small mini minimal collapsed</value>
+    <comment>Search aliases for how Command Palette opens, including compact mode.</comment>
   </data>
-  <data name="SettingsSearch_Keywords_CompactMode" xml:space="preserve">
-    <value>small mini minimal collapsed shelf quick access pinned</value>
+  <data name="SettingsSearch_Keywords_QuickAccessShelf" xml:space="preserve">
+    <value>shelf quick access pinned</value>
     <comment>Search aliases for the quick access shelf.</comment>
   </data>
   <data name="SettingsSearch_Keywords_History" xml:space="preserve">
@@ -2011,6 +2011,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsSearch_Keywords_LaunchPosition" xml:space="preserve">
     <value>window location screen monitor display cursor mouse center centre remember position</value>
     <comment>Search aliases for where the Command Palette window opens.</comment>
+  </data>
+  <data name="SettingsSearch_Keywords_CompactPosition" xml:space="preserve">
+    <value>compact height offset top bottom center centre placement</value>
+    <comment>Search aliases for the vertical position of the compact search box.</comment>
   </data>
   <data name="SettingsSearch_Keywords_Toast" xml:space="preserve">
     <value>notification popup pop-up toast message indicator</value>
