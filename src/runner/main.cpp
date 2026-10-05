@@ -268,6 +268,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"WinUI3Apps/PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.AutoHideCursor.dll",
             L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",

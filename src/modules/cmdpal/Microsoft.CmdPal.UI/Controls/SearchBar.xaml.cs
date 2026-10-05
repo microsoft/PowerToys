@@ -21,7 +21,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -39,6 +38,7 @@ public sealed partial class SearchBar : UserControl,
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly AppBarSeparator _menuSeparator = new();
     private bool _isBackspaceHeld;
 
     // Inline text suggestions
@@ -59,9 +59,7 @@ public sealed partial class SearchBar : UserControl,
 
     private bool _tokenSearchEnabled;
 
-    private AppBarSeparator? _menuSeparator;
-    private AppBarButton? _settingsMenuItem;
-    private AppBarButton? _helpMenuItem;
+    private IReadOnlyList<ICommandBarElement> _additionalContextMenuItems = [];
 
     private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
@@ -75,9 +73,14 @@ public sealed partial class SearchBar : UserControl,
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
+    // Called on each opening so the host can build commands from its current state.
+    public Func<IReadOnlyList<ICommandBarElement>>? AdditionalContextMenuItemsFactory { get; set; }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public event EventHandler? ActiveFocusTargetChanged;
+
+    public event EventHandler? SearchTextChanging;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -207,6 +210,11 @@ public sealed partial class SearchBar : UserControl,
 
     private void FilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         if (e.Key == VirtualKey.Back)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -262,26 +270,14 @@ public sealed partial class SearchBar : UserControl,
                 }
             }
         }
-        else if (e.Key == VirtualKey.Up)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Left)
-        {
-            // Check if we're in a grid view, and if so, send grid navigation command
-            var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
-
-            // Special handling is required if we're in grid view.
-            if (isGridView)
-            {
-                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
-                e.Handled = true;
-            }
-        }
         else if (e.Key == VirtualKey.Right)
         {
+            // Only unmodified Right accepts suggestions.
+            if (!KeyModifiers.GetCurrent().None)
+            {
+                return;
+            }
+
             // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
             // If it isn't, then only use the suggestion when the caret is at the end of the input.
             if (!IsTextToSuggestEnabled)
@@ -303,35 +299,10 @@ public sealed partial class SearchBar : UserControl,
                 _lastText = null;
                 DoFilterBoxUpdate();
             }
-
-            // Wouldn't want to perform text completion *and* move the selected item, so only perform this if text suggestion wasn't performed.
-            if (!e.Handled)
-            {
-                // Check if we're in a grid view, and if so, send grid navigation command
-                var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
-
-                // Special handling is required if we're in grid view.
-                if (isGridView)
-                {
-                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
-                    e.Handled = true;
-                }
-            }
         }
-        else if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageDown)
+        if (!e.Handled && TryHandleListNavigation(e.Key))
         {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageUp)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
 
@@ -382,6 +353,48 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
+    private bool TryHandleListNavigation(VirtualKey key)
+    {
+        var listViewModel = CurrentPageViewModel switch
+        {
+            ListViewModel listPage => listPage,
+            ParametersPageViewModel parametersPage => parametersPage.ActiveListViewModel,
+            _ => null,
+        };
+
+        switch (key)
+        {
+            case VirtualKey.Up when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+                return true;
+
+            case VirtualKey.Down when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+                return true;
+
+            case VirtualKey.Left when listViewModel is { IsGridView: true } && IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                return true;
+
+            case VirtualKey.Right when listViewModel is { IsGridView: true } && IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                return true;
+
+            case VirtualKey.PageUp when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+                return true;
+
+            case VirtualKey.PageDown when IsNoneModifierDown():
+                WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+                return true;
+
+            default:
+                return false;
+        }
+
+        static bool IsNoneModifierDown() => KeyModifiers.GetCurrent().None;
+    }
+
     // TextCommandBarFlyout rebuilds its commands on every open, so re-append ours each time.
     private void FilterBoxContextFlyout_Opening(object sender, object e)
     {
@@ -390,42 +403,27 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        if (_settingsMenuItem is null || _helpMenuItem is null)
+        // Remove the previous host items first in case the flyout retained them.
+        _ = flyout.SecondaryCommands.Remove(_menuSeparator);
+        foreach (var item in _additionalContextMenuItems)
         {
-            _menuSeparator = new AppBarSeparator();
-
-            _settingsMenuItem = new AppBarButton
-            {
-                Label = RS_.GetString("SearchBoxContextMenu_Settings"),
-                Icon = new FontIcon { Glyph = "\uE713" },
-                KeyboardAcceleratorTextOverride = RS_.GetString("SearchBoxContextMenu_Settings_Shortcut"),
-            };
-            _settingsMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
-
-            _helpMenuItem = new AppBarButton
-            {
-                Label = RS_.GetString("SearchBoxContextMenu_Help"),
-                Icon = new FontIcon { Glyph = "\uE897" },
-            };
-            _helpMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send(new LaunchUriMessage(new Uri("https://aka.ms/PowerToysOverview_CmdPal")));
+            _ = flyout.SecondaryCommands.Remove(item);
         }
 
-        // Only add the separator when the flyout populated built-in secondary commands above us.
-        if (_menuSeparator is not null &&
-            flyout.SecondaryCommands.Count > 0 &&
-            !flyout.SecondaryCommands.Contains(_menuSeparator))
+        _additionalContextMenuItems = AdditionalContextMenuItemsFactory?.Invoke() ?? [];
+        if (_additionalContextMenuItems.Count == 0)
+        {
+            return;
+        }
+
+        if (flyout.SecondaryCommands.Count > 0)
         {
             flyout.SecondaryCommands.Add(_menuSeparator);
         }
 
-        if (!flyout.SecondaryCommands.Contains(_settingsMenuItem))
+        foreach (var item in _additionalContextMenuItems)
         {
-            flyout.SecondaryCommands.Add(_settingsMenuItem);
-        }
-
-        if (!flyout.SecondaryCommands.Contains(_helpMenuItem))
-        {
-            flyout.SecondaryCommands.Add(_helpMenuItem);
+            flyout.SecondaryCommands.Add(item);
         }
     }
 
@@ -436,6 +434,11 @@ public sealed partial class SearchBar : UserControl,
             // Reset the backspace state on key release
             _isBackspaceHeld = false;
         }
+    }
+
+    private void FilterBox_TextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+    {
+        SearchTextChanging?.Invoke(this, EventArgs.Empty);
     }
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -743,7 +746,8 @@ public sealed partial class SearchBar : UserControl,
 
     private void ListParameter_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (sender is not TextBox textBox ||
+        if (e.Handled ||
+            sender is not TextBox textBox ||
             CurrentPageViewModel is not ParametersPageViewModel parametersPage)
         {
             return;
@@ -777,24 +781,8 @@ public sealed partial class SearchBar : UserControl,
                 parametersPage.SetActiveListParameter(null);
             }
         }
-        else if (e.Key == VirtualKey.Up)
+        else if (TryHandleListNavigation(e.Key))
         {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageDown)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.PageUp)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
     }

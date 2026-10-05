@@ -219,6 +219,23 @@ function Test-Elevation {
         [Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+function Test-HyperVAdministratorsMembership {
+    param([Parameter(Mandatory)][string]$Member)
+
+    try {
+        $group = Get-LocalGroup -SID 'S-1-5-32-578' -ErrorAction Stop
+        $targetSid = ([Security.Principal.NTAccount]$Member).Translate(
+            [Security.Principal.SecurityIdentifier]).Value
+        return @(Get-LocalGroupMember -Group $group.Name -ErrorAction Stop |
+            Where-Object { $_.SID.Value -eq $targetSid }).Count -gt 0
+    }
+    catch {
+        return $false
+    }
+}
+
+$accountHasHyperVAccess = $SkipGroupMembership -or (Test-HyperVAdministratorsMembership -Member $Account)
+
 function Write-Status {
     param([Parameter(Mandatory)]$Status)
 
@@ -226,6 +243,7 @@ function Write-Status {
     Write-Host "Local UI-test VM host setup - $vmName"
     foreach ($row in @(
             @{ Name = 'Hyper-V access'; Ok = $Status.HyperVAccess; Detail = $Status.HyperVAccessDetail },
+            @{ Name = 'Agent Hyper-V group'; Ok = $accountHasHyperVAccess; Detail = $(if ($accountHasHyperVAccess) { "ok ($Account)" } else { "missing: $Account must join Hyper-V Administrators and sign out/in" }) },
             @{ Name = 'Guest credential'; Ok = $Status.Credential; Detail = $Status.CredentialDetail },
             @{ Name = 'Video prerequisite'; Ok = $vcRedistReady; Detail = $(if ($vcRedistReady) { "ok ($vcArchitecture)" } else { "missing: $vcRedistPath" }) },
             @{ Name = 'PowerShell 7'; Ok = $powerShellReady; Detail = $(if ($powerShellReady) { "ok ($PowerShellVersion)" } else { "missing: $powerShellPath" }) },
@@ -241,13 +259,16 @@ Write-Status -Status $status
 
 if ($CheckOnly) {
     $allMissing = @($status.Missing)
+    if (-not $accountHasHyperVAccess) {
+        $allMissing += 'HyperVAdministratorsMembership'
+    }
     if (-not $vcRedistReady) {
         $allMissing += 'VideoPrerequisite'
     }
     if (-not $powerShellReady) {
         $allMissing += 'PowerShell7'
     }
-    $allReady = $status.IsReady -and $vcRedistReady -and $powerShellReady
+    $allReady = $status.IsReady -and $accountHasHyperVAccess -and $vcRedistReady -and $powerShellReady
 
     if (-not $allReady) {
         $media = if ([string]::IsNullOrWhiteSpace($InstallMedia)) { '<windows.iso>' } else { $InstallMedia }
@@ -263,6 +284,7 @@ if ($CheckOnly) {
         IsReady = $allReady
         Missing = $allMissing
         CredentialPath = $status.CredentialPath
+        HyperVAdministratorsMembership = $accountHasHyperVAccess
         VcRedistReady = $vcRedistReady
         PowerShellReady = $powerShellReady
     } | ConvertTo-Json -Depth 3
@@ -270,7 +292,7 @@ if ($CheckOnly) {
 }
 
 $elevated = Test-Elevation
-$needsElevation = (-not $status.HyperVAccess -and -not $SkipGroupMembership) -or
+$needsElevation = (-not $accountHasHyperVAccess -and -not $SkipGroupMembership) -or
                   ((-not $status.Guest -or $Force) -and -not $SkipGuestCreation)
 if ($needsElevation -and -not $elevated) {
     throw @"
@@ -283,7 +305,7 @@ Start an elevated pwsh and re-run:
 }
 
 # 1. Hyper-V access -------------------------------------------------------------------------------
-if (-not $status.HyperVAccess -and -not $SkipGroupMembership) {
+if (-not $accountHasHyperVAccess -and -not $SkipGroupMembership) {
     $member = $Account
     Write-Host "Adding '$member' to the local Hyper-V Administrators group..."
     if ($PSCmdlet.ShouldProcess($member, 'Add to Hyper-V Administrators')) {
@@ -396,11 +418,13 @@ if (-not $SkipWindowsUpdate -and (Get-VM -Name $vmName -ErrorAction SilentlyCont
 }
 
 $final = Test-LocalVmHostSetup -VmName $vmName -CredentialPath $CredentialPath -AdminUserName $AdminUserName
+$accountHasHyperVAccess = $SkipGroupMembership -or (Test-HyperVAdministratorsMembership -Member $Account)
 Write-Status -Status $final
 $finalMissing = @($final.Missing)
+if (-not $accountHasHyperVAccess) { $finalMissing += 'HyperVAdministratorsMembership' }
 if (-not $vcRedistReady) { $finalMissing += 'VideoPrerequisite' }
 if (-not $powerShellReady) { $finalMissing += 'PowerShell7' }
-$allReady = $final.IsReady -and $vcRedistReady -and $powerShellReady
+$allReady = $final.IsReady -and $accountHasHyperVAccess -and $vcRedistReady -and $powerShellReady
 if ($allReady) {
     Write-Host 'Host setup is complete. The agent can now drive Invoke-LocalVmUiTest.ps1 unattended.'
 }
@@ -413,6 +437,7 @@ else {
     IsReady = $allReady
     Missing = $finalMissing
     CredentialPath = $final.CredentialPath
+    HyperVAdministratorsMembership = $accountHasHyperVAccess
     VcRedistReady = $vcRedistReady
     PowerShellReady = $powerShellReady
 } | ConvertTo-Json -Depth 3

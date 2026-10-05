@@ -23,5 +23,9 @@ namespace KeyboardManagerEditorUI.Helpers
         public bool IsAllApps { get; set; } = true;
 
         public string AppName { get; set; } = string.Empty;
+
+        public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
+
+        public string SearchableText { get; set; } = string.Empty;
     }
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -46,6 +47,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsTrue(history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell") > 0);
+    }
+
+    [TestMethod]
+    public void RecentCommandIdsAreMostRecentFirstAndCanBeBoundedByConsumer()
+    {
+        var history = CreateHistory(["oldest", "middle", "newest"]);
+        string[] expected = ["newest", "middle"];
+
+        CollectionAssert.AreEqual(
+            expected,
+            history.EnumerateRecentCommandIds().Take(2).ToArray());
+        Assert.AreEqual(3, history.EnumerateRecentCommandIds().Count());
     }
 
     [TestMethod]
@@ -232,6 +245,61 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         // The original instance is unchanged - its index never gained beta.
         Assert.AreEqual(0, first.GetCommandHistoryWeight("beta", now), "the original instance must not see beta");
+    }
+
+    [TestMethod]
+    public void WithoutHistoryItem_RemovesOnlyRequestedCommand()
+    {
+        var original = CreateHistory(["alpha", "beta", "gamma"]);
+
+        var updated = original.WithoutHistoryItem("beta");
+
+        string[] expectedUpdated = ["gamma", "alpha"];
+        string[] expectedOriginal = ["gamma", "beta", "alpha"];
+        CollectionAssert.AreEqual(expectedUpdated, updated.EnumerateRecentCommandIds().ToArray());
+        CollectionAssert.AreEqual(expectedOriginal, original.EnumerateRecentCommandIds().ToArray());
+        Assert.AreSame(updated, updated.WithoutHistoryItem("missing"));
+    }
+
+    [TestMethod]
+    public void ClearHistory_RemovesEverythingAndPreservesEmptyInstance()
+    {
+        var original = CreateHistory(["alpha", "beta"]);
+
+        var cleared = original.ClearHistory();
+
+        Assert.IsTrue(cleared.IsEmpty);
+        Assert.AreEqual(0, cleared.EnumerateRecentCommandIds().Count());
+        Assert.AreSame(cleared, cleared.ClearHistory());
+        Assert.AreEqual(2, original.EnumerateRecentCommandIds().Count());
+    }
+
+    [TestMethod]
+    public void RecentCommandListItem_PreservesRecordedHistoryId()
+    {
+        var source = new ListItemMock("A command", GivenId: "source-command-id");
+        var recentItem = new RecentCommandListItem(source, "recorded-history-id");
+
+        Assert.AreSame(source, recentItem.Source);
+        Assert.AreEqual("recorded-history-id", MainListPage.IdForTopLevelOrAppItem(recentItem));
+    }
+
+    [TestMethod]
+    public void RecentCommandListItem_CreateOrReuse_ReusesOnlyMatchingPresentation()
+    {
+        var source = new ListItemMock("A command", GivenId: "source-command-id");
+        var first = RecentCommandListItem.CreateOrReuse(null, source, "recorded-history-id");
+
+        var reused = RecentCommandListItem.CreateOrReuse([first], source, "recorded-history-id");
+        var differentCommand = RecentCommandListItem.CreateOrReuse([first], source, "other-history-id");
+        var differentSource = RecentCommandListItem.CreateOrReuse(
+            [first],
+            new ListItemMock("A command", GivenId: "source-command-id"),
+            "recorded-history-id");
+
+        Assert.AreSame(first, reused);
+        Assert.AreNotSame(first, differentCommand);
+        Assert.AreNotSame(first, differentSource);
     }
 
     [TestMethod]

@@ -132,6 +132,7 @@ internal static class ModuleEnablementService
         "CmdPal" => "ConfigureEnabledUtilityCmdPal",
         "ColorPicker" => "ConfigureEnabledUtilityColorPicker",
         "CropAndLock" => "ConfigureEnabledUtilityCropAndLock",
+        "AutoHideCursor" => "ConfigureEnabledUtilityAutoHideCursor",
         "CursorWrap" => "ConfigureEnabledUtilityCursorWrap",
         "EnvironmentVariables" => "ConfigureEnabledUtilityEnvironmentVariables",
         "FancyZones" => "ConfigureEnabledUtilityFancyZones",

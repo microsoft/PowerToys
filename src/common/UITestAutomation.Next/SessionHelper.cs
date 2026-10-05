@@ -99,9 +99,25 @@ public sealed class SessionHelper
     /// <summary>Process name as winappcli's <c>-a</c> flag (and <see cref="Process.GetProcessesByName(string)"/>) accept it.</summary>
     public static string GetProcessName(PowerToysModule scope) => ModulePaths.ProcessNameFor(scope);
 
+    /// <summary>
+    /// Full path to the executable backing <paramref name="scope"/>, resolved against the build under
+    /// test (or an installed build). Exposed for the few modules a test must launch itself because the
+    /// scope needs arguments the harness cannot supply — PowerRename takes its item list on the
+    /// command line.
+    /// </summary>
+    public static string GetExecutablePath(PowerToysModule scope) => ModulePaths.ExePathFor(scope);
+
     /// <summary>Returns <c>true</c> if at least one process matching <paramref name="scope"/> is running.</summary>
     public static bool IsRunning(PowerToysModule scope) =>
         Process.GetProcessesByName(GetProcessName(scope)).Length > 0;
+
+    /// <summary>
+    /// Returns <c>true</c> when the scope's full owning environment is alive. Settings is healthy
+    /// only while both its window process and the runner that owns module lifecycle are running.
+    /// </summary>
+    internal static bool IsScopeHealthy(PowerToysModule scope) =>
+        IsRunning(scope) &&
+        (scope != PowerToysModule.PowerToysSettings || IsRunning(PowerToysModule.Runner));
 
     /// <summary>
     /// Ensure the runner-owned environment for <paramref name="scope"/> is up and has presented a
@@ -138,10 +154,10 @@ public sealed class SessionHelper
     {
         // Whether or not the scope process already exists, the test needs its WINDOW. EnsureWindow
         // waits patiently and (idempotently) re-issues the launch as needed; it only kills/relaunches
-        // a genuinely-dead fresh launch, never a slow-but-healthy or class-shared (reused) window.
-        var alreadyRunning = IsRunning(scope);
-        EnsureWindow(scope, timeout, alreadyRunning);
-        return !alreadyRunning;
+        // a genuinely-dead fresh launch or an orphaned Settings window whose runner has exited.
+        var alreadyRunning = IsScopeHealthy(scope);
+        var recoveredByUs = EnsureWindow(scope, timeout, alreadyRunning);
+        return !alreadyRunning || recoveredByUs;
     }
 
     /// <summary>
@@ -158,20 +174,26 @@ public sealed class SessionHelper
     /// the runner is single-instance, so <c>--open-settings</c> just (re)shows Settings — and
     /// additionally clears the single-instance mutex first only for a fresh launch that has gone
     /// completely dead (nothing running), i.e. the handoff-to-a-now-exited-instance race. A
-    /// class-shared (reused) window is never killed.
+    /// class-shared (reused) window is never killed while its runner remains healthy. An orphaned
+    /// Settings window cannot process module lifecycle commands, so recovery replaces it and keeps
+    /// waiting under the original deadline.
     /// </remarks>
-    private static void EnsureWindow(PowerToysModule scope, TimeSpan timeout, bool alreadyRunning)
+    private static bool EnsureWindow(PowerToysModule scope, TimeSpan timeout, bool alreadyRunning)
     {
         var processName = GetProcessName(scope);
         var runnerName = GetProcessName(PowerToysModule.Runner);
         var nudgeInterval = TimeSpan.FromSeconds(25);
+        var recoveredByUs = false;
 
         if (!alreadyRunning)
         {
             // Release the single-instance mutex any stale/half-launched instance still holds (pre-test
             // hygiene kills without waiting), then launch.
-            KillScopeProcessesAndWait(scope);
-            LaunchScope(scope);
+            if (TryKillScopeProcessesAndWait(scope, TimeSpan.FromSeconds(10), out _))
+            {
+                LaunchScope(scope);
+                recoveredByUs = true;
+            }
         }
 
         var deadline = DateTime.UtcNow + timeout;
@@ -179,11 +201,11 @@ public sealed class SessionHelper
 
         while (DateTime.UtcNow < deadline)
         {
-            if (WindowsFinder.ListByApp(processName).Count > 0)
+            if (IsScopeHealthy(scope) && WindowsFinder.ListByApp(processName).Count > 0)
             {
                 // Give XAML a moment to populate the visual tree.
                 Thread.Sleep(750);
-                return;
+                return recoveredByUs;
             }
 
             if (DateTime.UtcNow - lastLaunch > nudgeInterval)
@@ -196,16 +218,26 @@ public sealed class SessionHelper
                 // honours with a SEPARATE Settings.exe (the "Settings: 3" pile-up seen in CI), and the
                 // competing single-instance processes plus the launch contention push the window past
                 // the deadline. So when anything is alive, keep waiting instead of piling on.
-                var alive = IsRunning(scope) || Process.GetProcessesByName(runnerName).Length > 0;
-                if (!alive)
+                var scopeAlive = IsRunning(scope);
+                var runnerAlive = IsRunning(PowerToysModule.Runner);
+                var orphanedSettings = scope == PowerToysModule.PowerToysSettings && scopeAlive && !runnerAlive;
+                if (orphanedSettings)
                 {
-                    if (!alreadyRunning)
+                    if (TryKillScopeProcessesAndWait(scope, TimeSpan.FromSeconds(10), out _))
                     {
-                        KillScopeProcessesAndWait(scope);
+                        LaunchScope(scope);
+                        recoveredByUs = true;
+                        lastLaunch = DateTime.UtcNow;
                     }
-
-                    LaunchScope(scope);
-                    lastLaunch = DateTime.UtcNow;
+                }
+                else if (!scopeAlive && !runnerAlive)
+                {
+                    if (alreadyRunning || TryKillScopeProcessesAndWait(scope, TimeSpan.FromSeconds(10), out _))
+                    {
+                        LaunchScope(scope);
+                        recoveredByUs = true;
+                        lastLaunch = DateTime.UtcNow;
+                    }
                 }
             }
 
@@ -216,6 +248,7 @@ public sealed class SessionHelper
             $"No UIA-visible window from process '{processName}' appeared within {timeout.TotalSeconds:0}s. " +
             $"Live processes — runner '{runnerName}': {Process.GetProcessesByName(runnerName).Length}, " +
             $"'{processName}': {Process.GetProcessesByName(processName).Length}.");
+        return recoveredByUs;
     }
 
     /// <summary>
@@ -243,6 +276,18 @@ public sealed class SessionHelper
     /// </summary>
     private static void KillScopeProcessesAndWait(PowerToysModule scope)
     {
+        if (!TryKillScopeProcessesAndWait(scope, TimeSpan.FromSeconds(30), out var remaining))
+        {
+            throw new InvalidOperationException(
+                $"Could not stop the {scope} scope within 30 seconds. Remaining processes: {string.Join(", ", remaining)}.");
+        }
+    }
+
+    private static bool TryKillScopeProcessesAndWait(
+        PowerToysModule scope,
+        TimeSpan timeout,
+        out IReadOnlyList<string> remaining)
+    {
         var names = scope == PowerToysModule.PowerToysSettings
             ? new[] { GetProcessName(PowerToysModule.PowerToysSettings), GetProcessName(PowerToysModule.Runner) }
             : new[] { GetProcessName(scope) };
@@ -252,11 +297,40 @@ public sealed class SessionHelper
             WindowControl.TryKillProcessByName(name);
         }
 
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        while (DateTime.UtcNow < deadline && names.Any(n => Process.GetProcessesByName(n).Length > 0))
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
         {
+            remaining = GetRunningProcessNames(names);
+            if (remaining.Count == 0)
+            {
+                return true;
+            }
+
             Thread.Sleep(150);
         }
+
+        remaining = GetRunningProcessNames(names);
+        return remaining.Count == 0;
+    }
+
+    private static IReadOnlyList<string> GetRunningProcessNames(IEnumerable<string> names)
+    {
+        var running = new List<string>();
+        foreach (var name in names)
+        {
+            var processes = Process.GetProcessesByName(name);
+            if (processes.Length > 0)
+            {
+                running.Add(name);
+            }
+
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
+
+        return running;
     }
 
     /// <summary>

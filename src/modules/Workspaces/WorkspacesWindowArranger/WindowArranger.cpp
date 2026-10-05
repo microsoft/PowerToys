@@ -349,7 +349,8 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     // process launching windows
     while (!m_launchingStatus.AllLaunched() && waitingTime < maxLaunchingWaitingTime)
     {
-        if (processWindows(false))
+        const auto heartbeat = m_launchHeartbeat.load();
+        if (processWindows(false) || (heartbeat != 0 && GetTickCount64() - heartbeat < 5000))
         {
             waitingTime = 0;
         }
@@ -517,6 +518,11 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
 
 void WindowArranger::receiveIpcMessage(const std::wstring& message)
 {
+    if (message == L"launching-heartbeat")
+    {
+        m_launchHeartbeat = GetTickCount64();
+        return;
+    }
     try
     {
         auto data = WorkspacesData::AppLaunchInfoJSON::FromJson(json::JsonValue::Parse(message).GetObjectW());
