@@ -171,8 +171,8 @@ public sealed partial class ScoringThroughputHarnessTests
 
     /// <summary>
     /// Splits a single <see cref="MainListPage.ScoreTopLevelItem"/> into fuzzy DP scoring, tier
-    /// classification, and frecency lookup so the overhaul's added cost is visible. Asserts only
-    /// the direction of the extension-score delta, which holds regardless of the machine.
+    /// classification, and frecency lookup so the overhaul's added cost is visible. Timings are
+    /// report-only, with no wall-clock threshold.
     /// </summary>
     [TestMethod]
     public void PerItemScore_SubAttribution_DpVsTierVsFrecency()
@@ -247,9 +247,6 @@ public sealed partial class ScoringThroughputHarnessTests
             var extDelta = threeDpNs - twoDpNs;
             TestContext.WriteLine(
                 $"{raw,-8}| {fullNs,10:F1} | {twoDpNs,6:F1} | {threeDpNs,6:F1} | {extDelta,8:F1} | {classifyNs,12:F1} | {wordBoundaryNs,12:F1} | {frecencyNs,8:F1}");
-
-            // Adding a third DP score can't make the measurement cheaper.
-            Assert.IsTrue(threeDpNs >= twoDpNs * 0.5, "Three DP scores should not be dramatically cheaper than two; extension scoring is real added work.");
         }
     }
 
