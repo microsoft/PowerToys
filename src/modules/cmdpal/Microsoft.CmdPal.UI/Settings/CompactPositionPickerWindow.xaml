@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Settings.CompactPositionPickerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="Root"
+        x:Uid="CompactPositionPickerWindow_Root"
+        Background="Transparent"
+        IsTabStop="True"
+        Loaded="Root_Loaded"
+        PointerWheelChanged="Root_PointerWheelChanged"
+        PreviewKeyDown="Root_PreviewKeyDown"
+        SizeChanged="Root_SizeChanged">
+        <Image
+            x:Name="DesktopScreenshot"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Stretch="Fill" />
+
+        <Grid x:Name="DesktopBlurHost" IsHitTestVisible="False" />
+
+        <Rectangle
+            x:Name="DesktopDimmer"
+            Fill="Black"
+            IsHitTestVisible="False"
+            Opacity="0.22" />
+
+        <Canvas x:Name="PreviewCanvas">
+            <Border
+                x:Name="PaletteGhost"
+                Width="680"
+                Height="72"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                BorderThickness="2"
+                CornerRadius="12"
+                PointerCanceled="PaletteGhost_PointerCanceled"
+                PointerCaptureLost="PaletteGhost_PointerCaptureLost"
+                PointerMoved="PaletteGhost_PointerMoved"
+                PointerPressed="PaletteGhost_PointerPressed"
+                PointerReleased="PaletteGhost_PointerReleased">
+                <Grid>
+                    <Grid Padding="20,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Grid.Column="0"
+                            Margin="0,0,14,0"
+                            VerticalAlignment="Center"
+                            FontSize="20"
+                            Glyph="&#xE721;" />
+                        <TextBlock
+                            x:Uid="CompactPositionPickerWindow_GhostPlaceholder"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource BodyLargeTextBlockStyle}" />
+                        <FontIcon
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="20"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE74A;" />
+                    </Grid>
+                    <Rectangle
+                        Margin="3"
+                        IsHitTestVisible="False"
+                        Opacity="0.8"
+                        RadiusX="9"
+                        RadiusY="9"
+                        Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                        StrokeDashArray="5,3"
+                        StrokeThickness="1" />
+                </Grid>
+            </Border>
+
+            <Border
+                x:Name="GuidancePanel"
+                Width="300"
+                Padding="20"
+                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                SizeChanged="GuidancePanel_SizeChanged">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock
+                            x:Uid="CompactPositionPickerWindow_Heading"
+                            FontWeight="SemiBold"
+                            Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock
+                            x:Uid="CompactPositionPickerWindow_Instruction"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="PositionValueText"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Uid="CompactPositionPickerWindow_SaveButton"
+                            Click="SaveButton_Click"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <Button
+                            x:Uid="CompactPositionPickerWindow_CancelButton"
+                            Click="CancelButton_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Canvas>
+
+        <Button
+            x:Name="CloseButton"
+            x:Uid="CompactPositionPickerWindow_CloseButton"
+            Width="52"
+            Height="52"
+            Margin="24"
+            Padding="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            Click="CloseButton_Click"
+            CornerRadius="12"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+            <Button.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Escape" />
+            </Button.KeyboardAccelerators>
+            <FontIcon
+                AutomationProperties.AccessibilityView="Raw"
+                FontSize="18"
+                Glyph="&#xE711;" />
+        </Button>
+    </Grid>
+</winuiex:WindowEx>
