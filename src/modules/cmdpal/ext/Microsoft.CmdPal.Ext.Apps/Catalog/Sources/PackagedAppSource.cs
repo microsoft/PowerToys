@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -19,11 +21,20 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
 internal sealed partial class PackagedAppSource : IAppSource
 {
+    public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
+
     private const string SourceId = "packaged";
 
     private readonly IPackageCatalog _packageCatalog;
     private readonly MEL.ILogger<PackagedAppSource> _logger;
+    private Dictionary<string, FileStamp?>? _manifestStamps;
+    private IReadOnlyList<AppCatalogItem>? _lastCompleteItems;
+    private string? _lastCacheKey;
     private bool _disposed;
+
+    public string Id => SourceId;
+
+    public string CacheKey => $"{Environment.OSVersion.Version}|{ThemeHelper.GetCurrentTheme()}";
 
     public PackagedAppSource(
         IPackageCatalog packageCatalog,
@@ -36,26 +47,65 @@ internal sealed partial class PackagedAppSource : IAppSource
         _packageCatalog.PackageUpdating += OnPackageUpdating;
     }
 
-    public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
-
-    public string Id => SourceId;
-
-    public string CacheKey => $"{Environment.OSVersion.Version}|{ThemeHelper.GetCurrentTheme()}";
-
-    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
     {
-        return Task.Run<IReadOnlyList<AppCatalogItem>>(
+        return AppSourceWork.Run<IReadOnlyList<AppCatalogItem>>(
             () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var theme = ThemeHelper.GetCurrentTheme();
-                List<AppCatalogItem> items = [];
+                var cacheKey = $"{Environment.OSVersion.Version}|{theme}";
+                var packages = UWP.CurrentUserPackages(out var packagesComplete).ToArray();
+                var stamps = new Dictionary<string, FileStamp?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var package in packages)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var manifestPath = Path.Combine(package.InstalledLocation, "AppxManifest.xml");
+                    stamps[$"{package.FullName}|{manifestPath}"] = FileStamp.TryRead(manifestPath);
+                }
 
-                foreach (var app in UWP.All())
+                if (background && packagesComplete && _lastCompleteItems is not null
+                    && string.Equals(cacheKey, _lastCacheKey, StringComparison.Ordinal)
+                    && _manifestStamps is not null && stamps.Count == _manifestStamps.Count
+                    && stamps.All(pair => pair.Value is { Exists: true }
+                        && _manifestStamps.TryGetValue(pair.Key, out var previous) && pair.Value == previous))
+                {
+                    return _lastCompleteItems;
+                }
+
+                List<AppCatalogItem> items = [];
+                var failedFamilies = new ConcurrentBag<string>();
+                var retrySource = 0;
+                var coverageUnknown = 0;
+                var checkedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var applications = UWP.All(
+                    packages,
+                    out var manifestsComplete,
+                    background,
+                    (package, error) =>
+                    {
+                        try
+                        {
+                            failedFamilies.Add(package.FamilyName);
+                        }
+                        catch (Exception)
+                        {
+                            Interlocked.Exchange(ref coverageUnknown, 1);
+                        }
+
+                        if (Win32Program.IsRetryableReadFailure(error))
+                        {
+                            Interlocked.Exchange(ref retrySource, 1);
+                        }
+                    },
+                    cancellationToken);
+                var isComplete = packagesComplete && manifestsComplete;
+                foreach (var app in applications)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (!app.Enabled)
                     {
+                        checkedPaths.Add(app.UserModelId);
                         continue;
                     }
 
@@ -63,9 +113,17 @@ internal sealed partial class PackagedAppSource : IAppSource
                     {
                         app.UpdateLogoPath(theme);
                         items.Add(CreateCatalogItem(app));
+                        checkedPaths.Add(app.UserModelId);
                     }
                     catch (Exception ex)
                     {
+                        isComplete = false;
+                        failedFamilies.Add(app.Package.FamilyName);
+                        if (Win32Program.IsRetryableReadFailure(ex))
+                        {
+                            retrySource = 1;
+                        }
+
                         LogApplicationIndexingFailed(_logger, app.Name, ex);
                     }
                 }
@@ -83,8 +141,24 @@ internal sealed partial class PackagedAppSource : IAppSource
                     }
                 }
 
-                return new List<AppCatalogItem>(itemsByIdentity.Values);
+                var result = new AppSourceScanResult(
+                    new List<AppCatalogItem>(itemsByIdentity.Values),
+                    isComplete,
+                    retrySource != 0 ? [string.Empty] : [],
+                    packagesComplete && coverageUnknown == 0 ? [] : null,
+                    checkedPaths,
+                    [.. failedFamilies],
+                    isFullScan: true);
+                if (isComplete)
+                {
+                    _manifestStamps = stamps;
+                    _lastCompleteItems = result;
+                    _lastCacheKey = cacheKey;
+                }
+
+                return result;
             },
+            background,
             cancellationToken);
     }
 

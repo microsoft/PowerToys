@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using ManagedCommon;
@@ -66,21 +67,31 @@ public partial class UWP
 
     public unsafe void InitializeAppInfo(string installedLocation)
     {
+        _ = TryInitializeAppInfo(installedLocation);
+    }
+
+    private unsafe bool TryInitializeAppInfo(string installedLocation, Action<Exception>? onError = null)
+    {
         Location = installedLocation;
         LocationLocalized = ShellLocalization.Instance.GetLocalizedPath(installedLocation);
         var path = Path.Combine(installedLocation, "AppxManifest.xml");
 
-        var manifest = XDocument.Load(path);
+        XDocument manifest;
+        using (var manifestStream = System.IO.File.Open(path, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite | System.IO.FileShare.Delete))
+        {
+            manifest = XDocument.Load(manifestStream);
+        }
+
         var namespaces = XmlNamespaces(manifest);
         InitPackageVersion(namespaces);
         var executionAliases = GetExecutionAliases(manifest);
 
         const uint noAttribute = 0x80;
-        const uint STGMREAD = 0x00000000;
+        const uint readSharing = 0x00000040; // STGM_READ | STGM_SHARE_DENY_NONE
         try
         {
             IStream* stream = null;
-            PInvoke.SHCreateStreamOnFileEx(path, STGMREAD, noAttribute, false, null, &stream).ThrowOnFailure();
+            PInvoke.SHCreateStreamOnFileEx(path, readSharing, noAttribute, false, null, &stream).ThrowOnFailure();
             using var streamHandle = new SafeComHandle((IntPtr)stream);
 
             var appsInManifest = AppxPackageHelper.GetAppsFromManifest(stream);
@@ -114,9 +125,12 @@ public partial class UWP
         catch (Exception ex)
         {
             Apps = [];
+            onError?.Invoke(ex);
             Logger.LogError($"Failed to initialize UWP app info for {Name} ({FullName}): {ex.Message}");
-            return;
+            return false;
         }
+
+        return true;
     }
 
     private static string[] XmlNamespaces(XDocument manifest)
@@ -223,14 +237,36 @@ public partial class UWP
 
     public static UWPApplication[] All()
     {
-        var appsBag = new ConcurrentBag<UWPApplication>();
+        return All(out _);
+    }
 
-        Parallel.ForEach(CurrentUserPackages(), new ParallelOptions { MaxDegreeOfParallelism = IndexingMaxDegreeOfParallelism }, p =>
+    internal static UWPApplication[] All(out bool isComplete)
+    {
+        var packages = CurrentUserPackages(out var packagesComplete);
+        var apps = All(packages, out var manifestsComplete);
+        isComplete = packagesComplete && manifestsComplete;
+        return apps;
+    }
+
+    internal static UWPApplication[] All(
+        IEnumerable<IPackage> packages,
+        out bool isComplete,
+        bool background = false,
+        Action<IPackage, Exception>? onError = null,
+        CancellationToken cancellationToken = default)
+    {
+        var appsBag = new ConcurrentBag<UWPApplication>();
+        var incomplete = 0;
+
+        void IndexPackage(IPackage p)
         {
             try
             {
                 var u = new UWP(p);
-                u.InitializeAppInfo(p.InstalledLocation);
+                if (!u.TryInitializeAppInfo(p.InstalledLocation, error => onError?.Invoke(p, error)))
+                {
+                    System.Threading.Interlocked.Exchange(ref incomplete, 1);
+                }
 
                 foreach (var app in u.Apps)
                 {
@@ -239,15 +275,39 @@ public partial class UWP
             }
             catch (Exception ex)
             {
+                System.Threading.Interlocked.Exchange(ref incomplete, 1);
+                onError?.Invoke(p, ex);
                 Logger.LogError(ex.Message);
             }
-        });
+        }
 
+        if (background)
+        {
+            foreach (var package in packages)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                IndexPackage(package);
+            }
+        }
+        else
+        {
+            Parallel.ForEach(
+                packages,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = IndexingMaxDegreeOfParallelism,
+                    CancellationToken = cancellationToken,
+                },
+                IndexPackage);
+        }
+
+        isComplete = incomplete == 0;
         return appsBag.ToArray();
     }
 
-    private static IEnumerable<IPackage> CurrentUserPackages()
+    internal static IEnumerable<IPackage> CurrentUserPackages(out bool isComplete)
     {
+        isComplete = true;
         var currentUsersPackages = PackageManagerWrapper.FindPackagesForCurrentUser();
         ICollection<IPackage> packagesToReturn = [];
 
@@ -265,6 +325,7 @@ public partial class UWP
             }
             catch (Exception ex)
             {
+                isComplete = false;
                 Logger.LogError(ex.Message);
             }
         }

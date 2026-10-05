@@ -10,12 +10,49 @@ using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class PackagedAppMetadataTests
+public partial class PackagedAppMetadataTests
 {
+    [STATestMethod]
+    [DoNotParallelize]
+    public void All_FailedManifestReportsIncompleteAndRecoversAfterWriterCloses()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-manifest-sharing-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var path = Path.Combine(root, "AppxManifest.xml");
+        var originalManager = UWP.PackageManagerWrapper;
+        try
+        {
+            File.WriteAllText(path, CreateManifest("app.exe"));
+            var package = new Mock<IPackage>();
+            package.SetupGet(value => value.Name).Returns("Manifest fixture");
+            package.SetupGet(value => value.FullName).Returns("CmdPal.MetadataFixture_1.0.0.0_neutral__123");
+            package.SetupGet(value => value.FamilyName).Returns("CmdPal.MetadataFixture_123");
+            package.SetupGet(value => value.InstalledLocation).Returns(root);
+            var manager = new Mock<IPackageManager>();
+            manager.Setup(value => value.FindPackagesForCurrentUser()).Returns([package.Object]);
+            UWP.PackageManagerWrapper = manager.Object;
+            using (var writer = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.AreEqual(0, UWP.All(out var complete).Length);
+                Assert.IsFalse(complete);
+            }
+
+            Assert.AreEqual(1, UWP.All(out var recovered).Length);
+            Assert.IsTrue(recovered);
+            using var exclusiveWriter = File.Open(path, FileMode.Open, FileAccess.Write, FileShare.None);
+        }
+        finally
+        {
+            UWP.PackageManagerWrapper = originalManager;
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [TestMethod]
     [DataRow("launcher.exe", "launcher.exe")]
     [DataRow("launcher.exe", "launcher")]

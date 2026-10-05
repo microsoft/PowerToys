@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +20,77 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class Win32AppSourceTests
+public partial class Win32AppSourceTests
 {
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadAsync_RetriesShortcutWhoseTargetIsCreatedLater(bool background)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-late-target");
+        var path = Path.Combine(root, "Portable.lnk");
+        var target = Path.Combine(root, "Portable.exe");
+        try
+        {
+            CreateShortcut(path, target);
+            using var source = new Win32AppSource(CreateShortcutDirectorySource(root), Win32Program.LoadFromPath, createWatchers: false);
+            var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background);
+            Assert.AreEqual(0, initial.Count);
+            CollectionAssert.AreEqual(new[] { path }, initial.RetryPaths.ToArray());
+
+            File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), target);
+            var recovered = (AppSourceScanResult)await source.ApplyChangesAsync(
+                initial,
+                [new AppSourcePathChange(WatcherChangeTypes.Changed, path)],
+                CancellationToken.None,
+                background);
+            Assert.AreEqual(1, recovered.Count);
+            Assert.AreEqual(0, recovered.RetryPaths.Count);
+            Assert.IsTrue(recovered.IsComplete);
+
+            // Discovery must release both the shortcut and the executable before returning.
+            using var shortcutWriter = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            using var executableWriter = File.Open(target, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadAsync_SharingViolationIsIncompleteAndRecoveryReleasesTheFile(bool background)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-locked-shortcut");
+        var path = Path.Combine(root, "Console.lnk");
+        try
+        {
+            CreateShortcut(path, Path.Combine(Environment.SystemDirectory, "cmd.exe"));
+            using var source = new Win32AppSource(CreateShortcutDirectorySource(root), Win32Program.LoadFromPath, createWatchers: false);
+            using (var writer = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                var failed = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background);
+                Assert.IsFalse(failed.IsComplete);
+                Assert.AreEqual(0, failed.Count);
+                CollectionAssert.AreEqual(new[] { path }, failed.RetryPaths.ToArray());
+            }
+
+            var recovered = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background);
+            Assert.IsTrue(recovered.IsComplete);
+            Assert.AreEqual(1, recovered.Count);
+            Assert.AreEqual(0, recovered.RetryPaths.Count);
+            var renamed = Path.ChangeExtension(path, ".renamed");
+            File.Move(path, renamed);
+            using var exclusiveWriter = File.Open(renamed, FileMode.Open, FileAccess.Write, FileShare.None);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [TestMethod]
     public async Task LoadAsync_IndexesOneOriginWithSourceScopedProvenance()
     {
@@ -593,6 +663,50 @@ public class Win32AppSourceTests
     }
 
     [TestMethod]
+    public async Task LoadAsync_GameUrlsDifferingByCase_KeepSeparateCommandsAndHides()
+    {
+        var root = CreateTemporaryDirectory("cmdpal-game-url-case");
+        try
+        {
+            var firstPath = Path.Combine(root, "First.url");
+            var secondPath = Path.Combine(root, "Second.url");
+            const string firstUrl = "com.epicgames.launcher://apps/Example?action=launch";
+            const string secondUrl = "com.epicgames.launcher://apps/example?action=launch";
+            File.WriteAllText(firstPath, $"[InternetShortcut]\r\nURL={firstUrl}\r\n");
+            File.WriteAllText(secondPath, $"[InternetShortcut]\r\nURL={secondUrl}\r\n");
+            using var source = new Win32AppSource(
+                new TestProgramSource("test", 0, includeNonApps: false, firstPath, secondPath),
+                Win32Program.LoadFromPath,
+                createWatchers: false);
+            var items = await source.LoadAsync(CancellationToken.None);
+            Assert.AreEqual(2, items.Count);
+            Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+            var first = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == firstUrl);
+            var second = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == secondUrl);
+            var settingsPath = Path.Combine(root, "settings.json");
+            var settings = new AllAppsSettings(settingsPath);
+            var aliases = settings.RetainAppCommandAliases(items.Select(item => item.ToAppItem()));
+            var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray(), [], commandAliases: aliases);
+            Assert.AreEqual(firstUrl, snapshot.GetVisibleApp(first.Payload.GetCommandId())?.App.ExePath);
+            Assert.AreEqual(secondUrl, snapshot.GetVisibleApp(second.Payload.GetCommandId())?.App.ExePath);
+
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            Assert.IsTrue(visibility.SetHidden(first, hidden: true));
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(first));
+            Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(second));
+            settings.SaveSettings();
+            await settings.WaitForAliasSavesAsync();
+            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
+            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(first));
+            Assert.AreEqual(AppVisibility.Visible, reloadedVisibility.GetVisibility(second));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void CreateProgramSources_UsesSeparateShortcutAndPortableProfiles()
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-settings-{Guid.NewGuid():N}.json");
@@ -805,6 +919,7 @@ public class Win32AppSourceTests
                 CancellationToken.None);
 
             Assert.AreEqual(1, loadCounts[firstPath]);
+            Assert.IsFalse(((AppSourceScanResult)updatedItems).IsFullScan);
             Assert.IsFalse(loadCounts.ContainsKey(secondPath));
             Assert.AreEqual("First updated", (FindItemByReference(updatedItems, firstPath).Payload as Win32AppPayload)?.Name);
             Assert.AreSame(unchangedItem, FindItemByReference(updatedItems, secondPath));
@@ -1107,13 +1222,32 @@ public class Win32AppSourceTests
         return null;
     }
 
+    private static void CreateShortcut(string path, string target)
+    {
+        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!);
+        dynamic shortcut = shell.CreateShortcut(path);
+        try
+        {
+            shortcut.TargetPath = target;
+            shortcut.Description = "Recovery fixture";
+            shortcut.Save();
+        }
+        finally
+        {
+            Marshal.FinalReleaseComObject(shortcut);
+            Marshal.FinalReleaseComObject(shell);
+        }
+    }
+
     private static CustomDirectoryAppSource CreateShortcutDirectorySource(string root)
-        => new(
+    {
+        return new(
             "custom-shortcut",
             root,
             ["lnk"],
             Win32ProgramSourceProfile.IncludeNonApplications | Win32ProgramSourceProfile.RecurseSubdirectories,
             int.MaxValue);
+    }
 
     private static string CreateTemporaryDirectory(string prefix)
     {
@@ -1153,7 +1287,9 @@ public class Win32AppSourceTests
     private static bool HasProfileOption(
         Win32ProgramSourceProfile profile,
         Win32ProgramSourceProfile option)
-        => (profile & option) != 0;
+    {
+        return (profile & option) != 0;
+    }
 
     private static void AddSources(HashSet<IAppSource> destination, IReadOnlyList<IAppSource> sources)
     {
@@ -1201,8 +1337,10 @@ public class Win32AppSourceTests
 
         public string CacheKey => Id;
 
-        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken)
-            => Task.FromResult<IReadOnlyList<AppCatalogItem>>([]);
+        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
+        {
+            return Task.FromResult<IReadOnlyList<AppCatalogItem>>([]);
+        }
 
         public void Dispose()
         {
@@ -1212,6 +1350,20 @@ public class Win32AppSourceTests
     private sealed class TestProgramSource : IWin32ProgramSource
     {
         private readonly IReadOnlyList<string> _paths;
+
+        public string Id { get; }
+
+        public int Priority { get; }
+
+        public bool IsEnabled => true;
+
+        public Win32ProgramSourceProfile Profile { get; }
+
+        public string CacheKey => $"{Id}|{Profile}";
+
+        public string ConfigurationKey => CacheKey;
+
+        public IReadOnlyList<string> WatchPaths => [];
 
         public TestProgramSource(string id, int priority, bool includeNonApps, params string[] paths)
             : this(
@@ -1234,66 +1386,14 @@ public class Win32AppSourceTests
             _paths = paths;
         }
 
-        public string Id { get; }
-
-        public int Priority { get; }
-
-        public bool IsEnabled => true;
-
-        public Win32ProgramSourceProfile Profile { get; }
-
-        public string CacheKey => $"{Id}|{Profile}";
-
-        public string ConfigurationKey => CacheKey;
-
-        public IReadOnlyList<string> WatchPaths => [];
-
-        public IEnumerable<string> GetPaths() => _paths;
-
-        public bool IsRelevantPath(string path) => true;
-    }
-
-    [TestMethod]
-    public async Task LoadAsync_GameUrlsDifferingByCase_KeepSeparateCommandsAndHides()
-    {
-        var root = CreateTemporaryDirectory("cmdpal-game-url-case");
-        try
+        public IEnumerable<string> GetPaths()
         {
-            var firstPath = Path.Combine(root, "First.url");
-            var secondPath = Path.Combine(root, "Second.url");
-            const string firstUrl = "com.epicgames.launcher://apps/Example?action=launch";
-            const string secondUrl = "com.epicgames.launcher://apps/example?action=launch";
-            File.WriteAllText(firstPath, $"[InternetShortcut]\r\nURL={firstUrl}\r\n");
-            File.WriteAllText(secondPath, $"[InternetShortcut]\r\nURL={secondUrl}\r\n");
-            using var source = new Win32AppSource(
-                new TestProgramSource("test", 0, includeNonApps: false, firstPath, secondPath),
-                Win32Program.LoadFromPath,
-                createWatchers: false);
-            var items = await source.LoadAsync(CancellationToken.None);
-            Assert.AreEqual(2, items.Count);
-            Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
-            var first = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == firstUrl);
-            var second = items.Single(item => ((Win32AppPayload)item.Payload).FullPath == secondUrl);
-            var settingsPath = Path.Combine(root, "settings.json");
-            var settings = new AllAppsSettings(settingsPath);
-            var aliases = settings.RetainAppCommandAliases(items.Select(item => item.ToAppItem()));
-            var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray(), [], commandAliases: aliases);
-            Assert.AreEqual(firstUrl, snapshot.GetVisibleApp(first.Payload.GetCommandId())?.App.ExePath);
-            Assert.AreEqual(secondUrl, snapshot.GetVisibleApp(second.Payload.GetCommandId())?.App.ExePath);
-
-            using var visibility = new SettingsAppVisibilityStore(settings);
-            Assert.IsTrue(visibility.SetHidden(first, hidden: true));
-            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(first));
-            Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(second));
-            settings.SaveSettings();
-            await settings.WaitForAliasSavesAsync();
-            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
-            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(first));
-            Assert.AreEqual(AppVisibility.Visible, reloadedVisibility.GetVisibility(second));
+            return _paths;
         }
-        finally
+
+        public bool IsRelevantPath(string path)
         {
-            Directory.Delete(root, recursive: true);
+            return true;
         }
     }
 }

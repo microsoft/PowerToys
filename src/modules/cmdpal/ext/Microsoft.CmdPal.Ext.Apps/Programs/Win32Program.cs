@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -27,6 +29,14 @@ public partial class Win32Program
     private static readonly IFile File = FileSystem.File;
     private static readonly IDirectory Directory = FileSystem.Directory;
 
+    private const string ShortcutExtension = "lnk";
+    private const string ApplicationReferenceExtension = "appref-ms";
+    private const string InternetShortcutExtension = "url";
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+
+    private const string ProxyWebApp = "_proxy.exe";
+    private const string AppIdArgument = "--app-id";
+
     public string Name { get; set; } = string.Empty;
 
     // Localized name based on windows display language
@@ -38,6 +48,10 @@ public partial class Win32Program
 
     // Path of app executable or lnk target executable
     public string FullPath { get; set; } = string.Empty;
+
+    internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
+        ? LaunchTarget.Url(FullPath)
+        : LaunchTarget.FilePath(FullPath);
 
     // Localized path based on windows display language
     public string FullPathLocalized { get; set; } = string.Empty;
@@ -59,6 +73,11 @@ public partial class Win32Program
 
     public bool Valid { get; set; }
 
+    /// <summary>Gets whether a transient read failure prevented this candidate from being indexed.</summary>
+    internal bool RetryableReadFailure { get; init; }
+
+    internal bool Unreadable { get; init; }
+
     public bool HasArguments => !string.IsNullOrEmpty(Arguments);
 
     public string Arguments { get; set; } = string.Empty;
@@ -73,6 +92,9 @@ public partial class Win32Program
     /// <summary>Gets or sets the packaged application identity represented by this program.</summary>
     internal string PackagedAppUserModelId { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets the explicit Windows application ID declared by this shortcut.</summary>
+    internal string ExplicitAppUserModelId { get; set; } = string.Empty;
+
     public ApplicationType AppType { get; set; }
 
     // Wrappers for File Operations
@@ -80,25 +102,7 @@ public partial class Win32Program
 
     public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
-    private const string ShortcutExtension = "lnk";
-    private const string ApplicationReferenceExtension = "appref-ms";
-    private const string InternetShortcutExtension = "url";
-    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
-
-    private const string ProxyWebApp = "_proxy.exe";
-    private const string AppIdArgument = "--app-id";
-
-    public enum ApplicationType
-    {
-        WebApplication = 0,
-        InternetShortcutApplication = 1,
-        Win32Application = 2,
-        ShortcutApplication = 3,
-        ApprefApplication = 4,
-        RunCommand = 5,
-        Folder = 6,
-        GenericFile = 7,
-    }
+    internal static IDirectory DirectoryWrapper { get; set; } = Directory;
 
     public bool IsWebApplication()
     {
@@ -190,12 +194,12 @@ public partial class Win32Program
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
         catch (Exception e)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
     }
 
@@ -205,7 +209,7 @@ public partial class Win32Program
         try
         {
             // We don't want to read the whole file if we don't need to
-            var lines = FileWrapper.ReadLines(path);
+            var lines = ReadShortcutLines(path);
             var iconPath = string.Empty;
             var urlPath = string.Empty;
             var validApp = false;
@@ -272,8 +276,51 @@ public partial class Win32Program
         catch (Exception e)
         {
             Logger.LogError(e.Message);
+            return RejectedProgram(e);
+        }
+    }
+
+    private static IEnumerable<string> ReadShortcutLines(string path)
+    {
+        using var stream = FileWrapper.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        while (reader.ReadLine() is { } line)
+        {
+            yield return line;
+        }
+    }
+
+    private static bool IsMissingOrInvalidPath(Exception exception)
+    {
+        return exception is FileNotFoundException or DirectoryNotFoundException or ArgumentException or NotSupportedException
+            || exception.HResult is unchecked((int)0x80070002) or unchecked((int)0x80070003)
+                or unchecked((int)0x80030002) or unchecked((int)0x80030003) or unchecked((int)0x8007007B);
+    }
+
+    private static Win32Program RejectedProgram(Exception exception)
+    {
+        if (IsMissingOrInvalidPath(exception))
+        {
             return InvalidProgram;
         }
+
+        var unreadable = exception is IOException or UnauthorizedAccessException or SecurityException
+            || (exception is COMException && exception.HResult is unchecked((int)0x80070020) or unchecked((int)0x80070021) or unchecked((int)0x80070005)
+                or unchecked((int)0x80030020) or unchecked((int)0x80030021) or unchecked((int)0x80030005));
+        return unreadable
+            ? new Win32Program { Valid = false, Unreadable = true, RetryableReadFailure = IsRetryableReadFailure(exception) }
+            : InvalidProgram;
+    }
+
+    internal static bool IsRetryableReadFailure(Exception exception)
+    {
+        return (exception is IOException and not PathTooLongException
+            && !IsMissingOrInvalidPath(exception)
+            && exception.HResult is not (unchecked((int)0x80070005) or unchecked((int)0x80030005)
+                or unchecked((int)0x80070035) or unchecked((int)0x80070040) or unchecked((int)0x80070043)
+                or unchecked((int)0x800704C6) or unchecked((int)0x800704CF) or unchecked((int)0x800704D0)))
+            || (exception is COMException && exception.HResult is unchecked((int)0x80070020) or unchecked((int)0x80070021)
+                or unchecked((int)0x80030020) or unchecked((int)0x80030021));
     }
 
     private static Win32Program LnkProgram(string path)
@@ -281,6 +328,11 @@ public partial class Win32Program
         try
         {
             var program = CreateWin32Program(path);
+            if (!program.Valid)
+            {
+                return program;
+            }
+
             program.AppType = ApplicationType.ShortcutApplication;
             var link = ShellLinkReader.Read(path);
             if (link is null)
@@ -340,7 +392,7 @@ public partial class Win32Program
         catch (System.IO.FileLoadException e)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
 
         // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
@@ -348,7 +400,7 @@ public partial class Win32Program
         catch (Exception e)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
     }
 
@@ -368,17 +420,17 @@ public partial class Win32Program
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
         catch (FileNotFoundException e)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
         catch (Exception e)
         {
             Logger.LogError(e.Message);
-            return InvalidProgram;
+            return RejectedProgram(e);
         }
     }
 
@@ -450,12 +502,32 @@ public partial class Win32Program
             : null;
     }
 
-    private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
+    private static IEnumerable<string> ProgramPaths(
+        string directory,
+        IList<string> suffixes,
+        int maximumDepth = int.MaxValue,
+        Action<string, Exception>? onError = null,
+        Func<string, bool>? excludeDirectory = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maximumDepth);
 
-        if (!Directory.Exists(directory))
+        cancellationToken.ThrowIfCancellationRequested();
+        try
         {
+            if ((FileWrapper.GetAttributes(directory) & FileAttributes.Directory) == 0 || excludeDirectory?.Invoke(directory) == true)
+            {
+                return [];
+            }
+        }
+        catch (Exception ex) when (IsMissingOrInvalidPath(ex))
+        {
+            return [];
+        }
+        catch (Exception ex)
+        {
+            onError?.Invoke(directory, ex);
+            Logger.LogError(ex.Message);
             return [];
         }
 
@@ -468,6 +540,7 @@ public partial class Win32Program
 
         do
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var current = folderQueue.Dequeue();
             var currentDirectory = current.Path;
 
@@ -482,23 +555,22 @@ public partial class Win32Program
             {
                 foreach (var suffix in suffixes)
                 {
-                    try
+                    foreach (var file in DirectoryWrapper.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly))
                     {
-                        files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
-                    }
-                    catch (DirectoryNotFoundException e)
-                    {
-                        Logger.LogError(e.Message);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        files.Add(file);
                     }
                 }
             }
-            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            catch (Exception ex) when (IsMissingOrInvalidPath(ex))
             {
-                Logger.LogError(e.Message);
+                // A directory deleted during enumeration is a confirmed absence.
+                continue;
             }
-            catch (Exception e)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                Logger.LogError(e.Message);
+                onError?.Invoke(currentDirectory, ex);
+                Logger.LogError(ex.Message);
             }
 
             try
@@ -508,24 +580,30 @@ public partial class Win32Program
                     continue;
                 }
 
-                foreach (var childDirectory in Directory.EnumerateDirectories(currentDirectory, "*", new EnumerationOptions()
+                foreach (var childDirectory in DirectoryWrapper.EnumerateDirectories(currentDirectory, "*", new EnumerationOptions()
                 {
                     // https://learn.microsoft.com/dotnet/api/system.io.enumerationoptions?view=net-6.0
                     // Exclude directories with the Reparse Point file attribute, to avoid loops due to symbolic links / directory junction / mount points.
                     AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint,
                     RecurseSubdirectories = false,
+                    IgnoreInaccessible = false,
                 }))
                 {
-                    folderQueue.Enqueue((childDirectory, current.Depth + 1));
+                    cancellationToken.ThrowIfCancellationRequested();
+                    if (excludeDirectory?.Invoke(childDirectory) != true)
+                    {
+                        folderQueue.Enqueue((childDirectory, current.Depth + 1));
+                    }
                 }
             }
-            catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
+            catch (Exception ex) when (IsMissingOrInvalidPath(ex))
             {
-                Logger.LogError(e.Message);
+                // Continue with siblings that were already discovered.
             }
-            catch (Exception e)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                Logger.LogError(e.Message);
+                onError?.Invoke(currentDirectory, ex);
+                Logger.LogError(ex.Message);
             }
         }
         while (folderQueue.Count > 0);
@@ -533,8 +611,16 @@ public partial class Win32Program
         return files;
     }
 
-    internal static IEnumerable<string> EnumerateProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
-        => ProgramPaths(directory, suffixes, maximumDepth);
+    internal static IEnumerable<string> EnumerateProgramPaths(
+        string directory,
+        IList<string> suffixes,
+        int maximumDepth = int.MaxValue,
+        Action<string, Exception>? onError = null,
+        Func<string, bool>? excludeDirectory = null,
+        CancellationToken cancellationToken = default)
+    {
+        return ProgramPaths(directory, suffixes, maximumDepth, onError, excludeDirectory, cancellationToken);
+    }
 
     private static string Extension(string path)
     {
@@ -548,13 +634,17 @@ public partial class Win32Program
 
     /// <summary>Determines whether a source path directly names a supported executable type.</summary>
     internal static bool IsExecutablePath(string path)
-        => ExecutableApplicationExtensions.Contains(Extension(path));
+    {
+        return ExecutableApplicationExtensions.Contains(Extension(path));
+    }
 
     /// <summary>Determines whether an application type uses its executable target as catalog identity.</summary>
     internal static bool UsesExecutableTargetIdentity(ApplicationType appType)
-        => appType is ApplicationType.Win32Application
+    {
+        return appType is ApplicationType.Win32Application
             or ApplicationType.RunCommand
             or ApplicationType.WebApplication;
+    }
 
     /// <summary>Normalizes launch profiles without distinguishing default executable or installer directories.</summary>
     internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
@@ -593,8 +683,33 @@ public partial class Win32Program
         return normalizedDirectory;
     }
 
+    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
+    {
+        if (string.IsNullOrEmpty(explicitAppUserModelId)
+            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
+        var directoryName = Path.GetFileName(workingDirectory);
+        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
+            || !Version.TryParse(directoryName.AsSpan(4), out _))
+        {
+            return false;
+        }
+
+        // Squirrel's root launcher chooses the installed version and its working directory itself.
+        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
+        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
+    }
+
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
-    private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
+    private static List<string> PathEnvironmentProgramPaths(
+        IList<string> suffixes,
+        Action<string, Exception>? onError = null,
+        CancellationToken cancellationToken = default)
     {
         // To get all the locations stored in the PATH env variable
         var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
@@ -604,11 +719,11 @@ public partial class Win32Program
         {
             foreach (var path in searchPaths)
             {
-                if (path.Length > 0)
+                cancellationToken.ThrowIfCancellationRequested();
+                var directory = Environment.ExpandEnvironmentVariables(path).Trim('"', ' ');
+                if (directory.Length > 0)
                 {
-                    // to expand any environment variables present in the path
-                    var directory = Environment.ExpandEnvironmentVariables(path);
-                    var paths = ProgramPaths(directory, suffixes, maximumDepth: 0);
+                    var paths = ProgramPaths(directory, suffixes, maximumDepth: 0, onError: onError, cancellationToken: cancellationToken);
                     toFilterAllPaths.AddRange(paths);
                 }
             }
@@ -617,8 +732,13 @@ public partial class Win32Program
         return toFilterAllPaths;
     }
 
-    internal static IEnumerable<string> EnumeratePathEnvironmentPrograms(IList<string> suffixes)
-        => PathEnvironmentProgramPaths(suffixes);
+    internal static IEnumerable<string> EnumeratePathEnvironmentPrograms(
+        IList<string> suffixes,
+        Action<string, Exception>? onError = null,
+        CancellationToken cancellationToken = default)
+    {
+        return PathEnvironmentProgramPaths(suffixes, onError, cancellationToken);
+    }
 
     private static List<(string CommandName, string TargetPath)> RegistryAppPrograms(IList<string> suffixes)
     {
@@ -723,17 +843,23 @@ public partial class Win32Program
         }
     }
 
-    private static string ExpandEnvironmentVariables(string path) =>
-        !string.IsNullOrEmpty(path)
+    private static string ExpandEnvironmentVariables(string path)
+    {
+        return !string.IsNullOrEmpty(path)
             ? Environment.ExpandEnvironmentVariables(path)
             : string.Empty;
+    }
 
     // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
     public override int GetHashCode()
-        => Win32ProgramEqualityComparer.Default.GetHashCode(this);
+    {
+        return Win32ProgramEqualityComparer.Default.GetHashCode(this);
+    }
 
     public override bool Equals(object? obj)
-        => obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
+    {
+        return obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
+    }
 
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
     {
@@ -831,7 +957,9 @@ public partial class Win32Program
     }
 
     internal static Win32Program LoadFromPath(string path, bool asRunCommand)
-        => asRunCommand ? GetRunCommandProgramFromPath(path) : GetProgramFromPath(path);
+    {
+        return asRunCommand ? GetRunCommandProgramFromPath(path) : GetProgramFromPath(path);
+    }
 
     [GeneratedRegex(
         """
@@ -851,6 +979,18 @@ public partial class Win32Program
         """,
         RegexOptions.IgnorePatternWhitespace)]
     private static partial Regex InternetShortcutURLPrefixesGenerator();
+
+    public enum ApplicationType
+    {
+        WebApplication = 0,
+        InternetShortcutApplication = 1,
+        Win32Application = 2,
+        ShortcutApplication = 3,
+        ApprefApplication = 4,
+        RunCommand = 5,
+        Folder = 6,
+        GenericFile = 7,
+    }
 
     private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
     {
@@ -889,33 +1029,4 @@ public partial class Win32Program
             return hash.ToHashCode();
         }
     }
-
-    /// <summary>Gets or sets the explicit Windows application ID declared by this shortcut.</summary>
-    internal string ExplicitAppUserModelId { get; set; } = string.Empty;
-
-    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
-    {
-        if (string.IsNullOrEmpty(explicitAppUserModelId)
-            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
-        var directoryName = Path.GetFileName(workingDirectory);
-        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
-            || !Version.TryParse(directoryName.AsSpan(4), out _))
-        {
-            return false;
-        }
-
-        // Squirrel's root launcher chooses the installed version and its working directory itself.
-        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
-        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
-    }
-
-    internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
-        ? LaunchTarget.Url(FullPath)
-        : LaunchTarget.FilePath(FullPath);
 }

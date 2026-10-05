@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
@@ -23,6 +25,9 @@ internal interface IWin32ProgramSource
     /// <summary>Gets the scan and interpretation policy for paths contributed by this origin.</summary>
     Win32ProgramSourceProfile Profile { get; }
 
+    /// <summary>Gets whether this origin can enumerate a dirty path without a full source scan.</summary>
+    bool SupportsIncrementalChanges => false;
+
     /// <summary>
     /// Gets the greatest directory depth scanned below each watch root. Zero scans only the root;
     /// <see cref="int.MaxValue"/> scans every descendant allowed by the source profile.
@@ -42,10 +47,11 @@ internal interface IWin32ProgramSource
     IEnumerable<string> GetPaths();
 
     /// <summary>Enumerates candidate paths together with their search metadata.</summary>
-    IEnumerable<Win32ProgramCandidate> GetCandidates()
+    IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
     {
         foreach (var path in GetPaths())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             yield return new Win32ProgramCandidate(path, []);
         }
     }
@@ -57,8 +63,16 @@ internal interface IWin32ProgramSource
     /// <remarks>
     /// The observed watcher event is intentionally not supplied. Implementations must probe current
     /// state so duplicate, reordered, or superseded notifications converge on the same result.
+    /// Confirmed missing paths are reported separately so unreadable parents cannot preserve them.
     /// </remarks>
-    IEnumerable<string> GetPathsForChange(string path) => [];
+    IEnumerable<string> GetPathsForChange(
+        string path,
+        Action<string, Exception>? onError = null,
+        Action<string>? onMissing = null,
+        CancellationToken cancellationToken = default)
+    {
+        return [];
+    }
 
     /// <summary>Determines whether a watcher path can affect this origin's candidate set.</summary>
     bool IsRelevantPath(string path);

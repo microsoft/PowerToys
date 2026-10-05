@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
@@ -50,11 +51,12 @@ internal sealed class RegistryAppSource : IWin32ProgramSource
         }
     }
 
-    public IEnumerable<Win32ProgramCandidate> GetCandidates()
+    public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
     {
         var termsByPath = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var program in _enumeratePrograms(_settings.ProgramSuffixes))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!termsByPath.TryGetValue(program.TargetPath, out var terms))
             {
                 terms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

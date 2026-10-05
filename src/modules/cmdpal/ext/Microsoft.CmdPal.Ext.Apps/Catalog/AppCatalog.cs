@@ -18,17 +18,27 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
 public sealed partial class AppCatalog : IAppCatalog
 {
+    public event EventHandler<AppCatalogChangedEventArgs>? Changed;
+
+    public event EventHandler? RefreshStateChanged;
+
+    public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
+
     private const int MaxIncrementalPathChangesPerSource = 256;
 
-    private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan CachedSourceReconciliationDelay = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan BackgroundReconciliationInterval = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan[] RetryDelays = [TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(40)];
 
     private readonly Lock _stateLock = new();
     private readonly IAppSourceProvider _sourceProvider;
     private readonly Dictionary<string, IAppSource> _sourcesById = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _pendingRefreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SourceRefreshRequest> _debouncedRefreshes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SourceRefreshRequest> _pausedBackgroundRefreshes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TaskCompletionSource> _initialSourcePublications = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SourceRetryState> _sourceRetries = new(StringComparer.Ordinal);
     private readonly IAppCatalogCache _cache;
     private readonly IAppVisibilityStore _visibilityStore;
     private readonly IReadOnlyList<IAppCatalogFilter> _filters;
@@ -37,6 +47,10 @@ public sealed partial class AppCatalog : IAppCatalog
     private readonly TimeSpan _invalidationDelay;
     private readonly CancellationTokenSource _disposeCancellation = new();
     private readonly CancellationToken _disposeToken;
+    private readonly ITimer _retryTimer;
+    private readonly ITimer _reconciliationTimer;
+
+    private CancellationTokenSource? _backgroundCancellation;
 
     private IReadOnlyList<IAppSource> _sources;
 
@@ -47,6 +61,17 @@ public sealed partial class AppCatalog : IAppCatalog
     private bool _isRefreshing;
     private bool _disposed;
     private bool _invalidationFlushScheduled;
+
+    public bool IsRefreshing
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return _isRefreshing;
+            }
+        }
+    }
 
     internal AppCatalog(
         IAppSourceProvider sourceProvider,
@@ -66,6 +91,8 @@ public sealed partial class AppCatalog : IAppCatalog
         _timeProvider = timeProvider ?? TimeProvider.System;
         _invalidationDelay = invalidationDelay ?? DefaultInvalidationDelay;
         _disposeToken = _disposeCancellation.Token;
+        _retryTimer = _timeProvider.CreateTimer(_ => QueueRetries(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        _reconciliationTimer = _timeProvider.CreateTimer(_ => ReconcileInBackground(), null, BackgroundReconciliationInterval, BackgroundReconciliationInterval);
 
         foreach (var source in _sources)
         {
@@ -86,24 +113,10 @@ public sealed partial class AppCatalog : IAppCatalog
         _visibilityStore.Changed += OnFilterChanged;
     }
 
-    public event EventHandler<AppCatalogChangedEventArgs>? Changed;
-
-    public event EventHandler? RefreshStateChanged;
-
-    public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
-
-    public bool IsRefreshing
+    public AppCatalogSnapshot GetSnapshot()
     {
-        get
-        {
-            lock (_stateLock)
-            {
-                return _isRefreshing;
-            }
-        }
+        return Volatile.Read(ref _publishedState).Snapshot;
     }
-
-    public AppCatalogSnapshot GetSnapshot() => Volatile.Read(ref _publishedState).Snapshot;
 
     public Task InitializeAsync()
     {
@@ -232,7 +245,7 @@ public sealed partial class AppCatalog : IAppCatalog
             // Establish watchers before reconciling changes that occurred while the cache was being shown.
             await InitializeSourcesAsync(sources).ConfigureAwait(false);
             await Task.Delay(CachedSourceReconciliationDelay, _disposeToken).ConfigureAwait(false);
-            await QueueFullRefresh(sources).ConfigureAwait(false);
+            await QueueFullRefresh(sources, background: true).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
         {
@@ -254,7 +267,7 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources, bool waitForPublication = false)
+    private Task QueueFullRefresh(IReadOnlyList<IAppSource> sources, bool waitForPublication = false, bool background = false)
     {
         Task refreshTask;
         List<Task>? publicationTasks = waitForPublication ? [] : null;
@@ -271,8 +284,12 @@ public sealed partial class AppCatalog : IAppCatalog
                     continue;
                 }
 
-                _debouncedRefreshes.Remove(source.Id);
-                var request = GetOrAddRefreshRequest(_pendingRefreshes, activeSource);
+                if (!background)
+                {
+                    _debouncedRefreshes.Remove(source.Id);
+                }
+
+                var request = GetOrAddRefreshRequest(_pendingRefreshes, activeSource, background);
                 request.RequireFullRefresh();
                 if (publicationTasks is not null)
                 {
@@ -318,8 +335,13 @@ public sealed partial class AppCatalog : IAppCatalog
                         return;
                     }
 
-                    requests = new List<SourceRefreshRequest>(_pendingRefreshes.Values);
-                    _pendingRefreshes.Clear();
+                    var foregroundPending = _pendingRefreshes.Values.Any(request => !request.Background);
+                    requests = _pendingRefreshes.Values.Where(request => request.Background != foregroundPending).ToList();
+                    foreach (var request in requests)
+                    {
+                        _pendingRefreshes.Remove(request.Source.Id);
+                    }
+
                     snapshots = _publishedState.SourceSnapshots;
                 }
 
@@ -327,6 +349,20 @@ public sealed partial class AppCatalog : IAppCatalog
 
                 foreach (var request in requests)
                 {
+                    using var backgroundCancellation = request.Background ? CancellationTokenSource.CreateLinkedTokenSource(_disposeToken) : null;
+                    lock (_stateLock)
+                    {
+                        if (request.Background && (_pendingRefreshes.Values.Any(pending => !pending.Background)
+                            || _debouncedRefreshes.Values.Any(pending => !pending.Background)))
+                        {
+                            RequeueBackgroundUnderLock(request);
+                            continue;
+                        }
+
+                        _backgroundCancellation = backgroundCancellation;
+                    }
+
+                    var requestToken = backgroundCancellation?.Token ?? _disposeToken;
                     var hadSnapshot = snapshots.TryGetValue(request.Source.Id, out var currentItems);
                     currentItems ??= [];
 
@@ -337,25 +373,83 @@ public sealed partial class AppCatalog : IAppCatalog
                         if (incremental)
                         {
                             refreshedItems = await request.Source
-                                .ApplyChangesAsync(currentItems, request.PathChanges, _disposeToken)
+                                .ApplyChangesAsync(currentItems, request.PathChanges, requestToken, request.Background)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             refreshedItems = await request.Source
-                                .LoadAsync(_disposeToken)
+                                .LoadAsync(requestToken, request.Background)
                                 .ConfigureAwait(false);
                         }
 
-                        refreshedSources.Add((request.Source, refreshedItems, !incremental));
+                        requestToken.ThrowIfCancellationRequested();
+                        var scan = refreshedItems as AppSourceScanResult;
+                        incremental = incremental && scan?.IsFullScan != true;
+                        var complete = scan?.IsComplete != false;
+                        if (!complete)
+                        {
+                            // Preserve uncertainty only where reads failed, while applying confirmed source changes.
+                            var retained = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
+                            foreach (var item in currentItems)
+                            {
+                                var retainedItem = scan!.GetRetainedItem(item);
+                                if (retainedItem is not null)
+                                {
+                                    retained[retainedItem.Identity] = retainedItem;
+                                }
+                            }
+
+                            foreach (var item in refreshedItems)
+                            {
+                                retained[item.Identity] = item;
+                            }
+
+                            refreshedItems = new List<AppCatalogItem>(retained.Values);
+                        }
+
+                        lock (_stateLock)
+                        {
+                            if (!request.Background && !incremental)
+                            {
+                                _pausedBackgroundRefreshes.Remove(request.Source.Id);
+                            }
+
+                            var retrySource = (!complete && scan?.FailedPaths is null) || scan?.RetryPaths.Contains(string.Empty) == true;
+                            UpdateRetriesUnderLock(request.Source, scan?.RetryPaths ?? [], retrySource, incremental ? request.PathChanges : null);
+                        }
+
+                        refreshedSources.Add((request.Source, refreshedItems, !incremental && complete));
                     }
                     catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
                     {
                         return;
                     }
+                    catch (OperationCanceledException) when (backgroundCancellation?.IsCancellationRequested == true)
+                    {
+                        lock (_stateLock)
+                        {
+                            RequeueBackgroundUnderLock(request);
+                        }
+                    }
                     catch (Exception ex)
                     {
                         LogSourceRefreshFailed(_logger, request.Source.Id, ex);
+                        lock (_stateLock)
+                        {
+                            ScheduleRetryUnderLock(request.Source, string.Empty);
+                            ArmRetryTimerUnderLock();
+                        }
+                    }
+                    finally
+                    {
+                        lock (_stateLock)
+                        {
+                            if (ReferenceEquals(_backgroundCancellation, backgroundCancellation))
+                            {
+                                _backgroundCancellation = null;
+                            }
+                        }
                     }
                 }
 
@@ -457,6 +551,7 @@ public sealed partial class AppCatalog : IAppCatalog
                 if (refreshCompleted)
                 {
                     RaiseRefreshStateChanged();
+                    ScheduleInvalidationFlush();
                     return;
                 }
             }
@@ -533,6 +628,17 @@ public sealed partial class AppCatalog : IAppCatalog
         }
 
         return _refreshTask;
+    }
+
+    private void RequeueBackgroundUnderLock(SourceRefreshRequest request)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(request.Source.Id, out var active) || !ReferenceEquals(active, request.Source))
+        {
+            return;
+        }
+
+        // Keep recovery separate so a targeted foreground request does not become a full source scan.
+        GetOrAddRefreshRequest(_pausedBackgroundRefreshes, request.Source, background: true).Merge(request);
     }
 
     private void PublishCachedSnapshots(
@@ -930,6 +1036,8 @@ public sealed partial class AppCatalog : IAppCatalog
                     removedSources.Add(existing.Value);
                     _pendingRefreshes.Remove(existing.Key);
                     _debouncedRefreshes.Remove(existing.Key);
+                    _pausedBackgroundRefreshes.Remove(existing.Key);
+                    _sourceRetries.Remove(existing.Key);
                     if (!sourcesById.ContainsKey(existing.Key)
                         && _initialSourcePublications.Remove(existing.Key, out var publication))
                     {
@@ -1035,11 +1143,183 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    private void UpdateRetriesUnderLock(
+        IAppSource source,
+        IReadOnlyList<string> retryPaths,
+        bool incomplete,
+        IReadOnlyList<AppSourcePathChange>? checkedPaths)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(source.Id, out var active) || !ReferenceEquals(active, source))
+        {
+            return;
+        }
+
+        var rejected = new HashSet<string>(retryPaths, StringComparer.OrdinalIgnoreCase);
+        if (_sourceRetries.TryGetValue(source.Id, out var state))
+        {
+            foreach (var path in state.Paths.Keys.ToArray())
+            {
+                var checkedPath = checkedPaths is null || checkedPaths.Any(change => string.Equals(change.Path, path, StringComparison.OrdinalIgnoreCase));
+                if ((path.Length == 0 && !incomplete && checkedPaths is null) || (path.Length > 0 && checkedPath && !rejected.Contains(path)))
+                {
+                    state.Paths.Remove(path);
+                }
+            }
+        }
+
+        if (incomplete)
+        {
+            ScheduleRetryUnderLock(source, string.Empty);
+        }
+
+        foreach (var path in retryPaths)
+        {
+            ScheduleRetryUnderLock(source, path);
+        }
+
+        ArmRetryTimerUnderLock();
+    }
+
+    private void ScheduleRetryUnderLock(IAppSource source, string path)
+    {
+        if (_disposed || !_sourcesById.TryGetValue(source.Id, out var active) || !ReferenceEquals(active, source))
+        {
+            return;
+        }
+
+        if (!_sourceRetries.TryGetValue(source.Id, out var state))
+        {
+            state = new SourceRetryState(source);
+            _sourceRetries.Add(source.Id, state);
+        }
+
+        state.Paths.TryGetValue(path, out var retry);
+        if (retry?.Attempt >= RetryDelays.Length || retry?.DueAtUtc < DateTimeOffset.MaxValue)
+        {
+            return;
+        }
+
+        // Exhausted candidates remain here until a successful scan or the next reconciliation.
+        // Repeated notifications must not continually renew their retry budget.
+        if (path.Length > 0 && retry is null && state.Paths.Count >= MaxIncrementalPathChangesPerSource)
+        {
+            return;
+        }
+
+        var attempt = retry?.Attempt ?? 0;
+        state.Paths[path] = new PendingRetry(attempt, _timeProvider.GetUtcNow() + RetryDelays[attempt]);
+    }
+
+    private void ArmRetryTimerUnderLock()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        var dueAt = DateTimeOffset.MaxValue;
+        foreach (var state in _sourceRetries.Values)
+        {
+            foreach (var retry in state.Paths.Values)
+            {
+                if (retry.DueAtUtc < dueAt)
+                {
+                    dueAt = retry.DueAtUtc;
+                }
+            }
+        }
+
+        var delay = dueAt == DateTimeOffset.MaxValue ? Timeout.InfiniteTimeSpan : dueAt - _timeProvider.GetUtcNow();
+        _retryTimer.Change(delay < TimeSpan.Zero && delay != Timeout.InfiniteTimeSpan ? TimeSpan.Zero : delay, Timeout.InfiniteTimeSpan);
+    }
+
+    private void QueueRetries()
+    {
+        try
+        {
+            var refreshStarted = false;
+            lock (_stateLock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                var now = _timeProvider.GetUtcNow();
+                foreach (var state in _sourceRetries.Values)
+                {
+                    foreach (var path in state.Paths.Keys.ToArray())
+                    {
+                        var retry = state.Paths[path];
+                        if (retry.DueAtUtc > now)
+                        {
+                            continue;
+                        }
+
+                        state.Paths[path] = new PendingRetry(retry.Attempt + 1, DateTimeOffset.MaxValue);
+                        var request = GetOrAddRefreshRequest(_pendingRefreshes, state.Source, background: true);
+                        if (path.Length == 0)
+                        {
+                            request.RequireFullRefresh();
+                        }
+                        else
+                        {
+                            request.Add(AppSourceInvalidatedEventArgs.ForPath(new AppSourcePathChange(WatcherChangeTypes.Changed, path)), background: true);
+                        }
+                    }
+                }
+
+                ArmRetryTimerUnderLock();
+                if (_pendingRefreshes.Count > 0)
+                {
+                    _ = StartRefreshUnderLock(out refreshStarted);
+                }
+            }
+
+            if (refreshStarted)
+            {
+                RaiseRefreshStateChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogRefreshRecoveryFailed(_logger, ex);
+        }
+    }
+
+    private void ReconcileInBackground()
+    {
+        try
+        {
+            IReadOnlyList<IAppSource> sources;
+            lock (_stateLock)
+            {
+                if (_disposed || _initializationTask is null)
+                {
+                    return;
+                }
+
+                _sourceRetries.Clear();
+                _retryTimer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                sources = _sources;
+            }
+
+            _ = QueueFullRefresh(sources, background: true);
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (Exception ex)
+        {
+            LogRefreshRecoveryFailed(_logger, ex);
+        }
+    }
+
     private void ScheduleInvalidationFlush()
     {
         lock (_stateLock)
         {
-            if (_disposed || _invalidationFlushScheduled)
+            if (_disposed || _invalidationFlushScheduled || (_debouncedRefreshes.Count == 0 && _pausedBackgroundRefreshes.Count == 0))
             {
                 return;
             }
@@ -1054,7 +1334,7 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         try
         {
-            await Task.Delay(_invalidationDelay, _disposeToken).ConfigureAwait(false);
+            await Task.Delay(_invalidationDelay, _timeProvider, _disposeToken).ConfigureAwait(false);
             QueueDebouncedRefreshes(endScheduledWindow: true);
         }
         catch (OperationCanceledException)
@@ -1075,17 +1355,27 @@ public sealed partial class AppCatalog : IAppCatalog
                 _invalidationFlushScheduled = false;
             }
 
-            if (_disposed || _debouncedRefreshes.Count == 0)
+            if (_disposed || (_debouncedRefreshes.Count == 0 && _pausedBackgroundRefreshes.Count == 0))
             {
                 return;
             }
 
             foreach (var pending in _debouncedRefreshes.Values)
             {
-                GetOrAddRefreshRequest(_pendingRefreshes, pending.Source).Merge(pending);
+                GetOrAddRefreshRequest(_pendingRefreshes, pending.Source, pending.Background).Merge(pending);
             }
 
             _debouncedRefreshes.Clear();
+            if (!_pendingRefreshes.Values.Any(pending => !pending.Background))
+            {
+                foreach (var paused in _pausedBackgroundRefreshes.Values)
+                {
+                    GetOrAddRefreshRequest(_pendingRefreshes, paused.Source, background: true).Merge(paused);
+                }
+
+                _pausedBackgroundRefreshes.Clear();
+            }
+
             _ = StartRefreshUnderLock(out refreshStarted);
         }
 
@@ -1095,15 +1385,41 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
-    private static SourceRefreshRequest GetOrAddRefreshRequest(
+    private SourceRefreshRequest GetOrAddRefreshRequest(
         Dictionary<string, SourceRefreshRequest> requests,
-        IAppSource source)
+        IAppSource source,
+        bool background = false)
     {
+        if (ReferenceEquals(requests, _pendingRefreshes))
+        {
+            if (background && ((requests.TryGetValue(source.Id, out var foreground) && !foreground.Background)
+                || (_debouncedRefreshes.TryGetValue(source.Id, out var debounced) && !debounced.Background)))
+            {
+                return GetOrAddRefreshRequest(_pausedBackgroundRefreshes, source, background: true);
+            }
+
+            if (!background && requests.TryGetValue(source.Id, out var pendingBackground) && pendingBackground.Background)
+            {
+                RequeueBackgroundUnderLock(pendingBackground);
+                requests.Remove(source.Id);
+            }
+        }
+
+        if (!background && _backgroundCancellation is not null)
+        {
+            // Cancellation callbacks run outside the catalog lock; the worker yields at its next checkpoint.
+            _ = _backgroundCancellation.CancelAsync();
+        }
+
         if (!requests.TryGetValue(source.Id, out var request)
             || !ReferenceEquals(request.Source, source))
         {
-            request = new SourceRefreshRequest(source);
+            request = new SourceRefreshRequest(source, background);
             requests[source.Id] = request;
+        }
+        else
+        {
+            request.IncludePriority(background);
         }
 
         return request;
@@ -1170,10 +1486,14 @@ public sealed partial class AppCatalog : IAppCatalog
             VisibilityChanged = null;
             _pendingRefreshes.Clear();
             _debouncedRefreshes.Clear();
+            _pausedBackgroundRefreshes.Clear();
             _initialSourcePublications.Clear();
+            _sourceRetries.Clear();
             sources = _sources;
         }
 
+        _retryTimer.Dispose();
+        _reconciliationTimer.Dispose();
         _disposeCancellation.Cancel();
         _sourceProvider.Changed -= OnSourceProviderChanged;
         _sourceProvider.Dispose();
@@ -1234,19 +1554,29 @@ public sealed partial class AppCatalog : IAppCatalog
         private readonly List<AppSourcePathChange> _pathChanges = [];
         private readonly Dictionary<string, int> _pathChangeIndexes = new(StringComparer.OrdinalIgnoreCase);
 
-        public SourceRefreshRequest(IAppSource source)
-        {
-            Source = source;
-        }
-
         public IAppSource Source { get; }
 
         public bool RequiresFullRefresh { get; private set; }
 
+        public bool Background { get; private set; }
+
         public IReadOnlyList<AppSourcePathChange> PathChanges => _pathChanges;
 
-        public void Add(AppSourceInvalidatedEventArgs invalidation)
+        public SourceRefreshRequest(IAppSource source, bool background)
         {
+            Source = source;
+            Background = background;
+        }
+
+        public void IncludePriority(bool background)
+        {
+            // Manual and watcher work takes priority over coalesced background recovery.
+            Background &= background;
+        }
+
+        public void Add(AppSourceInvalidatedEventArgs invalidation, bool background = false)
+        {
+            IncludePriority(background);
             if (invalidation.RequiresFullRefresh)
             {
                 RequireFullRefresh();
@@ -1259,6 +1589,7 @@ public sealed partial class AppCatalog : IAppCatalog
 
         public void Merge(SourceRefreshRequest other)
         {
+            IncludePriority(other.Background);
             if (other.RequiresFullRefresh)
             {
                 RequireFullRefresh();
@@ -1314,6 +1645,20 @@ public sealed partial class AppCatalog : IAppCatalog
 
             _pathChangeIndexes.Add(change.Path, _pathChanges.Count);
             _pathChanges.Add(change);
+        }
+    }
+
+    private sealed record PendingRetry(int Attempt, DateTimeOffset DueAtUtc);
+
+    private sealed class SourceRetryState
+    {
+        public IAppSource Source { get; }
+
+        public Dictionary<string, PendingRetry> Paths { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public SourceRetryState(IAppSource source)
+        {
+            Source = source;
         }
     }
 
