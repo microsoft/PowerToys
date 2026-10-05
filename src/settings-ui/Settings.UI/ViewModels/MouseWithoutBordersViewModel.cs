@@ -296,78 +296,77 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             public NamedPipeClientStream Stream { get; }
 
-            public ISettingsSyncHelper Endpoint { get; private set; }
+            public ISettingsSyncHelper Endpoint { get; }
+
+            public static async Task<SyncHelper> ConnectAsync(string pipeName, string expectedServerExecutableFileName, string expectedUserSid, int expectedSessionId)
+            {
+                var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+                try
+                {
+                    await stream.ConnectAsync(10000);
+                    if (!NamedPipePeerVerification.TryVerifyServer(
+                            stream,
+                            expectedServerExecutableFileName,
+                            expectedUserSid,
+                            expectedSessionId,
+                            allowLocalSystem: true,
+                            out var rejectionReason))
+                    {
+                        throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
+                    }
+
+                    return new SyncHelper(stream);
+                }
+                catch
+                {
+                    await stream.DisposeAsync();
+                    throw;
+                }
+            }
+
+            public Task ShutdownAsync()
+            {
+                // Await notification delivery, not a reply from the terminating process.
+                return ((IJsonRpcClientProxy)Endpoint).JsonRpc.NotifyAsync(nameof(ISettingsSyncHelper.Shutdown));
+            }
 
             public void Dispose()
             {
-                ((IDisposable)Endpoint).Dispose();
+                try
+                {
+                    ((IDisposable)Endpoint).Dispose();
+                }
+                finally
+                {
+                    // RPC disposal can finish asynchronously; this helper owns the pipe.
+                    Stream.Dispose();
+                }
             }
         }
 
-        private static NamedPipeClientStream syncHelperStream;
-
-        private async Task<SyncHelper> GetSettingsSyncHelperAsync()
+        private async Task<SyncHelper> GetSettingsSyncHelperAsync(bool requireConnection = false)
         {
             try
             {
-                var recreateStream = false;
-                if (syncHelperStream == null)
-                {
-                    recreateStream = true;
-                }
-                else
-                {
-                    if (!syncHelperStream.IsConnected || !syncHelperStream.CanWrite)
-                    {
-                        await syncHelperStream.DisposeAsync();
-                        recreateStream = true;
-                    }
-                }
-
-                if (recreateStream)
-                {
-                    var sessionId = Process.GetCurrentProcess().SessionId;
-                    using var currentIdentity = WindowsIdentity.GetCurrent();
-                    var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
-                    var candidateStream = new NamedPipeClientStream(
-                        ".",
-                        MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
-                        PipeDirection.InOut,
-                        PipeOptions.Asynchronous);
-
-                    try
-                    {
-                        await candidateStream.ConnectAsync(10000);
-                        if (!NamedPipePeerVerification.TryVerifyServer(
-                                candidateStream,
-                                MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName,
-                                currentUserSid,
-                                sessionId,
-                                allowLocalSystem: true,
-                                out var rejectionReason))
-                        {
-                            throw new UnauthorizedAccessException($"Rejected SettingsSync server: {rejectionReason}");
-                        }
-
-                        syncHelperStream = candidateStream;
-                        candidateStream = null;
-                    }
-                    finally
-                    {
-                        if (candidateStream != null)
-                        {
-                            await candidateStream.DisposeAsync();
-                        }
-                    }
-                }
-
-                return new SyncHelper(syncHelperStream);
+                var sessionId = Process.GetCurrentProcess().SessionId;
+                using var currentIdentity = WindowsIdentity.GetCurrent();
+                var currentUserSid = currentIdentity.User?.Value ?? throw new InvalidOperationException("Settings process has no user SID.");
+                return await SyncHelper.ConnectAsync(
+                    MouseWithoutBordersIpc.GetSettingsSyncPipeName(sessionId),
+                    MouseWithoutBordersIpc.MouseWithoutBordersExecutableFileName,
+                    currentUserSid,
+                    sessionId);
             }
             catch (Exception ex)
             {
                 if (IsEnabled)
                 {
                     Logger.LogError($"Couldn't create SettingsSync: {ex}");
+                }
+
+                if (requireConnection)
+                {
+                    throw;
                 }
 
                 return null;
@@ -380,8 +379,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var syncHelper = await GetSettingsSyncHelperAsync())
                 {
-                    syncHelper?.Endpoint?.Shutdown();
-                    var task = syncHelper?.Stream.FlushAsync();
+                    var task = syncHelper?.ShutdownAsync();
                     if (task != null)
                     {
                         await task;
@@ -394,7 +392,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
                 {
                     var task = syncHelper?.Endpoint?.Reconnect();
                     if (task != null)
@@ -409,7 +407,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
                 {
                     var task = syncHelper?.Endpoint?.GenerateNewKey();
                     if (task != null)
@@ -424,7 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             using (await _ipcSemaphore.EnterAsync())
             {
-                using (var syncHelper = await GetSettingsSyncHelperAsync())
+                using (var syncHelper = await GetSettingsSyncHelperAsync(requireConnection: true))
                 {
                     var task = syncHelper?.Endpoint?.ConnectToMachine(pcName, securityKey);
                     if (task != null)
@@ -1374,20 +1372,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     catch (AggregateException)
                     {
                         // Task was cancelled, which is expected
-                    }
-
-                    // Dispose the named pipe stream
-                    try
-                    {
-                        syncHelperStream?.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Error disposing sync helper stream: {ex}");
-                    }
-                    finally
-                    {
-                        syncHelperStream = null;
                     }
 
                     // Dispose the semaphore

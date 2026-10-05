@@ -24,8 +24,25 @@ the 90-second transport-readiness wait: both owned MWB processes were listening,
 but neither had an established peer connection or the required routing slots.
 Cleanup and external recovery passed. This remaining pairing/transport failure
 is distinct from client installation, the resolved recording workflow contention,
-and the locally reproduced/fixed Start-menu focus blocker. Further CI work needs
-a new run budget; no transport assertion or timeout was weakened to report a pass.
+and the locally reproduced/fixed Start-menu focus blocker.
+
+The October 5 investigation identified the controlling failure in that run's
+guest Settings log: `MouseWithoutBordersPage.Connect` lost its JSON-RPC
+connection before the request completed, followed by repeated failures in status
+polling. The guest retained its previous key and own-only machine matrix; its
+MWB process never attempted an outbound peer connection. A deterministic
+poll-then-Connect unit reproduction failed with the same exception.
+Settings now uses one freshly verified pipe per disposable RPC helper and closes
+the helper's pipe explicitly rather than reusing a transport that an earlier
+RPC reader is still closing. State-changing calls remain acknowledged and are
+never automatically replayed.
+
+The pairing phase also now requires the guest's persisted key to match the
+requested host key and its machine matrix to contain the exact peer before
+transport checks begin. `pairing-before.json` and `pairing-acknowledgement.json`
+publish only boolean comparisons, stage and timing, never keys or their hashes.
+An invoked button is no longer treated as proof of accepted pairing. The
+90-second owned-transport assertion remains unchanged.
 
 The unfiltered Windows 10 regression with the same test payload
 (`localvm-20261002-214643-9264f3c0`) passed 7/7 tests and all eight ordered phases

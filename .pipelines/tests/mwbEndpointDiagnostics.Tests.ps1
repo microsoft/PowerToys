@@ -8,6 +8,118 @@ function Write-RunJson {
     throw 'Unmocked diagnostic publication'
 }
 
+Describe 'MWB pairing requires persisted command acknowledgement' {
+    BeforeAll {
+        $tokens = $null
+        $errors = $null
+        $ast = [Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $payloadRoot 'EndpointSupport.ps1'), [ref]$tokens, [ref]$errors)
+        if ($errors.Count) { throw 'Endpoint support contains parse errors.' }
+        foreach ($name in @('Read-RunJson', 'Get-GuestConnectAcknowledgement', 'Wait-GuestConnectAcknowledgement')) {
+            $definition = $ast.Find({
+                param($node)
+                $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name
+            }, $true)
+            . ([scriptblock]::Create($definition.Extent.Text))
+        }
+    }
+
+    BeforeEach {
+        $script:settingsRoot = $TestDrive
+        $OutputRoot = $TestDrive
+        $script:pairingWrites = [Collections.Generic.List[object]]::new()
+        Mock Write-RunJson { param($Path, $Value) $script:pairingWrites.Add($Value) }
+        Mock Start-Sleep {}
+    }
+
+    It 'does not mistake running listeners or an unchanged key for accepted pairing' {
+        Mock Read-RunJson {
+            @{ properties = @{ SecurityKey = @{ value = 'old-fixture-key' }; MachineMatrixString = @('HOST') } }
+        }
+        $state = Get-GuestConnectAcknowledgement 'new-private-fixture-key' 'host'
+        $state.KeyMatches | Should Be $false
+        $state.PeerConfigured | Should Be $true
+        $state.Acknowledged | Should Be $false
+    }
+
+    It 'requires both the requested key and exact peer identity' -TestCases @(
+        @{ StoredKey = 'private-fixture-key'; Peer = 'HOST'; Expected = $true }
+        @{ StoredKey = 'private-fixture-key'; Peer = 'HOST-other'; Expected = $false }
+        @{ StoredKey = 'PRIVATE-FIXTURE-KEY'; Peer = 'HOST'; Expected = $false }
+    ) {
+        param($StoredKey, $Peer, $Expected)
+        Mock Read-RunJson {
+            @{ properties = @{ SecurityKey = @{ value = $StoredKey }; MachineMatrixString = @($Peer, 'GUEST', '', '') } }
+        }
+        (Get-GuestConnectAcknowledgement 'private-fixture-key' 'host').Acknowledged | Should Be $Expected
+    }
+
+    It 'waits for the real persisted transition without reinvoking Connect and publishes only booleans' {
+        $script:pairingReads = 0
+        Mock Read-RunJson {
+            $script:pairingReads++
+            @{
+                properties = @{
+                    SecurityKey = @{ value = $(if ($script:pairingReads -gt 1) { 'private-fixture-key' } else { 'old-fixture-key' }) }
+                    MachineMatrixString = @('HOST', 'GUEST')
+                }
+            }
+        }
+        (Wait-GuestConnectAcknowledgement 'private-fixture-key' 'host').Acknowledged | Should Be $true
+        $script:pairingWrites.Count | Should Be 2
+        $script:pairingWrites[0].Stage | Should Be 'WaitingForSettingsRpc'
+        $script:pairingWrites[1].Stage | Should Be 'Acknowledged'
+        ($script:pairingWrites | ConvertTo-Json) | Should Not Match 'private-fixture|old-fixture|HOST|GUEST'
+    }
+
+    It 'fails an unacknowledged invoke instead of reporting the pairing phase passed' {
+        Mock Read-RunJson {
+            @{ properties = @{ SecurityKey = @{ value = 'old-fixture-key' }; MachineMatrixString = @('GUEST') } }
+        }
+        { Wait-GuestConnectAcknowledgement 'private-fixture-key' 'host' -TimeoutSeconds 0 } |
+            Should Throw 'did not persist the matching key and peer'
+        $script:pairingWrites.Count | Should Be 2
+        $script:pairingWrites[0].KeyMatches | Should Be $false
+        $script:pairingWrites[0].PeerConfigured | Should Be $false
+        $script:pairingWrites[1].Stage | Should Be 'NotAcknowledged'
+    }
+}
+
+Describe 'MWB guest UI error envelopes' {
+    BeforeAll {
+        $tokens = $null
+        $errors = $null
+        $ast = [Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $payloadRoot 'EndpointSupport.ps1'), [ref]$tokens, [ref]$errors)
+        $definition = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Assert-GuestUiResult'
+        }, $true)
+        . ([scriptblock]::Create($definition.Extent.Text))
+    }
+
+    It 'accepts only an explicit zero-match search result for exit one' {
+        { Assert-GuestUiResult 'search' 1 ([pscustomobject]@{ matchCount = 0; matches = @() }) } | Should Not Throw
+        { Assert-GuestUiResult 'invoke' 0 ([pscustomobject]@{ success = $true }) } | Should Not Throw
+        { Assert-GuestUiResult 'search' 1 ([pscustomobject]@{ matchCount = 1 }) } | Should Throw 'Guest winapp search failed'
+        { Assert-GuestUiResult 'invoke' 1 ([pscustomobject]@{ matchCount = 0 }) } | Should Throw 'Guest winapp invoke failed'
+        { Assert-GuestUiResult 'search' 1 $null } | Should Throw 'Guest winapp search failed'
+    }
+
+    It 'does not replace the native CLI failure with a missing-property error or expose raw contents' {
+        Set-StrictMode -Version 2.0
+        try {
+            Assert-GuestUiResult 'search' 1 ([pscustomobject]@{ error = @{ message = 'private-key-do-not-export' } })
+            throw 'Expected CLI failure'
+        }
+        catch {
+            $_.Exception.Message | Should Match 'Guest winapp search failed \(exit 1;'
+            $_.Exception.Message | Should Not Match 'private-key|matchCount|property.*cannot'
+        }
+        finally { Set-StrictMode -Off }
+    }
+}
+
 Describe 'MWB bounded nonsecret guest-command stages' {
     BeforeAll {
         $tokens = $null

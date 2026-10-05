@@ -545,7 +545,9 @@ internal sealed class TwoEndpointFixture : IDisposable
             return key.Length > 0 && key != previous;
         }, TimeSpan.FromSeconds(20), "Settings New key did not change the persisted key.");
         host!.Request("VerifyPeerMapping");
-        guest!.Request("Connect", new JsonObject { ["Key"] = key, ["PeerName"] = hostName }, timeoutSeconds: 600);
+        var connection = guest!.Request("Connect", new JsonObject { ["Key"] = key, ["PeerName"] = hostName }, timeoutSeconds: 600);
+        Assert.IsTrue(connection["Acknowledged"]?.GetValue<bool>() == true,
+            "Settings Connect must be acknowledged by the guest's persisted matching key and peer before testing transport.");
     }
 
     private void VerifyTransport()

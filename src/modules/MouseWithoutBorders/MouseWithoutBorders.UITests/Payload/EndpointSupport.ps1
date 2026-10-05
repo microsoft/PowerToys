@@ -820,6 +820,17 @@ function Get-GuestUiWaitSnapshot {
     $result
 }
 
+function Assert-GuestUiResult {
+    param([string]$Verb, [int]$ExitCode, $Data)
+
+    if ($ExitCode -eq 0) { return }
+    $count = if ($null -ne $Data) { $Data.PSObject.Properties['matchCount'] } else { $null }
+    if ($Verb -eq 'search' -and $ExitCode -eq 1 -and $count -and $count.Value -eq 0) { return }
+    # Error envelopes need not contain matchCount. Never echo their raw message or
+    # the command arguments: a set-value command can contain the pairing key.
+    throw "Guest winapp $Verb failed (exit $ExitCode; search no-match result was not confirmed)."
+}
+
 function Invoke-GuestUi {
     param([string[]]$Arguments, [ValidateSet(90, 180)][int]$TimeoutSeconds = 90)
     $launchWatch = [Diagnostics.Stopwatch]::StartNew()
@@ -866,9 +877,7 @@ function Invoke-GuestUi {
         # Never put command arguments, UI trees, or stderr in errors: Connect contains a key.
         try { $data = $raw | ConvertFrom-Json -ErrorAction Stop }
         catch { throw "Guest winapp $($Arguments[0]) did not return valid JSON." }
-        if ($process.ExitCode -ne 0 -and -not ($Arguments[0] -eq 'search' -and $process.ExitCode -eq 1 -and $data.matchCount -eq 0)) {
-            throw "Guest winapp $($Arguments[0]) failed (exit $($process.ExitCode))."
-        }
+        Assert-GuestUiResult $Arguments[0] $process.ExitCode $data
         Write-EndpointCommandStage 'UiResultParsed' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         return $data
     }
@@ -893,6 +902,43 @@ function Find-GuestButton {
     })
     if ($matches.Count -ne 1) { throw "Expected one enabled guest '$Name' button, found $($matches.Count)." }
     $matches[0].selector
+}
+
+function Get-GuestConnectAcknowledgement {
+    param([string]$Key, [string]$PeerName)
+
+    $settings = Read-RunJson "$script:settingsRoot\MouseWithoutBorders\settings.json"
+    $keyMatches = [string]$settings.properties.SecurityKey.value -ceq $Key
+    $peerConfigured = @($settings.properties.MachineMatrixString | Where-Object {
+        [string]::Equals([string]$_, $PeerName, [StringComparison]::OrdinalIgnoreCase)
+    }).Count -gt 0
+    @{
+        KeyMatches = $keyMatches; PeerConfigured = $peerConfigured
+        Acknowledged = $keyMatches -and $peerConfigured
+    }
+}
+
+function Wait-GuestConnectAcknowledgement {
+    param([string]$Key, [string]$PeerName, [int]$TimeoutSeconds = 30)
+
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    do {
+        $state = Get-GuestConnectAcknowledgement $Key $PeerName
+        Write-RunJson "$OutputRoot\pairing-acknowledgement.json" @{
+            Stage = $(if ($state.Acknowledged) { 'Acknowledged' } else { 'WaitingForSettingsRpc' })
+            KeyMatches = $state.KeyMatches; PeerConfigured = $state.PeerConfigured
+            ElapsedMilliseconds = $watch.ElapsedMilliseconds
+            TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        }
+        if ($state.Acknowledged) { return $state }
+        Start-Sleep -Milliseconds 200
+    } while ($watch.Elapsed.TotalSeconds -lt $TimeoutSeconds)
+    Write-RunJson "$OutputRoot\pairing-acknowledgement.json" @{
+        Stage = 'NotAcknowledged'; KeyMatches = $state.KeyMatches; PeerConfigured = $state.PeerConfigured
+        ElapsedMilliseconds = $watch.ElapsedMilliseconds
+        TimestampUtc = [DateTime]::UtcNow.ToString('o')
+    }
+    throw 'Guest Connect was invoked but MWB did not persist the matching key and peer. Inspect pairing-acknowledgement.json and the Settings RPC log; no connection retry or settings-file fallback was attempted.'
 }
 
 function Connect-Guest {
@@ -939,8 +985,14 @@ function Connect-Guest {
     })
     if ($buttons.Count -ne 1) { throw 'Guest input-row Connect button was ambiguous.' }
     $mapping = Assert-PeerMapping 'before-connect'
+    $before = Get-GuestConnectAcknowledgement $Key $PeerName
+    Write-RunJson "$OutputRoot\pairing-before.json" @{
+        KeyMatches = $before.KeyMatches; PeerConfigured = $before.PeerConfigured
+        TimestampUtc = [DateTime]::UtcNow.ToString('o')
+    }
     $null = Invoke-GuestUi @('invoke', $buttons[0].selector)
-    @{ Submitted = $true; Mapping = $mapping }
+    $acknowledgement = Wait-GuestConnectAcknowledgement $Key $PeerName
+    @{ Submitted = $true; Acknowledged = $acknowledgement.Acknowledged; Mapping = $mapping }
 }
 
 function Assert-PeerMapping {

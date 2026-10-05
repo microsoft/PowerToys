@@ -35,6 +35,11 @@
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                 </controls:SettingsGroup>
+                <InfoBar
+                    x:Name="SettingsSyncErrorInfoBar"
+                    x:Uid="MouseWithoutBorders_SettingsSyncErrorInfoBar"
+                    IsOpen="False"
+                    Severity="Error" />
                 <controls:SettingsGroup
                     x:Name="KeySettingsGroup"
                     x:Uid="MouseWithoutBorders_KeySettings"

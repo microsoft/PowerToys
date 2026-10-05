@@ -332,6 +332,14 @@
   <data name="MouseWithoutBorders_Connect.Content" xml:space="preserve">
     <value>Connect</value>
   </data>
+  <data name="MouseWithoutBorders_SettingsSyncErrorInfoBar.Title" xml:space="preserve">
+    <value>Couldn't complete the Mouse Without Borders request</value>
+    <comment>"Mouse Without Borders" is a product name</comment>
+  </data>
+  <data name="MouseWithoutBorders_SettingsSyncErrorInfoBar.Message" xml:space="preserve">
+    <value>Make sure Mouse Without Borders is enabled and running, then try again.</value>
+    <comment>"Mouse Without Borders" is a product name</comment>
+  </data>
   <data name="MouseWithoutBorders_UninstallService.Header" xml:space="preserve">
     <value>Uninstall service</value>
   </data>
