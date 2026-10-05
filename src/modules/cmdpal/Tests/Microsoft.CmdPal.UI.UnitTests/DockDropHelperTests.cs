@@ -28,6 +28,7 @@ public class DockDropHelperTests
 
         Assert.AreEqual(displayName, bookmark.Name);
         Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -45,6 +46,7 @@ public class DockDropHelperTests
 
         Assert.AreEqual("Application", bookmark.Name);
         Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -53,6 +55,7 @@ public class DockDropHelperTests
     [DataRow(@"C:\Documents\Report.txt", "Report")]
     [DataRow(@"C:\Documents\Projects", "Projects")]
     [DataRow(@"\\server\share\Report.txt", "Report")]
+    [DataRow(@"C:\", "")]
     [DataRow(@"C:\Documents\Disney.37853FC22B2CE_6rarf9sa4v8jt!App", "Disney")]
     public void GetBookmark_FileSystemItem_PreservesTargetWithoutAppLookup(string path, string expectedName)
     {
@@ -60,6 +63,7 @@ public class DockDropHelperTests
 
         Assert.AreEqual(expectedName, bookmark.Name);
         Assert.AreEqual(path, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -73,6 +77,21 @@ public class DockDropHelperTests
 
         Assert.AreEqual(Path.GetFileNameWithoutExtension(path), bookmark.Name);
         Assert.AreEqual(path, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
+    }
+
+    [TestMethod]
+    [DataRow("https://www.reddit.com/r/PowerToys/", "www.reddit.com")]
+    [DataRow("http://example.com/report?version=2#summary", "example.com")]
+    [DataRow("file:///C:/Documents/Report.txt", "")]
+    [DataRow("ms-settings:display", "")]
+    public void GetBookmark_Uri_PreservesHostAndTargetAndHidesSubtitle(string target, string expectedName)
+    {
+        var bookmark = DockDropHelper.GetBookmark(new Uri(target));
+
+        Assert.AreEqual(expectedName, bookmark.Name);
+        Assert.AreEqual(target, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -83,6 +102,7 @@ public class DockDropHelperTests
 
         Assert.AreEqual(appUserModelId, bookmark.Name);
         Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -95,6 +115,7 @@ public class DockDropHelperTests
         Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
         Assert.IsFalse(string.IsNullOrWhiteSpace(bookmark.Name));
         Assert.AreNotEqual(appUserModelId, bookmark.Name);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 
     [TestMethod]
@@ -106,5 +127,6 @@ public class DockDropHelperTests
 
         Assert.AreEqual(Path.GetFileNameWithoutExtension(path), bookmark.Name);
         Assert.AreEqual(path, bookmark.Target);
+        Assert.IsFalse(bookmark.ShowSubtitles);
     }
 }

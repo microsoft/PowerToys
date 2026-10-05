@@ -991,8 +991,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                         continue;
                     }
 
-                    var (name, target) = DockDropHelper.GetBookmark(path);
-                    AddBookmarkAndPinToDock(bookmarksManager, name, target);
+                    var (name, target, showSubtitles) = DockDropHelper.GetBookmark(path);
+                    AddBookmarkAndPinToDock(bookmarksManager, name, target, showSubtitles);
                     foundItem = true;
                 }
             }
@@ -1005,9 +1005,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             if (hasUri)
             {
                 var uri = await e.DataView.GetUriAsync();
-                var url = uri.AbsoluteUri;
-                var name = uri.Host;
-                AddBookmarkAndPinToDock(bookmarksManager, name, url);
+                var (name, target, showSubtitles) = DockDropHelper.GetBookmark(uri);
+                AddBookmarkAndPinToDock(bookmarksManager, name, target, showSubtitles);
             }
         }
         catch (Exception ex)
@@ -1016,7 +1015,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         }
     }
 
-    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
+    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue, bool showSubtitles)
     {
         var bookmark = bookmarksManager.Add(name, bookmarkValue);
 
@@ -1024,7 +1023,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         // top-level list, so that pinning to the dock from the top-level is seamless.
         var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
         Logger.LogDebug($"[DockDrop] Pinning dropped item '{name}' as bookmark id={bookmark.Id} (commandId='{commandId}')");
-        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
+        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false, ShowSubtitles: showSubtitles));
     }
 
     public void Receive(CrossMonitorBandDropMessage message)
