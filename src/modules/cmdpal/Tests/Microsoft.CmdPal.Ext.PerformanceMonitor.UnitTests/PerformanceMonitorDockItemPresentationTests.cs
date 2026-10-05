@@ -144,4 +144,21 @@ public class PerformanceMonitorDockItemPresentationTests
         Assert.AreEqual("10ch", properties[WellKnownExtensionAttributes.DockTitleWidth]);
         Assert.AreEqual("text:Download", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
     }
+
+    [TestMethod]
+    public void ConfigureValueLabel_TemperatureReservesTheWidestPlausibleReading()
+    {
+        var item = PerformanceMonitorDockItemPresentation.ConfigureValueLabel(
+            new ListItem { Subtitle = "Temp" },
+            PerformanceMonitorDockItemPresentation.TemperatureTitleWidth);
+        var properties = item.GetProperties();
+
+        Assert.AreEqual("text:100.0 °C", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+        Assert.AreEqual("text:Temp", properties[WellKnownExtensionAttributes.DockSubtitleWidth]);
+        Assert.AreEqual(true, properties[WellKnownExtensionAttributes.DockLabelTabularDigits]);
+
+        item.Title = "45.5 °C";
+
+        Assert.AreEqual("text:100.0 °C", properties[WellKnownExtensionAttributes.DockTitleWidth]);
+    }
 }
