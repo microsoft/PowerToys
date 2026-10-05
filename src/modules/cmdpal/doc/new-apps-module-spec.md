@@ -140,9 +140,9 @@ representation.
 
 - Publish valid `apps.catalog.json` snapshots before watcher setup and background reconciliation.
 - A complete cache makes the list ready without waiting for watcher setup or reconciliation.
-- Load uncached sources immediately; keep initial loading active until their first scans publish.
+- Load uncached sources immediately; keep initial loading active until their first scan attempts finish.
   Cached rows remain available during the scans. Later invalidations and cache writes do not
-  extend startup loading.
+  extend startup loading; failed reads retry in the background.
 - Validate schema, language, source configuration and age.
 - Maximum cache age: **36 hours**. Cached-source reconciliation delay: **30 seconds**.
 
@@ -161,6 +161,40 @@ staleness.
 | Package install/uninstall/update completion | Rebuild the packaged source.                                                   |
 | Identifiable framework event                | Ignore it.                                                                     |
 | Unavailable framework metadata              | Refresh conservatively.                                                        |
+
+- Debounce Win32 invalidations for **5 seconds** to let installers finish writing.
+- Retry rejected shortcuts and failed reads up to **three times**, waiting **5, 15 and 40 seconds**
+  between attempts. Keep at most **256** targeted paths per source; notifications do not renew
+  an exhausted budget.
+- Unavailable network paths retain affected rows without short retries; periodic or manual
+  refresh checks for recovery. PATH and registry retries use full source enumeration because
+  those origins do not support dirty-path scans. Unchanged Win32 candidates still reuse metadata.
+- Promoted full scans clear pending retries resolved anywhere in that source. Only complete
+  full scans renew cache validation; genuine incremental scans keep their narrower scope.
+- Check all sources every **10 minutes** to recover missed events and discover unwatched changes.
+  Win32 checks enumerate candidates and compare file and target stamps plus search terms;
+  unchanged candidates reuse their parsed metadata. Execution aliases and reparse points are
+  still read because ownership can change without a useful stamp change. Package checks compare
+  package identities, manifest stamps and theme before parsing manifests or resolving logos again. Rejected candidates
+  renew their bounded retry budget. PATH discovery still uses the process environment.
+- Run delayed reconciliation and retries on one background-priority worker per source, lowering
+  CPU, memory and I/O priority on a dedicated thread that exits after the scan. Catalog serialization
+  bounds active discovery to one worker. Manual refresh and watcher work use normal thread-pool
+  scheduling; shared pool priorities are never changed. Foreground requests cancel background
+  discovery at the next file, directory or package checkpoint. Targeted updates stay incremental;
+  interrupted recovery resumes after the existing debounce window. An active native read must
+  return before cancellation can take effect.
+- Save changed cache contents immediately; renew unchanged validation timestamps at most every
+  **6 hours**, keeping the cache fresh without a full-file write at each periodic check.
+- Unreadable files, subtrees or package families retain only their affected representations.
+  Readable siblings still publish, and confirmed deletions or retargeted shortcuts take effect
+  during an incomplete scan. Missing candidates are absent; access denial retains affected rows
+  without scheduling short retries. An existing shortcut with a missing target still gets bounded
+  retries. Unknown failure coverage retains the source snapshot conservatively.
+- Incomplete scans do not renew cache validation. A changed source key retains its previous cached
+  entry until a complete scan validates the new key. Incremental updates under the same key retain
+  the existing validation timestamp. Read handles are short-lived, allow sharing where the API
+  supports it, and are released before retry delays.
 
 Completion reflects the changed package state; progress events add scans before that state is
 ready. Framework-only changes do not add launchable apps, but resource packages can change

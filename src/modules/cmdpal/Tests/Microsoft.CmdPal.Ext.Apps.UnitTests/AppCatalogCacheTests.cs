@@ -17,6 +17,128 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class AppCatalogCacheTests
 {
+    [TestMethod]
+    public async Task SaveAsync_UnchangedReconciliationDoesNotRewriteTheCacheOnEachCheck()
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var created = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
+            var item = Item("win32:one", TestDataHelper.CreateTestWin32Program("Win32"), "start-menu");
+            var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [item] };
+            var cache = new AppCatalogCache(cachePath);
+            await cache.SaveAsync(snapshots, ["win32"], Context(created, ("win32", "key")), CancellationToken.None);
+            var original = File.ReadAllBytes(cachePath);
+            var sentinel = created.UtcDateTime;
+            File.SetLastWriteTimeUtc(cachePath, sentinel);
+
+            foreach (var minutes in new[] { 10, 20, 30, 60, 120, 359 })
+            {
+                await cache.SaveAsync(snapshots, ["win32"], Context(created.AddMinutes(minutes), ("win32", "key")), CancellationToken.None);
+                CollectionAssert.AreEqual(original, File.ReadAllBytes(cachePath));
+                Assert.AreEqual(sentinel, File.GetLastWriteTimeUtc(cachePath));
+            }
+
+            var changed = Item("win32:one", TestDataHelper.CreateTestWin32Program("Changed"), "start-menu");
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [changed] },
+                ["win32"],
+                Context(created.AddHours(1), ("win32", "key")),
+                CancellationToken.None);
+            var loaded = await cache.LoadAsync(Context(created.AddHours(1), ("win32", "key")), CancellationToken.None);
+            Assert.AreEqual("Changed", ((Win32AppPayload)loaded!.Sources.Single().Items.Single().Payload).Name);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
+    public async Task SaveAsync_IncompleteFirstScanDoesNotCreateAValidatedSource()
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var cache = new AppCatalogCache(cachePath);
+            var context = Context(DateTimeOffset.UtcNow, ("win32", "win32-key"));
+            var items = new Dictionary<string, IReadOnlyList<AppCatalogItem>>
+            {
+                ["win32"] = [Item("win32:partial", TestDataHelper.CreateTestWin32Program("Partial"), "start-menu")],
+            };
+            await cache.SaveAsync(items, [], context, CancellationToken.None);
+            Assert.IsNull(await cache.LoadAsync(context, CancellationToken.None));
+
+            await cache.SaveAsync(items, ["win32"], context, CancellationToken.None);
+            var validated = await cache.LoadAsync(context, CancellationToken.None);
+            Assert.IsNotNull(validated);
+            Assert.AreEqual(1, validated.Sources.Single().Items.Count);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
+    public async Task SaveAsync_ChangedKeyWaitsForCompleteReconciliation()
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var created = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
+            var cache = new AppCatalogCache(cachePath);
+            var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>>
+            {
+                ["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Program("Original"), "start-menu")],
+                ["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Program("Package v1"), "packaged")],
+            };
+            await cache.SaveAsync(
+                snapshots,
+                ["win32", "packaged"],
+                Context(created, ("win32", "old-key"), ("packaged", "package-key")),
+                CancellationToken.None);
+            var original = File.ReadAllBytes(cachePath);
+
+            snapshots["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Program("Updated"), "start-menu")];
+            await cache.SaveAsync(
+                snapshots,
+                [],
+                Context(created.AddHours(1), ("win32", "new-key"), ("packaged", "package-key")),
+                CancellationToken.None);
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(cachePath), "An unvalidated key change must leave the previous cache entry unchanged.");
+
+            snapshots["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Program("Package v2"), "packaged")];
+            var changedContext = Context(created.AddHours(1), ("win32", "new-key"), ("packaged", "new-package-key"));
+            await cache.SaveAsync(snapshots, ["packaged"], changedContext, CancellationToken.None);
+            var current = await new AppCatalogCache(cachePath).LoadAsync(changedContext, CancellationToken.None);
+            Assert.IsNotNull(current);
+            Assert.AreEqual("packaged", current.Sources.Single().SourceId);
+            Assert.AreEqual("Package v2", ((Win32AppPayload)current.Sources.Single().Items.Single().Payload).Name);
+
+            var previous = await new AppCatalogCache(cachePath).LoadAsync(
+                Context(created.AddHours(1), ("win32", "old-key"), ("packaged", "new-package-key")),
+                CancellationToken.None);
+            Assert.IsNotNull(previous);
+            var retained = previous.Sources.Single(source => source.SourceId == "win32");
+            Assert.AreEqual(created, retained.ValidatedAtUtc);
+            Assert.AreEqual("Original", ((Win32AppPayload)retained.Items.Single().Payload).Name);
+
+            var reconciledContext = Context(created.AddHours(2), ("win32", "new-key"), ("packaged", "new-package-key"));
+            await cache.SaveAsync(snapshots, ["win32"], reconciledContext, CancellationToken.None);
+            var reconciled = await new AppCatalogCache(cachePath).LoadAsync(reconciledContext, CancellationToken.None);
+            Assert.IsNotNull(reconciled);
+            Assert.AreEqual(2, reconciled.Sources.Count);
+            var updated = reconciled.Sources.Single(source => source.SourceId == "win32");
+            Assert.AreEqual(created.AddHours(2), updated.ValidatedAtUtc);
+            Assert.AreEqual("Updated", ((Win32AppPayload)updated.Items.Single().Payload).Name);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
     [DataTestMethod]
     [DataRow("null")]
     [DataRow("[null]")]
@@ -323,7 +445,7 @@ public class AppCatalogCacheTests
     }
 
     [TestMethod]
-    public async Task SaveAsync_FullReconciliationRenewsUnchangedSourceValidation()
+    public async Task SaveAsync_FullReconciliationRenewsUnchangedSourceValidationAfterWriteInterval()
     {
         var cachePath = TemporaryCachePath();
         try
@@ -342,7 +464,7 @@ public class AppCatalogCacheTests
             await cache.SaveAsync(
                 snapshots,
                 ["win32"],
-                Context(firstValidation.AddHours(1), sourceKeys),
+                Context(firstValidation.AddHours(6), sourceKeys),
                 CancellationToken.None);
 
             var loaded = await cache.LoadAsync(
@@ -360,7 +482,7 @@ public class AppCatalogCacheTests
     }
 
     [TestMethod]
-    public async Task SaveAsync_IncrementalChangeDoesNotRenewSourceValidation()
+    public async Task SaveAsync_SameKeyIncrementalChangeDoesNotRenewSourceValidation()
     {
         var cachePath = TemporaryCachePath();
         try
@@ -373,19 +495,19 @@ public class AppCatalogCacheTests
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [original] },
                 ["win32"],
-                Context(firstValidation, ("win32", "key-before-change")),
+                Context(firstValidation, ("win32", "key")),
                 CancellationToken.None);
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [updated] },
                 [],
-                Context(firstValidation.AddHours(1), ("win32", "key-after-change")),
+                Context(firstValidation.AddHours(1), ("win32", "key")),
                 CancellationToken.None);
 
             var current = await cache.LoadAsync(
-                Context(firstValidation.AddHours(35), ("win32", "key-after-change")),
+                Context(firstValidation.AddHours(35), ("win32", "key")),
                 CancellationToken.None);
             var expired = await cache.LoadAsync(
-                Context(firstValidation.AddHours(36).AddMinutes(30), ("win32", "key-after-change")),
+                Context(firstValidation.AddHours(36).AddMinutes(30), ("win32", "key")),
                 CancellationToken.None);
 
             Assert.IsNotNull(current);

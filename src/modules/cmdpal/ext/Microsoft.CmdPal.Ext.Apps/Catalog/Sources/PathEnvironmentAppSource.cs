@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
@@ -11,11 +12,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 internal sealed class PathEnvironmentAppSource : IWin32ProgramSource
 {
     private readonly AllAppsSettings _settings;
-
-    public PathEnvironmentAppSource(AllAppsSettings settings)
-    {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    }
 
     public string Id => "path";
 
@@ -32,7 +28,26 @@ internal sealed class PathEnvironmentAppSource : IWin32ProgramSource
 
     public IReadOnlyList<string> WatchPaths => [];
 
-    public IEnumerable<string> GetPaths() => Win32Program.EnumeratePathEnvironmentPrograms(_settings.RunCommandSuffixes);
+    public PathEnvironmentAppSource(AllAppsSettings settings)
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+    }
 
-    public bool IsRelevantPath(string path) => false;
+    public IEnumerable<string> GetPaths()
+    {
+        return Win32Program.EnumeratePathEnvironmentPrograms(_settings.RunCommandSuffixes);
+    }
+
+    public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
+    {
+        foreach (var path in Win32Program.EnumeratePathEnvironmentPrograms(_settings.RunCommandSuffixes, onError, cancellationToken))
+        {
+            yield return new Win32ProgramCandidate(path, []);
+        }
+    }
+
+    public bool IsRelevantPath(string path)
+    {
+        return false;
+    }
 }

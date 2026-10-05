@@ -176,6 +176,36 @@ public class RegistryAppSourceTests
         Assert.IsTrue(new AppSearch("foo", new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.Disabled).Evaluate(row).IsExactMetadataMatch);
     }
 
+    [TestMethod]
+    public async Task ApplyChangesAsync_RetryReenumeratesRegistryTargetsAndCommandNames()
+    {
+        using var fixture = new RegistryFixture();
+        const string path = @"C:\Tools\bar.exe";
+        (string CommandName, string TargetPath)[] programs = [("old.exe", path)];
+        using var source = new Win32AppSource(new RegistryAppSource(fixture.Settings, _ => programs), LoadProgram, createWatchers: false);
+        var initial = await source.LoadAsync(CancellationToken.None);
+        programs = [("new.exe", path)];
+
+        var updated = (AppSourceScanResult)await source.ApplyChangesAsync(
+            initial,
+            [new AppSourcePathChange(WatcherChangeTypes.Changed, path)],
+            CancellationToken.None,
+            background: true);
+        Assert.IsTrue(updated.IsComplete);
+        Assert.IsTrue(updated.IsFullScan);
+        var item = updated.Single();
+        CollectionAssert.Contains(item.MatchTerms.ToArray(), "new.exe");
+        Assert.IsFalse(item.MatchTerms.Contains("old.exe", StringComparer.OrdinalIgnoreCase));
+
+        programs = [];
+        var removed = await source.ApplyChangesAsync(
+            updated,
+            [new AppSourcePathChange(WatcherChangeTypes.Changed, path)],
+            CancellationToken.None,
+            background: true);
+        Assert.AreEqual(0, removed.Count);
+    }
+
     private static Win32Program LoadProgram(string path, bool asRunCommand)
     {
         var program = TestDataHelper.CreateTestWin32Program("Bar", path);
@@ -212,7 +242,7 @@ public class RegistryAppSourceTests
             throw new AssertFailedException("Candidate indexing must use the returned paths and terms together.");
         }
 
-        public IEnumerable<Win32ProgramCandidate> GetCandidates()
+        public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception> onError = null, CancellationToken cancellationToken = default)
         {
             return _candidates;
         }

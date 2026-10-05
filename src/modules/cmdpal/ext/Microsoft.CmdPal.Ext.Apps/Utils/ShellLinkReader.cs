@@ -24,14 +24,27 @@ internal static class ShellLinkReader
         PInvoke.CoCreateInstance(typeof(ShellLink).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out link).ThrowOnFailure();
         using var linkHandle = new SafeComHandle((IntPtr)link);
 
-        const int STGMREAD = 0;
+        const STGM readSharing = STGM.STGM_READ | STGM.STGM_SHARE_DENY_NONE;
 
         IPersistFile* persistFile = null;
         Guid iid = typeof(IPersistFile).GUID;
         var queryResult = ((IUnknown*)link)->QueryInterface(&iid, (void**)&persistFile);
         using var persistFileHandle = new SafeComHandle((IntPtr)persistFile);
-        if (queryResult.Failed || persistFile is null || persistFile->Load(path, STGMREAD).Failed)
+        if (queryResult.Failed || persistFile is null)
         {
+            return null;
+        }
+
+        var loadResult = persistFile->Load(path, readSharing);
+        if (loadResult.Failed)
+        {
+            // Let discovery distinguish read contention from an invalid shortcut.
+            if (loadResult.Value is unchecked((int)0x80070020) or unchecked((int)0x80070021) or unchecked((int)0x80070005)
+                or unchecked((int)0x80030020) or unchecked((int)0x80030021) or unchecked((int)0x80030005))
+            {
+                loadResult.ThrowOnFailure();
+            }
+
             return null;
         }
 

@@ -23,7 +23,7 @@ using MEL = Microsoft.Extensions.Logging;
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class AppCatalogTests
+public partial class AppCatalogTests
 {
     private static readonly TimeProvider TestTimeProvider = new FixedTimeProvider(
         new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero));
@@ -90,6 +90,41 @@ public class AppCatalogTests
         Assert.IsTrue(leftGrouped.HasSamePersistedContent(rightGrouped));
         Assert.AreEqual(3, leftGrouped.Provenance.References.Length);
         Assert.AreEqual(3, leftGrouped.MatchTerms.Length);
+    }
+
+    [TestMethod]
+    public void HaveSamePersistedContent_IgnoresItemOrderAndIdentityCasing()
+    {
+        var first = CreateCatalogItem("First");
+        var second = CreateCatalogItem("Second");
+        var caseVariant = CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant());
+
+        Assert.IsTrue(AppCatalogItem.HaveSamePersistedContent([first, second], [second, caseVariant]));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void HaveSamePersistedContent_RejectsDuplicateIdentities(bool duplicatesOnLeft)
+    {
+        var first = CreateCatalogItem("First");
+        var second = CreateCatalogItem("Second");
+        AppCatalogItem[] unique = [first, second];
+        AppCatalogItem[] duplicates = [first, CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant())];
+
+        Assert.IsFalse(duplicatesOnLeft
+            ? AppCatalogItem.HaveSamePersistedContent(duplicates, unique)
+            : AppCatalogItem.HaveSamePersistedContent(unique, duplicates));
+    }
+
+    [TestMethod]
+    public void HaveSamePersistedContent_DetectsProvenanceChangesWithoutPreventingRowReuse()
+    {
+        var first = CreateCatalogItem("First");
+        var updated = first.MergeProvenance(CreateCatalogItem("First", sourceId: "alternate"));
+
+        Assert.IsTrue(first.CanReuseMaterializedApp(updated));
+        Assert.IsFalse(AppCatalogItem.HaveSamePersistedContent([first], [updated]));
     }
 
     [TestMethod]
@@ -2086,7 +2121,8 @@ public class AppCatalogTests
         IAppVisibilityStore? visibilityStore = null,
         IReadOnlyList<IAppCatalogFilter>? filters = null,
         MEL.ILogger<AppCatalog>? logger = null)
-        => new(
+    {
+        return new(
             new MutableSourceProvider(sources),
             cache,
             visibilityStore ?? new VisibleApps(),
@@ -2094,6 +2130,7 @@ public class AppCatalogTests
             timeProvider: TestTimeProvider,
             invalidationDelay: TimeSpan.Zero,
             logger: logger);
+    }
 
     private static AppCatalogItem CreateCatalogItem(
         string name,
@@ -2132,12 +2169,14 @@ public class AppCatalogTests
         string identity,
         int priority,
         string sourceId)
-        => new(
+    {
+        return new(
             identity,
             priority,
             new AppCatalogSourceReference(sourceId, program.FullPath),
             [program.Name],
             Win32AppPayload.From(program));
+    }
 
     private static bool ContainsApp(IReadOnlyList<AppItem> items, string name)
     {
@@ -2150,18 +2189,6 @@ public class AppCatalogTests
         }
 
         return false;
-    }
-
-    private sealed class FixedTimeProvider : TimeProvider
-    {
-        private readonly DateTimeOffset _utcNow;
-
-        public FixedTimeProvider(DateTimeOffset utcNow)
-        {
-            _utcNow = utcNow;
-        }
-
-        public override DateTimeOffset GetUtcNow() => _utcNow;
     }
 
     private static bool ContainsString(IReadOnlyList<string> items, string expected)
@@ -2191,6 +2218,21 @@ public class AppCatalogTests
         }
     }
 
+    private sealed class FixedTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _utcNow;
+
+        public FixedTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return _utcNow;
+        }
+    }
+
     private sealed class VisibleApps : IAppVisibilityStore
     {
         public event EventHandler? Changed
@@ -2199,9 +2241,15 @@ public class AppCatalogTests
             remove { }
         }
 
-        public AppVisibility GetVisibility(AppCatalogItem item) => AppVisibility.Visible;
+        public AppVisibility GetVisibility(AppCatalogItem item)
+        {
+            return AppVisibility.Visible;
+        }
 
-        public bool SetHidden(AppCatalogItem item, bool hidden) => false;
+        public bool SetHidden(AppCatalogItem item, bool hidden)
+        {
+            return false;
+        }
 
         public void Persist()
         {
@@ -2214,20 +2262,22 @@ public class AppCatalogTests
 
     private sealed class MutableVisibilityStore : IAppVisibilityStore
     {
-        private readonly HashSet<string> _hiddenIds = new(StringComparer.OrdinalIgnoreCase);
-
         public event EventHandler? Changed
         {
             add { }
             remove { }
         }
 
-        public AppVisibility GetVisibility(AppCatalogItem item)
-            => _hiddenIds.Contains(item.Identity) ? AppVisibility.Hidden : AppVisibility.Visible;
+        private readonly HashSet<string> _hiddenIds = new(StringComparer.OrdinalIgnoreCase);
 
         public int PersistCount { get; private set; }
 
         public Exception? PersistException { get; init; }
+
+        public AppVisibility GetVisibility(AppCatalogItem item)
+        {
+            return _hiddenIds.Contains(item.Identity) ? AppVisibility.Hidden : AppVisibility.Visible;
+        }
 
         public bool SetHidden(AppCatalogItem item, bool hidden)
         {
@@ -2250,11 +2300,14 @@ public class AppCatalogTests
 
     private sealed class MutableCatalogFilter : IAppCatalogFilter
     {
-        private readonly HashSet<string> _excludedIds = new(StringComparer.OrdinalIgnoreCase);
-
         public event EventHandler? Changed;
 
-        public bool Includes(AppCatalogItem item) => !_excludedIds.Contains(item.Identity);
+        private readonly HashSet<string> _excludedIds = new(StringComparer.OrdinalIgnoreCase);
+
+        public bool Includes(AppCatalogItem item)
+        {
+            return !_excludedIds.Contains(item.Identity);
+        }
 
         public void Exclude(string identity)
         {
@@ -2264,17 +2317,22 @@ public class AppCatalogTests
             }
         }
 
-        public void Dispose() => Changed = null;
+        public void Dispose()
+        {
+            Changed = null;
+        }
     }
 
     private sealed class ThrowingCatalogFilter : IAppCatalogFilter
     {
-        private bool _fail;
-
         public event EventHandler? Changed;
 
+        private bool _fail;
+
         public bool Includes(AppCatalogItem item)
-            => !_fail ? true : throw new InvalidOperationException("Test reprojection failure.");
+        {
+            return !_fail ? true : throw new InvalidOperationException("Test reprojection failure.");
+        }
 
         public void FailAndRaiseChanged()
         {
@@ -2282,7 +2340,10 @@ public class AppCatalogTests
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Dispose() => Changed = null;
+        public void Dispose()
+        {
+            Changed = null;
+        }
     }
 
     private sealed class RecordingLogger<T> : MEL.ILogger<T>
@@ -2292,9 +2353,14 @@ public class AppCatalogTests
 
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
-            => null;
+        {
+            return null;
+        }
 
-        public bool IsEnabled(LogLevel logLevel) => true;
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return true;
+        }
 
         public void Log<TState>(
             LogLevel logLevel,
@@ -2324,11 +2390,6 @@ public class AppCatalogTests
         private Exception? _nextSaveException;
         private int _saveCount;
 
-        public TestCache(AppCatalogCacheFile? cache)
-        {
-            _cache = cache;
-        }
-
         public int SaveCount => Volatile.Read(ref _saveCount);
 
         public Task<AppCatalogCacheFile?>? DeferredLoad { get; init; }
@@ -2337,11 +2398,22 @@ public class AppCatalogTests
 
         public IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>>? LastSavedSnapshots { get; private set; }
 
+        public IReadOnlyCollection<string> LastFullyReconciledSourceIds { get; private set; } = [];
+
+        public TestCache(AppCatalogCacheFile? cache)
+        {
+            _cache = cache;
+        }
+
         public Task<AppCatalogCacheFile?> LoadAsync(AppCatalogCacheContext context, CancellationToken cancellationToken)
-            => DeferredLoad ?? Task.FromResult(_cache);
+        {
+            return DeferredLoad ?? Task.FromResult(_cache);
+        }
 
         public void FailNextSave(Exception exception)
-            => _nextSaveException = exception;
+        {
+            _nextSaveException = exception;
+        }
 
         public Task SaveAsync(
             IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> sourceSnapshots,
@@ -2350,6 +2422,7 @@ public class AppCatalogTests
             CancellationToken cancellationToken)
         {
             LastSavedSnapshots = sourceSnapshots;
+            LastFullyReconciledSourceIds = fullyReconciledSourceIds.ToArray();
             var exception = Interlocked.Exchange(ref _nextSaveException, null);
             var save = exception is not null ? Task.FromException(exception) : DeferredSave ?? Task.CompletedTask;
             // Publish the captured save state before a polling test observes the new count.
@@ -2361,6 +2434,8 @@ public class AppCatalogTests
 
     private sealed class MutableSourceProvider : IAppSourceProvider
     {
+        public event EventHandler? Changed;
+
         private IReadOnlyList<IAppSource> _sources;
 
         public MutableSourceProvider(IReadOnlyList<IAppSource> sources)
@@ -2368,9 +2443,10 @@ public class AppCatalogTests
             _sources = sources;
         }
 
-        public event EventHandler? Changed;
-
-        public IReadOnlyList<IAppSource> GetSources() => _sources;
+        public IReadOnlyList<IAppSource> GetSources()
+        {
+            return _sources;
+        }
 
         public void SetSources(IReadOnlyList<IAppSource> sources)
         {
@@ -2378,11 +2454,16 @@ public class AppCatalogTests
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Dispose() => Changed = null;
+        public void Dispose()
+        {
+            Changed = null;
+        }
     }
 
     private sealed class TestAppSource : IAppSource
     {
+        public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
+
         private IReadOnlyList<AppCatalogItem> _items;
         private Task? _initialization;
         private Task<IReadOnlyList<AppCatalogItem>>? _nextLoad;
@@ -2393,8 +2474,6 @@ public class AppCatalogTests
         private int _loadCount;
         private int _initializeCount;
         private int _incrementalLoadCount;
-
-        public event EventHandler<AppSourceInvalidatedEventArgs>? Invalidated;
 
         public string Id { get; }
 
@@ -2407,6 +2486,14 @@ public class AppCatalogTests
         public int IncrementalLoadCount => Volatile.Read(ref _incrementalLoadCount);
 
         public bool IsDisposed { get; private set; }
+
+        public Exception? LoadFailure { get; set; }
+
+        public bool LastLoadBackground { get; private set; }
+
+        public CancellationToken LastLoadToken { get; private set; }
+
+        public bool LastIncrementalBackground { get; private set; }
 
         public IReadOnlyList<AppCatalogItem> LastIncrementalBaseItems { get; private set; } = [];
 
@@ -2431,26 +2518,40 @@ public class AppCatalogTests
             _initialization = initialization;
         }
 
-        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken)
+        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
         {
+            LastLoadBackground = background;
+            LastLoadToken = cancellationToken;
             // Consume this load's gate before signaling: the waiting test may immediately supply the next one.
-            var load = Interlocked.Exchange(ref _nextLoad, null) ?? Task.FromResult(_items);
+            var load = LoadFailure is { } failure
+                ? Task.FromException<IReadOnlyList<AppCatalogItem>>(failure)
+                : Interlocked.Exchange(ref _nextLoad, null)?.WaitAsync(cancellationToken) ?? Task.FromResult(_items);
             Interlocked.Increment(ref _loadCount);
             return load;
         }
 
-        public void DeferNextLoad(Task<IReadOnlyList<AppCatalogItem>> nextLoad) => Interlocked.Exchange(ref _nextLoad, nextLoad);
+        public void DeferNextLoad(Task<IReadOnlyList<AppCatalogItem>> nextLoad)
+        {
+            Interlocked.Exchange(ref _nextLoad, nextLoad);
+        }
 
-        public void SetItems(IReadOnlyList<AppCatalogItem> items) => _items = items;
+        public void SetItems(IReadOnlyList<AppCatalogItem> items)
+        {
+            _items = items;
+        }
 
         public void SetIncrementalFactory(Func<IReadOnlyList<AppCatalogItem>, IReadOnlyList<AppCatalogItem>> incrementalFactory)
-            => _incrementalFactory = incrementalFactory;
+        {
+            _incrementalFactory = incrementalFactory;
+        }
 
         public Task<IReadOnlyList<AppCatalogItem>> ApplyChangesAsync(
             IReadOnlyList<AppCatalogItem> currentItems,
             IReadOnlyList<AppSourcePathChange> changes,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool background = false)
         {
+            LastIncrementalBackground = background;
             LastIncrementalBaseItems = currentItems;
             LastIncrementalChanges = new List<AppSourcePathChange>(changes);
             var incrementalFactory = _incrementalFactory;
@@ -2459,47 +2560,14 @@ public class AppCatalogTests
         }
 
         public void Invalidate(AppSourceInvalidatedEventArgs? args = null)
-            => Invalidated?.Invoke(this, args ?? AppSourceInvalidatedEventArgs.FullRefresh);
+        {
+            Invalidated?.Invoke(this, args ?? AppSourceInvalidatedEventArgs.FullRefresh);
+        }
 
         public void Dispose()
         {
             IsDisposed = true;
             Invalidated = null;
         }
-    }
-
-    [TestMethod]
-    public void HaveSamePersistedContent_IgnoresItemOrderAndIdentityCasing()
-    {
-        var first = CreateCatalogItem("First");
-        var second = CreateCatalogItem("Second");
-        var caseVariant = CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant());
-
-        Assert.IsTrue(AppCatalogItem.HaveSamePersistedContent([first, second], [second, caseVariant]));
-    }
-
-    [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void HaveSamePersistedContent_RejectsDuplicateIdentities(bool duplicatesOnLeft)
-    {
-        var first = CreateCatalogItem("First");
-        var second = CreateCatalogItem("Second");
-        AppCatalogItem[] unique = [first, second];
-        AppCatalogItem[] duplicates = [first, CreateCatalogItem("First", identity: first.Identity.ToUpperInvariant())];
-
-        Assert.IsFalse(duplicatesOnLeft
-            ? AppCatalogItem.HaveSamePersistedContent(duplicates, unique)
-            : AppCatalogItem.HaveSamePersistedContent(unique, duplicates));
-    }
-
-    [TestMethod]
-    public void HaveSamePersistedContent_DetectsProvenanceChangesWithoutPreventingRowReuse()
-    {
-        var first = CreateCatalogItem("First");
-        var updated = first.MergeProvenance(CreateCatalogItem("First", sourceId: "alternate"));
-
-        Assert.IsTrue(first.CanReuseMaterializedApp(updated));
-        Assert.IsFalse(AppCatalogItem.HaveSamePersistedContent([first], [updated]));
     }
 }
