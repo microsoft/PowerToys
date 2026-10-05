@@ -13,6 +13,65 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public class IconPresentationStateTests
 {
     [TestMethod]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    [DataRow(false, false, true)]
+    public void IntermediateIsSelectedOnlyWhenItIsActuallyPresented(bool hasResolvedSource, bool hasPlacementFallback, bool isPresented)
+    {
+        var state = new IconPresentationState<object>();
+        if (hasResolvedSource)
+        {
+            state.SetResolvedSource(new object(), expectsImageSource: true);
+        }
+
+        if (hasPlacementFallback)
+        {
+            state.PlacementFallback = new object();
+        }
+
+        var intermediate = new object();
+        state.SetRequestFallback(intermediate);
+
+        var selected = state.SelectSource(preferFallbackForResolvedSource: false);
+        Assert.AreEqual(isPresented, ReferenceEquals(selected, intermediate));
+    }
+
+    [TestMethod]
+    public void RetainedSourceSurvivesPendingReplacements()
+    {
+        var state = new IconPresentationState<string> { PlacementFallback = "placement" };
+        state.SetRequestFallback("old request");
+        state.SetResolvedSource("frame 1", expectsImageSource: true);
+
+        state.BeginSourceChange(retainResolvedSource: true);
+        Assert.IsNull(state.RequestFallback);
+        Assert.IsTrue(state.HasResolvedSource);
+        Assert.IsTrue(state.ResolvedSourceExpectsImage);
+        Assert.AreEqual("frame 1", state.SelectSource(preferFallbackForResolvedSource: false));
+
+        state.SetRequestFallback("intermediate");
+        state.BeginSourceChange(retainResolvedSource: true);
+        Assert.AreEqual("frame 1", state.SelectSource(preferFallbackForResolvedSource: false));
+        Assert.IsNull(state.RequestFallback);
+
+        state.SetResolvedSource("frame 2", expectsImageSource: true);
+        Assert.AreEqual("frame 2", state.SelectSource(preferFallbackForResolvedSource: false));
+    }
+
+    [TestMethod]
+    public void FailedReplacementUsesFallbackWithoutRestoringPreviousImage()
+    {
+        var state = new IconPresentationState<string> { PlacementFallback = "placement" };
+        state.SetResolvedSource("frame 1", expectsImageSource: true);
+        state.BeginSourceChange(retainResolvedSource: true);
+        state.SetResolvedSource(null, expectsImageSource: false);
+
+        Assert.AreEqual("placement", state.SelectSource(preferFallbackForResolvedSource: true));
+        state.BeginSourceChange(retainResolvedSource: true);
+        Assert.AreEqual("placement", state.SelectSource(preferFallbackForResolvedSource: true));
+    }
+
+    [TestMethod]
     public void SourceChangeResetsResolvedSourceToPlacementFallback()
     {
         var state = new IconPresentationState<string>

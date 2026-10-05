@@ -5,6 +5,7 @@
 using CommunityToolkit.WinUI.Deferred;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,13 +23,14 @@ public partial class IconBox : ContentControl
     private const double DefaultIconFontSize = 16.0;
     private static long _nextDiagnosticId;
     private readonly IconPresentationState<IconSource> _presentation = new();
+    private readonly IconRequestState _requestState = new();
     private readonly DispatcherQueue _dispatcherQueue;
 
     private double _lastScale;
     private ElementTheme _lastTheme;
+    private XamlRoot? _subscribedXamlRoot;
     private double _lastFontSize;
     private IconRefreshState _refreshState;
-    private long _requestVersion;
     private IconRequestMeasurement _activeRequestDiagnostics;
     private IIconRequestDemand? _activeRequestDemand;
     private PendingIntermediatePresentation? _pendingIntermediatePresentation;
@@ -225,13 +227,11 @@ public partial class IconBox : ContentControl
         _lastScale = newScale;
         UpdateLastFontSize();
 
-        if (XamlRoot is not null)
-        {
-            XamlRoot.Changed += OnXamlRootChanged;
-        }
+        SubscribeToXamlRoot(XamlRoot);
 
         if (SourceKey is not null && (changedTheme || changedScale))
         {
+            AdvanceRequestVersion();
             var reason = IconRequestReason.Loaded;
             if (changedTheme)
             {
@@ -255,24 +255,40 @@ public partial class IconBox : ContentControl
         // instance has already been rebound, loaded, and arranged for a new item.
         // No matching Loaded event follows that stale notification, so invalidating
         // the new request here would leave the previous icon in the visible row.
-        if (_activeRequestDemand is not null && IsLoaded && IsWithinXamlRootBounds())
+        if (IsLoaded && IsWithinXamlRootBounds())
         {
             return;
         }
 
-        if (XamlRoot is not null)
+        SubscribeToXamlRoot(null);
+        var interruptedRequest = _requestState.IsLatestRequestActive;
+        AdvanceRequestVersion();
+        if (interruptedRequest)
         {
-            XamlRoot.Changed -= OnXamlRootChanged;
-        }
-
-        if (_activeRequestDemand is not null)
-        {
-            AdvanceRequestVersion();
             MarkRefreshPending(IconRequestReason.Loaded);
         }
 
         _hasDerivedRequestSite = false;
         _derivedRequestSite = IconRequestSite.Unknown;
+    }
+
+    private void SubscribeToXamlRoot(XamlRoot? root)
+    {
+        if (ReferenceEquals(root, _subscribedXamlRoot))
+        {
+            return;
+        }
+
+        if (_subscribedXamlRoot is not null)
+        {
+            _subscribedXamlRoot.Changed -= OnXamlRootChanged;
+        }
+
+        _subscribedXamlRoot = root;
+        if (root is not null)
+        {
+            root.Changed += OnXamlRootChanged;
+        }
     }
 
     private bool IsWithinXamlRootBounds()
@@ -300,6 +316,11 @@ public partial class IconBox : ContentControl
 
     private void OnXamlRootChanged(XamlRoot sender, XamlRootChangedEventArgs args)
     {
+        if (!ReferenceEquals(sender, _subscribedXamlRoot))
+        {
+            return;
+        }
+
         var newScale = sender.RasterizationScale;
         var changedLastTheme = _lastTheme != ActualTheme;
         var changedScale = Math.Abs(newScale - _lastScale) > 0.01;
@@ -329,6 +350,11 @@ public partial class IconBox : ContentControl
 
     private void RequestRefresh(IconRequestReason reason)
     {
+        if ((reason & (IconRequestReason.ThemeChanged | IconRequestReason.ScaleChanged)) != 0)
+        {
+            AdvanceRequestVersion();
+        }
+
         MarkRefreshPending(reason);
         Refresh();
     }
@@ -337,6 +363,7 @@ public partial class IconBox : ContentControl
     {
         var sourceKey = SourceKey;
         var sourceRequested = _sourceRequested;
+        SynchronizeRequestSource(sourceKey, ActualTheme);
         if (!_refreshState.TryConsume(
                 IsLoaded,
                 sourceKey is not null,
@@ -346,20 +373,52 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        RequestIconFromSource(this, sourceKey!, sourceRequested!, AdvanceRequestVersion(), reason);
+        RequestIconFromSource(this, sourceKey!, sourceRequested!, _requestState.Begin(), _requestState.Theme, reason);
     }
 
-    private long AdvanceRequestVersion()
+    private void SynchronizeRequestSource(object? sourceKey, ElementTheme theme)
     {
-        _activeRequestDiagnostics.Invalidate();
+        if (ReferenceEquals(sourceKey, _requestState.SourceKey) && theme == _requestState.Theme)
+        {
+            return;
+        }
+
+        var owner = sourceKey is IconInfoViewModel icon && icon.HasIcon(theme == ElementTheme.Light)
+            ? icon.PresentationOwner
+            : null;
+        var sourceChanged = _requestState.ChangeSource(sourceKey, theme, owner, out var retainPresentation);
+        ReleaseActiveRequest(retainCandidate: _requestState.IsLatestRequestActive);
+
+        if (sourceChanged)
+        {
+            _presentation.BeginSourceChange(retainPresentation);
+        }
+    }
+
+    private void AdvanceRequestVersion()
+    {
+        _requestState.Invalidate();
+        ReleaseActiveRequest();
+    }
+
+    private void ReleaseActiveRequest(bool retainCandidate = false)
+    {
+        if (retainCandidate)
+        {
+            _activeRequestDiagnostics.ReleaseDemand();
+        }
+        else
+        {
+            _activeRequestDiagnostics.Invalidate();
+        }
+
         _activeRequestDiagnostics = default;
-        _activeRequestDemand?.Release();
+        var demand = _activeRequestDemand;
         _activeRequestDemand = null;
-        var requestVersion = ++_requestVersion;
+        demand?.Release();
         CompleteIntermediatePresentation(
             Interlocked.Exchange(ref _pendingIntermediatePresentation, null),
             applied: false);
-        return requestVersion;
     }
 
     private void TrackActiveRequest(
@@ -367,7 +426,7 @@ public partial class IconBox : ContentControl
         IconRequestMeasurement diagnostics,
         IIconRequestDemand demand)
     {
-        if (requestVersion == _requestVersion)
+        if (_requestState.IsCurrent(requestVersion))
         {
             _activeRequestDiagnostics = diagnostics;
             _activeRequestDemand = demand;
@@ -379,14 +438,16 @@ public partial class IconBox : ContentControl
         }
     }
 
-    private void ClearActiveRequest(long requestVersion, IIconRequestDemand demand)
+    private void ClearActiveRequest(long requestVersion, IIconRequestDemand? demand)
     {
-        demand.Release();
-        if (requestVersion == _requestVersion && ReferenceEquals(_activeRequestDemand, demand))
+        if (_requestState.IsCurrent(requestVersion))
         {
             _activeRequestDiagnostics = default;
             _activeRequestDemand = null;
         }
+
+        _requestState.Complete(requestVersion);
+        demand?.Release();
     }
 
     private IconRequestOrigin GetDiagnosticOrigin()
@@ -672,8 +733,7 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        self.AdvanceRequestVersion();
-        self._presentation.BeginSourceChange();
+        self.SynchronizeRequestSource(e.NewValue, self.ActualTheme);
 
         if (e.NewValue is null)
         {
@@ -682,10 +742,8 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        // Keep the preceding source only while a replacement has a chance to resolve
-        // synchronously in Refresh. RequestIconFromSource presents the fallback before
-        // an asynchronous suspension, so the preceding item can never reach another frame.
-        // If no request can start now, clear it immediately instead.
+        // Only updates from the same owner retain their resolved source across an await.
+        // A recycled item's source is replaced before the request suspends.
         if (!self.IsLoaded || self._sourceRequested is null)
         {
             self.UpdatePresentedSource();
@@ -699,6 +757,7 @@ public partial class IconBox : ContentControl
         object sourceKey,
         TypedEventHandler<IconBox, SourceRequestedEventArgs> sourceRequested,
         long requestVersion,
+        ElementTheme theme,
         IconRequestReason reason)
     {
         var diagnostics = default(IconRequestMeasurement);
@@ -713,7 +772,7 @@ public partial class IconBox : ContentControl
             diagnostics = IconLoadDiagnostics.IsRecording
                 ? IconLoadDiagnostics.BeginRequest(reason, scale, iconBox.GetDiagnosticOrigin())
                 : default;
-            var requestArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale)
+            var requestArgs = new SourceRequestedEventArgs(sourceKey, theme, scale)
             {
                 Diagnostics = diagnostics,
             };
@@ -721,7 +780,6 @@ public partial class IconBox : ContentControl
             requestArgs.SetIntermediateSourceReporter(
                 (source, presentationCompleted) => iconBox.TryQueueRequestIntermediate(
                     requestVersion,
-                    sourceKey,
                     requestArgs,
                     source,
                     presentationCompleted));
@@ -729,47 +787,44 @@ public partial class IconBox : ContentControl
             var invocation = sourceRequested.InvokeAsync(iconBox, eventArgs);
             if (!invocation.IsCompleted)
             {
-                iconBox.SetRequestFallback(requestVersion, sourceKey, eventArgs.FallbackSource);
+                iconBox.SetRequestFallback(requestVersion, eventArgs.FallbackSource);
             }
 
             await invocation;
 
-            // After the await:
-            // Is the icon we're looking up now, the one we still
-            // want to find? Since this IconBox might be used in a
-            // list virtualization situation, it's very possible we
-            // may have already been set to a new icon before we
-            // even got back from the await.
-            if (requestVersion != iconBox._requestVersion || !ReferenceEquals(sourceKey, iconBox.SourceKey))
+            // Completed frames may advance the same item, but must never replace a newer result.
+            if (!iconBox._requestState.CanApply(requestVersion, eventArgs.Value is not null))
             {
-                // If the requested icon has changed, then just bail
-                diagnostics.Complete(IconRequestStatus.Stale, eventArgs.Value);
+                CompleteRequestDiagnostics(diagnostics, IconRequestStatus.Stale, eventArgs.Value);
                 return;
             }
 
             iconBox._presentation.SetRequestFallback(eventArgs.FallbackSource);
             iconBox._presentation.SetResolvedSource(eventArgs.Value, eventArgs.ExpectsImageSource);
             iconBox.UpdatePresentedSource();
-            diagnostics.Complete(
+            iconBox._requestState.MarkApplied(requestVersion);
+            CompleteRequestDiagnostics(
+                diagnostics,
                 eventArgs.Value is null ? IconRequestStatus.Empty : IconRequestStatus.Applied,
                 eventArgs.Value);
         }
         catch (Exception ex)
         {
-            diagnostics.Complete(IconRequestStatus.Failed);
+            CompleteRequestDiagnostics(diagnostics, IconRequestStatus.Failed);
 
-            if (requestVersion == iconBox._requestVersion)
+            if (iconBox._requestState.ShouldClearOnFailure(requestVersion))
             {
-                // A synchronous provider failure occurs before the pending-source path
-                // gets a chance to clear the preceding item.
                 try
                 {
+                    iconBox._presentation.SetResolvedSource(null, expectsImageSource: false);
                     iconBox.UpdatePresentedSource();
                 }
                 catch (Exception presentationException)
                 {
                     Logger.LogError($"Failed to clear icon after a request failure ({iconBox.GetDiagnosticDescription()})", presentationException);
                 }
+
+                iconBox._requestState.MarkApplied(requestVersion);
 
                 // Do not dispatch immediately: a deterministic failure would recurse forever.
                 // Keep the request pending for the next external lifecycle or source trigger.
@@ -782,16 +837,25 @@ public partial class IconBox : ContentControl
         }
         finally
         {
-            if (eventArgs is not null)
-            {
-                iconBox.ClearActiveRequest(requestVersion, eventArgs);
-            }
+            iconBox.ClearActiveRequest(requestVersion, eventArgs);
         }
     }
 
-    private void SetRequestFallback(long requestVersion, object sourceKey, IconSource? fallbackSource)
+    private static void CompleteRequestDiagnostics(IconRequestMeasurement diagnostics, IconRequestStatus status, IconSource? source = null)
     {
-        if (requestVersion != _requestVersion || !ReferenceEquals(sourceKey, SourceKey))
+        try
+        {
+            diagnostics.Complete(status, source);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to record an icon request", ex);
+        }
+    }
+
+    private void SetRequestFallback(long requestVersion, IconSource? fallbackSource)
+    {
+        if (!_requestState.IsCurrent(requestVersion))
         {
             return;
         }
@@ -802,14 +866,12 @@ public partial class IconBox : ContentControl
 
     private bool TryQueueRequestIntermediate(
         long requestVersion,
-        object sourceKey,
         IIconRequestDemand demand,
         IconSource source,
         Action<bool>? presentationCompleted)
     {
         var presentation = new PendingIntermediatePresentation(
             requestVersion,
-            sourceKey,
             demand,
             source,
             presentationCompleted);
@@ -919,8 +981,7 @@ public partial class IconBox : ContentControl
     {
         try
         {
-            if (presentation.RequestVersion != _requestVersion
-                || !ReferenceEquals(presentation.SourceKey, SourceKey)
+            if (!_requestState.IsCurrent(presentation.RequestVersion)
                 || !ReferenceEquals(presentation.Demand, _activeRequestDemand))
             {
                 return false;
@@ -928,7 +989,7 @@ public partial class IconBox : ContentControl
 
             _presentation.SetRequestFallback(presentation.Source);
             UpdatePresentedSource();
-            return true;
+            return ReferenceEquals(Source, presentation.Source);
         }
         catch (Exception ex)
         {
@@ -969,14 +1030,11 @@ public partial class IconBox : ContentControl
 
     private sealed class PendingIntermediatePresentation(
         long requestVersion,
-        object sourceKey,
         IIconRequestDemand demand,
         IconSource source,
         Action<bool>? presentationCompleted)
     {
         public long RequestVersion { get; } = requestVersion;
-
-        public object SourceKey { get; } = sourceKey;
 
         public IIconRequestDemand Demand { get; } = demand;
 

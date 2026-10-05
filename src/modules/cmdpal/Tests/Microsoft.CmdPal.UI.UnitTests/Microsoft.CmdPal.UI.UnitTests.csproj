@@ -47,6 +47,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ContextMenuHost.cs" Link="Services\ContextMenuHost.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ItemActionController.cs" Link="Services\ItemActionController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestState.cs" Link="Controls\IconRequestState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\AppIconProtocolProcessor.cs" Link="Helpers\Icons\AppIconProtocolProcessor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconPresentationState`1.cs" Link="Controls\IconPresentationState`1.cs" />
@@ -129,5 +130,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\BuildInfo.cs" Link="Helpers\BuildInfo.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />
+    <Compile Include="..\..\ext\SamplePagesExtension\Pages\ProgressStreamReference.cs" Link="Samples\ProgressStreamReference.cs" />
   </ItemGroup>
 </Project>

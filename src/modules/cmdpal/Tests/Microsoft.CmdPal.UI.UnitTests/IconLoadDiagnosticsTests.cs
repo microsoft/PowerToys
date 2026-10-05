@@ -24,6 +24,48 @@ public class IconLoadDiagnosticsTests
     }
 
     [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    [DataRow(false, true)]
+    public void SupersededDemandIsInvalidatedOnlyWhenTheResultBecomesStale(bool releaseBeforeLink, bool stale)
+    {
+        IconLoadDiagnostics.Start();
+        var request = IconLoadDiagnostics.BeginRequest(IconRequestReason.SourceChanged, 1.0);
+        var load = IconLoadDiagnostics.CreateLoad(request, "frame", hasStream: true, width: 20, height: 20, scale: 1.0);
+        Assert.IsNotNull(load);
+        if (releaseBeforeLink)
+        {
+            request.ReleaseDemand();
+        }
+
+        request.RecordProviderResolution(IconProviderResolution.NewLoad, load);
+        load.Enqueued(IconLoadPriority.Low);
+        StartWorker(load);
+        request.ReleaseDemand();
+        request.ReleaseDemand();
+        load.SetResult(null);
+        load.Complete();
+        load.WorkerReleased();
+        var status = stale ? IconRequestStatus.Stale : IconRequestStatus.Applied;
+        request.Complete(status);
+
+        var report = IconLoadDiagnostics.StopAndCreateReport();
+        Assert.IsNotNull(report);
+        StringAssert.Contains(report.Text, $"    {status}: 1");
+        StringAssert.Contains(report.Text, "Live requesters at stop: 0");
+        StringAssert.Contains(report.Text, "Loads completed with no live requester: 1");
+        var invalidationsStart = report.Text.IndexOf("  Invalidated requests by load stage", StringComparison.Ordinal);
+        var invalidationsEnd = report.Text.IndexOf("  Demand-loss events", invalidationsStart, StringComparison.Ordinal);
+        var invalidations = report.Text[invalidationsStart..invalidationsEnd];
+        foreach (var stage in Enum.GetValues<IconLoadDemandStage>())
+        {
+            var expected = status == IconRequestStatus.Stale && stage == IconLoadDemandStage.Completed ? 1 : 0;
+            StringAssert.Contains(invalidations, $"    {stage}: {expected}");
+        }
+    }
+
+    [TestMethod]
     public void RecordingProducesAnonymousAggregateReport()
     {
         var sessionId = IconLoadDiagnostics.Start();
@@ -727,7 +769,7 @@ public class IconLoadDiagnosticsTests
         StringAssert.Contains(report.Text, "Requests linked to session loads: 2");
         StringAssert.Contains(report.Text, "    Queued: 1");
         StringAssert.Contains(report.Text, "  Invalidated requests by load stage");
-        StringAssert.Contains(report.Text, "  Demand-loss events after the last requester was invalidated");
+        StringAssert.Contains(report.Text, "  Demand-loss events after the last requester released demand");
         StringAssert.Contains(report.Text, "    Queued: 1");
         StringAssert.Contains(report.Text, "Workers started with no live requester: 1");
         StringAssert.Contains(report.Text, "Loads completed with no live requester: 1");

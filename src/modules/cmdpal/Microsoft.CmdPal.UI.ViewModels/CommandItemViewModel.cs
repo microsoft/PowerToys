@@ -69,9 +69,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public virtual string Subtitle { get; private set; } = string.Empty;
 
-    private IconInfoViewModel _icon = new(null);
+    private readonly object _iconPresentationOwner = new();
+    private volatile IconInfoViewModel _icon = new(null);
 
-    public IconInfoViewModel Icon => _icon.IsSet ? _icon : Command.Icon;
+    public IconInfoViewModel Icon
+    {
+        get
+        {
+            var icon = _icon;
+            return icon.IsSet ? icon : Command.Icon;
+        }
+    }
 
     /// <summary>
     /// The command and whether we own it, held as a single immutable pair.
@@ -203,8 +211,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         var icon = model.Icon;
         if (icon is not null)
         {
-            _icon = new(icon);
-            _icon.InitializeProperties();
+            TryPublishIconSnapshot(CreateIconSnapshot(icon));
         }
 
         // TODO: Do these need to go into FastInit?
@@ -279,7 +286,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             ClearContextMenu();
-            _icon = _errorIcon;
+            TryPublishIconSnapshot(_errorIcon);
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
             Initialized |= InitializedState.Error;
@@ -318,7 +325,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             ClearContextMenu();
-            _icon = _errorIcon;
+            TryPublishIconSnapshot(_errorIcon);
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
             Initialized |= InitializedState.Error;
@@ -427,9 +434,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(Icon):
                 var oldIcon = _icon;
-                _icon = new(model.Icon);
-                _icon.InitializeProperties();
-                if (oldIcon.IsSet || _icon.IsSet)
+                var newIcon = CreateIconSnapshot(model.Icon);
+                if (!TryPublishIconSnapshot(newIcon))
+                {
+                    return;
+                }
+
+                if (oldIcon.IsSet || newIcon.IsSet)
                 {
                     UpdateProperty(nameof(Icon));
                 }
@@ -554,10 +565,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         UpdateProperty(nameof(AllCommands));
     }
 
-    private void UpdateDefaultContextItemIcon() =>
-
-        // Command icon takes precedence over our icon on the primary command
-        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
+    private void UpdateDefaultContextItemIcon()
+    {
+        // Command icon takes precedence over our icon on the primary command.
+        var commandIcon = Command.Icon;
+        _defaultCommandContextItemViewModel?.UpdateIcon(commandIcon.IsSet ? commandIcon : _icon);
+    }
 
     private void UpdateTitle(string? title)
     {
@@ -568,9 +581,37 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private void UpdateIcon(IIconInfo? iconInfo)
     {
-        _icon = new(iconInfo);
-        _icon.InitializeProperties();
-        UpdateProperty(nameof(Icon));
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
+        if (TryPublishIconSnapshot(CreateIconSnapshot(iconInfo)))
+        {
+            UpdateProperty(nameof(Icon));
+        }
+    }
+
+    private IconInfoViewModel CreateIconSnapshot(IIconInfo? iconInfo)
+    {
+        var icon = new IconInfoViewModel(iconInfo, _iconPresentationOwner);
+        icon.InitializeProperties();
+        return icon;
+    }
+
+    private bool TryPublishIconSnapshot(IconInfoViewModel icon)
+    {
+        // Only publication shares the cleanup lock; extension reads happen before it.
+        lock (_contextItemsLock)
+        {
+            if (IsCleanedUp)
+            {
+                return false;
+            }
+
+            _icon = icon;
+            return true;
+        }
     }
 
     protected virtual void UpdateExtendedAttributes(IDictionary<string, object?>? properties)
@@ -733,6 +774,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         CommandContextItemViewModel? freedDefault;
         lock (_contextItemsLock)
         {
+            _icon = new(null);
             freedItems = [.. _contextItems];
             _contextItems.Clear();
 
@@ -749,9 +791,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
         freedDefault?.SafeCleanup();
-
-        // _listItemIcon.SafeCleanup();
-        _icon = new(null); // necessary?
 
         // One read of the pair, so a replacement racing this teardown cannot
         // leave us cleaning up a command against the wrong ownership flag.

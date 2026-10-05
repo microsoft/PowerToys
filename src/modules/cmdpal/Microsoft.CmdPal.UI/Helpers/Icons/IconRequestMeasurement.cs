@@ -43,6 +43,11 @@ internal readonly struct IconRequestMeasurement
         Session?.InvalidateRequest(Id);
     }
 
+    public void ReleaseDemand()
+    {
+        Session?.ReleaseRequestDemand(Id);
+    }
+
     public void Complete(IconRequestStatus status, IconSource? result = null)
     {
         if (Session is not { } session)
