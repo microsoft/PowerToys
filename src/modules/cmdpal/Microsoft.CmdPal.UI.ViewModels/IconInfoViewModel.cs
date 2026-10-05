@@ -28,13 +28,17 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
 
     public bool IsSet => _model.Unsafe is not null;
 
+    /// <summary>Gets the host-owned identity shared by successive icons of one item.</summary>
+    public object? PresentationOwner { get; }
+
     IIconData? IIconInfo.Dark => Dark;
 
     IIconData? IIconInfo.Light => Light;
 
-    public IconInfoViewModel(IIconInfo? icon)
+    public IconInfoViewModel(IIconInfo? icon, object? presentationOwner = null)
     {
         _model = new(icon);
+        PresentationOwner = presentationOwner;
         Light = new(null);
         Dark = new(null);
     }

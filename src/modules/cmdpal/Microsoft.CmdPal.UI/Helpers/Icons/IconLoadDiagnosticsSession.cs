@@ -585,8 +585,8 @@ internal sealed class IconLoadDiagnosticsSession
                 {
                     var result = demandState.RecordResolution(
                         resolution,
-                        requestState.Invalidated,
-                        requestState.InvalidatedAt);
+                        requestState.DemandReleased,
+                        requestState.DemandReleasedAt);
                     requestState.TracksLiveRequester = result.TracksLiveRequester;
                     if (result.RetainedResultCacheHit)
                     {
@@ -608,6 +608,31 @@ internal sealed class IconLoadDiagnosticsSession
         }
 
         IconLoadEventSource.Log.ProviderResolved(Id, requestId, loadId, (int)resolution);
+    }
+
+    public void ReleaseRequestDemand(long requestId)
+    {
+        // Superseded frames can still be presented after their scheduling demand is released.
+        if (!_requestDemandStates.TryGetValue(requestId, out var requestState))
+        {
+            return;
+        }
+
+        lock (requestState.SyncRoot)
+        {
+            if (requestState.DemandReleased)
+            {
+                return;
+            }
+
+            requestState.DemandReleased = true;
+            requestState.DemandReleasedAt = Stopwatch.GetTimestamp();
+            if (requestState.LoadId != 0 && _loadDemandStates.TryGetValue(requestState.LoadId, out var demandState))
+            {
+                demandState.InvalidateRequest(requestState.TracksLiveRequester, requestState.DemandReleasedAt);
+                requestState.TracksLiveRequester = false;
+            }
+        }
     }
 
     public void InvalidateRequest(long requestId)
@@ -695,7 +720,11 @@ internal sealed class IconLoadDiagnosticsSession
         }
 
         requestState.Invalidated = true;
-        requestState.InvalidatedAt = invalidatedAt;
+        if (!requestState.DemandReleased)
+        {
+            requestState.DemandReleased = true;
+            requestState.DemandReleasedAt = invalidatedAt;
+        }
 
         if (requestState.Resolution is null)
         {
@@ -2096,7 +2125,7 @@ internal sealed class IconLoadDiagnosticsSession
         AppendDemandQueueMeasurements(builder);
         builder.AppendLine("  Invalidated requests by load stage");
         AppendEnumCounts<IconLoadDemandStage>(builder, _invalidatedRequestLoadStages, "    ");
-        builder.AppendLine("  Demand-loss events after the last requester was invalidated");
+        builder.AppendLine("  Demand-loss events after the last requester released demand");
         AppendValue(builder, "Before enqueue", lostBeforeEnqueue, "    ");
         AppendValue(builder, "Queued", lostWhileQueued, "    ");
         AppendValue(builder, "Worker active", lostWhileWorkerActive, "    ");
@@ -2884,7 +2913,9 @@ internal sealed class IconLoadDiagnosticsSession
 
         public bool Invalidated { get; set; }
 
-        public long InvalidatedAt { get; set; }
+        public bool DemandReleased { get; set; }
+
+        public long DemandReleasedAt { get; set; }
 
         public bool InvalidationAttributed { get; set; }
     }

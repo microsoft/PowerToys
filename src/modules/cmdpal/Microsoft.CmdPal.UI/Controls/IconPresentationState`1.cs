@@ -17,12 +17,15 @@ internal sealed class IconPresentationState<T>
 
     public bool ResolvedSourceExpectsImage { get; private set; }
 
-    public void BeginSourceChange()
+    public void BeginSourceChange(bool retainResolvedSource = false)
     {
         RequestFallback = null;
-        ResolvedSource = null;
-        HasResolvedSource = false;
-        ResolvedSourceExpectsImage = false;
+        if (!retainResolvedSource)
+        {
+            ResolvedSource = null;
+            HasResolvedSource = false;
+            ResolvedSourceExpectsImage = false;
+        }
     }
 
     public void SetRequestFallback(T? source) => RequestFallback = source;
