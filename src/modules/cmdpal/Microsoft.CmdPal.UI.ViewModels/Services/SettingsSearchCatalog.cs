@@ -42,8 +42,9 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         [SettingsLinkIds.Appearance.Background] = ("Settings_GeneralPage_Background_SettingsExpander.Header", "Settings_GeneralPage_Background_SettingsExpander.Description", Glyphs.Personalization, "Background", SettingsLinkIds.Appearance.Visuals),
         [SettingsLinkIds.Appearance.DisableAnimations] = ("Settings_GeneralPage_DisableAnimations_SettingsCard.Header", null, Glyphs.Animations, "Animations", SettingsLinkIds.Appearance.Visuals),
         [SettingsLinkIds.Appearance.Layout] = ("Settings_AppearancePage_LayoutSettingsHeader.Text", null, Glyphs.Layout, null, null),
-        [SettingsLinkIds.Appearance.CompactMode] = ("Settings_GeneralPage_CompactMode_SettingsCard.Header", null, Glyphs.CompactMode, "CompactMode", SettingsLinkIds.Appearance.Layout),
-        [SettingsLinkIds.Appearance.QuickAccessShelf] = ("Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header", "Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description", Glyphs.Layout, "CompactMode", SettingsLinkIds.Appearance.Layout),
+        [SettingsLinkIds.Appearance.CompactMode] = ("Settings_GeneralPage_CommandPaletteOpening_SettingsCard.Header", null, Glyphs.CompactMode, "OpeningMode", SettingsLinkIds.Appearance.Layout),
+        [SettingsLinkIds.Appearance.CompactPosition] = ("Settings_GeneralPage_CompactCenterHeight_SettingsCard.Header", "Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description", Glyphs.Position, "LaunchPosition", SettingsLinkIds.Appearance.Layout),
+        [SettingsLinkIds.Appearance.QuickAccessShelf] = ("Settings_GeneralPage_QuickAccessShelf_SettingsCard.Header", "Settings_GeneralPage_QuickAccessShelf_SettingsCard.Description", Glyphs.DockBottom, "CompactMode", SettingsLinkIds.Appearance.Layout),
         [SettingsLinkIds.Appearance.LaunchPosition] = ("Run_PositionHeader.Header", null, Glyphs.Position, "LaunchPosition", SettingsLinkIds.Appearance.Layout),
         [SettingsLinkIds.Appearance.ToastPosition] = ("Settings_GeneralPage_ToastPosition_SettingsCard.Header", null, Glyphs.Notifications, "Toast", SettingsLinkIds.Appearance.Layout),
         [SettingsLinkIds.Appearance.Interaction] = ("Settings_AppearancePage_InteractionSettingsHeader.Text", null, Glyphs.Interaction, null, null),
@@ -304,6 +305,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         public const string CompactMode = "\uE73F";
         public const string Delete = "\uE74D";
         public const string Dock = "\uF596";
+        public const string DockBottom = "\uE90E";
         public const string Escape = "\uE845";
         public const string Extensions = "\uEA86";
         public const string Feedback = "\uE939";

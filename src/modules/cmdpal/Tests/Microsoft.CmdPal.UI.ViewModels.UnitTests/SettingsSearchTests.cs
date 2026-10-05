@@ -67,6 +67,10 @@ public partial class SettingsSearchTests
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
     [DataRow("recent items", SettingsLinkIds.General.RecentItems)]
     [DataRow("quick access shelf", SettingsLinkIds.Appearance.QuickAccessShelf)]
+    [DataRow("compact", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("compact mode", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("full mode", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("vertical search box position", SettingsLinkIds.Appearance.CompactPosition)]
     [DataRow("alt+number shortcuts in lists", SettingsLinkIds.Appearance.ListItemAltNumberBehavior)]
     public void Search_RanksExpectedSettingFirst(string query, string expectedLink)
     {
@@ -81,6 +85,7 @@ public partial class SettingsSearchTests
     [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.QuickAccessShelf, "Personalization › Layout and positioning")]
+    [DataRow(SettingsLinkIds.Appearance.CompactPosition, "Personalization › Layout and positioning")]
     [DataRow(SettingsLinkIds.Appearance.ListItemAltNumberBehavior, "Personalization › Interaction")]
     public void Catalog_UsesCurrentSettingsLocation(string linkId, string expectedBreadcrumb)
     {
