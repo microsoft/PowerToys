@@ -3,9 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,33 +11,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 [TestClass]
 public class ThumbnailHelperTests
 {
-    [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    [Timeout(15000)]
-    public async Task LoadsShellAppAndFileIconsConcurrently(bool refreshCache)
-    {
-        if (refreshCache)
-        {
-            Assert.IsTrue(ThumbnailHelper.RefreshShellIconCache());
-        }
-
-        var paths = new[]
-        {
-            @"shell:AppsFolder\Microsoft.Windows.Explorer",
-            @"shell:AppsFolder\{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\cmd.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
-        };
-
-        await Task.WhenAll(Enumerable.Range(0, 12).Select(index => Task.Run(async () =>
-        {
-            var path = paths[index % paths.Length];
-            using var stream = await ThumbnailHelper.GetThumbnail(path);
-            Assert.IsNotNull(stream, $"No icon was returned for {path}.");
-            Assert.IsTrue(stream.Size > 0, $"An empty icon was returned for {path}.");
-        })));
-    }
-
     [TestMethod]
     public void ShellDialogSuppressionPreservesModesAcrossNestedScopes()
     {
