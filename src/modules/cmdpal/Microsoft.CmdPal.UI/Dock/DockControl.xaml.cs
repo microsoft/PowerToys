@@ -991,8 +991,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
                         continue;
                     }
 
-                    var name = Path.GetFileNameWithoutExtension(path);
-                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
+                    var (name, target) = DockDropHelper.GetBookmark(path);
+                    AddBookmarkAndPinToDock(bookmarksManager, name, target);
                     foundItem = true;
                 }
             }
