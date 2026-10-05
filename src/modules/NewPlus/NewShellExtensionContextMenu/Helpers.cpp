@@ -11,8 +11,7 @@
 
 namespace
 {
-    // Capitalize with the locale the name was formatted in rather than the process-wide C locale: this code runs inside
-    // Explorer, so it must not change global CRT state with setlocale or std::locale::global.
+    // Use the name's own locale: this runs in Explorer, so it must not change the process-wide C locale.
     void CapitalizeFirstLetter(_In_ PCWSTR localeName, _Inout_ PWSTR text)
     {
         wchar_t upper = L'\0';

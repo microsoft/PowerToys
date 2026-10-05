@@ -43,12 +43,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <GenerateManifest>false</GenerateManifest>
     <DesktopCompatible>true</DesktopCompatible>
-    <!--
-      MeasureToolCore is loaded into MeasureToolUI (.NET) and calls InitUnhandledExceptionHandler. Its
-      SetUnhandledExceptionFilter is process-wide anyway, but signal(SIGABRT) goes to the UCRT this DLL links: with the
-      Hybrid CRT that is the ucrtbase.dll the .NET runtime and WinUI 3 use, so their abort() calls would also run this
-      DLL's AbortHandler. Keep a private static UCRT until the process, not this DLL, installs the handler.
-    -->
+    <!-- Keep a private UCRT: InitUnhandledExceptionHandler's signal(SIGABRT) would otherwise apply to every module in MeasureToolUI. -->
     <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

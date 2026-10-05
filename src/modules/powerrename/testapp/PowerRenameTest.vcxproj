@@ -10,7 +10,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <!-- Run PowerRenameLib on the same private static UCRT as PowerRename.exe, so it's tested the way it ships (see PowerRenameUI.vcxproj). -->
+    <!-- Same CRT as PowerRename.exe (see PowerRenameUI.vcxproj). -->
     <EnableHybridCRT>false</EnableHybridCRT>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">

@@ -10,8 +10,7 @@ namespace newplus::helpers::variables
 {
     inline std::wstring resolve_an_environment_variable(const std::wstring& string)
     {
-        // Read the live process environment rather than the CRT's copy of it, which is a snapshot that misses variables
-        // Explorer picks up later (for example, after the user edits their environment variables).
+        // Not _wdupenv_s: the CRT's environment copy is a snapshot that misses variables Explorer picks up later.
         std::wstring return_string = string;
         const DWORD required_size = GetEnvironmentVariableW(string.c_str(), nullptr, 0);
         if (required_size > 0)

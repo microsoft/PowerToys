@@ -48,9 +48,7 @@ std::shared_ptr<spdlog::logger> Logger::logger = spdlog::null_logger_mt("null");
 
 bool Logger::wasLogFailedShown()
 {
-    // Read the process environment, which init() updates with SetEnvironmentVariable. The CRT's copy of the environment
-    // is a snapshot that SetEnvironmentVariable doesn't update, and it is shared by every module in the process that
-    // links the Universal CRT dynamically (Hybrid CRT), so it would never see the flag set by another module.
+    // init() sets the flag with SetEnvironmentVariable, which the CRT's copy of the environment doesn't see.
     return GetEnvironmentVariableW(logFailedShown.c_str(), nullptr, 0) != 0;
 }
 

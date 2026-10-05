@@ -73,15 +73,14 @@
   - Open PR with changes
 
 ### C/C++ Runtime (Hybrid CRT)
-- Native projects link the C runtime as a "Hybrid CRT" (set up in `Cpp.Build.props`): the VC++ runtime and STL (`vcruntime`, `msvcp`) are linked statically (`/MT`, `/MTd`), and the Universal CRT comes from `ucrtbase.dll`, which is part of Windows 10 and later. No VC++ redistributable is needed. Windows App SDK, Windows Terminal and Command Palette use the same model.
-- Every module in a process shares that `ucrtbase.dll`, including WinUI 3 and the .NET runtime. Don't change process-wide CRT state:
-  - Don't call `setlocale` or `std::locale::global`, and don't construct named `std::locale` objects such as `std::locale("")` or `std::locale("de-DE")`. MSVC's STL temporarily calls `setlocale` while it builds them. To use a specific locale, create one with `_create_locale` or `_wcreate_locale` and pass it to the `_l` CRT functions, or call a Win32 NLS API such as `LCMapStringEx` or `GetDateFormatEx` with a locale name.
-  - Don't install CRT handlers such as `signal` or `_set_invalid_parameter_handler` from a DLL. They apply to every module in the process.
-  - Read environment variables with `GetEnvironmentVariableW`. The CRT's copy of the environment is a snapshot, and `SetEnvironmentVariableW` doesn't update it.
-- A project that can't follow these rules yet sets `<EnableHybridCRT>false</EnableHybridCRT>` to keep a private static UCRT, with a comment that says why. The exceptions today:
-  - `PowerRenameUI` (`PowerToys.PowerRename.exe`): PowerRenameLib calls `std::locale::global(std::locale(""))`, which would change the C locale that WinUI 3 uses for functions such as `wcstod` and `swprintf`. `PowerRenameLibUnitTests` and `PowerRenameTest` also opt out, so PowerRenameLib is tested the way it ships.
-  - `PowerToys.MeasureToolCore`: it installs a `SIGABRT` handler, and it's loaded into the MeasureToolUI process.
-- Debug builds link the debug Universal CRT, `ucrtbased.dll`. It's installed with the Windows SDK but not on clean machines. To run PowerToys on a machine without the Windows SDK, such as a clean test VM, use a Release build.
+- `Cpp.Build.props` links the VC++ runtime and STL statically (`/MT`) and the Universal CRT from the in-box `ucrtbase.dll`, so no VC++ redistributable is needed.
+- Every module in a process shares that UCRT, including WinUI 3 and .NET. Don't change process-wide CRT state:
+  - No `setlocale`, `std::locale::global` or named `std::locale` objects; MSVC's STL calls `setlocale` while building them. Use `_wcreate_locale` with the `_l` functions, or NLS APIs such as `LCMapStringEx`.
+  - No `signal` or `_set_invalid_parameter_handler` from a DLL.
+  - Read environment variables with `GetEnvironmentVariableW`; the CRT's copy is a snapshot.
+- If a project sets Link `IgnoreSpecificDefaultLibraries` or `AdditionalOptions`, keep the inherited `%(...)` value.
+- A project that can't follow these rules sets `<EnableHybridCRT>false</EnableHybridCRT>` with a comment that says why. Today: PowerRename.exe and its tests (PowerRenameLib calls `std::locale::global`) and MeasureToolCore (installs a `SIGABRT` handler).
+- Debug builds need `ucrtbased.dll`, which the Windows SDK installs. Use a Release build on machines without the SDK.
 
 ## Testing Requirements
 

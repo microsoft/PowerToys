@@ -48,12 +48,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <!--
-      PowerRenameLib calls std::locale::global(std::locale("")), which sets the C locale of the UCRT this EXE links.
-      With the Hybrid CRT that is ucrtbase.dll, which WinUI 3 also uses (Microsoft.UI.Xaml.dll imports setlocale, wcstod
-      and the swprintf family from it), so a user locale such as de-DE would change how WinUI parses and formats decimal
-      numbers. Keep a private static UCRT until PowerRenameLib stops changing global locale state.
-    -->
+    <!-- Keep a private UCRT: PowerRenameLib's std::locale::global would otherwise change the C locale WinUI 3 uses. -->
     <EnableHybridCRT>false</EnableHybridCRT>
     
     <CharacterSet>Unicode</CharacterSet>
