@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -23,8 +24,12 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        var startupTimer = Stopwatch.StartNew();
+        RuntimeLog.Info("Profile selector window initialization started.");
         InitializeComponent();
+        var topologyTimer = Stopwatch.StartNew();
         _topologyAtOpen = GetActiveTopologySignature();
+        RuntimeLog.Info($"Selector topology snapshot captured in {topologyTimer.ElapsedMilliseconds} ms.");
 
         var profiles = DisplayHelpers.GetSavedProfiles()
             .Select(profile => new RuntimeProfile(profile.FileName, profile.Name))
@@ -37,6 +42,7 @@ public sealed partial class MainWindow : Window
         StatusText.Text = profiles.Count == 0
             ? "No saved profiles. Save a profile in Monitor Power Settings first."
             : "Use the arrow keys or controller D-pad to select a profile. Press A or Apply to confirm; B or Cancel to close.";
+        RuntimeLog.Info($"Profile selector initialized in {startupTimer.ElapsedMilliseconds} ms with {profiles.Count} saved profile(s).");
     }
 
     private async void Apply_Click(object sender, RoutedEventArgs e)
@@ -92,10 +98,13 @@ public sealed partial class MainWindow : Window
     {
         if (ProfileList.SelectedItem is not RuntimeProfile profile)
         {
+            RuntimeLog.Warning("Profile apply requested without a selected profile.");
             SetStatus("Select a saved display profile first.");
             return;
         }
 
+        var applyTimer = Stopwatch.StartNew();
+        RuntimeLog.Info("Profile apply started.");
         ApplyButton.IsEnabled = false;
         SetStatus($"Applying '{profile.Name}'...");
         try
@@ -104,6 +113,7 @@ public sealed partial class MainWindow : Window
             {
                 if (!string.Equals(_topologyAtOpen, GetActiveTopologySignature(), StringComparison.Ordinal))
                 {
+                    RuntimeLog.Warning("Profile apply canceled because the active display topology changed.");
                     return null;
                 }
 
@@ -120,11 +130,17 @@ public sealed partial class MainWindow : Window
             SetStatus(result);
             if (result.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
             {
+                RuntimeLog.Warning($"Profile apply returned an error after {applyTimer.ElapsedMilliseconds} ms: {result}");
                 ApplyButton.IsEnabled = true;
+            }
+            else
+            {
+                RuntimeLog.Info($"Profile apply completed in {applyTimer.ElapsedMilliseconds} ms.");
             }
         }
         catch (Exception ex)
         {
+            RuntimeLog.Error($"Profile apply threw after {applyTimer.ElapsedMilliseconds} ms.", ex);
             SetStatus($"Could not apply '{profile.Name}': {ex.Message}");
             ApplyButton.IsEnabled = true;
         }

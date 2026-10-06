@@ -92,8 +92,9 @@ void start_monitorpower_runtime()
 
     runner_path.resize(path_length);
     const auto runtime_path = std::filesystem::path(runner_path).parent_path() / L"WinUI3Apps" / L"PowerToys.MonitorPower.Runtime.exe";
-    const auto runner_pid = std::format(L"--runner-pid {}", GetCurrentProcessId());
+    const auto runner_pid = std::format(L"--owner-pid {}", GetCurrentProcessId());
 
+    Logger::info(L"Starting Monitor Power runtime host at {}", runtime_path.c_str());
     SHELLEXECUTEINFOW launch_info{ sizeof(launch_info) };
     launch_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     launch_info.lpFile = runtime_path.c_str();
@@ -106,6 +107,7 @@ void start_monitorpower_runtime()
         return;
     }
 
+    Logger::info(L"Monitor Power runtime host process started with PID {}", launch_info.hProcess ? GetProcessId(launch_info.hProcess) : 0);
     if (launch_info.hProcess)
     {
         CloseHandle(launch_info.hProcess);

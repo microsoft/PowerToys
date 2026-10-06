@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public sealed class MonitorPowerViewModel : Observable
     {
+        private static bool _runtimeHostStartAttempted;
         private bool _xboxControllerEnabled = true;
         private readonly DispatcherQueue _dispatcher;
         private readonly ObservableCollection<MonitorDisplayInfo> _displays = new();
@@ -186,16 +187,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public MonitorPowerViewModel()
         {
+            var initializationTimer = Stopwatch.StartNew();
+            Logger.LogInfo("Monitor Power view-model initialization started.");
             _dispatcher = DispatcherQueue.GetForCurrentThread();
             LoadSettings();
+            Logger.LogInfo($"Monitor Power view-model initialization completed in {initializationTimer.ElapsedMilliseconds} ms.");
         }
 
         public void OnPageLoaded()
         {
+            var pageLoadTimer = Stopwatch.StartNew();
+            Logger.LogInfo($"Monitor Power page data initialization started. Runner PID={App.PowerToysPID}.");
             EnsureRuntimeHostStarted();
             LoadDisplays();
             LoadProfiles();
             RefreshDiagnostics();
+            Logger.LogInfo($"Monitor Power page initialization dispatched in {pageLoadTimer.ElapsedMilliseconds} ms.");
         }
 
         private static string SettingsPath => Path.Combine(
@@ -209,6 +216,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (!File.Exists(SettingsPath))
                 {
+                    Logger.LogInfo("Monitor Power settings file does not exist; using defaults.");
                     return;
                 }
 
@@ -240,6 +248,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         StatusMessage = "The saved activation shortcut is invalid; the default shortcut is in use.";
                     }
                 }
+
+                Logger.LogInfo("Monitor Power settings loaded successfully.");
             }
             catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
             {
@@ -284,6 +294,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnsureRuntimeHostStarted()
         {
+            if (App.PowerToysPID > 0)
+            {
+                Logger.LogInfo($"Monitor Power runtime is managed by runner PID {App.PowerToysPID}; Settings will not start a duplicate host.");
+                return;
+            }
+
+            if (_runtimeHostStartAttempted)
+            {
+                Logger.LogInfo("Monitor Power runtime start was already requested by this Settings process; skipping duplicate launch.");
+                return;
+            }
+
             var runtimePath = Path.Combine(AppContext.BaseDirectory, "PowerToys.MonitorPower.Runtime.exe");
             if (!File.Exists(runtimePath))
             {
@@ -294,20 +316,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             try
             {
+                _runtimeHostStartAttempted = true;
                 using var runtime = Process.Start(new ProcessStartInfo
                 {
                     FileName = runtimePath,
+                    Arguments = $"--owner-pid {Environment.ProcessId}",
                     WorkingDirectory = Path.GetDirectoryName(runtimePath)!,
                     UseShellExecute = true,
                 });
                 if (runtime is null)
                 {
+                    _runtimeHostStartAttempted = false;
                     StatusMessage = "Could not start the Monitor Power runtime host.";
                     Logger.LogError("Process.Start returned no process for the Monitor Power runtime host.");
+                }
+                else
+                {
+                    Logger.LogInfo($"Started Monitor Power runtime host from Settings; PID={runtime.Id}.");
                 }
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or Win32Exception)
             {
+                _runtimeHostStartAttempted = false;
                 StatusMessage = $"Could not start the Monitor Power runtime host: {ex.Message}";
                 Logger.LogError("Could not start the Monitor Power runtime host.", ex);
             }
@@ -315,8 +345,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task LoadDisplaysAsync()
         {
+            var loadTimer = Stopwatch.StartNew();
             IsLoading = true;
             StatusMessage = "Loading display topology...";
+            Logger.LogInfo("Monitor Power display topology query started.");
             await Task.Run(() =>
             {
                 try
@@ -441,10 +473,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         StatusMessage = displayInfos.Count == 0
                             ? "No displays are currently available."
                             : $"Found {activeDisplays.Length} active display(s) and {displayInfos.Count - activeDisplays.Length} inactive display(s).";
+                        Logger.LogInfo($"Monitor Power display topology query completed in {loadTimer.ElapsedMilliseconds} ms. Paths={paths.Length}, targets={displayInfos.Count}, active={activeDisplays.Length}.");
                     });
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError($"Monitor Power display topology query failed after {loadTimer.ElapsedMilliseconds} ms.", ex);
                     RunOnUiThread(() =>
                     {
                         _displays.Clear();
@@ -466,7 +500,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task LoadProfilesAsync()
         {
+            var loadTimer = Stopwatch.StartNew();
             IsProfilesLoading = true;
+            Logger.LogInfo("Monitor Power profile list query started.");
             await Task.Run(() =>
             {
                 try
@@ -481,10 +517,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         HasProfiles = profiles.Count > 0;
                         StatusMessage = $"Loaded {profiles.Count} saved profile(s)";
+                        Logger.LogInfo($"Monitor Power loaded {profiles.Count} saved profile(s) in {loadTimer.ElapsedMilliseconds} ms.");
                     });
                 }
                 catch (Exception ex)
                 {
+                    Logger.LogError($"Monitor Power profile list query failed after {loadTimer.ElapsedMilliseconds} ms.", ex);
                     RunOnUiThread(() => StatusMessage = $"Error loading profiles: {ex.Message}");
                 }
                 finally
@@ -675,6 +713,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task TestControllerAsync()
         {
+            var testTimer = Stopwatch.StartNew();
+            Logger.LogInfo("Monitor Power controller input test started.");
             ControllerStatus = "Looking for a supported XInput controller...";
             try
             {
@@ -683,6 +723,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ControllerStatus = "No supported XInput controller detected. Connect an Xbox-compatible controller and try again.";
                     StatusMessage = ControllerStatus;
+                    Logger.LogInfo($"Controller input test found no connected controllers in {testTimer.ElapsedMilliseconds} ms.");
                     return;
                 }
 
@@ -696,6 +737,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         ControllerStatus = $"Controller {pressed.Index} input detected (buttons 0x{pressed.Buttons:X4}).";
                         StatusMessage = ControllerStatus;
+                        Logger.LogInfo($"Controller input test received input from controller {pressed.Index} after {testTimer.ElapsedMilliseconds} ms.");
                         return;
                     }
 
@@ -704,6 +746,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 ControllerStatus = "Controller detected, but no button input was received.";
                 StatusMessage = ControllerStatus;
+                Logger.LogInfo($"Controller input test timed out after {testTimer.ElapsedMilliseconds} ms.");
             }
             catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
             {
@@ -715,17 +758,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void RefreshDiagnostics()
         {
+            var diagnosticsTimer = Stopwatch.StartNew();
             try
             {
                 var diagnostics = DisplayHelpers.ReadDiagnostics();
                 DiagnosticsText = string.Join(Environment.NewLine, diagnostics
                     .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
                     .TakeLast(100));
+                Logger.LogInfo($"Monitor Power diagnostics refreshed in {diagnosticsTimer.ElapsedMilliseconds} ms.");
             }
             catch (Exception ex)
             {
                 DiagnosticsText = $"Could not read diagnostics: {ex.Message}";
-                Logger.LogError("Could not read Monitor Power diagnostics.", ex);
+                Logger.LogError($"Could not read Monitor Power diagnostics after {diagnosticsTimer.ElapsedMilliseconds} ms.", ex);
             }
         }
 

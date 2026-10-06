@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -305,6 +306,8 @@ internal static partial class DisplayHelpers
     private static Timer? _xboxPollTimer;
     private static ControllerChord _controllerChord = new(0x0420);
     private static bool _controllerChordWasPressed;
+    private static int _controllerPollInProgress;
+    private static int _slowControllerPollLogged;
 
     public static event Action? GuideViewComboPressed;
 
@@ -988,6 +991,7 @@ internal static partial class DisplayHelpers
     {
         if (!ControllerChord.TryParse(chord, out var parsedChord))
         {
+            LogDiagnostic($"Controller listener was not started: unsupported chord '{chord}'.");
             return false;
         }
 
@@ -996,10 +1000,12 @@ internal static partial class DisplayHelpers
             _controllerChord = parsedChord;
             if (_xboxPollTimer != null)
             {
+                LogDiagnostic($"Controller chord updated to '{chord}'; existing 100 ms poll timer remains active.");
                 return true;
             }
 
             _controllerChordWasPressed = false;
+            _slowControllerPollLogged = 0;
             _xboxPollTimer = new Timer(
                 _ => PollXboxGuide(),
                 null,
@@ -1007,20 +1013,34 @@ internal static partial class DisplayHelpers
                 100);
         }
 
+        LogDiagnostic($"Controller listener started for chord '{chord}' with a 100 ms poll interval.");
         return true;
     }
 
     public static void DisableXboxGuideViewCombo()
     {
+        bool wasRunning;
         lock (StateLock)
         {
+            wasRunning = _xboxPollTimer != null;
             _xboxPollTimer?.Dispose();
             _xboxPollTimer = null;
+        }
+
+        if (wasRunning)
+        {
+            LogDiagnostic("Controller listener stopped.");
         }
     }
 
     private static void PollXboxGuide()
     {
+        if (Interlocked.Exchange(ref _controllerPollInProgress, 1) != 0)
+        {
+            return;
+        }
+
+        var pollStarted = Stopwatch.GetTimestamp();
         try
         {
             var chordDown = false;
@@ -1055,6 +1075,17 @@ internal static partial class DisplayHelpers
             LogDiagnostic($"Controller polling stopped because XInput is unavailable: {ex.Message}");
             DisableXboxGuideViewCombo();
             ControllerInputUnavailable?.Invoke(ex.Message);
+        }
+        finally
+        {
+            var elapsed = Stopwatch.GetElapsedTime(pollStarted);
+            if (elapsed >= TimeSpan.FromMilliseconds(100) &&
+                Interlocked.Exchange(ref _slowControllerPollLogged, 1) == 0)
+            {
+                LogDiagnostic($"Controller polling took {elapsed.TotalMilliseconds:F0} ms; overlapping timer callbacks are suppressed.");
+            }
+
+            Volatile.Write(ref _controllerPollInProgress, 0);
         }
     }
 

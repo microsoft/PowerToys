@@ -9,3 +9,8 @@ also starts the host when launched outside the runner. The host reloads the acti
 and controller chord from `settings.json`, and opens the profile selector on activation. The
 selector supports keyboard and controller navigation, explicit apply/cancel actions, and refuses
 to apply a profile if the active display topology changed after it opened.
+
+Runtime startup, listener registration, selector activation, and profile-apply timings/errors are
+appended to `%LOCALAPPDATA%\MonitorPower\Logs\runtime.log`. Display-operation diagnostics are in
+`%LOCALAPPDATA%\MonitorPower\diagnostics.log`; Settings initialization and navigation errors are
+in `%LOCALAPPDATA%\Microsoft\PowerToys\Settings\Logs`.

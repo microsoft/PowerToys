@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -27,12 +28,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public DisplayProfilesPage()
         {
+            var initializationTimer = Stopwatch.StartNew();
             Logger.LogInfo("Creating Monitor Power Settings page.");
             DataContext = ViewModel;
             try
             {
                 InitializeComponent();
                 Loaded += DisplayProfilesPage_Loaded;
+                Logger.LogInfo($"Monitor Power Settings page XAML initialized in {initializationTimer.ElapsedMilliseconds} ms.");
             }
             catch (Exception ex)
             {
@@ -45,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void DisplayProfilesPage_Loaded(object sender, RoutedEventArgs e)
         {
+            Logger.LogInfo("Monitor Power Settings page Loaded event fired; starting data initialization.");
             ViewModel.OnPageLoaded();
         }
 
