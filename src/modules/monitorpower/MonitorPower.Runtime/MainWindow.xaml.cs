@@ -29,8 +29,8 @@ public sealed partial class MainWindow : Window
     private const ushort ControllerDpadUp = 0x0001;
     private const ushort ControllerDpadDown = 0x0002;
     private static readonly ResourceLoader Resources = new("PowerToys.MonitorPower.Runtime.pri");
-    private const int OverlayWidthDip = 520;
-    private const int OverlayHeightDip = 440;
+    private const int OverlayWidthDip = 480;
+    private const int OverlayHeightDip = 420;
     private string _topologyAtOpen = string.Empty;
     private bool _isApplying;
 
@@ -54,6 +54,14 @@ public sealed partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+    private const int DwmwaWindowCornerPreference = 33;
+    private const int DwmwaBorderColor = 34;
+    private const int DwmwcpRound = 2;
+    private const int DwmwaColorNone = unchecked((int)0xFFFFFFFE);
 
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
@@ -108,6 +116,17 @@ public sealed partial class MainWindow : Window
         AppWindow.SetPresenter(presenter);
         AppWindow.IsShownInSwitchers = false;
         SystemBackdrop = new DesktopAcrylicBackdrop();
+
+        // Windows 11 look: rounded corners and no white system frame (the XAML border draws a subtle outline).
+        var hwnd = WindowNative.GetWindowHandle(this);
+        var corner = DwmwcpRound;
+        var cornerResult = DwmSetWindowAttribute(hwnd, DwmwaWindowCornerPreference, ref corner, sizeof(int));
+        var borderColor = DwmwaColorNone;
+        var borderResult = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref borderColor, sizeof(int));
+        if (cornerResult != 0 || borderResult != 0)
+        {
+            RuntimeLog.Warning($"Could not apply Windows 11 window styling (corner HRESULT 0x{cornerResult:X8}, border HRESULT 0x{borderResult:X8}).");
+        }
     }
 
     /// <summary>
@@ -193,6 +212,16 @@ public sealed partial class MainWindow : Window
         return DisplayArea.GetFromPoint(cursor, DisplayAreaFallback.Nearest);
     }
 
+    /// <summary>
+    /// Hides the overlay without closing the window. Closing the last window would end the whole runtime
+    /// process, and the global shortcut would stop working until Settings restarts it.
+    /// </summary>
+    private void HideOverlay()
+    {
+        AppWindow.Hide();
+        RuntimeLog.Info("Profile selector dismissed and hidden; the global Monitor Power runtime remains active.");
+    }
+
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         // Click outside the overlay dismisses it, unless a profile is being applied.
@@ -217,13 +246,10 @@ public sealed partial class MainWindow : Window
         };
         profiles.AddRange(savedProfiles.Select(profile => new RuntimeProfile(profile.FileName, profile.Name)));
         ProfileList.ItemsSource = profiles;
-        ProfileList.DisplayMemberPath = nameof(RuntimeProfile.Name);
         ProfileList.SelectedIndex = profiles.Count == 0 ? -1 : 0;
         ProfileList.Focus(FocusState.Programmatic);
         ApplyButton.IsEnabled = profiles.Count > 0;
-        StatusText.Text = savedProfiles.Count == 0
-            ? GetResourceString("MonitorPower_Selector_NoSavedProfiles")
-            : GetResourceString("MonitorPower_Selector_Instructions");
+        SetStatus(savedProfiles.Count == 0 ? GetResourceString("MonitorPower_Selector_NoSavedProfiles") : string.Empty);
         return profiles.Count;
     }
 
@@ -239,16 +265,11 @@ public sealed partial class MainWindow : Window
         await ApplySelectedProfileAsync();
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-
     private void ProfileList_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Escape)
         {
-            Close();
+            HideOverlay();
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Enter)
@@ -267,7 +288,7 @@ public sealed partial class MainWindow : Window
 
         if ((buttons & ControllerBButton) != 0)
         {
-            Close();
+            HideOverlay();
         }
         else if ((buttons & ControllerAButton) != 0)
         {
@@ -286,6 +307,7 @@ public sealed partial class MainWindow : Window
     public void SetStatus(string message)
     {
         StatusText.Text = message;
+        StatusText.Visibility = string.IsNullOrEmpty(message) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private async Task ApplySelectedProfileAsync()
@@ -371,9 +393,4 @@ public sealed partial class MainWindow : Window
 
     private static string GetResourceString(string key)
         => Resources.GetString(key);
-
-    private sealed record RuntimeProfile(
-        string FileName,
-        string Name,
-        BuiltInDisplayProfile BuiltInProfile = BuiltInDisplayProfile.None);
 }

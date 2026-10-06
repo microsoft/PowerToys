@@ -305,6 +305,11 @@ internal static partial class DisplayHelpers
 
     private static readonly object StateLock = new();
     private static readonly ushort[] PreviousControllerButtons = new ushort[XinputMaxControllers];
+    private static readonly ushort[] PreviousStickDirections = new ushort[XinputMaxControllers];
+    private static readonly long[] StickNextRepeatTimestamps = new long[XinputMaxControllers];
+    private const short StickThreshold = 16000;
+    private static readonly TimeSpan StickInitialRepeatDelay = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan StickRepeatInterval = TimeSpan.FromMilliseconds(150);
     private static (DISPLAYCONFIG_PATH_INFO[] paths, DISPLAYCONFIG_MODE_INFO[] modes)? _savedState;
     private static KeyboardHook? _activeHook;
     private static KeyboardHook? _activationHook;
@@ -1128,6 +1133,56 @@ internal static partial class DisplayHelpers
         }
     }
 
+    private static ushort GetStickDirection(short x, short y)
+    {
+        ushort direction = 0;
+        if (y > StickThreshold)
+        {
+            direction |= 0x0001; // DPadUp
+        }
+        else if (y < -StickThreshold)
+        {
+            direction |= 0x0002; // DPadDown
+        }
+
+        if (x < -StickThreshold)
+        {
+            direction |= 0x0004; // DPadLeft
+        }
+        else if (x > StickThreshold)
+        {
+            direction |= 0x0008; // DPadRight
+        }
+
+        return direction;
+    }
+
+    private static ushort GetStickPresses(int userIndex, ushort direction)
+    {
+        var now = Stopwatch.GetTimestamp();
+        var previous = PreviousStickDirections[userIndex];
+        PreviousStickDirections[userIndex] = direction;
+        if (direction == 0)
+        {
+            return 0;
+        }
+
+        var newlyPressed = (ushort)(direction & ~previous);
+        if (newlyPressed != 0)
+        {
+            StickNextRepeatTimestamps[userIndex] = now + (long)(StickInitialRepeatDelay.TotalSeconds * Stopwatch.Frequency);
+            return newlyPressed;
+        }
+
+        if (now >= StickNextRepeatTimestamps[userIndex])
+        {
+            StickNextRepeatTimestamps[userIndex] = now + (long)(StickRepeatInterval.TotalSeconds * Stopwatch.Frequency);
+            return direction;
+        }
+
+        return 0;
+    }
+
     private static void PollXboxGuide()
     {
         if (Interlocked.Exchange(ref _controllerPollInProgress, 1) != 0)
@@ -1144,10 +1199,20 @@ internal static partial class DisplayHelpers
             {
                 var state = default(XINPUT_STATE);
                 ushort buttons = 0;
+                ushort stickDirection = 0;
                 if (XInputGetState(userIndex, ref state) == 0)
                 {
                     connectedControllers++;
                     buttons = state.Gamepad.wButtons;
+                    stickDirection = GetStickDirection(state.Gamepad.sThumbLX, state.Gamepad.sThumbLY);
+                }
+
+                // The left analog stick is reported as virtual D-pad presses (with auto-repeat while held)
+                // so overlays can be navigated with the stick as well as the D-pad.
+                var stickPressed = GetStickPresses(userIndex, stickDirection);
+                if (stickPressed != 0)
+                {
+                    ControllerButtonsPressed?.Invoke(stickPressed);
                 }
 
                 var pressedButtons = (ushort)(buttons & ~PreviousControllerButtons[userIndex]);
