@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockDropTarget.cs" Link="Helpers\DockDropTarget.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ListItemDoubleTapTarget.cs" Link="Helpers\ListItemDoubleTapTarget.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />

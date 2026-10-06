@@ -90,6 +90,10 @@
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
 
+            <Style x:Key="PinDropZoneStyle" TargetType="local:DockDropZoneControl">
+                <Setter Property="Margin" Value="2" />
+            </Style>
+
             <cpcontrols:ContextMenuFlyout x:Name="ItemContextMenuFlyout" />
 
             <!--  Edit mode context menu for dock bands  -->
@@ -207,6 +211,8 @@
         BorderThickness="0,0,0,1"
         ContextCanceled="RootGrid_ContextCanceled"
         ContextRequested="RootGrid_ContextRequested"
+        DragEnter="RootGrid_DragOver"
+        DragLeave="RootGrid_DragLeave"
         DragOver="RootGrid_DragOver"
         Drop="RootGrid_Drop">
         <!--  Dock content with Start / Center / End sections  -->
@@ -304,6 +310,38 @@
                 </Button>
             </local:DockContentControl.EndActionButton>
         </local:DockContentControl>
+        <Grid
+            x:Name="PinDropOverlay"
+            IsHitTestVisible="False"
+            Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <local:DockDropZoneControl
+                x:Name="StartDropZone"
+                Grid.RowSpan="3"
+                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
+                Style="{StaticResource PinDropZoneStyle}" />
+            <local:DockDropZoneControl
+                x:Name="CenterDropZone"
+                Grid.RowSpan="3"
+                Grid.Column="1"
+                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
+                Style="{StaticResource PinDropZoneStyle}" />
+            <local:DockDropZoneControl
+                x:Name="EndDropZone"
+                Grid.RowSpan="3"
+                Grid.Column="2"
+                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
+                Style="{StaticResource PinDropZoneStyle}" />
+        </Grid>
         <TeachingTip
             x:Name="EditButtonsTeachingTip"
             MinWidth="0"
@@ -330,6 +368,44 @@
             </TeachingTip.Content>
         </TeachingTip>
         <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="PinDropOrientation">
+                <VisualState x:Name="PinDropHorizontal" />
+                <VisualState x:Name="PinDropVertical">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ItemsOrientation, Mode=OneWay}" To="Vertical" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartDropZone.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartDropZone.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterDropZone.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterDropZone.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="CenterDropZone.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterDropZone.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndDropZone.(Grid.Row)" Value="2" />
+                        <Setter Target="EndDropZone.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndDropZone.(Grid.Column)" Value="0" />
+                        <Setter Target="EndDropZone.(Grid.ColumnSpan)" Value="3" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="PinDropStates">
+                <VisualState x:Name="PinDropNone" />
+                <VisualState x:Name="PinDropStart">
+                    <VisualState.Setters>
+                        <Setter Target="StartDropZone.IsActive" Value="True" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PinDropCenter">
+                    <VisualState.Setters>
+                        <Setter Target="CenterDropZone.IsActive" Value="True" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PinDropEnd">
+                    <VisualState.Setters>
+                        <Setter Target="EndDropZone.IsActive" Value="True" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
             <VisualStateGroup x:Name="DockOrientation">
                 <VisualState x:Name="DockOnTop">
                     <VisualState.StateTriggers>
