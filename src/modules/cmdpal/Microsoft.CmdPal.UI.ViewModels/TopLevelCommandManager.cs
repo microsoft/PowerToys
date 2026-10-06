@@ -27,6 +27,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<PinToDockMessage>,
     IDisposable
 {
+    internal event EventHandler? PinnedCommandsChanged;
+
     private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan BackgroundCommandLoadTimeout = TimeSpan.FromSeconds(60);
 
@@ -47,29 +49,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
     private IReadOnlyList<PinnedCommandSettings> _pinnedCommands = [];
-
-    internal event EventHandler? PinnedCommandsChanged;
-
-    public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
-    {
-        _serviceProvider = serviceProvider;
-        _extensionServices = extensionServices;
-        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
-        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
-        WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
-        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
-        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
-        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
-        RebuildPinnedCache();
-
-        foreach (var service in _extensionServices)
-        {
-            service.OnProviderAdded += ExtensionService_OnProviderAdded;
-            service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
-        }
-    }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -94,7 +73,31 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot() => Volatile.Read(ref _pinnedCommands);
+    public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
+    {
+        _serviceProvider = serviceProvider;
+        _extensionServices = extensionServices;
+        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
+        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
+        WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
+        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        RebuildPinnedCache();
+
+        foreach (var service in _extensionServices)
+        {
+            service.OnProviderAdded += ExtensionService_OnProviderAdded;
+            service.OnProviderRemoved += ExtensionService_OnProviderRemoved;
+        }
+    }
+
+    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot()
+    {
+        return Volatile.Read(ref _pinnedCommands);
+    }
 
     internal void RebuildPinnedCache()
     {
@@ -1020,11 +1023,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    public void Receive(ReloadCommandsMessage message) =>
+    public void Receive(ReloadCommandsMessage message)
+    {
         _ = ReloadAllCommandsAsync();
+    }
 
-    public void Receive(ProviderEnabledStateChangedMessage message) =>
+    public void Receive(ProviderEnabledStateChangedMessage message)
+    {
         _ = UpdateProviderEnabledStateAsyncCore(message.ProviderId, message.IsEnabled);
+    }
 
     public void Receive(PinCommandItemMessage message)
     {

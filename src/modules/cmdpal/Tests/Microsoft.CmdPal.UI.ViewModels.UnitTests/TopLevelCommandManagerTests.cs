@@ -447,9 +447,15 @@ public partial class TopLevelCommandManagerTests
             return IncludeTopLevelCommand ? [_resolvedItem] : [];
         }
 
-        public override ICommandItem[] GetDockBands() => IncludeDockBand ? [_resolvedItem] : [];
+        public override ICommandItem[] GetDockBands()
+        {
+            return IncludeDockBand ? [_resolvedItem] : [];
+        }
 
-        public void NotifyItemsChanged() => RaiseItemsChanged();
+        public void NotifyItemsChanged()
+        {
+            RaiseItemsChanged();
+        }
 
         public override ICommandItem? GetCommandItem(string id)
         {
@@ -462,6 +468,7 @@ public partial class TopLevelCommandManagerTests
     private sealed partial class DeferredPinProvider : CommandProvider
     {
         public const string PinId = "deferred-pin";
+
         private readonly CommandItem _pin = new(new NoOpCommand { Id = PinId, Name = "Pinned app" });
         private bool _available;
         private int _loadCount;
@@ -510,7 +517,10 @@ public partial class TopLevelCommandManagerTests
 
     private sealed partial class TestExtension(ICommandProvider provider) : IExtension
     {
-        public object GetProvider(ProviderType providerType) => provider;
+        public object GetProvider(ProviderType providerType)
+        {
+            return provider;
+        }
 
         public void Dispose()
         {

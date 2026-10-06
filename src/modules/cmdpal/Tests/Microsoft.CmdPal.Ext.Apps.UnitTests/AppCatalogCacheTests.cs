@@ -696,13 +696,17 @@ public class AppCatalogCacheTests
         string identity,
         Programs.Win32AppMetadata program,
         string sourceId)
-        => new(
+    {
+        return new(
             identity,
             priority: 0,
             new AppCatalogSourceReference(sourceId, program.TargetPath),
             [],
             Win32AppPayload.From(program));
+    }
 
     private static string TemporaryCachePath()
-        => Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
+    {
+        return Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
+    }
 }

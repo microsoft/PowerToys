@@ -862,8 +862,14 @@ public partial class MainListPageTests
             DisplayName = "Apps";
         }
 
-        public override ICommandItem[] TopLevelCommands() => _page is null ? [] : [new CommandItem(_page) { Title = "Browse apps" }];
+        public override ICommandItem[] TopLevelCommands()
+        {
+            return _page is null ? [] : [new CommandItem(_page) { Title = "Browse apps" }];
+        }
 
-        public override ICommandItem? GetCommandItem(string id) => _snapshot?.GetCommandItem(id);
+        public override ICommandItem? GetCommandItem(string id)
+        {
+            return _snapshot?.GetCommandItem(id);
+        }
     }
 }
