@@ -62,7 +62,13 @@ public sealed partial class DockPageNavigationViewModelTests
         public TaskCompletionSource<string> SearchUpdated { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public override IListItem[] GetItems() => _items;
+        public string? SearchAtFirstGetItems { get; private set; }
+
+        public override IListItem[] GetItems()
+        {
+            SearchAtFirstGetItems ??= SearchText;
+            return _items;
+        }
 
         public override void UpdateSearchText(string oldSearch, string newSearch)
         {
@@ -100,6 +106,7 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await navigation.NavigateAsync(list));
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsTrue(navigation.CurrentPage.IsRootPage);
+        Assert.IsFalse(navigation.CurrentPage.HasBackButton);
         Assert.AreEqual(route, navigation.CurrentPage.DockRoute);
         Assert.AreSame(host, navigation.CurrentPage.ExtensionHost);
         Assert.AreSame(providerContext, navigation.CurrentPage.ProviderContext);
@@ -120,6 +127,76 @@ public sealed partial class DockPageNavigationViewModelTests
         Assert.IsTrue(await navigation.GoBackAsync());
         Assert.IsInstanceOfType<ListViewModel>(navigation.CurrentPage);
         Assert.IsFalse(navigation.CanGoBack);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task NavigateAsync_ResolvesHostAndProviderFromSourceContext(bool withSourcePage, bool withExplicitSource)
+    {
+        var route = new DockCommandRoute((nint)42, Guid.NewGuid());
+        var currentHost = new TestAppExtensionHost();
+        var currentProvider = new TestProviderContext("current");
+        var sourceHost = new TestAppExtensionHost();
+        var sourceProvider = new TestProviderContext("source");
+        var explicitHost = new TestAppExtensionHost();
+        var explicitProvider = new TestProviderContext("explicit");
+        var sourcePage = new PageViewModel(new Page(), TaskScheduler.Default, sourceHost, sourceProvider);
+        using var navigation = CreateNavigation(route);
+
+        try
+        {
+            Assert.IsTrue(await navigation.NavigateAsync(CreateMessage(new ListPage(), route, currentHost, currentProvider)));
+            var message = new PerformCommandMessage(new ExtensionObject<ICommand>(new ListPage()), withSourcePage ? sourcePage : null)
+            {
+                DockRoute = route,
+                SourceExtensionHost = withExplicitSource ? explicitHost : null,
+                SourceProviderContext = withExplicitSource ? explicitProvider : null,
+            };
+
+            Assert.IsTrue(await navigation.NavigateAsync(message));
+
+            Assert.AreSame(withSourcePage ? sourceHost : withExplicitSource ? explicitHost : currentHost, navigation.CurrentPage!.ExtensionHost);
+            Assert.AreSame(withSourcePage ? sourceProvider : withExplicitSource ? explicitProvider : currentProvider, navigation.CurrentPage.ProviderContext);
+        }
+        finally
+        {
+            sourcePage.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task NavigateAsync_AppliesLaunchOptionsBeforeFirstFetch()
+    {
+        var route = new DockCommandRoute((nint)42, Guid.NewGuid());
+        var page = new TestDynamicPage();
+        var message = CreateMessage(page, route, new TestAppExtensionHost(), CommandProviderContext.Empty);
+        message.ListPageOptions = new(Query: "Result");
+        using var navigation = CreateNavigation(route);
+
+        Assert.IsTrue(await navigation.NavigateAsync(message));
+        Assert.AreEqual("Result", page.SearchAtFirstGetItems);
+        Assert.AreEqual("Result", navigation.CurrentPage!.SearchTextBox);
+    }
+
+    [TestMethod]
+    public async Task NavigateAsync_InvalidLaunchOptions_DoesNotMutateNavigationState()
+    {
+        var route = new DockCommandRoute((nint)42, Guid.NewGuid());
+        var host = new TestAppExtensionHost();
+        using var navigation = CreateNavigation(route);
+        Assert.IsTrue(await navigation.NavigateAsync(CreateMessage(new ListPage(), route, host, CommandProviderContext.Empty)));
+        var currentPage = navigation.CurrentPage;
+        var message = CreateMessage(new TestContentPage(), route, host, CommandProviderContext.Empty);
+        message.ListPageOptions = new(Query: "query");
+
+        await Assert.ThrowsExactlyAsync<NotSupportedException>(() => navigation.NavigateAsync(message));
+
+        Assert.AreSame(currentPage, navigation.CurrentPage);
+        Assert.AreEqual(0, navigation.BackStackDepth);
+        Assert.IsTrue(await navigation.NavigateAsync(CreateMessage(new ListPage(), route, host, CommandProviderContext.Empty)));
+        Assert.AreEqual(1, navigation.BackStackDepth);
     }
 
     [TestMethod]

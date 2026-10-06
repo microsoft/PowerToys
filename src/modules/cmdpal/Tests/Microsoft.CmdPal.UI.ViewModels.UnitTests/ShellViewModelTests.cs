@@ -49,10 +49,10 @@ public partial class ShellViewModelTests
 
     private sealed partial class TestPageViewModel : PageViewModel
     {
-        public TestPageViewModel(IPage? page, AppExtensionHost host)
+        public TestPageViewModel(IPage? page, AppExtensionHost host, bool initialized = true)
             : base(page, TaskScheduler.Default, host, CommandProviderContext.Empty)
         {
-            IsInitialized = true;
+            IsInitialized = initialized;
             ModelIsLoading = false;
         }
     }
@@ -124,6 +124,83 @@ public partial class ShellViewModelTests
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
         pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task PerformCommand_LoadsPageAndActivatesItOnUiScheduler()
+    {
+        var host = new TestAppExtensionHost();
+        var page = new TestPage();
+        var viewModel = new TestPageViewModel(page, host, initialized: false);
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty)).Returns(viewModel);
+        var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+        using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
+        var activated = new TaskCompletionSource<TaskScheduler>(TaskCreationOptions.RunContinuationsAsynchronously);
+        shell.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ShellViewModel.CurrentPage))
+            {
+                activated.TrySetResult(TaskScheduler.Current);
+            }
+        };
+
+        try
+        {
+            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(page)));
+
+            Assert.AreSame(scheduler, await activated.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.AreSame(viewModel, shell.CurrentPage);
+            Assert.IsTrue(viewModel.InitializeCommand.ExecutionTask!.IsCompletedSuccessfully);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [TestMethod]
+    public async Task PerformCommand_RootPage_DoesNotInheritProviderContext()
+    {
+        var host = new TestAppExtensionHost();
+        var provider = Mock.Of<ICommandProviderContext>();
+        var rootPage = new TestPage();
+        var rootViewModel = new TestPageViewModel(rootPage, host);
+        var rootPageService = new Mock<IRootPageService>();
+        rootPageService.Setup(service => service.PreLoadAsync()).Returns(Task.CompletedTask);
+        rootPageService.Setup(service => service.PostLoadRootPageAsync()).Returns(Task.CompletedTask);
+        rootPageService.Setup(service => service.GetRootPage()).Returns(rootPage);
+        var appHostService = CreateAppHostService(host);
+        var factory = new Mock<IPageViewModelFactoryService>();
+        factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty)).Returns(rootViewModel);
+        using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object);
+        var nestedPage = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
+
+        try
+        {
+            await shell.LoadAsync();
+            shell.CurrentPage = nestedPage;
+            factory.Invocations.Clear();
+            appHostService.Invocations.Clear();
+
+            shell.Receive(new PerformCommandMessage(new ExtensionObject<ICommand>(rootPage), nestedPage));
+
+            Assert.AreSame(rootViewModel, shell.CurrentPage);
+            Assert.IsTrue(rootViewModel.IsRootPage);
+            Assert.IsFalse(rootViewModel.HasBackButton);
+            Assert.IsFalse(shell.IsNested);
+            factory.Verify(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty), Times.Once);
+            appHostService.Verify(
+                service => service.GetProviderContextForCommand(It.IsAny<object?>(), It.IsAny<ICommandProviderContext?>()),
+                Times.Never);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+            rootViewModel.SafeCleanup();
+            nestedPage.SafeCleanup();
+        }
     }
 
     [TestMethod]

@@ -12,8 +12,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockPageNavigationViewModel : ObservableObject, IDisposable
 {
     private readonly TaskScheduler _scheduler;
-    private readonly IPageViewModelFactoryService _pageFactory;
-    private readonly IAppHostService _appHostService;
+    private readonly PageNavigationService _pageNavigation;
     private readonly List<PageViewModel> _pages = [];
     private readonly Dictionary<PageViewModel, Task<bool>> _initializationTasks = [];
     private readonly Lock _initializationLock = new();
@@ -52,8 +51,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
     {
         Route = route;
         _scheduler = scheduler;
-        _pageFactory = pageFactory;
-        _appHostService = appHostService;
+        _pageNavigation = new(pageFactory, appHostService);
     }
 
     public async Task<bool> NavigateAsync(PerformCommandMessage message, CancellationToken cancellationToken = default)
@@ -77,20 +75,16 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
                 return false;
             }
 
-            var currentHost = message.SourceExtensionHost ?? CurrentPage?.ExtensionHost;
-            var currentProviderContext = message.SourceProviderContext ?? CurrentPage?.ProviderContext;
-            var host = _appHostService.GetHostForCommand(message.CommandContext, currentHost);
-            var providerContext = _appHostService.GetProviderContextForCommand(message.CommandContext, currentProviderContext);
+            var host = _pageNavigation.ResolveHost(message, CurrentPage);
+            var providerContext = _pageNavigation.ResolveProviderContext(message, CurrentPage);
             var nested = _pages.Count > 0;
-            var pageViewModel = _pageFactory.TryCreatePageViewModel(page, nested, host, providerContext);
+            var pageViewModel = _pageNavigation.TryPreparePage(page, nested, host, providerContext, message.ListPageOptions);
             if (pageViewModel is null)
             {
                 return false;
             }
 
             pageViewModel.DockRoute = Route;
-            pageViewModel.IsRootPage = !nested;
-            pageViewModel.HasBackButton = nested;
 
             try
             {
@@ -205,23 +199,9 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
     private async Task<bool> InitializePageAsync(PageViewModel page, CancellationToken cancellationToken)
     {
-        if (page.IsInitialized || page.InitializeCommand is null)
-        {
-            return true;
-        }
-
         try
         {
-            await Task.Run(
-                async () =>
-                {
-                    page.InitializeCommand.Execute(null);
-                    if (page.InitializeCommand.ExecutionTask is Task executionTask)
-                    {
-                        await executionTask;
-                    }
-                },
-                cancellationToken);
+            await PageNavigationService.InitializePageAsync(page, cancellationToken);
             return true;
         }
         catch (OperationCanceledException)
