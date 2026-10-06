@@ -836,12 +836,15 @@ public class AppSearchTests
             new AppItem { Name = name, AppUserModelId = aumid, IsPackaged = true, MatchTerms = ["wt.exe"] });
     }
 
-    private static AppListItem CreateItem(params string[] terms) => new(
-        new AppItem
-        {
-            Name = "Editor",
-            MatchTerms = terms,
-        });
+    private static AppListItem CreateItem(params string[] terms)
+    {
+        return new(
+            new AppItem
+            {
+                Name = "Editor",
+                MatchTerms = terms,
+            });
+    }
 
     private sealed class CountingMatcher : IPrecomputedFuzzyMatcher
     {

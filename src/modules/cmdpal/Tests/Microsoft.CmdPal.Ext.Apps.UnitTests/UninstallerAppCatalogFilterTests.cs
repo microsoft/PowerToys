@@ -160,5 +160,7 @@ public class UninstallerAppCatalogFilterTests
     }
 
     private static string TemporarySettingsPath()
-        => Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+    {
+        return Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+    }
 }
