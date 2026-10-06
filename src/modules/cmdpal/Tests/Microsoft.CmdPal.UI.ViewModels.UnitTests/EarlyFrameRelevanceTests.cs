@@ -22,27 +22,10 @@ public sealed partial class EarlyFrameRelevanceTests
 {
     public TestContext TestContext { get; set; } = null!;
 
-    private sealed partial class CatalogItem : ListItem, IPrecomputedListItem
+    private static IPrecomputedFuzzyMatcher CreateMatcher()
     {
-        private FuzzyTargetCache _titleCache;
-        private FuzzyTargetCache _subtitleCache;
-
-        public CatalogItem(string title, string subtitle, string id)
-            : base(new NoOpCommand() { Id = id })
-        {
-            Title = title;
-            Subtitle = subtitle;
-            Id = id;
-        }
-
-        public string Id { get; }
-
-        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher) => _titleCache.GetOrUpdate(matcher, Title);
-
-        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher) => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+        return new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
     }
-
-    private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
 
     private static ScoringFunction<IListItem> BuildScoringFunction(IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher, AppSearch? appSearch)
     {
@@ -67,27 +50,33 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     // Every app matches "x" only at the Fuzzy tier.
-    private static CatalogItem[] BuildFuzzyOnlyCatalogForX() =>
-    [
-        new CatalogItem("Galaxy Store", "Shop for apps", "app.galaxy"),
-        new CatalogItem("Nexus Mods", "Manage game mods", "app.nexus"),
-        new CatalogItem("Toolbox Companion", "Developer tools", "app.toolbox"),
-        new CatalogItem("Max Cleaner", "Free up disk space", "app.max"),
-        new CatalogItem("Voxel Editor", "Edit voxel art", "app.voxel"),
-    ];
+    private static CatalogItem[] BuildFuzzyOnlyCatalogForX()
+    {
+        return
+        [
+            new CatalogItem("Galaxy Store", "Shop for apps", "app.galaxy"),
+            new CatalogItem("Nexus Mods", "Manage game mods", "app.nexus"),
+            new CatalogItem("Toolbox Companion", "Developer tools", "app.toolbox"),
+            new CatalogItem("Max Cleaner", "Free up disk space", "app.max"),
+            new CatalogItem("Voxel Editor", "Edit voxel art", "app.voxel"),
+        ];
+    }
 
     // Apps spanning multiple tiers for "c": some titles start with it, some have a non-leading word
     // that does, and some only contain it mid-word.
-    private static CatalogItem[] BuildMixedCatalogForC() =>
-    [
-        new CatalogItem("Calculator", "Perform calculations", "app.calc"),
-        new CatalogItem("Calendar", "View your schedule", "app.cal"),
-        new CatalogItem("Visual Studio Code", "Code editor", "app.vscode"),
-        new CatalogItem("Windows Camera", "Take photos", "app.camera"),
-        new CatalogItem("Microsoft Edge", "Browse the web", "app.edge"),
-        new CatalogItem("Office Hub", "Productivity apps", "app.office"),
-        new CatalogItem("Discord", "Chat with friends", "app.discord"),
-    ];
+    private static CatalogItem[] BuildMixedCatalogForC()
+    {
+        return
+        [
+            new CatalogItem("Calculator", "Perform calculations", "app.calc"),
+            new CatalogItem("Calendar", "View your schedule", "app.cal"),
+            new CatalogItem("Visual Studio Code", "Code editor", "app.vscode"),
+            new CatalogItem("Windows Camera", "Take photos", "app.camera"),
+            new CatalogItem("Microsoft Edge", "Browse the web", "app.edge"),
+            new CatalogItem("Office Hub", "Productivity apps", "app.office"),
+            new CatalogItem("Discord", "Chat with friends", "app.discord"),
+        ];
+    }
 
     /// <summary>
     /// The mechanism, locked as a test: when a 1-char query only matches mid-word, every result is
@@ -178,5 +167,31 @@ public sealed partial class EarlyFrameRelevanceTests
             useThumbnails: false)).ToArray();
         var appSearch = new AppSearch(rawQuery, matcher, ExecutableNameMatchMode.FilenameAndStem);
         return InternalListHelpers.FilterListWithScores<IListItem>(items, matcher.PrecomputeQuery(rawQuery), BuildScoringFunction(history, matcher, appSearch));
+    }
+
+    private sealed partial class CatalogItem : ListItem, IPrecomputedListItem
+    {
+        private FuzzyTargetCache _titleCache;
+        private FuzzyTargetCache _subtitleCache;
+
+        public string Id { get; }
+
+        public CatalogItem(string title, string subtitle, string id)
+            : base(new NoOpCommand() { Id = id })
+        {
+            Title = title;
+            Subtitle = subtitle;
+            Id = id;
+        }
+
+        public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        {
+            return _titleCache.GetOrUpdate(matcher, Title);
+        }
+
+        public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        {
+            return _subtitleCache.GetOrUpdate(matcher, Subtitle);
+        }
     }
 }

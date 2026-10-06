@@ -393,11 +393,14 @@ public class AppSearchTests
             useThumbnails: false);
     }
 
-    private static AppListItem CreateItem(params string[] terms) => new(
-        new AppItem
-        {
-            Name = "Editor",
-            MatchTerms = terms,
-        },
-        useThumbnails: false);
+    private static AppListItem CreateItem(params string[] terms)
+    {
+        return new(
+            new AppItem
+            {
+                Name = "Editor",
+                MatchTerms = terms,
+            },
+            useThumbnails: false);
+    }
 }
