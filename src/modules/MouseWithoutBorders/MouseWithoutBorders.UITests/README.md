@@ -84,6 +84,32 @@ physical two-PC networking and the remainder of the manual module checklist are
 **outside this pilot's sign-off**. ARM64 payload compilation is retained for
 future image work; it is not evidence of a working ARM64 Sandbox.
 
+### Required recovery cases
+
+The unfiltered suite contains **eleven cases**, including the ordered smoke and
+these four `MwbRecovery` cases. None is skipped or hidden behind a smoke-only
+filter.
+
+| Case | Required observation |
+|---|---|
+| `ControllerExitBeforePairingRestoresOriginalSettings` | Real Runner/MWB/Settings startup, retained controller exit, unchanged 45-second lease expiry, exact original settings restored and only recorded processes stopped |
+| `KilledClipboardOwnerRequiresBaselineReset` | Real synthetic clipboard publication, exact worker/controller termination, recovery exits nonzero with only the expected lost-snapshot error and `RequiresBaselineReset=true` |
+| `AbortedSandboxStartupRefusesUnownedInstance` | Actual owned creation aborted before guest acknowledgement; a different run refuses the existing GUID/PID without adoption, replacement or unowned stop |
+| `StaleRunDirectoryRefusalPreservesRecoveryJournals` | Fixture preflight/finally/cleanup refuses a nonempty prior run root without changing any original bytes, publication markers or file names |
+
+Expected injected failures are asserted explicitly; an unrelated startup or
+cleanup error cannot satisfy a recovery case. They do not change a normal
+smoke failure into a pass.
+
+The killed-worker case has a separate **test-only in-memory clipboard guard**,
+using the receiver's supported `Host` snapshotting role, to isolate its deliberate
+loss from subsequent cases. A known synthetic baseline must be restored after
+fixture disposal; an outer guard then restores the actual original clipboard in
+`finally`. No original clipboard payload or digest is published. This isolation
+is not available to an interrupted real run: `Recover-Host.ps1` still reports
+`Incomplete`, returns nonzero and requires baseline reset when the original
+worker snapshot is lost.
+
 ## Recorded evidence
 
 **Status: official winappcli v0.7.0 passed the full seven-test pilot on both
