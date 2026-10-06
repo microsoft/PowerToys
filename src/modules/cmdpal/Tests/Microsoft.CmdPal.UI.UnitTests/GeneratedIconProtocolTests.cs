@@ -4,6 +4,7 @@
 
 using System.Text;
 using System.Xml.Linq;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,6 +21,35 @@ public class GeneratedIconProtocolTests
     private static readonly GeneratedIconProtocolProcessor TestProcessor = new(TryCreateTestInitialsPathData);
     private static readonly IIconProtocolProcessor[] TestProcessors = [TestProcessor];
 
+    [TestMethod]
+    public async Task HighContrastPreservesSwatchColorAndMakesTransparentInitialsUseSystemForeground()
+    {
+        var contrast = new IconContrast(IconContrastMode.High, 0xFF12AB34, 0xFF000000);
+        const string Swatch = "|Swatch|#FF123456|square|";
+        Assert.IsTrue(TestProcessor.TryPrepareSynchronously(Swatch, 20, new IconRenderContext(ElementTheme.Light, contrast), out var swatch));
+        using (swatch)
+        {
+            var background = ParseSvg(swatch.SvgData!).Element(SvgName("rect"))!;
+            Assert.AreEqual("#123456", background.Attribute("fill")?.Value);
+            Assert.AreEqual("#12AB34", background.Attribute("stroke")?.Value);
+        }
+
+        using var result = await TestProcessor.PrepareAsync("|Initials|CP|transparent|square|", 20, new IconRenderContext(ElementTheme.Light, contrast));
+        using var initials = result.TakePreparedIcon()!;
+        Assert.AreEqual("#12AB34", GetForegroundFill(initials.SvgData!));
+        Assert.AreEqual(contrast, TestProcessor.GetCacheContext(Swatch, new IconRenderContext(ElementTheme.Default, contrast)).Contrast);
+    }
+
+    [TestMethod]
+    public void TranslucentInitialsCompositesAgainstCapturedContrastBackground()
+    {
+        const string Value = "|Initials|CP|#80000000|square|";
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateInitialsSvg(Value, new IconRenderContext(ElementTheme.Light, new(IconContrastMode.Black, Background: 0xFF000000)), TryCreateTestInitialsPathData, out var black));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateInitialsSvg(Value, new IconRenderContext(ElementTheme.Dark, new(IconContrastMode.White, Background: 0xFFFFFFFF)), TryCreateTestInitialsPathData, out var white));
+        Assert.AreEqual("#FFFFFF", GetForegroundFill(black));
+        Assert.AreEqual("#000000", GetForegroundFill(white));
+    }
+
     [DataTestMethod]
     [DataRow("|Swatch|#07A|", "#0077AA", null)]
     [DataRow("|Swatch|#807A|", "#0077AA", "0.533")]
@@ -27,7 +57,7 @@ public class GeneratedIconProtocolTests
     [DataRow("|Swatch|#80102030|", "#102030", "0.502")]
     public void SwatchSupportsXamlHexColorForms(string value, string expectedFill, string? expectedOpacity)
     {
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, ElementTheme.Light, out var svg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, new IconRenderContext(ElementTheme.Light, default), out var svg));
 
         var shape = ParseSvg(svg).Element(SvgName("circle"));
         Assert.IsNotNull(shape);
@@ -41,14 +71,14 @@ public class GeneratedIconProtocolTests
     {
         const string Value = "|Swatch|#FF0067C0|#FF60CDFF|square|";
 
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, ElementTheme.Light, out var lightSvg));
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, ElementTheme.Dark, out var darkSvg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, new IconRenderContext(ElementTheme.Light, default), out var lightSvg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(Value, new IconRenderContext(ElementTheme.Dark, default), out var darkSvg));
 
         Assert.AreEqual("#0067C0", GetBackgroundFill(lightSvg));
         Assert.AreEqual("#60CDFF", GetBackgroundFill(darkSvg));
-        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Light));
-        Assert.AreEqual(ElementTheme.Dark, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Dark));
-        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Default));
+        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Light, default)).Theme);
+        Assert.AreEqual(ElementTheme.Dark, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
+        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Default, default)).Theme);
     }
 
     [TestMethod]
@@ -56,8 +86,8 @@ public class GeneratedIconProtocolTests
     {
         const string Value = "|Swatch|#0067C0|";
 
-        Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Light));
-        Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Dark));
+        Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Light, default)).Theme);
+        Assert.AreEqual(ElementTheme.Default, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
     }
 
     [DataTestMethod]
@@ -79,8 +109,8 @@ public class GeneratedIconProtocolTests
     {
         var value = $"|Swatch|{semanticColor}|square|";
 
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, ElementTheme.Light, out var lightSvg));
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, ElementTheme.Dark, out var darkSvg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, new IconRenderContext(ElementTheme.Light, default), out var lightSvg));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg(value, new IconRenderContext(ElementTheme.Dark, default), out var darkSvg));
 
         Assert.AreEqual(expectedLight, GetBackgroundFill(lightSvg));
         Assert.AreEqual(expectedDark, GetBackgroundFill(darkSvg));
@@ -89,10 +119,10 @@ public class GeneratedIconProtocolTests
         Assert.IsNotNull(ParseSvg(lightSvg).Element(SvgName("rect")));
         Assert.AreEqual(
             isThemeDependent ? ElementTheme.Light : ElementTheme.Default,
-            GeneratedIconProtocol.GetCacheTheme(value, ElementTheme.Light));
+            GeneratedIconProtocol.GetCacheContext(value, new IconRenderContext(ElementTheme.Light, default)).Theme);
         Assert.AreEqual(
             isThemeDependent ? ElementTheme.Dark : ElementTheme.Default,
-            GeneratedIconProtocol.GetCacheTheme(value, ElementTheme.Dark));
+            GeneratedIconProtocol.GetCacheContext(value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
     }
 
     [TestMethod]
@@ -126,8 +156,8 @@ public class GeneratedIconProtocolTests
 
         Assert.AreEqual("#000000", GetForegroundFill(lightSvg));
         Assert.AreEqual("#FFFFFF", GetForegroundFill(darkSvg));
-        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Light));
-        Assert.AreEqual(ElementTheme.Dark, GeneratedIconProtocol.GetCacheTheme(Value, ElementTheme.Dark));
+        Assert.AreEqual(ElementTheme.Light, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Light, default)).Theme);
+        Assert.AreEqual(ElementTheme.Dark, GeneratedIconProtocol.GetCacheContext(Value, new IconRenderContext(ElementTheme.Dark, default)).Theme);
     }
 
     [TestMethod]
@@ -154,9 +184,9 @@ public class GeneratedIconProtocolTests
     [TestMethod]
     public async Task SwatchAndInitialsShareCircleAndSquareBackgroundGeometry()
     {
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|", ElementTheme.Light, out var circleSwatch));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|", new IconRenderContext(ElementTheme.Light, default), out var circleSwatch));
         var circleInitials = await CreateSvgAsync("|Initials|A|#0067C0|", ElementTheme.Light);
-        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|square|", ElementTheme.Light, out var squareSwatch));
+        Assert.IsTrue(GeneratedIconProtocol.TryCreateSwatchSvg("|Swatch|#0067C0|square|", new IconRenderContext(ElementTheme.Light, default), out var squareSwatch));
         var squareInitials = await CreateSvgAsync("|Initials|A|#0067C0|square|", ElementTheme.Light);
 
         Assert.AreEqual(GetBackgroundGeometry(circleSwatch), GetBackgroundGeometry(circleInitials));
@@ -311,9 +341,9 @@ public class GeneratedIconProtocolTests
         }
 
         IconPathConverter.PreparedIcon? preparedIcon;
-        if (!processor.TryPrepareSynchronously(value!, 32, theme, out preparedIcon))
+        if (!processor.TryPrepareSynchronously(value!, 32, new IconRenderContext(theme, default), out preparedIcon))
         {
-            using var result = await processor.PrepareAsync(value!, 32, theme);
+            using var result = await processor.PrepareAsync(value!, 32, new IconRenderContext(theme, default));
             preparedIcon = result.TakePreparedIcon();
         }
 
