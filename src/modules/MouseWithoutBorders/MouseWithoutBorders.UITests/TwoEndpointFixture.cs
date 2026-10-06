@@ -24,6 +24,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 {
     private readonly TestContext context;
     private readonly WinAppSandboxPrerequisiteReport prerequisites;
+    private readonly Action<string> attachEvidence;
     private readonly ProcessIdentity testProcess = ProcessIdentity.Capture(Environment.ProcessId);
     private readonly List<object> phases = [];
     private readonly List<Exception> cleanupErrors = [];
@@ -59,10 +60,11 @@ internal sealed class TwoEndpointFixture : IDisposable
     private bool hostPeersStarted;
     private bool guestPeersStarted;
 
-    public TwoEndpointFixture(TestContext context, WinAppSandboxPrerequisiteReport prerequisites)
+    public TwoEndpointFixture(TestContext context, WinAppSandboxPrerequisiteReport prerequisites, Action<string>? attachEvidence = null)
     {
         this.context = context;
         this.prerequisites = prerequisites;
+        this.attachEvidence = attachEvidence ?? context.AddResultFile;
     }
 
     public void Run()
@@ -184,7 +186,7 @@ internal sealed class TwoEndpointFixture : IDisposable
             {
                 foreach (var file in RunFiles.EvidenceFiles(directory!))
                 {
-                    Attempt("Attach " + Path.GetFileName(file), () => context.AddResultFile(file));
+                    Attempt("Attach " + Path.GetFileName(file), () => attachEvidence(file));
                 }
             }
         }

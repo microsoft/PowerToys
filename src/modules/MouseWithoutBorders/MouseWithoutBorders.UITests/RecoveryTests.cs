@@ -83,13 +83,14 @@ public sealed class RecoveryTests
         }
 
         var filesBefore = Directory.GetFiles(root).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
+        var attachments = new List<string>();
         var previousRoot = Environment.GetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT");
         try
         {
             Environment.SetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT", root);
             WinAppSandboxPrerequisiteReport.CapturePersistent(TestContext.TestRunDirectory, TestContext.AddResultFile, report =>
             {
-                using var fixture = new TwoEndpointFixture(TestContext, report);
+                using var fixture = new TwoEndpointFixture(TestContext, report, attachments.Add);
                 var refusal = Assert.ThrowsExactly<AssertFailedException>(fixture.Run);
                 StringAssert.Contains(refusal.Message, "Run directory must be new; preserve old recovery journals.");
                 Assert.AreEqual(0, fixture.Cleanup().Count, "Refusal cleanup must not act on the stale directory.");
@@ -101,6 +102,7 @@ public sealed class RecoveryTests
         }
 
         CollectionAssert.AreEqual(filesBefore, Directory.GetFiles(root).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray());
+        Assert.AreEqual(0, attachments.Count, "The refused fixture must not collect another owner's evidence.");
         foreach (var (name, bytes) in snapshots)
         {
             CollectionAssert.AreEqual(bytes, File.ReadAllBytes(Path.Combine(root, name)), "Refusal/finally/cleanup modified a prior-owner file: " + name);
@@ -117,6 +119,7 @@ public sealed class RecoveryTests
             PhaseFinallyAndCleanupExercised = true,
             StaleFilesUnchanged = true,
             NewFilesInStaleRoot = 0,
+            StaleEvidenceCollected = 0,
             Files = snapshots.Select(item => new { Name = item.Key, Sha256 = Convert.ToHexString(SHA256.HashData(item.Value)) }).ToArray(),
         });
         TestContext.AddResultFile(evidence);
