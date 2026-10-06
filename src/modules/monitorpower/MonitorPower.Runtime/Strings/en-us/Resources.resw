@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MonitorPower_Selector_Title.Text" xml:space="preserve"><value>Choose a display profile</value></data>
+  <data name="MonitorPower_Selector_ProfileList.AutomationProperties.Name" xml:space="preserve"><value>Saved display profiles</value></data>
+  <data name="MonitorPower_Selector_ApplyButton.Content" xml:space="preserve"><value>Apply</value></data>
+  <data name="MonitorPower_Selector_CancelButton.Content" xml:space="preserve"><value>Cancel</value></data>
+</root>

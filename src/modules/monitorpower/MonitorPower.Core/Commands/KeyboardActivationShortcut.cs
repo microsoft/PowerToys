@@ -150,8 +150,14 @@ internal sealed record KeyboardActivationShortcut(
 
     private static bool IsReservedCombination(bool win, bool control, bool alt, bool shift, string key)
     {
-        return (win && !control && !alt && !shift && key is "L" or "P" or "Tab") ||
-               (!win && !control && alt && !shift && key == "F4") ||
-               (!win && control && alt && !shift && key == "Delete");
+        bool reservedWinKey = key is ("A" or "C" or "D" or "E" or "I" or "L" or "N" or "P" or "R" or "S" or "Tab" or "V" or "W" or "X" or "Z" or "Space");
+        bool reservedAltKey = key is ("F4" or "Tab" or "Escape");
+
+        return (win && !control && !alt && !shift && reservedWinKey) ||
+               (win && !alt && control && shift && key == "B") ||
+               (win && !control && !alt && shift && key == "S") ||
+               (!win && !control && alt && reservedAltKey) ||
+               (!win && control && !alt && key == "Escape") ||
+               (!win && control && alt && key == "Delete");
     }
 }

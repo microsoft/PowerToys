@@ -80,6 +80,38 @@ void chdir_current_executable()
     }
 }
 
+void start_monitorpower_runtime()
+{
+    std::wstring runner_path(MAX_PATH, L'\0');
+    const auto path_length = GetModuleFileNameW(nullptr, runner_path.data(), static_cast<DWORD>(runner_path.size()));
+    if (path_length == 0 || path_length >= runner_path.size())
+    {
+        Logger::warn(L"Could not locate the PowerToys executable to start Monitor Power runtime");
+        return;
+    }
+
+    runner_path.resize(path_length);
+    const auto runtime_path = std::filesystem::path(runner_path).parent_path() / L"WinUI3Apps" / L"PowerToys.MonitorPower.Runtime.exe";
+    const auto runner_pid = std::format(L"--runner-pid {}", GetCurrentProcessId());
+
+    SHELLEXECUTEINFOW launch_info{ sizeof(launch_info) };
+    launch_info.fMask = SEE_MASK_NOCLOSEPROCESS;
+    launch_info.lpFile = runtime_path.c_str();
+    launch_info.lpParameters = runner_pid.c_str();
+    launch_info.lpDirectory = runtime_path.parent_path().c_str();
+    launch_info.nShow = SW_SHOWNORMAL;
+    if (!ShellExecuteExW(&launch_info))
+    {
+        Logger::warn(L"Could not start Monitor Power runtime: {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
+
+    if (launch_info.hProcess)
+    {
+        CloseHandle(launch_info.hProcess);
+    }
+}
+
 // Detect AI capabilities by calling ImageResizer in detection mode.
 // This runs in a background thread to avoid blocking the main startup.
 // ImageResizer writes the result to a cache file that it reads on normal startup.
@@ -320,6 +352,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
         // Start initial powertoys
         start_enabled_powertoys();
+        start_monitorpower_runtime();
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);

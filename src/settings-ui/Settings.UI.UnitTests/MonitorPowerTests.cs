@@ -105,6 +105,8 @@ public sealed class MonitorPowerTests
         Assert.IsTrue(shortcut.Win);
         Assert.IsTrue(shortcut.Shift);
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("Win + P", out _, out _));
+        Assert.IsFalse(KeyboardActivationShortcut.TryParse("Alt + F4", out _, out _));
+        Assert.IsFalse(KeyboardActivationShortcut.TryParse("Ctrl + Shift + Escape", out _, out _));
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("Ctrl + Ctrl + A", out _, out _));
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("P", out _, out _));
     }

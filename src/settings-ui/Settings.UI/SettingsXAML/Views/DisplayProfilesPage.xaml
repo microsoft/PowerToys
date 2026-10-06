@@ -191,9 +191,9 @@
                     <controls:SettingsGroup x:Uid="DisplayProfiles_ActivationShortcut">
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                <TextBlock Text="Open Selector:" VerticalAlignment="Center" />
+                                <TextBlock x:Uid="DisplayProfiles_ActivationShortcut_OpenSelector" Text="Open Selector:" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ActivationShortcut, Mode=OneWay}" VerticalAlignment="Center" FontFamily="Consolas" FontSize="14" FontWeight="SemiBold" />
-                                <Button Grid.Column="2" Content="Capture shortcut" Click="CaptureActivationShortcut_Click" Style="{StaticResource DefaultButtonStyle}" />
+                                <Button x:Uid="DisplayProfiles_ActivationShortcut_CaptureButton" Grid.Column="2" Content="Capture shortcut" Click="CaptureActivationShortcut_Click" Style="{StaticResource DefaultButtonStyle}" />
                             </Grid>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Description">

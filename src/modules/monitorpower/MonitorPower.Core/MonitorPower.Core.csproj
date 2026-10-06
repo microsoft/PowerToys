@@ -31,5 +31,8 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Settings.UI.UnitTests</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.MonitorPower.Runtime</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>

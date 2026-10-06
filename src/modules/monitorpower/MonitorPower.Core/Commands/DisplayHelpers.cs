@@ -296,6 +296,7 @@ internal static partial class DisplayHelpers
     private const uint DISPLAYCONFIG_PATH_ACTIVE = 0x00000001;
 
     private static readonly object StateLock = new();
+    private static readonly ushort[] PreviousControllerButtons = new ushort[XinputMaxControllers];
     private static (DISPLAYCONFIG_PATH_INFO[] paths, DISPLAYCONFIG_MODE_INFO[] modes)? _savedState;
     private static KeyboardHook? _activeHook;
     private static KeyboardHook? _activationHook;
@@ -309,6 +310,10 @@ internal static partial class DisplayHelpers
 
     public static event Action? ActivationShortcutPressed;
 
+    public static event Action<ushort>? ControllerButtonsPressed;
+
+    public static event Action<string>? ControllerInputUnavailable;
+
     public static event Action? DisplayProfileApplyStarted;
 
     public static event Action? DisplayProfileApplyCompleted;
@@ -316,6 +321,8 @@ internal static partial class DisplayHelpers
     private const ushort XinputGamepadBack = 0x0020;
     private const ushort XinputGamepadGuide = 0x0400;
     private const int XinputMaxControllers = 4;
+    private const ushort XinputGamepadDpadUp = 0x0001;
+    private const ushort XinputGamepadDpadDown = 0x0002;
 
     internal const DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY INTERNAL_TECH = (DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY)0x80000000;
 
@@ -1014,24 +1021,41 @@ internal static partial class DisplayHelpers
 
     private static void PollXboxGuide()
     {
-        var chordDown = false;
-        for (int userIndex = 0; userIndex < XinputMaxControllers; userIndex++)
+        try
         {
-            var state = default(XINPUT_STATE);
-            if (XInputGetState(userIndex, ref state) != 0)
+            var chordDown = false;
+            for (int userIndex = 0; userIndex < XinputMaxControllers; userIndex++)
             {
-                continue;
+                var state = default(XINPUT_STATE);
+                ushort buttons = 0;
+                if (XInputGetState(userIndex, ref state) == 0)
+                {
+                    buttons = state.Gamepad.wButtons;
+                }
+
+                var pressedButtons = (ushort)(buttons & ~PreviousControllerButtons[userIndex]);
+                PreviousControllerButtons[userIndex] = buttons;
+                if (pressedButtons != 0)
+                {
+                    ControllerButtonsPressed?.Invoke(pressedButtons);
+                }
+
+                chordDown |= _controllerChord.IsPressed(buttons);
             }
 
-            chordDown |= _controllerChord.IsPressed(state.Gamepad.wButtons);
-        }
+            if (chordDown && !_controllerChordWasPressed)
+            {
+                GuideViewComboPressed?.Invoke();
+            }
 
-        if (chordDown && !_controllerChordWasPressed)
+            _controllerChordWasPressed = chordDown;
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
-            GuideViewComboPressed?.Invoke();
+            LogDiagnostic($"Controller polling stopped because XInput is unavailable: {ex.Message}");
+            DisableXboxGuideViewCombo();
+            ControllerInputUnavailable?.Invoke(ex.Message);
         }
-
-        _controllerChordWasPressed = chordDown;
     }
 
     internal static List<(int Index, ushort Buttons)> GetConnectedControllerInputs()

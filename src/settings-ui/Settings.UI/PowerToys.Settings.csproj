@@ -128,6 +128,7 @@
 		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 <ProjectReference Include="..\..\modules\powerdisplay\PowerDisplay.Models\PowerDisplay.Models.csproj" />
   <ProjectReference Include="..\..\modules\monitorpower\MonitorPower.Core\MonitorPower.Core.csproj" />
+  <ProjectReference Include="..\..\modules\monitorpower\MonitorPower.Runtime\MonitorPower.Runtime.csproj" ReferenceOutputAssembly="false" />
   <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 		<ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
 	</ItemGroup>

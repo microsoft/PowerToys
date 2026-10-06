@@ -6597,6 +6597,11 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_OpenSelector.Text" xml:space="preserve"><value>Open Selector:</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_CaptureButton.Content" xml:space="preserve"><value>Capture shortcut</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_CapturePrompt" xml:space="preserve"><value>Press a modifier and key combination. Press Escape to cancel.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_CaptureCancelled" xml:space="preserve"><value>Shortcut capture cancelled.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_ModifierRequired" xml:space="preserve"><value>The shortcut needs at least one modifier key.</value></data>
   <data name="CmdPal_Launch.Header" xml:space="preserve">
     <value>Open Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>

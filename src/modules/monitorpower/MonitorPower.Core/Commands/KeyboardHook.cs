@@ -19,6 +19,7 @@ internal sealed partial class KeyboardHook : IDisposable
     private const int VkEscape = 0x1B;
 
     private readonly LowLevelKeyboardProc _proc;
+    private readonly CancellationToken _cancellationToken;
     private readonly Dictionary<int, Func<bool>> _keyActions = [];
     private nint _hookId = nint.Zero;
     private Thread? _hookThread;
@@ -29,6 +30,7 @@ internal sealed partial class KeyboardHook : IDisposable
     {
         _proc = HookCallback;
         _cts = new CancellationTokenSource();
+        _cancellationToken = _cts.Token;
         _hookThread = new Thread(HookThreadProc)
         {
             Name = "KeyboardHook",
@@ -78,7 +80,6 @@ internal sealed partial class KeyboardHook : IDisposable
 
     private void HookThreadProc()
     {
-        var cancellationToken = _cts?.Token ?? CancellationToken.None;
         _ = PeekMessage(out _, nint.Zero, 0, 0, PmNoRemove);
         _hookThreadId = GetCurrentThreadId();
         var moduleHandle = GetModuleHandle(null);
@@ -91,7 +92,7 @@ internal sealed partial class KeyboardHook : IDisposable
 
         try
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancellationToken.IsCancellationRequested)
             {
                 var result = GetMessage(out var msg, nint.Zero, 0, 0);
                 if (result == -1 || result == 0)

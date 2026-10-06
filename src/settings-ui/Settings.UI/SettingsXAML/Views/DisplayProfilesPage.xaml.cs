@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class DisplayProfilesPage : NavigablePage
     {
         private MonitorPowerViewModel ViewModel { get; } = new();
+
         private bool _capturingActivationShortcut;
 
         public DisplayProfilesPage()
@@ -50,7 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void CaptureActivationShortcut_Click(object sender, RoutedEventArgs e)
         {
             _capturingActivationShortcut = true;
-            ViewModel.StatusMessage = "Press a modifier and key combination. Press Escape to cancel.";
+            ViewModel.StatusMessage = GetResourceString(
+                "DisplayProfiles_ActivationShortcut_CapturePrompt",
+                "Press a modifier and key combination. Press Escape to cancel.");
         }
 
         private void DisplayProfilesPage_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -64,7 +67,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (e.Key == VirtualKey.Escape)
             {
                 _capturingActivationShortcut = false;
-                ViewModel.StatusMessage = "Shortcut capture cancelled.";
+                ViewModel.StatusMessage = GetResourceString(
+                    "DisplayProfiles_ActivationShortcut_CaptureCancelled",
+                    "Shortcut capture cancelled.");
                 return;
             }
 
@@ -78,14 +83,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 modifiers.Add("Win");
             }
+
             if (IsKeyDown(VirtualKey.Control))
             {
                 modifiers.Add("Ctrl");
             }
+
             if (IsKeyDown(VirtualKey.Menu))
             {
                 modifiers.Add("Alt");
             }
+
             if (IsKeyDown(VirtualKey.Shift))
             {
                 modifiers.Add("Shift");
@@ -93,7 +101,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (modifiers.Count == 0)
             {
-                ViewModel.StatusMessage = "The shortcut needs at least one modifier key.";
+                ViewModel.StatusMessage = GetResourceString(
+                    "DisplayProfiles_ActivationShortcut_ModifierRequired",
+                    "The shortcut needs at least one modifier key.");
                 return;
             }
 
@@ -110,6 +120,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static bool IsKeyDown(VirtualKey key)
             => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
+
+        private static string GetResourceString(string resourceKey, string fallback)
+        {
+            var value = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
+            return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        }
 
         private async void ApplyProfile_Click(object sender, RoutedEventArgs e)
         {

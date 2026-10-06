@@ -61,7 +61,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     OnPropertyChanged(nameof(XboxControllerEnabled));
-                    UpdateControllerPolling(value);
                 }
             }
         }
@@ -145,11 +144,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         OnPropertyChanged(nameof(ActivationShortcut));
                         return;
                     }
-
-                    if (!DisplayHelpers.RegisterActivationShortcut(_activationShortcut))
-                    {
-                        StatusMessage = "The activation shortcut could not be registered.";
-                    }
                 }
             }
         }
@@ -174,8 +168,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _controllerShortcut = previousValue;
                         OnPropertyChanged(nameof(ControllerShortcut));
                     }
-
-                    UpdateControllerPolling(XboxControllerEnabled);
                 }
             }
         }
@@ -200,12 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void OnPageLoaded()
         {
-            UpdateControllerPolling(XboxControllerEnabled);
-            if (!DisplayHelpers.RegisterActivationShortcut(ActivationShortcut))
-            {
-                StatusMessage = "The saved activation shortcut is invalid.";
-            }
-
+            EnsureRuntimeHostStarted();
             LoadDisplays();
             LoadProfiles();
             RefreshDiagnostics();
@@ -295,23 +282,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void UpdateControllerPolling(bool enabled)
+        private void EnsureRuntimeHostStarted()
         {
-            if (enabled)
+            var runtimePath = Path.Combine(AppContext.BaseDirectory, "PowerToys.MonitorPower.Runtime.exe");
+            if (!File.Exists(runtimePath))
             {
-                if (DisplayHelpers.EnableControllerChord(ControllerShortcut))
+                StatusMessage = "The Monitor Power runtime host is not installed beside Settings.";
+                Logger.LogError($"Monitor Power runtime host was not found: {runtimePath}");
+                return;
+            }
+
+            try
+            {
+                using var runtime = Process.Start(new ProcessStartInfo
                 {
-                    StatusMessage = $"Controller shortcut enabled ({ControllerShortcut})";
-                }
-                else
+                    FileName = runtimePath,
+                    WorkingDirectory = Path.GetDirectoryName(runtimePath)!,
+                    UseShellExecute = true,
+                });
+                if (runtime is null)
                 {
-                    StatusMessage = $"Unsupported controller chord: {ControllerShortcut}";
+                    StatusMessage = "Could not start the Monitor Power runtime host.";
+                    Logger.LogError("Process.Start returned no process for the Monitor Power runtime host.");
                 }
             }
-            else
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or Win32Exception)
             {
-                DisplayHelpers.DisableXboxGuideViewCombo();
-                StatusMessage = "Controller shortcut disabled";
+                StatusMessage = $"Could not start the Monitor Power runtime host: {ex.Message}";
+                Logger.LogError("Could not start the Monitor Power runtime host.", ex);
             }
         }
 
