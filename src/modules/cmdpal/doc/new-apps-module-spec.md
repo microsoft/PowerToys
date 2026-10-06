@@ -211,7 +211,7 @@ staleness.
   Explicit refreshes, watcher requests and targeted retries still read those candidates.
   Execution aliases and reparse points are
   still read because ownership can change without a useful stamp change. Package checks compare
-  package identities, manifest stamps and theme before parsing manifests or resolving logos again.
+  package identities and manifest stamps before parsing manifests again.
   Unchanged missing manifests also reuse their incomplete scan in memory; they never renew disk-cache
   validation, and an appearing manifest, package change or explicit refresh forces a new read.
   Unchanged rejected candidates do not start another retry burst. PATH discovery still uses the process environment.
@@ -522,7 +522,12 @@ behavior: a main-based build does not recognize app usage recorded under the new
 
 - Honor shortcut icon resources independently of launch targets.
 - Win32 row/hero icons use shell icon protocols and fallbacks.
-- Packaged icons select size/theme assets across resource packages.
+- Packaged metadata caches logical small/large logo references and package resource identity, never a theme-selected filename.
+- The host supplies size, surface light/dark theme and system contrast at rendering time. Apps resolves the logical references through `PackagedAppIcons.TryResolve`, preserving language/configuration and resource-package fallbacks.
+- Apps owns the packaged icon protocol, asset selection and a thread-safe per-package PRI manager cache. The UI processor only adapts the captured rendering context and returns the resolved path.
+- Contrast changes refresh realized icons. No light/dark/contrast state enters catalog cache keys or triggers catalog discovery, publication or persistence.
+- Icon requests carry a required, immutable `IconRenderContext` containing theme and contrast separately from resource strings. Each processor normalizes that context for its bitmap cache key; context-independent processors share cache entries by default.
+- Themed SVG and generated icons use the captured high-contrast palette; literal SVG artwork and swatch colors remain intact.
 
 A shortcut can launch one executable while using another executable's icon resource. Keep those
 choices independent to preserve its artwork. Packaged logos need size/theme selection to avoid
