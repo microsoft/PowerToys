@@ -24,6 +24,7 @@ public partial class CachedIconSourceProviderTests
     [DataTestMethod]
     [DataRow("|ThemedSvg|<svg />", true)]
     [DataRow("|Swatch|#123456|", true)]
+    [DataRow("|packaged-app-icon|a|C%3A%5CApps|Logo.png|", false)]
     public async Task ContrastAwareProtocolsSeparateRequestsAndReuseRelevantPalette(string value, bool usesPalette)
     {
         var loader = new ControllableIconLoader();

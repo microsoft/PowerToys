@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-/// <summary>Holds one application's manifest and resolved resource data before catalog capture.</summary>
+/// <summary>Holds one application's manifest data and logical logo references before catalog capture.</summary>
 internal sealed class PackagedAppMetadata
 {
     public string Name { get; set; } = string.Empty;
@@ -21,9 +21,11 @@ internal sealed class PackagedAppMetadata
     /// <summary>Gets or sets execution alias filenames declared by this application.</summary>
     public IReadOnlyList<string> ExecutionAliases { get; set; } = [];
 
-    public string LogoPath { get; set; } = string.Empty;
+    /// <summary>Gets or sets the manifest's small-logo reference, with asset selection deferred to rendering.</summary>
+    public string SmallLogoUri { get; set; } = string.Empty;
 
-    public string JumboLogoPath { get; set; } = string.Empty;
+    /// <summary>Gets or sets the manifest's large-logo fallback reference for the details icon.</summary>
+    public string LargeLogoUri { get; set; } = string.Empty;
 
     public bool CanRunElevated { get; set; }
 

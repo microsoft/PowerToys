@@ -10,6 +10,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -369,8 +370,8 @@ public class AppCatalogCacheTests
                     AppUserModelId = "Cached.Package!App",
                     PackageFullName = "Cached.Package_1.0.0.0_x64__publisher",
                     PackageLocation = @"C:\Packages\Cached",
-                    LogoPath = @"C:\Packages\Cached\Assets\Logo.png",
-                    JumboLogoPath = @"C:\Packages\Cached\Assets\JumboLogo.png",
+                    SmallLogoUri = @"Assets\Logo.png",
+                    LargeLogoUri = @"Assets\JumboLogo.png",
                     Executable = @"Tools\Editor.exe",
                 });
             var cache = new AppCatalogCache(cachePath);
@@ -388,11 +389,17 @@ public class AppCatalogCacheTests
             Assert.AreEqual("Cached package", payload.ToAppItem().Name);
             Assert.AreEqual("Cached package description", payload.ToAppItem().Subtitle);
             Assert.AreEqual(@"C:\Packages\Cached", payload.ToAppItem().DirectoryPath);
-            Assert.AreEqual(@"C:\Packages\Cached\Assets\Logo.png", payload.ToAppItem().IconSource);
-            Assert.AreEqual(@"C:\Packages\Cached\Assets\JumboLogo.png", payload.ToAppItem().JumboIconSource);
+            Assert.IsTrue(PackagedAppIcons.TryParse(payload.ToAppItem().IconSource, out var listIcon));
+            Assert.IsTrue(PackagedAppIcons.TryParse(payload.ToAppItem().JumboIconSource!, out var heroIcon));
+            Assert.AreEqual("Cached.Package_1.0.0.0_x64__publisher", listIcon.PackageFullName);
+            Assert.AreEqual(@"Assets\Logo.png", listIcon.LogoUri);
+            Assert.AreEqual(string.Empty, listIcon.LargeLogoUri);
+            Assert.AreEqual(@"Assets\JumboLogo.png", heroIcon.LargeLogoUri);
             var savedPayload = JsonNode.Parse(File.ReadAllText(cachePath))!["Sources"]![0]!["Items"]![0]!["Payload"]!;
             Assert.AreEqual("Cached.Package!App", savedPayload[nameof(PackagedAppPayload.AppUserModelId)]!.GetValue<string>());
             Assert.IsNull(savedPayload["UserModelId"]);
+            Assert.AreEqual(@"Assets\Logo.png", savedPayload[nameof(PackagedAppPayload.SmallLogoUri)]!.GetValue<string>());
+            Assert.IsNull(savedPayload["LogoPath"]);
             Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppPayload)payload).Executable);
             CollectionAssert.Contains(loaded.Sources[0].Items[0].MatchTerms.ToArray(), "edit.exe");
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));

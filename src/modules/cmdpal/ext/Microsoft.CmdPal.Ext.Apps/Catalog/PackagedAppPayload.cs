@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -43,11 +44,11 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
     /// <summary>Gets the package installation directory used by location and path context actions.</summary>
     public string PackageLocation { get; init; } = string.Empty;
 
-    /// <summary>Gets the resolved small-logo file used for the row icon.</summary>
-    public string LogoPath { get; init; } = string.Empty;
+    /// <summary>Gets the logical small-logo resource reference declared by the manifest.</summary>
+    public string SmallLogoUri { get; init; } = string.Empty;
 
-    /// <summary>Gets the resolved logo file used for the details icon.</summary>
-    public string JumboLogoPath { get; init; } = string.Empty;
+    /// <summary>Gets the logical large-logo resource reference used when small-logo artwork is insufficient.</summary>
+    public string LargeLogoUri { get; init; } = string.Empty;
 
     /// <summary>Gets whether this application's manifest declares full-trust or medium-integrity execution.</summary>
     /// <remarks>Controls whether the packaged app exposes a Run as administrator context action.</remarks>
@@ -59,7 +60,7 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
 
     /// <summary>Captures only the packaged-application data needed after discovery completes.</summary>
     /// <param name="app">The resolved manifest metadata and its containing package.</param>
-    /// <returns>An immutable payload with package identity, installation data and resolved logo files.</returns>
+    /// <returns>An immutable payload with package identity, installation data and logical logo references.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="app"/> is <see langword="null"/>.</exception>
     public static PackagedAppPayload From(PackagedAppMetadata app)
     {
@@ -73,8 +74,8 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
             PackageFamilyName = app.Package.FamilyName,
             PackageFullName = app.Package.FullName,
             PackageLocation = app.Package.InstalledLocation,
-            LogoPath = app.LogoPath,
-            JumboLogoPath = app.JumboLogoPath,
+            SmallLogoUri = app.SmallLogoUri,
+            LargeLogoUri = app.LargeLogoUri,
             CanRunElevated = app.CanRunElevated,
             IsNonRemovable = app.Package.IsNonRemovable,
         };
@@ -89,14 +90,28 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
             Name = Name,
             Subtitle = Description,
             AppTypeLabel = Resources.packaged_application,
-            IconSource = LogoPath,
-            JumboIconSource = JumboLogoPath,
+            IconSource = GetIconSource(includeLargeLogo: false),
+            JumboIconSource = GetIconSource(includeLargeLogo: true),
             DirectoryPath = PackageLocation,
             AppUserModelId = AppUserModelId,
             IsPackaged = true,
             Commands = GetCommands(),
             PackageFamilyName = PackageFamilyName,
         };
+    }
+
+    private string GetIconSource(bool includeLargeLogo)
+    {
+        if (string.IsNullOrEmpty(SmallLogoUri) && string.IsNullOrEmpty(LargeLogoUri))
+        {
+            return string.Empty;
+        }
+
+        return PackagedAppIcons.Create(
+            PackageFullName,
+            PackageLocation,
+            string.IsNullOrEmpty(SmallLogoUri) ? LargeLogoUri : SmallLogoUri,
+            includeLargeLogo ? LargeLogoUri : string.Empty);
     }
 
     /// <summary>Gets the released name-based command ID for resolving references to this source representation.</summary>

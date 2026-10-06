@@ -6,9 +6,9 @@ using System;
 using System.IO;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+
+using ContrastMode = Microsoft.CmdPal.Common.IconContrastMode;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
@@ -34,20 +34,20 @@ public class AppxIconLoaderTests
     }
 
     [DataTestMethod]
-    [DataRow(Theme.Dark, "AppLogo.targetsize-16.png", "AppLogo.scale-100.png", "AppLogo.scale-100.png")]
-    [DataRow(Theme.Dark, "AppLogo.targetsize-16.png", "AppLogo.targetsize-32_contrast-black.png", "AppLogo.targetsize-32_contrast-black.png")]
-    [DataRow(Theme.HighContrastWhite, "AppLogo.targetsize-32.png", "AppLogo.targetsize-32_contrast-white.png", "AppLogo.targetsize-32_contrast-white.png")]
-    [DataRow(Theme.HighContrastBlack, "AppLogo.targetsize-16_contrast-black.png", "AppLogo.scale-100.png", "AppLogo.scale-100.png")]
-    [DataRow(Theme.HighContrastBlack, "AppLogo.targetsize-16_contrast-black.png", "AppLogo.targetsize-16.png", "AppLogo.targetsize-16_contrast-black.png")]
-    [DataRow(Theme.Light, "AppLogo.targetsize-32_theme-dark.png", "AppLogo.targetsize-32_theme-light.png", "AppLogo.targetsize-32_theme-light.png")]
-    [DataRow(Theme.HighContrastWhite, "AppLogo.targetsize-32_theme-dark.png", "AppLogo.targetsize-32_theme-light.png", "AppLogo.targetsize-32_theme-light.png")]
-    public void LogoPathFromUri_PreservesThemeAndSizeFallbackOrder(Theme theme, string first, string second, string expected)
+    [DataRow(false, ContrastMode.Standard, "AppLogo.targetsize-16.png", "AppLogo.scale-100.png", "AppLogo.scale-100.png")]
+    [DataRow(false, ContrastMode.Standard, "AppLogo.targetsize-16.png", "AppLogo.targetsize-32_contrast-black.png", "AppLogo.targetsize-32_contrast-black.png")]
+    [DataRow(true, ContrastMode.White, "AppLogo.targetsize-32.png", "AppLogo.targetsize-32_contrast-white.png", "AppLogo.targetsize-32_contrast-white.png")]
+    [DataRow(false, ContrastMode.Black, "AppLogo.targetsize-16_contrast-black.png", "AppLogo.scale-100.png", "AppLogo.scale-100.png")]
+    [DataRow(false, ContrastMode.Black, "AppLogo.targetsize-16_contrast-black.png", "AppLogo.targetsize-16.png", "AppLogo.targetsize-16_contrast-black.png")]
+    [DataRow(true, ContrastMode.Standard, "AppLogo.targetsize-32_theme-dark.png", "AppLogo.targetsize-32_theme-light.png", "AppLogo.targetsize-32_theme-light.png")]
+    [DataRow(true, ContrastMode.White, "AppLogo.targetsize-32_theme-dark.png", "AppLogo.targetsize-32_theme-light.png", "AppLogo.targetsize-32_theme-light.png")]
+    public void LogoPathFromUri_PreservesThemeAndSizeFallbackOrder(bool isLight, ContrastMode contrastMode, string first, string second, string expected)
     {
         var directory = Path.Combine(_packageRoot, "Assets");
         CreateAsset(directory, first);
         CreateAsset(directory, second);
 
-        var result = AppxIconLoader.LogoPathFromUri("AppLogo.png", theme, 24, CreatePackage(), resolvedResourcePath: null);
+        var result = AppxIconLoader.LogoPathFromUri("AppLogo.png", new PackagedIconTheme(isLight, contrastMode), 24, CreatePackage(), resolvedResourcePath: null);
 
         Assert.AreEqual(Path.Combine(directory, expected), result.LogoPath);
     }
@@ -64,21 +64,21 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"BETA\Square44x44LogoBETA.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedPath);
 
         Assert.AreEqual(expectedPath, result.LogoPath);
-        Assert.AreEqual(LogoType.Colored, result.LogoType);
+        Assert.IsFalse(result.IsHighContrast);
         Assert.IsTrue(result.MeetsMinimumSize(20));
     }
 
     [TestMethod]
-    [DataRow(Theme.Dark, 20, "unplated")]
-    [DataRow(Theme.Dark, 64, "unplated")]
-    [DataRow(Theme.Light, 64, "lightunplated")]
-    public void LogoPathFromUri_SplitScalePackage_PrefersMainPackageTargetSize(Theme theme, int size, string alternateForm)
+    [DataRow(false, ContrastMode.Standard, 20, "unplated")]
+    [DataRow(false, ContrastMode.Standard, 64, "unplated")]
+    [DataRow(true, ContrastMode.Standard, 64, "lightunplated")]
+    public void LogoPathFromUri_SplitScalePackage_PrefersMainPackageTargetSize(bool isLight, ContrastMode contrastMode, int size, string alternateForm)
     {
         var resolvedPath = CreateAsset(Path.Combine(_packageRoot, "resource-pack", "Assets"), "AppLogo.scale-100.png");
         var mainDirectory = Path.Combine(_packageRoot, "Assets");
@@ -88,7 +88,7 @@ public class AppxIconLoaderTests
             CreateAsset(mainDirectory, $"AppLogo.targetsize-{targetSize}_altform-lightunplated.png");
         }
 
-        var result = AppxIconLoader.LogoPathFromUri(@"Assets\AppLogo.png", theme, size, CreatePackage(), resolvedPath);
+        var result = AppxIconLoader.LogoPathFromUri(@"Assets\AppLogo.png", new PackagedIconTheme(isLight, contrastMode), size, CreatePackage(), resolvedPath);
 
         Assert.AreEqual(Path.Combine(mainDirectory, $"AppLogo.targetsize-{size}_altform-{alternateForm}.png"), result.LogoPath);
         Assert.IsTrue(result.MeetsMinimumSize(size));
@@ -101,27 +101,25 @@ public class AppxIconLoaderTests
         CreateAsset(Path.Combine(_packageRoot, "Assets"), "AppLogo.targetsize-16_altform-unplated.png");
         CreateAsset(Path.Combine(_packageRoot, "Assets"), "AppLogo.scale-200.png");
 
-        var result = AppxIconLoader.LogoPathFromUri(@"Assets\AppLogo.png", Theme.Dark, 64, CreatePackage(), resolvedPath);
+        var result = AppxIconLoader.LogoPathFromUri(@"Assets\AppLogo.png", new PackagedIconTheme(false), 64, CreatePackage(), resolvedPath);
 
         Assert.AreEqual(resolvedPath, result.LogoPath);
     }
 
     [DataTestMethod]
-    [DataRow(Theme.System, "", "_contrast-black", false)]
-    [DataRow(Theme.Dark, "", "_contrast-black", false)]
-    [DataRow(Theme.Dark, "", "_contrast-black", true)]
-    [DataRow(Theme.Light, "", "_contrast-white", false)]
-    [DataRow(Theme.Light, "", "_contrast-white", true)]
-    [DataRow(Theme.HighContrastBlack, "_contrast-black", "", false)]
-    [DataRow(Theme.HighContrastBlack, "_contrast-black", "", true)]
-    [DataRow(Theme.HighContrastWhite, "_contrast-white", "", false)]
-    [DataRow(Theme.HighContrastWhite, "_contrast-white", "", true)]
-    [DataRow(Theme.Dark, "_contrast-standard", "_contrast-black", false)]
-    [DataRow(Theme.HighContrastBlack, "_contrast-high", "", false)]
-    [DataRow(Theme.HighContrastOne, "_contrast-high", "", false)]
-    [DataRow(Theme.HighContrastTwo, "_contrast-high", "", false)]
+    [DataRow(false, ContrastMode.Standard, "", "_contrast-black", false)]
+    [DataRow(false, ContrastMode.Standard, "", "_contrast-black", true)]
+    [DataRow(true, ContrastMode.Standard, "", "_contrast-white", false)]
+    [DataRow(true, ContrastMode.Standard, "", "_contrast-white", true)]
+    [DataRow(false, ContrastMode.Black, "_contrast-black", "", false)]
+    [DataRow(false, ContrastMode.Black, "_contrast-black", "", true)]
+    [DataRow(true, ContrastMode.White, "_contrast-white", "", false)]
+    [DataRow(true, ContrastMode.White, "_contrast-white", "", true)]
+    [DataRow(false, ContrastMode.Standard, "_contrast-standard", "_contrast-black", false)]
+    [DataRow(false, ContrastMode.Black, "_contrast-high", "", false)]
     public void LogoPathFromUri_PrefersMatchingContrastScaleOverOppositeTarget(
-        Theme theme,
+        bool isLight,
+        ContrastMode contrastMode,
         string matchingContrast,
         string oppositeContrast,
         bool splitResourcePackage)
@@ -135,7 +133,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            theme,
+            new PackagedIconTheme(isLight, contrastMode),
             24,
             CreatePackage(),
             resolvedPath);
@@ -145,12 +143,13 @@ public class AppxIconLoaderTests
     }
 
     [DataTestMethod]
-    [DataRow(Theme.Dark, "", "_contrast-black")]
-    [DataRow(Theme.Light, "", "_contrast-white")]
-    [DataRow(Theme.HighContrastBlack, "_contrast-black", "")]
-    [DataRow(Theme.HighContrastWhite, "_contrast-white", "")]
+    [DataRow(false, ContrastMode.Standard, "", "_contrast-black")]
+    [DataRow(true, ContrastMode.Standard, "", "_contrast-white")]
+    [DataRow(false, ContrastMode.Black, "_contrast-black", "")]
+    [DataRow(true, ContrastMode.White, "_contrast-white", "")]
     public void LogoPathFromUri_SplitPackage_FindsMatchingContrastScaleAfterOppositeTarget(
-        Theme theme,
+        bool isLight,
+        ContrastMode contrastMode,
         string matchingContrast,
         string oppositeContrast)
     {
@@ -163,7 +162,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            theme,
+            new PackagedIconTheme(isLight, contrastMode),
             24,
             CreatePackage(),
             resolvedPath);
@@ -173,10 +172,11 @@ public class AppxIconLoaderTests
     }
 
     [DataTestMethod]
-    [DataRow(Theme.Dark, "", "_contrast-black")]
-    [DataRow(Theme.HighContrastBlack, "_contrast-black", "")]
+    [DataRow(false, ContrastMode.Standard, "", "_contrast-black")]
+    [DataRow(false, ContrastMode.Black, "_contrast-black", "")]
     public void LogoPathFromUri_SplitPackage_OppositeTargetRemainsFallbackForUndersizedMatchingIcon(
-        Theme theme,
+        bool isLight,
+        ContrastMode contrastMode,
         string matchingContrast,
         string oppositeContrast)
     {
@@ -189,7 +189,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            theme,
+            new PackagedIconTheme(isLight, contrastMode),
             24,
             CreatePackage(),
             resolvedPath);
@@ -211,7 +211,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"iCloud\Square44x44Logo.png",
-            Theme.Light,
+            new PackagedIconTheme(true),
             32,
             CreatePackage(),
             resolvedPath);
@@ -221,9 +221,9 @@ public class AppxIconLoaderTests
     }
 
     [TestMethod]
-    [DataRow(Theme.Light)]
-    [DataRow(Theme.HighContrastWhite)]
-    public void LogoPathFromUri_LightTheme_PrefersLightUnplatedAcrossTargetSizes(Theme theme)
+    [DataRow(true, ContrastMode.Standard)]
+    [DataRow(true, ContrastMode.White)]
+    public void LogoPathFromUri_LightTheme_PrefersLightUnplatedAcrossTargetSizes(bool isLight, ContrastMode contrastMode)
     {
         var physicalDirectory = Path.Combine(_packageRoot, "Assets");
         var resolvedPath = CreateAsset(physicalDirectory, "AppLogo.scale-100.png");
@@ -234,7 +234,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            theme,
+            new PackagedIconTheme(isLight, contrastMode),
             20,
             CreatePackage(),
             resolvedPath);
@@ -257,13 +257,13 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"BETA\Square44x44LogoBETA.png",
-            Theme.HighContrastBlack,
+            new PackagedIconTheme(false, ContrastMode.Black),
             20,
             CreatePackage(),
             resolvedPath);
 
         Assert.AreEqual(expectedPath, result.LogoPath);
-        Assert.AreEqual(LogoType.HighContrast, result.LogoType);
+        Assert.IsTrue(result.IsHighContrast);
     }
 
     [TestMethod]
@@ -277,7 +277,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             64,
             CreatePackage(),
             resolvedPath);
@@ -295,7 +295,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedResourcePath: null);
@@ -314,7 +314,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedResourcePath: null);
@@ -341,7 +341,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedPath);
@@ -359,7 +359,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             @"Assets\AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedPath);
@@ -378,7 +378,7 @@ public class AppxIconLoaderTests
 
         var result = AppxIconLoader.LogoPathFromUri(
             "AppLogo.png",
-            Theme.Dark,
+            new PackagedIconTheme(false),
             20,
             CreatePackage(),
             resolvedResourcePath: null);
@@ -386,17 +386,9 @@ public class AppxIconLoaderTests
         Assert.AreEqual(expectedPath, result.LogoPath);
     }
 
-    private PackageMetadata CreatePackage()
+    private PackagedAppIcons.Request CreatePackage()
     {
-        var package = new Mock<IPackage>();
-        package.SetupGet(value => value.Name).Returns("Contoso.TestApp");
-        package.SetupGet(value => value.FullName).Returns("Contoso.TestApp_1.0.0.0_x64__test");
-        package.SetupGet(value => value.FamilyName).Returns("Contoso.TestApp_test");
-
-        return new PackageMetadata(package.Object)
-        {
-            InstalledLocation = _packageRoot,
-        };
+        return new("Contoso.TestApp_1.0.0.0_x64__test", _packageRoot, "AppLogo.png");
     }
 
     private static string CreateAsset(string directory, string fileName)

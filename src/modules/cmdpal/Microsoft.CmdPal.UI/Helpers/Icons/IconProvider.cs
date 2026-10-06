@@ -55,7 +55,7 @@ public static partial class IconProvider
                 IconInfoViewModel value => value.IconForTheme(args.Context.Theme == ElementTheme.Light),
                 _ => null,
             };
-            if (iconData is not null && IconProtocolRegistry.Find(iconData.Icon) is AppIconProtocolProcessor)
+            if (iconData is not null && IconProtocolRegistry.Find(iconData.Icon) is AppIconProtocolProcessor or PackagedAppIconProtocolProcessor)
             {
                 args.FallbackSource = _appIconFallbackSource ??= new ImageIconSource
                 {
