@@ -93,10 +93,10 @@ namespace FancyZonesEditor
             public Orientation Orientation { get; set; }
 
             // all zones to the left/up, in order
-            public List<int> NegativeSideIndices { get; set; }
+            public List<int> NegativeSideIndices { get; init; }
 
             // all zones to the right/down, in order
-            public List<int> PositiveSideIndices { get; set; }
+            public List<int> PositiveSideIndices { get; init; }
         }
 
         private List<Zone> _zones;
@@ -216,8 +216,6 @@ namespace FancyZonesEditor
                             endCol++;
                         }
 
-                        var resizer = default(Resizer);
-                        resizer.Orientation = Orientation.Horizontal;
                         var positive = new List<int>();
                         var negative = new List<int>();
 
@@ -227,8 +225,12 @@ namespace FancyZonesEditor
                             positive.Add(grid[row, col]);
                         }
 
-                        resizer.PositiveSideIndices = Unique(positive);
-                        resizer.NegativeSideIndices = Unique(negative);
+                        var resizer = new Resizer
+                        {
+                            Orientation = Orientation.Horizontal,
+                            PositiveSideIndices = Unique(positive),
+                            NegativeSideIndices = Unique(negative),
+                        };
 
                         _resizers.Add(resizer);
 
@@ -254,8 +256,6 @@ namespace FancyZonesEditor
                             endRow++;
                         }
 
-                        var resizer = default(Resizer);
-                        resizer.Orientation = Orientation.Vertical;
                         var positive = new List<int>();
                         var negative = new List<int>();
 
@@ -265,8 +265,12 @@ namespace FancyZonesEditor
                             positive.Add(grid[row, col]);
                         }
 
-                        resizer.PositiveSideIndices = Unique(positive);
-                        resizer.NegativeSideIndices = Unique(negative);
+                        var resizer = new Resizer
+                        {
+                            Orientation = Orientation.Vertical,
+                            PositiveSideIndices = Unique(positive),
+                            NegativeSideIndices = Unique(negative),
+                        };
 
                         _resizers.Add(resizer);
 
@@ -313,8 +317,10 @@ namespace FancyZonesEditor
 
             model.Rows = yCoords.Count - 1;
             model.Columns = xCoords.Count - 1;
-            model.RowPercents = AdjacentDifference(yCoords);
-            model.ColumnPercents = AdjacentDifference(xCoords);
+            model.RowPercents.Clear();
+            model.RowPercents.AddRange(AdjacentDifference(yCoords));
+            model.ColumnPercents.Clear();
+            model.ColumnPercents.AddRange(AdjacentDifference(xCoords));
             model.CellChildMap = new int[model.Rows, model.Columns];
 
             for (int index = 0; index < _zones.Count; index++)

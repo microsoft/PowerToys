@@ -64,6 +64,26 @@ public partial class SamplesListPage : ListPage
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
         },
+        new ListItem(new SampleSwatchIconPage())
+        {
+            Title = "Swatch Icon Palette",
+            Subtitle = "A 256-color circle and square swatch stress sample",
+        },
+        new ListItem(new SampleSvgIconPage())
+        {
+            Title = "SVG Icon Protocols",
+            Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
+        },
+        new ListItem(new SampleShellItemIconPage())
+        {
+            Title = "System32 Shell Icons",
+            Subtitle = "A large real-world list for Shell icon identity and cache testing",
+        },
+        new ListItem(new SampleShellItemIconPage(useLegacyIndexerIcons: true))
+        {
+            Title = "System32 Legacy Indexer Icons",
+            Subtitle = "The same System32 list using pre-protocol ThumbnailHelper streams",
+        },
         new ListItem(new SlowListPage())
         {
             Title = "Slow loading list page",
@@ -137,6 +157,11 @@ public partial class SamplesListPage : ListPage
         },
 
         // Data package samples
+        new ListItem(new SampleClipboardPage())
+        {
+            Title = "Clipboard Helper Samples",
+            Subtitle = "Test text, RTF, images, and custom data packages with ClipboardHelper",
+        },
         new ListItem(new SampleDataTransferPage())
         {
             Title = "Clipboard and Drag-and-Drop Demo",

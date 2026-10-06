@@ -332,6 +332,21 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         }
 
         [TestMethod]
+        public void GeneratedCertificateChainUsesIssuerValidity()
+        {
+            using var rootKey = RSA.Create(2048);
+            using var root = CreateRootCertificate(rootKey, validityDays: 1);
+            using var intermediateKey = RSA.Create(2048);
+            using var intermediate = CreateIntermediateCertificate(root, intermediateKey);
+            using var leaf = CreateCodeSigningLeafCertificate(intermediate);
+
+            Assert.AreEqual(root.NotBefore, intermediate.NotBefore);
+            Assert.AreEqual(root.NotAfter, intermediate.NotAfter);
+            Assert.AreEqual(intermediate.NotBefore, leaf.NotBefore);
+            Assert.AreEqual(intermediate.NotAfter, leaf.NotAfter);
+        }
+
+        [TestMethod]
         public void SignerCertificateEqualityRejectsDistinctCertificatesWithSameSubject_FallbackWithoutSecondTrustedFixture()
         {
             using var firstKey = RSA.Create(2048);
@@ -771,7 +786,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             return chain;
         }
 
-        private static X509Certificate2 CreateRootCertificate(RSA rootKey, int validityDays)
+        private static X509Certificate2 CreateRootCertificate(RSA rootKey, int validityDays = 7)
         {
             var request = new CertificateRequest(
                 "CN=MWB IPC Test Root",

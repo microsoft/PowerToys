@@ -1356,13 +1356,12 @@ UINT __stdcall InstallCmdPalPackageCA(MSIHANDLE hInstall)
     try
     {
         auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\", false);
-        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\Dependencies\\", true);
 
         if (!msix.empty())
         {
             auto msixPath = msix[0];
 
-            if (!package::RegisterPackage(msixPath, dependencies))
+            if (!package::RegisterPackage(msixPath, {}))
             {
                 Logger::error(L"Failed to install CmdPal package");
                 er = ERROR_INSTALL_FAILURE;

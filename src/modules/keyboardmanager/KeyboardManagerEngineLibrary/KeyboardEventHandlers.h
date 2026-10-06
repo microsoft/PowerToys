@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include "State.h"
 
@@ -10,6 +11,17 @@ namespace KeyboardManagerInput
 
 namespace KeyboardEventHandlers
 {
+    namespace ProgramLauncher
+    {
+        constexpr bool ShouldUseExplorerShell(Shortcut::StartWindowType startWindowType) noexcept
+        {
+            return startWindowType == Shortcut::StartWindowType::Normal;
+        }
+
+        std::optional<std::wstring> ExpandAndGetAbsolutePath(const std::wstring& value);
+
+        std::wstring GetWorkingDirectory(const std::wstring& filePath, const std::wstring& configuredDirectory);
+    }
 
     struct ResetChordsResults
     {
@@ -89,7 +101,7 @@ namespace KeyboardEventHandlers
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
     // Function to find and show a running program
-    bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount);
+    bool TryShowExistingProgram(DWORD pid, const std::wstring& programName);
 
     bool HideProgram(DWORD pid, std::wstring programName, int retryCount);
 

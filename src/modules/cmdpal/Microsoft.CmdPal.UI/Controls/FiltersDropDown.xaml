@@ -34,6 +34,8 @@
                         Margin="4,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        DiagnosticScope="MenuItem"
+                        RequestSite="Filter"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
@@ -62,6 +64,7 @@
         Padding="16,5,8,5"
         VerticalAlignment="Center"
         HorizontalContentAlignment="Left"
+        AccessKey="F"
         PreviewKeyDown="FilterDropDownButton_PreviewKeyDown"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <DropDownButton.Content>
@@ -72,6 +75,8 @@
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
+                    DiagnosticScope="Selected"
+                    RequestSite="Filter"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
                     Visibility="Collapsed" />
                 <TextBlock x:Name="SelectedFilterText" VerticalAlignment="Center" />

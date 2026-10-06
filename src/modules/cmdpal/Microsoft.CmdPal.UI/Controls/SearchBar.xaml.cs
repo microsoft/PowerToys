@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -21,7 +22,6 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -39,6 +39,7 @@ public sealed partial class SearchBar : UserControl,
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly AppBarSeparator _menuSeparator = new();
     private bool _isBackspaceHeld;
 
     // Inline text suggestions
@@ -59,9 +60,7 @@ public sealed partial class SearchBar : UserControl,
 
     private bool _tokenSearchEnabled;
 
-    private AppBarSeparator? _menuSeparator;
-    private AppBarButton? _settingsMenuItem;
-    private AppBarButton? _helpMenuItem;
+    private IReadOnlyList<ICommandBarElement> _additionalContextMenuItems = [];
 
     private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
@@ -75,9 +74,14 @@ public sealed partial class SearchBar : UserControl,
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
+    // Called on each opening so the host can build commands from its current state.
+    public Func<IReadOnlyList<ICommandBarElement>>? AdditionalContextMenuItemsFactory { get; set; }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public event EventHandler? ActiveFocusTargetChanged;
+
+    public event EventHandler? SearchTextChanging;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -400,42 +404,27 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        if (_settingsMenuItem is null || _helpMenuItem is null)
+        // Remove the previous host items first in case the flyout retained them.
+        _ = flyout.SecondaryCommands.Remove(_menuSeparator);
+        foreach (var item in _additionalContextMenuItems)
         {
-            _menuSeparator = new AppBarSeparator();
-
-            _settingsMenuItem = new AppBarButton
-            {
-                Label = RS_.GetString("SearchBoxContextMenu_Settings"),
-                Icon = new FontIcon { Glyph = "\uE713" },
-                KeyboardAcceleratorTextOverride = RS_.GetString("SearchBoxContextMenu_Settings_Shortcut"),
-            };
-            _settingsMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
-
-            _helpMenuItem = new AppBarButton
-            {
-                Label = RS_.GetString("SearchBoxContextMenu_Help"),
-                Icon = new FontIcon { Glyph = "\uE897" },
-            };
-            _helpMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send(new LaunchUriMessage(new Uri("https://aka.ms/PowerToysOverview_CmdPal")));
+            _ = flyout.SecondaryCommands.Remove(item);
         }
 
-        // Only add the separator when the flyout populated built-in secondary commands above us.
-        if (_menuSeparator is not null &&
-            flyout.SecondaryCommands.Count > 0 &&
-            !flyout.SecondaryCommands.Contains(_menuSeparator))
+        _additionalContextMenuItems = AdditionalContextMenuItemsFactory?.Invoke() ?? [];
+        if (_additionalContextMenuItems.Count == 0)
+        {
+            return;
+        }
+
+        if (flyout.SecondaryCommands.Count > 0)
         {
             flyout.SecondaryCommands.Add(_menuSeparator);
         }
 
-        if (!flyout.SecondaryCommands.Contains(_settingsMenuItem))
+        foreach (var item in _additionalContextMenuItems)
         {
-            flyout.SecondaryCommands.Add(_settingsMenuItem);
-        }
-
-        if (!flyout.SecondaryCommands.Contains(_helpMenuItem))
-        {
-            flyout.SecondaryCommands.Add(_helpMenuItem);
+            flyout.SecondaryCommands.Add(item);
         }
     }
 
@@ -446,6 +435,11 @@ public sealed partial class SearchBar : UserControl,
             // Reset the backspace state on key release
             _isBackspaceHeld = false;
         }
+    }
+
+    private void FilterBox_TextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
+    {
+        SearchTextChanging?.Invoke(this, EventArgs.Empty);
     }
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -567,13 +561,20 @@ public sealed partial class SearchBar : UserControl,
     /// box and its placeholder. Used for summon and post-navigation focus alike so both paths
     /// are announced consistently.
     /// </summary>
-    internal void FocusActiveControl()
+    /// <param name="onFocused">Called after the queued focus succeeds.</param>
+    internal void FocusActiveControl(Action? onFocused = null)
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
+            if (this.FindAscendant<ShellPage>()?.HostWindow?.IsVisibleToUser == true &&
+                FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
             {
-                FocusManager.TryFocusAsync(focusable, FocusState.Keyboard).Wait();
+                var operation = FocusManager.TryFocusAsync(focusable, FocusState.Keyboard);
+                operation.Wait();
+                if (operation.GetResults().Succeeded)
+                {
+                    onFocused?.Invoke();
+                }
             }
         });
     }
