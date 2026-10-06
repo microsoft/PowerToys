@@ -247,8 +247,11 @@ namespace Microsoft.MouseWithoutBorders.UITests
         {
             // This source token is never sent to the other endpoint's request channel.
             string token = "mwb-test-" + role + "-" + runId + "-" + Guid.NewGuid().ToString("N");
-            Clipboard.SetText(token);
+            DataObject data = new DataObject();
+            data.SetText(token, TextDataFormat.UnicodeText);
             clipboardChanged = true;
+            // Keep the same token while OLE's bounded retry handles an open clipboard.
+            Clipboard.SetDataObject(data, true, 50, 100);
             // An immediate OLE clipboard read can still be empty on a cold desktop.
             // Acknowledge the generated value; the controller verifies its publication.
             return Digest(token);

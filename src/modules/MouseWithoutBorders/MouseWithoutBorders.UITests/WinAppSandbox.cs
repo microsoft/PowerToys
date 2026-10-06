@@ -29,6 +29,7 @@ internal sealed class WinAppSandbox : ISandboxSession
     private readonly Action saveJournal;
     private readonly TestContext context;
     private readonly WinAppSandboxPrerequisiteReport prerequisites;
+    private readonly Action? created;
     private readonly List<ProcessIdentity> commandProcesses = [];
     private readonly JsonArray commandLog = [];
     private readonly string recordingPath;
@@ -54,7 +55,7 @@ internal sealed class WinAppSandbox : ISandboxSession
     private bool recordingStarted;
     private bool recordingFinalized;
 
-    public WinAppSandbox(string runId, string controlRoot, string runRoot, string winappPath, Action saveJournal, TestContext context, WinAppSandboxPrerequisiteReport prerequisites)
+    public WinAppSandbox(string runId, string controlRoot, string runRoot, string winappPath, Action saveJournal, TestContext context, WinAppSandboxPrerequisiteReport prerequisites, Action? created = null)
     {
         instanceId = Guid.Parse(runId);
         if (instanceId == Guid.Empty)
@@ -69,6 +70,7 @@ internal sealed class WinAppSandbox : ISandboxSession
         this.saveJournal = saveJournal;
         this.context = context;
         this.prerequisites = prerequisites;
+        this.created = created;
         wsbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WindowsApps\wsb.exe");
         targetStateRoot = Path.Combine(this.controlRoot, "winapp-target");
         recordingPath = Path.Combine(this.runRoot, "recordings", "sandbox-guest.mp4");
@@ -129,6 +131,7 @@ internal sealed class WinAppSandbox : ISandboxSession
             WinAppSandboxProtocol.RequireExclusiveInstance(Inventory(Budget(InventoryTimeout, bootstrap: true)), instanceId);
             creationConfirmed = true;
             saveJournal();
+            created?.Invoke();
             ConnectOwnedClient();
 
             // The first target command also installs the released guest agent. Keep it
@@ -202,6 +205,8 @@ internal sealed class WinAppSandbox : ISandboxSession
         lastDiscoveryUtc = DateTime.UtcNow;
         RequireLiveWorker();
     }
+
+    internal Guid[] RecoveryInventory() => WinAppSandboxProtocol.ReadInventory(Inventory(InventoryTimeout));
 
     public void AcknowledgeGuest()
     {

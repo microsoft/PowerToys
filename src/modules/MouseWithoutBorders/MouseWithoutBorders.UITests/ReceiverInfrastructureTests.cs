@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,7 +32,7 @@ public sealed class ReceiverInfrastructureTests
 
         try
         {
-            var digest = receiver.PublishClipboard();
+            var digest = PublishWhileClipboardIsOwned(receiver);
             Assert.AreEqual(64, digest.Length, "Publication must acknowledge the generated token, not an empty transient read.");
             RunFiles.Wait(() => receiver.ClipboardDigest() == digest, TimeSpan.FromSeconds(15), "The receiver did not publish its synthetic clipboard token.");
         }
@@ -46,4 +47,55 @@ public sealed class ReceiverInfrastructureTests
         RunFiles.Write(evidence, new { ForegroundHwnd = receiver.Handle.ToInt64(), receiver.InputFocused });
         TestContext.AddResultFile(evidence);
     }
+
+    private static string PublishWhileClipboardIsOwned(ReceiverController receiver)
+    {
+        using var acquired = new ManualResetEventSlim();
+        var locker = Task.Run(() =>
+        {
+            var watch = Stopwatch.StartNew();
+            while (!OpenClipboard(IntPtr.Zero))
+            {
+                if (watch.Elapsed > TimeSpan.FromSeconds(5))
+                {
+                    throw new InvalidOperationException("The test-owned clipboard lock could not be acquired.");
+                }
+
+                Thread.Sleep(50);
+            }
+
+            bool closed;
+            try
+            {
+                acquired.Set();
+                Thread.Sleep(2000);
+            }
+            finally
+            {
+                closed = CloseClipboard();
+            }
+
+            if (!closed)
+            {
+                throw new InvalidOperationException("The test-owned clipboard lock did not close.");
+            }
+        });
+        try
+        {
+            Assert.IsTrue(acquired.Wait(TimeSpan.FromSeconds(10)), "The real Windows clipboard lock did not acknowledge ownership.");
+            return receiver.PublishClipboard();
+        }
+        finally
+        {
+            locker.GetAwaiter().GetResult();
+        }
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool OpenClipboard(IntPtr owner);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseClipboard();
 }

@@ -43,8 +43,25 @@ try {
     }
     Assert-Check ($moduleSettings.properties.Name2IP.value -eq 'PEER 192.0.2.1') 'MWB name mapping is retained in the typed settings schema'
     & {
+        Add-Type -Path "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\NativeSupport.cs" -ErrorAction Stop
+        $closeQuestion = 'Are you sure you want to close Windows Sandbox? Once Windows Sandbox is closed all of its content will be discarded and permanently lost.'
+        Assert-Check ([Microsoft.MouseWithoutBorders.UITests.NativeSupport]::IsSandboxCloseConfirmation($closeQuestion)) 'only the exact owned Sandbox destruction prompt is accepted'
+        foreach ($text in @('', 'Windows Sandbox could not start.', 'Close Windows Sandbox',
+            'Are you sure you want to close this window?', 'Are you sure you want to close Windows Sandbox?')) {
+            Assert-Check (-not [Microsoft.MouseWithoutBorders.UITests.NativeSupport]::IsSandboxCloseConfirmation($text)) 'an unrelated dialog is never confirmed'
+        }
         . "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\EndpointSupport.ps1"
         . "$PSScriptRoot\..\..\MouseWithoutBorders.UITests\Payload\ModernSandboxRecovery.ps1"
+        $birth = [DateTime]::Parse('2026-10-05T23:24:22.6314321Z',
+            [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind)
+        $processRecord = Convert-EndpointProcessRecord ([pscustomobject]@{
+            Id = 1; ParentId = 2; SessionId = 3; Path = 'C:\owned.exe'; StartTimeUtc = $birth
+            CommandLine = 'must never be exported'
+        })
+        Assert-Check ($processRecord.Count -eq 5 -and -not $processRecord.Contains('CommandLine')) 'endpoint journals contain only whitelisted process identity fields'
+        Assert-Check ($processRecord.StartTimeUtc -ceq $birth.ToString('o')) 'process identity preserves submillisecond birth-time precision in PS5 JSON'
+        $roundtrip = ($processRecord | ConvertTo-Json | ConvertFrom-Json).StartTimeUtc
+        Assert-Check (([DateTime]$roundtrip).ToUniversalTime().Ticks -eq $birth.Ticks) 'recovery can revalidate the exact original process birth time'
         $recoveryRunId = [guid]::NewGuid().ToString()
         $control = "$fixture\control\$recoveryRunId"
         $provisioning = [pscustomobject]@{

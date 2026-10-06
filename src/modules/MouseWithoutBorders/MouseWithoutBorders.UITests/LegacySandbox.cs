@@ -13,15 +13,17 @@ internal sealed class LegacySandbox : ISandboxSession
     private readonly List<ProcessIdentity> owned = [];
     private readonly Action saveJournal;
     private readonly Action<long> captureViewer;
+    private readonly Action? created;
     private readonly int sessionId = Process.GetCurrentProcess().SessionId;
     private readonly string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
     private long viewerHwnd;
     private bool stopping;
 
-    public LegacySandbox(Action saveJournal, Action<long> captureViewer)
+    public LegacySandbox(Action saveJournal, Action<long> captureViewer, Action? created = null)
     {
         this.saveJournal = saveJournal;
         this.captureViewer = captureViewer;
+        this.created = created;
     }
 
     public IReadOnlyList<ProcessIdentity> Processes => owned;
@@ -73,6 +75,7 @@ internal sealed class LegacySandbox : ISandboxSession
         using var launcher = Process.Start(start) ?? throw new InvalidOperationException("Sandbox launcher did not start.");
         owned.Add(ProcessIdentity.Capture(launcher.Id));
         saveJournal();
+        created?.Invoke();
     }
 
     public void Discover()

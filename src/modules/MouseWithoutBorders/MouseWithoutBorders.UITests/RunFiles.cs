@@ -91,4 +91,31 @@ internal static class RunFiles
         while (timer.Elapsed < timeout);
         throw new TimeoutException(description);
     }
+
+    public static void RemoveOwnedDirectory(string path, TimeSpan timeout)
+    {
+        Wait(
+            () =>
+            {
+                if (!Directory.Exists(path))
+                {
+                    return true;
+                }
+
+                _ = WinAppSandboxPayload.PlainFiles(path).ToArray();
+                try
+                {
+                    Directory.Delete(path, recursive: true);
+                    return true;
+                }
+                catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33 or 145)
+                {
+                    // HCS can release a mapped folder shortly after the exact Sandbox
+                    // process/provider is absent. Do not retry unrelated access failures.
+                    return false;
+                }
+            },
+            timeout,
+            "An owned directory remained in use after bounded resource cleanup: " + path);
+    }
 }

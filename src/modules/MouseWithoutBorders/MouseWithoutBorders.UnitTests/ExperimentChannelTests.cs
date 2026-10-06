@@ -162,6 +162,24 @@ public sealed class ExperimentChannelTests
         }
     }
 
+    [TestMethod]
+    public void OwnedDirectoryCleanupWaitsForSharingRelease()
+    {
+        WithChannel((channel, _) =>
+        {
+            var path = Path.Combine(channel.InputRoot, "held.json");
+            using var held = new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite);
+            var release = Task.Run(() =>
+            {
+                Thread.Sleep(300);
+                held.Dispose();
+            });
+            RunFiles.RemoveOwnedDirectory(channel.InputRoot, TimeSpan.FromSeconds(5));
+            release.GetAwaiter().GetResult();
+            Assert.IsFalse(Directory.Exists(channel.InputRoot));
+        });
+    }
+
     private static void WithChannel(Action<EndpointChannel, string> action)
     {
         var root = Path.Combine(Path.GetTempPath(), "mwb-channel-" + Guid.NewGuid().ToString("N"));

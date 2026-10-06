@@ -572,11 +572,29 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 return;
             }
 
+            if (!IsSandboxCloseConfirmation(string.Join(" ", DialogStaticText(dialog, processId))))
+            {
+                return;
+            }
+
             IntPtr yes = GetDlgItem(dialog, 6);
+            if (yes == IntPtr.Zero)
+            {
+                // Windows 10 uses IDOK instead of IDYES for this exact confirmation.
+                yes = GetDlgItem(dialog, 1);
+            }
+
             if (yes != IntPtr.Zero && WindowProcessId(yes) == processId)
             {
                 PostMessage(yes, 0x00F5, IntPtr.Zero, IntPtr.Zero);
             }
+        }
+
+        public static bool IsSandboxCloseConfirmation(string text)
+        {
+            return text != null &&
+                text.IndexOf("Are you sure you want to close Windows Sandbox?", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                text.IndexOf("discarded and permanently lost", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public static string ImagePath(int id)

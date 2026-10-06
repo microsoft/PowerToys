@@ -283,12 +283,20 @@ function Assert-CleanEndpoint {
     }
 }
 
+function Convert-EndpointProcessRecord {
+    param($Record)
+    [ordered]@{
+        Id = $Record.Id; ParentId = $Record.ParentId; SessionId = $Record.SessionId
+        Path = $Record.Path; StartTimeUtc = $Record.StartTimeUtc.ToUniversalTime().ToString('o')
+    }
+}
+
 function Write-EndpointJournal {
     Write-RunJson "$OutputRoot\endpoint-journal.json" ([ordered]@{
         FormatVersion = 1; RunId = $script:config.RunId; Role = $script:config.Role
         ProductRoot = $ProductRoot; SettingsRoot = $script:settingsRoot
-        Worker = [Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]::Capture($PID)
-        Processes = @($script:owned.ToArray()); Settings = @($script:backups)
+        Worker = Convert-EndpointProcessRecord ([Microsoft.MouseWithoutBorders.UITests.ProcessIdentity]::Capture($PID))
+        Processes = @($script:owned.ToArray() | ForEach-Object { Convert-EndpointProcessRecord $_ }); Settings = @($script:backups)
         Status = $script:status; GuestFirewallRule = $script:firewallRule
         GuestFirewallOwnership = $script:firewallOwnership
         SettingsRestored = $script:settingsRestored; ClipboardRestored = $script:clipboardRestored

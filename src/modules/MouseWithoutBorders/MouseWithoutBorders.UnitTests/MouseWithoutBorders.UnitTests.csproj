@@ -37,6 +37,7 @@
     <Compile Include="..\MouseWithoutBorders.UITests\EndpointChannel.cs" Link="Experiment\EndpointChannel.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxStartupError.cs" Link="Experiment\SandboxStartupError.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\LeasePublisher.cs" Link="Experiment\LeasePublisher.cs" />
+    <Compile Include="..\MouseWithoutBorders.UITests\RecoveryOutcome.cs" Link="Experiment\RecoveryOutcome.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxBackendSelection.cs" Link="Experiment\SandboxBackendSelection.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxTimeouts.cs" Link="Experiment\SandboxTimeouts.cs" />
     <Compile Include="..\MouseWithoutBorders.UITests\SandboxConfiguration.cs" Link="Experiment\SandboxConfiguration.cs" />

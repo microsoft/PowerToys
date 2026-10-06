@@ -55,6 +55,7 @@ internal sealed class TwoEndpointFixture : IDisposable
     private long hostReceiverHwnd;
     private long guestReceiverHwnd;
     private bool cleanupComplete;
+    private bool ownsRunDirectory;
     private bool hostPeersStarted;
     private bool guestPeersStarted;
 
@@ -86,6 +87,11 @@ internal sealed class TwoEndpointFixture : IDisposable
         }
 
         cleanupComplete = true;
+        if (!ownsRunDirectory)
+        {
+            return cleanupErrors;
+        }
+
         phase = "Cleanup";
         Attempt("Capture Sandbox-native evidence before teardown", () =>
         {
@@ -171,7 +177,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         Attempt("Finalize and attach desktop and Sandbox videos", () => recordings?.Complete());
         status = cleanupErrors.Count == 0 ? "Cleaned" : "RecoveryRequired";
         Attempt("Persist cleanup journal", SaveJournal);
-        if (runRoot.Length > 0)
+        if (ownsRunDirectory)
         {
             // Profile backups are recovery data, not test attachments. Do not export them.
             foreach (var directory in new[] { runRoot, host?.OutputRoot, guest?.OutputRoot }.Where(path => path is not null))
@@ -258,12 +264,14 @@ internal sealed class TwoEndpointFixture : IDisposable
         Assert.IsTrue(WinappCli.IsAvailable(), WinappCli.InstallHint);
         var tools = Environment.GetEnvironmentVariable("WINAPP_CLI_PATH");
         Assert.IsTrue(!string.IsNullOrWhiteSpace(tools) && File.Exists(tools), "Set WINAPP_CLI_PATH to the staged standalone winapp.exe.");
-        runRoot = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT")
+        var proposedRunRoot = Path.GetFullPath(Environment.GetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT")
             ?? Path.Combine(RunFiles.PersistentResultsRoot(context.TestRunDirectory), "mwb-" + runId));
-        Assert.IsFalse(Directory.Exists(runRoot) && Directory.EnumerateFileSystemEntries(runRoot).Any(), "Run directory must be new; preserve old recovery journals.");
+        Assert.IsFalse(Directory.Exists(proposedRunRoot) && Directory.EnumerateFileSystemEntries(proposedRunRoot).Any(), "Run directory must be new; preserve old recovery journals.");
         controlRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToysUiTestControl", runId);
         Assert.IsFalse(Directory.Exists(controlRoot), "A control directory already exists for this RunId; provision a new run.");
-        Directory.CreateDirectory(runRoot);
+        Directory.CreateDirectory(proposedRunRoot);
+        runRoot = proposedRunRoot;
+        ownsRunDirectory = true;
         recordings = new TestRecordings(context, Path.Combine(runRoot, "recordings"));
         recordings.StartDesktop();
         host = new EndpointChannel(runId, Path.Combine(controlRoot, "host-input"), Path.Combine(runRoot, "host"));
@@ -488,21 +496,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 
     private void StartPeers()
     {
-        var enabled = new JsonObject();
-        var moduleSource = File.ReadAllText(Path.Combine(payloadRoot, "EnabledModules.source.txt"));
-        foreach (Match match in Regex.Matches(moduleSource, """(?:\[JsonPropertyName\("(?<json>[^"]+)"\)\]\s*)?public bool (?<property>\w+)"""))
-        {
-            var name = match.Groups["json"].Success ? match.Groups["json"].Value : match.Groups["property"].Value;
-            enabled[name] = name == "MouseWithoutBorders";
-        }
-
-        Assert.IsTrue(enabled.Count >= 30 && enabled["MouseWithoutBorders"]!.GetValue<bool>(), "Enabled-module source contract was incomplete.");
-        var global = new JsonObject
-        {
-            ["startup"] = false, ["run_elevated"] = false, ["show_whats_new_after_updates"] = false,
-            ["download_updates_automatically"] = false, ["show_new_updates_toast_notification"] = false,
-            ["enable_experimentation"] = false, ["enabled"] = enabled,
-        };
+        var global = CreateGlobalSettings(payloadRoot);
         hostPeersStarted = true;
         var started = host!.Request("Start", new JsonObject
         {
@@ -523,6 +517,25 @@ internal sealed class TwoEndpointFixture : IDisposable
             ["PeerName"] = hostName, ["PeerAddress"] = provision["HostAddress"]!.DeepClone(), ["GlobalSettings"] = global.DeepClone(),
             ["ExpectedLocalAddress"] = guestAddress,
         }, timeoutSeconds: 900);
+    }
+
+    internal static JsonObject CreateGlobalSettings(string payloadRoot)
+    {
+        var enabled = new JsonObject();
+        var moduleSource = File.ReadAllText(Path.Combine(payloadRoot, "EnabledModules.source.txt"));
+        foreach (Match match in Regex.Matches(moduleSource, """(?:\[JsonPropertyName\("(?<json>[^"]+)"\)\]\s*)?public bool (?<property>\w+)"""))
+        {
+            var name = match.Groups["json"].Success ? match.Groups["json"].Value : match.Groups["property"].Value;
+            enabled[name] = name == "MouseWithoutBorders";
+        }
+
+        Assert.IsTrue(enabled.Count >= 30 && enabled["MouseWithoutBorders"]!.GetValue<bool>(), "Enabled-module source contract was incomplete.");
+        return new JsonObject
+        {
+            ["startup"] = false, ["run_elevated"] = false, ["show_whats_new_after_updates"] = false,
+            ["download_updates_automatically"] = false, ["show_new_updates_toast_notification"] = false,
+            ["enable_experimentation"] = false, ["enabled"] = enabled,
+        };
     }
 
     private void Pair()
@@ -836,7 +849,7 @@ internal sealed class TwoEndpointFixture : IDisposable
 
     private void SaveJournal()
     {
-        if (runRoot.Length == 0 || !Directory.Exists(runRoot))
+        if (!ownsRunDirectory || !Directory.Exists(runRoot))
         {
             return;
         }
@@ -892,7 +905,7 @@ internal sealed class TwoEndpointFixture : IDisposable
         return true;
     }
 
-    private static void AssertDebugAssembly(string path)
+    internal static void AssertDebugAssembly(string path)
     {
         using var stream = File.OpenRead(path);
         using var pe = new PEReader(stream);
