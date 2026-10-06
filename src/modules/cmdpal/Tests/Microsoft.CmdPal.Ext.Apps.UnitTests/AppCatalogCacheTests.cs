@@ -24,7 +24,7 @@ public class AppCatalogCacheTests
         try
         {
             var created = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
-            var item = Item("win32:one", TestDataHelper.CreateTestWin32Program("Win32"), "start-menu");
+            var item = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Win32"), "start-menu");
             var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [item] };
             var cache = new AppCatalogCache(cachePath);
             await cache.SaveAsync(snapshots, ["win32"], Context(created, ("win32", "key")), CancellationToken.None);
@@ -40,7 +40,7 @@ public class AppCatalogCacheTests
                 Assert.AreEqual(sentinel, File.GetLastWriteTimeUtc(cachePath));
             }
 
-            var changed = Item("win32:one", TestDataHelper.CreateTestWin32Program("Changed"), "start-menu");
+            var changed = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Changed"), "start-menu");
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [changed] },
                 ["win32"],
@@ -65,7 +65,7 @@ public class AppCatalogCacheTests
             var context = Context(DateTimeOffset.UtcNow, ("win32", "win32-key"));
             var items = new Dictionary<string, IReadOnlyList<AppCatalogItem>>
             {
-                ["win32"] = [Item("win32:partial", TestDataHelper.CreateTestWin32Program("Partial"), "start-menu")],
+                ["win32"] = [Item("win32:partial", TestDataHelper.CreateTestWin32Metadata("Partial"), "start-menu")],
             };
             await cache.SaveAsync(items, [], context, CancellationToken.None);
             Assert.IsNull(await cache.LoadAsync(context, CancellationToken.None));
@@ -91,8 +91,8 @@ public class AppCatalogCacheTests
             var cache = new AppCatalogCache(cachePath);
             var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>>
             {
-                ["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Program("Original"), "start-menu")],
-                ["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Program("Package v1"), "packaged")],
+                ["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Original"), "start-menu")],
+                ["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Metadata("Package v1"), "packaged")],
             };
             await cache.SaveAsync(
                 snapshots,
@@ -101,7 +101,7 @@ public class AppCatalogCacheTests
                 CancellationToken.None);
             var original = File.ReadAllBytes(cachePath);
 
-            snapshots["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Program("Updated"), "start-menu")];
+            snapshots["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Updated"), "start-menu")];
             await cache.SaveAsync(
                 snapshots,
                 [],
@@ -109,7 +109,7 @@ public class AppCatalogCacheTests
                 CancellationToken.None);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(cachePath), "An unvalidated key change must leave the previous cache entry unchanged.");
 
-            snapshots["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Program("Package v2"), "packaged")];
+            snapshots["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Metadata("Package v2"), "packaged")];
             var changedContext = Context(created.AddHours(1), ("win32", "new-key"), ("packaged", "new-package-key"));
             await cache.SaveAsync(snapshots, ["packaged"], changedContext, CancellationToken.None);
             var current = await new AppCatalogCache(cachePath).LoadAsync(changedContext, CancellationToken.None);
@@ -177,8 +177,8 @@ public class AppCatalogCacheTests
         {
             var now = new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero);
             var context = Context(now, ("win32", "win32-key"));
-            var program = TestDataHelper.CreateTestWin32Program("Cached app");
-            program.IcoPath = @"C:\Icons, custom\icons.dll,-4";
+            var program = TestDataHelper.CreateTestWin32Metadata("Cached app");
+            program.IconLocation = @"C:\Icons, custom\icons.dll,-4";
             program.Arguments = "--profile cached";
             program.WorkingDirectory = @"C:\Projects\Cached";
             program.AppExecutionAlias = new Programs.ReparsePoint.AppExecutionAliasInfo
@@ -213,11 +213,11 @@ public class AppCatalogCacheTests
             Assert.AreEqual("Contoso.Cached_123!app", payload.PackagedAppUserModelId);
             Assert.AreEqual(program.AppExecutionAlias.TargetPath, payload.AppExecutionAliasTargetPath);
             var app = loaded.Sources[0].Items[0].ToAppItem();
-            Assert.AreEqual(program.IcoPath, app.IcoPath);
-            Assert.AreEqual(program.FullPath, app.ExePath);
-            Assert.AreEqual(program.AppExecutionAlias.TargetPath, app.FullExecutablePath);
-            Assert.AreEqual(program.Arguments, app.Arguments);
-            Assert.AreEqual(program.AppExecutionAlias.Aumid, app.UserModelId);
+            Assert.AreEqual(program.IconLocation, app.IconSource);
+            Assert.AreEqual(program.TargetPath, app.LaunchTarget);
+            Assert.AreEqual(program.AppExecutionAlias.TargetPath, app.ResolvedTarget);
+            Assert.AreEqual(program.Arguments, app.LaunchArguments);
+            Assert.AreEqual(program.AppExecutionAlias.Aumid, app.AppUserModelId);
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
             CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
@@ -225,6 +225,113 @@ public class AppCatalogCacheTests
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
             Assert.AreEqual(legacyId, snapshot.GetCommandItem(legacyId)?.Command?.Id);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
+    public async Task SaveAndLoadAsync_ShortcutDisplayNamePreservesRawNameAndCommandIds()
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var context = Context(DateTimeOffset.UtcNow, ("win32", "win32-key"));
+            var program = TestDataHelper.CreateTestWin32Metadata("Raw shortcut");
+            program.DisplayName = "Localized shortcut";
+            program.LnkFilePath = @"C:\Links\Raw shortcut.lnk";
+            program.AppType = Programs.Win32AppType.ShortcutApplication;
+            var item = Item("win32:shortcut", program, "start-menu");
+            var releasedId = AppCommand.GenerateId(program.Name, program.Description, program.LnkFilePath);
+            var canonicalId = new AppCommand(item.ToAppItem()).Id;
+            var cache = new AppCatalogCache(cachePath);
+
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [item] },
+                ["win32"],
+                context,
+                CancellationToken.None);
+            var loaded = await cache.LoadAsync(context, CancellationToken.None);
+
+            Assert.IsNotNull(loaded);
+            var cachedItem = loaded.Sources.Single().Items.Single();
+            var payload = (Win32AppPayload)cachedItem.Payload;
+            Assert.AreEqual(program.Name, payload.Name);
+            Assert.AreEqual(program.Name, Path.GetFileNameWithoutExtension(payload.LnkFilePath));
+            Assert.AreEqual(program.DisplayName, payload.DisplayName);
+            Assert.AreEqual(program.TargetPath, payload.TargetPath);
+            Assert.AreEqual(program.LnkFilePath, payload.LnkFilePath);
+            Assert.AreEqual(releasedId, payload.GetCommandId());
+            Assert.AreEqual(item.Identity, cachedItem.Identity);
+            Assert.IsTrue(item.HasSamePersistedContent(cachedItem));
+            CollectionAssert.AreEqual(item.CommandIds.ToArray(), cachedItem.CommandIds.ToArray());
+
+            var app = cachedItem.ToAppItem();
+            Assert.AreEqual(program.DisplayName, app.Name);
+            Assert.AreEqual(program.LnkFilePath, app.LaunchTarget);
+            Assert.AreEqual(canonicalId, new AppCommand(app).Id);
+            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], []);
+            Assert.AreSame(row, snapshot.GetVisibleApp(canonicalId));
+            Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
+            Assert.AreEqual(releasedId, snapshot.GetCommandItem(releasedId)?.Command?.Id);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadAsync_ShortcutPayloadWithMissingOrNullDisplayNameFallsBackToRawName(bool explicitNull)
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var context = Context(DateTimeOffset.UtcNow, ("win32", "win32-key"));
+            var program = TestDataHelper.CreateTestWin32Metadata("Raw shortcut");
+            program.LnkFilePath = @"C:\Links\Raw shortcut.lnk";
+            program.AppType = Programs.Win32AppType.ShortcutApplication;
+            var item = Item("win32:shortcut", program, "start-menu");
+            var releasedId = item.Payload.GetCommandId();
+            var canonicalId = new AppCommand(item.ToAppItem()).Id;
+            var cache = new AppCatalogCache(cachePath);
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [item] },
+                ["win32"],
+                context,
+                CancellationToken.None);
+            var content = JsonNode.Parse(File.ReadAllText(cachePath))!;
+            var payloadJson = content["Sources"]![0]!["Items"]![0]!["Payload"]!.AsObject();
+            if (explicitNull)
+            {
+                payloadJson["DisplayName"] = null;
+            }
+            else
+            {
+                Assert.IsTrue(payloadJson.Remove("DisplayName"));
+            }
+
+            File.WriteAllText(cachePath, content.ToJsonString());
+            var loaded = await cache.LoadAsync(context, CancellationToken.None);
+
+            Assert.IsNotNull(loaded);
+            var cachedItem = loaded.Sources.Single().Items.Single();
+            var payload = (Win32AppPayload)cachedItem.Payload;
+            Assert.AreEqual(string.Empty, payload.DisplayName);
+            Assert.AreEqual(program.Name, payload.Name);
+            Assert.AreEqual(releasedId, payload.GetCommandId());
+            Assert.IsTrue(item.HasSamePersistedContent(cachedItem));
+            var app = cachedItem.ToAppItem();
+            Assert.AreEqual(program.Name, app.Name);
+            Assert.AreEqual(canonicalId, new AppCommand(app).Id);
+            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var snapshot = new AppListItemSnapshot([row], []);
+            Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
         }
         finally
         {
@@ -374,8 +481,8 @@ public class AppCatalogCacheTests
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>>
                 {
-                    ["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Program("Packaged"), "packaged")],
-                    ["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Program("Win32"), "start-menu")],
+                    ["packaged"] = [Item("packaged:one", TestDataHelper.CreateTestWin32Metadata("Packaged"), "packaged")],
+                    ["win32"] = [Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Win32"), "start-menu")],
                 },
                 ["packaged", "win32"],
                 Context(now, ("packaged", "package-key"), ("win32", "win32-key")),
@@ -403,8 +510,8 @@ public class AppCatalogCacheTests
         {
             var created = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
             var cache = new AppCatalogCache(cachePath);
-            var unchanged = Item("win32:one", TestDataHelper.CreateTestWin32Program("Win32"), "start-menu");
-            var packaged = Item("packaged:one", TestDataHelper.CreateTestWin32Program("Packaged v1"), "packaged");
+            var unchanged = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Win32"), "start-menu");
+            var packaged = Item("packaged:one", TestDataHelper.CreateTestWin32Metadata("Packaged v1"), "packaged");
             var sourceKeys = new[] { ("packaged", "package-key"), ("win32", "win32-key") };
 
             await cache.SaveAsync(
@@ -419,7 +526,7 @@ public class AppCatalogCacheTests
 
             var updatedPackaged = Item(
                 "packaged:one",
-                TestDataHelper.CreateTestWin32Program("Packaged v2"),
+                TestDataHelper.CreateTestWin32Metadata("Packaged v2"),
                 "packaged");
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>>
@@ -453,7 +560,7 @@ public class AppCatalogCacheTests
         {
             var firstValidation = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
             var sourceKeys = new[] { ("win32", "win32-key") };
-            var item = Item("win32:one", TestDataHelper.CreateTestWin32Program("Win32"), "start-menu");
+            var item = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Win32"), "start-menu");
             var snapshots = new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [item] };
             var cache = new AppCatalogCache(cachePath);
 
@@ -489,8 +596,8 @@ public class AppCatalogCacheTests
         try
         {
             var firstValidation = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
-            var original = Item("win32:one", TestDataHelper.CreateTestWin32Program("Original"), "start-menu");
-            var updated = Item("win32:one", TestDataHelper.CreateTestWin32Program("Updated"), "start-menu");
+            var original = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Original"), "start-menu");
+            var updated = Item("win32:one", TestDataHelper.CreateTestWin32Metadata("Updated"), "start-menu");
             var cache = new AppCatalogCache(cachePath);
 
             await cache.SaveAsync(
@@ -558,15 +665,19 @@ public class AppCatalogCacheTests
 
     private static AppCatalogItem Item(
         string identity,
-        Programs.Win32Program program,
+        Programs.Win32AppMetadata program,
         string sourceId)
-        => new(
+    {
+        return new(
             identity,
             priority: 0,
-            new AppCatalogSourceReference(sourceId, program.FullPath),
+            new AppCatalogSourceReference(sourceId, program.TargetPath),
             [],
             Win32AppPayload.From(program));
+    }
 
     private static string TemporaryCachePath()
-        => Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
+    {
+        return Path.Combine(Path.GetTempPath(), $"cmdpal-app-catalog-{Guid.NewGuid():N}.json");
+    }
 }

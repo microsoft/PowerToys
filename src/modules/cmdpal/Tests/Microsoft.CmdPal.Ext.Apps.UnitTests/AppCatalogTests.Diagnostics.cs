@@ -201,7 +201,7 @@ public partial class AppCatalogTests
                 (candidate, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return TestDataHelper.CreateTestWin32Program("App", candidate);
+                    return TestDataHelper.CreateTestWin32Metadata("App", candidate);
                 },
                 createWatchers: false,
                 diagnosticsEnabled: () => enabled,

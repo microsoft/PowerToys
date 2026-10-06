@@ -35,7 +35,8 @@ internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
         var matches = item.Payload switch
         {
             Win32AppPayload app => Matches(patterns.Names, app.Name)
-                || MatchesPath(patterns.Paths, app.FullPath)
+                || Matches(patterns.Names, app.DisplayName)
+                || MatchesPath(patterns.Paths, app.TargetPath)
                 || MatchesPath(patterns.Paths, app.LnkFilePath)
                 || MatchesPath(patterns.Paths, app.AppExecutionAliasTargetPath),
             PackagedAppSnapshot app => Matches(patterns.Names, app.Name)

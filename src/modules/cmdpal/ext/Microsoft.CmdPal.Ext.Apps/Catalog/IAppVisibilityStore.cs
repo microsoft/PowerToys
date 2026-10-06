@@ -6,13 +6,6 @@ using System;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
-internal enum AppVisibility
-{
-    Visible,
-    Hidden,
-    HiddenByPattern,
-}
-
 /// <summary>
 /// Reads visibility rules and mutates explicit visibility preferences for canonical catalog items.
 /// </summary>
