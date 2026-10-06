@@ -33,10 +33,7 @@ public class AppIconProtocolProcessorTests
             return ThumbnailHelper.GetThumbnail(candidate, useJumbo);
         });
 
-        using var result = await processor.PrepareAsync(
-            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
-            32,
-            ElementTheme.Default);
+        using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback), 32, new IconRenderContext(ElementTheme.Default, default));
 
         CollectionAssert.AreEqual(new[] { primary }, attempts);
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
@@ -45,7 +42,7 @@ public class AppIconProtocolProcessorTests
         Assert.AreEqual(decoder.PixelWidth, decoder.PixelHeight);
 
         // Compare against direct resource extraction, including the absence of overlays.
-        using var expected = IconPathConverter.Prepare(primary, null, (int)decoder.PixelWidth);
+        using var expected = IconPathConverter.Prepare(primary, null, (int)decoder.PixelWidth, new IconRenderContext(ElementTheme.Default, default));
         using var actual = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
         Assert.IsNotNull(expected.SoftwareBitmap);
         var expectedPixels = new byte[actual.PixelWidth * actual.PixelHeight * 4];
@@ -81,7 +78,7 @@ public class AppIconProtocolProcessorTests
             Assert.IsNotNull(result);
             var decoder = await BitmapDecoder.CreateAsync(result);
             Assert.AreEqual(jumbo ? 256u : 32u, decoder.PixelWidth);
-            using var prepared = IconPathConverter.Prepare($"{iconPath},0", null, 32);
+            using var prepared = IconPathConverter.Prepare($"{iconPath},0", null, 32, new IconRenderContext(ElementTheme.Default, default));
             Assert.IsNotNull(prepared.SoftwareBitmap);
         }
         finally
@@ -109,10 +106,7 @@ public class AppIconProtocolProcessorTests
                 ThumbnailHelper.GetThumbnail,
                 ShellItemImageFactoryIconExtractor.Extract);
 
-            using var result = await processor.PrepareAsync(
-                jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
-                64,
-                ElementTheme.Default);
+            using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback), 64, new IconRenderContext(ElementTheme.Default, default));
 
             if (jumbo)
             {
@@ -165,10 +159,7 @@ public class AppIconProtocolProcessorTests
                     return null;
                 });
 
-            using var result = await processor.PrepareAsync(
-                jumbo ? AppIconProtocol.CreateJumbo(candidate) : AppIconProtocol.Create(candidate),
-                64,
-                ElementTheme.Default);
+            using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(candidate) : AppIconProtocol.Create(candidate), 64, new IconRenderContext(ElementTheme.Default, default));
 
             CollectionAssert.AreEqual(new[] { candidate }, thumbnailAttempts);
             CollectionAssert.AreEqual(jumbo ? new[] { candidate } : Array.Empty<string>(), jumboAttempts);
@@ -199,10 +190,7 @@ public class AppIconProtocolProcessorTests
                 return null;
             });
 
-        using var result = await processor.PrepareAsync(
-            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
-            64,
-            ElementTheme.Default);
+        using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback), 64, new IconRenderContext(ElementTheme.Default, default));
 
         var expected = new[] { normalized, fallback };
         CollectionAssert.AreEqual(expected, thumbnailAttempts);
@@ -244,10 +232,7 @@ public class AppIconProtocolProcessorTests
                 : Task.FromResult<IRandomAccessStream?>(stream);
         });
 
-        using var result = await processor.PrepareAsync(
-            AppIconProtocol.CreateJumbo(primary, fallback),
-            64,
-            ElementTheme.Default);
+        using var result = await processor.PrepareAsync(AppIconProtocol.CreateJumbo(primary, fallback), 64, new IconRenderContext(ElementTheme.Default, default));
 
         CollectionAssert.AreEqual(
             new[] { (primary, true), (fallback, true) },
@@ -270,7 +255,7 @@ public class AppIconProtocolProcessorTests
         var iconDescription = jumbo
             ? AppIconProtocol.CreateJumbo(primary, fallback, finalFallback)
             : AppIconProtocol.Create(primary, fallback);
-        using var result = await processor.PrepareAsync(iconDescription, 20, ElementTheme.Default);
+        using var result = await processor.PrepareAsync(iconDescription, 20, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.FallbackIconStrings, result.Kind);
         CollectionAssert.AreEqual(
@@ -289,13 +274,10 @@ public class AppIconProtocolProcessorTests
         var processor = new AppIconProtocolProcessor(
             static (_, _) => Task.FromResult<IRandomAccessStream?>(null));
 
-        using var result = await processor.PrepareAsync(
-            jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback),
-            32,
-            ElementTheme.Default);
+        using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(primary, fallback) : AppIconProtocol.Create(primary, fallback), 32, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.IsNotNull(result.FallbackIconStrings);
-        using var prepared = IconPathConverter.PrepareFirstAvailable(result.FallbackIconStrings, null, 32);
+        using var prepared = IconPathConverter.PrepareFirstAvailable(result.FallbackIconStrings, null, 32, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Binary, prepared.Kind);
         Assert.IsNotNull(prepared.SoftwareBitmap);
@@ -331,10 +313,7 @@ public class AppIconProtocolProcessorTests
                 return null;
             });
 
-        using var result = await processor.PrepareAsync(
-            jumbo ? AppIconProtocol.CreateJumbo(path) : AppIconProtocol.Create(path),
-            32,
-            ElementTheme.Default);
+        using var result = await processor.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(path) : AppIconProtocol.Create(path), 32, new IconRenderContext(ElementTheme.Default, default));
 
         CollectionAssert.AreEqual(jumbo ? Array.Empty<string>() : new[] { path }, shortcutAttempts);
         CollectionAssert.AreEqual(new[] { (path, jumbo) }, thumbnailAttempts);
@@ -349,10 +328,7 @@ public class AppIconProtocolProcessorTests
     {
         var shortcutPath = Path.Combine(Path.GetTempPath(), $"CmdPal-missing-shortcut-{Guid.NewGuid():N}.lnk");
         var fallback = $"{GetShell32DllPath()},1";
-        using var result = await AppIconProtocolProcessor.Instance.PrepareAsync(
-            jumbo ? AppIconProtocol.CreateJumbo(shortcutPath, fallback) : AppIconProtocol.Create(shortcutPath, fallback),
-            32,
-            ElementTheme.Default);
+        using var result = await AppIconProtocolProcessor.Instance.PrepareAsync(jumbo ? AppIconProtocol.CreateJumbo(shortcutPath, fallback) : AppIconProtocol.Create(shortcutPath, fallback), 32, new IconRenderContext(ElementTheme.Default, default));
 
         Assert.AreEqual(IconProtocolProcessingResult.ResultKind.BitmapStream, result.Kind);
         Assert.IsNotNull(result.BitmapStream);

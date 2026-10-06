@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.UI.Xaml;
-
 namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
@@ -12,33 +10,40 @@ internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
 
     public static GeneratedIconProtocolProcessor Instance { get; } = new(InitialsTextRenderer.TryCreatePathData);
 
+    public IconCachePartition CachePartition => IconCachePartition.Other;
+
+    public ReadOnlySpan<string> ProtocolPrefixes => GeneratedIconProtocol.ProtocolPrefixes;
+
     internal GeneratedIconProtocolProcessor(InitialsPathFactory createInitialsPathData)
     {
         ArgumentNullException.ThrowIfNull(createInitialsPathData);
         _createInitialsPathData = createInitialsPathData;
     }
 
-    public IconCachePartition CachePartition => IconCachePartition.Other;
+    public string GetCacheIdentity(string value)
+    {
+        return GeneratedIconProtocol.GetCacheIdentity(value);
+    }
 
-    public ReadOnlySpan<string> ProtocolPrefixes => GeneratedIconProtocol.ProtocolPrefixes;
+    public IconRenderContext GetCacheContext(string value, IconRenderContext context)
+    {
+        return GeneratedIconProtocol.GetCacheContext(value, context);
+    }
 
-    public string GetCacheIdentity(string value) => GeneratedIconProtocol.GetCacheIdentity(value);
-
-    public ElementTheme GetCacheTheme(string value, ElementTheme theme) =>
-        GeneratedIconProtocol.GetCacheTheme(value, theme);
-
-    public IconLoadInputKind ClassifyInput(string value) =>
-        GeneratedIconProtocol.Classify(value) switch
+    public IconLoadInputKind ClassifyInput(string value)
+    {
+        return GeneratedIconProtocol.Classify(value) switch
         {
             GeneratedIconProtocol.Kind.Swatch => IconLoadInputKind.GeneratedSwatch,
             GeneratedIconProtocol.Kind.Initials => IconLoadInputKind.GeneratedInitials,
             _ => IconLoadInputKind.String,
         };
+    }
 
     public bool TryPrepareSynchronously(
         string value,
         int targetSize,
-        ElementTheme theme,
+        IconRenderContext context,
         out IconPathConverter.PreparedIcon preparedIcon)
     {
         if (GeneratedIconProtocol.Classify(value) == GeneratedIconProtocol.Kind.Initials)
@@ -49,7 +54,7 @@ internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
             return false;
         }
 
-        preparedIcon = GeneratedIconProtocol.TryCreateSwatchSvg(value, theme, out var svg)
+        preparedIcon = GeneratedIconProtocol.TryCreateSwatchSvg(value, context, out var svg)
             ? IconPathConverter.PreparedIcon.FromSvgData(svg, targetSize)
             : IconPathConverter.PreparedIcon.Empty();
         return true;
@@ -58,11 +63,11 @@ internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
     public async ValueTask<IconProtocolProcessingResult> PrepareAsync(
         string value,
         int targetSize,
-        ElementTheme theme)
+        IconRenderContext context)
     {
         if (GeneratedIconProtocol.Classify(value) != GeneratedIconProtocol.Kind.Initials)
         {
-            _ = TryPrepareSynchronously(value, targetSize, theme, out var synchronousIcon);
+            _ = TryPrepareSynchronously(value, targetSize, context, out var synchronousIcon);
             return IconProtocolProcessingResult.FromPreparedIcon(synchronousIcon);
         }
 
@@ -73,7 +78,7 @@ internal sealed class GeneratedIconProtocolProcessor : IIconProtocolProcessor
             {
                 var preparedIcon = GeneratedIconProtocol.TryCreateInitialsSvg(
                     value,
-                    theme,
+                    context,
                     _createInitialsPathData,
                     out var svg)
                     ? IconPathConverter.PreparedIcon.FromSvgData(svg, targetSize)

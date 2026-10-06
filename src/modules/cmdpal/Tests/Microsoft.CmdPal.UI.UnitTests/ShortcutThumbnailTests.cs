@@ -41,10 +41,7 @@ public partial class ShortcutThumbnailTests
                 requestedPixelSize: 32);
             Assert.IsNotNull(expected.SoftwareBitmap);
 
-            using var result = await AppIconProtocolProcessor.Instance.PrepareAsync(
-                AppIconProtocol.Create(shortcutPath),
-                32,
-                ElementTheme.Default);
+            using var result = await AppIconProtocolProcessor.Instance.PrepareAsync(AppIconProtocol.Create(shortcutPath), 32, new IconRenderContext(ElementTheme.Default, default));
             Assert.AreEqual(IconProtocolProcessingResult.ResultKind.PreparedIcon, result.Kind);
             using var actual = result.TakePreparedIcon();
             Assert.IsNotNull(actual);

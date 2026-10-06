@@ -121,10 +121,12 @@ public partial class App : Application, IDisposable
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        AppWindow = new MainWindow();
+        var mainWindow = new MainWindow();
+        AppWindow = mainWindow;
+        IconContrastSettings.Initialize(mainWindow.AppWindow.Id);
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+        mainWindow.HandleLaunchNonUI(activatedEventArgs);
 
         // Initialize the palette window before creating dock windows.
         if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)

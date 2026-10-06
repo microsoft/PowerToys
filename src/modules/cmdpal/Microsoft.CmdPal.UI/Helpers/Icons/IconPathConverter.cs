@@ -4,7 +4,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -18,11 +17,13 @@ internal static partial class IconPathConverter
     private const string InvalidGlyph = "\u25CC";
     private const int DefaultBinaryIconSize = 256;
 
+    /// <summary>Converts an icon string into a descriptor using synchronous protocol, binary, URI, or glyph conversion.</summary>
+    /// <returns>A descriptor owned by the caller, which must be disposed after use.</returns>
     public static PreparedIcon Prepare(
         string iconPath,
         string? fontFamily,
         int targetSize,
-        ElementTheme theme = ElementTheme.Default)
+        IconRenderContext context)
     {
         if (string.IsNullOrEmpty(iconPath))
         {
@@ -33,7 +34,7 @@ internal static partial class IconPathConverter
         {
             try
             {
-                return protocolProcessor.TryPrepareSynchronously(iconPath, targetSize, theme, out var protocolIcon)
+                return protocolProcessor.TryPrepareSynchronously(iconPath, targetSize, context, out var protocolIcon)
                     ? protocolIcon
                     : PreparedIcon.Empty();
             }
@@ -64,18 +65,20 @@ internal static partial class IconPathConverter
         return PreparedIcon.FromGlyph(glyph, family, targetSize > 0 ? targetSize : 8);
     }
 
+    /// <summary>Returns the first usable icon descriptor, skipping failed candidates and placeholder glyphs.</summary>
+    /// <returns>A caller-owned descriptor, or an empty descriptor when every candidate fails.</returns>
     public static PreparedIcon PrepareFirstAvailable(
         ReadOnlySpan<string> candidates,
         string? fontFamily,
         int targetSize,
-        ElementTheme theme = ElementTheme.Default)
+        IconRenderContext context)
     {
         foreach (var candidate in candidates)
         {
             PreparedIcon prepared;
             try
             {
-                prepared = Prepare(candidate, fontFamily, targetSize, theme);
+                prepared = Prepare(candidate, fontFamily, targetSize, context);
             }
             catch
             {
