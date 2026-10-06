@@ -355,7 +355,7 @@ internal static class AppxIconLoader
         string uri,
         Theme theme,
         int iconSize,
-        UWP package)
+        PackageMetadata package)
     {
         ArgumentNullException.ThrowIfNull(package);
 
@@ -367,7 +367,7 @@ internal static class AppxIconLoader
         string uri,
         Theme theme,
         int iconSize,
-        UWP package,
+        PackageMetadata package,
         string? resolvedResourcePath)
     {
         ArgumentNullException.ThrowIfNull(package);
@@ -389,9 +389,9 @@ internal static class AppxIconLoader
         }
 
         var relativePath = NormalizePathSeparators(uri).TrimStart(Path.DirectorySeparatorChar);
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.Location, relativePath));
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.Location, "Assets", relativePath));
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.Location, "Images", relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, "Assets", relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, "Images", relativePath));
 
         var fallback = IconSearchResult.NotFound();
         foreach (var path in pathsToProbe)
@@ -435,7 +435,7 @@ internal static class AppxIconLoader
     private static string NormalizePathSeparators(string path) =>
         path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
-    private static string? TryResolvePackageResourcePath(string uri, UWP package)
+    private static string? TryResolvePackageResourcePath(string uri, PackageMetadata package)
     {
         if (string.IsNullOrWhiteSpace(uri) ||
             string.IsNullOrWhiteSpace(package.Name) ||

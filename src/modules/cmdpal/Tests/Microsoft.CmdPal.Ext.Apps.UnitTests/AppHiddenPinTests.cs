@@ -103,15 +103,15 @@ public class AppHiddenPinTests : AppsTestBase
     [DataRow(true, true)]
     public void PackagedApps_SharedReleasedIdPrefersVisibleAppUnlessSavedAmbiguous(bool patternHidden, bool savedAmbiguous)
     {
-        var visiblePayload = new PackagedAppSnapshot { Name = "Editor", Description = "Edit documents", UserModelId = "Contoso.Editor_123!App" };
-        var hiddenPayload = visiblePayload with { UserModelId = "Contoso.EditorPreview_123!App" };
+        var visiblePayload = new PackagedAppPayload { Name = "Editor", Description = "Edit documents", AppUserModelId = "Contoso.Editor_123!App" };
+        var hiddenPayload = visiblePayload with { AppUserModelId = "Contoso.EditorPreview_123!App" };
         var releasedId = visiblePayload.GetCommandId();
         Assert.AreEqual(releasedId, hiddenPayload.GetCommandId());
         var visibleApp = visiblePayload.ToAppItem();
-        visibleApp.CatalogId = AppIdentity.ForPackaged(visiblePayload.UserModelId);
+        visibleApp.CatalogId = AppIdentity.ForPackaged(visiblePayload.AppUserModelId);
         visibleApp.CommandIds = [releasedId];
         var hiddenApp = hiddenPayload.ToAppItem();
-        hiddenApp.CatalogId = AppIdentity.ForPackaged(hiddenPayload.UserModelId);
+        hiddenApp.CatalogId = AppIdentity.ForPackaged(hiddenPayload.AppUserModelId);
         hiddenApp.CommandIds = [releasedId];
         var visible = new AppListItem(visibleApp, useThumbnails: false);
         var hidden = new AppListItem(hiddenApp, useThumbnails: false);
@@ -273,7 +273,7 @@ public class AppHiddenPinTests : AppsTestBase
 
     private static AppListItem CreatePackagedItem(string name, string aumid)
     {
-        var payload = new PackagedAppSnapshot { Name = name, UserModelId = aumid };
+        var payload = new PackagedAppPayload { Name = name, AppUserModelId = aumid };
         var app = payload.ToAppItem();
         app.CatalogId = AppIdentity.ForPackaged(aumid);
         return new AppListItem(app, useThumbnails: false);

@@ -26,7 +26,6 @@ public partial class PackagedAppMetadataTests
         var root = Path.Combine(Path.GetTempPath(), $"cmdpal-package-probe-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         var manifestPath = Path.Combine(root, "AppxManifest.xml");
-        var originalManager = UWP.PackageManagerWrapper;
         try
         {
             File.WriteAllText(manifestPath, CreateManifest("before.exe"));
@@ -38,8 +37,7 @@ public partial class PackagedAppMetadataTests
             IPackage[] packages = [package.Object];
             var manager = new Mock<IPackageManager>();
             manager.Setup(value => value.FindPackagesForCurrentUser()).Returns(() => packages);
-            UWP.PackageManagerWrapper = manager.Object;
-            using var source = new PackagedAppSource(new SilentPackageCatalog());
+            using var source = new PackagedAppSource(new SilentPackageCatalog(), packageManager: manager.Object);
             var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
             Assert.IsTrue(initial.IsComplete);
             Assert.AreEqual(1, initial.Count);
@@ -52,7 +50,7 @@ public partial class PackagedAppMetadataTests
 
             File.WriteAllText(manifestPath, CreateManifest("after-update.exe"));
             var updated = await source.LoadAsync(CancellationToken.None, background: true);
-            Assert.AreEqual("after-update.exe", ((PackagedAppSnapshot)updated.Single().Payload).Executable);
+            Assert.AreEqual("after-update.exe", ((PackagedAppPayload)updated.Single().Payload).Executable);
 
             packages = [];
             var removed = await source.LoadAsync(CancellationToken.None, background: true);
@@ -64,7 +62,6 @@ public partial class PackagedAppMetadataTests
         }
         finally
         {
-            UWP.PackageManagerWrapper = originalManager;
             Directory.Delete(root, recursive: true);
         }
     }
@@ -77,7 +74,6 @@ public partial class PackagedAppMetadataTests
     {
         var root = Path.Combine(Path.GetTempPath(), $"cmdpal-missing-package-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
-        var originalManager = UWP.PackageManagerWrapper;
         try
         {
             var fixtures = new[] { "Available", "Unavailable" };
@@ -103,8 +99,7 @@ public partial class PackagedAppMetadataTests
             }).ToArray();
             var manager = new Mock<IPackageManager>();
             manager.Setup(value => value.FindPackagesForCurrentUser()).Returns(packages);
-            UWP.PackageManagerWrapper = manager.Object;
-            using var source = new PackagedAppSource(new SilentPackageCatalog());
+            using var source = new PackagedAppSource(new SilentPackageCatalog(), packageManager: manager.Object);
             var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
             Assert.IsFalse(initial.IsComplete);
             Assert.AreEqual(1, initial.Count);
@@ -134,11 +129,10 @@ public partial class PackagedAppMetadataTests
             var recovered = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background: true);
             Assert.IsTrue(recovered.IsComplete);
             Assert.AreEqual(2, recovered.Count);
-            Assert.IsTrue(recovered.Any(item => ((PackagedAppSnapshot)item.Payload).Executable == "installed.exe"));
+            Assert.IsTrue(recovered.Any(item => ((PackagedAppPayload)item.Payload).Executable == "installed.exe"));
         }
         finally
         {
-            UWP.PackageManagerWrapper = originalManager;
             Directory.Delete(root, recursive: true);
         }
     }
@@ -149,7 +143,6 @@ public partial class PackagedAppMetadataTests
     {
         var root = Path.Combine(Path.GetTempPath(), $"cmdpal-scoped-packages-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
-        var originalManager = UWP.PackageManagerWrapper;
         try
         {
             var fixtures = new[] { "Locked", "Removed" };
@@ -166,8 +159,7 @@ public partial class PackagedAppMetadataTests
             }).ToArray();
             var manager = new Mock<IPackageManager>();
             manager.Setup(value => value.FindPackagesForCurrentUser()).Returns(() => packages);
-            UWP.PackageManagerWrapper = manager.Object;
-            using var source = new PackagedAppSource(new SilentPackageCatalog());
+            using var source = new PackagedAppSource(new SilentPackageCatalog(), packageManager: manager.Object);
             var initial = await source.LoadAsync(CancellationToken.None);
             Assert.AreEqual(2, initial.Count);
             packages = [packages[0]];
@@ -179,12 +171,11 @@ public partial class PackagedAppMetadataTests
             string[] expectedFamilies = ["CmdPal.Locked_123"];
             CollectionAssert.AreEqual(expectedFamilies, scan.FailedPackageFamilies.ToArray());
             CollectionAssert.AreEqual(new[] { string.Empty }, scan.RetryPaths.ToArray());
-            Assert.IsNotNull(scan.GetRetainedItem(initial.Single(item => ((PackagedAppSnapshot)item.Payload).PackageFamilyName == "CmdPal.Locked_123")));
-            Assert.IsNull(scan.GetRetainedItem(initial.Single(item => ((PackagedAppSnapshot)item.Payload).PackageFamilyName == "CmdPal.Removed_123")));
+            Assert.IsNotNull(scan.GetRetainedItem(initial.Single(item => ((PackagedAppPayload)item.Payload).PackageFamilyName == "CmdPal.Locked_123")));
+            Assert.IsNull(scan.GetRetainedItem(initial.Single(item => ((PackagedAppPayload)item.Payload).PackageFamilyName == "CmdPal.Removed_123")));
         }
         finally
         {
-            UWP.PackageManagerWrapper = originalManager;
             Directory.Delete(root, recursive: true);
         }
     }

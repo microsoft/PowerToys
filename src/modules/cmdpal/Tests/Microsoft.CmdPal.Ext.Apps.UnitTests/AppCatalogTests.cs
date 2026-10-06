@@ -12,6 +12,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
@@ -562,7 +563,7 @@ public partial class AppCatalogTests
                 priority: 0,
                 new AppCatalogSourceReference("packaged", "Contoso.Cached_123!App"),
                 [],
-                new PackagedAppSnapshot { Name = "Cached package", UserModelId = "Contoso.Cached_123!App" });
+                new PackagedAppPayload { Name = "Cached package", AppUserModelId = "Contoso.Cached_123!App" });
             var cacheFile = new AppCatalogCacheFile
             {
                 Sources = [new AppCatalogSourceSnapshot { SourceId = "packaged", Items = [cachedPackage] }],
@@ -904,10 +905,10 @@ public partial class AppCatalogTests
             priority: 0,
             new AppCatalogSourceReference("packaged", aumid),
             ["Ubuntu"],
-            new PackagedAppSnapshot
+            new PackagedAppPayload
             {
                 Name = "Ubuntu",
-                UserModelId = aumid,
+                AppUserModelId = aumid,
                 PackageFullName = "CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc",
             });
         using var aliasSource = new TestAppSource("path", [aliasItem]);
@@ -986,6 +987,72 @@ public partial class AppCatalogTests
     }
 
     [TestMethod]
+    [DataRow("", "", 1)]
+    [DataRow("--profile work", "", 2)]
+    [DataRow("", @"C:\Projects\Work", 2)]
+    public async Task RefreshAsync_PackageLocalExecutable_CoalescesOnlyDefaultLaunch(string arguments, string workingDirectory, int expectedCount)
+    {
+        const string packagePath = @"C:\Program Files\WindowsApps\Agilebits.1Password_8.12.40.31_x64__amwd9z03whsfe";
+        const string aumid = "Agilebits.1Password_amwd9z03whsfe!Agilebits.OnePassword";
+        var targetPath = Path.Combine(packagePath, "1Password.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata("1Password.exe", targetPath);
+        program.Arguments = arguments;
+        program.WorkingDirectory = workingDirectory;
+        var executableItem = CreateWin32CatalogItem(program, $"win32:{targetPath}|args:", 30, "registry");
+        var packagedApp = TestDataHelper.CreateTestPackagedMetadata("1Password", aumid, packagePath);
+        packagedApp.Executable = "1Password.exe";
+        var packagedItem = PackagedAppSource.CreateCatalogItem(packagedApp);
+        using var executableSource = new TestAppSource("registry", [executableItem]);
+        using var packagedSource = new TestAppSource("packaged", [packagedItem]);
+        using var catalog = new AppCatalog(new MutableSourceProvider([executableSource, packagedSource]), new TestCache(null), new VisibleApps());
+
+        await catalog.RefreshAsync();
+
+        var snapshot = catalog.GetSnapshot();
+        Assert.AreEqual(expectedCount, snapshot.Items.Count);
+        var app = snapshot.Items.Single(item => item.IsPackaged);
+        Assert.AreEqual(AppIdentity.ForPackaged(aumid), app.CatalogId);
+        Assert.AreEqual(aumid, app.AppUserModelId);
+        if (expectedCount == 1)
+        {
+            // Reidentifying the executable must retain both its typed pin ID and released name-based ID.
+            var row = new AppListItem(app, useThumbnails: false);
+            var rows = new AppListItemSnapshot([row], []);
+            var executableCommandId = AppIdentity.ForCommand(executableItem.Identity);
+            Assert.AreSame(row, rows.GetVisibleApp(executableCommandId));
+            Assert.AreSame(row, rows.GetVisibleApp(executableItem.Payload.GetCommandId()));
+            CollectionAssert.Contains(app.ExecutableSourcePaths.ToArray(), targetPath);
+        }
+        else
+        {
+            Assert.IsTrue(snapshot.Items.Any(item => !item.IsPackaged));
+        }
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_SharedPackageExecutable_DoesNotChooseAnAumid()
+    {
+        const string packagePath = @"C:\Program Files\WindowsApps\Contoso.Shared_1.0.0.0_x64__123";
+        var targetPath = Path.Combine(packagePath, "shared.exe");
+        var first = TestDataHelper.CreateTestPackagedMetadata("First app", "Contoso.Shared_123!First", packagePath);
+        var second = TestDataHelper.CreateTestPackagedMetadata("Second app", "Contoso.Shared_123!Second", packagePath);
+        first.Executable = "shared.exe";
+        second.Executable = first.Executable;
+        var program = TestDataHelper.CreateTestWin32Metadata("Shared executable", targetPath);
+        var executableItem = CreateWin32CatalogItem(program, $"win32:{targetPath}|args:", 30, "registry");
+        using var packagedSource = new TestAppSource("packaged", [PackagedAppSource.CreateCatalogItem(first), PackagedAppSource.CreateCatalogItem(second)]);
+        using var executableSource = new TestAppSource("registry", [executableItem]);
+        using var catalog = new AppCatalog(new MutableSourceProvider([packagedSource, executableSource]), new TestCache(null), new VisibleApps());
+
+        await catalog.RefreshAsync();
+
+        var items = catalog.GetSnapshot().Items;
+        Assert.AreEqual(3, items.Count);
+        Assert.AreEqual(2, items.Count(item => item.IsPackaged));
+        Assert.AreEqual(executableItem.Identity, items.Single(item => !item.IsPackaged).CatalogId);
+    }
+
+    [TestMethod]
     public async Task RefreshAsync_PackagedShortcut_CoalescesWithPackagedApplication()
     {
         const string aumid = "Microsoft.Microsoft3DViewer_8wekyb3d8bbwe!Microsoft.Microsoft3DViewer";
@@ -1000,10 +1067,10 @@ public partial class AppCatalogTests
             priority: 0,
             new AppCatalogSourceReference("packaged", aumid),
             ["3D Viewer"],
-            new PackagedAppSnapshot
+            new PackagedAppPayload
             {
                 Name = "3D Viewer",
-                UserModelId = aumid,
+                AppUserModelId = aumid,
                 PackageFullName = "Microsoft.Microsoft3DViewer_1.0.0.0_x64__8wekyb3d8bbwe",
             });
         using var shortcutSource = new TestAppSource("desktop", [shortcutItem]);
@@ -1765,14 +1832,14 @@ public partial class AppCatalogTests
             var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Apps\Editor.exe");
             program.LnkFilePath = @"C:\Links\Editor.lnk";
             IAppCatalogPayload originalPayload = packaged
-                ? new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.Editor_123!app" }
+                ? new PackagedAppPayload { Name = "Editor", Description = "Text editor", AppUserModelId = "Contoso.Editor_123!app" }
                 : Win32AppPayload.From(program);
             var identity = packaged ? "packaged:Contoso.Editor_123!app" : @"win32:C:\Apps\Editor.exe|args:";
             var original = new AppCatalogItem(identity, 0, new AppCatalogSourceReference("test", "original"), [], originalPayload);
             var legacyId = originalPayload.GetCommandId();
             var stableId = new AppCommand(original.ToAppItem()).Id;
             IAppCatalogPayload renamedPayload = packaged
-                ? ((PackagedAppSnapshot)originalPayload) with { Name = "Éditeur", Description = "Éditeur de texte" }
+                ? ((PackagedAppPayload)originalPayload) with { Name = "Éditeur", Description = "Éditeur de texte" }
                 : ((Win32AppPayload)originalPayload) with { Name = "Renamed Editor", Description = "Updated description", LnkFilePath = @"C:\Links\Renamed Editor.lnk" };
             var renamed = new AppCatalogItem(identity, 0, new AppCatalogSourceReference("test", "renamed"), [], renamedPayload);
             var settings = new AllAppsSettings(settingsPath);
@@ -2040,7 +2107,7 @@ public partial class AppCatalogTests
                 0,
                 new AppCatalogSourceReference("test", "packaged"),
                 [],
-                new PackagedAppSnapshot { Name = "Packaged Editor", UserModelId = "Contoso.Editor_123!app" });
+                new PackagedAppPayload { Name = "Packaged Editor", AppUserModelId = "Contoso.Editor_123!app" });
             using (var source = new TestAppSource("test", [win32]))
             using (var catalog = CreateCatalog([source], new TestCache(null)))
             using (var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath)))
@@ -2081,13 +2148,13 @@ public partial class AppCatalogTests
                 0,
                 new AppCatalogSourceReference("test", "first"),
                 [],
-                new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.First_123!app" });
+                new PackagedAppPayload { Name = "Editor", Description = "Text editor", AppUserModelId = "Contoso.First_123!app" });
             var second = new AppCatalogItem(
                 "packaged:Contoso.Second_123!app",
                 0,
                 new AppCatalogSourceReference("test", "second"),
                 [],
-                new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.Second_123!app" });
+                new PackagedAppPayload { Name = "Editor", Description = "Text editor", AppUserModelId = "Contoso.Second_123!app" });
             Assert.AreEqual(first.Payload.GetCommandId(), second.Payload.GetCommandId());
             using var source = new TestAppSource("test", [first]);
             using var catalog = CreateCatalog([source], new TestCache(null));

@@ -173,7 +173,7 @@ public class AllAppsSettingsTests
             [
                 new Win32AppPayload { LnkFilePath = @"C:\Hidden\App.lnk" },
                 new Win32AppPayload { AppExecutionAliasTargetPath = @"C:\Hidden\App.exe" },
-                new PackagedAppSnapshot { PackageLocation = @"C:\Hidden\Package" },
+                new PackagedAppPayload { PackageLocation = @"C:\Hidden\Package" },
             ];
             foreach (var payload in payloads)
             {
@@ -181,7 +181,7 @@ public class AllAppsSettingsTests
                 Assert.AreEqual(AppVisibility.HiddenByPattern, visibility.GetVisibility(item));
             }
 
-            var preferred = new AppCatalogItem("app", 0, new AppCatalogSourceReference("test", "app"), [], new PackagedAppSnapshot());
+            var preferred = new AppCatalogItem("app", 0, new AppCatalogSourceReference("test", "app"), [], new PackagedAppPayload());
             var shortcut = new AppCatalogItem("app", 1, new AppCatalogSourceReference("shortcuts", @"C:\Hidden\App.lnk"), [], new Win32AppPayload());
             var target = new AppCatalogItem("app", 1, new AppCatalogSourceReference("other", "app"), [@"C:\Hidden\App.exe"], new Win32AppPayload());
 
@@ -250,7 +250,7 @@ public class AllAppsSettingsTests
                     -1,
                     new AppCatalogSourceReference("packaged", "Contoso.App!app"),
                     [],
-                    new PackagedAppSnapshot { Name = "App", UserModelId = "Contoso.App!app" });
+                    new PackagedAppPayload { Name = "App", AppUserModelId = "Contoso.App!app" });
                 item = item.MergeProvenance(packaged).WithIdentity("packaged:Contoso.App!app");
             }
 
@@ -900,9 +900,7 @@ public class AllAppsSettingsTests
     }
 
     private static string TemporarySettingsPath()
-    {
-        return Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
-    }
+        => Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
 
     private static AppCatalogItem CreateCatalogItem(string identity)
     {
@@ -927,14 +925,9 @@ public class AllAppsSettingsTests
 
         public IDisposable BeginScope<TState>(TState state)
             where TState : notnull
-        {
-            return null;
-        }
+            => null;
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return true;
-        }
+        public bool IsEnabled(LogLevel logLevel) => true;
 
         public void Log<TState>(
             LogLevel logLevel,

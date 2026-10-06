@@ -386,17 +386,16 @@ public class AppxIconLoaderTests
         Assert.AreEqual(expectedPath, result.LogoPath);
     }
 
-    private UWP CreatePackage()
+    private PackageMetadata CreatePackage()
     {
         var package = new Mock<IPackage>();
         package.SetupGet(value => value.Name).Returns("Contoso.TestApp");
         package.SetupGet(value => value.FullName).Returns("Contoso.TestApp_1.0.0.0_x64__test");
         package.SetupGet(value => value.FamilyName).Returns("Contoso.TestApp_test");
 
-        return new UWP(package.Object)
+        return new PackageMetadata(package.Object)
         {
-            Location = _packageRoot,
-            Version = UWP.PackageVersion.Windows10,
+            InstalledLocation = _packageRoot,
         };
     }
 
