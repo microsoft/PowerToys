@@ -29,6 +29,7 @@ public class AppCatalogCacheTests
             var cache = new AppCatalogCache(cachePath);
             await cache.SaveAsync(snapshots, ["win32"], Context(created, ("win32", "key")), CancellationToken.None);
             var original = File.ReadAllBytes(cachePath);
+            Assert.AreEqual(1, JsonNode.Parse(original)![nameof(AppCatalogCacheFile.SchemaVersion)]!.GetValue<int>());
             var sentinel = created.UtcDateTime;
             File.SetLastWriteTimeUtc(cachePath, sentinel);
 

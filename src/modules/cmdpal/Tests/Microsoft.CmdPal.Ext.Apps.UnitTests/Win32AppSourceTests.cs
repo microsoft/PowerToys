@@ -1338,7 +1338,7 @@ public partial class Win32AppSourceTests
 
         public string CacheKey => Id;
 
-        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
+        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange> dirtyPaths = null)
         {
             return Task.FromResult<IReadOnlyList<AppCatalogItem>>([]);
         }
