@@ -93,4 +93,21 @@ Describe 'MWB full-suite results gate' {
         $source | Should Match "eq\(parameters.buildSource, 'buildNow'\)"
         $source | Should Match 'ARM64 and Release/installed builds are not supported'
     }
+
+    It 'requires all three recovery methods as well as the ordered smoke' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbPilotResults.Common.ps1') -Raw
+        $function = [scriptblock]::Create($source).Ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -eq 'Assert-MwbPilotTestResults'
+        }, $true)
+        $names = $function.Body.ParamBlock.Parameters |
+            Where-Object { $_.Name.VariablePath.UserPath -eq 'RequiredMethods' } |
+            ForEach-Object { $_.DefaultValue.SafeGetValue() }
+        $names.Count | Should Be 10
+        ($names -ccontains 'AutonomousSandboxSmoke') | Should Be $true
+        ($names -ccontains 'ControllerExitBeforePairingRestoresOriginalSettings') | Should Be $true
+        ($names -ccontains 'KilledClipboardOwnerRequiresBaselineReset') | Should Be $true
+        ($names -ccontains 'AbortedSandboxStartupRefusesUnownedInstance') | Should Be $true
+    }
 }

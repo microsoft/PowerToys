@@ -13,7 +13,10 @@ function Assert-MwbPilotTestResults {
             'ReceiverInfrastructureRemainsResponsiveToUiAutomation',
             'ReceiverRegainsFocusFromStartMenuWithoutMouseInput',
             'StartMenuDismissalDoesNotActOnAnOrdinaryForegroundWindow',
-            'StartMenuIdentityRequiresExactOsPathClassAndInteractiveSession'
+            'StartMenuIdentityRequiresExactOsPathClassAndInteractiveSession',
+            'ControllerExitBeforePairingRestoresOriginalSettings',
+            'KilledClipboardOwnerRequiresBaselineReset',
+            'AbortedSandboxStartupRefusesUnownedInstance'
         )
     )
 
