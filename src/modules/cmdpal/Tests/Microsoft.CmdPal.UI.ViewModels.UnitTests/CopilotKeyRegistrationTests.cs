@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -38,6 +39,31 @@ public class CopilotKeyRegistrationTests
             Assert.AreEqual(VARENUM.VT_EMPTY, ReadRegistration(hwnd).Type);
 
             registration.Dispose();
+            Assert.AreEqual(VARENUM.VT_EMPTY, ReadRegistration(hwnd).Type);
+        }
+        finally
+        {
+            Assert.IsTrue(DestroyWindow(hwnd));
+        }
+    }
+
+    [TestMethod]
+    [Ignore("Suspended until property-write error assertions are portable across Windows builds.")]
+    public void Registration_PropertyWriteFailureIsNotIgnored()
+    {
+        var hwnd = CreateWindowExW(0, "STATIC", string.Empty, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        Assert.AreNotEqual(nint.Zero, hwnd);
+
+        try
+        {
+            var value = default(PROPVARIANT);
+            value.Anonymous.Anonymous.vt = VARENUM.VT_ILLEGAL;
+            var setter = typeof(CopilotKeyRegistration).GetMethod("SetWindowProperty", BindingFlags.Static | BindingFlags.NonPublic)!;
+
+            var failure = Assert.ThrowsExactly<TargetInvocationException>(() => setter.Invoke(null, [hwnd, value]));
+
+            Assert.IsInstanceOfType<COMException>(failure.InnerException);
+            Assert.AreEqual(unchecked((int)0x80028CA0), failure.InnerException.HResult);
             Assert.AreEqual(VARENUM.VT_EMPTY, ReadRegistration(hwnd).Type);
         }
         finally
