@@ -151,6 +151,9 @@
   <data name="RotationTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Rotation</value>
   </data>
+  <data name="RefreshRateTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh rate</value>
+  </data>
   <data name="RotateNormalTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Normal (0°)</value>
   </data>

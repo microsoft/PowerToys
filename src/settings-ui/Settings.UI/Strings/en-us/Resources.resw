@@ -6102,6 +6102,9 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
     <value>Show rotation control</value>
   </data>
+  <data name="PowerDisplay_Monitor_EnableRefreshRate.Content" xml:space="preserve">
+    <value>Show refresh-rate control</value>
+  </data>
   <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
     <value>Show color temperature switcher</value>
   </data>

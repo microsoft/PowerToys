@@ -334,6 +334,9 @@
                                                 <tkcontrols:SettingsCard ContentAlignment="Left">
                                                     <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
                                                 </tkcontrols:SettingsCard>
+                                                 <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsRefreshRate, Mode=OneWay}">
+                                                     <CheckBox x:Uid="PowerDisplay_Monitor_EnableRefreshRate" IsChecked="{x:Bind EnableRefreshRate, Mode=TwoWay}" />
+                                                 </tkcontrols:SettingsCard>
                                                 <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
                                                     <CheckBox
                                                         x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
