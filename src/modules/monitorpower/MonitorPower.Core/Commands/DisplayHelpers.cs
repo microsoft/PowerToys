@@ -812,6 +812,150 @@ internal static partial class DisplayHelpers
         return SetTopology(DISPLAYCONFIG_TOPOLOGY_ID.Extend);
     }
 
+    public static string SetPrimaryDisplayOnly(Action<string>? onProgress = null)
+    {
+        var (paths, modes) = GetAllPathsWithModes();
+        var primaryTargets = paths
+            .Where(path => (path.flags & DISPLAYCONFIG_PATH_ACTIVE) != 0)
+            .Where(path =>
+            {
+                var sourceModeIndex = path.sourceInfo.sourceModeInfoIdx;
+                return sourceModeIndex < modes.Length &&
+                    modes[sourceModeIndex].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source &&
+                    modes[sourceModeIndex].modeInfo.sourceMode.position.x == 0 &&
+                    modes[sourceModeIndex].modeInfo.sourceMode.position.y == 0;
+            })
+            .Select(path => new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id))
+            .Distinct()
+            .ToArray();
+
+        var primaryTarget = ChoosePrimaryTarget(primaryTargets, BuildTargetToDeviceNameMap());
+        if (primaryTarget is null)
+        {
+            LogDiagnostic("SetPrimaryDisplayOnly: no active primary display path found.");
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_primary_display_not_found);
+        }
+
+        LogDiagnostic($"SetPrimaryDisplayOnly: selected target={primaryTarget.Value} from {primaryTargets.Length} primary-source target(s).");
+        return ApplyExactDisplayTargets([primaryTarget.Value], onProgress);
+    }
+
+    internal static DisplayTargetId? ChoosePrimaryTarget(
+        IEnumerable<DisplayTargetId> candidates,
+        IReadOnlyDictionary<DisplayTargetId, string> deviceNames)
+    {
+        var distinctCandidates = candidates.Distinct().ToArray();
+        if (distinctCandidates.Length == 0)
+        {
+            return null;
+        }
+
+        return distinctCandidates
+            .OrderBy(target => deviceNames.ContainsKey(target) ? 0 : 1)
+            .ThenBy(target => deviceNames.TryGetValue(target, out var deviceName) ? deviceName : string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(target => target)
+            .First();
+    }
+
+    internal static (uint Width, uint Height) GetPreviewDimensions(
+        uint sourceWidth,
+        uint sourceHeight,
+        uint signalWidth,
+        uint signalHeight,
+        DISPLAYCONFIG_ROTATION rotation)
+    {
+        var width = sourceWidth > 0 ? sourceWidth : signalWidth;
+        var height = sourceHeight > 0 ? sourceHeight : signalHeight;
+        if ((rotation is DISPLAYCONFIG_ROTATION.Rotate90 or DISPLAYCONFIG_ROTATION.Rotate270) && width >= height)
+        {
+            return (height, width);
+        }
+
+        return (width, height);
+    }
+
+    private static string ApplyExactDisplayTargets(
+        IReadOnlyCollection<DisplayTargetId> targets,
+        Action<string>? onProgress)
+    {
+        var requested = targets.ToHashSet();
+        var allPaths = GetAllPaths(virtualModeAware: false);
+        var selectedPaths = allPaths
+            .Where(path => requested.Contains(new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id)))
+            .GroupBy(path => new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id))
+            .Select(group => group.OrderByDescending(path => (path.flags & DISPLAYCONFIG_PATH_ACTIVE) != 0).First())
+            .ToArray();
+
+        if (selectedPaths.Length != requested.Count)
+        {
+            LogDiagnostic($"ApplyExactDisplayTargets: found {selectedPaths.Length} of {requested.Count} requested path(s).");
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_no_matching_paths);
+        }
+
+        SaveSnapshot();
+        SaveState();
+        EnableEscRestore();
+
+        foreach (ref var path in selectedPaths.AsSpan())
+        {
+            path.sourceInfo.modeInfoIdx = 0xFFFFFFFF;
+            path.targetInfo.modeInfoIdx = 0xFFFFFFFF;
+        }
+
+        var flags = SDC_APPLY | SDC_SAVE_TO_DATABASE | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_ALLOW_CHANGES;
+        int error;
+        unsafe
+        {
+            fixed (DISPLAYCONFIG_PATH_INFO* selectedPtr = selectedPaths)
+            {
+                error = SetDisplayConfig((uint)selectedPaths.Length, selectedPtr, 0, null, flags);
+            }
+        }
+
+        if (error != 0)
+        {
+            flags = SDC_APPLY | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_ALLOW_CHANGES;
+            unsafe
+            {
+                fixed (DISPLAYCONFIG_PATH_INFO* selectedPtr = selectedPaths)
+                {
+                    error = SetDisplayConfig((uint)selectedPaths.Length, selectedPtr, 0, null, flags);
+                }
+            }
+        }
+
+        if (error != 0)
+        {
+            var recoveryResult = RestoreState();
+            RetainEscRecoveryIfNeeded(recoveryResult);
+            LogDiagnostic($"ApplyExactDisplayTargets: SetDisplayConfig failed error={error}; recovery='{recoveryResult}'.");
+            return string.Format(
+                Properties.Resources.error_format,
+                $"{GetWin32ErrorMessage(error)}. Recovery: {recoveryResult}");
+        }
+
+        if (!WaitForActiveTargets(targets.ToList(), onProgress: onProgress))
+        {
+            var recoveryResult = RestoreState();
+            RetainEscRecoveryIfNeeded(recoveryResult);
+            LogDiagnostic($"ApplyExactDisplayTargets: active targets did not match the requested set; recovery='{recoveryResult}'.");
+            return string.Format(
+                Properties.Resources.error_format,
+                $"{Properties.Resources.error_display_targets_not_applied}. Recovery: {recoveryResult}");
+        }
+
+        LogDiagnostic($"ApplyExactDisplayTargets: applied exact target set [{string.Join(",", targets)}].");
+        return string.Format(Properties.Resources.activated_displays_format, targets.Count);
+    }
+
+    private static void RetainEscRecoveryIfNeeded(string recoveryResult)
+    {
+        if (!string.Equals(recoveryResult, Properties.Resources.display_state_restored, StringComparison.Ordinal))
+        {
+            EnableEscRestore();
+        }
+    }
+
     public static string GetWin32ErrorMessage(int errorCode)
     {
         return errorCode switch

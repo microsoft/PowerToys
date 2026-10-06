@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _xboxControllerEnabled = true;
         private readonly DispatcherQueue _dispatcher;
         private readonly ObservableCollection<MonitorDisplayInfo> _displays = new();
+        private readonly ObservableCollection<MonitorDisplayInfo> _previewDisplays = new();
         private readonly ObservableCollection<ProfileInfo> _profiles = new();
         private MonitorDisplayInfo? _selectedDisplay;
         private ProfileInfo? _selectedProfile;
@@ -67,6 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<MonitorDisplayInfo> Displays => _displays;
+
+        public ObservableCollection<MonitorDisplayInfo> PreviewDisplays => _previewDisplays;
 
         public ObservableCollection<ProfileInfo> Profiles => _profiles;
 
@@ -374,22 +377,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             ? modes[sourceModeInfoIndex]
                             : default;
                         var active = (path.flags & 1) != 0;
-                        var width = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                        var sourceWidth = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
                             ? sourceMode.modeInfo.sourceMode.width
                             : 0;
-                        var height = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                        var sourceHeight = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
                             ? sourceMode.modeInfo.sourceMode.height
                             : 0;
-                        if (width == 0 || height == 0)
+                        var targetWidth = 0u;
+                        var targetHeight = 0u;
+                        var targetModeInfoIndex = path.targetInfo.targetModeInfoIdx;
+                        if (targetModeInfoIndex < modes.Length &&
+                            modes[targetModeInfoIndex].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Target)
                         {
-                            var targetModeInfoIndex = path.targetInfo.targetModeInfoIdx;
-                            if (targetModeInfoIndex < modes.Length &&
-                                modes[targetModeInfoIndex].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Target)
-                            {
-                                width = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cx;
-                                height = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cy;
-                            }
+                            targetWidth = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cx;
+                            targetHeight = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cy;
                         }
+
+                        var resolutionWidth = targetWidth > 0 ? targetWidth : sourceWidth;
+                        var resolutionHeight = targetHeight > 0 ? targetHeight : sourceHeight;
+                        var (pixelWidth, pixelHeight) = DisplayHelpers.GetPreviewDimensions(
+                            sourceWidth,
+                            sourceHeight,
+                            resolutionWidth,
+                            resolutionHeight,
+                            path.targetInfo.rotation);
 
                         displayInfos.Add(new MonitorDisplayInfo
                         {
@@ -398,9 +409,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             Technology = tech,
                             AdapterId = targetInfo.adapterId.ToString(),
                             TargetId = targetInfo.id,
+                            SourceKey = $"{path.sourceInfo.adapterId}:{path.sourceInfo.id}",
                             IsActive = active,
-                            Resolution = width > 0
-                                ? $"{width}x{height}"
+                            Resolution = resolutionWidth > 0
+                                ? $"{resolutionWidth}x{resolutionHeight}"
                                 : "Unknown",
                             Orientation = targetInfo.rotation switch
                             {
@@ -419,47 +431,82 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             PositionY = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
                                 ? sourceMode.modeInfo.sourceMode.position.y
                                 : 0,
-                            PixelWidth = width,
-                            PixelHeight = height,
+                            PixelWidth = pixelWidth,
+                            PixelHeight = pixelHeight,
                             IsInternal = DisplayHelpers.IsInternalTechnology(targetInfo.outputTechnology)
                         });
                     }
 
-                    var activeDisplays = displayInfos.Where(display => display.IsActive).ToArray();
-                    if (activeDisplays.Length > 0)
+                    var primaryDisplay = displayInfos
+                        .Where(display => display.IsPrimary)
+                        .OrderBy(display => display.Index)
+                        .FirstOrDefault();
+                    if (primaryDisplay != null)
                     {
-                        var minX = activeDisplays.Min(display => display.PositionX);
-                        var minY = activeDisplays.Min(display => display.PositionY);
-                        var maxX = activeDisplays.Max(display => display.PositionX + (int)display.PixelWidth);
-                        var maxY = activeDisplays.Max(display => display.PositionY + (int)display.PixelHeight);
-                        var scale = Math.Min(680d / Math.Max(1, maxX - minX), 210d / Math.Max(1, maxY - minY));
-                        foreach (var display in activeDisplays)
+                        foreach (var display in displayInfos)
                         {
-                            display.LayoutLeft = 10 + ((display.PositionX - minX) * scale);
-                            display.LayoutTop = 10 + ((display.PositionY - minY) * scale);
-                            display.LayoutWidth = Math.Max(48, display.PixelWidth * scale);
-                            display.LayoutHeight = Math.Max(36, display.PixelHeight * scale);
+                            display.IsPrimary = ReferenceEquals(display, primaryDisplay);
+                        }
+                    }
+
+                    var previewDisplays = new List<MonitorDisplayInfo>();
+                    foreach (var sourceGroup in displayInfos
+                        .Where(display => display.IsActive)
+                        .GroupBy(display => display.SourceKey))
+                    {
+                        var mirroredDisplays = sourceGroup
+                            .OrderByDescending(display => display.IsPrimary)
+                            .ThenBy(display => display.Index)
+                            .ToArray();
+                        foreach (var display in mirroredDisplays)
+                        {
+                            display.MirroredDisplayCount = mirroredDisplays.Length;
                         }
 
-                        var inactiveLeft = 10d;
-                        foreach (var display in displayInfos.Where(display => !display.IsActive))
+                        previewDisplays.Add(mirroredDisplays[0]);
+                    }
+
+                    previewDisplays.AddRange(displayInfos.Where(display => !display.IsActive));
+                    var activeDisplays = displayInfos.Where(display => display.IsActive).ToArray();
+                    var activePreviewDisplays = previewDisplays.Where(display => display.IsActive).ToArray();
+                    var inactivePreviewDisplays = previewDisplays.Where(display => !display.IsActive).ToArray();
+                    if (activePreviewDisplays.Length > 0)
+                    {
+                        var minX = activePreviewDisplays.Min(display => display.PositionX);
+                        var minY = activePreviewDisplays.Min(display => display.PositionY);
+                        var maxX = activePreviewDisplays.Max(display => display.PositionX + (int)display.PixelWidth);
+                        var maxY = activePreviewDisplays.Max(display => display.PositionY + (int)display.PixelHeight);
+                        var scale = Math.Min(660d / Math.Max(1, maxX - minX), 205d / Math.Max(1, maxY - minY));
+                        foreach (var display in activePreviewDisplays)
                         {
-                            display.LayoutLeft = inactiveLeft;
-                            display.LayoutTop = 222;
-                            display.LayoutWidth = 120;
-                            display.LayoutHeight = 32;
-                            inactiveLeft += 128;
+                            display.LayoutLeft = 20 + ((display.PositionX - minX) * scale);
+                            display.LayoutTop = 12 + ((display.PositionY - minY) * scale);
+                            display.LayoutWidth = Math.Max(1, (display.PixelWidth * scale) - 2);
+                            display.LayoutHeight = Math.Max(1, (display.PixelHeight * scale) - 2);
+                        }
+
+                        for (int i = 0; i < inactivePreviewDisplays.Length; i++)
+                        {
+                            inactivePreviewDisplays[i].LayoutLeft = 20 + ((i % 5) * 132);
+                            inactivePreviewDisplays[i].LayoutTop = 230 + ((i / 5) * 32);
+                            inactivePreviewDisplays[i].LayoutWidth = 120;
+                            inactivePreviewDisplays[i].LayoutHeight = 28;
                         }
                     }
                     else
                     {
-                        for (int i = 0; i < displayInfos.Count; i++)
+                        for (int i = 0; i < previewDisplays.Count; i++)
                         {
-                            displayInfos[i].LayoutLeft = 10 + (i * 128);
-                            displayInfos[i].LayoutTop = 10;
-                            displayInfos[i].LayoutWidth = 120;
-                            displayInfos[i].LayoutHeight = 32;
+                            previewDisplays[i].LayoutLeft = 20 + ((i % 5) * 132);
+                            previewDisplays[i].LayoutTop = 120 + ((i / 5) * 36);
+                            previewDisplays[i].LayoutWidth = 120;
+                            previewDisplays[i].LayoutHeight = 30;
                         }
+                    }
+
+                    foreach (var display in previewDisplays)
+                    {
+                        Logger.LogInfo($"Monitor Power preview tile: target={display.Index}, source={display.SourceKey}, active={display.IsActive}, primary={display.IsPrimary}, mirrored={display.MirroredDisplayCount}, position={display.PositionX},{display.PositionY}, resolution={display.Resolution}, geometry={display.PixelWidth}x{display.PixelHeight}, tile={display.LayoutLeft:0.##},{display.LayoutTop:0.##} {display.LayoutWidth:0.##}x{display.LayoutHeight:0.##}.");
                     }
 
                     RunOnUiThread(() =>
@@ -469,6 +516,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             _displays.Add(d);
                         }
+                        _previewDisplays.Clear();
+                        foreach (var display in previewDisplays)
+                        {
+                            _previewDisplays.Add(display);
+                        }
+
                         HasDisplays = displayInfos.Count > 0;
                         StatusMessage = displayInfos.Count == 0
                             ? "No displays are currently available."
@@ -482,6 +535,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     RunOnUiThread(() =>
                     {
                         _displays.Clear();
+                        _previewDisplays.Clear();
                         HasDisplays = false;
                         StatusMessage = $"Error loading displays: {ex.Message}";
                     });
@@ -812,59 +866,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void SetTopologyExternalOnly()
+        public void SetTopologyPrimaryOnly()
         {
-            try
-            {
-                var result = DisplayHelpers.SetExternalOnly();
-                StatusMessage = result;
-                LoadDisplays();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error: {ex.Message}";
-            }
+            _ = ApplyQuickTopologyAsync(progress => DisplayHelpers.SetPrimaryDisplayOnly(progress));
         }
 
-        public void SetTopologyInternalOnly()
+        public void SetTopologyAllDisplays()
         {
-            try
-            {
-                var result = DisplayHelpers.SetInternalOnly();
-                StatusMessage = result;
-                LoadDisplays();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error: {ex.Message}";
-            }
+            _ = ApplyQuickTopologyAsync(_ => DisplayHelpers.SetExtend());
         }
 
-        public void SetTopologyClone()
+        private async Task ApplyQuickTopologyAsync(Func<Action<string>?, string> apply)
         {
-            try
+            if (IsApplying)
             {
-                var result = DisplayHelpers.SetClone();
-                StatusMessage = result;
-                LoadDisplays();
+                return;
             }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error: {ex.Message}";
-            }
-        }
 
-        public void SetTopologyExtend()
-        {
+            IsApplying = true;
             try
             {
-                var result = DisplayHelpers.SetExtend();
+                StatusMessage = "Applying display configuration...";
+                var result = await Task.Run(() => apply(message => RunOnUiThread(() => StatusMessage = message)));
+                await LoadDisplaysAsync();
                 StatusMessage = result;
-                LoadDisplays();
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error: {ex.Message}";
+                Logger.LogError("Monitor Power quick topology action failed.", ex);
+                StatusMessage = $"Error applying display configuration: {ex.Message}";
+            }
+            finally
+            {
+                IsApplying = false;
             }
         }
 
@@ -902,6 +936,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Technology { get; set; } = string.Empty;
         public string AdapterId { get; set; } = string.Empty;
         public uint TargetId { get; set; }
+        public string SourceKey { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string Resolution { get; set; } = string.Empty;
         public bool IsInternal { get; set; }
@@ -911,12 +946,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public uint PixelHeight { get; set; }
         public string Orientation { get; set; } = "0°";
         public bool IsPrimary { get; set; }
+        public int MirroredDisplayCount { get; set; } = 1;
         public double LayoutLeft { get; set; }
         public double LayoutTop { get; set; }
         public double LayoutWidth { get; set; }
         public double LayoutHeight { get; set; }
-        public string State => IsPrimary ? "Primary" : IsActive ? "Active" : "Inactive";
-        public string AccessibilityDescription => $"{Name}, {Technology}, {Resolution}, {Orientation}, {State}";
+        public double PreviewOpacity => IsActive ? 1 : 0.55;
+        public string State => IsActive ? "Active" : "Inactive";
+        public string PreviewStatus => IsPrimary ? "Primary" : MirroredDisplayCount > 1 ? $"Mirrored x{MirroredDisplayCount}" : State;
+        public string Details => $"{Technology} · {Resolution} · {Orientation}";
+        public string AccessibilityDescription => $"{Name}, {Details}, {(IsPrimary ? "Primary" : State)}";
 
         public bool IsSelected
         {

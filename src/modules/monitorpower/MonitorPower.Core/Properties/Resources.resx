@@ -161,6 +161,12 @@
   <data name="error_no_matching_paths" xml:space="preserve">
     <value>No matching display paths found for the selected targets</value>
   </data>
+  <data name="error_primary_display_not_found" xml:space="preserve">
+    <value>Could not identify the active primary display</value>
+  </data>
+  <data name="error_display_targets_not_applied" xml:space="preserve">
+    <value>The active displays do not match the requested configuration</value>
+  </data>
   <data name="error_no_active_to_save" xml:space="preserve">
     <value>No active displays to save</value>
   </data>

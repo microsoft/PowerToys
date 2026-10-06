@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -34,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             try
             {
                 InitializeComponent();
+                ViewModel.PreviewDisplays.CollectionChanged += PreviewDisplays_CollectionChanged;
                 Loaded += DisplayProfilesPage_Loaded;
                 Logger.LogInfo($"Monitor Power Settings page XAML initialized in {initializationTimer.ElapsedMilliseconds} ms.");
             }
@@ -44,6 +46,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             Logger.LogInfo("Monitor Power Settings page created.");
+        }
+
+        private void PreviewDisplays_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RenderTopologyPreview();
+        }
+
+        private void RenderTopologyPreview()
+        {
+            if (Resources["PreviewTileTemplate"] is not DataTemplate previewTileTemplate)
+            {
+                throw new InvalidOperationException("The Monitor Power preview tile template is unavailable.");
+            }
+
+            DisplayTopologyCanvas.Children.Clear();
+            foreach (var display in ViewModel.PreviewDisplays)
+            {
+                if (previewTileTemplate.LoadContent() is not FrameworkElement tile)
+                {
+                    throw new InvalidOperationException("The Monitor Power preview tile template did not create a UI element.");
+                }
+
+                tile.DataContext = display;
+                Canvas.SetLeft(tile, display.LayoutLeft);
+                Canvas.SetTop(tile, display.LayoutTop);
+                DisplayTopologyCanvas.Children.Add(tile);
+            }
         }
 
         private void DisplayProfilesPage_Loaded(object sender, RoutedEventArgs e)

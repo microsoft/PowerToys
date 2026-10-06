@@ -17,11 +17,13 @@ internal static class Resources
     internal static string activated_displays_format => Get(nameof(activated_displays_format));
     internal static string display_label => Get(nameof(display_label));
     internal static string display_state_restored => Get(nameof(display_state_restored));
+    internal static string error_display_targets_not_applied => Get(nameof(error_display_targets_not_applied));
     internal static string error_format => Get(nameof(error_format));
     internal static string error_no_active_monitors_remaining => Get(nameof(error_no_active_monitors_remaining));
     internal static string error_no_displays_connected => Get(nameof(error_no_displays_connected));
     internal static string error_no_displays_selected => Get(nameof(error_no_displays_selected));
     internal static string error_no_matching_paths => Get(nameof(error_no_matching_paths));
+    internal static string error_primary_display_not_found => Get(nameof(error_primary_display_not_found));
     internal static string error_prefix => Get(nameof(error_prefix));
     internal static string error_profile_empty => Get(nameof(error_profile_empty));
     internal static string error_profile_layout_invalid => Get(nameof(error_profile_layout_invalid));

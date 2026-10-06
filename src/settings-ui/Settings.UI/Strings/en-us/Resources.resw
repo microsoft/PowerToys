@@ -6578,14 +6578,19 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ControllerTest_Status.Text" xml:space="preserve"><value>Controller input diagnostics are active.</value></data>
 <data name="Shell_DisplayProfiles.Content" xml:space="preserve"><value>Monitor Power</value></data>
   <data name="DisplayProfiles_CurrentTopology.Header" xml:space="preserve"><value>Current Display Topology</value></data>
-  <data name="DisplayProfiles_CurrentTopology_Header.Header" xml:space="preserve"><value>Active Displays</value></data>
-  <data name="DisplayProfiles_RefreshDisplays.Header" xml:space="preserve"><value>Refresh</value></data>
-  <data name="DisplayProfiles_DisplayList_Description.Header" xml:space="preserve"><value>Select displays to include in profiles. Internal displays are marked with a laptop icon.</value></data>
-  <data name="DisplayProfiles_QuickTopology.Header" xml:space="preserve"><value>Quick Topology</value></data>
-  <data name="DisplayProfiles_Topology_ExternalOnly.Header" xml:space="preserve"><value>External Only</value></data>
-  <data name="DisplayProfiles_Topology_InternalOnly.Header" xml:space="preserve"><value>Internal Only</value></data>
-  <data name="DisplayProfiles_Topology_Clone.Header" xml:space="preserve"><value>Clone (Duplicate)</value></data>
-  <data name="DisplayProfiles_Topology_Extend.Header" xml:space="preserve"><value>Extend</value></data>
+<data name="DisplayProfiles_DisplayArrangement.Header" xml:space="preserve"><value>Display arrangement</value></data>
+<data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Displays are shown in their desktop positions. Mirrored outputs share a tile.</value></data>
+<data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
+<data name="DisplayProfiles_RefreshDisplays.Content" xml:space="preserve"><value>Refresh</value></data>
+<data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Select displays to include in a saved profile. Each row shows its connection type, resolution, orientation, and status.</value></data>
+<data name="DisplayProfiles_EmptyState.Text" xml:space="preserve"><value>No displays are available. Connect or enable a display, then refresh.</value></data>
+<data name="DisplayProfiles_PrimaryBadge.Text" xml:space="preserve"><value>Primary</value></data>
+<data name="DisplayProfiles_QuickTopology.Header" xml:space="preserve"><value>Quick Topology</value></data>
+<data name="DisplayProfiles_QuickTopology_Description.Text" xml:space="preserve"><value>Switch between a focused single-screen setup and your full extended desktop. Saved profiles remain customizable.</value></data>
+<data name="DisplayProfiles_Topology_PrimaryOnly_Title.Text" xml:space="preserve"><value>Primary display only</value></data>
+<data name="DisplayProfiles_Topology_PrimaryOnly_Description.Text" xml:space="preserve"><value>Turn off the other displays while keeping your primary display active.</value></data>
+<data name="DisplayProfiles_Topology_AllDisplays_Title.Text" xml:space="preserve"><value>Enable all displays</value></data>
+<data name="DisplayProfiles_Topology_AllDisplays_Description.Text" xml:space="preserve"><value>Extend your desktop across all connected displays.</value></data>
   <data name="DisplayProfiles_BaseTopology.Header" xml:space="preserve"><value>Base Topology</value></data>
   <data name="DisplayProfiles_SaveBaseTopology.Header" xml:space="preserve"><value>Save as Base</value></data>
   <data name="DisplayProfiles_RestoreBaseTopology.Header" xml:space="preserve"><value>Restore Base (ESC)</value></data>

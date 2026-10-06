@@ -69,6 +69,45 @@ public sealed class MonitorPowerTests
     }
 
     [TestMethod]
+    public void TopologyMapping_SelectsMappedPrimaryTargetFromSharedPrimarySource()
+    {
+        var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 1);
+        var second = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 2);
+        var third = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 3);
+        var deviceNames = new Dictionary<DisplayHelpers.DisplayTargetId, string>
+        {
+            [first] = @"\\.\DISPLAY2",
+            [third] = @"\\.\DISPLAY1",
+        };
+
+        var selected = DisplayHelpers.ChoosePrimaryTarget([first, second, third], deviceNames);
+
+        Assert.AreEqual(third, selected);
+        Assert.IsNull(DisplayHelpers.ChoosePrimaryTarget([], deviceNames));
+    }
+
+    [TestMethod]
+    public void TopologyMapping_RotatesPreviewGeometryWithoutChangingSignalResolution()
+    {
+        Assert.AreEqual(
+            (1080u, 1920u),
+            DisplayHelpers.GetPreviewDimensions(
+                1920,
+                1080,
+                1920,
+                1080,
+                DISPLAYCONFIG_ROTATION.Rotate90));
+        Assert.AreEqual(
+            (1080u, 1920u),
+            DisplayHelpers.GetPreviewDimensions(
+                1080,
+                1920,
+                1920,
+                1080,
+                DISPLAYCONFIG_ROTATION.Rotate90));
+    }
+
+    [TestMethod]
     public void TopologyMapping_ClassifiesInternalAndExternalSelections()
     {
         var internalTarget = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 1);

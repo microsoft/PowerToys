@@ -19,25 +19,33 @@
         <tkconverters:BoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" FalseValue="Visible" TrueValue="Collapsed" />
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <DataTemplate x:Key="DisplayTemplate" x:DataType="vm:MonitorDisplayInfo">
-            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Margin="0,4" Padding="12">
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Margin="0,3" Padding="10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}" VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}" />
-                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="3">
                         <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
-                        <TextBlock Text="{x:Bind Technology}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Text="{x:Bind Resolution, Mode=OneWay}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Text="{x:Bind Orientation}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind Details}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="{x:Bind IsInternal, Converter={StaticResource BoolToVisibilityConverter}}" ToolTipService.ToolTip="Internal Display" />
-                        <FontIcon Glyph="&#xE73D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="{x:Bind IsInternal, Converter={StaticResource InvertedBoolToVisibilityConverter}}" ToolTipService.ToolTip="External Display" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Spacing="4">
-                        <TextBlock Text="{x:Bind State}" HorizontalAlignment="Right" FontSize="12" FontWeight="SemiBold" />
-                        <TextBlock Text="{x:Bind Index}" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                        <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="10" Padding="8,3" Visibility="{x:Bind IsPrimary, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock x:Uid="DisplayProfiles_PrimaryBadge" FontSize="12" FontWeight="SemiBold" />
+                        </Border>
+                        <TextBlock Text="{x:Bind State}" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind Index}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </Grid>
             </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PreviewTileTemplate" x:DataType="vm:MonitorDisplayInfo">
+            <Grid Width="{Binding LayoutWidth}" Height="{Binding LayoutHeight}" Opacity="{Binding PreviewOpacity}" AutomationProperties.Name="{Binding AccessibilityDescription}">
+                <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" />
+                <Border Background="{ThemeResource AccentFillColorDefaultBrush}" BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Visibility="{Binding IsPrimary, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2" Padding="4">
+                    <TextBlock Text="{Binding Index}" HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding PreviewStatus}" HorizontalAlignment="Center" FontSize="10" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="ProfileTemplate" x:DataType="vm:ProfileInfo">
@@ -62,44 +70,29 @@
                 <StackPanel Spacing="24">
                     <!-- Current Topology Section -->
                     <controls:SettingsGroup x:Uid="DisplayProfiles_CurrentTopology">
-                        <tkcontrols:SettingsCard Header="Display arrangement" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
-                            <Grid Height="260" Margin="0,8,0,0" AutomationProperties.Name="Display topology preview">
-                                <Border Background="{ThemeResource ControlFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
-                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <Canvas Width="700" Height="260" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemContainerStyle>
-                                            <Style TargetType="ContentPresenter">
-                                                <Setter Property="Canvas.Left" Value="{Binding LayoutLeft}" />
-                                                <Setter Property="Canvas.Top" Value="{Binding LayoutTop}" />
-                                            </Style>
-                                        </ItemsControl.ItemContainerStyle>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="vm:MonitorDisplayInfo">
-                                                <Border Width="{x:Bind LayoutWidth}" Height="{x:Bind LayoutHeight}" Background="{ThemeResource AccentFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" AutomationProperties.Name="{x:Bind AccessibilityDescription}">
-                                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
-                                                        <TextBlock Text="{x:Bind Index}" HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold" />
-                                                        <TextBlock Text="{x:Bind Resolution}" HorizontalAlignment="Center" FontSize="11" />
-                                                        <TextBlock Text="{x:Bind State}" HorizontalAlignment="Center" FontSize="10" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Border>
-                            </Grid>
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_DisplayArrangement" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
+                            <StackPanel Spacing="8">
+                                <TextBlock x:Uid="DisplayProfiles_Preview_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                <Grid Height="296" AutomationProperties.Name="Display topology preview">
+                                    <Border Background="{ThemeResource ControlFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8">
+                                        <Canvas x:Name="DisplayTopologyCanvas" Width="700" Height="296" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_CurrentTopology_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
-                            <Grid RowDefinitions="Auto,Auto,*,Auto">
-                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                                    <Button Content="Refresh Displays" Click="{x:Bind ViewModel.LoadDisplays}" Style="{StaticResource DefaultButtonStyle}" HorizontalAlignment="Left" />
-                                    <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                </StackPanel>
-                                <TextBlock Grid.Row="1" Text="Select the displays to include in a profile." TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
-                                <ListView Grid.Row="2" ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" SelectionMode="None" Height="200" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                            <StackPanel Spacing="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock x:Uid="DisplayProfiles_ActiveDisplays_Title" FontSize="16" FontWeight="SemiBold" />
+                                        <TextBlock x:Uid="DisplayProfiles_DisplayList_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Uid="DisplayProfiles_RefreshDisplays" Click="{x:Bind ViewModel.LoadDisplays}" Style="{StaticResource DefaultButtonStyle}" />
+                                        <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                                <ListView ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" SelectionMode="None" MaxHeight="340" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderThickness="0">
                                     <ListView.ItemContainerStyle>
                                         <Style TargetType="ListViewItem">
                                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -108,17 +101,31 @@
                                         </Style>
                                     </ListView.ItemContainerStyle>
                                 </ListView>
-                                <TextBlock Grid.Row="3" Text="No displays are available. Connect or enable a display, then refresh." Visibility="{x:Bind ViewModel.HasDisplays, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,8,0,0" />
-                            </Grid>
-                        </tkcontrols:SettingsCard>
+                                <TextBlock x:Uid="DisplayProfiles_EmptyState" Visibility="{x:Bind ViewModel.HasDisplays, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
 
                         <!-- Topology Quick Actions -->
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_QuickTopology" HeaderIcon="{ui:FontIcon Glyph=&#xE74E;}">
-                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-                                <Button Content="External Only" Click="{x:Bind ViewModel.SetTopologyExternalOnly}" Style="{StaticResource DefaultButtonStyle}" />
-                                <Button Content="Internal Only" Click="{x:Bind ViewModel.SetTopologyInternalOnly}" Style="{StaticResource DefaultButtonStyle}" />
-                                <Button Content="Clone" Click="{x:Bind ViewModel.SetTopologyClone}" Style="{StaticResource DefaultButtonStyle}" />
-                                <Button Content="Extend" Click="{x:Bind ViewModel.SetTopologyExtend}" Style="{StaticResource DefaultButtonStyle}" />
+                            <StackPanel Spacing="12" Margin="0,8,0,0">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock x:Uid="DisplayProfiles_QuickTopology_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                    <ProgressRing Grid.Column="1" Width="20" Height="20" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <Button Click="{x:Bind ViewModel.SetTopologyPrimaryOnly}" Style="{StaticResource DefaultButtonStyle}" HorizontalContentAlignment="Left" Padding="16" MinHeight="72" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock x:Uid="DisplayProfiles_Topology_PrimaryOnly_Title" FontWeight="SemiBold" />
+                                            <TextBlock x:Uid="DisplayProfiles_Topology_PrimaryOnly_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="1" Click="{x:Bind ViewModel.SetTopologyAllDisplays}" Style="{StaticResource DefaultButtonStyle}" HorizontalContentAlignment="Left" Padding="16" MinHeight="72" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock x:Uid="DisplayProfiles_Topology_AllDisplays_Title" FontWeight="SemiBold" />
+                                            <TextBlock x:Uid="DisplayProfiles_Topology_AllDisplays_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
