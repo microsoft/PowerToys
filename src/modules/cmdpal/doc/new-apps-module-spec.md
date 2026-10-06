@@ -91,10 +91,12 @@ Packaged discovery retains the manifest's optional `Executable` value in its sna
 Only its filename and stem enter search terms: relative layout folders such as `VFS` and
 `ProgramFilesX64` must not make unrelated apps match ordinary queries.
 AUMIDs remain the identity and activation target.
-The declared value is not a resolved file path: shared launchers and externally located
-executables make that assumption unsafe. It therefore does not receive executable-name priority
-or become a path-based deduplication key. Existing caches remain usable until reconciliation
-adds the new metadata.
+The declared value does not receive executable-name priority or replace packaged activation.
+A relative executable that resolves inside the package installation directory can associate
+an independently discovered Win32 entry with the packaged app, using the full path rather than
+the filename. Shared executable paths claimed by different AUMIDs remain ambiguous and do not
+merge the Win32 entry. Absolute, external, and escaping paths are not inferred from the manifest.
+This association uses cached metadata without opening executables or depending on PATH discovery.
 
 Packaged discovery also reads each application's declared execution aliases during the same
 manifest scan. Alias filenames and stems, such as `wt.exe` and `wt`, are ordinary search
@@ -128,6 +130,22 @@ data in an immutable `Win32AppPayload`. Identity and deduplication belong to the
 so discovery metadata has no separate equality, query filtering or deduplication policy.
 Shortcut launch paths, arguments and working directories remain intact; resolved targets
 supply identity and search metadata rather than replacing shortcut activation.
+
+Discovery and cached payloads retain source-specific names; `ToAppItem()` maps them to the
+consumer fields such as `Name`, `Subtitle` and `IconSource`. Win32 `Name` retains the filename
+stem used by released command IDs, while `DisplayName` supplies the localized title. Win32
+`ParentDirectory` is the discovered entry's containing folder; packaged `PackageLocation` is
+the installation root. Both map to `AppItem.DirectoryPath`. `TargetPath` is the discovered
+Win32 target, while `AppItem.ResolvedTarget` prefers an execution alias's resolved target when
+available. Cache fields use their code names; earlier development cache layouts are not a
+compatibility contract.
+
+`PackagedAppSource` enumerates packages and controls scan concurrency. `PackagedAppReader`
+reads each manifest into `PackagedAppMetadata`, resolves display and icon resources, and
+checks visibility before `PackagedAppPayload` captures the retained data. Execution aliases
+and elevation capability come from the declaring application's XML element. Package-wide
+trust-level searches could incorrectly offer elevation for another application in the package.
+Manifest reads share access with writers and release native references before completing.
 
 ### 2.1 Deduplication
 
@@ -534,6 +552,14 @@ classDiagram
     Win32AppSource ..> Win32AppPayload : captures immutable launch data
     Win32AppMetadata ..> Win32AppPayload : supplies retained metadata
     class PackagedAppSource
+    class PackagedAppReader
+    class PackagedAppMetadata
+    class PackageMetadata
+    class PackagedAppPayload
+    PackagedAppSource ..> PackagedAppReader : reads package manifests
+    PackagedAppReader ..> PackagedAppMetadata : resolves application metadata
+    PackagedAppMetadata --> "1" PackageMetadata : retains package identity and location
+    PackagedAppSource ..> PackagedAppPayload : captures immutable launch data
     Win32AppSource ..|> IAppSource
     PackagedAppSource ..|> IAppSource
 

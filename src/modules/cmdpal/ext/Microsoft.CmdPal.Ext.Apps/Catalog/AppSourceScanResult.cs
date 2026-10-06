@@ -14,11 +14,13 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// <summary>Reports discovered items together with incomplete reads and candidates worth retrying.</summary>
 internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
 {
+    /// <summary>Gets a value indicating whether all required source reads succeeded, so absent old items can be removed.</summary>
     public bool IsComplete { get; }
 
-    /// <summary>Gets whether the scan covered the whole source, including when reads were incomplete.</summary>
+    /// <summary>Gets a value indicating whether the scan covered the whole source, including when reads were incomplete.</summary>
     public bool IsFullScan { get; }
 
+    /// <summary>Gets candidates for bounded retries; an empty path requests a whole-source retry.</summary>
     public IReadOnlyList<string> RetryPaths { get; }
 
     /// <summary>Gets cached rejections whose existing retries should be retained or rescheduled within their retry budget.</summary>
@@ -27,12 +29,21 @@ internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
     /// <summary>Gets unreadable files or subtrees, or null when failure coverage is unknown.</summary>
     public IReadOnlyList<string>? FailedPaths { get; }
 
-    /// <summary>Gets source paths whose current state was successfully established.</summary>
+    /// <summary>Gets source paths or IDs whose current state was successfully established.</summary>
     public IReadOnlySet<string> CheckedPaths { get; }
 
     /// <summary>Gets package families whose applications could not be read.</summary>
     public IReadOnlyList<string> FailedPackageFamilies { get; }
 
+    /// <summary>Initializes a new instance of the <see cref="AppSourceScanResult"/> class. Captures discovered items and the coverage needed to retain unknown data and schedule bounded retries.</summary>
+    /// <param name="items">Applications confirmed by this scan.</param>
+    /// <param name="isComplete">Whether all required source reads completed successfully.</param>
+    /// <param name="retryPaths">Candidates worth retrying; an empty path requests a full-source retry.</param>
+    /// <param name="failedPaths">Unreadable files or subtrees; null means failure coverage is unknown.</param>
+    /// <param name="checkedPaths">Paths or source-local IDs whose current state was successfully established.</param>
+    /// <param name="failedPackageFamilies">Package families whose apps could not be read.</param>
+    /// <param name="isFullScan">Whether the whole source was scanned, even if reads were incomplete.</param>
+    /// <param name="reusedRejectedPaths">Cached rejections whose existing retry budget must be retained.</param>
     public AppSourceScanResult(
         IList<AppCatalogItem> items,
         bool isComplete = true,
@@ -54,6 +65,7 @@ internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
     }
 
     /// <summary>Preserves only representations whose current source state is still unknown.</summary>
+    /// <returns>The old item or a copy restricted to unreadable representations; null when no old data needs retaining.</returns>
     public AppCatalogItem? GetRetainedItem(AppCatalogItem item)
     {
         if (IsComplete)
@@ -94,7 +106,7 @@ internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
                 item.IdentityAliases.Where(alias => !removedPrefixes.Any(prefix => alias.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))).ToImmutableArray());
         }
 
-        if (item.Payload is PackagedAppSnapshot packaged && !CheckedPaths.Contains(packaged.UserModelId))
+        if (item.Payload is PackagedAppPayload packaged && !CheckedPaths.Contains(packaged.AppUserModelId))
         {
             foreach (var family in FailedPackageFamilies)
             {

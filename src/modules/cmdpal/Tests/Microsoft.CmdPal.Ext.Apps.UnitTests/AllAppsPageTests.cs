@@ -242,7 +242,7 @@ public class AllAppsPageTests : AppsTestBase
     {
         using var mockCatalog = new MockAppCatalog();
         mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Windows\System32\notepad.exe"));
-        mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("Calculator"));
+        mockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata("Calculator"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
@@ -770,7 +770,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_TypeFiltersOnlyReturnMatchingApplications()
     {
         MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
-        MockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("Calculator"));
+        MockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata("Calculator"));
         await WaitForPageInitializationAsync();
 
         Page.Filters!.CurrentFilterId = AllAppsFilters.Win32FilterId;

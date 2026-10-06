@@ -259,7 +259,7 @@ public class AppIdentityTests
             0,
             new AppCatalogSourceReference("packaged", packagedAumid),
             [],
-            new PackagedAppSnapshot { Name = "App", UserModelId = packagedAumid });
+            new PackagedAppPayload { Name = "App", AppUserModelId = packagedAumid });
         var mergedRow = new AppListItem(packaged.MergeProvenance(shortcut).ToAppItem(), useThumbnails: false);
         var snapshot = new AppListItemSnapshot([mergedRow], []);
 

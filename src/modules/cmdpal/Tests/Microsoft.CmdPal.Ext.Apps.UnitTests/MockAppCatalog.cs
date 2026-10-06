@@ -46,7 +46,9 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public void DeferInitialization(Task initializationTask)
     {
-        _initializationTask = initializationTask ?? throw new ArgumentNullException(nameof(initializationTask));
+        ArgumentNullException.ThrowIfNull(initializationTask);
+
+        _initializationTask = initializationTask;
     }
 
     public async Task RefreshAsync()
@@ -71,10 +73,10 @@ public sealed class MockAppCatalog : IAppCatalog
         AddAndRaise(Win32AppPayload.From(program));
     }
 
-    public void AddUWPApplication(IUWPApplication app)
+    internal void AddPackagedApp(PackagedAppMetadata app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        AddAndRaise(PackagedAppSnapshot.From(app));
+        AddAndRaise(PackagedAppPayload.From(app));
     }
 
     public Task SetAppHiddenAsync(string catalogId, bool hidden)
@@ -117,7 +119,7 @@ public sealed class MockAppCatalog : IAppCatalog
         app.CatalogId = payload switch
         {
             Win32AppPayload win32 => $"{win32.Name}|{win32.TargetPath}",
-            PackagedAppSnapshot packaged => packaged.UserModelId,
+            PackagedAppPayload packaged => packaged.AppUserModelId,
             _ => throw new ArgumentException("Unsupported application payload.", nameof(payload)),
         };
         app.CommandIds = [payload.GetCommandId(), .. AppIdentity.GetCommandIds(app.CatalogId)];
