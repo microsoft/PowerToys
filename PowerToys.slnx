@@ -314,10 +314,6 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/MonitorPowerExtension/MonitorPowerExtension.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Extension SDK/">
     <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
@@ -364,10 +360,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Indexer.UnitTests/Microsoft.CmdPal.Ext.Indexer.UnitTests.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.MonitorPower.UnitTests/Microsoft.CmdPal.Ext.MonitorPower.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

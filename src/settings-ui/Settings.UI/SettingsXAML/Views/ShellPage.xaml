@@ -339,6 +339,12 @@
                             AutomationProperties.AutomationId="PowerDisplayNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}" />
                         <NavigationViewItem
+                            x:Name="DisplayProfilesNavigationItem"
+                            x:Uid="Shell_DisplayProfiles"
+                            helpers:NavHelper.NavigateTo="views:DisplayProfilesPage"
+                            AutomationProperties.AutomationId="DisplayProfilesNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}" />
+                        <NavigationViewItem
                             x:Name="QuickAccentNavigationItem"
                             x:Uid="Shell_QuickAccent"
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"

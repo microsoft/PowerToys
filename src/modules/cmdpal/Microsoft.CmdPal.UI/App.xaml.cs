@@ -43,7 +43,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using MonitorPowerExtension;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -270,8 +269,6 @@ public partial class App : Application, IDisposable
         {
             services.AddSingleton<ICommandProvider, ActionsCommandsProvider>();
         }
-
-        services.AddSingleton<ICommandProvider, MonitorPowerCommandsProvider>();
     }
 
     private static void AddUIServices(

@@ -10,13 +10,14 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Microsoft.CommandPalette.Extensions;
+using Windows.Gaming.Input;
+using Properties = MonitorPowerCore;
 
 #pragma warning disable IL2026, IL3050
 
 #pragma warning disable SA1300, SA1307, SA1310, SA1316, SA1649, CA1069, CA1305, CA1863
 
-namespace MonitorPowerExtension;
+namespace MonitorPower;
 
 internal enum DISPLAYCONFIG_TOPOLOGY_ID : uint
 {
@@ -1110,7 +1111,7 @@ internal static partial class DisplayHelpers
         return result;
     }
 
-    public static string ActivateDisplays(List<DisplayTargetId> targets, Action<string, MessageState>? onProgress = null)
+    public static string ActivateDisplays(List<DisplayTargetId> targets, Action<string>? onProgress = null)
     {
         SaveState();
         SaveSnapshot();
@@ -1226,7 +1227,7 @@ internal static partial class DisplayHelpers
         return string.Format(Properties.Resources.error_format, GetWin32ErrorMessage(err));
     }
 
-    private static bool WaitForActiveTargets(List<DisplayTargetId> targets, int maxWaitMs = 15000, Action<string, MessageState>? onProgress = null)
+    private static bool WaitForActiveTargets(List<DisplayTargetId> targets, int maxWaitMs = 15000, Action<string>? onProgress = null)
     {
         var requested = targets.ToHashSet();
         const int pollMs = 500;
@@ -1245,7 +1246,7 @@ internal static partial class DisplayHelpers
             if (onProgress != null)
             {
                 int remainingSecs = (maxWaitMs - elapsed + 999) / 1000;
-                onProgress.Invoke($"Verifica monitor attivi in corso ({remainingSecs}s)...", MessageState.Info);
+                onProgress.Invoke($"Verifica monitor attivi in corso ({remainingSecs}s)...");
             }
 
             Thread.Sleep(pollMs);
@@ -1261,12 +1262,12 @@ internal static partial class DisplayHelpers
 
     private static readonly string ProfilesDir = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "MonitorPowerExtension",
+        "MonitorPower",
         "profiles");
 
     private static readonly string SnapshotDir = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "MonitorPowerExtension");
+        "MonitorPower");
 
     private static readonly string SnapshotPath = System.IO.Path.Combine(SnapshotDir, "snapshot.json");
     private static readonly string DiagnosticsPath = System.IO.Path.Combine(SnapshotDir, "diagnostics.log");
@@ -1966,7 +1967,7 @@ internal static partial class DisplayHelpers
         return list;
     }
 
-    public static string ApplyNamedProfile(string fileName, Action<string, MessageState>? onProgress = null)
+    public static string ApplyNamedProfile(string fileName, Action<string>? onProgress = null)
     {
         var path = System.IO.Path.Combine(ProfilesDir, fileName);
         if (!System.IO.File.Exists(path))
@@ -2058,7 +2059,7 @@ internal static partial class DisplayHelpers
             // and expose display modes before applying the layout (resolution/orientation).
             for (int i = 3; i > 0; i--)
             {
-                onProgress?.Invoke($"Attivazione profilo in corso... Attendi l'accensione dei monitor ({i}s)...", MessageState.Info);
+                onProgress?.Invoke($"Attivazione profilo in corso... Attendi l'accensione dei monitor ({i}s)...");
                 Thread.Sleep(1000);
             }
         }
@@ -2066,7 +2067,7 @@ internal static partial class DisplayHelpers
         {
             for (int i = 2; i > 0; i--)
             {
-                onProgress?.Invoke($"Attivazione profilo in corso... Attendi ({i}s)...", MessageState.Info);
+                onProgress?.Invoke($"Attivazione profilo in corso... Attendi ({i}s)...");
                 Thread.Sleep(750);
             }
         }

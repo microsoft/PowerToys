@@ -1,0 +1,156 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.DisplayProfilesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" FalseValue="Collapsed" TrueValue="Visible" />
+        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <DataTemplate x:Key="DisplayTemplate" x:DataType="vm:MonitorDisplayInfo">
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Margin="0,4" Padding="12">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind Technology}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind Resolution}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="{x:Bind IsInternal, Converter={StaticResource BoolToVisibilityConverter}}" ToolTipService.ToolTip="Internal Display" />
+                        <FontIcon Glyph="&#xE73D;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="{x:Bind IsInternal, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True}" ToolTipService.ToolTip="External Display" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="3" Text="{x:Bind Index}" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ProfileTemplate" x:DataType="vm:ProfileInfo">
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Margin="0,4" Padding="12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" FontWeight="Medium" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0">
+                        <Button Content="Apply" Click="ApplyProfile_Click" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="Delete" Click="DeleteProfile_Click" Style="{StaticResource DefaultButtonStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </local:NavigablePage.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
+        <controls:SettingsPageControl x:Uid="DisplayProfiles" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
+            <controls:SettingsPageControl.ModuleContent>
+                <StackPanel Spacing="24">
+                    <!-- Current Topology Section -->
+                    <controls:SettingsGroup x:Uid="DisplayProfiles_CurrentTopology">
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_CurrentTopology_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
+                            <Grid RowDefinitions="Auto,Auto,*">
+                                <Button Grid.Row="0" x:Uid="DisplayProfiles_RefreshDisplays" Content="Refresh Displays" Click="{x:Bind ViewModel.LoadDisplays}" Style="{StaticResource DefaultButtonStyle}" Margin="0,0,0,8" HorizontalAlignment="Left" />
+                                <TextBlock Grid.Row="1" x:Uid="DisplayProfiles_DisplayList_Description" TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
+                                <ListView Grid.Row="2" ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" SelectionMode="None" Height="200" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                </ListView>
+                            </Grid>
+                        </tkcontrols:SettingsCard>
+
+                        <!-- Topology Quick Actions -->
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_QuickTopology" HeaderIcon="{ui:FontIcon Glyph=&#xE74E;}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                <Button x:Uid="DisplayProfiles_Topology_ExternalOnly" Content="External Only" Click="{x:Bind ViewModel.SetTopologyExternalOnly}" Style="{StaticResource DefaultButtonStyle}" />
+                                <Button x:Uid="DisplayProfiles_Topology_InternalOnly" Content="Internal Only" Click="{x:Bind ViewModel.SetTopologyInternalOnly}" Style="{StaticResource DefaultButtonStyle}" />
+                                <Button x:Uid="DisplayProfiles_Topology_Clone" Content="Clone" Click="{x:Bind ViewModel.SetTopologyClone}" Style="{StaticResource DefaultButtonStyle}" />
+                                <Button x:Uid="DisplayProfiles_Topology_Extend" Content="Extend" Click="{x:Bind ViewModel.SetTopologyExtend}" Style="{StaticResource DefaultButtonStyle}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+
+                        <!-- Base Topology -->
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_BaseTopology" HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                <Button x:Uid="DisplayProfiles_SaveBaseTopology" Content="Save as Base Topology" Click="{x:Bind ViewModel.SetCurrentAsBaseTopology}" Style="{StaticResource DefaultButtonStyle}" />
+                                <Button x:Uid="DisplayProfiles_RestoreBaseTopology" Content="Restore Base Topology (ESC)" Click="{x:Bind ViewModel.RestoreBaseTopology}" Style="{StaticResource DefaultButtonStyle}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
+
+                    <!-- Profiles Section -->
+                    <controls:SettingsGroup x:Uid="DisplayProfiles_Profiles">
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_Profiles_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE73D;}">
+                            <Grid RowDefinitions="Auto,Auto,*" RowSpacing="8">
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                                    <TextBox x:Uid="DisplayProfiles_NewProfileName" Width="250" Text="{x:Bind ViewModel.NewProfileName, Mode=TwoWay}" PlaceholderText="Profile name..." />
+                                    <Button x:Uid="DisplayProfiles_SaveProfile" Content="Save Profile" Click="SaveProfile_Click" Style="{StaticResource AccentButtonStyle}" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                                    <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="1" x:Uid="DisplayProfiles_SavedProfiles_Description" TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                                <ListView Grid.Row="2" ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}" ItemTemplate="{StaticResource ProfileTemplate}" SelectionMode="None" Height="200" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                </ListView>
+                            </Grid>
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
+
+                    <!-- Controller Section -->
+                    <controls:SettingsGroup x:Uid="DisplayProfiles_Controller">
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerEnabled">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <TextBlock Text="Shortcut:" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ControllerShortcut, Mode=OneWay}" VerticalAlignment="Center" FontFamily="Consolas" FontSize="14" />
+                            </Grid>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerTest" HeaderIcon="{ui:FontIcon Glyph=&#xE768;}">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Button x:Uid="DisplayProfiles_TestController" Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
+                                <TextBlock x:Uid="DisplayProfiles_ControllerTest_Status" Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
+
+                    <!-- Activation Shortcut Section -->
+                    <controls:SettingsGroup x:Uid="DisplayProfiles_ActivationShortcut">
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <TextBlock Text="Open Selector:" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ActivationShortcut, Mode=OneWay}" VerticalAlignment="Center" FontFamily="Consolas" FontSize="14" FontWeight="SemiBold" />
+                            </Grid>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Description">
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
+
+                    <!-- Status Bar -->
+                    <Border Background="{ThemeResource ControlFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,16,0,0">
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="Wrap" FontSize="13" />
+                    </Border>
+                </StackPanel>
+            </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl>
+    </ScrollViewer>
+</local:NavigablePage>

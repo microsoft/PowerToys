@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace MonitorPowerExtension;
+namespace MonitorPower;
 
 internal sealed partial class KeyboardHook : IDisposable
 {

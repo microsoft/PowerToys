@@ -6560,6 +6560,43 @@ The break timer font matches the text font.</value>
   <data name="CmdPal_Settings.Description" xml:space="preserve">
     <value>Configure the activation shortcut, extensions, behavior and much more</value>
   </data>
+  <data name="CmdPal_MonitorPower.Header" xml:space="preserve"><value>Monitor Power</value></data>
+  <data name="CmdPal_MonitorPower_XboxController.Header" xml:space="preserve"><value>Open Monitor Power with an Xbox controller</value></data>
+  <data name="CmdPal_MonitorPower_XboxController.Description" xml:space="preserve"><value>Press Guide + View to open Monitor Power and choose a display profile.</value></data>
+  <data name="CmdPal_MonitorPower_Test.Header" xml:space="preserve"><value>Test Monitor Power</value></data>
+  <data name="CmdPal_MonitorPower_Test.Description" xml:space="preserve"><value>Open Monitor Power in Command Palette.</value></data>
+  <data name="DisplayProfiles.Header" xml:space="preserve"><value>Monitor Power</value></data>
+  <data name="MonitorPower/ModuleTitle" xml:space="preserve"><value>Monitor Power</value></data>
+  <data name="DisplayProfiles.Description" xml:space="preserve"><value>Open and manage saved display layouts with your controller.</value></data>
+  <data name="DisplayProfiles_Controller.Header" xml:space="preserve"><value>Controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerEnabled.Header" xml:space="preserve"><value>Enable controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerEnabled.Description" xml:space="preserve"><value>Use an Xbox controller to open the display profile selector.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut.Header" xml:space="preserve"><value>Shortcut</value></data>
+  <data name="DisplayProfiles_ControllerShortcut.Description" xml:space="preserve"><value>Press these buttons together to open Display Profiles.</value></data>
+  <data name="DisplayProfiles_ControllerTest.Header" xml:space="preserve"><value>Test the shortcut</value></data>
+  <data name="DisplayProfiles_ControllerTest.Description" xml:space="preserve"><value>With Command Palette running, press Guide + View. Input details are recorded while diagnosing your controller.</value></data>
+  <data name="DisplayProfiles_ControllerTest_Status.Text" xml:space="preserve"><value>Controller input diagnostics are active.</value></data>
+<data name="Shell_DisplayProfiles.Content" xml:space="preserve"><value>Monitor Power</value></data>
+  <data name="DisplayProfiles_CurrentTopology.Header" xml:space="preserve"><value>Current Display Topology</value></data>
+  <data name="DisplayProfiles_CurrentTopology_Header.Header" xml:space="preserve"><value>Active Displays</value></data>
+  <data name="DisplayProfiles_RefreshDisplays.Header" xml:space="preserve"><value>Refresh</value></data>
+  <data name="DisplayProfiles_DisplayList_Description.Header" xml:space="preserve"><value>Select displays to include in profiles. Internal displays are marked with a laptop icon.</value></data>
+  <data name="DisplayProfiles_QuickTopology.Header" xml:space="preserve"><value>Quick Topology</value></data>
+  <data name="DisplayProfiles_Topology_ExternalOnly.Header" xml:space="preserve"><value>External Only</value></data>
+  <data name="DisplayProfiles_Topology_InternalOnly.Header" xml:space="preserve"><value>Internal Only</value></data>
+  <data name="DisplayProfiles_Topology_Clone.Header" xml:space="preserve"><value>Clone (Duplicate)</value></data>
+  <data name="DisplayProfiles_Topology_Extend.Header" xml:space="preserve"><value>Extend</value></data>
+  <data name="DisplayProfiles_BaseTopology.Header" xml:space="preserve"><value>Base Topology</value></data>
+  <data name="DisplayProfiles_SaveBaseTopology.Header" xml:space="preserve"><value>Save as Base</value></data>
+  <data name="DisplayProfiles_RestoreBaseTopology.Header" xml:space="preserve"><value>Restore Base (ESC)</value></data>
+  <data name="DisplayProfiles_Profiles.Header" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles_Profiles_Header.Header" xml:space="preserve"><value>Saved Profiles</value></data>
+  <data name="DisplayProfiles_NewProfileName.Header" xml:space="preserve"><value>Profile Name</value></data>
+  <data name="DisplayProfiles_SaveProfile.Header" xml:space="preserve"><value>Save Profile</value></data>
+  <data name="DisplayProfiles_SavedProfiles_Description.Header" xml:space="preserve"><value>Click Apply to activate a saved display configuration. Profiles store monitor positions, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
+  <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
   <data name="CmdPal_Launch.Header" xml:space="preserve">
     <value>Open Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>

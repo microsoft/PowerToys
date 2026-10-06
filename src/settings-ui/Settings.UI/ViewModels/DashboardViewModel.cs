@@ -501,6 +501,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
+                ModuleType.MonitorPower => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),

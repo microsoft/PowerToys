@@ -595,6 +595,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool monitorPower;
+
+        [JsonPropertyName("MonitorPower")]
+        public bool MonitorPower
+        {
+            get => monitorPower;
+            set
+            {
+                if (monitorPower != value)
+                {
+                    LogTelemetryEvent(value);
+                    monitorPower = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool grabAndMove;
 
         [JsonPropertyName("GrabAndMove")]

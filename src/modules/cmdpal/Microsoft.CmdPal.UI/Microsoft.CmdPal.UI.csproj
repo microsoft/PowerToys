@@ -178,7 +178,6 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
-    <ProjectReference Include="..\ext\MonitorPowerExtension\MonitorPowerExtension.csproj" />
 
     <!-- Microsoft.Terminal.UI vcxproj removed: replaced by C# implementations in
          Helpers\Icons\IconPathConverter.cs and RunHistoryService.cs -->
