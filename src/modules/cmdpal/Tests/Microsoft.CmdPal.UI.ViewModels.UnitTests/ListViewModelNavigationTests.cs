@@ -1131,6 +1131,12 @@ public sealed partial class ListViewModelNavigationTests
             scheduler.Drain();
             viewModel.SafeCleanup();
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => Interlocked.Increment(ref commandBars);
+
+        void OnDetailsChanged(object? sender, PageDetailsChangedEventArgs e) => Interlocked.Increment(ref details);
+
+        void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => Interlocked.Increment(ref suggestions);
     }
 
     [DataTestMethod]
