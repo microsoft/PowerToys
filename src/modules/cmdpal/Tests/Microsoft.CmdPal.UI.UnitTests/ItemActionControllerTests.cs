@@ -36,10 +36,10 @@ public class ItemActionControllerTests
     [DataRow(VirtualKeyModifiers.None, true)]
     [DataRow(VirtualKeyModifiers.Control, false)]
     [DataRow(VirtualKeyModifiers.Control, true)]
-    public void Activation_IsLeftToThePageOwner(VirtualKeyModifiers modifiers, bool hasContext)
+    public void Activation_IsLeftToThePageInteractionTarget(VirtualKeyModifiers modifiers, bool hasContext)
     {
         _context = hasContext ? Mock.Of<ICommandBarContext>() : null;
-        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("Enter belongs to the page owner; the controller must not invoke a command."));
+        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("The page interaction target owns activation."));
         using var controller = CreateController();
 
         Assert.IsFalse(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));

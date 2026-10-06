@@ -1489,7 +1489,6 @@ public sealed partial class ListViewModelNavigationTests
         var scheduler = new QueuedTaskScheduler();
         var page = new StaticPage([CreateItem("Alpha"), CreateItem("Beta")]);
         var viewModel = CreateViewModel(page, scheduler);
-        var recipient = new object();
         var contexts = new List<ICommandBarContext?>();
 
         try
@@ -1499,7 +1498,7 @@ public sealed partial class ListViewModelNavigationTests
             viewModel.UpdateSelectedItemCommand.Execute(viewModel.FilteredItems[0]);
             scheduler.Drain();
             viewModel.SuspendForNavigation();
-            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) => contexts.Add(message.ViewModel));
+            viewModel.CommandBarContextChanged += OnCommandBarContextChanged;
 
             var requested = clearSelection ? null : viewModel.FilteredItems[1];
             viewModel.UpdateSelectedItemCommand.Execute(requested);
@@ -1512,11 +1511,13 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.CommandBarContextChanged -= OnCommandBarContextChanged;
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => contexts.Add(e.Context);
     }
 
     private static ListPageWorkState GetWorkState(ListViewModel viewModel) =>
