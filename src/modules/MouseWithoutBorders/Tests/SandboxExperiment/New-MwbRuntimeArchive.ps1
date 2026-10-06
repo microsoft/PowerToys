@@ -11,6 +11,9 @@ assets come from the built .deps.json files. Native MWB activation libraries and
 WinUI resources are included explicitly. No installation or UI is run. Optional
 ReadyToRun preparation compiles only the private staged copy using an explicit,
 matching native SDK Crossgen2 compiler; the product build remains unchanged.
+Hybrid-CRT Debug native imports also require the explicitly supplied, Microsoft-
+signed Windows SDK debug UCRT when it is absent from the original product tree.
+That dependency is fingerprinted and copied only into the private staging tree.
 #>
 [CmdletBinding()]
 param(
@@ -18,6 +21,7 @@ param(
     [Parameter(Mandatory = $true)][string]$ArchivePath,
     [switch]$ReadyToRun,
     [string]$Crossgen2Path,
+    [string]$DebugUcrtPath,
     [ValidateSet('x64', 'arm64')][string]$Platform = 'x64',
     [ValidateRange(1, 16)][int]$ReadyToRunParallelism = 2,
     [ValidateRange(1, 3600)][int]$ReadyToRunTimeoutSeconds = 600
@@ -151,6 +155,27 @@ function Add-RuntimeFile {
     $null = $files.Add($full.Substring($root.Length + 1))
 }
 
+$externalRuntimeFiles = @{}
+if (-not [string]::IsNullOrWhiteSpace($DebugUcrtPath)) {
+    $debugUcrt = Resolve-MwbArchiveFileSystemPath $DebugUcrtPath
+    if ([IO.Path]::GetFileName($debugUcrt) -ine 'ucrtbased.dll') {
+        throw 'DebugUcrtPath must identify the SDK ucrtbased.dll.'
+    }
+    . "$PSScriptRoot\MwbReadyToRun.ps1"
+    Initialize-MwbReadyToRunMetadata
+    $identity = Get-MwbReadyToRunFileIdentity $debugUcrt -Native -NativeArchitecture $Platform
+    $signature = Get-AuthenticodeSignature -LiteralPath $debugUcrt
+    if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch '(?:^|, )O=Microsoft Corporation(?:,|$)') {
+        throw 'The SDK debug UCRT must have a valid Microsoft signature.'
+    }
+    $existing = Join-Path $root 'ucrtbased.dll'
+    if ((Test-Path -LiteralPath $existing -PathType Leaf) -and
+        (Get-FileHash -LiteralPath $existing -Algorithm SHA256).Hash -ne $identity.Sha256) {
+        throw 'The original product and explicitly supplied SDK debug UCRT differ.'
+    }
+    $externalRuntimeFiles['ucrtbased.dll'] = $identity
+}
+
 foreach ($application in @(
     'PowerToys.MouseWithoutBorders',
     'PowerToys.MouseWithoutBordersHelper',
@@ -236,11 +261,17 @@ foreach ($directory in @($root, (Join-Path $root 'WinUI3Apps'))) {
         })
         foreach ($relative in $pending) {
             $null = $visited.Add($relative)
-            $path = Join-Path $root $relative
+            $path = if ($externalRuntimeFiles.ContainsKey($relative)) { $externalRuntimeFiles[$relative].Path } else { Join-Path $root $relative }
             foreach ($dependency in [MwbPeImports]::Read($path)) {
                 $candidates = @((Join-Path (Split-Path $path) $dependency), (Join-Path $root $dependency))
                 $found = @($candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })
                 if ($found.Count) { Add-RuntimeFile $found[0] }
+                elseif ($dependency -ieq 'ucrtbased.dll') {
+                    if (-not $externalRuntimeFiles.ContainsKey('ucrtbased.dll')) {
+                        throw 'Native Debug imports require ucrtbased.dll; supply the matching SDK file with -DebugUcrtPath.'
+                    }
+                    $null = $files.Add('ucrtbased.dll')
+                }
             }
         }
     } while ($pending.Count)
@@ -267,7 +298,13 @@ try {
     foreach ($relative in $files) {
         $destination = Join-Path $stage $relative
         $null = New-Item -ItemType Directory -Path (Split-Path $destination) -Force
-        Copy-Item -LiteralPath (Join-Path $root $relative) -Destination $destination
+        $source = if ($externalRuntimeFiles.ContainsKey($relative)) { $externalRuntimeFiles[$relative].Path } else { Join-Path $root $relative }
+        Copy-Item -LiteralPath $source -Destination $destination
+        if ($externalRuntimeFiles.ContainsKey($relative) -and
+            ((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $externalRuntimeFiles[$relative].Sha256 -or
+                (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash -ne $externalRuntimeFiles[$relative].Sha256)) {
+            throw 'The SDK debug UCRT changed while staging the private runtime.'
+        }
     }
     $compilation = $null
     if ($ReadyToRun) {
@@ -283,6 +320,7 @@ try {
         Files = @($files | Sort-Object)
     }
     if ($ReadyToRun) { $manifest.ReadyToRun = $compilation }
+    if ($externalRuntimeFiles.Count) { $manifest.ExternalRuntimeFiles = @($externalRuntimeFiles.Values) }
     $manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestOutput
     if ($ReadyToRun) {
         [IO.File]::Move($archiveOutput, $archive)

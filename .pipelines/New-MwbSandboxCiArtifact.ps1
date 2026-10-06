@@ -163,6 +163,32 @@ function Get-MwbCiPreparationPaths {
     [pscustomobject]@{ ProductRoot = $product; SourceRoot = $source; OutputRoot = $output; WorkRoot = $work }
 }
 
+function Get-MwbCiDebugUcrtPath {
+    param([string] $SdkRoot, [string] $TargetVersion, [ValidateSet('x64', 'arm64')][string] $Platform)
+
+    if ($TargetVersion -notmatch '^\d+\.\d+\.\d+\.\d+$' -or
+        -not [IO.Path]::IsPathFullyQualified($SdkRoot)) {
+        throw 'The debug UCRT requires an explicit installed Windows SDK root and pinned version.'
+    }
+    $path = Join-Path $SdkRoot "bin\$TargetVersion\$Platform\ucrt\ucrtbased.dll"
+    Assert-MwbCiPlainPath $path
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        throw "The pinned Windows SDK debug UCRT is missing for $Platform."
+    }
+    $path
+}
+
+function Get-MwbCiWindowsTargetVersion {
+    param([xml] $Properties)
+
+    $versions = @($Properties.SelectNodes('/*[local-name()="Project"]/*[local-name()="PropertyGroup"]/*[local-name()="WindowsTargetPlatformVersion"]') |
+        ForEach-Object { $_.InnerText } | Select-Object -Unique)
+    if ($versions.Count -ne 1 -or $versions[0] -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+        throw 'MWB CI requires one pinned C++ Windows SDK version.'
+    }
+    $versions[0]
+}
+
 $paths = Get-MwbCiPreparationPaths $ProductRoot $OutputRoot $WorkRoot (Join-Path $PSScriptRoot '..')
 $product = $paths.ProductRoot
 $sourceRoot = $paths.SourceRoot
@@ -173,6 +199,9 @@ $null = New-Item -ItemType Directory -Path $output, $work, (Join-Path $work 'scr
 $experiment = Join-Path $sourceRoot 'src\modules\MouseWithoutBorders\Tests\SandboxExperiment'
 $archive = Join-Path $output 'runtime.zip'
 $options = @{}
+$sdkRoot = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots' -Name KitsRoot10).KitsRoot10
+[xml]$cppProps = Get-Content -LiteralPath (Join-Path $sourceRoot 'Cpp.Build.props') -Raw
+$options.DebugUcrtPath = Get-MwbCiDebugUcrtPath -SdkRoot $sdkRoot -TargetVersion (Get-MwbCiWindowsTargetVersion $cppProps) -Platform $Platform
 if ($ReadyToRun) {
     if (-not $DotNetPath) { $DotNetPath = (Get-Command dotnet.exe -ErrorAction Stop).Source }
     $runtimeVersion = Get-MwbCiRuntimeVersion $product

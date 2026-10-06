@@ -337,7 +337,7 @@ Describe 'MWB optional archive publication and failure cleanup' {
             $_.Extent.Text -eq '$stageOwned = $false'
         }
         $script:publishFixture = [scriptblock]::Create(
-            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds,$Platform = ''x64'')' +
+            'param($root,$archive,$stage,$files,$ReadyToRun,$Crossgen2Path,$ReadyToRunParallelism,$ReadyToRunTimeoutSeconds,$Platform = ''x64'', $externalRuntimeFiles = @{})' +
             "`n`$ErrorActionPreference = 'Stop'`n" + $script:archiveAst.Extent.Text.Substring($start.Extent.StartOffset))
         $pathFunction = $script:archiveAst.Find({
             param($node)
@@ -370,6 +370,33 @@ Describe 'MWB optional archive publication and failure cleanup' {
         $manifest = Get-Content "$archive.manifest.json" -Raw | ConvertFrom-Json
         ($manifest.PSObject.Properties.Name -contains 'ReadyToRun') | Should Be $false
         [IO.File]::ReadAllText((Join-Path $stage 'fixture.dll')) | Should Be ([IO.File]::ReadAllText((Join-Path $root 'fixture.dll')))
+    }
+
+    It 'stages a fingerprinted external debug runtime without changing the product build' {
+        $native = Join-Path $TestDrive 'explicit-sdk-debug-runtime.dll'
+        Set-Content -LiteralPath $native -Value 'Nonexecutable SDK provenance fixture'
+        $identity = [pscustomobject]@{ Path = $native; Sha256 = (Get-FileHash -LiteralPath $native).Hash }
+        $extra = @{ 'ucrtbased.dll' = $identity }
+        $inputs = @($files) + 'ucrtbased.dll'
+        & $script:publishFixture $root $archive $stage $inputs $false '' 2 600 x64 $extra | Out-Null
+        Test-Path -LiteralPath (Join-Path $root 'ucrtbased.dll') | Should Be $false
+        (Get-FileHash -LiteralPath (Join-Path $stage 'ucrtbased.dll')).Hash | Should Be $identity.Sha256
+        $manifest = Get-Content -LiteralPath "$archive.manifest.json" -Raw | ConvertFrom-Json
+        $manifest.ExternalRuntimeFiles.Count | Should Be 1
+        $manifest.ExternalRuntimeFiles[0].Sha256 | Should Be $identity.Sha256
+    }
+
+    It 'rejects an external runtime changed after its fingerprint was captured' {
+        $native = Join-Path $TestDrive 'changed-sdk-debug-runtime.dll'
+        Set-Content -LiteralPath $native -Value 'Nonexecutable SDK provenance fixture'
+        $identity = [pscustomobject]@{ Path = $native; Sha256 = (Get-FileHash -LiteralPath $native).Hash }
+        Set-Content -LiteralPath $native -Value 'Changed after capture'
+        $extra = @{ 'ucrtbased.dll' = $identity }
+        $inputs = @($files) + 'ucrtbased.dll'
+        { & $script:publishFixture $root $archive $stage $inputs $false '' 2 600 x64 $extra } |
+            Should Throw 'changed while staging'
+        Test-Path -LiteralPath $archive | Should Be $false
+        Test-Path -LiteralPath (Join-Path $root 'ucrtbased.dll') | Should Be $false
     }
 
     It 'publishes optional provenance only after staging completes and preserves source bytes' {

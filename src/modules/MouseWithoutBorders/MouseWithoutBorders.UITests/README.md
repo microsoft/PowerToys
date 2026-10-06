@@ -24,6 +24,16 @@ infrastructure case is not full-suite evidence.
 | Payload | Same coherent self-contained Debug runtime for both endpoints; private ReadyToRun compilation does not change IL/MVID or bypass product checks |
 | Privileged boundary | Separate protected setup/cleanup; no feature enablement, reboot, GPO edit, or test-side elevation |
 
+Debug native binaries using the hybrid CRT import **`ucrtbased.dll`**, which is
+not an inbox dependency on a fresh Sandbox. CI takes this sidecar from the
+installed Windows SDK version pinned by `Cpp.Build.props`, verifies its native
+architecture and Microsoft signature, and fingerprints/copies it only into the
+private runtime stage. The original build outputs are not modified. Manual
+packaging can pass `-DebugUcrtPath` explicitly; a missing required debug UCRT is
+a packaging error, not a reason to wait longer for an already-exited Runner.
+This SDK debug dependency is internal test payload, not a Release/installer
+redistribution.
+
 The one-vCPU/4-GB generic `Constrained` profile is **not signed off for nested
 Sandbox**. The resource profiles above are the demonstrated pilot baselines,
 not measurements establishing the smallest possible configuration. Do not

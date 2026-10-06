@@ -11,7 +11,7 @@ $buildAst = [Management.Automation.Language.Parser]::ParseFile($buildPath, [ref]
 if ($parseErrors) { throw 'MWB CI preparation contains PowerShell parse errors.' }
 # Load definitions only: no downloads, native compiler execution, OS mutation, or UI.
 foreach ($name in @('Get-MwbCiCrossgen2', 'Invoke-MwbCiBuildCommand', 'Get-MwbCiRuntimeVersion',
-    'Get-MwbCiFileVersion', 'Get-MwbCiPreparationPaths')) {
+    'Get-MwbCiFileVersion', 'Get-MwbCiPreparationPaths', 'Get-MwbCiDebugUcrtPath', 'Get-MwbCiWindowsTargetVersion')) {
     $definition = $buildAst.Find({
         param($node)
         $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name
@@ -81,6 +81,65 @@ function Get-CiShortPathFixture {
     }
     finally {
         if ($null -ne $fileSystem) { $null = [Runtime.InteropServices.Marshal]::ReleaseComObject($fileSystem) }
+    }
+}
+
+Describe 'Pinned Windows SDK debug UCRT preparation' {
+    It 'reads the pinned version with or without the MSBuild namespace' -TestCases @(
+        @{ Namespace = '' }
+        @{ Namespace = ' xmlns="http://schemas.microsoft.com/developer/msbuild/2003"' }
+    ) {
+        param($Namespace)
+        [xml]$properties = "<Project$Namespace><PropertyGroup><WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion></PropertyGroup></Project>"
+        Get-MwbCiWindowsTargetVersion $properties | Should Be '10.0.26100.0'
+    }
+
+    It 'reads the actual contributor C++ property file rather than guessing a host SDK' {
+        [xml]$properties = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\Cpp.Build.props') -Raw
+        $version = Get-MwbCiWindowsTargetVersion $properties
+        $version | Should Match '^\d+\.\d+\.\d+\.\d+$'
+    }
+
+    It 'rejects missing or conflicting target versions' -TestCases @(
+        @{ Xml = '<Project/>' }
+        @{ Xml = '<Project><PropertyGroup><WindowsTargetPlatformVersion>latest</WindowsTargetPlatformVersion></PropertyGroup></Project>' }
+        @{ Xml = '<Project><PropertyGroup><WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion><WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion></PropertyGroup></Project>' }
+    ) {
+        param($Xml)
+        { Get-MwbCiWindowsTargetVersion ([xml]$Xml) } | Should Throw 'one pinned C++ Windows SDK'
+    }
+
+    It 'selects only the requested architecture and pinned SDK version' -TestCases @(
+        @{ Platform = 'x64' }
+        @{ Platform = 'arm64' }
+    ) {
+        param($Platform)
+        $root = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $file = Join-Path $root "bin\10.0.26100.0\$Platform\ucrt\ucrtbased.dll"
+        $null = New-Item -ItemType Directory -Path (Split-Path $file) -Force
+        Set-Content -LiteralPath $file -Value 'Nonexecutable path fixture'
+        Get-MwbCiDebugUcrtPath $root '10.0.26100.0' $Platform | Should Be $file
+    }
+
+    It 'fails closed for a missing SDK debug runtime' {
+        { Get-MwbCiDebugUcrtPath $TestDrive '10.0.26100.0' x64 } | Should Throw 'debug UCRT is missing'
+    }
+
+    It 'does not guess SDK versions or accept a relative SDK root' -TestCases @(
+        @{ Root = 'relative'; Version = '10.0.26100.0' }
+        @{ Root = 'C:\Windows'; Version = '..\other' }
+        @{ Root = 'C:\Windows'; Version = 'latest' }
+    ) {
+        param($Root, $Version)
+        { Get-MwbCiDebugUcrtPath $Root $Version x64 } | Should Throw 'explicit installed Windows SDK root'
+    }
+
+    It 'passes the pinned SDK sidecar only to private runtime preparation' {
+        $source = Get-Content -LiteralPath $buildPath -Raw
+        $source | Should Match 'Cpp.Build.props'
+        $source | Should Match '\$options.DebugUcrtPath = Get-MwbCiDebugUcrtPath'
+        $source | Should Match '-Platform \$Platform @options'
+        $source | Should Not Match 'Copy-Item.*\$product.*ucrtbased'
     }
 }
 
