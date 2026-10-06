@@ -609,7 +609,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             var pipeName = UniquePipeName();
             var target = new SettingsCommandTarget();
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var serverTask = RunSettingsServerAsync(pipeName, target, 1, timeout.Token);
+            var serverTask = RunSettingsServerAsync(pipeName, target, 1, timeout.Token, target.ShutdownReceived.Task);
             try
             {
                 using (var helper = await ConnectSettingsSyncHelperAsync(pipeName))
@@ -641,7 +641,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             }
         }
 
-        private static async Task RunSettingsServerAsync(string pipeName, object target, int connections, CancellationToken cancellationToken)
+        private static async Task RunSettingsServerAsync(string pipeName, object target, int connections, CancellationToken cancellationToken, Task notificationDelivery = null)
         {
             using var currentIdentity = WindowsIdentity.GetCurrent();
             for (var connection = 0; connection < connections; connection++)
@@ -650,6 +650,11 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
                 await server.WaitForConnectionAsync(cancellationToken);
                 using var serverRpc = JsonRpc.Attach(server, target);
                 await serverRpc.Completion.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                if (notificationDelivery != null)
+                {
+                    // Pipe EOF does not mean the queued notification handler has completed.
+                    await notificationDelivery.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+                }
             }
         }
 
@@ -876,6 +881,8 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
         {
             public ConcurrentQueue<string> Calls { get; } = new();
 
+            public TaskCompletionSource ShutdownReceived { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
             public string MachineName { get; private set; }
 
             public string SecurityKey { get; private set; }
@@ -909,6 +916,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests
             public void Shutdown()
             {
                 Calls.Enqueue(nameof(Shutdown));
+                ShutdownReceived.TrySetResult();
             }
         }
     }
