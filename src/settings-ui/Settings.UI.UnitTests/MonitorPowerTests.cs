@@ -69,21 +69,19 @@ public sealed class MonitorPowerTests
     }
 
     [TestMethod]
-    public void TopologyMapping_SelectsMappedPrimaryTargetFromSharedPrimarySource()
+    public void TopologyMapping_ChoosesPrimaryTargetDeterministicallyForMirroredDisplays()
     {
-        var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 1);
-        var second = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 2);
-        var third = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 3);
-        var deviceNames = new Dictionary<DisplayHelpers.DisplayTargetId, string>
+        var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 2 }, 2);
+        var second = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 1);
+        var names = new Dictionary<DisplayHelpers.DisplayTargetId, string>
         {
             [first] = @"\\.\DISPLAY2",
-            [third] = @"\\.\DISPLAY1",
+            [second] = @"\\.\DISPLAY1",
         };
 
-        var selected = DisplayHelpers.ChoosePrimaryTarget([first, second, third], deviceNames);
-
-        Assert.AreEqual(third, selected);
-        Assert.IsNull(DisplayHelpers.ChoosePrimaryTarget([], deviceNames));
+        Assert.AreEqual(second, DisplayHelpers.ChoosePrimaryTarget([first, second], names));
+        Assert.AreEqual(first, DisplayHelpers.ChoosePrimaryTarget([first], new Dictionary<DisplayHelpers.DisplayTargetId, string>()));
+        Assert.IsNull(DisplayHelpers.ChoosePrimaryTarget([], names));
     }
 
     [TestMethod]
@@ -129,11 +127,23 @@ public sealed class MonitorPowerTests
     [TestMethod]
     public void ControllerChord_ParsesTwoDistinctSupportedButtons()
     {
-        Assert.IsTrue(ControllerChord.TryParse("Guide + View", out var chord));
-        Assert.IsTrue(chord.IsPressed(0x0420));
-        Assert.IsFalse(chord.IsPressed(0x0400));
+        Assert.IsTrue(ControllerChord.TryParse("View + A", out var chord));
+        Assert.IsTrue(chord.IsPressed(0x1020));
+        Assert.IsFalse(chord.IsPressed(0x0020));
+        Assert.IsFalse(ControllerChord.TryParse("Guide + View", out _));
         Assert.IsFalse(ControllerChord.TryParse("Guide + Guide", out _));
         Assert.IsFalse(ControllerChord.TryParse("Guide + Unknown", out _));
+    }
+
+    [TestMethod]
+    public void ControllerChord_CapturesExactlyTwoSupportedButtons()
+    {
+        Assert.IsTrue(ControllerChord.TryCapture(0x1020, out var captured));
+        Assert.AreEqual("View + A", captured);
+        Assert.IsFalse(ControllerChord.TryCapture(0x0020, out _));
+        Assert.IsFalse(ControllerChord.TryCapture(0x1021, out _));
+        Assert.IsTrue(ControllerChord.TryCapture(0x1420, out captured));
+        Assert.AreEqual("View + A", captured);
     }
 
     [TestMethod]
@@ -143,6 +153,9 @@ public sealed class MonitorPowerTests
         Assert.AreEqual("Win + Shift + P", shortcut!.Text);
         Assert.IsTrue(shortcut.Win);
         Assert.IsTrue(shortcut.Shift);
+        Assert.IsTrue(KeyboardActivationShortcut.TryParse(false, true, false, true, 'P', out var hotkeyShortcut, out _));
+        Assert.AreEqual("Ctrl + Shift + P", hotkeyShortcut!.Text);
+        Assert.AreEqual(0x50, hotkeyShortcut.VirtualKey);
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("Win + P", out _, out _));
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("Alt + F4", out _, out _));
         Assert.IsFalse(KeyboardActivationShortcut.TryParse("Ctrl + Shift + Escape", out _, out _));

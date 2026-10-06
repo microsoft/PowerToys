@@ -11,7 +11,6 @@
     xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     AutomationProperties.LandmarkType="Main"
-    PreviewKeyDown="DisplayProfilesPage_PreviewKeyDown"
     mc:Ignorable="d">
 
     <local:NavigablePage.Resources>
@@ -50,14 +49,19 @@
 
         <DataTemplate x:Key="ProfileTemplate" x:DataType="vm:ProfileInfo">
             <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Margin="0,4" Padding="12">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,Auto,Auto">
                     <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" FontWeight="Medium" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="12,0,0,0">
+                    <Border Grid.Column="1" Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="10" Padding="8,3" Margin="12,0" Visibility="{x:Bind IsBuiltIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock x:Uid="DisplayProfiles_BuiltInBadge" FontSize="12" />
+                    </Border>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                         <Button Content="Apply" Click="ApplyProfile_Click" Style="{StaticResource AccentButtonStyle}" />
-                        <Button Content="Overwrite" Click="OverwriteProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
-                        <Button Content="Rename" Click="RenameProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
-                        <Button Content="Duplicate" Click="DuplicateProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
-                        <Button Content="Delete" Click="DeleteProfile_Click" Style="{StaticResource DefaultButtonStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" Visibility="{x:Bind IsBuiltIn, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                            <Button Content="Overwrite" Click="OverwriteProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
+                            <Button Content="Rename" Click="RenameProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
+                            <Button Content="Duplicate" Click="DuplicateProfile_Click" Style="{StaticResource DefaultButtonStyle}" />
+                            <Button Content="Delete" Click="DeleteProfile_Click" Style="{StaticResource DefaultButtonStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -70,7 +74,7 @@
                 <StackPanel Spacing="24">
                     <!-- Current Topology Section -->
                     <controls:SettingsGroup x:Uid="DisplayProfiles_CurrentTopology">
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_DisplayArrangement" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="8">
                                 <TextBlock x:Uid="DisplayProfiles_Preview_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 <Grid Height="296" AutomationProperties.Name="Display topology preview">
@@ -79,7 +83,7 @@
                                     </Border>
                                 </Grid>
                             </StackPanel>
-                        </tkcontrols:SettingsCard>
+                        </Border>
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
                             <StackPanel Spacing="12">
                                 <Grid ColumnDefinitions="*,Auto">
@@ -105,37 +109,6 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Topology Quick Actions -->
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_QuickTopology" HeaderIcon="{ui:FontIcon Glyph=&#xE74E;}">
-                            <StackPanel Spacing="12" Margin="0,8,0,0">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock x:Uid="DisplayProfiles_QuickTopology_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                                    <ProgressRing Grid.Column="1" Width="20" Height="20" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                </Grid>
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                                    <Button Click="{x:Bind ViewModel.SetTopologyPrimaryOnly}" Style="{StaticResource DefaultButtonStyle}" HorizontalContentAlignment="Left" Padding="16" MinHeight="72" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock x:Uid="DisplayProfiles_Topology_PrimaryOnly_Title" FontWeight="SemiBold" />
-                                            <TextBlock x:Uid="DisplayProfiles_Topology_PrimaryOnly_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Grid.Column="1" Click="{x:Bind ViewModel.SetTopologyAllDisplays}" Style="{StaticResource DefaultButtonStyle}" HorizontalContentAlignment="Left" Padding="16" MinHeight="72" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock x:Uid="DisplayProfiles_Topology_AllDisplays_Title" FontWeight="SemiBold" />
-                                            <TextBlock x:Uid="DisplayProfiles_Topology_AllDisplays_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Button>
-                                </Grid>
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
-
-                        <!-- Base Topology -->
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_BaseTopology" HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
-                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-                                <Button Content="Save as Base Topology" Click="{x:Bind ViewModel.SetCurrentAsBaseTopology}" Style="{StaticResource DefaultButtonStyle}" />
-                                <Button Content="Restore Base Topology" Click="RestoreBaseTopology_Click" Style="{StaticResource DefaultButtonStyle}" />
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>
 
                     <!-- Profiles Section -->
@@ -171,38 +144,29 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <TextBlock Text="Shortcut:" VerticalAlignment="Center" Margin="0,0,12,0" />
-                                <TextBox Grid.Column="1" Text="{x:Bind ViewModel.ControllerShortcut, Mode=TwoWay}" PlaceholderText="Guide + View" />
-                            </Grid>
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <TextBlock Text="{x:Bind ViewModel.ControllerShortcut, Mode=OneWay}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <Button Grid.Column="1" Content="{x:Bind ViewModel.ControllerCaptureButtonText, Mode=OneWay}" Click="CaptureControllerShortcut_Click" IsEnabled="{x:Bind ViewModel.IsCapturingControllerShortcut, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" Style="{StaticResource DefaultButtonStyle}" />
+                                </Grid>
+                                <TextBlock Text="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerTest" HeaderIcon="{ui:FontIcon Glyph=&#xE768;}">
-                            <StackPanel Spacing="8">
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <Button Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
-                                    <TextBlock Text="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                </StackPanel>
-                            </StackPanel>
+                            <Button Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
                         </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="DisplayProfiles_Diagnostics">
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_Diagnostics_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
-                            <StackPanel Spacing="8">
-                                <Button Content="Refresh diagnostics" Click="RefreshDiagnostics_Click" Style="{StaticResource DefaultButtonStyle}" HorizontalAlignment="Left" />
-                                <TextBox Text="{x:Bind ViewModel.DiagnosticsText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="96" AutomationProperties.Name="Monitor Power diagnostics" />
-                            </StackPanel>
+                            <Button x:Uid="DisplayProfiles_Diagnostics_OpenLog" Click="OpenDiagnosticsLog_Click" Style="{StaticResource DefaultButtonStyle}" />
                         </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>
 
                     <!-- Activation Shortcut Section -->
                     <controls:SettingsGroup x:Uid="DisplayProfiles_ActivationShortcut">
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                <TextBlock x:Uid="DisplayProfiles_ActivationShortcut_OpenSelector" Text="Open Selector:" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ActivationShortcut, Mode=OneWay}" VerticalAlignment="Center" FontFamily="Consolas" FontSize="14" FontWeight="SemiBold" />
-                                <Button x:Uid="DisplayProfiles_ActivationShortcut_CaptureButton" Grid.Column="2" Content="Capture shortcut" Click="CaptureActivationShortcut_Click" Style="{StaticResource DefaultButtonStyle}" />
-                            </Grid>
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" AllowDisable="True" HotkeySettings="{x:Bind ViewModel.ActivationHotkeySettings, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Description">
                             <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

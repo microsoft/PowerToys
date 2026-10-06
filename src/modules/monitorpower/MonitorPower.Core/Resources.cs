@@ -17,7 +17,6 @@ internal static class Resources
     internal static string activated_displays_format => Get(nameof(activated_displays_format));
     internal static string display_label => Get(nameof(display_label));
     internal static string display_state_restored => Get(nameof(display_state_restored));
-    internal static string error_display_targets_not_applied => Get(nameof(error_display_targets_not_applied));
     internal static string error_format => Get(nameof(error_format));
     internal static string error_no_active_monitors_remaining => Get(nameof(error_no_active_monitors_remaining));
     internal static string error_no_displays_connected => Get(nameof(error_no_displays_connected));

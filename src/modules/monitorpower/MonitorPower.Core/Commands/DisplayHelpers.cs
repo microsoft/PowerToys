@@ -304,10 +304,11 @@ internal static partial class DisplayHelpers
     private static Dictionary<DisplayTargetId, string>? _displayNameCache;
     private static DisplayTargetId[]? _cachedTargetOrder;
     private static Timer? _xboxPollTimer;
-    private static ControllerChord _controllerChord = new(0x0420);
+    private static ControllerChord _controllerChord = new(0x1020);
     private static bool _controllerChordWasPressed;
     private static int _controllerPollInProgress;
     private static int _slowControllerPollLogged;
+    private static int _lastConnectedControllerCount = -1;
 
     public static event Action? GuideViewComboPressed;
 
@@ -802,19 +803,12 @@ internal static partial class DisplayHelpers
         return SetTopology(DISPLAYCONFIG_TOPOLOGY_ID.Internal);
     }
 
-    public static string SetClone()
-    {
-        return SetTopology(DISPLAYCONFIG_TOPOLOGY_ID.Clone);
-    }
-
-    public static string SetExtend()
-    {
-        return SetTopology(DISPLAYCONFIG_TOPOLOGY_ID.Extend);
-    }
+    public static string SetAllDisplays()
+        => SetTopology(DISPLAYCONFIG_TOPOLOGY_ID.Extend);
 
     public static string SetPrimaryDisplayOnly(Action<string>? onProgress = null)
     {
-        var (paths, modes) = GetAllPathsWithModes();
+        var (paths, modes) = GetActivePaths();
         var primaryTargets = paths
             .Where(path => (path.flags & DISPLAYCONFIG_PATH_ACTIVE) != 0)
             .Where(path =>
@@ -837,7 +831,15 @@ internal static partial class DisplayHelpers
         }
 
         LogDiagnostic($"SetPrimaryDisplayOnly: selected target={primaryTarget.Value} from {primaryTargets.Length} primary-source target(s).");
-        return ApplyExactDisplayTargets([primaryTarget.Value], onProgress);
+        var result = ActivateDisplays([primaryTarget.Value], onProgress);
+        if (result.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var recoveryResult = RestoreState();
+            RetainEscRecoveryIfNeeded(recoveryResult);
+            return $"{result} Recovery: {recoveryResult}";
+        }
+
+        return result;
     }
 
     internal static DisplayTargetId? ChoosePrimaryTarget(
@@ -853,7 +855,9 @@ internal static partial class DisplayHelpers
         return distinctCandidates
             .OrderBy(target => deviceNames.ContainsKey(target) ? 0 : 1)
             .ThenBy(target => deviceNames.TryGetValue(target, out var deviceName) ? deviceName : string.Empty, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(target => target)
+            .ThenBy(target => target.AdapterId.LowPart)
+            .ThenBy(target => target.AdapterId.HighPart)
+            .ThenBy(target => target.TargetId)
             .First();
     }
 
@@ -872,80 +876,6 @@ internal static partial class DisplayHelpers
         }
 
         return (width, height);
-    }
-
-    private static string ApplyExactDisplayTargets(
-        IReadOnlyCollection<DisplayTargetId> targets,
-        Action<string>? onProgress)
-    {
-        var requested = targets.ToHashSet();
-        var allPaths = GetAllPaths(virtualModeAware: false);
-        var selectedPaths = allPaths
-            .Where(path => requested.Contains(new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id)))
-            .GroupBy(path => new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id))
-            .Select(group => group.OrderByDescending(path => (path.flags & DISPLAYCONFIG_PATH_ACTIVE) != 0).First())
-            .ToArray();
-
-        if (selectedPaths.Length != requested.Count)
-        {
-            LogDiagnostic($"ApplyExactDisplayTargets: found {selectedPaths.Length} of {requested.Count} requested path(s).");
-            return string.Format(Properties.Resources.error_format, Properties.Resources.error_no_matching_paths);
-        }
-
-        SaveSnapshot();
-        SaveState();
-        EnableEscRestore();
-
-        foreach (ref var path in selectedPaths.AsSpan())
-        {
-            path.sourceInfo.modeInfoIdx = 0xFFFFFFFF;
-            path.targetInfo.modeInfoIdx = 0xFFFFFFFF;
-        }
-
-        var flags = SDC_APPLY | SDC_SAVE_TO_DATABASE | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_ALLOW_CHANGES;
-        int error;
-        unsafe
-        {
-            fixed (DISPLAYCONFIG_PATH_INFO* selectedPtr = selectedPaths)
-            {
-                error = SetDisplayConfig((uint)selectedPaths.Length, selectedPtr, 0, null, flags);
-            }
-        }
-
-        if (error != 0)
-        {
-            flags = SDC_APPLY | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_ALLOW_CHANGES;
-            unsafe
-            {
-                fixed (DISPLAYCONFIG_PATH_INFO* selectedPtr = selectedPaths)
-                {
-                    error = SetDisplayConfig((uint)selectedPaths.Length, selectedPtr, 0, null, flags);
-                }
-            }
-        }
-
-        if (error != 0)
-        {
-            var recoveryResult = RestoreState();
-            RetainEscRecoveryIfNeeded(recoveryResult);
-            LogDiagnostic($"ApplyExactDisplayTargets: SetDisplayConfig failed error={error}; recovery='{recoveryResult}'.");
-            return string.Format(
-                Properties.Resources.error_format,
-                $"{GetWin32ErrorMessage(error)}. Recovery: {recoveryResult}");
-        }
-
-        if (!WaitForActiveTargets(targets.ToList(), onProgress: onProgress))
-        {
-            var recoveryResult = RestoreState();
-            RetainEscRecoveryIfNeeded(recoveryResult);
-            LogDiagnostic($"ApplyExactDisplayTargets: active targets did not match the requested set; recovery='{recoveryResult}'.");
-            return string.Format(
-                Properties.Resources.error_format,
-                $"{Properties.Resources.error_display_targets_not_applied}. Recovery: {recoveryResult}");
-        }
-
-        LogDiagnostic($"ApplyExactDisplayTargets: applied exact target set [{string.Join(",", targets)}].");
-        return string.Format(Properties.Resources.activated_displays_format, targets.Count);
     }
 
     private static void RetainEscRecoveryIfNeeded(string recoveryResult)
@@ -1012,7 +942,7 @@ internal static partial class DisplayHelpers
 
         if (!hasSavedState)
         {
-            return RestoreBaseTopology();
+            return Properties.Resources.no_saved_state;
         }
 
         if (snapshot.paths.Length == 0)
@@ -1129,14 +1059,28 @@ internal static partial class DisplayHelpers
     private static bool IsKeyDown(int virtualKey) => GetAsyncKeyState((short)virtualKey) < 0;
 
     public static void EnableXboxGuideViewCombo()
-        => EnableControllerChord("Guide + View");
+        => EnableControllerChord("View + A");
 
     public static bool EnableControllerChord(string chord)
     {
         if (!ControllerChord.TryParse(chord, out var parsedChord))
         {
-            LogDiagnostic($"Controller listener was not started: unsupported chord '{chord}'.");
-            return false;
+            if (string.Equals(chord, "Guide + View", StringComparison.OrdinalIgnoreCase))
+            {
+                chord = "View + A";
+                if (!ControllerChord.TryParse(chord, out parsedChord))
+                {
+                    LogDiagnostic("The legacy controller chord could not be mapped to the supported default.");
+                    return false;
+                }
+
+                LogDiagnostic("Migrated the legacy Guide + View controller chord to View + A because XInput does not expose Guide reliably.");
+            }
+            else
+            {
+                LogDiagnostic($"Controller listener was not started: unsupported chord '{chord}'.");
+                return false;
+            }
         }
 
         lock (StateLock)
@@ -1157,7 +1101,7 @@ internal static partial class DisplayHelpers
                 100);
         }
 
-        LogDiagnostic($"Controller listener started for chord '{chord}' with a 100 ms poll interval.");
+        LogDiagnostic($"Controller listener started for chord '{chord}' with a 100 ms poll interval. The XInput Guide button is not supported because Windows may reserve it.");
         return true;
     }
 
@@ -1188,12 +1132,14 @@ internal static partial class DisplayHelpers
         try
         {
             var chordDown = false;
+            var connectedControllers = 0;
             for (int userIndex = 0; userIndex < XinputMaxControllers; userIndex++)
             {
                 var state = default(XINPUT_STATE);
                 ushort buttons = 0;
                 if (XInputGetState(userIndex, ref state) == 0)
                 {
+                    connectedControllers++;
                     buttons = state.Gamepad.wButtons;
                 }
 
@@ -1201,10 +1147,17 @@ internal static partial class DisplayHelpers
                 PreviousControllerButtons[userIndex] = buttons;
                 if (pressedButtons != 0)
                 {
+                    LogDiagnostic($"Controller {userIndex + 1} button press detected: {ControllerChord.DescribeButtons(pressedButtons)} (0x{pressedButtons:X4}).");
                     ControllerButtonsPressed?.Invoke(pressedButtons);
                 }
 
                 chordDown |= _controllerChord.IsPressed(buttons);
+            }
+
+            if (connectedControllers != _lastConnectedControllerCount)
+            {
+                _lastConnectedControllerCount = connectedControllers;
+                LogDiagnostic($"XInput controller connection count changed: {connectedControllers}.");
             }
 
             if (chordDown && !_controllerChordWasPressed)
@@ -1570,8 +1523,9 @@ internal static partial class DisplayHelpers
 
     private static readonly string SnapshotPath = System.IO.Path.Combine(SnapshotDir, "snapshot.json");
 
-    private static readonly string BaseTopologyPath = System.IO.Path.Combine(SnapshotDir, "base-topology.json");
     private static readonly string DiagnosticsPath = System.IO.Path.Combine(SnapshotDir, "diagnostics.log");
+
+    public static string DiagnosticsLogPath => DiagnosticsPath;
 
     private static void LogDiagnostic(string message)
     {
@@ -1586,21 +1540,8 @@ internal static partial class DisplayHelpers
         }
     }
 
-    public static string ReadDiagnostics()
-    {
-        if (!File.Exists(DiagnosticsPath))
-        {
-            return "No Monitor Power diagnostics have been recorded.";
-        }
-
-        return File.ReadAllText(DiagnosticsPath);
-    }
-
     internal static void SaveSnapshot()
         => SaveTopologySnapshot(SnapshotPath);
-
-    public static void SaveBaseTopology()
-        => SaveTopologySnapshot(BaseTopologyPath);
 
     private static void SaveTopologySnapshot(string path)
     {
@@ -1614,75 +1555,6 @@ internal static partial class DisplayHelpers
 
         Directory.CreateDirectory(SnapshotDir);
         File.WriteAllText(path, JsonSerializer.Serialize(new { targets }));
-    }
-
-    public static string RestoreBaseTopology()
-    {
-        if (!File.Exists(BaseTopologyPath))
-        {
-            return "No base display topology has been saved.";
-        }
-
-        var saved = JsonSerializer.Deserialize<SnapshotDocument>(
-            File.ReadAllText(BaseTopologyPath));
-        if (saved?.Targets is not { Count: > 0 })
-        {
-            return "The saved base topology is empty or invalid.";
-        }
-
-        var currentTargets = BuildTargetToDeviceNameMap();
-        var remappedLayout = new List<SnapshotTarget>();
-        foreach (var entry in saved.Targets)
-        {
-            var savedTarget = new DisplayTargetId(
-                new LUID { LowPart = entry.LowPart, HighPart = entry.HighPart },
-                entry.TargetId);
-            var candidates = currentTargets.Keys
-                .Where(target => target.Equals(savedTarget) || target.TargetId == savedTarget.TargetId)
-                .Take(2)
-                .ToArray();
-            if (candidates.Length != 1)
-            {
-                continue;
-            }
-
-            entry.LowPart = candidates[0].AdapterId.LowPart;
-            entry.HighPart = candidates[0].AdapterId.HighPart;
-            entry.DeviceName = currentTargets[candidates[0]];
-            remappedLayout.Add(entry);
-        }
-
-        if (remappedLayout.Count == 0)
-        {
-            return "None of the displays from the saved base topology are available.";
-        }
-
-        var targets = remappedLayout
-            .Select(entry => new DisplayTargetId(
-                new LUID { LowPart = entry.LowPart, HighPart = entry.HighPart },
-                entry.TargetId))
-            .ToList();
-        var activationResult = ActivateDisplays(targets, saveRecoverySnapshot: false);
-        if (activationResult.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return activationResult;
-        }
-
-        if (remappedLayout.Count > 1 && !TryValidateLayout(remappedLayout, targets, out var validationError))
-        {
-            return $"The saved base topology is invalid: {validationError}";
-        }
-
-        var layoutResult = ApplyLayout(remappedLayout);
-        return layoutResult == DISP_CHANGE_SUCCESSFUL
-            ? "Base display topology restored."
-            : $"Could not restore the saved display layout: {GetWin32ErrorMessage(layoutResult)}";
-    }
-
-    private sealed class SnapshotDocument
-    {
-        [JsonPropertyName("targets")]
-        public List<SnapshotTarget> Targets { get; set; } = [];
     }
 
     internal sealed class SnapshotTarget

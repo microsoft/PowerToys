@@ -6562,7 +6562,7 @@ The break timer font matches the text font.</value>
   </data>
   <data name="CmdPal_MonitorPower.Header" xml:space="preserve"><value>Monitor Power</value></data>
   <data name="CmdPal_MonitorPower_XboxController.Header" xml:space="preserve"><value>Open Monitor Power with an Xbox controller</value></data>
-  <data name="CmdPal_MonitorPower_XboxController.Description" xml:space="preserve"><value>Press Guide + View to open Monitor Power and choose a display profile.</value></data>
+  <data name="CmdPal_MonitorPower_XboxController.Description" xml:space="preserve"><value>Press View + A to open Monitor Power and choose a display profile.</value></data>
   <data name="CmdPal_MonitorPower_Test.Header" xml:space="preserve"><value>Test Monitor Power</value></data>
   <data name="CmdPal_MonitorPower_Test.Description" xml:space="preserve"><value>Open Monitor Power in Command Palette.</value></data>
   <data name="DisplayProfiles.ModuleTitle" xml:space="preserve"><value>Monitor Power</value></data>
@@ -6572,28 +6572,26 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ControllerEnabled.Header" xml:space="preserve"><value>Enable controller shortcut</value></data>
   <data name="DisplayProfiles_ControllerEnabled.Description" xml:space="preserve"><value>Use an Xbox controller to open the display profile selector.</value></data>
   <data name="DisplayProfiles_ControllerShortcut.Header" xml:space="preserve"><value>Shortcut</value></data>
-  <data name="DisplayProfiles_ControllerShortcut.Description" xml:space="preserve"><value>Press these buttons together to open Display Profiles.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut.Description" xml:space="preserve"><value>Hold two supported controller buttons together to choose the activation chord. The Xbox/Guide button may be reserved by Windows.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Capture" xml:space="preserve"><value>Capture chord</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Listening" xml:space="preserve"><value>Listening...</value></data>
   <data name="DisplayProfiles_ControllerTest.Header" xml:space="preserve"><value>Test the shortcut</value></data>
-  <data name="DisplayProfiles_ControllerTest.Description" xml:space="preserve"><value>With Command Palette running, press Guide + View. Input details are recorded while diagnosing your controller.</value></data>
+  <data name="DisplayProfiles_ControllerTest.Description" xml:space="preserve"><value>Check whether an XInput controller is connected and whether its buttons are readable.</value></data>
   <data name="DisplayProfiles_ControllerTest_Status.Text" xml:space="preserve"><value>Controller input diagnostics are active.</value></data>
 <data name="Shell_DisplayProfiles.Content" xml:space="preserve"><value>Monitor Power</value></data>
   <data name="DisplayProfiles_CurrentTopology.Header" xml:space="preserve"><value>Current Display Topology</value></data>
-<data name="DisplayProfiles_DisplayArrangement.Header" xml:space="preserve"><value>Display arrangement</value></data>
 <data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Displays are shown in their desktop positions. Mirrored outputs share a tile.</value></data>
 <data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
 <data name="DisplayProfiles_RefreshDisplays.Content" xml:space="preserve"><value>Refresh</value></data>
 <data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Select displays to include in a saved profile. Each row shows its connection type, resolution, orientation, and status.</value></data>
 <data name="DisplayProfiles_EmptyState.Text" xml:space="preserve"><value>No displays are available. Connect or enable a display, then refresh.</value></data>
 <data name="DisplayProfiles_PrimaryBadge.Text" xml:space="preserve"><value>Primary</value></data>
-<data name="DisplayProfiles_QuickTopology.Header" xml:space="preserve"><value>Quick Topology</value></data>
-<data name="DisplayProfiles_QuickTopology_Description.Text" xml:space="preserve"><value>Switch between a focused single-screen setup and your full extended desktop. Saved profiles remain customizable.</value></data>
-<data name="DisplayProfiles_Topology_PrimaryOnly_Title.Text" xml:space="preserve"><value>Primary display only</value></data>
-<data name="DisplayProfiles_Topology_PrimaryOnly_Description.Text" xml:space="preserve"><value>Turn off the other displays while keeping your primary display active.</value></data>
-<data name="DisplayProfiles_Topology_AllDisplays_Title.Text" xml:space="preserve"><value>Enable all displays</value></data>
-<data name="DisplayProfiles_Topology_AllDisplays_Description.Text" xml:space="preserve"><value>Extend your desktop across all connected displays.</value></data>
-  <data name="DisplayProfiles_BaseTopology.Header" xml:space="preserve"><value>Base Topology</value></data>
-  <data name="DisplayProfiles_SaveBaseTopology.Header" xml:space="preserve"><value>Save as Base</value></data>
-  <data name="DisplayProfiles_RestoreBaseTopology.Header" xml:space="preserve"><value>Restore Base (ESC)</value></data>
+  <data name="DisplayProfiles_BuiltInBadge.Text" xml:space="preserve"><value>Built-in</value></data>
+  <data name="DisplayProfiles_BuiltIn_AllDisplays" xml:space="preserve"><value>All displays</value></data>
+  <data name="DisplayProfiles_BuiltIn_PrimaryOnly" xml:space="preserve"><value>Primary display only</value></data>
+  <data name="DisplayProfiles_Diagnostics.Header" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DisplayProfiles_Diagnostics_Header.Header" xml:space="preserve"><value>Diagnostics log</value></data>
+  <data name="DisplayProfiles_Diagnostics_OpenLog.Content" xml:space="preserve"><value>Open diagnostics log</value></data>
   <data name="DisplayProfiles_Profiles.Header" xml:space="preserve"><value>Display Profiles</value></data>
   <data name="DisplayProfiles_Profiles_Header.Header" xml:space="preserve"><value>Saved Profiles</value></data>
   <data name="DisplayProfiles_NewProfileName.Header" xml:space="preserve"><value>Profile Name</value></data>
@@ -6602,11 +6600,6 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
-  <data name="DisplayProfiles_ActivationShortcut_OpenSelector.Text" xml:space="preserve"><value>Open Selector:</value></data>
-  <data name="DisplayProfiles_ActivationShortcut_CaptureButton.Content" xml:space="preserve"><value>Capture shortcut</value></data>
-  <data name="DisplayProfiles_ActivationShortcut_CapturePrompt" xml:space="preserve"><value>Press a modifier and key combination. Press Escape to cancel.</value></data>
-  <data name="DisplayProfiles_ActivationShortcut_CaptureCancelled" xml:space="preserve"><value>Shortcut capture cancelled.</value></data>
-  <data name="DisplayProfiles_ActivationShortcut_ModifierRequired" xml:space="preserve"><value>The shortcut needs at least one modifier key.</value></data>
   <data name="CmdPal_Launch.Header" xml:space="preserve">
     <value>Open Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>

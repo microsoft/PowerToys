@@ -17,7 +17,7 @@ namespace MonitorPower.Runtime;
 public sealed partial class App : Application
 {
     private const string DefaultActivationShortcut = "Win + Shift + P";
-    private const string DefaultControllerShortcut = "Guide + View";
+    private const string DefaultControllerShortcut = "View + A";
     private readonly string _settingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MonitorPower",
@@ -151,7 +151,12 @@ public sealed partial class App : Application
             if (!string.Equals(activationShortcut, _registeredActivationShortcut, StringComparison.Ordinal))
             {
                 _registeredActivationShortcut = activationShortcut;
-                if (!DisplayHelpers.RegisterActivationShortcut(activationShortcut))
+                if (string.IsNullOrWhiteSpace(activationShortcut))
+                {
+                    DisplayHelpers.UnregisterActivationShortcut();
+                    RuntimeLog.Info("Activation shortcut disabled.");
+                }
+                else if (!DisplayHelpers.RegisterActivationShortcut(activationShortcut))
                 {
                     DisplayHelpers.UnregisterActivationShortcut();
                     RuntimeLog.Warning($"Activation shortcut registration rejected: '{activationShortcut}'.");
@@ -221,17 +226,17 @@ public sealed partial class App : Application
         if (_selectorWindow != null)
         {
             RuntimeLog.Info("Existing profile selector activated.");
+            if (!_selectorWindow.AppWindow.IsVisible)
+            {
+                _selectorWindow.PrepareForActivation();
+            }
+
             _selectorWindow.Activate();
             return;
         }
 
         RuntimeLog.Info("Creating profile selector window.");
         _selectorWindow = new MainWindow();
-        _selectorWindow.Closed += (_, _) =>
-        {
-            RuntimeLog.Info("Profile selector window closed.");
-            _selectorWindow = null;
-        };
         _selectorWindow.Activate();
     }
 

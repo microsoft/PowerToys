@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using MonitorPower;
@@ -20,13 +21,25 @@ public sealed partial class MainWindow : Window
     private const ushort ControllerBButton = 0x2000;
     private const ushort ControllerDpadUp = 0x0001;
     private const ushort ControllerDpadDown = 0x0002;
-    private readonly string _topologyAtOpen;
+    private string _topologyAtOpen = string.Empty;
 
     public MainWindow()
     {
         var startupTimer = Stopwatch.StartNew();
         RuntimeLog.Info("Profile selector window initialization started.");
         InitializeComponent();
+        var profileCount = InitializeSelectorState();
+        AppWindow.Closing += AppWindow_Closing;
+        RuntimeLog.Info($"Profile selector initialized in {startupTimer.ElapsedMilliseconds} ms with {profileCount} saved profile(s).");
+    }
+
+    public void PrepareForActivation()
+    {
+        InitializeSelectorState();
+    }
+
+    private int InitializeSelectorState()
+    {
         var topologyTimer = Stopwatch.StartNew();
         _topologyAtOpen = GetActiveTopologySignature();
         RuntimeLog.Info($"Selector topology snapshot captured in {topologyTimer.ElapsedMilliseconds} ms.");
@@ -42,7 +55,14 @@ public sealed partial class MainWindow : Window
         StatusText.Text = profiles.Count == 0
             ? "No saved profiles. Save a profile in Monitor Power Settings first."
             : "Use the arrow keys or controller D-pad to select a profile. Press A or Apply to confirm; B or Cancel to close.";
-        RuntimeLog.Info($"Profile selector initialized in {startupTimer.ElapsedMilliseconds} ms with {profiles.Count} saved profile(s).");
+        return profiles.Count;
+    }
+
+    private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        args.Cancel = true;
+        AppWindow.Hide();
+        RuntimeLog.Info("Profile selector dismissed and hidden; the global Monitor Power runtime remains active.");
     }
 
     private async void Apply_Click(object sender, RoutedEventArgs e)

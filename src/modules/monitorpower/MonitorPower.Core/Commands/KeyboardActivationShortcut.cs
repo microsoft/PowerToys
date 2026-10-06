@@ -76,10 +76,33 @@ internal sealed record KeyboardActivationShortcut(
             return false;
         }
 
-        bool win = modifiers.Contains("win");
-        bool control = modifiers.Contains("ctrl");
-        bool alt = modifiers.Contains("alt");
-        bool shift = modifiers.Contains("shift");
+        return TryParse(
+            modifiers.Contains("win"),
+            modifiers.Contains("ctrl"),
+            modifiers.Contains("alt"),
+            modifiers.Contains("shift"),
+            virtualKey,
+            out shortcut,
+            out error);
+    }
+
+    public static bool TryParse(
+        bool win,
+        bool control,
+        bool alt,
+        bool shift,
+        int virtualKey,
+        out KeyboardActivationShortcut? shortcut,
+        out string error)
+    {
+        shortcut = null;
+        error = string.Empty;
+        if (!TryGetKeyName(virtualKey, out var keyName))
+        {
+            error = $"Unsupported shortcut key code '{virtualKey}'.";
+            return false;
+        }
+
         if (IsReservedCombination(win, control, alt, shift, keyName))
         {
             error = "This shortcut is reserved by Windows.";
@@ -117,6 +140,33 @@ internal sealed record KeyboardActivationShortcut(
             alt,
             shift);
         return true;
+    }
+
+    private static bool TryGetKeyName(int virtualKey, out string keyName)
+    {
+        if (virtualKey is >= 'A' and <= 'Z' or >= '0' and <= '9')
+        {
+            keyName = ((char)virtualKey).ToString(CultureInfo.InvariantCulture);
+            return true;
+        }
+
+        if (virtualKey is >= 0x70 and <= 0x87)
+        {
+            keyName = $"F{virtualKey - 0x70 + 1}";
+            return true;
+        }
+
+        foreach (var candidate in NamedKeys)
+        {
+            if (candidate.Value == virtualKey)
+            {
+                keyName = candidate.Key;
+                return true;
+            }
+        }
+
+        keyName = string.Empty;
+        return false;
     }
 
     private static bool TryGetVirtualKey(string key, out int virtualKey, out string displayName)
