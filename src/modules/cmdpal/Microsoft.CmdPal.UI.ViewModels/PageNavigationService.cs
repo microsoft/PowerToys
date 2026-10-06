@@ -14,12 +14,12 @@ internal sealed class PageNavigationService(
     public AppExtensionHost ResolveHost(PerformCommandMessage message, PageViewModel? currentPage) =>
         appHostService.GetHostForCommand(
             message.CommandContext,
-            message.Context?.ExtensionHost ?? message.SourceExtensionHost ?? currentPage?.ExtensionHost);
+            message.Context?.ExtensionHost ?? currentPage?.ExtensionHost);
 
     public ICommandProviderContext ResolveProviderContext(PerformCommandMessage message, PageViewModel? currentPage) =>
         appHostService.GetProviderContextForCommand(
             message.CommandContext,
-            message.Context?.ProviderContext ?? message.SourceProviderContext ?? currentPage?.ProviderContext);
+            message.Context?.ProviderContext ?? currentPage?.ProviderContext);
 
     public PageViewModel? TryPreparePage(
         IPage page,
@@ -43,6 +43,7 @@ internal sealed class PageNavigationService(
         {
             if (viewModel is not ListViewModel listViewModel)
             {
+                viewModel.SafeCleanup();
                 throw new NotSupportedException("List page launch options can only be applied to list pages.");
             }
 

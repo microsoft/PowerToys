@@ -17,7 +17,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
@@ -136,8 +135,6 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
         _pageFlyoutController.Activate();
 
-        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
-        ItemContextMenuFlyout.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
         ItemContextMenuFlyout.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
@@ -157,7 +154,6 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         _pageFlyoutController.Deactivate();
         _menuHost.Close();
 
-        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
@@ -468,14 +464,11 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
 
-    // Position (in window coords) of the dock item whose context menu is currently
-    // open, used to anchor the cmdpal palette when a Page command is invoked from
-    // the context menu. Null when the open context menu is not anchored to a band.
-    private Point? _bandContextMenuPalettePos;
+    // The dock item whose context menu is open. Page commands from that menu open at the
+    // item, and confirmations surface the palette there. Null for the dock's own menu.
+    private BandMenuInvocation? _bandContextMenu;
 
-    private FrameworkElement? _bandContextMenuTarget;
-
-    private DockItemViewModel? _bandContextMenuItem;
+    private sealed record BandMenuInvocation(FrameworkElement Target, DockItemViewModel Item, Point Position);
 
     private void BandItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
@@ -543,9 +536,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             }
 
             // Anchor page commands and confirmation dialogs to the invoking dock item.
-            _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
-            _bandContextMenuTarget = dockItem;
-            _bandContextMenuItem = item;
+            _bandContextMenu = new(dockItem, item, GetDockItemCenter(dockItem));
             return new ContextMenuRequest(item)
             {
                 Anchor = GetDefaultContextMenuAnchor() with { Element = dockItem },
@@ -581,40 +572,37 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void InvokeItem(CommandItemViewModel item, FrameworkElement anchor, Point pos)
     {
-        var command = item.Command;
-        var hwnd = OwnerHwnd;
         try
         {
             var message = DockItemActions.CreateInvocationMessage(item);
-            AddSourceContext(message, item);
-
-            if (command.Model.Unsafe is IPage)
+            if (item.Command.IsPage)
             {
-                var result = _pageFlyoutController.Open(message, anchor, pos);
-                if (result == DockPageFlyoutController.RequestResult.Started)
-                {
-                    WeakReferenceMessenger.Default.Send(message);
-                }
-                else if (result == DockPageFlyoutController.RequestResult.Failed)
-                {
-                    _pageFlyoutController.PreparePaletteFallback(message, pos);
-                    WeakReferenceMessenger.Default.Send(message);
-                }
+                _pageFlyoutController.OpenPage(message, anchor, pos);
             }
             else
             {
-                message.OnBeforeShowConfirmation = () =>
-                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
-                WeakReferenceMessenger.Default.Send(message);
-                if (DockItemActions.ShouldShowPalette(command))
-                {
-                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
-                }
+                SendCommand(message, item.Command, pos);
             }
         }
         catch (COMException e)
         {
             Logger.LogError("Error invoking dock command", e);
+        }
+    }
+
+    /// <summary>
+    /// Sends a command that is not a page. Confirmations, and commands that need the
+    /// palette, surface the palette at the dock item.
+    /// </summary>
+    private void SendCommand(PerformCommandMessage message, CommandViewModel command, Point pos)
+    {
+        var hwnd = OwnerHwnd;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+        WeakReferenceMessenger.Default.Send(message);
+        if (DockItemActions.ShouldShowPalette(command))
+        {
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
         }
     }
 
@@ -626,75 +614,35 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
             borderPos.Y + (dockItem.ActualHeight / 2));
     }
 
-    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    private void ContextMenu_CommandInvoking(object? sender, CommandInvokingEventArgs e)
     {
-        if (_bandContextMenuPalettePos is Point pos &&
-            command.Command.Model.Unsafe is not IPage &&
-            DockItemActions.ShouldShowPalette(command.Command))
-        {
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
-        }
-
-        ClearBandContextMenuInvocation();
-    }
-
-    private void ClearBandContextMenuInvocation()
-    {
-        _bandContextMenuPalettePos = null;
-        _bandContextMenuTarget = null;
-        _bandContextMenuItem = null;
-    }
-
-    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
-    {
-        // The context menu is about to dispatch a command. If it was opened
-        // from a dock band, attach a callback so that an invokable command
-        // whose result is a Confirm surfaces the cmdpal window anchored at the
-        // dock item before the confirmation dialog appears.
-        var pos = _bandContextMenuPalettePos;
-        var target = _bandContextMenuTarget;
-        var item = _bandContextMenuItem;
-        if (pos is null || target is null || item is null)
+        // Commands from a dock band's menu run as if the band item were invoked directly.
+        // The dock's own menu has no band, so its commands are sent unchanged.
+        if (_bandContextMenu is not { } invocation)
         {
             return;
         }
 
-        AddSourceContext(message, item);
-        if (message.Command.Unsafe is IPage)
-        {
-            _menuHost.Close();
+        _bandContextMenu = null;
+        e.Handled = true;
 
-            var result = _pageFlyoutController.Open(message, target, pos.Value);
-            if (result == DockPageFlyoutController.RequestResult.Deferred)
+        var message = DockItemActions.WithOwnerContext(e.Message, e.Command);
+        message = DockItemActions.WithOwnerContext(message, invocation.Item);
+        try
+        {
+            if (e.Command.Command.IsPage)
             {
-                message.CancelSend();
-                ClearBandContextMenuInvocation();
+                _menuHost.Close();
+                _pageFlyoutController.OpenPage(message, invocation.Target, invocation.Position);
             }
-            else if (result == DockPageFlyoutController.RequestResult.Failed)
+            else
             {
-                _pageFlyoutController.PreparePaletteFallback(message, pos.Value);
+                SendCommand(message, e.Command.Command, invocation.Position);
             }
-
-            return;
         }
-
-        var hwnd = OwnerHwnd;
-        var capturedPos = pos.Value;
-        message.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
-    }
-
-    private static void AddSourceContext(PerformCommandMessage message, CommandItemViewModel item)
-    {
-        if (!item.PageContext.TryGetTarget(out var pageContext))
+        catch (COMException ex)
         {
-            return;
-        }
-
-        message.SourceProviderContext = pageContext.ProviderContext;
-        if (pageContext.ProviderContext is CommandProviderWrapper provider)
-        {
-            message.SourceExtensionHost = provider.ExtensionHost;
+            Logger.LogError("Error invoking dock context command", ex);
         }
     }
 
@@ -708,9 +656,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
         // This context menu is for the dock itself (not a band), so the palette
         // should not be opened on invocation.
-        _bandContextMenuPalettePos = null;
-        _bandContextMenuTarget = null;
-        _bandContextMenuItem = null;
+        _bandContextMenu = null;
 
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.CanOpenContextMenu)
@@ -1124,7 +1070,6 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         Loaded -= DockControl_Loaded;
         Unloaded -= DockControl_Unloaded;
         _menuHost.Close();
-        ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);

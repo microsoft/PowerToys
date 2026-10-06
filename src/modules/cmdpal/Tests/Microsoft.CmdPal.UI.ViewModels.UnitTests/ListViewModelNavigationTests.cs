@@ -1073,9 +1073,6 @@ public sealed partial class ListViewModelNavigationTests
         var commandBars = 0;
         var details = 0;
         var suggestions = 0;
-        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs args) => Interlocked.Increment(ref commandBars);
-        void OnDetailsChanged(object? sender, PageDetailsChangedEventArgs args) => Interlocked.Increment(ref details);
-        void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs args) => Interlocked.Increment(ref suggestions);
 
         try
         {

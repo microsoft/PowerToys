@@ -15,13 +15,30 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.UnitTests;
 
 [TestClass]
-public class DockItemActionsTests
+public partial class DockItemActionsTests
 {
     private sealed class TestPageContext : IPageContext
     {
         public TaskScheduler Scheduler => TaskScheduler.Default;
 
         public ICommandProviderContext ProviderContext => CommandProviderContext.Empty;
+
+        public void ShowException(Exception ex, string? extensionHint = null) =>
+            throw new AssertFailedException($"Unexpected exception from view model: {ex}");
+    }
+
+    private sealed partial class TestAppExtensionHost : AppExtensionHost
+    {
+        public override string? GetExtensionDisplayName() => "Test Host";
+    }
+
+    private sealed class OwnedPageContext(AppExtensionHost host, ICommandProviderContext provider) : IPageContext, ICommandContextSource
+    {
+        public TaskScheduler Scheduler => TaskScheduler.Default;
+
+        public ICommandProviderContext ProviderContext => provider;
+
+        public AppExtensionHost? ExtensionHost => host;
 
         public void ShowException(Exception ex, string? extensionHint = null) =>
             throw new AssertFailedException($"Unexpected exception from view model: {ex}");
@@ -62,6 +79,26 @@ public class DockItemActionsTests
         Assert.IsNull(message.CommandContext, "Direct dock activation must not change the sender or enter home-page history.");
         Assert.IsFalse(message.WithAnimation);
         Assert.IsTrue(message.TransientPage);
+    }
+
+    [TestMethod]
+    public void CreateInvocationMessage_RunsWithTheOwningProviderButNoSourcePage()
+    {
+        var host = new TestAppExtensionHost();
+        var provider = Mock.Of<ICommandProviderContext>();
+        var owner = new OwnedPageContext(host, provider);
+        _item = new DockItemViewModel(new(new ListItem(new NoOpCommand())), new(owner), true, true, DefaultContextMenuFactory.Instance);
+        _item.SlowInitializeProperties();
+
+        var message = DockItemActions.CreateInvocationMessage(_item);
+
+        Assert.IsNotNull(message.Context);
+        Assert.IsNull(message.Context.Page);
+        Assert.AreSame(host, message.Context.ExtensionHost);
+        Assert.AreSame(provider, message.Context.ProviderContext);
+        Assert.IsNull(message.CommandContext);
+        Assert.IsNull(message.DockRoute);
+        GC.KeepAlive(owner);
     }
 
     [TestMethod]

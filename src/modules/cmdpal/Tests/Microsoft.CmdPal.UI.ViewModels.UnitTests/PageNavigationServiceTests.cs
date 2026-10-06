@@ -15,11 +15,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public sealed partial class PageNavigationServiceTests
 {
-    private sealed partial class TestAppExtensionHost : AppExtensionHost
-    {
-        public override string? GetExtensionDisplayName() => "Test Host";
-    }
-
     private sealed partial class TestPageViewModel : PageViewModel
     {
         private readonly Action _initialize;
@@ -58,14 +53,6 @@ public sealed partial class PageNavigationServiceTests
         {
             viewModel.SafeCleanup();
         }
-    }
-
-    [TestMethod]
-    public void TryPreparePage_UnsupportedPage_ReturnsNull()
-    {
-        var service = new PageNavigationService(Mock.Of<IPageViewModelFactoryService>(), Mock.Of<IAppHostService>());
-
-        Assert.IsNull(service.TryPreparePage(new Page(), false, new TestAppExtensionHost(), CommandProviderContext.Empty, null));
     }
 
     [TestMethod]

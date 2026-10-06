@@ -39,7 +39,7 @@ public class ItemActionControllerTests
     public void Activation_IsLeftToThePageOwner(VirtualKeyModifiers modifiers, bool hasContext)
     {
         _context = hasContext ? Mock.Of<ICommandBarContext>() : null;
-        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("Page activation must retain its existing invocation path."));
+        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("Enter belongs to the page owner; the controller must not invoke a command."));
         using var controller = CreateController();
 
         Assert.IsFalse(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));

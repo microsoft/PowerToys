@@ -578,7 +578,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     public ListViewModel? ActiveListViewModel
     {
         get => _activeListViewModel;
-        internal set
+        private set
         {
             if (ReferenceEquals(_activeListViewModel, value))
             {

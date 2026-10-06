@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -20,23 +21,22 @@ using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
+/// <summary>
+/// Shows dock pages in a flyout. Each flyout session owns one
+/// <see cref="DockPageNavigationViewModel"/> and a matching <see cref="DockCommandRoute"/>.
+/// Commands sent by its pages carry the route; this controller navigates page commands
+/// and forwards other commands to the shell, routing their results back to the flyout.
+/// </summary>
 internal sealed partial class DockPageFlyoutController :
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
     IDisposable
 {
-    internal enum RequestResult
-    {
-        Started,
-        Deferred,
-        Failed,
-    }
+    private sealed record PageRequest(PerformCommandMessage Message, FrameworkElement Anchor, Point Position);
 
-    private sealed record PendingRequest(
-        PerformCommandMessage Message,
-        FrameworkElement Anchor,
-        Point Position,
-        DockCommandRoute Route);
+    // Where the latest flyout opened. Kept after it closes, so a confirmation that arrives
+    // late still surfaces the palette at the right dock item.
+    private sealed record ShownFlyout(DockCommandRoute Route, Point Position);
 
     private readonly Flyout _flyout;
     private readonly DispatcherQueue _dispatcherQueue;
@@ -49,8 +49,9 @@ internal sealed partial class DockPageFlyoutController :
     private readonly Action _restoreFocus;
     private DockPageNavigationViewModel? _navigation;
     private DockPageControl? _control;
-    private PendingRequest? _pendingRequest;
-    private Point? _palettePosition;
+    private PageRequest? _openRequest;
+    private PageRequest? _pendingRequest;
+    private ShownFlyout? _lastShown;
     private bool _isActive;
     private bool _isDisposed;
 
@@ -98,7 +99,6 @@ internal sealed partial class DockPageFlyoutController :
         _isActive = false;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _pendingRequest = null;
-
         if (_flyout.IsOpen)
         {
             _flyout.Hide();
@@ -107,40 +107,37 @@ internal sealed partial class DockPageFlyoutController :
         Cleanup();
     }
 
-    internal RequestResult Open(PerformCommandMessage message, FrameworkElement anchor, Point position)
+    /// <summary>
+    /// Shows the page in <paramref name="message"/> in a flyout at <paramref name="anchor"/>.
+    /// This method owns delivery of the message: if the flyout can't be shown, it sends the
+    /// message to the palette instead. Invoking the open flyout's command again closes it.
+    /// </summary>
+    internal void OpenPage(PerformCommandMessage message, FrameworkElement anchor, Point position)
     {
-        var route = new DockCommandRoute(_ownerHwnd(), Guid.NewGuid());
-        message.DockRoute = route;
-        var request = new PendingRequest(message, anchor, position, route);
-
         if (_flyout.IsOpen)
         {
-            _pendingRequest = request;
+            if (_openRequest is { } open &&
+                ReferenceEquals(anchor, open.Anchor) &&
+                ReferenceEquals(message.Command.Unsafe, open.Message.Command.Unsafe))
+            {
+                Close();
+                return;
+            }
+
+            // A flyout can't move to another anchor while it's open. Show the next page
+            // after this one closes.
+            _pendingRequest = new(message, anchor, position);
             _flyout.Hide();
-            return RequestResult.Deferred;
+            return;
         }
 
         Cleanup();
-        if (TryStartRequest(request))
-        {
-            return RequestResult.Started;
-        }
-
-        message.DockRoute = null;
-        return RequestResult.Failed;
-    }
-
-    internal void PreparePaletteFallback(PerformCommandMessage message, Point position)
-    {
-        message.DockRoute = null;
-        WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, _ownerHwnd()));
+        StartRequest(new(message, anchor, position));
     }
 
     public void Receive(PerformCommandMessage message)
     {
-        var route = message.DockRoute;
-        if (route is null ||
-            route.Value.OwnerHwnd != _ownerHwnd())
+        if (!IsForThisDock(message.DockRoute))
         {
             return;
         }
@@ -148,220 +145,117 @@ internal sealed partial class DockPageFlyoutController :
         _dispatcherQueue.TryEnqueue(() =>
         {
             var navigation = _navigation;
-            var commandRoute = message.DockRoute;
-            if (navigation is null || commandRoute != navigation.Route)
+            if (message.Command.Unsafe is IPage)
             {
+                if (navigation is not null && message.DockRoute == navigation.Route)
+                {
+                    _ = NavigateAsync(navigation, message);
+                }
+
                 return;
             }
 
-            if (message.Command.Unsafe is IPage)
-            {
-                _ = ObserveNavigationAsync(navigation.NavigateAsync(message));
-            }
-            else if (message.Command.Unsafe is IInvokableCommand)
-            {
-                ForwardInvokableCommand(message, navigation, commandRoute.Value);
-            }
+            // The user asked for this command, so run it even if its flyout has closed.
+            ForwardToShell(message, navigation);
         });
     }
 
     public void Receive(HandleCommandResultMessage message)
     {
-        var route = message.DockRoute;
-        if (route is null ||
-            route.Value.OwnerHwnd != _ownerHwnd())
+        if (!IsForThisDock(message.DockRoute))
         {
             return;
         }
 
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            var navigation = _navigation;
-            var sourcePage = message.SourcePage;
-            var commandRoute = message.DockRoute;
-            if (navigation is null ||
-                commandRoute != navigation.Route ||
-                sourcePage is null ||
-                !navigation.OwnsSourcePage(sourcePage))
-            {
-                return;
-            }
-
-            var forwarded = message with { DockRoute = null };
-            AddPaletteConfirmationCallback(forwarded);
-
-            var existingHandler = forwarded.ResultHandler;
-            forwarded.ResultHandler = result =>
-            {
-                if (existingHandler?.Invoke(result) == true)
-                {
-                    return true;
-                }
-
-                return HandleCommandResult(navigation, commandRoute.Value, sourcePage, result);
-            };
-            WeakReferenceMessenger.Default.Send(forwarded);
-        });
+        _dispatcherQueue.TryEnqueue(() => ForwardToShell(message, _navigation));
     }
 
-    private void ForwardInvokableCommand(
-        PerformCommandMessage message,
-        DockPageNavigationViewModel navigation,
-        DockCommandRoute route)
-    {
-        var sourcePage = message.SourcePage ?? navigation.CurrentPage;
-        if (sourcePage is null || !navigation.OwnsSourcePage(sourcePage))
-        {
-            return;
-        }
+    private bool IsForThisDock(DockCommandRoute? route) =>
+        route is { } value && value.OwnerHwnd == _ownerHwnd();
 
-        var forwarded = message with
+    private void ForwardToShell(PerformCommandMessage message, DockPageNavigationViewModel? navigation) =>
+        WeakReferenceMessenger.Default.Send(message with
         {
             DockRoute = null,
-            SourcePage = sourcePage,
-            SourceExtensionHost = message.SourceExtensionHost ?? navigation.CurrentPage?.ExtensionHost,
-            SourceProviderContext = message.SourceProviderContext ?? navigation.CurrentPage?.ProviderContext,
-        };
-        AddPaletteConfirmationCallback(forwarded);
+            OnBeforeShowConfirmation = CreateConfirmationCallback(message.DockRoute, message.OnBeforeShowConfirmation),
+            ResultHandler = CreateResultHandler(message.ResultHandler, navigation, message.DockRoute, message.Context?.Page),
+        });
 
-        var existingHandler = forwarded.ResultHandler;
-        forwarded.ResultHandler = result =>
+    private void ForwardToShell(HandleCommandResultMessage message, DockPageNavigationViewModel? navigation) =>
+        WeakReferenceMessenger.Default.Send(message with
         {
-            if (existingHandler?.Invoke(result) == true)
-            {
-                return true;
-            }
+            DockRoute = null,
+            OnBeforeShowConfirmation = CreateConfirmationCallback(message.DockRoute, message.OnBeforeShowConfirmation),
+            ResultHandler = CreateResultHandler(message.ResultHandler, navigation, message.DockRoute, message.Context?.Page),
+        });
 
-            return HandleCommandResult(navigation, route, sourcePage, result);
-        };
-        WeakReferenceMessenger.Default.Send(forwarded);
-    }
-
-    private void AddPaletteConfirmationCallback(PerformCommandMessage message)
+    // Confirmation dialogs belong to the palette, so surface it at the dock item first.
+    private Action CreateConfirmationCallback(DockCommandRoute? route, Action? existingCallback)
     {
-        var existingCallback = message.OnBeforeShowConfirmation;
-        var capturedPosition = _palettePosition;
+        var position = _lastShown is { } shown && shown.Route == route ? shown.Position : (Point?)null;
         var hwnd = _ownerHwnd();
-        message.OnBeforeShowConfirmation = () =>
+        return () =>
         {
             existingCallback?.Invoke();
-            if (capturedPosition is Point position)
+            if (position is Point value)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, hwnd));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(value, hwnd));
             }
         };
     }
 
-    private void AddPaletteConfirmationCallback(HandleCommandResultMessage message)
+    /// <summary>
+    /// Routes results from the current page back to its flyout. Results from a closed
+    /// flyout or an old page keep only shell UI, so they can't move the palette.
+    /// </summary>
+    private static Func<ICommandResult, bool> CreateResultHandler(
+        Func<ICommandResult, bool>? existingHandler,
+        DockPageNavigationViewModel? navigation,
+        DockCommandRoute? route,
+        PageViewModel? sourcePage)
     {
-        var existingCallback = message.OnBeforeShowConfirmation;
-        var capturedPosition = _palettePosition;
-        var hwnd = _ownerHwnd();
-        message.OnBeforeShowConfirmation = () =>
+        if (navigation is not null &&
+            route == navigation.Route &&
+            sourcePage is not null &&
+            navigation.OwnsSourcePage(sourcePage))
         {
-            existingCallback?.Invoke();
-            if (capturedPosition is Point position)
-            {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(position, hwnd));
-            }
-        };
+            return result => existingHandler?.Invoke(result) == true ||
+                navigation.HandleCommandResult(sourcePage, result);
+        }
+
+        return result => existingHandler?.Invoke(result) == true ||
+            !DockPageNavigationViewModel.IsShellResult(result.Kind);
     }
 
-    private bool HandleCommandResult(
-        DockPageNavigationViewModel navigation,
-        DockCommandRoute route,
-        PageViewModel sourcePage,
-        ICommandResult result)
+    private void StartRequest(PageRequest request)
     {
-        if (!ReferenceEquals(Volatile.Read(ref _navigation), navigation) ||
-            navigation.Route != route ||
-            !navigation.OwnsSourcePage(sourcePage))
+        var route = new DockCommandRoute(_ownerHwnd(), Guid.NewGuid());
+        var message = request.Message;
+        if (TryShowFlyout(request, route) is { } navigation)
         {
-            return true;
-        }
-
-        if (result.Kind is CommandResultKind.ShowToast or CommandResultKind.Confirm)
-        {
-            return false;
-        }
-
-        if (_dispatcherQueue.HasThreadAccess)
-        {
-            ApplyCommandResult(navigation, route, sourcePage, result.Kind);
-        }
-        else
-        {
-            _dispatcherQueue.TryEnqueue(
-                () => ApplyCommandResult(navigation, route, sourcePage, result.Kind));
-        }
-
-        return true;
-    }
-
-    private void ApplyCommandResult(
-        DockPageNavigationViewModel navigation,
-        DockCommandRoute route,
-        PageViewModel sourcePage,
-        CommandResultKind kind)
-    {
-        if (!ReferenceEquals(_navigation, navigation) ||
-            navigation.Route != route ||
-            !navigation.OwnsSourcePage(sourcePage))
-        {
+            message.DockRoute = route;
+            _ = NavigateAsync(navigation, message);
             return;
         }
 
-        switch (kind)
-        {
-            case CommandResultKind.Dismiss:
-            case CommandResultKind.Hide:
-                Close();
-                break;
-            case CommandResultKind.GoHome:
-                _ = ObserveNavigationAsync(navigation.GoHomeAsync());
-                break;
-            case CommandResultKind.GoBack:
-                if (navigation.CanGoBack)
-                {
-                    _ = ObserveNavigationAsync(navigation.GoBackAsync());
-                }
-                else
-                {
-                    Close();
-                }
-
-                break;
-        }
+        message.DockRoute = null;
+        WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(request.Position, _ownerHwnd()));
+        WeakReferenceMessenger.Default.Send(message);
     }
 
-    private void Close()
+    private DockPageNavigationViewModel? TryShowFlyout(PageRequest request, DockCommandRoute route)
     {
-        _pendingRequest = null;
-        if (_flyout.IsOpen)
+        if (request.Anchor.XamlRoot is null)
         {
-            _flyout.Hide();
-        }
-        else
-        {
-            Cleanup();
-        }
-    }
-
-    private bool TryStartRequest(PendingRequest request)
-    {
-        if (request.Anchor.XamlRoot is null || request.Route.OwnerHwnd != _ownerHwnd())
-        {
-            return false;
+            return null;
         }
 
         try
         {
-            _palettePosition = request.Position;
-            _navigation = new DockPageNavigationViewModel(
-                request.Route,
-                _uiScheduler,
-                _pageFactory,
-                _appHostService);
+            _lastShown = new(route, request.Position);
+            _openRequest = request;
+            _navigation = new DockPageNavigationViewModel(route, _uiScheduler, _pageFactory, _appHostService);
+            _navigation.CloseRequested += Navigation_CloseRequested;
             _control = new DockPageControl(_navigation);
             _control.CloseRequested += Control_CloseRequested;
             _flyout.Content = _control;
@@ -371,7 +265,7 @@ internal sealed partial class DockPageFlyoutController :
             PInvoke.SetForegroundWindow(ownerHwnd);
             PInvoke.SetActiveWindow(ownerHwnd);
 
-            PreparePopupForShow(request.Anchor);
+            UIHelper.PreparePopupForShow(_flyout, request.Anchor);
             _flyout.ShowAt(
                 request.Anchor,
                 new FlyoutShowOptions
@@ -379,13 +273,34 @@ internal sealed partial class DockPageFlyoutController :
                     ShowMode = FlyoutShowMode.Standard,
                     Placement = GetPlacement(),
                 });
-            return true;
+            return _navigation;
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to show a dock page.", ex);
             Cleanup();
-            return false;
+            return null;
+        }
+    }
+
+    private async Task NavigateAsync(DockPageNavigationViewModel navigation, PerformCommandMessage message)
+    {
+        try
+        {
+            await navigation.NavigateAsync(message);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open a dock page.", ex);
+        }
+
+        // Don't leave an empty flyout open when the first page couldn't be created.
+        if (ReferenceEquals(_navigation, navigation) && navigation.CurrentPage is null)
+        {
+            Close();
         }
     }
 
@@ -401,11 +316,16 @@ internal sealed partial class DockPageFlyoutController :
         };
     }
 
-    private void PreparePopupForShow(FrameworkElement placementTarget)
+    private void Close()
     {
-        if (placementTarget.XamlRoot is not null && _flyout.XamlRoot != placementTarget.XamlRoot)
+        _pendingRequest = null;
+        if (_flyout.IsOpen)
         {
-            _flyout.XamlRoot = placementTarget.XamlRoot;
+            _flyout.Hide();
+        }
+        else
+        {
+            Cleanup();
         }
     }
 
@@ -417,35 +337,26 @@ internal sealed partial class DockPageFlyoutController :
     private void Flyout_Closed(object? sender, object e)
     {
         Cleanup();
-        if (_isActive && _shouldRestoreFocus())
-        {
-            _restoreFocus();
-        }
 
         var pending = _pendingRequest;
         _pendingRequest = null;
         if (pending is not null)
         {
-            if (!TryStartRequest(pending))
-            {
-                PreparePaletteFallback(pending.Message, pending.Position);
-            }
-
-            WeakReferenceMessenger.Default.Send(pending.Message);
+            StartRequest(pending);
         }
-    }
-
-    private void Control_CloseRequested(object? sender, EventArgs e)
-    {
-        if (_flyout.IsOpen)
+        else if (_isActive && _shouldRestoreFocus())
         {
-            _flyout.Hide();
+            _restoreFocus();
         }
     }
+
+    private void Navigation_CloseRequested(object? sender, EventArgs e) => Close();
+
+    private void Control_CloseRequested(object? sender, EventArgs e) => Close();
 
     private void Cleanup()
     {
-        _palettePosition = null;
+        _openRequest = null;
         _flyout.Content = null;
 
         if (_control is not null)
@@ -453,27 +364,13 @@ internal sealed partial class DockPageFlyoutController :
             _control.CloseRequested -= Control_CloseRequested;
             _control.Dispose();
             _control = null;
-            _navigation = null;
         }
-        else
-        {
-            _navigation?.Dispose();
-            _navigation = null;
-        }
-    }
 
-    private static async Task ObserveNavigationAsync(Task<bool> navigationTask)
-    {
-        try
+        if (_navigation is not null)
         {
-            await navigationTask;
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to open a dock page.", ex);
+            _navigation.CloseRequested -= Navigation_CloseRequested;
+            _navigation.Dispose();
+            _navigation = null;
         }
     }
 

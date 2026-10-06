@@ -9,6 +9,10 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
+/// <summary>
+/// The page stack of one dock flyout. Page state is only read and changed on the UI
+/// scheduler passed to the constructor.
+/// </summary>
 public sealed partial class DockPageNavigationViewModel : ObservableObject, IDisposable
 {
     private readonly TaskScheduler _scheduler;
@@ -40,8 +44,10 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
     public int BackStackDepth => Math.Max(0, _pages.Count - 1);
 
-    public bool OwnsSourcePage(PageViewModel? sourcePage) =>
-        sourcePage?.DockRoute == Route && CurrentPage?.OwnsCommandSource(sourcePage) == true;
+    /// <summary>
+    /// Raised on the UI scheduler when a command result asks to dismiss the flyout.
+    /// </summary>
+    public event EventHandler? CloseRequested;
 
     public DockPageNavigationViewModel(
         DockCommandRoute route,
@@ -54,9 +60,19 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         _pageNavigation = new(pageFactory, appHostService);
     }
 
+    public bool OwnsSourcePage(PageViewModel? sourcePage) =>
+        sourcePage is not null &&
+        sourcePage.DockRoute == Route &&
+        CurrentPage?.OwnsCommandSource(sourcePage) == true;
+
+    /// <summary>
+    /// Pushes the page in <paramref name="message"/>. The first page can come from any
+    /// sender on this route; after that, only the current page can push another one.
+    /// </summary>
+    /// <returns>True when the page was pushed and initialized.</returns>
     public async Task<bool> NavigateAsync(PerformCommandMessage message, CancellationToken cancellationToken = default)
     {
-        if (message.DockRoute != Route || message.Command.Unsafe is not IPage page)
+        if (_isDisposed || message.DockRoute != Route || message.Command.Unsafe is not IPage page)
         {
             return false;
         }
@@ -70,49 +86,14 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         Task<bool>? initializationTask = null;
         try
         {
-            if (_isDisposed)
-            {
-                return false;
-            }
-
-            var host = _pageNavigation.ResolveHost(message, CurrentPage);
-            var providerContext = _pageNavigation.ResolveProviderContext(message, CurrentPage);
-            var nested = _pages.Count > 0;
-            var pageViewModel = _pageNavigation.TryPreparePage(page, nested, host, providerContext, message.ListPageOptions);
-            if (pageViewModel is null)
-            {
-                return false;
-            }
-
-            pageViewModel.DockRoute = Route;
-
-            try
-            {
-                await RunOnUiThreadAsync(
-                    () =>
-                    {
-                        _pages.Add(pageViewModel);
-                        CurrentPage = pageViewModel;
-                        initializationTask = InitializePageAsync(pageViewModel, token);
-                        lock (_initializationLock)
-                        {
-                            _initializationTasks[pageViewModel] = initializationTask;
-                        }
-                    },
-                    token);
-            }
-            catch
-            {
-                CleanupPage(pageViewModel);
-                throw;
-            }
+            await RunOnUiThreadAsync(() => initializationTask = TryPushPage(page, message, token), token);
         }
         finally
         {
             _navigationGate.Release();
         }
 
-        return await initializationTask!;
+        return initializationTask is not null && await initializationTask;
     }
 
     public async Task<bool> GoBackAsync(CancellationToken cancellationToken = default)
@@ -130,15 +111,15 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         await _navigationGate.WaitAsync(token);
         try
         {
-            if (_pages.Count <= 1 || _isDisposed)
-            {
-                return false;
-            }
-
             PageViewModel? removed = null;
             await RunOnUiThreadAsync(
                 () =>
                 {
+                    if (_pages.Count <= 1 || _isDisposed)
+                    {
+                        return;
+                    }
+
                     removed = _pages[^1];
                     _pages.RemoveAt(_pages.Count - 1);
                     CurrentPage = _pages[^1];
@@ -146,7 +127,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
                 token);
 
             CleanupPageAfterInitialization(removed);
-            return true;
+            return removed is not null;
         }
         finally
         {
@@ -169,15 +150,15 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         await _navigationGate.WaitAsync(token);
         try
         {
-            if (_pages.Count <= 1 || _isDisposed)
-            {
-                return false;
-            }
-
             List<PageViewModel> removed = [];
             await RunOnUiThreadAsync(
                 () =>
                 {
+                    if (_pages.Count <= 1 || _isDisposed)
+                    {
+                        return;
+                    }
+
                     removed.AddRange(_pages.Skip(1));
                     _pages.RemoveRange(1, _pages.Count - 1);
                     CurrentPage = _pages[0];
@@ -189,7 +170,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
                 CleanupPageAfterInitialization(page);
             }
 
-            return true;
+            return removed.Count > 0;
         }
         finally
         {
@@ -197,7 +178,96 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         }
     }
 
-    private async Task<bool> InitializePageAsync(PageViewModel page, CancellationToken cancellationToken)
+    /// <summary>
+    /// Returns whether a result is shell UI (a toast or a confirmation). The shell must
+    /// show these even when the dock flyout that caused them has closed.
+    /// </summary>
+    public static bool IsShellResult(CommandResultKind kind) =>
+        kind is CommandResultKind.ShowToast or CommandResultKind.Confirm;
+
+    /// <summary>
+    /// Handles a command result produced by <paramref name="sourcePage"/>. Safe to call
+    /// from any thread; navigation is applied later on the UI scheduler.
+    /// </summary>
+    /// <returns>False when the shell must still handle the result.</returns>
+    public bool HandleCommandResult(PageViewModel sourcePage, ICommandResult result)
+    {
+        var kind = result.Kind;
+        if (IsShellResult(kind))
+        {
+            return false;
+        }
+
+        // Every other result belongs to this flyout. A result for a closed flyout or a
+        // page that is no longer current is dropped, so it can't move the palette.
+        _ = Task.Factory.StartNew(
+            () => ApplyCommandResult(sourcePage, kind),
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _scheduler);
+        return true;
+    }
+
+    private void ApplyCommandResult(PageViewModel sourcePage, CommandResultKind kind)
+    {
+        if (_isDisposed || !OwnsSourcePage(sourcePage))
+        {
+            return;
+        }
+
+        switch (kind)
+        {
+            case CommandResultKind.Dismiss:
+            case CommandResultKind.Hide:
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+                break;
+            case CommandResultKind.GoHome:
+                _ = ObserveNavigationAsync(GoHomeAsync());
+                break;
+            case CommandResultKind.GoBack:
+                if (CanGoBack)
+                {
+                    _ = ObserveNavigationAsync(GoBackAsync());
+                }
+                else
+                {
+                    CloseRequested?.Invoke(this, EventArgs.Empty);
+                }
+
+                break;
+        }
+    }
+
+    private Task<bool>? TryPushPage(IPage page, PerformCommandMessage message, CancellationToken cancellationToken)
+    {
+        if (_isDisposed ||
+            (CurrentPage is not null && !OwnsSourcePage(message.Context?.Page)))
+        {
+            return null;
+        }
+
+        var host = _pageNavigation.ResolveHost(message, CurrentPage);
+        var providerContext = _pageNavigation.ResolveProviderContext(message, CurrentPage);
+        var pageViewModel = _pageNavigation.TryPreparePage(page, _pages.Count > 0, host, providerContext, message.ListPageOptions);
+        if (pageViewModel is null)
+        {
+            return null;
+        }
+
+        pageViewModel.DockRoute = Route;
+        _pages.Add(pageViewModel);
+        CurrentPage = pageViewModel;
+
+        var initializationTask = InitializePageAsync(pageViewModel, cancellationToken);
+        lock (_initializationLock)
+        {
+            _initializationTasks[pageViewModel] = initializationTask;
+        }
+
+        return initializationTask;
+    }
+
+    private static async Task<bool> InitializePageAsync(PageViewModel page, CancellationToken cancellationToken)
     {
         try
         {
@@ -212,6 +282,21 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         {
             page.ShowException(ex);
             return false;
+        }
+    }
+
+    private static async Task ObserveNavigationAsync(Task<bool> navigationTask)
+    {
+        try
+        {
+            await navigationTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to navigate a dock page.", ex);
         }
     }
 
@@ -264,6 +349,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             return;
         }
 
+        // An extension call that already started must finish before its page is released.
         _ = initializationTask.ContinueWith(
             _ => CleanupPage(page),
             CancellationToken.None,
@@ -288,6 +374,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
         _pages.Clear();
         CurrentPage = null;
+        CloseRequested = null;
         _lifetimeCancellation.Dispose();
         GC.SuppressFinalize(this);
     }

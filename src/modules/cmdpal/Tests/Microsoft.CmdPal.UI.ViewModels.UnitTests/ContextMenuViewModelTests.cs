@@ -17,7 +17,7 @@ using Moq;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public sealed partial class ContextMenuViewModelTests
+public sealed class ContextMenuViewModelTests
 {
     private sealed class MessageRecipient
     {
@@ -42,7 +42,7 @@ public sealed partial class ContextMenuViewModelTests
     }
 
     [TestMethod]
-    public void InvokeCommand_CanceledSend_DoesNotPublishTheMessage()
+    public void InvokeCommand_HandledInvocation_IsNotPublishedButStillReported()
     {
         var page = new PageViewModel(
             new Page(),
@@ -64,24 +64,30 @@ public sealed partial class ContextMenuViewModelTests
         WeakReferenceMessenger.Default.Register<MessageRecipient, PerformCommandMessage>(
             recipient,
             static (r, message) => r.Messages.Add(message));
-        var commandInvoked = false;
-        EventHandler<PerformCommandMessage> cancelSend = (_, message) => message.CancelSend();
-        contextMenu.CommandInvoking += cancelSend;
-        contextMenu.CommandInvoked += (_, _) => commandInvoked = true;
+        var invokedCount = 0;
+        CommandInvokingEventArgs? invoking = null;
+        EventHandler<CommandInvokingEventArgs> takeOver = (_, e) =>
+        {
+            invoking = e;
+            e.Handled = true;
+        };
+        contextMenu.CommandInvoking += takeOver;
+        contextMenu.CommandInvoked += (_, _) => invokedCount++;
 
         try
         {
             Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
             Assert.AreEqual(0, recipient.Messages.Count);
-            Assert.IsFalse(commandInvoked);
+            Assert.AreEqual(1, invokedCount);
+            Assert.IsNotNull(invoking);
+            Assert.AreSame(command, invoking.Command);
 
-            contextMenu.CommandInvoking -= cancelSend;
+            contextMenu.CommandInvoking -= takeOver;
             Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
             Assert.AreEqual(1, recipient.Messages.Count);
-            Assert.IsTrue(commandInvoked);
+            Assert.AreEqual(2, invokedCount);
             var message = recipient.Messages[0];
             Assert.AreEqual(page.DockRoute, message.DockRoute);
-            Assert.AreSame(page, message.SourcePage);
             Assert.AreSame(page, message.Context?.Page);
             Assert.AreSame(model, message.CommandContext);
         }
@@ -98,10 +104,5 @@ public sealed partial class ContextMenuViewModelTests
         var context = new Mock<ICommandBarContext>();
         context.SetupGet(x => x.AllCommands).Returns([]);
         return context.Object;
-    }
-
-    private sealed partial class TestAppExtensionHost : AppExtensionHost
-    {
-        public override string? GetExtensionDisplayName() => "Test Host";
     }
 }

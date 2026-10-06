@@ -302,18 +302,20 @@ public partial class ContextMenuViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Raised after a command is actually invoked (i.e. sent as a <see cref="PerformCommandMessage"/>)
-    /// from this context menu. Not raised when the user navigates into a submenu.
+    /// Raised after a command is invoked from this context menu, whether the menu sent its
+    /// <see cref="PerformCommandMessage"/> or a <see cref="CommandInvoking"/> subscriber handled it.
+    /// Not raised when the user navigates into a submenu.
     /// </summary>
     public event EventHandler<CommandItemViewModel>? CommandInvoked;
 
     /// <summary>
     /// Raised immediately before the <see cref="PerformCommandMessage"/> is sent.
     /// Subscribers can decorate the message (for example, to attach an
-    /// <see cref="PerformCommandMessage.OnBeforeShowConfirmation"/> callback).
+    /// <see cref="PerformCommandMessage.OnBeforeShowConfirmation"/> callback), or set
+    /// <see cref="CommandInvokingEventArgs.Handled"/> to deliver it themselves.
     /// Not raised when the user navigates into a submenu.
     /// </summary>
-    public event EventHandler<PerformCommandMessage>? CommandInvoking;
+    public event EventHandler<CommandInvokingEventArgs>? CommandInvoking;
 
     public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command, bool navigateSubmenus = true)
     {
@@ -329,14 +331,14 @@ public partial class ContextMenuViewModel : ObservableObject
             return ContextKeybindingResult.KeepOpen;
         }
 
-        var message = new PerformCommandMessage(command);
-        CommandInvoking?.Invoke(this, message);
-        if (!message.IsSendCanceled)
+        var invoking = new CommandInvokingEventArgs(command, new PerformCommandMessage(command));
+        CommandInvoking?.Invoke(this, invoking);
+        if (!invoking.Handled)
         {
-            WeakReferenceMessenger.Default.Send(message);
-            CommandInvoked?.Invoke(this, command);
+            WeakReferenceMessenger.Default.Send(invoking.Message);
         }
 
+        CommandInvoked?.Invoke(this, command);
         return ContextKeybindingResult.Hide;
     }
 }

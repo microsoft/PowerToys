@@ -9,6 +9,8 @@ using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -24,6 +26,9 @@ public sealed partial class DockPageControl : UserControl, IDisposable
     private bool _isLoaded;
     private bool _isDisposed;
 
+    /// <summary>
+    /// Gets the page stack shown by this control. The creator owns and disposes it.
+    /// </summary>
     internal DockPageNavigationViewModel Navigation { get; }
 
     internal PageViewModel? CurrentPage => Navigation.CurrentPage;
@@ -41,7 +46,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         SearchBox.BackRequested += SearchBox_BackRequested;
         SearchBox.NavigationRequested += SearchBox_NavigationRequested;
         PageCommandBar.FocusSearchRequested += PageCommandBar_FocusSearchRequested;
-        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), true);
+        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), false);
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), false);
         Loaded += OnLoaded;
     }
@@ -64,8 +69,10 @@ public sealed partial class DockPageControl : UserControl, IDisposable
     {
         _isLoaded = true;
         UpdatePageLevelState(useTransitions: false);
-        UpdateCurrentPage();
-        FocusSearch();
+        if (!ReferenceEquals(_subscribedPage, CurrentPage))
+        {
+            UpdateCurrentPage();
+        }
     }
 
     private void Navigation_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -102,13 +109,19 @@ public sealed partial class DockPageControl : UserControl, IDisposable
             return;
         }
 
-        IPageInteractionTarget target = _subscribedPage switch
+        IPageInteractionTarget? target = _subscribedPage switch
         {
             ListViewModel list => new ListItemsView { ViewModel = list },
             ContentPageViewModel content => new ContentPage { ViewModel = content },
             ParametersPageViewModel parameters => new ParametersPage { ViewModel = parameters },
-            _ => throw new NotSupportedException(),
+            _ => null,
         };
+
+        if (target is null)
+        {
+            Logger.LogError($"Dock pages can't show a {_subscribedPage.GetType().Name}.");
+            return;
+        }
 
         AttachInteractionTarget(target);
         PageContent.Content = target;
@@ -184,7 +197,8 @@ public sealed partial class DockPageControl : UserControl, IDisposable
 
     private void PageCommandBar_FocusSearchRequested(object? sender, EventArgs e) => FocusSearch();
 
-    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e) => RequestBackOrClose();
+    private void SearchBox_BackRequested(object? sender, SearchBarBackRequestedEventArgs e) =>
+        ApplyBackAction(e.Kind, e.FromBackspace);
 
     private void SearchBox_NavigationRequested(object? sender, SearchBarNavigationRequestedEventArgs e)
     {
@@ -218,22 +232,21 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         {
             RequestBackOrClose();
             e.Handled = true;
-            return;
         }
-
-        if (e.Key == VirtualKey.K && modifiers.OnlyCtrl)
+        else if (e.Key == VirtualKey.K && modifiers.OnlyCtrl)
         {
             _pageInteractions.OpenContextMenu();
             e.Handled = true;
-            return;
         }
-
-        e.Handled = _pageInteractions.TryCommandKeybinding(
+        else if (_pageInteractions.TryCommandKeybinding(
             modifiers.Ctrl,
             modifiers.Alt,
             modifiers.Shift,
             modifiers.Win,
-            e.Key);
+            e.Key))
+        {
+            e.Handled = true;
+        }
     }
 
     private void OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -256,15 +269,21 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         }
     }
 
-    private void RequestBackOrClose()
+    private void RequestBackOrClose() =>
+        ApplyBackAction(SearchBarBackRequestKind.GoBack, fromBackspace: false);
+
+    private void ApplyBackAction(SearchBarBackRequestKind kind, bool fromBackspace)
     {
-        if (Navigation.CanGoBack)
+        var backspaceGoesBack = fromBackspace &&
+            App.Current.Services.GetRequiredService<ISettingsService>().Settings.BackspaceGoesBack;
+        switch (DockPageBackNavigation.GetAction(kind, fromBackspace, Navigation.CanGoBack, backspaceGoesBack))
         {
-            _ = ObserveBackNavigationAsync();
-        }
-        else
-        {
-            CloseRequested?.Invoke(this, EventArgs.Empty);
+            case DockPageBackAction.GoBack:
+                _ = ObserveBackNavigationAsync();
+                break;
+            case DockPageBackAction.Close:
+                CloseRequested?.Invoke(this, EventArgs.Empty);
+                break;
         }
     }
 
@@ -304,7 +323,6 @@ public sealed partial class DockPageControl : UserControl, IDisposable
         SearchBox.CurrentPageViewModel = null;
         _pageInteractions.Dispose();
         PageCommandBar.Dispose();
-        Navigation.Dispose();
         GC.SuppressFinalize(this);
     }
 }

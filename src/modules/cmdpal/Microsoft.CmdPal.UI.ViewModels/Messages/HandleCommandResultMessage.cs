@@ -9,13 +9,10 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 public record HandleCommandResultMessage
 {
+    /// <summary>
+    /// Gets or sets the dock flyout that owns the page that produced this result.
+    /// </summary>
     public DockCommandRoute? DockRoute { get; set; }
-
-    public PageViewModel? SourcePage { get; set; }
-
-    public AppExtensionHost? SourceExtensionHost { get; set; }
-
-    public ICommandProviderContext? SourceProviderContext { get; set; }
 
     public ExtensionObject<ICommandResult> Result { get; }
 
@@ -29,6 +26,6 @@ public record HandleCommandResultMessage
     {
         Result = result;
         Context = sourcePage is null ? null : new(sourcePage);
-        sourcePage?.PrepareHandleCommandResultMessage(this);
+        DockRoute = sourcePage?.DockRoute;
     }
 }

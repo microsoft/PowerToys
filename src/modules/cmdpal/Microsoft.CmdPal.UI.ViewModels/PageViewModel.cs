@@ -263,24 +263,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         // subclasses should override.
     }
 
-    internal PerformCommandMessage PreparePerformCommandMessage(PerformCommandMessage message)
-    {
-        message.DockRoute = DockRoute;
-        message.SourcePage = this;
-        message.SourceExtensionHost = ExtensionHost;
-        message.SourceProviderContext = ProviderContext;
-        return message;
-    }
-
-    internal HandleCommandResultMessage PrepareHandleCommandResultMessage(HandleCommandResultMessage message)
-    {
-        message.DockRoute = DockRoute;
-        message.SourcePage = this;
-        message.SourceExtensionHost = ExtensionHost;
-        message.SourceProviderContext = ProviderContext;
-        return message;
-    }
-
     protected internal void SetCommandBarContext(ICommandBarContext? context) =>
         CommandBarContextChanged?.Invoke(this, new(context));
 

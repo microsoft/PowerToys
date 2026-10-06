@@ -11,10 +11,12 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <Grid
-        Width="500"
-        MaxHeight="560"
-        Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+    <Grid MaxHeight="560" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <!--
+            These transitions are deliberately Storyboards, not the Implicit Show/Hide
+            composition animations that ShellPage uses. In this windowed flyout, the
+            implicit animations broke mouse input.
+        -->
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="PageLevelStates">
                 <VisualStateGroup.Transitions>
@@ -104,11 +106,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
-            <Grid Padding="0,12,-12,12" RowSpacing="8">
-                <!--<Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>-->
+            <Grid Padding="0,12,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />

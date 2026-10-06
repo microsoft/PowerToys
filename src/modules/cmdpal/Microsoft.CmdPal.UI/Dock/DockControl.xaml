@@ -90,24 +90,19 @@
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
 
-            <Style
-                x:Name="ContextMenuFlyoutStyle"
-                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
-                TargetType="FlyoutPresenter">
-                <Style.Setters>
-                    <Setter Property="Margin" Value="0" />
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
-                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                </Style.Setters>
-            </Style>
+            <x:Double x:Key="DockPageFlyoutWidth">500</x:Double>
 
             <Style
-                x:Name="DockPageFlyoutStyle"
-                BasedOn="{StaticResource ContextMenuFlyoutStyle}"
+                x:Key="DockPageFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
                 TargetType="FlyoutPresenter">
-                <Setter Property="MinWidth" Value="500" />
-                <Setter Property="MaxWidth" Value="500" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <!--  The default presenter MaxWidth is narrower than a dock page.  -->
+                <Setter Property="MinWidth" Value="{StaticResource DockPageFlyoutWidth}" />
+                <Setter Property="MaxWidth" Value="{StaticResource DockPageFlyoutWidth}" />
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
                 <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
             </Style>

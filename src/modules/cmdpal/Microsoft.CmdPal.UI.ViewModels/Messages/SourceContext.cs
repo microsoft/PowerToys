@@ -6,7 +6,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 public sealed record SourceContext
 {
-    public PageViewModel Page { get; }
+    /// <summary>
+    /// Gets the page that sent the command, or null when the sender is not a page
+    /// (for example, a dock band that only knows its owning provider).
+    /// </summary>
+    public PageViewModel? Page { get; }
 
     public AppExtensionHost ExtensionHost { get; }
 
@@ -19,4 +23,24 @@ public sealed record SourceContext
         ExtensionHost = page.ExtensionHost;
         ProviderContext = page.ProviderContext;
     }
+
+    public SourceContext(AppExtensionHost extensionHost, ICommandProviderContext providerContext)
+    {
+        ArgumentNullException.ThrowIfNull(extensionHost);
+        ArgumentNullException.ThrowIfNull(providerContext);
+        ExtensionHost = extensionHost;
+        ProviderContext = providerContext;
+    }
+
+    /// <summary>
+    /// Creates a source context for a sender that is not a page. Returns null when
+    /// the page context does not identify an owning host and provider.
+    /// </summary>
+    public static SourceContext? FromPageContext(IPageContext? pageContext) =>
+        pageContext switch
+        {
+            PageViewModel page => new(page),
+            ICommandContextSource { ExtensionHost: { } host, ProviderContext: { } provider } => new(host, provider),
+            _ => null,
+        };
 }
