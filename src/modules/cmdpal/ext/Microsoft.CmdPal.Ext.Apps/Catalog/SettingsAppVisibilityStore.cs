@@ -39,7 +39,7 @@ internal sealed partial class SettingsAppVisibilityStore : IAppVisibilityStore
                 || MatchesPath(patterns.Paths, app.TargetPath)
                 || MatchesPath(patterns.Paths, app.LnkFilePath)
                 || MatchesPath(patterns.Paths, app.AppExecutionAliasTargetPath),
-            PackagedAppSnapshot app => Matches(patterns.Names, app.Name)
+            PackagedAppPayload app => Matches(patterns.Names, app.Name)
                 || MatchesPath(patterns.Paths, app.PackageLocation),
             _ => false,
         };

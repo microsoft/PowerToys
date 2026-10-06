@@ -49,53 +49,45 @@ public static class TestDataHelper
     }
 
     /// <summary>
-    /// Creates a test UWP application with the specified parameters.
+    /// Creates transient packaged metadata for catalog indexing tests.
     /// </summary>
     /// <param name="displayName">The display name of the application.</param>
     /// <param name="userModelId">The user model ID of the application.</param>
-    /// <param name="enabled">A value indicating whether the application is enabled.</param>
-    /// <returns>A new IUWPApplication instance with the specified parameters.</returns>
-    public static IUWPApplication CreateTestUWPApplication(
+    /// <param name="packageLocation">The package installation directory.</param>
+    /// <returns>A new PackagedAppMetadata instance with the specified parameters.</returns>
+    internal static PackagedAppMetadata CreateTestPackagedMetadata(
         string displayName = "Test UWP App",
         string userModelId = "TestPublisher.TestUWPApp_1.0.0.0_neutral__8wekyb3d8bbwe",
-        bool enabled = true)
+        string packageLocation = null)
     {
-        return new MockUWPApplication
+        return new PackagedAppMetadata
         {
-            DisplayName = displayName,
-            UserModelId = userModelId,
-            Enabled = enabled,
+            Name = displayName,
+            AppUserModelId = userModelId,
             Description = $"Test UWP description for {displayName}",
-            AppListEntry = "default",
-            BackgroundColor = "#000000",
-            EntryPoint = "TestApp.App",
             CanRunElevated = false,
-            LogoPath = string.Empty,
-            Package = CreateMockUWPPackage(displayName, userModelId),
+            Package = CreateMockPackageMetadata(displayName, userModelId, packageLocation),
         };
     }
 
     /// <summary>
-    /// Creates a mock UWP package for testing purposes.
+    /// Creates package metadata for testing purposes.
     /// </summary>
     /// <param name="displayName">The display name of the package.</param>
     /// <param name="userModelId">The user model ID of the package.</param>
-    /// <returns>A new UWP package instance.</returns>
-    private static UWP CreateMockUWPPackage(string displayName, string userModelId)
+    /// <param name="packageLocation">An optional package installation directory.</param>
+    /// <returns>New package metadata.</returns>
+    private static PackageMetadata CreateMockPackageMetadata(string displayName, string userModelId, string packageLocation)
     {
         var mockPackage = new MockPackage
         {
             Name = displayName,
             FullName = userModelId,
             FamilyName = $"{displayName}_8wekyb3d8bbwe",
-            InstalledLocation = $"C:\\Program Files\\WindowsApps\\{displayName}",
+            InstalledLocation = packageLocation ?? $"C:\\Program Files\\WindowsApps\\{displayName}",
         };
 
-        return new UWP(mockPackage)
-        {
-            Location = mockPackage.InstalledLocation,
-            LocationLocalized = mockPackage.InstalledLocation,
-        };
+        return new PackageMetadata(mockPackage);
     }
 
     /// <summary>

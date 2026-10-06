@@ -102,7 +102,7 @@ public class UninstallerAppCatalogFilterTests
                 priority: 0,
                 new AppCatalogSourceReference("packaged", "Contoso_1.0.0.0_x64__publisher"),
                 [],
-                new PackagedAppSnapshot
+                new PackagedAppPayload
                 {
                     Name = "Uninstall Contoso",
                     PackageFullName = "Contoso_1.0.0.0_x64__publisher",
@@ -160,7 +160,5 @@ public class UninstallerAppCatalogFilterTests
     }
 
     private static string TemporarySettingsPath()
-    {
-        return Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
-    }
+        => Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
 }
