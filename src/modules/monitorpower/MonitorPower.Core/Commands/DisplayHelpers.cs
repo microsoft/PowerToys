@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -703,6 +704,48 @@ internal static partial class DisplayHelpers
         Array.Resize(ref pathArray, (int)numPathArrayElements);
         Array.Resize(ref modeInfoArray, (int)numModeInfoArrayElements);
         return (pathArray, modeInfoArray);
+    }
+
+    public static unsafe (DISPLAYCONFIG_PATH_INFO[] paths, DISPLAYCONFIG_MODE_INFO[] modes) GetAllPathsWithModes()
+    {
+        const int maxAttempts = 3;
+        const int errorInsufficientBuffer = 122;
+        var flags = QDC_ALL_PATHS | QDC_VIRTUAL_MODE_AWARE;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            var result = GetDisplayConfigBufferSizes(flags, out var pathCount, out var modeCount);
+            if (result != 0)
+            {
+                throw new Win32Exception(result, "Could not query the display configuration buffer sizes.");
+            }
+
+            var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+            fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
+            {
+                fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
+                {
+                    result = QueryDisplayConfig(flags, ref pathCount, pathsPtr, ref modeCount, modesPtr, nint.Zero);
+                }
+            }
+
+            if (result == errorInsufficientBuffer && attempt + 1 < maxAttempts)
+            {
+                continue;
+            }
+
+            if (result != 0)
+            {
+                throw new Win32Exception(result, "Could not query the display topology.");
+            }
+
+            Array.Resize(ref paths, (int)pathCount);
+            Array.Resize(ref modes, (int)modeCount);
+            return (paths, modes);
+        }
+
+        throw new InvalidOperationException("The display topology changed repeatedly while it was being queried.");
     }
 
     // manageState: when true (default), SaveState() is called before the switch and

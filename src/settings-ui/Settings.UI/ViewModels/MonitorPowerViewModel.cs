@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using MonitorPower;
@@ -25,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public sealed class MonitorPowerViewModel : Observable
     {
         private bool _xboxControllerEnabled = LoadXboxControllerEnabled();
+        private readonly DispatcherQueue _dispatcher;
         private readonly ObservableCollection<MonitorDisplayInfo> _displays = new();
         private readonly ObservableCollection<ProfileInfo> _profiles = new();
         private MonitorDisplayInfo? _selectedDisplay;
@@ -105,6 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public MonitorPowerViewModel()
         {
+            _dispatcher = DispatcherQueue.GetForCurrentThread();
             LoadDisplays();
             LoadProfiles();
         }
@@ -170,7 +173,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         var targetInfo = paths[i].targetInfo;
                         var name = DisplayHelpers.GetTargetFriendlyName(targetInfo);
                         var tech = DisplayHelpers.GetOutputTechnologyName(targetInfo.outputTechnology);
-                        var modeInfo = modes.Length > paths[i].sourceInfo.sourceModeInfoIdx ? modes[paths[i].sourceInfo.sourceModeInfoIdx] : default;
+                        var sourceModeInfoIndex = paths[i].sourceInfo.sourceModeInfoIdx;
+                        var sourceMode = modes.Length > sourceModeInfoIndex ? modes[sourceModeInfoIndex] : default;
+                        var width = sourceMode.modeInfo.sourceMode.width;
+                        var height = sourceMode.modeInfo.sourceMode.height;
 
                         displayInfos.Add(new MonitorDisplayInfo
                         {
@@ -180,14 +186,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             AdapterId = targetInfo.adapterId.ToString(),
                             TargetId = targetInfo.id,
                             IsActive = (paths[i].flags & 1) != 0,
-                            Resolution = modeInfo.modeInfo.targetMode.targetVideoSignalInfo.activeSize.cx > 0
-                                ? $"{modeInfo.modeInfo.targetMode.targetVideoSignalInfo.activeSize.cx}x{modeInfo.modeInfo.targetMode.targetVideoSignalInfo.activeSize.cy}"
+                            Resolution = width > 0
+                                ? $"{width}x{height}"
                                 : "Unknown",
+                            PositionX = sourceMode.modeInfo.sourceMode.position.x,
+                            PositionY = sourceMode.modeInfo.sourceMode.position.y,
+                            PixelWidth = width,
+                            PixelHeight = height,
                             IsInternal = DisplayHelpers.IsInternalTechnology(targetInfo.outputTechnology)
                         });
                     }
 
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    var minX = displayInfos.Min(d => d.PositionX);
+                    var minY = displayInfos.Min(d => d.PositionY);
+                    var maxX = displayInfos.Max(d => d.PositionX + (int)d.PixelWidth);
+                    var maxY = displayInfos.Max(d => d.PositionY + (int)d.PixelHeight);
+                    var scale = Math.Min(680d / Math.Max(1, maxX - minX), 240d / Math.Max(1, maxY - minY));
+                    foreach (var display in displayInfos)
+                    {
+                        display.LayoutLeft = 10 + ((display.PositionX - minX) * scale);
+                        display.LayoutTop = 10 + ((display.PositionY - minY) * scale);
+                        display.LayoutWidth = Math.Max(48, display.PixelWidth * scale);
+                        display.LayoutHeight = Math.Max(36, display.PixelHeight * scale);
+                    }
+
+                    RunOnUiThread(() =>
                     {
                         _displays.Clear();
                         foreach (var d in displayInfos)
@@ -199,7 +222,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    StatusMessage = $"Error loading displays: {ex.Message}";
+                    RunOnUiThread(() => StatusMessage = $"Error loading displays: {ex.Message}");
                 }
             });
         }
@@ -216,7 +239,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     var profiles = DisplayHelpers.GetSavedProfiles();
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiThread(() =>
                     {
                         _profiles.Clear();
                         foreach (var (fileName, name) in profiles)
@@ -228,7 +251,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    StatusMessage = $"Error loading profiles: {ex.Message}";
+                    RunOnUiThread(() => StatusMessage = $"Error loading profiles: {ex.Message}");
                 }
             });
         }
@@ -263,7 +286,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     var result = DisplayHelpers.SaveNamedProfile(NewProfileName, selectedTargets);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiThread(() =>
                     {
                         StatusMessage = result;
                         if (!result.StartsWith("Error", StringComparison.OrdinalIgnoreCase))
@@ -279,14 +302,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiThread(() =>
                     {
                         StatusMessage = $"Error saving profile: {ex.Message}";
                     });
                 }
                 finally
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => IsApplying = false);
+                    RunOnUiThread(() => IsApplying = false);
                 }
             });
         }
@@ -308,9 +331,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     var result = DisplayHelpers.ApplyNamedProfile(SelectedProfile.FileName, progress =>
                     {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() => StatusMessage = progress);
+                        RunOnUiThread(() => StatusMessage = progress);
                     });
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiThread(() =>
                     {
                         StatusMessage = result;
                         LoadDisplays();
@@ -318,14 +341,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    RunOnUiThread(() =>
                     {
                         StatusMessage = $"Error applying profile: {ex.Message}";
                     });
                 }
                 finally
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() => IsApplying = false);
+                    RunOnUiThread(() => IsApplying = false);
                 }
             });
         }
@@ -453,6 +476,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             return default;
         }
+
+        private void RunOnUiThread(Action action)
+        {
+            if (_dispatcher.HasThreadAccess)
+            {
+                action();
+                return;
+            }
+
+            _dispatcher.TryEnqueue(() => action());
+        }
     }
 
     public class MonitorDisplayInfo : INotifyPropertyChanged
@@ -467,6 +501,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsActive { get; set; }
         public string Resolution { get; set; } = string.Empty;
         public bool IsInternal { get; set; }
+        public int PositionX { get; set; }
+        public int PositionY { get; set; }
+        public uint PixelWidth { get; set; }
+        public uint PixelHeight { get; set; }
+        public double LayoutLeft { get; set; }
+        public double LayoutTop { get; set; }
+        public double LayoutWidth { get; set; }
+        public double LayoutHeight { get; set; }
 
         public bool IsSelected
         {

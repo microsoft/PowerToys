@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -14,8 +15,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public DisplayProfilesPage()
         {
+            Logger.LogInfo("Creating Monitor Power Settings page.");
             DataContext = ViewModel;
             InitializeComponent();
+            Logger.LogInfo("Monitor Power Settings page created.");
         }
 
         private async void ApplyProfile_Click(object sender, RoutedEventArgs e)

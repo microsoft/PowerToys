@@ -6565,9 +6565,9 @@ The break timer font matches the text font.</value>
   <data name="CmdPal_MonitorPower_XboxController.Description" xml:space="preserve"><value>Press Guide + View to open Monitor Power and choose a display profile.</value></data>
   <data name="CmdPal_MonitorPower_Test.Header" xml:space="preserve"><value>Test Monitor Power</value></data>
   <data name="CmdPal_MonitorPower_Test.Description" xml:space="preserve"><value>Open Monitor Power in Command Palette.</value></data>
-  <data name="DisplayProfiles.Header" xml:space="preserve"><value>Monitor Power</value></data>
+  <data name="DisplayProfiles.ModuleTitle" xml:space="preserve"><value>Monitor Power</value></data>
   <data name="MonitorPower/ModuleTitle" xml:space="preserve"><value>Monitor Power</value></data>
-  <data name="DisplayProfiles.Description" xml:space="preserve"><value>Open and manage saved display layouts with your controller.</value></data>
+  <data name="DisplayProfiles.ModuleDescription" xml:space="preserve"><value>Open and manage saved display layouts with your controller.</value></data>
   <data name="DisplayProfiles_Controller.Header" xml:space="preserve"><value>Controller shortcut</value></data>
   <data name="DisplayProfiles_ControllerEnabled.Header" xml:space="preserve"><value>Enable controller shortcut</value></data>
   <data name="DisplayProfiles_ControllerEnabled.Description" xml:space="preserve"><value>Use an Xbox controller to open the display profile selector.</value></data>
