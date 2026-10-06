@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CmdPal.Common;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Win32;
 
 namespace Microsoft.CmdPal.Ext.Apps.Helpers;
@@ -20,7 +20,7 @@ internal static class AppxIconLoader
 
     private static IconSearchResult GetTargetSizeIcon(
         IReadOnlyList<IconCandidate> candidates,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         bool highContrast,
         int appIconSize,
@@ -57,7 +57,7 @@ internal static class AppxIconLoader
             ? IconSearchResult.NotFound()
             : IconSearchResult.FoundTargetSize(
                 bestCandidate.Path,
-                bestCandidate.LogoType,
+                bestCandidate.IsHighContrast,
                 bestCandidate.TargetSize!.Value);
     }
 
@@ -65,7 +65,7 @@ internal static class AppxIconLoader
         IconCandidate candidate,
         IconCandidate current,
         int requestedSize,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         IconCandidate? resolvedCandidate)
     {
@@ -98,7 +98,7 @@ internal static class AppxIconLoader
 
     private static IconSearchResult GetScaleIcon(
         IReadOnlyList<IconCandidate> candidates,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         bool highContrast,
         IconCandidate? resolvedCandidate)
@@ -121,13 +121,13 @@ internal static class AppxIconLoader
 
         return bestCandidate is null
             ? IconSearchResult.NotFound()
-            : IconSearchResult.FoundScaled(bestCandidate.Path, bestCandidate.LogoType);
+            : IconSearchResult.FoundScaled(bestCandidate.Path, bestCandidate.IsHighContrast);
     }
 
     private static bool IsBetterScaleCandidate(
         IconCandidate candidate,
         IconCandidate current,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         IconCandidate? resolvedCandidate)
     {
@@ -217,8 +217,10 @@ internal static class AppxIconLoader
         return true;
     }
 
-    private static bool IsSelectionQualifier(string qualifierName) =>
-        qualifierName is "scale" or "targetsize" or "contrast" or "theme" or "altform";
+    private static bool IsSelectionQualifier(string qualifierName)
+    {
+        return qualifierName is "scale" or "targetsize" or "contrast" or "theme" or "altform";
+    }
 
     private static int GetContrastScore(IconCandidate candidate, string desiredContrast)
     {
@@ -240,25 +242,25 @@ internal static class AppxIconLoader
         return 1;
     }
 
-    private static int GetThemeScore(IconCandidate candidate, Theme theme)
+    private static int GetThemeScore(IconCandidate candidate, PackagedIconTheme theme)
     {
         if (candidate.Theme is null)
         {
             return 1;
         }
 
-        var desiredTheme = theme is Theme.Light or Theme.HighContrastWhite ? "light" : "dark";
+        var desiredTheme = theme.IsLight ? "light" : "dark";
         return string.Equals(candidate.Theme, desiredTheme, StringComparison.OrdinalIgnoreCase) ? 2 : 0;
     }
 
-    private static int GetAlternateFormScore(IconCandidate candidate, Theme theme)
+    private static int GetAlternateFormScore(IconCandidate candidate, PackagedIconTheme theme)
     {
         if (candidate.AlternateForm is null)
         {
             return 1;
         }
 
-        if (theme is Theme.Light or Theme.HighContrastWhite)
+        if (theme.IsLight)
         {
             if (string.Equals(candidate.AlternateForm, "lightunplated", StringComparison.OrdinalIgnoreCase))
             {
@@ -278,18 +280,20 @@ internal static class AppxIconLoader
 
     private static (int Context, int Contrast, int Theme, int AlternateForm) GetPreference(
         IconCandidate candidate,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         IconCandidate? resolvedCandidate)
-        => (
+    {
+        return (
             GetContextScore(candidate, resolvedCandidate),
             GetContrastScore(candidate, desiredContrast),
             GetThemeScore(candidate, theme),
             GetAlternateFormScore(candidate, theme));
+    }
 
     private static IconSearchResult GetIcon(
         IReadOnlyList<IconCandidate> candidates,
-        Theme theme,
+        PackagedIconTheme theme,
         string desiredContrast,
         bool highContrast,
         int iconSize,
@@ -326,26 +330,22 @@ internal static class AppxIconLoader
 
     private static (bool NotUndersized, bool MatchesContrast, bool MeetsMinimumSize) GetResultPreference(
         IconSearchResult result,
-        Theme theme,
+        PackagedIconTheme theme,
         int iconSize)
     {
-        var highContrast = theme is Theme.HighContrastBlack or Theme.HighContrastOne
-            or Theme.HighContrastTwo or Theme.HighContrastWhite;
-        var preferredLogoType = highContrast ? LogoType.HighContrast : LogoType.Colored;
-
         return (
             !result.IsKnownUndersized(iconSize),
-            result.LogoType == preferredLogoType,
+            result.IsHighContrast == theme.IsHighContrast,
             result.MeetsMinimumSize(iconSize));
     }
 
     /// <summary>
-    /// Loads an icon from a packaged application, attempting to find the best match for the requested size.
+    /// Finds packaged artwork that best matches the requested rendering context and size.
     /// </summary>
     /// <param name="uri">The logical package-relative URI to the logo asset.</param>
-    /// <param name="theme">The current theme.</param>
+    /// <param name="theme">The captured surface theme and system contrast qualifier.</param>
     /// <param name="iconSize">The requested icon size in pixels.</param>
-    /// <param name="package">The packaged application.</param>
+    /// <param name="package">The immutable package identity and installation location.</param>
     /// <returns>
     /// An IconSearchResult. Use <see cref="IconSearchResult.MeetsMinimumSize"/> to check if
     /// the icon is confirmed to be large enough, or <see cref="IconSearchResult.IsTargetSizeIcon"/>
@@ -353,25 +353,30 @@ internal static class AppxIconLoader
     /// </returns>
     internal static IconSearchResult LogoPathFromUri(
         string uri,
-        Theme theme,
+        PackagedIconTheme theme,
         int iconSize,
-        PackageMetadata package)
+        PackagedAppIcons.Request package)
     {
-        ArgumentNullException.ThrowIfNull(package);
+        var resolvedResourcePath = TryResolvePackageResourcePath(uri, theme, iconSize, package);
 
-        var resolvedResourcePath = TryResolvePackageResourcePath(uri, package);
+        // PRI can return undersized or plated artwork even with explicit qualifiers.
+        // Keep filename selection for size, alternate-form and split-resource fallbacks.
         return LogoPathFromUri(uri, theme, iconSize, package, resolvedResourcePath);
     }
 
+    /// <summary>Finds context-compatible logo assets using a previously resolved PRI candidate and package-local fallbacks.</summary>
+    /// <param name="uri">The logical package-relative logo URI.</param>
+    /// <param name="theme">The rendering surface theme and captured contrast qualifier.</param>
+    /// <param name="iconSize">The requested icon size in pixels.</param>
+    /// <param name="package">The immutable package identity and installation location.</param>
+    /// <param name="resolvedResourcePath">A PRI-selected candidate, or null when no resource index result is available.</param>
     internal static IconSearchResult LogoPathFromUri(
         string uri,
-        Theme theme,
+        PackagedIconTheme theme,
         int iconSize,
-        PackageMetadata package,
+        PackagedAppIcons.Request package,
         string? resolvedResourcePath)
     {
-        ArgumentNullException.ThrowIfNull(package);
-
         if (string.IsNullOrWhiteSpace(uri) || iconSize <= 0)
         {
             return IconSearchResult.NotFound();
@@ -389,9 +394,9 @@ internal static class AppxIconLoader
         }
 
         var relativePath = NormalizePathSeparators(uri).TrimStart(Path.DirectorySeparatorChar);
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, relativePath));
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, "Assets", relativePath));
-        AddPathIfUnique(pathsToProbe, Path.Combine(package.InstalledLocation, "Images", relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.PackageLocation, relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.PackageLocation, "Assets", relativePath));
+        AddPathIfUnique(pathsToProbe, Path.Combine(package.PackageLocation, "Images", relativePath));
 
         var fallback = IconSearchResult.NotFound();
         foreach (var path in pathsToProbe)
@@ -432,17 +437,31 @@ internal static class AppxIconLoader
         paths.Add(path);
     }
 
-    private static string NormalizePathSeparators(string path) =>
-        path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+    private static string NormalizePathSeparators(string path)
+    {
+        return path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+    }
 
-    private static string? TryResolvePackageResourcePath(string uri, PackageMetadata package)
+    private static string? TryResolvePackageResourcePath(
+        string uri,
+        PackagedIconTheme theme,
+        int iconSize,
+        PackagedAppIcons.Request package)
     {
         if (string.IsNullOrWhiteSpace(uri) ||
-            string.IsNullOrWhiteSpace(package.Name) ||
-            string.IsNullOrWhiteSpace(package.FullName))
+            string.IsNullOrWhiteSpace(package.PackageFullName))
         {
             return null;
         }
+
+        // Package identity names cannot contain the underscore separating full-name fields.
+        var nameEnd = package.PackageFullName.IndexOf('_');
+        if (nameEnd <= 0)
+        {
+            return null;
+        }
+
+        var packageName = package.PackageFullName[..nameEnd];
 
         // Manifest asset paths are logical resource names. PRI resolution accounts for
         // physical resource roots and qualifiers stored in folders, such as "images" or "en-US".
@@ -453,13 +472,47 @@ internal static class AppxIconLoader
             return null;
         }
 
+        try
+        {
+            // Override the resource context for forced surface themes and capture contrast
+            // with the request. Qualifier folders need PRI selection as well as filename ranking.
+            var resources = PackagedAppIcons.GetResourceManager(package);
+            if (resources is not null)
+            {
+                var context = resources.CreateResourceContext();
+                context.QualifierValues["Theme"] = theme.IsLight ? "light" : "dark";
+                context.QualifierValues["Contrast"] = GetContrastQualifier(theme);
+                context.QualifierValues["TargetSize"] = iconSize.ToString(CultureInfo.InvariantCulture);
+                context.QualifierValues["AlternateForm"] = theme.IsLight ? "lightunplated" : "unplated";
+                var candidate = resources.MainResourceMap.TryGetValue("Files/" + normalizedResourcePath, context);
+                if (candidate?.Kind == ResourceCandidateKind.FilePath)
+                {
+                    var candidatePath = candidate.ValueAsString;
+                    if (!Path.IsPathFullyQualified(candidatePath))
+                    {
+                        candidatePath = Path.Combine(package.PackageLocation, candidatePath);
+                    }
+
+                    if (File.Exists(candidatePath))
+                    {
+                        return candidatePath;
+                    }
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            // Older/split resource indexes may require the installed-package Shell resolver.
+            PackagedAppIcons.ReportResourceFailure(package, exception);
+        }
+
         for (var i = 0; i < pathSegments.Length; i++)
         {
             pathSegments[i] = Uri.EscapeDataString(pathSegments[i]);
         }
 
-        var resourceUri = $"ms-resource://{package.Name}/Files/{string.Join('/', pathSegments)}";
-        var source = $"@{{{package.FullName}?{resourceUri}}}";
+        var resourceUri = $"ms-resource://{packageName}/Files/{string.Join('/', pathSegments)}";
+        var source = $"@{{{package.PackageFullName}?{resourceUri}}}";
         Span<char> output = stackalloc char[1024];
         var result = PInvoke.SHLoadIndirectString(source, output);
         if (result.Failed)
@@ -476,7 +529,7 @@ internal static class AppxIconLoader
     }
 
     private static IconSearchResult Probe(
-        Theme theme,
+        PackagedIconTheme theme,
         string path,
         int iconSize,
         string? resolvedResourcePath)
@@ -496,10 +549,20 @@ internal static class AppxIconLoader
         // Size variants must preserve the language and configuration selected by PRI.
         candidates.RemoveAll(candidate => !IsContextCompatible(candidate, resolvedCandidate));
 
-        var highContrast = theme is Theme.HighContrastBlack or Theme.HighContrastOne
-            or Theme.HighContrastTwo or Theme.HighContrastWhite;
-        var desiredContrast = theme is Theme.Light or Theme.HighContrastWhite ? ContrastWhite : ContrastBlack;
-        return GetIcon(candidates, theme, desiredContrast, highContrast, iconSize, resolvedCandidate);
+        var desiredContrast = theme.IsHighContrast ? GetContrastQualifier(theme)
+            : theme.IsLight ? ContrastWhite : ContrastBlack;
+        return GetIcon(candidates, theme, desiredContrast, theme.IsHighContrast, iconSize, resolvedCandidate);
+    }
+
+    private static string GetContrastQualifier(PackagedIconTheme theme)
+    {
+        return theme.Contrast switch
+        {
+            IconContrastMode.White => ContrastWhite,
+            IconContrastMode.Black => ContrastBlack,
+            IconContrastMode.High => "high",
+            _ => "standard",
+        };
     }
 
     private static List<IconCandidate> FindCandidates(string path)
@@ -606,10 +669,8 @@ internal static class AppxIconLoader
             return IconSearchResult.NotFound();
         }
 
-        var logoType = resolvedResourcePath.Contains("contrast-", StringComparison.OrdinalIgnoreCase)
-            ? LogoType.HighContrast
-            : LogoType.Colored;
-        return IconSearchResult.FoundScaled(resolvedResourcePath, logoType);
+        var isHighContrast = resolvedResourcePath.Contains("contrast-", StringComparison.OrdinalIgnoreCase);
+        return IconSearchResult.FoundScaled(resolvedResourcePath, isHighContrast);
     }
 
     private sealed class IconCandidate
@@ -630,8 +691,6 @@ internal static class AppxIconLoader
 
         internal bool IsHighContrast =>
             Contrast is not null && !string.Equals(Contrast, "standard", StringComparison.OrdinalIgnoreCase);
-
-        internal LogoType LogoType => IsHighContrast ? LogoType.HighContrast : LogoType.Colored;
 
         internal IconCandidate(string path, Dictionary<string, string> qualifiers)
         {

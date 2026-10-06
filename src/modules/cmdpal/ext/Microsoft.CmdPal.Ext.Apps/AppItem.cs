@@ -68,7 +68,7 @@ public sealed class AppItem
     /// <summary>Gets or sets the preferred packaged payload's family name, or null for a Win32 payload.</summary>
     public string? PackageFamilyName { get; set; }
 
-    /// <summary>Gets or sets the preferred row-icon source as an image path or native icon resource reference.</summary>
+    /// <summary>Gets or sets the preferred row-icon source as an image path, native resource reference or icon protocol request.</summary>
     /// <remarks>
     /// May include a resource index and intentionally differ from the launch target. An empty source allows
     /// target and generic fallbacks. The list projection creates icon requests; the host loads their images.

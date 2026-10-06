@@ -8,22 +8,16 @@ using System.IO;
 using System.Threading;
 using System.Xml.Linq;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Windows.Win32;
 using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
 
-using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
-
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-/// <summary>Reads one package manifest and resolves each application's display and icon resources.</summary>
+/// <summary>Reads one package manifest, resolving display text and retaining logical logo references.</summary>
 internal static class PackagedAppReader
 {
-    private const int ListIconSize = 20;
-    private const int JumboIconSize = 64;
-
     private static readonly XNamespace Uap3Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/3";
     private static readonly XNamespace Uap5Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/5";
     private static readonly XNamespace Uap8Namespace = "http://schemas.microsoft.com/appx/manifest/uap/windows10/8";
@@ -33,7 +27,6 @@ internal static class PackagedAppReader
     /// <summary>Returns visible manifest applications; failed application reads leave the scan incomplete.</summary>
     internal static unsafe IReadOnlyList<PackagedAppMetadata> ReadManifest(
         PackageMetadata package,
-        Theme theme,
         out bool isComplete,
         Action<Exception>? onError = null,
         CancellationToken cancellationToken = default)
@@ -95,7 +88,7 @@ internal static class PackagedAppReader
                     result.ThrowOnFailure();
                     var id = ReadStringValue(application, "ID");
                     applicationElements.TryGetValue(id, out var element);
-                    var app = ReadApplication(application, element, package, theme);
+                    var app = ReadApplication(application, element, package);
                     if (app is not null)
                     {
                         items.Add(app);
@@ -122,8 +115,7 @@ internal static class PackagedAppReader
     private static unsafe PackagedAppMetadata? ReadApplication(
         IAppxManifestApplication* application,
         XElement? element,
-        PackageMetadata package,
-        Theme theme)
+        PackageMetadata package)
     {
         if (ReadStringValue(application, "AppListEntry") == "none")
         {
@@ -168,19 +160,8 @@ internal static class PackagedAppReader
             largeLogoUri = ReadStringValue(application, "Logo");
         }
 
-        var icon = AppxIconLoader.LogoPathFromUri(smallLogoUri, theme, ListIconSize, package);
-        app.LogoPath = icon.IsFound ? icon.LogoPath! : string.Empty;
-        var jumboIcon = AppxIconLoader.LogoPathFromUri(smallLogoUri, theme, JumboIconSize, package);
-        if (!jumboIcon.MeetsMinimumSize(JumboIconSize) || !jumboIcon.IsFound)
-        {
-            var alternative = AppxIconLoader.LogoPathFromUri(largeLogoUri, theme, JumboIconSize, package);
-            if (alternative.IsFound)
-            {
-                jumboIcon = alternative;
-            }
-        }
-
-        app.JumboLogoPath = jumboIcon.IsFound ? jumboIcon.LogoPath! : string.Empty;
+        app.SmallLogoUri = smallLogoUri;
+        app.LargeLogoUri = largeLogoUri;
         return app;
     }
 

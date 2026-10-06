@@ -20,6 +20,13 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public partial class PackagedAppMetadataTests
 {
+    [TestMethod]
+    public void CacheKey_ContainsNoThemeState()
+    {
+        using var source = new PackagedAppSource(new SilentPackageCatalog());
+        Assert.AreEqual(Environment.OSVersion.Version.ToString(), source.CacheKey);
+    }
+
     [STATestMethod]
     [DoNotParallelize]
     public async Task Load_FailedManifestReportsIncompleteAndRecoversAfterWriterCloses()
@@ -255,7 +262,7 @@ public partial class PackagedAppMetadataTests
             File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), CreateManifest(executable));
             var package = TestDataHelper.CreateTestPackagedMetadata("Manifest fixture", packageLocation: root).Package;
 
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
             Assert.IsTrue(complete);
 
             Assert.AreEqual(1, apps.Count, "The real typed manifest reader should retain the application even without Executable.");
@@ -293,7 +300,7 @@ public partial class PackagedAppMetadataTests
             var extensions = CreateExecutionAliasExtension("wt.exe", extensionPrefix, aliasPrefix);
             File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), CreateManifest("WindowsTerminal.exe", extensions));
             var package = TestDataHelper.CreateTestPackagedMetadata("Manifest fixture", packageLocation: root).Package;
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
             Assert.IsTrue(complete);
 
             Assert.AreEqual(1, apps.Count);
@@ -342,7 +349,7 @@ public partial class PackagedAppMetadataTests
                 Path.Combine(root, "AppxManifest.xml"),
                 CreateManifest("WindowsTerminal.exe", CreateExecutionAliasExtension("wt.exe", "uap3", "desktop"), otherApplication));
             var package = TestDataHelper.CreateTestPackagedMetadata("Manifest fixture", packageLocation: root).Package;
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
             Assert.IsTrue(complete);
 
             Assert.AreEqual(2, apps.Count);
@@ -381,7 +388,7 @@ public partial class PackagedAppMetadataTests
             File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), manifest);
             var package = TestDataHelper.CreateTestPackagedMetadata(packageLocation: root).Package;
 
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
 
             Assert.IsTrue(complete);
             Assert.AreEqual(2, apps.Count);
@@ -421,7 +428,7 @@ public partial class PackagedAppMetadataTests
             File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), manifest);
             var package = TestDataHelper.CreateTestPackagedMetadata(packageLocation: root).Package;
 
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
 
             Assert.IsTrue(complete);
             Assert.AreEqual(hidden ? 0 : 1, apps.Count);
@@ -452,7 +459,7 @@ public partial class PackagedAppMetadataTests
                 .Replace("Description=\"Manifest executable metadata\"", string.Empty, StringComparison.Ordinal));
             var package = TestDataHelper.CreateTestPackagedMetadata(packageLocation: root).Package;
 
-            Assert.ThrowsExactly<COMException>(() => PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out _));
+            Assert.ThrowsExactly<COMException>(() => PackagedAppReader.ReadManifest(package, out _));
 
             using var writer = File.Open(path, FileMode.Open, FileAccess.Write, FileShare.None);
         }
@@ -466,7 +473,7 @@ public partial class PackagedAppMetadataTests
     [DataRow("Windows8")]
     [DataRow("Windows81")]
     [DataRow("Windows10")]
-    public void ReadManifest_SupportedSchemasResolveListAndHeroIcons(string schema)
+    public void ReadManifest_SupportedSchemasRetainLogicalLogoReferences(string schema)
     {
         var root = Path.Combine(Path.GetTempPath(), $"cmdpal-packaged-legacy-icons-{Guid.NewGuid():N}");
         Directory.CreateDirectory(Path.Combine(root, "Assets"));
@@ -521,12 +528,12 @@ public partial class PackagedAppMetadataTests
             File.WriteAllText(Path.Combine(root, "AppxManifest.xml"), manifest);
             var package = TestDataHelper.CreateTestPackagedMetadata(packageLocation: root).Package;
 
-            var apps = PackagedAppReader.ReadManifest(package, Utils.Theme.Light, out var complete);
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
 
             Assert.IsTrue(complete);
             Assert.AreEqual(1, apps.Count);
-            Assert.AreEqual(smallLogo, apps[0].LogoPath);
-            Assert.AreEqual(largeLogo, apps[0].JumboLogoPath);
+            Assert.AreEqual(@"Assets\SmallLogo.png", apps[0].SmallLogoUri);
+            Assert.AreEqual(@"Assets\LargeLogo.png", apps[0].LargeLogoUri);
         }
         finally
         {
