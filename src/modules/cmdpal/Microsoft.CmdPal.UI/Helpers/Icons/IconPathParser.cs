@@ -11,29 +11,21 @@ internal static class IconPathParser
 
     public static bool TryParseBinaryIconReference(string iconPath, out BinaryIconReference iconReference)
     {
-        var commaIndex = iconPath.IndexOf(',');
-        var path = commaIndex < 0 ? iconPath.AsSpan() : iconPath.AsSpan(0, commaIndex);
+        var commaIndex = iconPath.LastIndexOf(',');
+        var index = commaIndex < 0 ? 0 : ParseNativeIconIndex(iconPath.AsSpan(commaIndex + 1));
+        var hasIndex = commaIndex >= 0 && index != SignedConversionError;
+        var path = hasIndex ? iconPath.AsSpan(0, commaIndex) : iconPath.AsSpan();
 
         if (!path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
             && !path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-            && !path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
+            && !path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase)
+            && !(hasIndex && path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)))
         {
             iconReference = default;
             return false;
         }
 
-        var index = 0;
-        if (commaIndex >= 0)
-        {
-            index = ParseNativeIconIndex(iconPath.AsSpan(commaIndex + 1));
-            if (index == SignedConversionError)
-            {
-                iconReference = default;
-                return false;
-            }
-        }
-
-        iconReference = new(commaIndex < 0 ? iconPath : iconPath[..commaIndex], index);
+        iconReference = new(path.ToString(), hasIndex ? index : 0);
         return true;
     }
 
