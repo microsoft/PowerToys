@@ -7,13 +7,16 @@
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -67,6 +70,71 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Canvas.SetTop(tile, display.LayoutTop);
                 DisplayTopologyCanvas.Children.Add(tile);
             }
+
+            // Allinea il menu della modalita' allo stato reale: Extend se tutti i display sono attivi.
+            var allActive = ViewModel.PreviewDisplays.Count > 0 && ViewModel.PreviewDisplays.All(display => display.IsActive);
+            _updatingDisplayMode = true;
+            DisplayModeComboBox.SelectedIndex = allActive ? 0 : 1;
+            _updatingDisplayMode = false;
+        }
+
+        private bool _updatingDisplayMode;
+
+        private async void DisplayModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_updatingDisplayMode || DisplayModeComboBox.SelectedIndex < 0 || ViewModel.PreviewDisplays.Count == 0)
+            {
+                return;
+            }
+
+            var extend = DisplayModeComboBox.SelectedIndex == 0;
+            var allActive = ViewModel.PreviewDisplays.All(display => display.IsActive);
+            if (extend == allActive)
+            {
+                return;
+            }
+
+            await ViewModel.ApplyDisplayModeAsync(extend);
+        }
+
+        private void IdentifyDisplays_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var display in ViewModel.PreviewDisplays.Where(d => d.IsActive))
+            {
+                var overlay = new Window
+                {
+                    Content = new Grid
+                    {
+                        Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black),
+                        Children =
+                        {
+                            new TextBlock
+                            {
+                                Text = display.Index.ToString(System.Globalization.CultureInfo.CurrentCulture),
+                                FontSize = 72,
+                                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center,
+                            },
+                        },
+                    },
+                };
+
+                var presenter = OverlappedPresenter.Create();
+                presenter.SetBorderAndTitleBar(false, false);
+                presenter.IsResizable = false;
+                presenter.IsAlwaysOnTop = true;
+                overlay.AppWindow.SetPresenter(presenter);
+                overlay.AppWindow.IsShownInSwitchers = false;
+                overlay.AppWindow.MoveAndResize(new RectInt32(display.PositionX + 24, display.PositionY + 24, 160, 160));
+                overlay.Activate();
+
+                var timer = DispatcherQueue.CreateTimer();
+                timer.Interval = TimeSpan.FromSeconds(3);
+                timer.IsRepeating = false;
+                timer.Tick += (_, _) => overlay.Close();
+                timer.Start();
+            }
         }
 
         private void DisplayProfilesPage_Loaded(object sender, RoutedEventArgs e)
@@ -75,9 +143,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.OnPageLoaded();
         }
 
+        private void PreviewDisplay_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: MonitorDisplayInfo display })
+            {
+                ViewModel.TogglePreviewDisplaySelection(display);
+            }
+        }
+
+        private static bool TryGetProfile(object sender, out ProfileInfo profile)
+        {
+            if (sender is FrameworkElement { DataContext: ProfileInfo fromContext })
+            {
+                profile = fromContext;
+                return true;
+            }
+
+            if (sender is FrameworkElement { Tag: ProfileInfo fromTag })
+            {
+                profile = fromTag;
+                return true;
+            }
+
+            profile = null!;
+            return false;
+        }
+
         private async void ApplyProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: ProfileInfo profile })
+            if (TryGetProfile(sender, out var profile))
             {
                 ViewModel.SelectedProfile = profile;
                 await ViewModel.ApplyProfileAsync();
@@ -86,26 +180,44 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void SaveProfile_Click(object sender, RoutedEventArgs e)
         {
-            bool overwrite = false;
-            if (ViewModel.ProfileExists(ViewModel.NewProfileName))
+            var nameInput = new TextBox
             {
-                var dialog = new ContentDialog
-                {
-                    XamlRoot = XamlRoot,
-                    Title = "Overwrite saved profile?",
-                    Content = $"A profile named '{ViewModel.NewProfileName}' already exists. Replace it with the current display selection?",
-                    PrimaryButtonText = "Overwrite",
-                    CloseButtonText = "Cancel",
-                    DefaultButton = ContentDialogButton.Close,
-                };
-                overwrite = await dialog.ShowAsync() == ContentDialogResult.Primary;
-                if (!overwrite)
-                {
-                    return;
-                }
-            }
+                PlaceholderText = GetLocalizedString("DisplayProfiles_ProfileName_Placeholder", "Profile name"),
+            };
+            AutomationProperties.SetName(nameInput, GetLocalizedString("DisplayProfiles_ProfileName_AccessibilityName", "Profile name"));
+            var validationMessage = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                Visibility = Visibility.Collapsed,
+            };
+            var content = new StackPanel { Spacing = 8 };
+            content.Children.Add(nameInput);
+            content.Children.Add(validationMessage);
 
-            await ViewModel.SaveProfileAsync(overwrite);
+            var dialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Title", "Save display profile"),
+                Content = content,
+                PrimaryButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Save", "Save"),
+                CloseButtonText = GetLocalizedString("DisplayProfiles_SaveProfileDialog_Cancel", "Cancel"),
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                if (!ViewModel.TryValidateProfileName(nameInput.Text, out var message))
+                {
+                    validationMessage.Text = message;
+                    validationMessage.Visibility = Visibility.Visible;
+                    args.Cancel = true;
+                }
+            };
+            nameInput.TextChanged += (_, _) => validationMessage.Visibility = Visibility.Collapsed;
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                await ViewModel.SaveProfileAsync(nameInput.Text);
+            }
         }
 
         private async void TestController_Click(object sender, RoutedEventArgs e)
@@ -113,9 +225,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await ViewModel.TestControllerAsync();
         }
 
+        private static bool HasText(string? value) => !string.IsNullOrWhiteSpace(value);
+
         private async void CaptureControllerShortcut_Click(object sender, RoutedEventArgs e)
         {
             await ViewModel.CaptureControllerShortcutAsync();
+        }
+
+        private void ResetControllerShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ResetControllerShortcut();
         }
 
         private void OpenDiagnosticsLog_Click(object sender, RoutedEventArgs e)
@@ -125,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void DeleteProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: ProfileInfo profile })
+            if (TryGetProfile(sender, out var profile))
             {
                 ViewModel.SelectedProfile = profile;
                 _ = ConfirmDeleteProfileAsync(profile);
@@ -134,13 +253,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void OverwriteProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: ProfileInfo profile })
+            if (TryGetProfile(sender, out var profile))
             {
                 var dialog = new ContentDialog
                 {
                     XamlRoot = XamlRoot,
                     Title = "Overwrite profile?",
-                    Content = $"Replace '{profile.Name}' with the currently selected displays and layout?",
+                    Content = $"Replace '{profile.Name}' with the current active displays and layout?",
                     PrimaryButtonText = "Overwrite",
                     CloseButtonText = "Cancel",
                     DefaultButton = ContentDialogButton.Close,
@@ -155,7 +274,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void RenameProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: ProfileInfo profile } &&
+            if (TryGetProfile(sender, out var profile) &&
                 await PromptForProfileNameAsync("Rename profile", profile.Name) is { } newName)
             {
                 await ViewModel.RenameProfileAsync(profile, newName);
@@ -164,7 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void DuplicateProfile_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { DataContext: ProfileInfo profile } &&
+            if (TryGetProfile(sender, out var profile) &&
                 await PromptForProfileNameAsync("Duplicate profile", $"{profile.Name} Copy") is { } newName)
             {
                 await ViewModel.DuplicateProfileAsync(profile, newName);
@@ -210,6 +329,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return await dialog.ShowAsync() == ContentDialogResult.Primary
                 ? nameInput.Text
                 : null;
+        }
+
+        private static string GetLocalizedString(string key, string fallback)
+        {
+            var value = ResourceLoaderInstance.ResourceLoader.GetString(key);
+            return string.IsNullOrWhiteSpace(value) ? fallback : value;
         }
     }
 }

@@ -52,6 +52,33 @@ public sealed class MonitorPowerTests
     }
 
     [TestMethod]
+    public void ProfilePersistence_RejectsDuplicateNamesAndDisplayCombinations()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"MonitorPowerTests-{Guid.NewGuid():N}");
+        var store = new MonitorPowerProfilePersistence(directory);
+        var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 12, HighPart = 34 }, 5);
+        var second = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 56, HighPart = 78 }, 9);
+        var targets = new[] { first, second };
+
+        try
+        {
+            store.Save("Desk.json", new MonitorPowerProfile { Name = "Desk", Targets = targets }, overwrite: false);
+            store.Save("Travel.json", new MonitorPowerProfile { Name = "Travel", Targets = [first] }, overwrite: false);
+
+            Assert.IsNotNull(store.GetConflict("desk", [second, first]));
+            Assert.IsNotNull(store.GetConflict("Another name", [second, first]));
+            Assert.IsNull(store.GetConflict("Desk", targets, excludedFileName: "Desk.json"));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public void TopologyMapping_AssignsOneUniqueDeviceNamePerTarget()
     {
         var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 1 }, 1);

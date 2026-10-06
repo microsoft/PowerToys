@@ -6573,17 +6573,24 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ControllerEnabled.Description" xml:space="preserve"><value>Use an Xbox controller to open the display profile selector.</value></data>
   <data name="DisplayProfiles_ControllerShortcut.Header" xml:space="preserve"><value>Shortcut</value></data>
   <data name="DisplayProfiles_ControllerShortcut.Description" xml:space="preserve"><value>Hold two supported controller buttons together to choose the activation chord. The Xbox/Guide button may be reserved by Windows.</value></data>
-  <data name="DisplayProfiles_ControllerShortcut_Capture" xml:space="preserve"><value>Capture chord</value></data>
-  <data name="DisplayProfiles_ControllerShortcut_Listening" xml:space="preserve"><value>Listening...</value></data>
   <data name="DisplayProfiles_ControllerTest.Header" xml:space="preserve"><value>Test the shortcut</value></data>
   <data name="DisplayProfiles_ControllerTest.Description" xml:space="preserve"><value>Check whether an XInput controller is connected and whether its buttons are readable.</value></data>
   <data name="DisplayProfiles_ControllerTest_Status.Text" xml:space="preserve"><value>Controller input diagnostics are active.</value></data>
 <data name="Shell_DisplayProfiles.Content" xml:space="preserve"><value>Monitor Power</value></data>
   <data name="DisplayProfiles_CurrentTopology.Header" xml:space="preserve"><value>Current Display Topology</value></data>
-<data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Displays are shown in their desktop positions. Mirrored outputs share a tile.</value></data>
+  <data name="DisplayProfiles_ProfilesSection.Title" xml:space="preserve"><value>Display Profiles</value></data>
+  <data name="DisplayProfiles_ProfilesSection.Subtitle" xml:space="preserve"><value>Select a profile to apply it. Saved profiles keep the selected monitors, positions, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_ControllerSection.Title" xml:space="preserve"><value>Controller shortcut</value></data>
+  <data name="DisplayProfiles_ControllerSection.Subtitle" xml:space="preserve"><value>Use an Xbox controller chord to open the quick display profile selector overlay.</value></data>
+  <data name="DisplayProfiles_DiagnosticsSection.Title" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DisplayProfiles_ActivationSection.Title" xml:space="preserve"><value>Activation Shortcut</value></data>
+  <data name="DisplayProfiles_ActivationSection.Subtitle" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
+<data name="DisplayProfiles_TopologySection.Title" xml:space="preserve"><value>Current Display Topology</value></data>
+  <data name="DisplayProfiles_TopologySection.Subtitle" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
+<data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
 <data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
 <data name="DisplayProfiles_RefreshDisplays.Content" xml:space="preserve"><value>Refresh</value></data>
-<data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Select displays to include in a saved profile. Each row shows its connection type, resolution, orientation, and status.</value></data>
+<data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Monitor names, connection type, resolution, orientation, and active status are shown below. Saving a profile captures the current active display topology.</value></data>
 <data name="DisplayProfiles_EmptyState.Text" xml:space="preserve"><value>No displays are available. Connect or enable a display, then refresh.</value></data>
 <data name="DisplayProfiles_PrimaryBadge.Text" xml:space="preserve"><value>Primary</value></data>
   <data name="DisplayProfiles_BuiltInBadge.Text" xml:space="preserve"><value>Built-in</value></data>
@@ -6594,10 +6601,19 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_Diagnostics_OpenLog.Content" xml:space="preserve"><value>Open diagnostics log</value></data>
   <data name="DisplayProfiles_Profiles.Header" xml:space="preserve"><value>Display Profiles</value></data>
   <data name="DisplayProfiles_Profiles_Header.Header" xml:space="preserve"><value>Saved Profiles</value></data>
-  <data name="DisplayProfiles_NewProfileName.Header" xml:space="preserve"><value>Profile Name</value></data>
-  <data name="DisplayProfiles_SaveProfile.Header" xml:space="preserve"><value>Save Profile</value></data>
+  <data name="DisplayProfiles_SaveProfile.Content" xml:space="preserve"><value>Save profile</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Title" xml:space="preserve"><value>Save display profile</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="DisplayProfiles_SaveProfileDialog_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="DisplayProfiles_ProfileName_Placeholder" xml:space="preserve"><value>Profile name</value></data>
+  <data name="DisplayProfiles_ProfileName_AccessibilityName" xml:space="preserve"><value>Profile name</value></data>
+  <data name="DisplayProfiles_ProfileName_Required" xml:space="preserve"><value>Enter a profile name.</value></data>
+  <data name="DisplayProfiles_ProfileName_Reserved" xml:space="preserve"><value>Built-in profile names are reserved.</value></data>
+  <data name="DisplayProfiles_ProfileName_NoDisplaysSelected" xml:space="preserve"><value>Select at least one active display in the topology preview.</value></data>
+  <data name="DisplayProfiles_ProfileName_CheckFailed" xml:space="preserve"><value>Could not check saved profiles: {0}</value></data>
   <data name="DisplayProfiles_SavedProfiles_Description.Header" xml:space="preserve"><value>Click Apply to activate a saved display configuration. Profiles store monitor positions, resolutions, and orientations.</value></data>
-  <data name="DisplayProfiles_SavedProfiles_EmptyState.Text" xml:space="preserve"><value>No custom profiles saved yet. Built-in profiles are available above. Select displays and save a profile to add one.</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Edit.AutomationProperties.Name" xml:space="preserve"><value>Edit controller activation chord</value></data>
+  <data name="DisplayProfiles_ControllerShortcut_Edit.ToolTipService.ToolTip" xml:space="preserve"><value>Change controller chord. Right-click to reset to default.</value></data>
   <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>

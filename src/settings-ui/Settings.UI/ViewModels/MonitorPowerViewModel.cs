@@ -36,12 +36,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly ObservableCollection<ProfileInfo> _profiles = new();
         private MonitorDisplayInfo? _selectedDisplay;
         private ProfileInfo? _selectedProfile;
-        private string _newProfileName = string.Empty;
         private string _statusMessage = string.Empty;
         private bool _isLoading;
         private bool _isProfilesLoading;
         private bool _hasDisplays;
-        private bool _hasProfiles;
         private string _controllerStatus = "Controller status has not been checked.";
         private bool _isApplying;
         private string _activationShortcut = "Win + Shift + P";
@@ -84,13 +82,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ProfileInfo? SelectedProfile
         {
             get => _selectedProfile;
-            set => Set(ref _selectedProfile, value);
-        }
-
-        public string NewProfileName
-        {
-            get => _newProfileName;
-            set => Set(ref _newProfileName, value);
+            set
+            {
+                if (Set(ref _selectedProfile, value))
+                {
+                    foreach (var profile in Profiles)
+                    {
+                        profile.IsCurrent = ReferenceEquals(profile, value);
+                    }
+                }
+            }
         }
 
         public string StatusMessage
@@ -117,17 +118,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             private set => Set(ref _hasDisplays, value);
         }
 
-        public bool HasProfiles
-        {
-            get => _hasProfiles;
-            private set => Set(ref _hasProfiles, value);
-        }
-
         public bool IsApplying
         {
             get => _isApplying;
-            set => Set(ref _isApplying, value);
+            set
+            {
+                if (Set(ref _isApplying, value))
+                {
+                    OnPropertyChanged(nameof(CanSaveProfile));
+                }
+            }
         }
+
+        public bool CanSaveProfile => !IsApplying && _displays.Any(display => display.IsSelected);
 
         public string ActivationShortcut
         {
@@ -217,26 +220,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string ControllerFirstButton => GetControllerButton(0);
+
+        public string ControllerSecondButton => GetControllerButton(1);
+
         public bool IsCapturingControllerShortcut
         {
             get => _isCapturingControllerShortcut;
             private set
             {
-                if (Set(ref _isCapturingControllerShortcut, value))
-                {
-                    OnPropertyChanged(nameof(ControllerCaptureButtonText));
-                }
+                Set(ref _isCapturingControllerShortcut, value);
             }
         }
-
-        public string ControllerCaptureButtonText => IsCapturingControllerShortcut
-            ? GetResourceString("DisplayProfiles_ControllerShortcut_Listening", "Listening...")
-            : GetResourceString("DisplayProfiles_ControllerShortcut_Capture", "Capture chord");
 
         public string ControllerStatus
         {
             get => _controllerStatus;
             set => Set(ref _controllerStatus, value);
+        }
+
+        private string GetControllerButton(int index)
+        {
+            var buttons = ControllerShortcut.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            return buttons.Length > index ? buttons[index] : string.Empty;
+        }
+
+        public void ResetControllerShortcut()
+        {
+            ControllerShortcut = "View + A";
+            ControllerStatus = "Controller chord reset to View + A.";
         }
 
         public MonitorPowerViewModel()
@@ -418,6 +430,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public async Task LoadDisplaysAsync()
         {
             var loadTimer = Stopwatch.StartNew();
+            var previouslySelectedTargets = GetSelectedTargets().ToHashSet();
             IsLoading = true;
             StatusMessage = "Loading display topology...";
             Logger.LogInfo("Monitor Power display topology query started.");
@@ -494,6 +507,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                                 sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source &&
                                 sourceMode.modeInfo.sourceMode.position.x == 0 &&
                                 sourceMode.modeInfo.sourceMode.position.y == 0,
+                            IsSelected = active && previouslySelectedTargets.Contains(
+                                new DisplayHelpers.DisplayTargetId(targetInfo.adapterId, targetInfo.id)),
                             PositionX = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
                                 ? sourceMode.modeInfo.sourceMode.position.x
                                 : 0,
@@ -548,10 +563,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         var scale = Math.Min(660d / Math.Max(1, maxX - minX), 205d / Math.Max(1, maxY - minY));
                         foreach (var display in activePreviewDisplays)
                         {
-                            display.LayoutLeft = 20 + ((display.PositionX - minX) * scale);
-                            display.LayoutTop = 12 + ((display.PositionY - minY) * scale);
-                            display.LayoutWidth = Math.Max(1, (display.PixelWidth * scale) - 2);
-                            display.LayoutHeight = Math.Max(1, (display.PixelHeight * scale) - 2);
+                            display.LayoutLeft = 20 + 4 + ((display.PositionX - minX) * scale);
+                            display.LayoutTop = 12 + 4 + ((display.PositionY - minY) * scale);
+                            display.LayoutWidth = Math.Max(1, (display.PixelWidth * scale) - 8);
+                            display.LayoutHeight = Math.Max(1, (display.PixelHeight * scale) - 8);
                         }
 
                         for (int i = 0; i < inactivePreviewDisplays.Length; i++)
@@ -650,6 +665,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     var savedProfiles = DisplayHelpers.GetSavedProfiles();
                     RunOnUiThread(() =>
                     {
+                        var previousProfile = SelectedProfile;
                         _profiles.Clear();
                         _profiles.Add(new ProfileInfo
                         {
@@ -665,7 +681,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             _profiles.Add(new ProfileInfo { FileName = fileName, Name = name });
                         }
-                        HasProfiles = savedProfiles.Count > 0;
+
+                        // Profilo di default: "All displays". Se c'era gia' una selezione ancora valida, la mantiene.
+                        SelectedProfile = _profiles.FirstOrDefault(profile =>
+                                previousProfile != null &&
+                                profile.BuiltInProfile == previousProfile.BuiltInProfile &&
+                                string.Equals(profile.FileName, previousProfile.FileName, StringComparison.Ordinal))
+                            ?? _profiles[0];
                         StatusMessage = $"Loaded {savedProfiles.Count} saved profile(s)";
                         Logger.LogInfo($"Monitor Power loaded {savedProfiles.Count} saved profile(s) in {loadTimer.ElapsedMilliseconds} ms.");
                     });
@@ -687,54 +709,83 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _ = LoadProfilesAsync();
         }
 
-        public bool ProfileExists(string name)
+        public void TogglePreviewDisplaySelection(MonitorDisplayInfo display)
         {
-            return DisplayHelpers.GetSavedProfiles().Any(
-                profile => string.Equals(profile.Name, name.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (!display.IsActive)
+            {
+                return;
+            }
+
+            var mirroredDisplays = _displays
+                .Where(candidate => candidate.IsActive && string.Equals(candidate.SourceKey, display.SourceKey, StringComparison.Ordinal))
+                .ToArray();
+            var select = mirroredDisplays.Any(candidate => !candidate.IsSelected);
+            foreach (var mirroredDisplay in mirroredDisplays)
+            {
+                mirroredDisplay.IsSelected = select;
+            }
+
+            OnPropertyChanged(nameof(CanSaveProfile));
         }
 
-        public async Task SaveProfileAsync(bool overwrite = false)
+        public bool TryValidateProfileName(string name, out string validationMessage)
         {
-            if (IsBuiltInProfileName(NewProfileName))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                StatusMessage = "Built-in profile names are reserved.";
-                return;
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_Required", "Enter a profile name.");
+                return false;
             }
 
-            if (string.IsNullOrWhiteSpace(NewProfileName))
+            if (IsBuiltInProfileName(name))
             {
-                StatusMessage = "Please enter a profile name";
-                return;
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_Reserved", "Built-in profile names are reserved.");
+                return false;
             }
 
-            var selectedTargets = _displays.Where(d => d.IsSelected).Select(d => new DisplayHelpers.DisplayTargetId(
-                ParseLuid(d.AdapterId), d.TargetId)).ToList();
-
+            var selectedTargets = GetSelectedTargets();
             if (selectedTargets.Count == 0)
             {
-                StatusMessage = "Please select at least one display";
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_NoDisplaysSelected", "Select at least one active display in the topology preview.");
+                return false;
+            }
+
+            try
+            {
+                validationMessage = DisplayHelpers.GetSavedProfileConflict(name.Trim(), selectedTargets) ?? string.Empty;
+                return validationMessage.Length == 0;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_CheckFailed", "Could not check saved profiles: {0}")
+                    .Replace("{0}", ex.Message, StringComparison.Ordinal);
+                Logger.LogError("Could not check for duplicate Monitor Power profiles.", ex);
+                return false;
+            }
+        }
+
+        public async Task SaveProfileAsync(string name)
+        {
+            if (!TryValidateProfileName(name, out var validationMessage))
+            {
+                StatusMessage = validationMessage;
                 return;
             }
 
+            var selectedTargets = GetSelectedTargets();
             IsApplying = true;
-            StatusMessage = "Saving profile...";
+            StatusMessage = "Saving selected displays as a profile...";
 
             await Task.Run(() =>
             {
                 try
                 {
-                    var result = DisplayHelpers.SaveNamedProfile(NewProfileName, selectedTargets, overwrite);
+                    var result = DisplayHelpers.SaveNamedProfile(name.Trim(), selectedTargets);
                     RunOnUiThread(() =>
                     {
                         StatusMessage = result;
                         if (!result.StartsWith("Error", StringComparison.OrdinalIgnoreCase))
                         {
-                            NewProfileName = string.Empty;
                             LoadProfiles();
-                            foreach (var d in _displays)
-                            {
-                                d.IsSelected = false;
-                            }
                         }
                     });
                 }
@@ -744,6 +795,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         StatusMessage = $"Error saving profile: {ex.Message}";
                     });
+                }
+                finally
+                {
+                    RunOnUiThread(() => IsApplying = false);
+                }
+            });
+        }
+
+        public async Task ApplyDisplayModeAsync(bool extend)
+        {
+            IsApplying = true;
+            StatusMessage = extend ? "Extending desktop to all displays..." : "Switching to primary display only...";
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var result = extend
+                        ? DisplayHelpers.SetAllDisplays()
+                        : DisplayHelpers.SetPrimaryDisplayOnly(progress => RunOnUiThread(() => StatusMessage = progress));
+                    RunOnUiThread(() =>
+                    {
+                        StatusMessage = result;
+                        LoadDisplays();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    RunOnUiThread(() => StatusMessage = $"Error changing display mode: {ex.Message}");
                 }
                 finally
                 {
@@ -823,12 +902,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var selectedTargets = GetSelectedTargets();
             if (selectedTargets.Count == 0)
             {
-                StatusMessage = "Select at least one display before overwriting a profile.";
+                StatusMessage = "There are no active displays to save.";
                 return;
             }
 
             IsApplying = true;
-            StatusMessage = $"Overwriting profile '{profile.Name}'...";
+            StatusMessage = $"Overwriting profile '{profile.Name}' with the selected displays...";
             try
             {
                 var result = await Task.Run(() =>
@@ -1055,7 +1134,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private List<DisplayHelpers.DisplayTargetId> GetSelectedTargets()
         {
             return _displays
-                .Where(display => display.IsSelected)
+                .Where(display => display.IsActive && display.IsSelected)
                 .Select(display => new DisplayHelpers.DisplayTargetId(
                     ParseLuid(display.AdapterId),
                     display.TargetId))
@@ -1107,7 +1186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
     }
 
-    public class MonitorDisplayInfo : INotifyPropertyChanged
+    public class MonitorDisplayInfo
     {
         private bool _isSelected;
 
@@ -1133,26 +1212,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public double LayoutHeight { get; set; }
         public double PreviewOpacity => IsActive ? 1 : 0.55;
         public string State => IsActive ? "Active" : "Inactive";
-        public string PreviewStatus => IsPrimary ? "Primary" : MirroredDisplayCount > 1 ? $"Mirrored x{MirroredDisplayCount}" : State;
+        public string PreviewStatus => IsSelected
+            ? IsPrimary ? "Selected · Primary" : "Selected"
+            : IsPrimary ? "Primary" : MirroredDisplayCount > 1 ? $"Mirrored x{MirroredDisplayCount}" : State;
         public string Details => $"{Technology} · {Resolution} · {Orientation}";
-        public string AccessibilityDescription => $"{Name}, {Details}, {(IsPrimary ? "Primary" : State)}";
+        public string AccessibilityDescription => $"{Name}, {Details}, {(IsSelected ? "Selected, " : string.Empty)}{(IsPrimary ? "Primary" : State)}";
 
         public bool IsSelected
         {
             get => _isSelected;
             set
             {
-                if (_isSelected != value)
+                if (_isSelected == value)
                 {
-                    _isSelected = value;
-                    OnPropertyChanged(nameof(IsSelected));
+                    return;
                 }
+
+                _isSelected = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PreviewStatus));
+                OnPropertyChanged(nameof(AccessibilityDescription));
             }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -1164,6 +1249,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Name { get; set; } = string.Empty;
         public BuiltInDisplayProfile BuiltInProfile { get; set; }
         public bool IsBuiltIn => BuiltInProfile != BuiltInDisplayProfile.None;
+        public string Description => IsBuiltIn ? "Built-in profile" : "Saved profile";
+
+        private bool _isCurrent;
+
+        public bool IsCurrent
+        {
+            get => _isCurrent;
+            set
+            {
+                if (_isCurrent != value)
+                {
+                    _isCurrent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -1172,7 +1273,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-
 }
 
 #pragma warning restore CA1846, SA1214, SA1402, SA1413, SA1513, SA1516

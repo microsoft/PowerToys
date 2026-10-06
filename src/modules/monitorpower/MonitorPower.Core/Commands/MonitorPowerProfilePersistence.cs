@@ -81,6 +81,35 @@ internal sealed class MonitorPowerProfilePersistence(string directory)
         return profiles.OrderBy(profile => profile.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
     }
 
+    public string? GetConflict(
+        string name,
+        IReadOnlyCollection<DisplayHelpers.DisplayTargetId> targets,
+        string? excludedFileName = null)
+    {
+        var profiles = List()
+            .Where(profile => !string.Equals(profile.FileName, excludedFileName, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        var nameConflict = profiles.FirstOrDefault(
+            profile => string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (nameConflict != default)
+        {
+            return $"A profile named '{nameConflict.Name}' already exists.";
+        }
+
+        var targetSet = targets.ToHashSet();
+        foreach (var profile in profiles)
+        {
+            var savedProfile = Load(profile.FileName);
+            if (savedProfile != null && savedProfile.Targets.ToHashSet().SetEquals(targetSet))
+            {
+                return $"The same display combination is already saved as '{savedProfile.Name}'.";
+            }
+        }
+
+        return null;
+    }
+
     public void Delete(string fileName)
     {
         var path = GetPath(fileName);

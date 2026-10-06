@@ -2162,6 +2162,12 @@ internal static partial class DisplayHelpers
         }
 
         var fileName = $"{safeName}.json";
+        var conflict = ProfileStore.GetConflict(name, targets, overwrite ? fileName : null);
+        if (conflict is not null)
+        {
+            return string.Format(Properties.Resources.error_format, conflict);
+        }
+
         if (File.Exists(ProfileStore.GetPath(fileName)) && !overwrite)
         {
             return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
@@ -2185,6 +2191,12 @@ internal static partial class DisplayHelpers
 
     public static List<(string FileName, string Name)> GetSavedProfiles()
         => ProfileStore.List().ToList();
+
+    public static string? GetSavedProfileConflict(
+        string name,
+        IReadOnlyCollection<DisplayTargetId> targets,
+        string? excludedFileName = null)
+        => ProfileStore.GetConflict(name, targets, excludedFileName);
 
     public static string ApplyNamedProfile(string fileName, Action<string>? onProgress = null)
     {
