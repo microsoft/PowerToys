@@ -163,6 +163,37 @@ public class Win32ProgramTests
     }
 
     [TestMethod]
+    public void Shortcut_MissingTargetRetainsItsPathWithoutSearchingNearbyFolders()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"CmdPal-missing-target-{Guid.NewGuid():N}");
+        var target = Path.Combine(root, "Missing", "App.exe");
+        var shortcutPath = Path.Combine(root, "App.lnk");
+        Directory.CreateDirectory(root);
+        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!);
+        dynamic shortcut = shell.CreateShortcut(shortcutPath);
+        try
+        {
+            shortcut.TargetPath = target;
+            shortcut.Save();
+            Directory.CreateDirectory(Path.Combine(root, "Other"));
+            File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), Path.Combine(root, "Other", "App.exe"));
+            var shortcutBytes = File.ReadAllBytes(shortcutPath);
+
+            var program = Win32Program.LoadFromPath(shortcutPath, asRunCommand: false);
+            Assert.IsFalse(program.Valid);
+            Assert.IsTrue(string.Equals(target, program.FullPath, StringComparison.OrdinalIgnoreCase));
+            CollectionAssert.AreEqual(shortcutBytes, File.ReadAllBytes(shortcutPath));
+            using var writer = File.Open(shortcutPath, FileMode.Open, FileAccess.Write, FileShare.None);
+        }
+        finally
+        {
+            Marshal.FinalReleaseComObject(shortcut);
+            Marshal.FinalReleaseComObject(shell);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void Shortcut_UnreadableIsInvalid(bool createInvalidFile)

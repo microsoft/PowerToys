@@ -44,6 +44,7 @@ public static class AppCatalogFactory
                 loggerFactory.CreateLogger<AppCatalogCache>()),
             new SettingsAppVisibilityStore(settings),
             [new UninstallerAppCatalogFilter(settings)],
-            logger: loggerFactory.CreateLogger<AppCatalog>());
+            logger: loggerFactory.CreateLogger<AppCatalog>(),
+            diagnosticsEnabled: () => settings.EnableCatalogDiagnostics);
     }
 }

@@ -21,6 +21,9 @@ internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
 
     public IReadOnlyList<string> RetryPaths { get; }
 
+    /// <summary>Gets cached rejections whose existing retries should be retained or rescheduled within their retry budget.</summary>
+    public IReadOnlyList<string> ReusedRejectedPaths { get; }
+
     /// <summary>Gets unreadable files or subtrees, or null when failure coverage is unknown.</summary>
     public IReadOnlyList<string>? FailedPaths { get; }
 
@@ -37,12 +40,14 @@ internal sealed class AppSourceScanResult : ReadOnlyCollection<AppCatalogItem>
         IReadOnlyList<string>? failedPaths = null,
         IReadOnlySet<string>? checkedPaths = null,
         IReadOnlyList<string>? failedPackageFamilies = null,
-        bool isFullScan = false)
+        bool isFullScan = false,
+        IReadOnlyList<string>? reusedRejectedPaths = null)
         : base(items)
     {
         IsComplete = isComplete;
         IsFullScan = isFullScan;
         RetryPaths = retryPaths ?? [];
+        ReusedRejectedPaths = reusedRejectedPaths ?? [];
         FailedPaths = failedPaths;
         CheckedPaths = checkedPaths ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         FailedPackageFamilies = failedPackageFamilies ?? [];

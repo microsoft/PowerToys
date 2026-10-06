@@ -16,6 +16,9 @@ internal static class ShellLinkReader
 {
     private const string AppsFolderPrefix = "shell:AppsFolder\\";
 
+    /// <summary>Reads a shell link's target, arguments, working directory, icon, and app identity with nonexclusive sharing.</summary>
+    /// <returns>The shortcut metadata, or null when the link cannot be loaded as a supported shortcut.</returns>
+    /// <remarks>COM activation and access or sharing failures propagate so discovery can distinguish rejected links from unreadable ones.</remarks>
     public static unsafe ShellLinkInfo? Read(string path)
     {
         const int MAX_PATH = 260;
@@ -49,7 +52,10 @@ internal static class ShellLinkReader
         }
 
         const uint SLR_NO_UI = 0x1;
-        link->Resolve(HWND.Null, SLR_NO_UI);
+        const uint SLR_NOSEARCH = 0x10;
+
+        // Keep link tracking for moved targets without searching nearby folders or other volumes.
+        link->Resolve(HWND.Null, SLR_NO_UI | SLR_NOSEARCH);
 
         var buffer = stackalloc char[MAX_PATH];
         buffer[0] = '\0';

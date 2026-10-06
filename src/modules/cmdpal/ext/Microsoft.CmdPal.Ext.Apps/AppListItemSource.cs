@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -33,11 +34,14 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private readonly AllAppsSettings _settings;
     private readonly MEL.ILogger<AppListItemSource> _logger;
     private readonly AppExecutionAliasCache? _executionAliasCache;
+    private readonly long? _diagnosticStartedAt;
 
     private PublishedState _publishedState = new(new AppListItemSnapshot([], []), IsLoading: true, HideDescriptions: false, ResultLimit: 0);
     private CommandContextItem? _editExclusionPatterns;
     private bool _initializationCompleted;
     private int _userRefreshCount;
+    private (long Timestamp, string Kind)? _loadingStarted;
+    private bool _firstItemsReported;
     private InterlockedBoolean _synchronizeRequested;
     private InterlockedBoolean _synchronizing;
     private InterlockedBoolean _disposed;
@@ -69,6 +73,12 @@ public sealed partial class AppListItemSource : IAppListItemSource
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _executionAliasCache = executionAliasCache;
+        if (ShouldLogDiagnostics())
+        {
+            _diagnosticStartedAt = Stopwatch.GetTimestamp();
+            _loadingStarted = (_diagnosticStartedAt.Value, "startup");
+        }
+
         lock (_stateLock)
         {
             if (_executionAliasCache is not null)
@@ -163,6 +173,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
             LogInitializationFailed(_logger, ex);
         }
 
+        (string Kind, double DurationMs)? completedLoading;
         lock (_stateLock)
         {
             if (_disposed.Value)
@@ -171,7 +182,12 @@ public sealed partial class AppListItemSource : IAppListItemSource
             }
 
             _initializationCompleted = true;
-            PublishLoadingStateUnderLock(_userRefreshCount > 0);
+            completedLoading = PublishLoadingStateUnderLock(_userRefreshCount > 0);
+        }
+
+        if (completedLoading is { } completed)
+        {
+            LogDiagnosticLoadingCompleted(_logger, completed.Kind, completed.DurationMs);
         }
 
         RaiseChanged();
@@ -195,6 +211,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private void UpdateLoadingState(int refreshCountDelta)
     {
         var changed = false;
+        (string Kind, double DurationMs)? completedLoading = null;
         lock (_stateLock)
         {
             if (_disposed.Value)
@@ -206,9 +223,14 @@ public sealed partial class AppListItemSource : IAppListItemSource
             var isLoading = !_initializationCompleted || _userRefreshCount > 0;
             if (_publishedState.IsLoading != isLoading)
             {
-                PublishLoadingStateUnderLock(isLoading);
+                completedLoading = PublishLoadingStateUnderLock(isLoading);
                 changed = true;
             }
+        }
+
+        if (completedLoading is { } completed)
+        {
+            LogDiagnosticLoadingCompleted(_logger, completed.Kind, completed.DurationMs);
         }
 
         if (changed)
@@ -249,6 +271,8 @@ public sealed partial class AppListItemSource : IAppListItemSource
 
     private void SynchronizeCore()
     {
+        var diagnostics = ShouldLogDiagnostics();
+        var started = diagnostics ? Stopwatch.GetTimestamp() : 0;
         var catalogSnapshot = _appCatalog.GetSnapshot();
         var state = Volatile.Read(ref _publishedState);
         var snapshot = state.Snapshot;
@@ -282,6 +306,14 @@ public sealed partial class AppListItemSource : IAppListItemSource
             snapshot.ExecutionAliasOwners);
 
         var resolutionChanged = !updated.HasSameCommandResolution(snapshot);
+        if (diagnostics)
+        {
+            var durationMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+            var rowCount = updated.VisibleItems.Count + updated.HiddenItems.Count + updated.PatternHiddenItems.Count;
+            var reusedRows = updated.VisibleItems.Concat(updated.HiddenItems).Concat(updated.PatternHiddenItems).Count(
+                item => existingItems.TryGetValue(item.App.CatalogId, out var existing) && ReferenceEquals(existing.Item, item));
+            LogDiagnosticProjection(_logger, durationMs, rowCount, reusedRows, rowCount - reusedRows, resolutionChanged);
+        }
 
         if (ReferenceEquals(updated.VisibleItems, snapshot.VisibleItems)
             && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems)
@@ -298,6 +330,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
             }
         }
 
+        double? firstItemsMs = null;
         lock (_stateLock)
         {
             if (_disposed.Value)
@@ -311,6 +344,16 @@ public sealed partial class AppListItemSource : IAppListItemSource
             }
 
             Volatile.Write(ref _publishedState, _publishedState with { Snapshot = updated, HideDescriptions = hideDescriptions, ResultLimit = resultLimit });
+            if (diagnostics && !_firstItemsReported && _diagnosticStartedAt is { } diagnosticStartedAt && updated.VisibleItems.Count > 0)
+            {
+                _firstItemsReported = true;
+                firstItemsMs = Stopwatch.GetElapsedTime(diagnosticStartedAt).TotalMilliseconds;
+            }
+        }
+
+        if (firstItemsMs is { } duration)
+        {
+            LogDiagnosticFirstItems(_logger, duration, updated.VisibleItems.Count);
         }
 
         // Property notifications can change the catalog again. Publish first and drain those
@@ -401,9 +444,33 @@ public sealed partial class AppListItemSource : IAppListItemSource
         }
     }
 
-    private void PublishLoadingStateUnderLock(bool isLoading)
+    private bool ShouldLogDiagnostics()
     {
+        return _settings.EnableCatalogDiagnostics && _logger.IsEnabled(LogLevel.Information);
+    }
+
+    private (string Kind, double DurationMs)? PublishLoadingStateUnderLock(bool isLoading)
+    {
+        (string Kind, double DurationMs)? completed = null;
+        if (_publishedState.IsLoading != isLoading)
+        {
+            if (isLoading)
+            {
+                _loadingStarted = ShouldLogDiagnostics() ? (Stopwatch.GetTimestamp(), "refresh") : null;
+            }
+            else
+            {
+                if (ShouldLogDiagnostics() && _loadingStarted is { } started)
+                {
+                    completed = (started.Kind, Stopwatch.GetElapsedTime(started.Timestamp).TotalMilliseconds);
+                }
+
+                _loadingStarted = null;
+            }
+        }
+
         Volatile.Write(ref _publishedState, _publishedState with { IsLoading = isLoading });
+        return completed;
     }
 
     private void RaiseChanged()
@@ -445,4 +512,13 @@ public sealed partial class AppListItemSource : IAppListItemSource
         MEL.ILogger logger,
         string catalogId,
         Exception exception);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] Row projection took {DurationMs} ms: rows={RowCount}, reused={ReusedCount}, created={CreatedCount}, resolutionChanged={ResolutionChanged}.")]
+    private static partial void LogDiagnosticProjection(MEL.ILogger logger, double durationMs, int rowCount, int reusedCount, int createdCount, bool resolutionChanged);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] First non-empty row snapshot after {DurationMs} ms: visible={VisibleCount}.")]
+    private static partial void LogDiagnosticFirstItems(MEL.ILogger logger, double durationMs, int visibleCount);
+
+    [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] {Kind} loading completed after {DurationMs} ms.")]
+    private static partial void LogDiagnosticLoadingCompleted(MEL.ILogger logger, string kind, double durationMs);
 }

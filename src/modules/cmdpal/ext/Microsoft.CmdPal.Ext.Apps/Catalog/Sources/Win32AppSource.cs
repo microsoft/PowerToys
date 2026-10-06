@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -108,15 +109,15 @@ internal sealed partial class Win32AppSource : IAppSource
         }
     }
 
-    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
+    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
     {
         return AppSourceWork.Run<IReadOnlyList<AppCatalogItem>>(
-            () => Load(cancellationToken, background),
+            () => Load(cancellationToken, background, dirtyPaths),
             background,
             cancellationToken);
     }
 
-    private IReadOnlyList<AppCatalogItem> Load(CancellationToken cancellationToken, bool background = false)
+    private IReadOnlyList<AppCatalogItem> Load(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
     {
         if (!_source.IsEnabled)
         {
@@ -152,7 +153,21 @@ internal sealed partial class Win32AppSource : IAppSource
             }
         }
 
-        var items = IndexCandidates([.. candidates.Values], background, cancellationToken);
+        HashSet<string>? forceReadPaths = null;
+        if (dirtyPaths is { Count: > 0 })
+        {
+            forceReadPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var change in dirtyPaths)
+            {
+                forceReadPaths.Add(change.Path);
+                if (!string.IsNullOrWhiteSpace(change.OldPath))
+                {
+                    forceReadPaths.Add(change.OldPath);
+                }
+            }
+        }
+
+        var items = IndexCandidates([.. candidates.Values], background, cancellationToken, forceReadPaths: forceReadPaths);
         foreach (var path in _indexedCandidates.Keys)
         {
             if (!candidates.ContainsKey(path)
@@ -194,13 +209,14 @@ internal sealed partial class Win32AppSource : IAppSource
 
         if (!_source.SupportsIncrementalChanges)
         {
-            return PromoteDirtyPathsToFullRefresh("the origin requires full enumeration", background, cancellationToken);
+            return PromoteDirtyPathsToFullRefresh("the origin requires full enumeration", changes, background, cancellationToken);
         }
 
         if (changes.Count > IncrementalRefreshPathLimit)
         {
             return PromoteDirtyPathsToFullRefresh(
                 $"received {changes.Count} dirty paths",
+                changes,
                 background,
                 cancellationToken);
         }
@@ -228,7 +244,7 @@ internal sealed partial class Win32AppSource : IAppSource
                     missingPaths,
                     cancellationToken))
             {
-                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", background, cancellationToken);
+                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", changes, background, cancellationToken);
             }
 
             if (!TryCollectDirtyPath(
@@ -242,7 +258,7 @@ internal sealed partial class Win32AppSource : IAppSource
                 missingPaths,
                 cancellationToken))
             {
-                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", background, cancellationToken);
+                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", changes, background, cancellationToken);
             }
         }
 
@@ -272,7 +288,7 @@ internal sealed partial class Win32AppSource : IAppSource
 
                 if (!TryAddCandidatePath(candidatePaths, candidatePathKeys, reference.ItemId))
                 {
-                    return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", background, cancellationToken);
+                    return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", changes, background, cancellationToken);
                 }
             }
         }
@@ -329,7 +345,8 @@ internal sealed partial class Win32AppSource : IAppSource
             [.. retryPaths],
             [.. failedPaths],
             scan.CheckedPaths,
-            isFullScan: isFullScan);
+            isFullScan: isFullScan,
+            reusedRejectedPaths: scan.ReusedRejectedPaths);
     }
 
     private bool TryCollectDirtyPath(
@@ -391,11 +408,12 @@ internal sealed partial class Win32AppSource : IAppSource
 
     private IReadOnlyList<AppCatalogItem> PromoteDirtyPathsToFullRefresh(
         string reason,
+        IReadOnlyList<AppSourcePathChange> changes,
         bool background,
         CancellationToken cancellationToken)
     {
         LogDiagnostic($"Promoting incremental reconciliation to a full source refresh because it {reason}.");
-        return Load(cancellationToken, background);
+        return Load(cancellationToken, background, changes);
     }
 
     private static bool IsAffected(
@@ -446,10 +464,16 @@ internal sealed partial class Win32AppSource : IAppSource
         IReadOnlyList<Win32ProgramCandidate> candidates,
         bool background,
         CancellationToken cancellationToken,
-        bool reuseUnchanged = true)
+        bool reuseUnchanged = true,
+        IReadOnlySet<string>? forceReadPaths = null)
     {
+        var diagnostics = _diagnosticsEnabled() && _logger.IsEnabled(LogLevel.Information);
+        var started = diagnostics ? Stopwatch.GetTimestamp() : 0;
+        var loadedCandidates = 0;
+        var reusedCandidates = 0;
         var indexedItems = new ConcurrentBag<AppCatalogItem>();
         var retryPaths = new ConcurrentBag<string>();
+        var reusedRejectedPaths = new ConcurrentBag<string>();
         var failedPaths = new ConcurrentBag<string>();
         var checkedPaths = new ConcurrentBag<string>();
         void IndexCandidate(Win32ProgramCandidate candidate)
@@ -457,10 +481,11 @@ internal sealed partial class Win32AppSource : IAppSource
             var path = candidate.Path;
             var stamp = FileStamp.TryRead(path);
             if (background && reuseUnchanged
+                && forceReadPaths?.Contains(path) != true
                 && stamp is { Exists: true }
                 && (stamp.Value.Attributes & FileAttributes.ReparsePoint) == 0
                 && _indexedCandidates.TryGetValue(path, out var cached)
-                && string.Equals(path, cached.Item.Provenance.References[0].ItemId, StringComparison.Ordinal)
+                && (cached.Item is null || string.Equals(path, cached.Item.Provenance.References[0].ItemId, StringComparison.Ordinal))
                 && cached.SourceStamp == stamp
                 && candidate.MatchTerms.SequenceEqual(cached.MatchTerms, StringComparer.OrdinalIgnoreCase)
                 && cached.TargetStamp is not null
@@ -469,21 +494,49 @@ internal sealed partial class Win32AppSource : IAppSource
                     ? stamp
                     : FileStamp.TryRead(cached.TargetPath)))
             {
-                indexedItems.Add(cached.Item);
+                if (cached.Item is not null)
+                {
+                    indexedItems.Add(cached.Item);
+                }
+                else
+                {
+                    reusedRejectedPaths.Add(path);
+                }
+
                 checkedPaths.Add(path);
+                if (diagnostics)
+                {
+                    Interlocked.Increment(ref reusedCandidates);
+                }
+
                 return;
             }
 
             _indexedCandidates.TryRemove(path, out var previousCandidate);
+            if (diagnostics)
+            {
+                Interlocked.Increment(ref loadedCandidates);
+            }
+
+            var candidateStarted = diagnostics ? Stopwatch.GetTimestamp() : 0;
             var program = _programLoader(
                 path,
                 HasProfileOption(_source.Profile, Win32ProgramSourceProfile.LoadAsRunCommand));
+            if (diagnostics)
+            {
+                var durationMs = Stopwatch.GetElapsedTime(candidateStarted).TotalMilliseconds;
+                if (durationMs >= 250)
+                {
+                    LogDiagnosticSlowCandidate(_logger, Id, path, durationMs, program.Valid, program.RetryableReadFailure);
+                }
+            }
+
             if (!program.Valid)
             {
                 if (program.Unreadable || program.RetryableReadFailure)
                 {
                     failedPaths.Add(path);
-                    if (previousCandidate is not null)
+                    if (previousCandidate?.Item is not null)
                     {
                         indexedItems.Add(previousCandidate.Item);
                         _indexedCandidates[path] = previousCandidate;
@@ -497,6 +550,7 @@ internal sealed partial class Win32AppSource : IAppSource
                 else
                 {
                     checkedPaths.Add(path);
+                    CacheCandidate(candidate, stamp, program, item: null);
                     if (File.Exists(path) && string.Equals(Path.GetExtension(path), ".lnk", StringComparison.OrdinalIgnoreCase))
                     {
                         retryPaths.Add(path);
@@ -510,6 +564,7 @@ internal sealed partial class Win32AppSource : IAppSource
             var isNonApp = program.AppType is Win32Program.ApplicationType.GenericFile or Win32Program.ApplicationType.Folder;
             if (isNonApp && !HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeNonApplications))
             {
+                CacheCandidate(candidate, stamp, program, item: null);
                 return;
             }
 
@@ -526,17 +581,7 @@ internal sealed partial class Win32AppSource : IAppSource
                 Win32AppPayload.From(program),
                 [launchIdentity]);
             indexedItems.Add(item);
-            var targetPath = program.AppExecutionAlias?.TargetPath ?? program.FullPath;
-            if (program.AppExecutionAlias is null)
-            {
-                // Execution-alias ownership can change without a useful file-stamp change.
-                _indexedCandidates[path] = new IndexedCandidate(
-                    stamp,
-                    targetPath,
-                    string.Equals(path, targetPath, StringComparison.OrdinalIgnoreCase) ? stamp : FileStamp.TryRead(targetPath),
-                    candidate.MatchTerms.ToArray(),
-                    item);
-            }
+            CacheCandidate(candidate, stamp, program, item);
         }
 
         if (background)
@@ -572,12 +617,36 @@ internal sealed partial class Win32AppSource : IAppSource
             }
         }
 
+        if (diagnostics)
+        {
+            var durationMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+            LogDiagnosticIndexing(_logger, Id, background, candidates.Count, loadedCandidates, reusedCandidates, itemsByIdentity.Count, durationMs);
+        }
+
         return new AppSourceScanResult(
             new List<AppCatalogItem>(itemsByIdentity.Values),
             failedPaths.IsEmpty,
             [.. retryPaths],
             [.. failedPaths],
-            new HashSet<string>(checkedPaths, StringComparer.OrdinalIgnoreCase));
+            new HashSet<string>(checkedPaths, StringComparer.OrdinalIgnoreCase),
+            reusedRejectedPaths: [.. reusedRejectedPaths]);
+    }
+
+    private void CacheCandidate(Win32ProgramCandidate candidate, FileStamp? stamp, Win32Program program, AppCatalogItem? item)
+    {
+        if (program.AppExecutionAlias is not null)
+        {
+            // Execution-alias ownership can change without a useful file-stamp change.
+            return;
+        }
+
+        var targetPath = string.IsNullOrWhiteSpace(program.FullPath) ? candidate.Path : program.FullPath;
+        _indexedCandidates[candidate.Path] = new IndexedCandidate(
+            stamp,
+            targetPath,
+            string.Equals(candidate.Path, targetPath, StringComparison.OrdinalIgnoreCase) ? stamp : FileStamp.TryRead(targetPath),
+            candidate.MatchTerms.ToArray(),
+            item);
     }
 
     private static bool HasProfileOption(
@@ -1035,6 +1104,12 @@ internal sealed partial class Win32AppSource : IAppSource
     [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] [{SourceId}] {Message}")]
     private static partial void LogDiagnosticMessage(MEL.ILogger logger, string sourceId, string message);
 
+    [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] Source {SourceId} indexed {CandidateCount} candidates in {DurationMs} ms: background={Background}, loaded={LoadedCount}, reused={ReusedCount}, items={ItemCount}.")]
+    private static partial void LogDiagnosticIndexing(MEL.ILogger logger, string sourceId, bool background, int candidateCount, int loadedCount, int reusedCount, int itemCount, double durationMs);
+
+    [LoggerMessage(EventId = 6, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] Source {SourceId} read '{Path}' in {DurationMs} ms: valid={Valid}, retryableReadFailure={RetryableReadFailure}.")]
+    private static partial void LogDiagnosticSlowCandidate(MEL.ILogger logger, string sourceId, string path, double durationMs, bool valid, bool retryableReadFailure);
+
     public void Dispose()
     {
         if (!_disposed.Set())
@@ -1065,7 +1140,7 @@ internal sealed partial class Win32AppSource : IAppSource
         string TargetPath,
         FileStamp? TargetStamp,
         IReadOnlyList<string> MatchTerms,
-        AppCatalogItem Item);
+        AppCatalogItem? Item);
 
     private sealed record AffectedPath(string Path, bool IncludeDescendants);
 

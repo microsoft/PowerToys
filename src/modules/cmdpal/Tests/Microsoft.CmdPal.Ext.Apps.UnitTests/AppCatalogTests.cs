@@ -600,7 +600,7 @@ public partial class AppCatalogTests
                 await cachedPublication.Task.WaitAsync(TimeSpan.FromSeconds(5));
             }
 
-            await WaitForConditionAsync(() => desktopSource.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == (partialCache ? 1 : 0));
+            await WaitForConditionAsync(() => desktopSource.LoadCount == 1 && list.GetSnapshot().VisibleItems.Count == 1);
             await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
 
             Assert.IsFalse(initialization.IsCompleted);
@@ -1136,7 +1136,7 @@ public partial class AppCatalogTests
     }
 
     [TestMethod]
-    public async Task RefreshFailure_DrainsRefreshQueuedByFailingSubscriber()
+    public async Task RefreshFailure_PreservesRefreshQueuedByFailingSubscriber()
     {
         using var source = new TestAppSource("test", [CreateCatalogItem("First")]);
         using var catalog = CreateCatalog([source], new TestCache(null));
@@ -1158,7 +1158,9 @@ public partial class AppCatalogTests
         var refresh = catalog.RefreshAsync();
         await refresh;
 
-        Assert.AreSame(refresh, queuedRefresh);
+        Assert.IsNotNull(queuedRefresh);
+        Assert.AreNotSame(refresh, queuedRefresh);
+        await queuedRefresh;
         Assert.AreEqual(2, source.LoadCount);
         Assert.AreEqual("Second", catalog.GetSnapshot().Items[0].Name);
         Assert.IsFalse(catalog.IsRefreshing);
@@ -1298,6 +1300,7 @@ public partial class AppCatalogTests
                 new AppSourcePathChange(WatcherChangeTypes.Changed, @"C:\Apps\Incremental.lnk")));
         fullRefreshCompletion.SetResult([CreateCatalogItem("Full")]);
         await fullRefresh;
+        await WaitForConditionAsync(() => source.IncrementalLoadCount == 1 && !catalog.IsRefreshing);
 
         Assert.AreEqual(1, source.IncrementalLoadCount);
         Assert.IsFalse(catalog.IsRefreshing);
@@ -1328,6 +1331,7 @@ public partial class AppCatalogTests
 
         fullRefreshCompletion.SetResult([CreateCatalogItem("Full")]);
         await fullRefresh;
+        await WaitForConditionAsync(() => source.IncrementalLoadCount == 1 && !catalog.IsRefreshing);
 
         Assert.AreEqual(1, source.IncrementalLoadCount);
         Assert.AreEqual(1, source.LastIncrementalChanges.Count);
@@ -1357,6 +1361,7 @@ public partial class AppCatalogTests
         sourceA.SetItems([CreateCatalogItem("After flood")]);
         fullRefreshCompletion.SetResult([CreateCatalogItem("First full")]);
         await runningFullRefresh;
+        await WaitForConditionAsync(() => !catalog.IsRefreshing && ContainsApp(catalog.GetSnapshot().Items, "After flood"));
 
         Assert.AreEqual(3, sourceA.LoadCount);
         Assert.AreEqual(0, sourceA.IncrementalLoadCount);
@@ -2329,9 +2334,13 @@ public partial class AppCatalogTests
 
         private bool _fail;
 
+        public string? FailingIdentity { get; init; }
+
         public bool Includes(AppCatalogItem item)
         {
-            return !_fail ? true : throw new InvalidOperationException("Test reprojection failure.");
+            return !_fail && !StringComparer.OrdinalIgnoreCase.Equals(FailingIdentity, item.Identity)
+                ? true
+                : throw new InvalidOperationException("Test reprojection failure.");
         }
 
         public void FailAndRaiseChanged()
@@ -2350,6 +2359,7 @@ public partial class AppCatalogTests
     {
         private readonly Lock _eventLock = new();
         private readonly HashSet<int> _eventIds = [];
+        private readonly List<(int EventId, IReadOnlyDictionary<string, object?> State)> _entries = [];
 
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
@@ -2372,6 +2382,10 @@ public partial class AppCatalogTests
             lock (_eventLock)
             {
                 _eventIds.Add(eventId.Id);
+                if (state is IEnumerable<KeyValuePair<string, object?>> values)
+                {
+                    _entries.Add((eventId.Id, values.ToDictionary()));
+                }
             }
         }
 
@@ -2380,6 +2394,14 @@ public partial class AppCatalogTests
             lock (_eventLock)
             {
                 return _eventIds.Contains(eventId);
+            }
+        }
+
+        public IReadOnlyList<IReadOnlyDictionary<string, object?>> GetEntries(int eventId)
+        {
+            lock (_eventLock)
+            {
+                return _entries.Where(entry => entry.EventId == eventId).Select(entry => entry.State).ToArray();
             }
         }
     }
@@ -2518,7 +2540,7 @@ public partial class AppCatalogTests
             _initialization = initialization;
         }
 
-        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
+        public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
         {
             LastLoadBackground = background;
             LastLoadToken = cancellationToken;

@@ -83,7 +83,7 @@ public partial class Win32AppSourceTests
                     Interlocked.Increment(ref loads);
                     return File.Exists(target)
                         ? TestDataHelper.CreateTestWin32Program(File.ReadAllText(target), target)
-                        : Win32Program.InvalidProgram;
+                        : new Win32Program { Valid = false, FullPath = target };
                 },
                 createWatchers: false);
             await source.LoadAsync(CancellationToken.None);
@@ -103,6 +103,128 @@ public partial class Win32AppSourceTests
             File.WriteAllText(target, "Reinstalled");
             var restored = await source.LoadAsync(CancellationToken.None, background: true);
             Assert.AreEqual("Reinstalled", ((Win32AppPayload)restored.Single().Payload).Name);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task BackgroundLoad_ReusesRejectedCandidatesButHonorsExplicitReadsAndChangedTargets(bool knownTarget)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-rejected-probe");
+        var shortcut = Path.Combine(root, "App.lnk");
+        var target = Path.Combine(root, "App.exe");
+        try
+        {
+            File.WriteAllText(shortcut, "shortcut fixture");
+            var loads = 0;
+            using var source = new Win32AppSource(
+                CreateShortcutDirectorySource(root),
+                (_, _) =>
+                {
+                    Interlocked.Increment(ref loads);
+                    return File.Exists(target)
+                        ? TestDataHelper.CreateTestWin32Program("Installed", target)
+                        : new Win32Program { Valid = false, FullPath = knownTarget ? target : string.Empty };
+                },
+                createWatchers: false);
+            var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
+            Assert.AreEqual(1, initial.RetryPaths.Count);
+
+            var unchanged = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background: true);
+            Assert.AreEqual(1, loads, "Periodic reconciliation must reuse an unchanged rejection.");
+            Assert.AreEqual(0, unchanged.Count);
+            Assert.AreEqual(0, unchanged.RetryPaths.Count, "An unchanged rejection must not renew its retry budget.");
+            CollectionAssert.AreEqual(new[] { shortcut }, unchanged.ReusedRejectedPaths.ToArray());
+
+            await source.LoadAsync(CancellationToken.None);
+            Assert.AreEqual(2, loads, "Manual refresh must re-read a rejected shortcut.");
+            await source.ApplyChangesAsync(
+                initial,
+                [new AppSourcePathChange(WatcherChangeTypes.Changed, shortcut)],
+                CancellationToken.None,
+                background: true);
+            Assert.AreEqual(3, loads, "Explicit recovery must re-read a rejected shortcut.");
+
+            File.WriteAllText(target, "Installed");
+            if (!knownTarget)
+            {
+                File.AppendAllText(shortcut, "changed");
+            }
+
+            var restored = await source.LoadAsync(CancellationToken.None, background: true);
+            Assert.AreEqual(4, loads);
+            Assert.AreEqual("Installed", ((Win32AppPayload)restored.Single().Payload).Name);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BackgroundLoad_ReusesExcludedNonApplications()
+    {
+        var root = CreateTemporaryDirectory("cmdpal-nonapp-probe");
+        var shortcut = Path.Combine(root, "Document.lnk");
+        var target = Path.Combine(root, "Document.txt");
+        try
+        {
+            File.WriteAllText(shortcut, "shortcut fixture");
+            File.WriteAllText(target, "document");
+            var loads = 0;
+            using var source = new Win32AppSource(
+                new TestProgramSource("probe", 0, includeNonApps: false, shortcut),
+                (_, _) =>
+                {
+                    Interlocked.Increment(ref loads);
+                    var program = TestDataHelper.CreateTestWin32Program("Document", target);
+                    program.AppType = Win32Program.ApplicationType.GenericFile;
+                    return program;
+                },
+                createWatchers: false);
+            Assert.AreEqual(0, (await source.LoadAsync(CancellationToken.None)).Count);
+            Assert.AreEqual(0, (await source.LoadAsync(CancellationToken.None, background: true)).Count);
+            Assert.AreEqual(1, loads);
+
+            File.AppendAllText(target, "changed");
+            Assert.AreEqual(0, (await source.LoadAsync(CancellationToken.None, background: true)).Count);
+            Assert.AreEqual(2, loads);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task BackgroundLoad_DoesNotCacheUnreadableCandidates(bool retryable)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-unreadable-probe");
+        try
+        {
+            var shortcut = Path.Combine(root, "App.lnk");
+            File.WriteAllText(shortcut, "shortcut fixture");
+            var loads = 0;
+            using var source = new Win32AppSource(
+                CreateShortcutDirectorySource(root),
+                (_, _) =>
+                {
+                    Interlocked.Increment(ref loads);
+                    return new Win32Program { Valid = false, Unreadable = true, RetryableReadFailure = retryable };
+                },
+                createWatchers: false);
+            await source.LoadAsync(CancellationToken.None);
+            var unchanged = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background: true);
+            Assert.AreEqual(2, loads);
+            Assert.IsFalse(unchanged.IsComplete);
+            Assert.AreEqual(retryable ? 1 : 0, unchanged.RetryPaths.Count);
         }
         finally
         {

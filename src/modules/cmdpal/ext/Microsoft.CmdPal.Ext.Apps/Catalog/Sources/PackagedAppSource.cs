@@ -28,7 +28,7 @@ internal sealed partial class PackagedAppSource : IAppSource
     private readonly IPackageCatalog _packageCatalog;
     private readonly MEL.ILogger<PackagedAppSource> _logger;
     private Dictionary<string, FileStamp?>? _manifestStamps;
-    private IReadOnlyList<AppCatalogItem>? _lastCompleteItems;
+    private AppSourceScanResult? _lastScan;
     private string? _lastCacheKey;
     private bool _disposed;
 
@@ -47,7 +47,7 @@ internal sealed partial class PackagedAppSource : IAppSource
         _packageCatalog.PackageUpdating += OnPackageUpdating;
     }
 
-    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false)
+    public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
     {
         return AppSourceWork.Run<IReadOnlyList<AppCatalogItem>>(
             () =>
@@ -64,19 +64,20 @@ internal sealed partial class PackagedAppSource : IAppSource
                     stamps[$"{package.FullName}|{manifestPath}"] = FileStamp.TryRead(manifestPath);
                 }
 
-                if (background && packagesComplete && _lastCompleteItems is not null
+                if (background && packagesComplete && _lastScan is not null
                     && string.Equals(cacheKey, _lastCacheKey, StringComparison.Ordinal)
                     && _manifestStamps is not null && stamps.Count == _manifestStamps.Count
-                    && stamps.All(pair => pair.Value is { Exists: true }
+                    && stamps.All(pair => pair.Value is not null
                         && _manifestStamps.TryGetValue(pair.Key, out var previous) && pair.Value == previous))
                 {
-                    return _lastCompleteItems;
+                    return _lastScan;
                 }
 
                 List<AppCatalogItem> items = [];
                 var failedFamilies = new ConcurrentBag<string>();
                 var retrySource = 0;
                 var coverageUnknown = 0;
+                var onlyMissingManifests = 1;
                 var checkedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var applications = UWP.All(
                     packages,
@@ -87,6 +88,13 @@ internal sealed partial class PackagedAppSource : IAppSource
                         try
                         {
                             failedFamilies.Add(package.FamilyName);
+                            var manifestPath = Path.Combine(package.InstalledLocation, "AppxManifest.xml");
+                            if (error is not FileNotFoundException and not DirectoryNotFoundException
+                                || !stamps.TryGetValue($"{package.FullName}|{manifestPath}", out var stamp)
+                                || stamp is not { Exists: false })
+                            {
+                                Interlocked.Exchange(ref onlyMissingManifests, 0);
+                            }
                         }
                         catch (Exception)
                         {
@@ -118,6 +126,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                     catch (Exception ex)
                     {
                         isComplete = false;
+                        onlyMissingManifests = 0;
                         failedFamilies.Add(app.Package.FamilyName);
                         if (Win32Program.IsRetryableReadFailure(ex))
                         {
@@ -149,10 +158,11 @@ internal sealed partial class PackagedAppSource : IAppSource
                     checkedPaths,
                     [.. failedFamilies],
                     isFullScan: true);
-                if (isComplete)
+                if (isComplete || (packagesComplete && coverageUnknown == 0 && onlyMissingManifests != 0 && retrySource == 0))
                 {
+                    // Retain missing-manifest failures without treating their scan as validated cache data.
                     _manifestStamps = stamps;
-                    _lastCompleteItems = result;
+                    _lastScan = result;
                     _lastCacheKey = cacheKey;
                 }
 

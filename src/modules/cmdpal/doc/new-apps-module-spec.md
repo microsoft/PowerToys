@@ -12,6 +12,7 @@
     - [3.1 Cache and startup](#31-cache-and-startup)
     - [3.2 Source updates](#32-source-updates)
     - [3.3 Publication and durability](#33-publication-and-durability)
+    - [3.4 Diagnostics and publication measurements](#34-diagnostics-and-publication-measurements)
   - [4 Browsing and search](#4-browsing-and-search)
     - [4.1 Browsing](#41-browsing)
     - [4.2 Shared matching](#42-shared-matching)
@@ -51,6 +52,12 @@ Shared inventory keeps discovery and hiding consistent across both surfaces. Con
 query state lets them operate independently. Publishing rows and aliases together prevents a
 command lookup from mixing different catalog versions.
 
+`AppCatalog` coordinates source lifecycle and refresh scheduling. `AppCatalogPublicationBuilder`
+merges source snapshots, applies filters and visibility, reuses unchanged app objects and builds
+change sets. The catalog calls the builder under its existing state lock and publishes the result
+atomically. Keeping the builder free of scheduling and synchronization makes projection changes
+independent of retry and source-replacement policy.
+
 ## 2 Discovery
 
 | Source                  | Default         | Content and depth                                       |
@@ -70,9 +77,8 @@ entry. Explicitly configured custom folders can still include these locations.
 Win32 entry titles use the Shell display name when available, including localized names supplied
 by `desktop.ini`. Retain the filename-based name separately for released command IDs and as
 an unavailable-name fallback. Both names remain searchable and match name exclusions; display
-metadata does not change launch or catalog identity. Win32 source-cache versions cover this
-metadata so an older snapshot cannot publish filename-only titles after an upgrade. Packaged
-source caches remain valid.
+metadata does not change launch or catalog identity. Cached Win32 payloads retain both names;
+cache schema and language validation protect their compatibility.
 
 Registry App Paths retains each registered command filename and stem as search metadata,
 including when a differently named executable or shortcut supplies the preferred row.
@@ -144,6 +150,8 @@ representation.
   Cached rows remain available during the scans. Later invalidations and cache writes do not
   extend startup loading; failed reads retry in the background.
 - Validate schema, language, source configuration and age.
+- The first release uses cache schema **1**. Source keys describe configuration and source state;
+  development revision tags are not part of the persisted format.
 - Maximum cache age: **36 hours**. Cached-source reconciliation delay: **30 seconds**.
 
 Cached discovery makes the list usable before filesystem and manifest scans finish. Validation
@@ -173,10 +181,15 @@ staleness.
   full scans renew cache validation; genuine incremental scans keep their narrower scope.
 - Check all sources every **10 minutes** to recover missed events and discover unwatched changes.
   Win32 checks enumerate candidates and compare file and target stamps plus search terms;
-  unchanged candidates reuse their parsed metadata. Execution aliases and reparse points are
+  unchanged candidates reuse their parsed metadata or rejection, including excluded non-applications.
+  Missing shortcut targets remain part of the stamp check so an install or reconnect is detected.
+  Explicit refreshes, watcher requests and targeted retries still read those candidates.
+  Execution aliases and reparse points are
   still read because ownership can change without a useful stamp change. Package checks compare
-  package identities, manifest stamps and theme before parsing manifests or resolving logos again. Rejected candidates
-  renew their bounded retry budget. PATH discovery still uses the process environment.
+  package identities, manifest stamps and theme before parsing manifests or resolving logos again.
+  Unchanged missing manifests also reuse their incomplete scan in memory; they never renew disk-cache
+  validation, and an appearing manifest, package change or explicit refresh forces a new read.
+  Unchanged rejected candidates do not start another retry burst. PATH discovery still uses the process environment.
 - Run delayed reconciliation and retries on one background-priority worker per source, lowering
   CPU, memory and I/O priority on a dedicated thread that exits after the scan. Catalog serialization
   bounds active discovery to one worker. Manual refresh and watcher work use normal thread-pool
@@ -195,6 +208,9 @@ staleness.
   entry until a complete scan validates the new key. Incremental updates under the same key retain
   the existing validation timestamp. Read handles are short-lived, allow sharing where the API
   supports it, and are released before retry delays.
+- Shortcut discovery allows Windows link tracking to recover moved targets but disables Shell's
+  heuristic search across nearby folders and other volumes. Missing targets must not trigger
+  repeated filesystem searches during discovery.
 
 Completion reflects the changed package state; progress events add scans before that state is
 ready. Framework-only changes do not add launchable apps, but resource packages can change
@@ -226,6 +242,63 @@ from overwriting settings edits and avoids writing the growing alias map on ever
 change. Aliases are durable compatibility data, so they remain separate from the disposable
 catalog cache. Migration removes legacy keys from the saved JSON without applying in-memory
 preferences; hidden identities changed by an install move still use the settings writer.
+
+### 3.4 Diagnostics and publication measurements
+
+Enable **catalog diagnostics** in Apps settings to collect structured information-level logs
+prefixed with `[AppCatalog diagnostics]`. Measurements use monotonic clocks; disabled diagnostics
+do not read timing clocks or count reused rows. The setting does not schedule additional scans.
+
+| Measurement | Scope |
+| ----------- | ----- |
+| Startup phases | Cache read, cached publication including notifications, and catalog initialization completion. |
+| Source initialization | Watcher/subscription setup for each source, including failure or retirement. Cached sources initialize later. |
+| Source queue wait | First coalesced enqueue to scan start, including debounce and earlier work. Retry backoff before enqueue is excluded. |
+| Source scan | Awaited load/update, including worker scheduling and enumeration/indexing. Logs requested and actual incremental mode, completeness and item/failure/retry counts. |
+| Publication delay | Completed scan to application of that source's snapshot, including retention and catalog merging. Later sources do not delay publication; unchanged snapshots can be accepted without new rows. |
+| Snapshot publication | Lock acquisition, validation and publication; `BuildPublication` time is also reported separately. A missing build duration means no rebuild. |
+| Observer callbacks | Synchronous `Changed` notification, including row projection. This is part of batch time and is separate from snapshot publication. |
+| Cache save | Cache-context preparation and the awaited save, including a possible no-op. `cacheAttempted` reports invocation, not a confirmed disk write. |
+| Metadata and row reuse | Win32 candidates parsed/reused and rows created/reused. Projection time includes aliases, sorting and resolution; excludes subsequent presentation notifications. |
+| First rows and loading | First non-empty visible row snapshot since `AppListItemSource` construction, plus effective startup/manual-refresh loading spans. These are model timings, not process startup or the first painted frame. |
+
+Batch IDs correlate scan, publication and cache timings within a catalog instance. A canceled
+background scan is marked `preempted`; failed scans are distinguished from completed incomplete
+scans. Startup loading can finish before cache persistence and later invalidations finish.
+
+Compare these scenarios using the same catalog and configuration:
+
+- First launch with no `apps.catalog.json`: identify watcher setup, slow sources and completed
+  scans waiting for the batch. Preserve `apps.settings.json` and `apps.aliases.json`.
+- Normal cached launch: check first rows and loading completion separately from the delayed
+  reconciliation. An unchanged background scan should reuse metadata and rows.
+- Launch with a newly configured uncached custom folder: cached rows should remain available
+  while loading waits for that source.
+- Manual Refresh: compare queue wait, source reads, publication and cache cost, including when
+  a background scan is preempted.
+
+**Publication behavior:**
+
+Discovery remains sequential, and each completed source publishes immediately after validating
+that its instance is still active. Unchanged snapshots skip merging and notification. Initial
+loading waits for all initial source IDs, including replacements; explicit Refresh waits for its
+own queued requests and their batch's cache save, rather than subsequent background recovery.
+The cache is saved once per batch. Opt-in diagnostics also identify individual candidate reads
+taking at least **250 ms**.
+
+**Possible follow-ups, requiring measurement:**
+
+1. Start each scan once its own watchers are ready. Register startup waits before starting work
+   so an early completion cannot hide loading for later sources. Preserve watch-before-scan
+   ordering and source replacement handling.
+2. Consider at most two concurrent sources only if scan timings justify it. Win32 foreground
+   indexing already uses two workers per source; bound total native reads and cancellation state.
+
+Earlier publication adds merges and consumer updates. Measure `BuildPublication` and projection
+with a realistic large catalog before introducing incremental merge or notification coalescing.
+Cold startup may briefly show duplicates until a later source supplies a canonical alias; cached
+snapshots usually supply that context already. Account for that tradeoff before changing source
+order solely to improve time to first rows.
 
 ## 4 Browsing and search
 
@@ -473,6 +546,8 @@ classDiagram
     AppCatalog "1" *-- "*" IAppSource : owns
     AppCatalog --> "1" IAppCatalogCache : persists source snapshots
     AppCatalog --> "1" IAppVisibilityStore : applies visibility
+    class AppCatalogPublicationBuilder
+    AppCatalog "1" *-- "1" AppCatalogPublicationBuilder : builds projections under catalog lock
 
     class AppCatalogItem {
         String Identity
@@ -494,7 +569,7 @@ classDiagram
         String LaunchTarget
     }
     IAppSource ..> AppCatalogItem : discovers
-    AppCatalog o-- "*" AppCatalogItem : reconciles and deduplicates
+    AppCatalogPublicationBuilder o-- "*" AppCatalogItem : merges and deduplicates
     AppCatalog --> "1" AppCatalogSnapshot : publishes atomically
     AppCatalogItem ..> AppItem : materializes
     AppCatalogSnapshot o-- "*" AppItem : visible and hidden projections

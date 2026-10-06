@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,6 +19,76 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 public partial class AppCatalogTests
 {
+    [TestMethod]
+    public async Task RefreshAsync_CompletesAfterItsCacheSaveWithoutWaitingForBackgroundRecovery()
+    {
+        var clock = new RecoveryTimeProvider();
+        var item = CreateCatalogItem("Published");
+        var backgroundLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cacheSave = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var source = new TestAppSource("test", new AppSourceScanResult([item], retryPaths: [string.Empty], failedPaths: []));
+        var cache = new TestCache(null) { DeferredSave = cacheSave.Task };
+        using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+        catalog.Changed += (_, _) =>
+        {
+            source.DeferNextLoad(backgroundLoad.Task);
+            clock.Advance(TimeSpan.FromSeconds(5));
+        };
+
+        try
+        {
+            var refresh = catalog.RefreshAsync();
+            await WaitForConditionAsync(() => cache.SaveCount == 1);
+            Assert.IsFalse(refresh.IsCompleted, "The explicit request still waits for its cache save.");
+            cacheSave.SetResult();
+            await refresh.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => source.LoadCount == 2);
+
+            Assert.IsTrue(catalog.IsRefreshing, "Recovery continues independently after explicit refresh completion.");
+            Assert.AreEqual("Published", catalog.GetSnapshot().Items.Single().Name);
+            Assert.IsTrue(source.LastLoadBackground);
+            backgroundLoad.SetResult([item]);
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+        }
+        finally
+        {
+            cacheSave.TrySetResult();
+            backgroundLoad.TrySetResult([item]);
+        }
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_AnEarlierInFlightScanCannotCompleteANewerRequest()
+    {
+        var firstLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var source = new TestAppSource("test", []);
+        using var catalog = CreateCatalog([source], new TestCache(null));
+        source.DeferNextLoad(firstLoad.Task);
+        try
+        {
+            var firstRefresh = catalog.RefreshAsync();
+            await WaitForConditionAsync(() => source.LoadCount == 1);
+            source.DeferNextLoad(secondLoad.Task);
+            var secondRefresh = catalog.RefreshAsync();
+            firstLoad.SetResult([CreateCatalogItem("First")]);
+            await firstRefresh.WaitAsync(TimeSpan.FromSeconds(5));
+            await WaitForConditionAsync(() => source.LoadCount == 2);
+
+            Assert.IsFalse(secondRefresh.IsCompleted, "Completion belongs to the queued request, not just its source ID.");
+            Assert.AreEqual("First", catalog.GetSnapshot().Items.Single().Name);
+            secondLoad.SetResult([CreateCatalogItem("Second")]);
+            await secondRefresh.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual("Second", catalog.GetSnapshot().Items.Single().Name);
+            Assert.IsFalse(catalog.IsRefreshing);
+        }
+        finally
+        {
+            firstLoad.TrySetResult([]);
+            secondLoad.TrySetResult([]);
+        }
+    }
+
     [TestMethod]
     public async Task Recovery_StartupFailureDoesNotWaitForRetries()
     {
@@ -54,6 +125,229 @@ public partial class AppCatalogTests
 
         clock.Advance(TimeSpan.FromMinutes(2));
         Assert.AreEqual(1, source.IncrementalLoadCount);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task Recovery_PathLimitDoesNotStrandAReusedRejectedRetry(bool recovers)
+    {
+        const string path = @"C:\Apps\Rejected.lnk";
+        var clock = new RecoveryTimeProvider();
+        var queuedPaths = Enumerable.Range(0, 256).Select(index => $@"C:\Apps\Queued{index}.lnk").ToArray();
+        var firstScan = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var blocked = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var blocker = new TestAppSource("other", []);
+        using var source = new TestAppSource("test", new AppSourceScanResult([], retryPaths: queuedPaths));
+        using var catalog = CreateRecoveryCatalog([source, blocker], clock);
+        try
+        {
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+            source.DeferNextLoad(firstScan.Task);
+            blocker.DeferNextLoad(blocked.Task);
+            source.Invalidate();
+            await WaitForConditionAsync(() => source.LoadCount == 2);
+            blocker.Invalidate();
+            source.SetItems(new AppSourceScanResult([], reusedRejectedPaths: [path.ToUpperInvariant()]));
+            source.SetIncrementalFactory(_ => recovers
+                ? new AppSourceScanResult([CreateCatalogItem("Recovered")])
+                : new AppSourceScanResult([], reusedRejectedPaths: [path.ToUpperInvariant()]));
+            clock.Advance(TimeSpan.FromSeconds(5));
+            firstScan.SetResult(new AppSourceScanResult([], retryPaths: [path], reusedRejectedPaths: queuedPaths.Skip(1).ToArray()));
+            await WaitForConditionAsync(() => blocker.LoadCount == 2);
+            clock.Advance(TimeSpan.FromSeconds(5));
+            blocked.SetResult([]);
+            await WaitForConditionAsync(() => source.LoadCount == 3 && !catalog.IsRefreshing);
+            Assert.AreEqual(0, source.IncrementalLoadCount, "The omitted retry path promotes the full queue to a full scan.");
+            Assert.IsTrue(source.LastLoadBackground);
+
+            clock.Advance(TimeSpan.FromSeconds(15));
+            await WaitForConditionAsync(() => source.IncrementalLoadCount == 1 && !catalog.IsRefreshing);
+            Assert.AreEqual(path, source.LastIncrementalChanges.Single().Path);
+            Assert.IsTrue(source.LastIncrementalBackground);
+            if (recovers)
+            {
+                Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Recovered"));
+            }
+            else
+            {
+                clock.Advance(TimeSpan.FromSeconds(40));
+                await WaitForConditionAsync(() => source.IncrementalLoadCount == 2 && !catalog.IsRefreshing);
+            }
+
+            clock.Advance(TimeSpan.FromMinutes(3));
+            Assert.AreEqual(recovers ? 1 : 2, source.IncrementalLoadCount, "Cached rejections must not renew the three-attempt budget.");
+        }
+        finally
+        {
+            firstScan.TrySetResult([]);
+            blocked.TrySetResult([]);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task Recovery_CachedRejectionKeepsPendingRetriesAcrossReconciliation(bool targetAppears)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-cached-retry-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var shortcut = Path.Combine(root, "App.lnk");
+            var target = Path.Combine(root, "App.exe");
+            var reads = 0;
+            var clock = new RecoveryTimeProvider();
+            using var source = new Win32AppSource(
+                new CustomDirectoryAppSource("retry", root, ["lnk"], Win32ProgramSourceProfile.None, maximumDepth: 0),
+                (_, _) =>
+                {
+                    Interlocked.Increment(ref reads);
+                    return File.Exists(target)
+                        ? TestDataHelper.CreateTestWin32Program("Installed", target)
+                        : new Win32Program { Valid = false };
+                },
+                createWatchers: false);
+            var cache = new TestCache(null);
+            using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+
+            clock.Advance(TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1));
+            File.WriteAllText(shortcut, "shortcut fixture");
+            await catalog.RefreshAsync();
+            Assert.AreEqual(1, reads);
+            var savedBeforeReconciliation = cache.SaveCount;
+
+            clock.Advance(TimeSpan.FromSeconds(1));
+            await WaitForConditionAsync(() => cache.SaveCount > savedBeforeReconciliation && !catalog.IsRefreshing);
+            Assert.AreEqual(1, reads, "Reconciliation must reuse the rejected shortcut without cancelling its retry.");
+            if (targetAppears)
+            {
+                File.WriteAllText(target, "installed");
+            }
+
+            clock.Advance(TimeSpan.FromSeconds(4));
+            await WaitForConditionAsync(() => reads == 2 && !catalog.IsRefreshing);
+            if (targetAppears)
+            {
+                Assert.IsTrue(ContainsApp(catalog.GetSnapshot().Items, "Installed"));
+                clock.Advance(TimeSpan.FromMinutes(2));
+                Assert.AreEqual(2, reads, "A successful retry must clear the remaining attempts.");
+            }
+            else
+            {
+                clock.Advance(TimeSpan.FromSeconds(15));
+                await WaitForConditionAsync(() => reads == 3 && !catalog.IsRefreshing);
+                clock.Advance(TimeSpan.FromSeconds(40));
+                await WaitForConditionAsync(() => reads == 4 && !catalog.IsRefreshing);
+                savedBeforeReconciliation = cache.SaveCount;
+                clock.Advance(TimeSpan.FromMinutes(10));
+                await WaitForConditionAsync(() => cache.SaveCount > savedBeforeReconciliation && !catalog.IsRefreshing);
+                clock.Advance(TimeSpan.FromMinutes(1));
+                Assert.AreEqual(4, reads, "Reusing an exhausted rejection must not start another retry burst.");
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task Recovery_RetryMergedWithFullReconciliationStillReReadsItsShortcut(bool retryFirst)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-merged-retry-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var blocked = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            var rejected = Path.Combine(root, "Rejected.lnk");
+            var unchanged = Path.Combine(root, "Unchanged.lnk");
+            File.WriteAllText(unchanged, "shortcut fixture");
+            var rejectedReads = 0;
+            var unchangedReads = 0;
+            var installed = false;
+            var clock = new RecoveryTimeProvider();
+            using var blocker = new TestAppSource("other", [CreateCatalogItem("Other", sourceId: "other")]);
+            using var source = new Win32AppSource(
+                new CustomDirectoryAppSource("retry", root, ["lnk"], Win32ProgramSourceProfile.None, maximumDepth: 0),
+                (path, _) =>
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(path, rejected))
+                    {
+                        Interlocked.Increment(ref rejectedReads);
+                        return installed
+                            ? TestDataHelper.CreateTestWin32Program("Installed", Path.ChangeExtension(path, ".exe"))
+                            : new Win32Program { Valid = false };
+                    }
+
+                    Interlocked.Increment(ref unchangedReads);
+                    return TestDataHelper.CreateTestWin32Program("Unchanged", Path.ChangeExtension(path, ".exe"));
+                },
+                createWatchers: false);
+            using var catalog = CreateRecoveryCatalog([blocker, source], clock);
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !catalog.IsRefreshing);
+            clock.Advance(TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1));
+            File.WriteAllText(rejected, "shortcut fixture");
+            await catalog.RefreshAsync();
+            Assert.AreEqual(1, rejectedReads);
+            Assert.AreEqual(2, unchangedReads);
+            blocker.DeferNextLoad(blocked.Task);
+            blocker.Invalidate();
+            await WaitForConditionAsync(() => blocker.LoadCount == 3);
+
+            if (!retryFirst)
+            {
+                clock.Advance(TimeSpan.FromSeconds(1));
+            }
+
+            clock.Advance(TimeSpan.FromSeconds(retryFirst ? 5 : 4));
+            installed = true;
+            blocked.SetResult([CreateCatalogItem("Other", sourceId: "other")]);
+            await WaitForConditionAsync(() => ContainsApp(catalog.GetSnapshot().Items, "Installed") && !catalog.IsRefreshing);
+
+            Assert.AreEqual(2, rejectedReads, "The queued retry must survive either full-scan coalescing order.");
+            Assert.AreEqual(2, unchangedReads, "The full background scan must reuse unrelated candidates.");
+            clock.Advance(TimeSpan.FromMinutes(1));
+            Assert.AreEqual(2, rejectedReads, "A successful retry must release its remaining retry budget.");
+        }
+        finally
+        {
+            blocked.TrySetResult([]);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task Recovery_PublicationFailureDoesNotRescanSourcesOrBlockOtherPublications()
+    {
+        var clock = new RecoveryTimeProvider();
+        var filter = new ThrowingCatalogFilter { FailingIdentity = "win32:Rejected" };
+        var logger = new RecordingLogger<AppCatalog>();
+        var cache = new TestCache(null);
+        using var first = new TestAppSource("test", [CreateCatalogItem("Original")]);
+        using var second = new TestAppSource("other", [CreateCatalogItem("Other", sourceId: "other")]);
+        using var catalog = new AppCatalog(new MutableSourceProvider([first, second]), cache, new VisibleApps(), [filter], timeProvider: clock, invalidationDelay: TimeSpan.Zero, logger: logger);
+        await catalog.InitializeAsync();
+        await WaitForConditionAsync(() => !catalog.IsRefreshing);
+        first.SetItems([CreateCatalogItem("Rejected")]);
+        second.SetItems([CreateCatalogItem("Updated", sourceId: "other")]);
+
+        await catalog.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+        string[] expectedNames = ["Original", "Updated"];
+        CollectionAssert.AreEquivalent(expectedNames, catalog.GetSnapshot().Items.Select(item => item.Name).ToArray());
+        Assert.IsTrue(logger.HasEvent(4));
+        Assert.IsFalse(logger.HasEvent(2), "A publication failure is not a source read failure.");
+        Assert.AreEqual("other", cache.LastFullyReconciledSourceIds.Single());
+        clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.AreEqual(2, first.LoadCount);
+        Assert.AreEqual(2, second.LoadCount);
     }
 
     [TestMethod]
