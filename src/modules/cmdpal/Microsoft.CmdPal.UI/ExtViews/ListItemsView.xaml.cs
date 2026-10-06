@@ -55,11 +55,8 @@ public sealed partial class ListItemsView : UserControl
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
-    // A single search-text change can produce multiple ItemsUpdated calls
-    // dispatched as separate UI-thread callbacks. A later "soft" update
-    // (ForceFirstItem = false) must not overwrite a prior force-first
-    // intent. This flag latches true whenever any update requests
-    // force-first and is only cleared once selection stabilizes.
+    // Retain reset intent until selection is applied. The main page keeps following
+    // the first result as late results arrive, until the user changes selection.
     private bool _forceFirstPending;
 
     private bool _isLoaded;
@@ -264,13 +261,25 @@ public sealed partial class ListItemsView : UserControl
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (sender is not ListViewBase itemView || !ReferenceEquals(itemView, ItemView) || ViewModel is not { } viewModel)
         {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
+            return;
+        }
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var item = ListItemDoubleTapTarget.Resolve<DependencyObject, SelectorItem>(
+            e.OriginalSource as DependencyObject,
+            itemView,
+            settings.SingleClickActivates,
+            VisualTreeHelper.GetParent,
+            container => ReferenceEquals(ItemsControl.ItemsControlFromItemContainer(container), itemView)
+                ? itemView.ItemFromContainer(container) as ListItemViewModel
+                : null);
+
+        if (item is not null)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            e.Handled = true;
         }
     }
 
@@ -545,28 +554,50 @@ public sealed partial class ListItemsView : UserControl
     // Navigation requested by the owner should count as keyboard input.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
-    private void PushSelectionToVm()
+    private void PushSelectionToVm(bool force = false)
     {
         if (ViewModel is null)
         {
             return;
         }
 
-        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        var li = ItemView.SelectedItem as ListItemViewModel;
+        if (li is not null && !IsSeparator(li))
         {
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            if (!force && ReferenceEquals(_lastPushedToVm, li))
+            {
+                return;
+            }
+
+            _lastPushedToVm = li;
+            _stickySelectedItem = li;
+        }
+        else
+        {
+            li = null;
+            _lastPushedToVm = null;
+            if (force)
+            {
+                ViewModel.AcknowledgeSelection(li);
+            }
+            else
+            {
+                ViewModel.UpdateSelectedItemCommand.Execute(li);
+            }
+
             SelectionChanged?.Invoke(this, new(ViewModel.ShowEmptyContent ? ViewModel.EmptyContent : null));
             return;
         }
 
-        if (ReferenceEquals(_lastPushedToVm, li))
+        if (force)
         {
-            return;
+            ViewModel.AcknowledgeSelection(li);
+        }
+        else
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(li);
         }
 
-        _lastPushedToVm = li;
-        _stickySelectedItem = li;
-        ViewModel.UpdateSelectedItemCommand.Execute(li);
         SelectionChanged?.Invoke(this, new(li));
     }
 
@@ -954,8 +985,8 @@ public sealed partial class ListItemsView : UserControl
 
         // Try to handle selection immediately after updating the presentation.
         // The grouped CollectionViewSource may still be processing its changes.
-        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
-        // selection stabilizes (no repair needed), so we don't clear it here.
+        // TrySetSelectionAfterUpdate consumes resets once selection is applied
+        // and retains main-page tracking until user navigation.
         if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
         {
             return;
@@ -1318,8 +1349,7 @@ public sealed partial class ListItemsView : UserControl
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         // If ItemView.Items hasn't caught up with the ObservableCollection yet,
@@ -1340,10 +1370,11 @@ public sealed partial class ListItemsView : UserControl
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
+        // User navigation can cancel a reset while its retry is queued.
+        forceFirstItem &= _forceFirstPending;
         var shouldUpdateSelection = forceFirstItem;
 
         if (!shouldUpdateSelection)
@@ -1424,10 +1455,6 @@ public sealed partial class ListItemsView : UserControl
         }
         else
         {
-            // Selection is valid and unchanged: the force-first intent (if any)
-            // has been fully delivered and selection has stabilized.
-            _forceFirstPending = false;
-
             if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
@@ -1446,7 +1473,17 @@ public sealed partial class ListItemsView : UserControl
             }
         }
 
-        PushSelectionToVm();
+        return CompleteSelectionUpdate(sender, version, forceFirstItem);
+    }
+
+    private bool CompleteSelectionUpdate(ListViewModel sender, long version, bool forceSelection)
+    {
+        if (version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(sender, ViewModel))
+        {
+            _forceFirstPending &= sender.IsMainPage;
+            PushSelectionToVm(forceSelection);
+        }
+
         return true;
     }
 

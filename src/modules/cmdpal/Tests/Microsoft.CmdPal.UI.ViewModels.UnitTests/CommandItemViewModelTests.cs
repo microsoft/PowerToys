@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -445,6 +446,53 @@ public partial class CommandItemViewModelTests
 
         Assert.AreEqual(readCount, item.MenuReadCount, "Presentation reads must not fetch SDK menu entries again.");
         Assert.AreEqual(1, secondary.ShortcutReadCount, "Read the extension shortcut once during initialization; menu preparation, filtering and lookups use its cached value.");
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task AdministratorShortcut_IsIndependentOfSecondaryPositionAndMenuLifetime(bool isDock, bool adminIsSecondary)
+    {
+        var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+        var pageContext = new TestPageContext(uiTasks.Scheduler);
+        await uiTasks.StartNew(() =>
+        {
+            var admin = new CommandContextItem(new NoOpCommand { Name = "Run as administrator" })
+            {
+                RequestedShortcut = WellKnownKeyChords.RunAsAdministrator,
+            };
+            var other = new CommandContextItem(new NoOpCommand { Name = "Other action" });
+            var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+            {
+                MoreCommands = adminIsSecondary ? [admin, other] : [other, admin],
+            };
+            var viewModel = isDock
+                ? new DockItemViewModel(new(item), new(pageContext), true, true, DefaultContextMenuFactory.Instance)
+                : new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+            var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
+            try
+            {
+                viewModel.SlowInitializeProperties();
+                var adminViewModel = viewModel.AllCommands.OfType<CommandContextItemViewModel>().Single(command => ReferenceEquals(command.Model.Unsafe, admin));
+
+                Assert.AreSame(adminViewModel, ((IContextMenuContext)viewModel).FindKeybinding(WellKnownKeyChords.RunAsAdministrator));
+                menu.PrepareForOpen(viewModel);
+                Assert.AreEqual(WellKnownKeyChords.RunAsAdministrator, adminViewModel.DisplayShortcut);
+                menu.SetSearchText("Other action");
+                Assert.AreSame(adminViewModel, menu.FindKeybinding(WellKnownKeyChords.RunAsAdministrator));
+                menu.Close();
+                Assert.AreSame(adminViewModel, ((IContextMenuContext)viewModel).FindKeybinding(WellKnownKeyChords.RunAsAdministrator));
+                Assert.AreEqual(WellKnownKeyChords.RunAsAdministrator, adminViewModel.DisplayShortcut);
+            }
+            finally
+            {
+                menu.Close();
+                viewModel.SafeCleanup();
+                GC.KeepAlive(pageContext);
+            }
+        });
     }
 
     [TestMethod]

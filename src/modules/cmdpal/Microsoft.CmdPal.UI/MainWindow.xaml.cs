@@ -1552,9 +1552,11 @@ public sealed partial class MainWindow : WindowEx,
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
-        else if (!IsVisibleToUser && !_isShowing)
+        else if (_copilotKeyRegistration is null && !IsVisibleToUser && !_isShowing)
         {
-            // External activation (e.g. the Copilot key) must restore search selection and focus.
+            // LOAD BEARING
+            // This fallback is a footgun I'd rather remove entirely, but it must remain when Copilot fast path registration fails.
+            // If Copilot key fast-path is not registered, external activation (e.g. the Copilot key) must restore search selection and focus.
             Summon(string.Empty);
         }
 

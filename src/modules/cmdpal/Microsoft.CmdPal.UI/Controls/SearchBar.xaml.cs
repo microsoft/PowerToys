@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -569,13 +570,20 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
     /// box and its placeholder. Used for summon and post-navigation focus alike so both paths
     /// are announced consistently.
     /// </summary>
-    internal void FocusActiveControl()
+    /// <param name="onFocused">Called after the queued focus succeeds.</param>
+    internal void FocusActiveControl(Action? onFocused = null)
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
+            if (this.FindAscendant<ShellPage>()?.HostWindow?.IsVisibleToUser == true &&
+                FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
             {
-                FocusManager.TryFocusAsync(focusable, FocusState.Keyboard).Wait();
+                var operation = FocusManager.TryFocusAsync(focusable, FocusState.Keyboard);
+                operation.Wait();
+                if (operation.GetResults().Succeeded)
+                {
+                    onFocused?.Invoke();
+                }
             }
         });
     }
