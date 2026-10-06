@@ -15,6 +15,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public static class ThumbnailHelper
 {
+    // Temporary until IShellItemImageFactory replaces image lists; the SDK does not own the extension lifecycle.
     private static readonly Lazy<bool> ShellIconCacheInitialized = new(static () => NativeMethods.FileIconInit(true));
 
     private static readonly string[] ImageExtensions =
@@ -36,16 +37,6 @@ public static class ThumbnailHelper
         ".ico",
         ".webp",
     ];
-
-    /// <summary>
-    /// Refreshes the current process's Shell image lists after non-client metrics change.
-    /// </summary>
-    /// <returns>Whether the system image lists were refreshed successfully.</returns>
-    public static bool RefreshShellIconCache()
-    {
-        _ = ShellIconCacheInitialized.Value;
-        return NativeMethods.FileIconInit(false);
-    }
 
     /// <summary>
     /// Determines whether a path has an image extension supported by the thumbnail path.

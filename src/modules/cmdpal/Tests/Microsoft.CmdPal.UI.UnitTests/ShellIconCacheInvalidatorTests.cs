@@ -43,6 +43,8 @@ public class ShellIconCacheInvalidatorTests
     [TestMethod]
     public void NonClientMetricsChangeInvalidatesCachedImageListIndices()
     {
+        _ = ShellIconCacheInvalidator.InitializeShellIconCache();
+
         var cache = new ShellIconLocationCache();
         using var invalidator = new ShellIconCacheInvalidator(
             windowHandle: 0,
