@@ -15,6 +15,9 @@ public class PackageWrapper : IPackage
 {
     private const int ErrorAppDataNotFoundHResult = unchecked((int)0x80071130);
 
+    private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new(() =>
+        ApiInformation.IsPropertyPresent(typeof(Package).FullName, nameof(Package.InstalledLocation.Path)));
+
     public string Name { get; } = string.Empty;
 
     public string FullName { get; } = string.Empty;
@@ -44,9 +47,6 @@ public class PackageWrapper : IPackage
         IsNonRemovable = isNonRemovable;
     }
 
-    private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new(() =>
-        ApiInformation.IsPropertyPresent(typeof(Package).FullName, nameof(Package.InstalledLocation.Path)));
-
     public static PackageWrapper GetWrapperFromPackage(Package package)
     {
         ArgumentNullException.ThrowIfNull(package);
@@ -63,16 +63,18 @@ public class PackageWrapper : IPackage
             path = string.Empty;
         }
 
+        var packageId = package.Id;
         return new PackageWrapper(
-            package.Id.Name,
-            package.Id.FullName,
-            package.Id.FamilyName,
+            packageId.Name,
+            packageId.FullName,
+            packageId.FamilyName,
             package.IsFramework,
             package.IsDevelopmentMode,
             path,
             GetIsNonRemovable(() => package.SignatureKind));
     }
 
+    /// <summary>Reads system-package status, conservatively disabling uninstall when the package-cache data is unavailable.</summary>
     internal static bool GetIsNonRemovable(Func<PackageSignatureKind> getSignatureKind)
     {
         ArgumentNullException.ThrowIfNull(getSignatureKind);
@@ -89,6 +91,7 @@ public class PackageWrapper : IPackage
         }
     }
 
+    /// <summary>Reads framework status, treating a failed property read as an app package so refreshes are not suppressed.</summary>
     internal static bool GetIsFramework(Func<bool> getIsFramework)
     {
         ArgumentNullException.ThrowIfNull(getIsFramework);
@@ -105,9 +108,13 @@ public class PackageWrapper : IPackage
     }
 
     private static bool IsFastCacheDataNotFound(Exception exception)
-        => exception.HResult == ErrorAppDataNotFoundHResult;
+    {
+        return exception.HResult == ErrorAppDataNotFoundHResult;
+    }
 
     // This is a separate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
     private static string GetInstalledPath(Package package)
-        => package.InstalledLocation.Path;
+    {
+        return package.InstalledLocation.Path;
+    }
 }

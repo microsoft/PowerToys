@@ -349,8 +349,10 @@ public partial class Win32Program
             {
                 if (!(File.Exists(target) || Directory.Exists(target)))
                 {
-                    // If the link points nowhere, consider it invalid.
-                    return InvalidProgram;
+                    // Keep the missing target so background validation can detect a later install.
+                    program.FullPath = target;
+                    program.Valid = false;
+                    return program;
                 }
 
                 program.LnkFilePath = program.FullPath;

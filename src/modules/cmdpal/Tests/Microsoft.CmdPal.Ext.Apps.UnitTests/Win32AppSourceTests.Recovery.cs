@@ -23,6 +23,81 @@ public partial class Win32AppSourceTests
     [DataRow(false)]
     [DataRow(true)]
     [DoNotParallelize]
+    public async Task Recovery_PromotedRetryReReadsCachedRejectionWithoutReReadingOtherCandidates(bool pathSource)
+    {
+        var root = CreateTemporaryDirectory("cmdpal-promoted-retry");
+        var originalPath = Environment.GetEnvironmentVariable("PATH");
+        try
+        {
+            var rejected = Path.Combine(root, "Rejected.lnk");
+            var unchanged = Path.Combine(root, "Unchanged.lnk");
+            File.WriteAllText(rejected, "shortcut fixture");
+            File.WriteAllText(unchanged, "shortcut fixture");
+            Environment.SetEnvironmentVariable("PATH", root);
+            var settingsPath = Path.Combine(root, "settings.json");
+            File.WriteAllText(settingsPath, "{\"apps.EnablePathEnvironmentVariableSource\":\"true\",\"apps.EnableRegistrySource\":\"true\"}");
+            var settings = new AllAppsSettings(settingsPath);
+            IWin32ProgramSource origin = pathSource
+                ? new PathEnvironmentAppSource(settings)
+                : new RegistryAppSource(settings, _ => [("rejected.exe", rejected), ("unchanged.exe", unchanged)]);
+            var rejectedReads = 0;
+            var unchangedReads = 0;
+            var installed = false;
+            using var source = new Win32AppSource(
+                origin,
+                (path, _) =>
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(path, rejected))
+                    {
+                        Interlocked.Increment(ref rejectedReads);
+                        return installed
+                            ? TestDataHelper.CreateTestWin32Program("Installed", Path.ChangeExtension(path, ".exe"))
+                            : new Win32Program { Valid = false };
+                    }
+
+                    Interlocked.Increment(ref unchangedReads);
+                    return TestDataHelper.CreateTestWin32Program("Unchanged", Path.ChangeExtension(path, ".exe"));
+                },
+                createWatchers: false);
+            var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
+            Assert.AreEqual(1, initial.Count);
+            Assert.AreEqual(rejected, initial.RetryPaths.Single());
+            await source.LoadAsync(CancellationToken.None, background: true);
+            Assert.AreEqual(1, rejectedReads);
+
+            var retry = (AppSourceScanResult)await source.ApplyChangesAsync(
+                initial,
+                [new AppSourcePathChange(WatcherChangeTypes.Changed, rejected.ToUpperInvariant())],
+                CancellationToken.None,
+                background: true);
+            Assert.IsTrue(retry.IsFullScan);
+            Assert.AreEqual(2, rejectedReads, "A promoted full scan must actually perform the requested retry.");
+            Assert.AreEqual(1, unchangedReads, "Unrelated unchanged candidates must remain cached.");
+            Assert.AreEqual(rejected, retry.RetryPaths.Single());
+            Assert.AreEqual(0, retry.ReusedRejectedPaths.Count);
+
+            installed = true;
+            var recovered = (AppSourceScanResult)await source.ApplyChangesAsync(
+                retry,
+                [new AppSourcePathChange(WatcherChangeTypes.Changed, rejected)],
+                CancellationToken.None,
+                background: true);
+            Assert.AreEqual(3, rejectedReads);
+            Assert.AreEqual(1, unchangedReads);
+            Assert.AreEqual(2, recovered.Count);
+            Assert.AreEqual(0, recovered.RetryPaths.Count);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("PATH", originalPath);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [DoNotParallelize]
     public async Task Recovery_QuotedPathEntriesRemainDiscoverableAndCacheable(bool includeMalformed)
     {
         var root = CreateTemporaryDirectory("cmdpal-quoted-path");
