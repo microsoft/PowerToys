@@ -40,7 +40,7 @@ internal sealed partial class Win32AppSource : IAppSource
 
     private readonly IWin32ProgramSource _source;
     private readonly string _configurationKey;
-    private readonly Func<string, bool, Win32Program> _programLoader;
+    private readonly Func<string, bool, Win32AppMetadata> _readMetadata;
     private readonly Func<bool> _diagnosticsEnabled;
     private readonly Func<TimeSpan, CancellationToken, Task> _recoveryDelayAsync;
     private readonly MEL.ILogger<Win32AppSource> _logger;
@@ -73,31 +73,37 @@ internal sealed partial class Win32AppSource : IAppSource
         }
     }
 
+    /// <summary>Initializes a new instance of the <see cref="Win32AppSource"/> class. Creates a Win32 catalog source using the production metadata reader and filesystem watchers.</summary>
     internal Win32AppSource(
         IWin32ProgramSource source,
         Func<bool>? diagnosticsEnabled = null,
         MEL.ILogger<Win32AppSource>? logger = null)
-        : this(source, Win32Program.LoadFromPath, createWatchers: true, diagnosticsEnabled, logger: logger)
+        : this(source, Win32AppReader.LoadFromPath, createWatchers: true, diagnosticsEnabled, logger: logger)
     {
     }
 
+    /// <summary>Initializes a new instance of the <see cref="Win32AppSource"/> class. Creates a Win32 source with configurable metadata reads, watchers, diagnostics, and recovery delays.</summary>
     internal Win32AppSource(
         IWin32ProgramSource source,
-        Func<string, bool, Win32Program> programLoader,
+        Func<string, bool, Win32AppMetadata> readMetadata,
         bool createWatchers,
         Func<bool>? diagnosticsEnabled = null,
         Func<TimeSpan, CancellationToken, Task>? recoveryDelayAsync = null,
         MEL.ILogger<Win32AppSource>? logger = null)
     {
-        _source = source ?? throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(readMetadata);
+
+        _source = source;
         _configurationKey = source.ConfigurationKey;
-        _programLoader = programLoader ?? throw new ArgumentNullException(nameof(programLoader));
+        _readMetadata = readMetadata;
         _createWatchers = createWatchers;
         _diagnosticsEnabled = diagnosticsEnabled ?? (() => false);
         _recoveryDelayAsync = recoveryDelayAsync ?? Task.Delay;
         _logger = logger ?? NullLogger<Win32AppSource>.Instance;
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync(CancellationToken cancellationToken)
     {
         lock (_watchersLock)
@@ -109,6 +115,7 @@ internal sealed partial class Win32AppSource : IAppSource
         }
     }
 
+    /// <inheritdoc />
     public Task<IReadOnlyList<AppCatalogItem>> LoadAsync(CancellationToken cancellationToken, bool background = false, IReadOnlyList<AppSourcePathChange>? dirtyPaths = null)
     {
         return AppSourceWork.Run<IReadOnlyList<AppCatalogItem>>(
@@ -135,7 +142,7 @@ internal sealed partial class Win32AppSource : IAppSource
             var path = candidate.Path;
             if (string.IsNullOrWhiteSpace(path)
                 || (!HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeRawExecutables)
-                    && Win32Program.IsExecutablePath(path)))
+                    && PathHelpers.IsExecutablePath(path)))
             {
                 continue;
             }
@@ -181,6 +188,7 @@ internal sealed partial class Win32AppSource : IAppSource
         return CompleteScan(items, failedPaths, retryPaths, isFullScan: true);
     }
 
+    /// <inheritdoc />
     public Task<IReadOnlyList<AppCatalogItem>> ApplyChangesAsync(
         IReadOnlyList<AppCatalogItem> currentItems,
         IReadOnlyList<AppSourcePathChange> changes,
@@ -329,7 +337,7 @@ internal sealed partial class Win32AppSource : IAppSource
     private static void RecordReadFailure(string path, Exception error, HashSet<string> failedPaths, HashSet<string> retryPaths)
     {
         failedPaths.Add(path);
-        if (Win32Program.IsRetryableReadFailure(error))
+        if (PathHelpers.IsRetryableReadFailure(error))
         {
             retryPaths.Add(path);
         }
@@ -391,7 +399,7 @@ internal sealed partial class Win32AppSource : IAppSource
     {
         if (string.IsNullOrWhiteSpace(candidatePath)
             || (!HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeRawExecutables)
-                && Win32Program.IsExecutablePath(candidatePath))
+                && PathHelpers.IsExecutablePath(candidatePath))
             || !candidatePathKeys.Add(candidatePath))
         {
             return true;
@@ -519,7 +527,7 @@ internal sealed partial class Win32AppSource : IAppSource
             }
 
             var candidateStarted = diagnostics ? Stopwatch.GetTimestamp() : 0;
-            var program = _programLoader(
+            var program = _readMetadata(
                 path,
                 HasProfileOption(_source.Profile, Win32ProgramSourceProfile.LoadAsRunCommand));
             if (diagnostics)
@@ -561,15 +569,15 @@ internal sealed partial class Win32AppSource : IAppSource
             }
 
             checkedPaths.Add(path);
-            var isNonApp = program.AppType is Win32Program.ApplicationType.GenericFile or Win32Program.ApplicationType.Folder;
+            var isNonApp = program.AppType is Win32AppType.GenericFile or Win32AppType.Folder;
             if (isNonApp && !HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeNonApplications))
             {
                 CacheCandidate(candidate, stamp, program, item: null);
                 return;
             }
 
-            var workingDirectory = Win32Program.GetDistinctWorkingDirectory(program.AppExecutionAlias?.TargetPath ?? program.FullPath, program.WorkingDirectory, program.ExplicitAppUserModelId);
-            var target = string.IsNullOrWhiteSpace(program.FullPath) ? LaunchTarget.FilePath(path) : program.Target;
+            var workingDirectory = AppIdentity.GetDistinctWorkingDirectory(program.AppExecutionAlias?.TargetPath ?? program.TargetPath, program.WorkingDirectory, program.ExplicitAppUserModelId);
+            var target = string.IsNullOrWhiteSpace(program.TargetPath) ? LaunchTarget.FilePath(path) : program.Target;
 
             var identity = CreateCatalogIdentity(target.IdentityToken, program.Arguments, workingDirectory);
             var launchIdentity = CreateCatalogIdentity(LaunchTarget.FilePath(path).IdentityToken, program.Arguments, workingDirectory);
@@ -632,7 +640,7 @@ internal sealed partial class Win32AppSource : IAppSource
             reusedRejectedPaths: [.. reusedRejectedPaths]);
     }
 
-    private void CacheCandidate(Win32ProgramCandidate candidate, FileStamp? stamp, Win32Program program, AppCatalogItem? item)
+    private void CacheCandidate(Win32ProgramCandidate candidate, FileStamp? stamp, Win32AppMetadata program, AppCatalogItem? item)
     {
         if (program.AppExecutionAlias is not null)
         {
@@ -640,7 +648,7 @@ internal sealed partial class Win32AppSource : IAppSource
             return;
         }
 
-        var targetPath = string.IsNullOrWhiteSpace(program.FullPath) ? candidate.Path : program.FullPath;
+        var targetPath = string.IsNullOrWhiteSpace(program.TargetPath) ? candidate.Path : program.TargetPath;
         _indexedCandidates[candidate.Path] = new IndexedCandidate(
             stamp,
             targetPath,
@@ -656,9 +664,9 @@ internal sealed partial class Win32AppSource : IAppSource
         return (profile & option) != 0;
     }
 
-    private static int GetRepresentationPriority(Win32Program program, string sourcePath)
+    private static int GetRepresentationPriority(Win32AppMetadata program, string sourcePath)
     {
-        return Win32Program.IsExecutablePath(sourcePath) && program.AppExecutionAlias is null
+        return PathHelpers.IsExecutablePath(sourcePath) && program.AppExecutionAlias is null
             ? RawExecutablePriorityOffset
             : 0;
     }
@@ -672,20 +680,20 @@ internal sealed partial class Win32AppSource : IAppSource
             : $"{identity}|cwd:{workingDirectory}";
     }
 
-    private static List<string> CreateMatchTerms(Win32Program program, string sourcePath, IReadOnlyList<string> sourceTerms)
+    private static List<string> CreateMatchTerms(Win32AppMetadata program, string sourcePath, IReadOnlyList<string> sourceTerms)
     {
         List<string> terms = [];
         var uniqueTerms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         AddMatchTerm(terms, uniqueTerms, program.Name);
-        AddMatchTerm(terms, uniqueTerms, program.NameLocalized);
+        AddMatchTerm(terms, uniqueTerms, program.DisplayName);
         AddMatchTerm(terms, uniqueTerms, program.Description);
-        AddMatchTerm(terms, uniqueTerms, program.FullPath);
-        AddMatchTerm(terms, uniqueTerms, program.FullPathLocalized);
+        AddMatchTerm(terms, uniqueTerms, program.TargetPath);
+        AddMatchTerm(terms, uniqueTerms, program.LocalizedTargetPath);
         AddMatchTerm(terms, uniqueTerms, program.ParentDirectory);
-        AddMatchTerm(terms, uniqueTerms, program.ExecutableName);
-        AddMatchTerm(terms, uniqueTerms, program.ExecutableNameLocalized);
-        AddMatchTerm(terms, uniqueTerms, program.LnkResolvedExecutableName);
-        AddMatchTerm(terms, uniqueTerms, program.LnkResolvedExecutableNameLocalized);
+        AddMatchTerm(terms, uniqueTerms, program.SourceFilename);
+        AddMatchTerm(terms, uniqueTerms, program.LocalizedSourceFilename);
+        AddMatchTerm(terms, uniqueTerms, program.TargetFilename);
+        AddMatchTerm(terms, uniqueTerms, program.LocalizedTargetFilename);
         AddMatchTerm(terms, uniqueTerms, program.ExplicitAppUserModelId);
         AddMatchTerm(terms, uniqueTerms, sourcePath);
         foreach (var term in sourceTerms)
@@ -1110,6 +1118,7 @@ internal sealed partial class Win32AppSource : IAppSource
     [LoggerMessage(EventId = 6, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] Source {SourceId} read '{Path}' in {DurationMs} ms: valid={Valid}, retryableReadFailure={RetryableReadFailure}.")]
     private static partial void LogDiagnosticSlowCandidate(MEL.ILogger logger, string sourceId, string path, double durationMs, bool valid, bool retryableReadFailure);
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (!_disposed.Set())

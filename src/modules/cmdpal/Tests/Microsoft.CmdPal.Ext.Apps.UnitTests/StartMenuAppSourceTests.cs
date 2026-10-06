@@ -83,8 +83,8 @@ public class StartMenuAppSourceTests
             fixture.CreateSource(),
             (path, _) =>
             {
-                var program = TestDataHelper.CreateTestWin32Program("OpenRGB", Path.Combine(fixture.Root, "OpenRGB.exe"));
-                program.AppType = Win32Program.ApplicationType.Win32Application;
+                var program = TestDataHelper.CreateTestWin32Metadata("OpenRGB", Path.Combine(fixture.Root, "OpenRGB.exe"));
+                program.AppType = Win32AppType.Win32Application;
                 program.LnkFilePath = path;
                 return program;
             },
@@ -105,7 +105,7 @@ public class StartMenuAppSourceTests
             [new AppSourcePathChange(WatcherChangeTypes.Renamed, normal, startup)],
             CancellationToken.None);
         Assert.AreEqual(1, items.Count);
-        Assert.AreEqual(normal, items[0].ToAppItem().ExePath);
+        Assert.AreEqual(normal, items[0].ToAppItem().LaunchTarget);
     }
 
     [TestMethod]

@@ -8,7 +8,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
@@ -17,7 +17,25 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </summary>
 internal sealed class AppCatalogItem
 {
-    /// <summary>Initializes a catalog item loaded from or written to the catalog cache.</summary>
+    /// <summary>Gets the stable canonical identity.</summary>
+    public string Identity { get; }
+
+    /// <summary>Gets the selected representation and all contributing source references.</summary>
+    public AppCatalogProvenance Provenance { get; }
+
+    /// <summary>Gets the sorted source aliases and metadata retained across deduplication.</summary>
+    public ImmutableArray<string> MatchTerms { get; }
+
+    /// <summary>Gets the persisted command IDs of all contributing representations.</summary>
+    public ImmutableArray<string> CommandIds { get; }
+
+    /// <summary>Gets contributing catalog identities retained for existing visibility preferences.</summary>
+    public ImmutableArray<string> IdentityAliases { get; }
+
+    /// <summary>Gets the exactly-one immutable application payload.</summary>
+    public IAppCatalogPayload Payload { get; }
+
+    /// <summary>Initializes a new instance of the <see cref="AppCatalogItem"/> class. Initializes a catalog item loaded from or written to the catalog cache.</summary>
     [JsonConstructor]
     public AppCatalogItem(
         string identity,
@@ -41,7 +59,7 @@ internal sealed class AppCatalogItem
     {
     }
 
-    /// <summary>Initializes an item contributed by one application source.</summary>
+    /// <summary>Initializes a new instance of the <see cref="AppCatalogItem"/> class. Initializes an item contributed by one application source.</summary>
     public AppCatalogItem(
         string identity,
         int priority,
@@ -67,31 +85,17 @@ internal sealed class AppCatalogItem
         ImmutableArray<string> commandIds,
         ImmutableArray<string> identityAliases)
     {
-        Identity = identity ?? throw new ArgumentNullException(nameof(identity));
-        Provenance = provenance ?? throw new ArgumentNullException(nameof(provenance));
+        ArgumentNullException.ThrowIfNull(identity);
+        ArgumentNullException.ThrowIfNull(provenance);
+        ArgumentNullException.ThrowIfNull(payload);
+
+        Identity = identity;
+        Provenance = provenance;
         MatchTerms = normalizedMatchTerms;
-        Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        Payload = payload;
         CommandIds = commandIds;
         IdentityAliases = identityAliases;
     }
-
-    /// <summary>Gets the stable canonical identity.</summary>
-    public string Identity { get; }
-
-    /// <summary>Gets the selected representation and all contributing source references.</summary>
-    public AppCatalogProvenance Provenance { get; }
-
-    /// <summary>Gets the sorted source aliases and metadata retained across deduplication.</summary>
-    public ImmutableArray<string> MatchTerms { get; }
-
-    /// <summary>Gets the persisted command IDs of all contributing representations.</summary>
-    public ImmutableArray<string> CommandIds { get; }
-
-    /// <summary>Gets contributing catalog identities retained for existing visibility preferences.</summary>
-    public ImmutableArray<string> IdentityAliases { get; }
-
-    /// <summary>Gets the exactly-one immutable application payload.</summary>
-    public IAppCatalogPayload Payload { get; }
 
     /// <summary>Materializes the consumer-facing application payload.</summary>
     public AppItem ToAppItem()
@@ -101,7 +105,7 @@ internal sealed class AppCatalogItem
         app.MatchTerms = MatchTerms;
         app.ExecutableSourcePaths = Provenance.References
             .Select(reference => reference.ItemId)
-            .Where(path => Path.IsPathFullyQualified(path) && Win32Program.IsExecutablePath(path))
+            .Where(path => Path.IsPathFullyQualified(path) && PathHelpers.IsExecutablePath(path))
             .ToArray();
         app.CommandIds = CommandIds.Concat(IdentityAliases.SelectMany(identity => AppIdentity.GetCommandIds(identity))).Distinct(StringComparer.Ordinal).ToArray();
         return app;
@@ -152,6 +156,37 @@ internal sealed class AppCatalogItem
             NormalizeIdentityAliases(Identity, IdentityAliases.Concat(other.IdentityAliases)));
     }
 
+    /// <summary>Compares source snapshots by persisted item content, independent of item order.</summary>
+    internal static bool HaveSamePersistedContent(
+        IReadOnlyList<AppCatalogItem> left,
+        IReadOnlyList<AppCatalogItem> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        var leftById = new Dictionary<string, AppCatalogItem>(left.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var item in left)
+        {
+            if (!leftById.TryAdd(item.Identity, item))
+            {
+                return false;
+            }
+        }
+
+        foreach (var item in right)
+        {
+            if (!leftById.Remove(item.Identity, out var leftItem)
+                || !leftItem.HasSamePersistedContent(item))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>Determines whether two items would write equivalent catalog-cache content.</summary>
     public bool HasSamePersistedContent(AppCatalogItem other)
     {
@@ -196,11 +231,13 @@ internal sealed class AppCatalogItem
     }
 
     private static ImmutableArray<string> NormalizeIdentityAliases(string identity, IEnumerable<string> aliases)
-        => aliases.Append(identity)
+    {
+        return aliases.Append(identity)
             .Where(alias => !string.IsNullOrWhiteSpace(alias))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToImmutableArray();
+    }
 
     private static ImmutableArray<string> NormalizeMatchTerms(ImmutableArray<string> matchTerms)
     {
@@ -302,36 +339,5 @@ internal sealed class AppCatalogItem
         return comparison != 0
             ? comparison
             : string.Compare(left, right, StringComparison.Ordinal);
-    }
-
-    /// <summary>Compares source snapshots by persisted item content, independent of item order.</summary>
-    internal static bool HaveSamePersistedContent(
-        IReadOnlyList<AppCatalogItem> left,
-        IReadOnlyList<AppCatalogItem> right)
-    {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-
-        var leftById = new Dictionary<string, AppCatalogItem>(left.Count, StringComparer.OrdinalIgnoreCase);
-        foreach (var item in left)
-        {
-            if (!leftById.TryAdd(item.Identity, item))
-            {
-                return false;
-            }
-        }
-
-        foreach (var item in right)
-        {
-            if (!leftById.Remove(item.Identity, out var leftItem)
-                || !leftItem.HasSamePersistedContent(item))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

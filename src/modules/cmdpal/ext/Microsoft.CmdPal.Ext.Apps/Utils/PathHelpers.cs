@@ -3,13 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
 internal static class PathHelpers
 {
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+
     private static readonly string CachedSystemRoot =
         NormalizeDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
@@ -132,5 +136,32 @@ internal static class PathHelpers
     {
         return directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
+    }
+
+    /// <summary>Determines whether a source path directly names a supported executable type.</summary>
+    internal static bool IsExecutablePath(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return !string.IsNullOrEmpty(extension) && ExecutableApplicationExtensions.Contains(extension[1..]);
+    }
+
+    /// <summary>Classifies missing or syntactically invalid path failures that cannot be repaired by a short read retry.</summary>
+    internal static bool IsMissingOrInvalidPath(Exception exception)
+    {
+        return exception is FileNotFoundException or DirectoryNotFoundException or ArgumentException or NotSupportedException
+            || exception.HResult is unchecked((int)0x80070002) or unchecked((int)0x80070003)
+                or unchecked((int)0x80030002) or unchecked((int)0x80030003) or unchecked((int)0x8007007B);
+    }
+
+    /// <summary>Classifies transient file or COM read failures, excluding missing paths, denied access, and offline networks.</summary>
+    internal static bool IsRetryableReadFailure(Exception exception)
+    {
+        return (exception is IOException and not PathTooLongException
+            && !IsMissingOrInvalidPath(exception)
+            && exception.HResult is not (unchecked((int)0x80070005) or unchecked((int)0x80030005)
+                or unchecked((int)0x80070035) or unchecked((int)0x80070040) or unchecked((int)0x80070043)
+                or unchecked((int)0x800704C6) or unchecked((int)0x800704CF) or unchecked((int)0x800704D0)))
+            || (exception is COMException && exception.HResult is unchecked((int)0x80070020) or unchecked((int)0x80070021)
+                or unchecked((int)0x80030020) or unchecked((int)0x80030021));
     }
 }

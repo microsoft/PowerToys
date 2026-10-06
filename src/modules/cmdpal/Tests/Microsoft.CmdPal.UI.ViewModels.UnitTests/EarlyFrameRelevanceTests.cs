@@ -174,7 +174,7 @@ public sealed partial class EarlyFrameRelevanceTests
     private static RoScored<IListItem>[] ScoreApps(IReadOnlyList<CatalogItem> apps, string rawQuery, IRecentCommandsManager history, IPrecomputedFuzzyMatcher matcher)
     {
         var items = apps.Select(app => new AppListItem(
-            new AppItem { Name = app.Title, Subtitle = app.Subtitle, AppIdentifier = app.Id },
+            new AppItem { Name = app.Title, Subtitle = app.Subtitle },
             useThumbnails: false)).ToArray();
         var appSearch = new AppSearch(rawQuery, matcher, ExecutableNameMatchMode.FilenameAndStem);
         return InternalListHelpers.FilterListWithScores<IListItem>(items, matcher.PrecomputeQuery(rawQuery), BuildScoringFunction(history, matcher, appSearch));

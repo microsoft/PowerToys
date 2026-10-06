@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -51,12 +52,12 @@ public partial class Win32AppSourceTests
                     {
                         Interlocked.Increment(ref rejectedReads);
                         return installed
-                            ? TestDataHelper.CreateTestWin32Program("Installed", Path.ChangeExtension(path, ".exe"))
-                            : new Win32Program { Valid = false };
+                            ? TestDataHelper.CreateTestWin32Metadata("Installed", Path.ChangeExtension(path, ".exe"))
+                            : new Win32AppMetadata { Valid = false };
                     }
 
                     Interlocked.Increment(ref unchangedReads);
-                    return TestDataHelper.CreateTestWin32Program("Unchanged", Path.ChangeExtension(path, ".exe"));
+                    return TestDataHelper.CreateTestWin32Metadata("Unchanged", Path.ChangeExtension(path, ".exe"));
                 },
                 createWatchers: false);
             var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
@@ -118,12 +119,12 @@ public partial class Win32AppSourceTests
             File.WriteAllText(settingsPath, "{\"apps.EnablePathEnvironmentVariableSource\":\"true\"}");
             using var source = new Win32AppSource(
                 new PathEnvironmentAppSource(new AllAppsSettings(settingsPath)),
-                (path, _) => TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), path),
+                (path, _) => TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), path),
                 createWatchers: false);
 
             var scan = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
             Assert.IsTrue(scan.IsComplete);
-            Assert.AreEqual(executable, ((Win32AppPayload)scan.Single().Payload).FullPath);
+            Assert.AreEqual(executable, ((Win32AppPayload)scan.Single().Payload).TargetPath);
             Assert.AreEqual(0, scan.FailedPaths!.Count);
             Assert.AreEqual(0, scan.RetryPaths.Count);
 
@@ -137,7 +138,7 @@ public partial class Win32AppSourceTests
                 CancellationToken.None);
             var cached = await new AppCatalogCache(cachePath).LoadAsync(context, CancellationToken.None);
             Assert.IsNotNull(cached);
-            Assert.AreEqual(executable, ((Win32AppPayload)cached.Sources.Single().Items.Single().Payload).FullPath);
+            Assert.AreEqual(executable, ((Win32AppPayload)cached.Sources.Single().Items.Single().Payload).TargetPath);
         }
         finally
         {
@@ -152,7 +153,7 @@ public partial class Win32AppSourceTests
     {
         var root = CreateTemporaryDirectory("cmdpal-offline-path");
         var originalPath = Environment.GetEnvironmentVariable("PATH");
-        var originalFile = Win32Program.FileWrapper;
+        var originalFile = Win32FileEnumerator.FileWrapper;
         try
         {
             var local = Directory.CreateDirectory(Path.Combine(root, "Local")).FullName;
@@ -168,21 +169,21 @@ public partial class Win32AppSourceTests
                 .Returns((string path) => offline && path == network
                     ? throw new IOException("Network share unavailable", unchecked((int)0x80070040))
                     : File.GetAttributes(path));
-            Win32Program.FileWrapper = file.Object;
+            Win32FileEnumerator.FileWrapper = file.Object;
             var settingsPath = Path.Combine(root, "settings.json");
             File.WriteAllText(settingsPath, "{\"apps.EnablePathEnvironmentVariableSource\":\"true\"}");
             using var source = new Win32AppSource(
                 new PathEnvironmentAppSource(new AllAppsSettings(settingsPath)),
-                (path, _) => TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), path),
+                (path, _) => TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), path),
                 createWatchers: false);
             var initial = await source.LoadAsync(CancellationToken.None);
-            var networkItem = initial.Single(item => ((Win32AppPayload)item.Payload).FullPath == networkApp);
+            var networkItem = initial.Single(item => ((Win32AppPayload)item.Payload).TargetPath == networkApp);
             offline = true;
 
             var scan = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None, background: true);
             Assert.IsFalse(scan.IsComplete);
             Assert.IsTrue(scan.IsFullScan);
-            Assert.AreEqual(localApp, ((Win32AppPayload)scan.Single().Payload).FullPath);
+            Assert.AreEqual(localApp, ((Win32AppPayload)scan.Single().Payload).TargetPath);
             CollectionAssert.AreEqual(new[] { network }, scan.FailedPaths!.ToArray());
             Assert.AreEqual(0, scan.RetryPaths.Count, "Offline shares should wait for periodic or manual reconciliation.");
             Assert.IsNotNull(scan.GetRetainedItem(networkItem));
@@ -205,7 +206,7 @@ public partial class Win32AppSourceTests
                 background: true);
             Assert.IsTrue(recovered.IsComplete);
             Assert.AreEqual(2, recovered.Count);
-            Assert.IsTrue(recovered.Any(item => ((Win32AppPayload)item.Payload).FullPath == networkApp));
+            Assert.IsTrue(recovered.Any(item => ((Win32AppPayload)item.Payload).TargetPath == networkApp));
 
             File.Delete(networkApp);
             var removed = (AppSourceScanResult)await source.ApplyChangesAsync(
@@ -214,12 +215,12 @@ public partial class Win32AppSourceTests
                 CancellationToken.None,
                 background: true);
             Assert.IsTrue(removed.IsComplete);
-            Assert.AreEqual(localApp, ((Win32AppPayload)removed.Single().Payload).FullPath);
+            Assert.AreEqual(localApp, ((Win32AppPayload)removed.Single().Payload).TargetPath);
             Assert.IsNull(removed.GetRetainedItem(networkItem));
         }
         finally
         {
-            Win32Program.FileWrapper = originalFile;
+            Win32FileEnumerator.FileWrapper = originalFile;
             Environment.SetEnvironmentVariable("PATH", originalPath);
             Directory.Delete(root, recursive: true);
         }
@@ -232,7 +233,7 @@ public partial class Win32AppSourceTests
     public async Task Recovery_UnreadableFolderOnFirstLoadStillPublishesReadableSiblings(bool pathSource)
     {
         var root = CreateTemporaryDirectory("cmdpal-scoped-folder");
-        var originalDirectory = Win32Program.DirectoryWrapper;
+        var originalDirectory = Win32FileEnumerator.DirectoryWrapper;
         var originalPath = Environment.GetEnvironmentVariable("PATH");
         try
         {
@@ -250,7 +251,7 @@ public partial class Win32AppSourceTests
                 .Returns((string path, string pattern, EnumerationOptions options) => path == blocked
                     ? throw new UnauthorizedAccessException("Fixture access denial")
                     : Directory.EnumerateDirectories(path, pattern, options));
-            Win32Program.DirectoryWrapper = directory.Object;
+            Win32FileEnumerator.DirectoryWrapper = directory.Object;
             Environment.SetEnvironmentVariable("PATH", $"{readable};{blocked}");
             var settingsPath = Path.Combine(root, "settings.json");
             File.WriteAllText(settingsPath, "{\"apps.EnablePathEnvironmentVariableSource\":\"true\"}");
@@ -260,7 +261,7 @@ public partial class Win32AppSourceTests
             Assert.IsTrue(origin.IsEnabled);
             using var source = new Win32AppSource(
                 origin,
-                (path, _) => TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), Path.ChangeExtension(path, ".exe")),
+                (path, _) => TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), Path.ChangeExtension(path, ".exe")),
                 createWatchers: false);
 
             var scan = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
@@ -271,7 +272,7 @@ public partial class Win32AppSourceTests
         }
         finally
         {
-            Win32Program.DirectoryWrapper = originalDirectory;
+            Win32FileEnumerator.DirectoryWrapper = originalDirectory;
             Environment.SetEnvironmentVariable("PATH", originalPath);
             Directory.Delete(root, recursive: true);
         }
@@ -301,10 +302,10 @@ public partial class Win32AppSourceTests
                 {
                     if (failRead && path == locked)
                     {
-                        return new Win32Program { Valid = false, Unreadable = true, RetryableReadFailure = true };
+                        return new Win32AppMetadata { Valid = false, Unreadable = true, RetryableReadFailure = true };
                     }
 
-                    var program = TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), path == retargeted ? target : Path.ChangeExtension(path, ".exe"));
+                    var program = TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), path == retargeted ? target : Path.ChangeExtension(path, ".exe"));
                     program.LnkFilePath = path;
                     return program;
                 },
@@ -319,7 +320,7 @@ public partial class Win32AppSourceTests
             Assert.IsFalse(scan.IsComplete);
             string[] expected = ["Locked", "Retargeted"];
             CollectionAssert.AreEquivalent(expected, scan.Select(item => ((Win32AppPayload)item.Payload).Name).ToArray());
-            Assert.AreEqual(target, ((Win32AppPayload)scan.Single(item => ((Win32AppPayload)item.Payload).Name == "Retargeted").Payload).FullPath);
+            Assert.AreEqual(target, ((Win32AppPayload)scan.Single(item => ((Win32AppPayload)item.Payload).Name == "Retargeted").Payload).TargetPath);
             CollectionAssert.AreEqual(new[] { locked }, scan.FailedPaths!.ToArray());
             CollectionAssert.AreEqual(new[] { locked }, scan.RetryPaths.ToArray());
             Assert.IsTrue(scan.CheckedPaths.Contains(retargeted));
@@ -338,7 +339,7 @@ public partial class Win32AppSourceTests
     public async Task Recovery_ConfirmedRemovalOverridesUnreadableParent(WatcherChangeTypes kind, bool directoryRemoved)
     {
         var root = CreateTemporaryDirectory("cmdpal-confirmed-removal");
-        var originalDirectory = Win32Program.DirectoryWrapper;
+        var originalDirectory = Win32FileEnumerator.DirectoryWrapper;
         try
         {
             var restricted = Directory.CreateDirectory(Path.Combine(root, "Restricted")).FullName;
@@ -352,7 +353,7 @@ public partial class Win32AppSourceTests
                 CreateShortcutDirectorySource(root),
                 (path, _) =>
                 {
-                    var program = TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), Path.ChangeExtension(path, ".exe"));
+                    var program = TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), Path.ChangeExtension(path, ".exe"));
                     program.LnkFilePath = path;
                     return program;
                 },
@@ -381,7 +382,7 @@ public partial class Win32AppSourceTests
                     : Directory.EnumerateFiles(path, pattern, options));
             directory.Setup(value => value.EnumerateDirectories(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<EnumerationOptions>()))
                 .Returns((string path, string pattern, EnumerationOptions options) => Directory.EnumerateDirectories(path, pattern, options));
-            Win32Program.DirectoryWrapper = directory.Object;
+            Win32FileEnumerator.DirectoryWrapper = directory.Object;
             var removal = kind == WatcherChangeTypes.Renamed
                 ? new AppSourcePathChange(kind, renamedPath, removedPath)
                 : new AppSourcePathChange(kind, removedPath);
@@ -399,7 +400,7 @@ public partial class Win32AppSourceTests
         }
         finally
         {
-            Win32Program.DirectoryWrapper = originalDirectory;
+            Win32FileEnumerator.DirectoryWrapper = originalDirectory;
             Directory.Delete(root, recursive: true);
         }
     }
@@ -409,19 +410,19 @@ public partial class Win32AppSourceTests
     public void Recovery_DirectoryEnumerationHonorsCancellationBetweenFiles()
     {
         var root = CreateTemporaryDirectory("cmdpal-folder-cancellation");
-        var originalDirectory = Win32Program.DirectoryWrapper;
+        var originalDirectory = Win32FileEnumerator.DirectoryWrapper;
         using var cancellation = new CancellationTokenSource();
         try
         {
             var directory = new Mock<IDirectory>();
             directory.Setup(value => value.EnumerateFiles(It.IsAny<string>(), It.IsAny<string>(), SearchOption.TopDirectoryOnly))
                 .Returns(() => EnumerateThenCancel(root, cancellation));
-            Win32Program.DirectoryWrapper = directory.Object;
-            Assert.ThrowsExactly<OperationCanceledException>(() => _ = Win32Program.EnumerateProgramPaths(root, ["lnk"], cancellationToken: cancellation.Token).ToArray());
+            Win32FileEnumerator.DirectoryWrapper = directory.Object;
+            Assert.ThrowsExactly<OperationCanceledException>(() => _ = Win32FileEnumerator.EnumerateFiles(root, ["lnk"], cancellationToken: cancellation.Token).ToArray());
         }
         finally
         {
-            Win32Program.DirectoryWrapper = originalDirectory;
+            Win32FileEnumerator.DirectoryWrapper = originalDirectory;
             Directory.Delete(root, recursive: true);
         }
     }
