@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -298,12 +298,16 @@ internal static partial class DisplayHelpers
     private static readonly object StateLock = new();
     private static (DISPLAYCONFIG_PATH_INFO[] paths, DISPLAYCONFIG_MODE_INFO[] modes)? _savedState;
     private static KeyboardHook? _activeHook;
+    private static KeyboardHook? _activationHook;
     private static Dictionary<DisplayTargetId, string>? _displayNameCache;
     private static DisplayTargetId[]? _cachedTargetOrder;
     private static Timer? _xboxPollTimer;
-    private static bool _guideWasPressed;
+    private static ControllerChord _controllerChord = new(0x0420);
+    private static bool _controllerChordWasPressed;
 
     public static event Action? GuideViewComboPressed;
+
+    public static event Action? ActivationShortcutPressed;
 
     public static event Action? DisplayProfileApplyStarted;
 
@@ -766,10 +770,6 @@ internal static partial class DisplayHelpers
         {
             EnableEscRestore();
         }
-        else if (manageState)
-        {
-            _savedState = null;
-        }
 
         return err switch
         {
@@ -842,15 +842,23 @@ internal static partial class DisplayHelpers
     public static unsafe string RestoreState()
     {
         (DISPLAYCONFIG_PATH_INFO[] paths, DISPLAYCONFIG_MODE_INFO[] modes) snapshot;
+        bool hasSavedState;
         lock (StateLock)
         {
-            if (_savedState == null)
+            hasSavedState = _savedState.HasValue;
+            if (hasSavedState)
             {
-                return Properties.Resources.no_saved_state;
+                snapshot = _savedState!.Value;
             }
+            else
+            {
+                snapshot = ([], []);
+            }
+        }
 
-            snapshot = _savedState.Value;
-            _savedState = null;
+        if (!hasSavedState)
+        {
+            return RestoreBaseTopology();
         }
 
         if (snapshot.paths.Length == 0)
@@ -874,7 +882,15 @@ internal static partial class DisplayHelpers
             }
         }
 
-        CancelEscRestore();
+        if (err == 0)
+        {
+            lock (StateLock)
+            {
+                _savedState = null;
+            }
+
+            CancelEscRestore();
+        }
 
         return err switch
         {
@@ -918,22 +934,73 @@ internal static partial class DisplayHelpers
         }
     }
 
-    public static void EnableXboxGuideViewCombo()
+    public static bool RegisterActivationShortcut(string shortcutText)
+    {
+        if (!KeyboardActivationShortcut.TryParse(shortcutText, out var shortcut, out _))
+        {
+            return false;
+        }
+
+        lock (StateLock)
+        {
+            _activationHook?.Dispose();
+            _activationHook = new KeyboardHook();
+            _activationHook.RegisterConditional(shortcut!.VirtualKey, () =>
+            {
+                if ((shortcut.Win && !IsKeyDown(0x5B) && !IsKeyDown(0x5C)) ||
+                    (shortcut.Control && !IsKeyDown(0x11)) ||
+                    (shortcut.Alt && !IsKeyDown(0x12)) ||
+                    (shortcut.Shift && !IsKeyDown(0x10)))
+                {
+                    return false;
+                }
+
+                ActivationShortcutPressed?.Invoke();
+                return true;
+            });
+        }
+
+        return true;
+    }
+
+    public static void UnregisterActivationShortcut()
     {
         lock (StateLock)
         {
+            _activationHook?.Dispose();
+            _activationHook = null;
+        }
+    }
+
+    private static bool IsKeyDown(int virtualKey) => GetAsyncKeyState((short)virtualKey) < 0;
+
+    public static void EnableXboxGuideViewCombo()
+        => EnableControllerChord("Guide + View");
+
+    public static bool EnableControllerChord(string chord)
+    {
+        if (!ControllerChord.TryParse(chord, out var parsedChord))
+        {
+            return false;
+        }
+
+        lock (StateLock)
+        {
+            _controllerChord = parsedChord;
             if (_xboxPollTimer != null)
             {
-                return;
+                return true;
             }
 
-            _guideWasPressed = false;
+            _controllerChordWasPressed = false;
             _xboxPollTimer = new Timer(
                 _ => PollXboxGuide(),
                 null,
                 0,
                 100);
         }
+
+        return true;
     }
 
     public static void DisableXboxGuideViewCombo()
@@ -947,7 +1014,7 @@ internal static partial class DisplayHelpers
 
     private static void PollXboxGuide()
     {
-        // Try all 4 controller indices
+        var chordDown = false;
         for (int userIndex = 0; userIndex < XinputMaxControllers; userIndex++)
         {
             var state = default(XINPUT_STATE);
@@ -956,45 +1023,30 @@ internal static partial class DisplayHelpers
                 continue;
             }
 
-            bool guideDown = (state.Gamepad.wButtons & XinputGamepadGuide) != 0;
-            bool viewDown = (state.Gamepad.wButtons & XinputGamepadBack) != 0;
-
-            if (guideDown && !_guideWasPressed)
-            {
-                _guideWasPressed = true;
-
-                if (viewDown)
-                {
-                    CycleSavedProfiles();
-                    GuideViewComboPressed?.Invoke();
-                }
-
-                return;
-            }
-
-            _guideWasPressed = guideDown;
-            return;
+            chordDown |= _controllerChord.IsPressed(state.Gamepad.wButtons);
         }
 
-        _guideWasPressed = false;
+        if (chordDown && !_controllerChordWasPressed)
+        {
+            GuideViewComboPressed?.Invoke();
+        }
+
+        _controllerChordWasPressed = chordDown;
     }
 
-    private static int _profileCycleIndex;
-
-    private static void CycleSavedProfiles()
+    internal static List<(int Index, ushort Buttons)> GetConnectedControllerInputs()
     {
-        var profiles = GetSavedProfiles();
-        if (profiles.Count == 0)
+        var connected = new List<(int Index, ushort Buttons)>();
+        for (int userIndex = 0; userIndex < XinputMaxControllers; userIndex++)
         {
-            System.Diagnostics.Debug.WriteLine("Xbox Guide+View: no saved profiles to cycle");
-            return;
+            var state = default(XINPUT_STATE);
+            if (XInputGetState(userIndex, ref state) == 0)
+            {
+                connected.Add((userIndex + 1, state.Gamepad.wButtons));
+            }
         }
 
-        _profileCycleIndex %= profiles.Count;
-        var (fileName, name) = profiles[_profileCycleIndex];
-        _profileCycleIndex++;
-        var msg = ApplySavedProfileReference(fileName, referenceIsFileName: true);
-        System.Diagnostics.Debug.WriteLine($"Xbox Guide+View applied profile '{name}': {msg}");
+        return connected;
     }
 
     private static bool IsViewButtonPressed()
@@ -1154,10 +1206,16 @@ internal static partial class DisplayHelpers
         return result;
     }
 
-    public static string ActivateDisplays(List<DisplayTargetId> targets, Action<string>? onProgress = null)
+    public static string ActivateDisplays(
+        List<DisplayTargetId> targets,
+        Action<string>? onProgress = null,
+        bool saveRecoverySnapshot = true)
     {
         SaveState();
-        SaveSnapshot();
+        if (saveRecoverySnapshot)
+        {
+            SaveSnapshot();
+        }
 
         // Resolve targets to unique device names. Ghost targets (Intel GPU) that
         // share a GDI device name are skipped — they can't be activated individually.
@@ -1168,7 +1226,6 @@ internal static partial class DisplayHelpers
 
         if (realTargets.Count == 0)
         {
-            _savedState = null;
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_no_displays_selected);
         }
 
@@ -1208,7 +1265,6 @@ internal static partial class DisplayHelpers
 
         if (selectedPaths.Length == 0)
         {
-            _savedState = null;
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_no_matching_paths);
         }
 
@@ -1266,7 +1322,6 @@ internal static partial class DisplayHelpers
         }
 
         LogDiagnostic($"ActivateDisplays: ALL METHODS FAILED. lastErr={err} cdseResult={cdseResult}");
-        _savedState = null;
         return string.Format(Properties.Resources.error_format, GetWin32ErrorMessage(err));
     }
 
@@ -1308,11 +1363,15 @@ internal static partial class DisplayHelpers
         "MonitorPower",
         "profiles");
 
+    private static MonitorPowerProfilePersistence ProfileStore => new(ProfilesDir);
+
     private static readonly string SnapshotDir = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MonitorPower");
 
     private static readonly string SnapshotPath = System.IO.Path.Combine(SnapshotDir, "snapshot.json");
+
+    private static readonly string BaseTopologyPath = System.IO.Path.Combine(SnapshotDir, "base-topology.json");
     private static readonly string DiagnosticsPath = System.IO.Path.Combine(SnapshotDir, "diagnostics.log");
 
     private static void LogDiagnostic(string message)
@@ -1322,46 +1381,109 @@ internal static partial class DisplayHelpers
             Directory.CreateDirectory(SnapshotDir);
             File.AppendAllText(DiagnosticsPath, $"{DateTime.Now:O} {message}{Environment.NewLine}");
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Monitor Power diagnostic write failed: {ex.Message}");
         }
     }
 
+    public static string ReadDiagnostics()
+    {
+        if (!File.Exists(DiagnosticsPath))
+        {
+            return "No Monitor Power diagnostics have been recorded.";
+        }
+
+        return File.ReadAllText(DiagnosticsPath);
+    }
+
     internal static void SaveSnapshot()
+        => SaveTopologySnapshot(SnapshotPath);
+
+    public static void SaveBaseTopology()
+        => SaveTopologySnapshot(BaseTopologyPath);
+
+    private static void SaveTopologySnapshot(string path)
     {
         var (paths, _) = GetActivePaths();
-        var deviceNameMap = BuildTargetToDeviceNameMap();
-        var targets = new List<SnapshotTarget>();
-        foreach (var p in paths)
+        var targets = CaptureLayout(paths.Select(path =>
+            new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id)));
+        if (targets.Count == 0)
         {
-            var id = new DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id);
-            deviceNameMap.TryGetValue(id, out var deviceName);
-            deviceName ??= string.Empty;
-            var dm = default(DEVMODE);
-            dm.dmSize = (short)Marshal.SizeOf<DEVMODE>();
-            int regOk = string.IsNullOrEmpty(deviceName) ? 0 : EnumDisplaySettings(deviceName, ENUM_CURRENT_SETTINGS, ref dm);
-            targets.Add(new SnapshotTarget
+            throw new InvalidOperationException("The current display topology could not be captured.");
+        }
+
+        Directory.CreateDirectory(SnapshotDir);
+        File.WriteAllText(path, JsonSerializer.Serialize(new { targets }));
+    }
+
+    public static string RestoreBaseTopology()
+    {
+        if (!File.Exists(BaseTopologyPath))
+        {
+            return "No base display topology has been saved.";
+        }
+
+        var saved = JsonSerializer.Deserialize<SnapshotDocument>(
+            File.ReadAllText(BaseTopologyPath));
+        if (saved?.Targets is not { Count: > 0 })
+        {
+            return "The saved base topology is empty or invalid.";
+        }
+
+        var currentTargets = BuildTargetToDeviceNameMap();
+        var remappedLayout = new List<SnapshotTarget>();
+        foreach (var entry in saved.Targets)
+        {
+            var savedTarget = new DisplayTargetId(
+                new LUID { LowPart = entry.LowPart, HighPart = entry.HighPart },
+                entry.TargetId);
+            var candidates = currentTargets.Keys
+                .Where(target => target.Equals(savedTarget) || target.TargetId == savedTarget.TargetId)
+                .Take(2)
+                .ToArray();
+            if (candidates.Length != 1)
             {
-                LowPart = id.AdapterId.LowPart,
-                HighPart = id.AdapterId.HighPart,
-                TargetId = id.TargetId,
-                DeviceName = deviceName,
-                Width = regOk != 0 ? dm.dmPelsWidth : 0,
-                Height = regOk != 0 ? dm.dmPelsHeight : 0,
-                Frequency = regOk != 0 ? dm.dmDisplayFrequency : 0,
-                PositionX = regOk != 0 ? dm.dmPositionX : 0,
-                PositionY = regOk != 0 ? dm.dmPositionY : 0,
-                Orientation = regOk != 0 ? dm.dmDisplayOrientation : 0,
-                BitsPerPel = regOk != 0 ? dm.dmBitsPerPel : 0,
-            });
+                continue;
+            }
+
+            entry.LowPart = candidates[0].AdapterId.LowPart;
+            entry.HighPart = candidates[0].AdapterId.HighPart;
+            entry.DeviceName = currentTargets[candidates[0]];
+            remappedLayout.Add(entry);
         }
 
-        if (!Directory.Exists(SnapshotDir))
+        if (remappedLayout.Count == 0)
         {
-            Directory.CreateDirectory(SnapshotDir);
+            return "None of the displays from the saved base topology are available.";
         }
 
-        File.WriteAllText(SnapshotPath, JsonSerializer.Serialize(new { targets }));
+        var targets = remappedLayout
+            .Select(entry => new DisplayTargetId(
+                new LUID { LowPart = entry.LowPart, HighPart = entry.HighPart },
+                entry.TargetId))
+            .ToList();
+        var activationResult = ActivateDisplays(targets, saveRecoverySnapshot: false);
+        if (activationResult.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return activationResult;
+        }
+
+        if (remappedLayout.Count > 1 && !TryValidateLayout(remappedLayout, targets, out var validationError))
+        {
+            return $"The saved base topology is invalid: {validationError}";
+        }
+
+        var layoutResult = ApplyLayout(remappedLayout);
+        return layoutResult == DISP_CHANGE_SUCCESSFUL
+            ? "Base display topology restored."
+            : $"Could not restore the saved display layout: {GetWin32ErrorMessage(layoutResult)}";
+    }
+
+    private sealed class SnapshotDocument
+    {
+        [JsonPropertyName("targets")]
+        public List<SnapshotTarget> Targets { get; set; } = [];
     }
 
     internal sealed class SnapshotTarget
@@ -1396,15 +1518,6 @@ internal static partial class DisplayHelpers
         string DeviceName,
         bool IsActive,
         uint SourceId);
-
-    private sealed class SavedProfile
-    {
-        public string Name { get; set; } = string.Empty;
-
-        public List<DisplayTargetId> Targets { get; set; } = [];
-
-        public List<SnapshotTarget>? Layout { get; set; }
-    }
 
     internal static Dictionary<DisplayTargetId, string> AssignUniqueDeviceNames(
         IEnumerable<DisplayNameCandidate> candidates)
@@ -1952,21 +2065,31 @@ internal static partial class DisplayHelpers
         }
     }
 
-    public static string SaveNamedProfile(string name, List<DisplayTargetId> targets)
+    public static string SaveNamedProfile(string name, List<DisplayTargetId> targets, bool overwrite = false)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Format(Properties.Resources.error_format, "A profile name is required.");
+        }
+
         if (targets.Count == 0)
         {
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_no_displays_selected);
         }
 
         var safeName = SanitizeFileName(name);
-        if (!System.IO.Directory.Exists(ProfilesDir))
+        if (string.IsNullOrWhiteSpace(safeName))
         {
-            System.IO.Directory.CreateDirectory(ProfilesDir);
+            return string.Format(Properties.Resources.error_format, "The profile name does not contain any valid filename characters.");
         }
 
-        var path = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
-        var data = new SavedProfile
+        var fileName = $"{safeName}.json";
+        if (File.Exists(ProfileStore.GetPath(fileName)) && !overwrite)
+        {
+            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+        }
+
+        var data = new MonitorPowerProfile
         {
             Name = name,
             Targets = targets,
@@ -1978,47 +2101,16 @@ internal static partial class DisplayHelpers
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_layout_invalid);
         }
 
-        System.IO.File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(data));
+        ProfileStore.Save(fileName, data, overwrite);
         return Properties.Resources.profile_saved;
     }
 
     public static List<(string FileName, string Name)> GetSavedProfiles()
-    {
-        if (!System.IO.Directory.Exists(ProfilesDir))
-        {
-            return [];
-        }
-
-        var list = new List<(string, string)>();
-        foreach (var f in System.IO.Directory.GetFiles(ProfilesDir, "*.json"))
-        {
-            try
-            {
-                var json = System.IO.File.ReadAllText(f);
-                using var doc = JsonDocument.Parse(json);
-                var name = doc.RootElement.GetProperty("Name").GetString();
-                if (!string.IsNullOrEmpty(name))
-                {
-                    list.Add((System.IO.Path.GetFileName(f), name));
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        return list;
-    }
+        => ProfileStore.List().ToList();
 
     public static string ApplyNamedProfile(string fileName, Action<string>? onProgress = null)
     {
-        var path = System.IO.Path.Combine(ProfilesDir, fileName);
-        if (!System.IO.File.Exists(path))
-        {
-            return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_not_found);
-        }
-
-        var profile = JsonSerializer.Deserialize<SavedProfile>(System.IO.File.ReadAllText(path));
+        var profile = ProfileStore.Load(fileName);
         if (profile == null || profile.Targets.Count == 0)
         {
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_empty);
@@ -2133,23 +2225,84 @@ internal static partial class DisplayHelpers
     }
 
     public static void DeleteSavedProfile(string fileName)
+        => ProfileStore.Delete(fileName);
+
+    public static string RenameSavedProfile(string fileName, string newName)
     {
-        var path = System.IO.Path.Combine(ProfilesDir, fileName);
-        if (System.IO.File.Exists(path))
+        var sourcePath = GetProfilePath(fileName);
+        if (!File.Exists(sourcePath))
         {
-            System.IO.File.Delete(path);
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_not_found);
         }
+
+        var safeName = SanitizeFileName(newName);
+        if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(safeName))
+        {
+            return string.Format(Properties.Resources.error_format, "A valid profile name is required.");
+        }
+
+        var targetPath = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
+        if (!string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase) && File.Exists(targetPath))
+        {
+            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+        }
+
+        var profile = ProfileStore.Load(Path.GetFileName(sourcePath));
+        if (profile == null)
+        {
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_empty);
+        }
+
+        profile.Name = newName.Trim();
+        ProfileStore.Save(Path.GetFileName(targetPath), profile, overwrite: true);
+        if (!string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase))
+        {
+            File.Delete(sourcePath);
+        }
+
+        return "Profile renamed.";
+    }
+
+    public static string DuplicateSavedProfile(string fileName, string newName)
+    {
+        var sourcePath = GetProfilePath(fileName);
+        if (!File.Exists(sourcePath))
+        {
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_not_found);
+        }
+
+        var safeName = SanitizeFileName(newName);
+        if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(safeName))
+        {
+            return string.Format(Properties.Resources.error_format, "A valid profile name is required.");
+        }
+
+        var targetPath = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
+        if (File.Exists(targetPath))
+        {
+            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+        }
+
+        var profile = ProfileStore.Load(Path.GetFileName(sourcePath));
+        if (profile == null)
+        {
+            return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_empty);
+        }
+
+        profile.Name = newName.Trim();
+        ProfileStore.Save(Path.GetFileName(targetPath), profile, overwrite: false);
+        return "Profile duplicated.";
+    }
+
+    private static string GetProfilePath(string fileName)
+    {
+        var resolvedFileName = ResolveSavedProfileFileName(fileName, referenceIsFileName: true);
+        return ProfileStore.GetPath(resolvedFileName ?? string.Empty);
     }
 
     public static (string Name, List<DisplayTargetId> Targets)? LoadNamedProfile(string fileName)
     {
-        var path = System.IO.Path.Combine(ProfilesDir, fileName);
-        if (!System.IO.File.Exists(path))
-        {
-            return null;
-        }
-
-        var profile = JsonSerializer.Deserialize<SavedProfile>(System.IO.File.ReadAllText(path));
+        var profile = ProfileStore.Load(fileName);
         if (profile == null || string.IsNullOrEmpty(profile.Name) || profile.Targets.Count == 0)
         {
             return null;
@@ -2166,13 +2319,8 @@ internal static partial class DisplayHelpers
         }
 
         var safeName = SanitizeFileName(name);
-        if (!System.IO.Directory.Exists(ProfilesDir))
-        {
-            System.IO.Directory.CreateDirectory(ProfilesDir);
-        }
-
-        var path = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
-        var data = new SavedProfile
+        var path = ProfileStore.GetPath($"{safeName}.json");
+        var data = new MonitorPowerProfile
         {
             Name = name,
             Targets = targets,
@@ -2184,10 +2332,10 @@ internal static partial class DisplayHelpers
             return string.Format(Properties.Resources.error_format, Properties.Resources.error_profile_layout_invalid);
         }
 
-        System.IO.File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(data));
-        if (!string.Equals(path, System.IO.Path.Combine(ProfilesDir, fileName), StringComparison.OrdinalIgnoreCase))
+        ProfileStore.Save(Path.GetFileName(path), data, overwrite: true);
+        if (!string.Equals(path, GetProfilePath(fileName), StringComparison.OrdinalIgnoreCase))
         {
-            System.IO.File.Delete(System.IO.Path.Combine(ProfilesDir, fileName));
+            ProfileStore.Delete(fileName);
         }
 
         return Properties.Resources.profile_saved;
@@ -2214,4 +2362,7 @@ internal static partial class DisplayHelpers
 
     [DllImport("xinput1_4.dll", EntryPoint = "XInputGetState")]
     private static extern int XInputGetState(int dwUserIndex, ref XINPUT_STATE pState);
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(short vKey);
 }

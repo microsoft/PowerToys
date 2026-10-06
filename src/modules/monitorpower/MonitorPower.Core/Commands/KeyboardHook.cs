@@ -13,6 +13,9 @@ internal sealed partial class KeyboardHook : IDisposable
 {
     private const int HookTypeKeyboardLowLevel = 13;
     private const int WmKeydown = 0x0100;
+    private const int WmSysKeydown = 0x0104;
+    private const uint WmQuit = 0x0012;
+    private const uint PmNoRemove = 0x0000;
     private const int VkEscape = 0x1B;
 
     private readonly LowLevelKeyboardProc _proc;
@@ -20,6 +23,7 @@ internal sealed partial class KeyboardHook : IDisposable
     private nint _hookId = nint.Zero;
     private Thread? _hookThread;
     private CancellationTokenSource? _cts;
+    private uint _hookThreadId;
 
     public KeyboardHook()
     {
@@ -74,6 +78,9 @@ internal sealed partial class KeyboardHook : IDisposable
 
     private void HookThreadProc()
     {
+        var cancellationToken = _cts?.Token ?? CancellationToken.None;
+        _ = PeekMessage(out _, nint.Zero, 0, 0, PmNoRemove);
+        _hookThreadId = GetCurrentThreadId();
         var moduleHandle = GetModuleHandle(null);
         _hookId = SetWindowsHookEx(HookTypeKeyboardLowLevel, _proc, moduleHandle, 0);
 
@@ -84,7 +91,7 @@ internal sealed partial class KeyboardHook : IDisposable
 
         try
         {
-            while (_cts is { IsCancellationRequested: false })
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var result = GetMessage(out var msg, nint.Zero, 0, 0);
                 if (result == -1 || result == 0)
@@ -108,7 +115,7 @@ internal sealed partial class KeyboardHook : IDisposable
 
     private nint HookCallback(int nCode, nint wParam, nint lParam)
     {
-        if (nCode >= 0 && wParam == WmKeydown)
+        if (nCode >= 0 && (wParam == WmKeydown || wParam == WmSysKeydown))
         {
             var vkCode = Marshal.ReadInt32(lParam);
             lock (_keyActions)
@@ -125,19 +132,21 @@ internal sealed partial class KeyboardHook : IDisposable
 
     public void Dispose()
     {
-        if (_cts != null)
+        var cancellationSource = _cts;
+        cancellationSource?.Cancel();
+        if (_hookThreadId != 0)
         {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null;
+            _ = PostThreadMessage(_hookThreadId, WmQuit, nint.Zero, nint.Zero);
         }
 
-        if (_hookId != nint.Zero)
+        var hookThread = _hookThread;
+        if (hookThread != null && hookThread != Thread.CurrentThread)
         {
-            UnhookWindowsHookEx(_hookId);
-            _hookId = nint.Zero;
+            _ = hookThread.Join(TimeSpan.FromSeconds(1));
         }
 
+        cancellationSource?.Dispose();
+        _cts = null;
         _hookThread = null;
     }
 
@@ -168,8 +177,15 @@ internal sealed partial class KeyboardHook : IDisposable
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern nint GetModuleHandle([MarshalAs(UnmanagedType.LPWStr)] string? lpModuleName);
 
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern int GetMessage(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PeekMessage(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -177,4 +193,8 @@ internal sealed partial class KeyboardHook : IDisposable
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern nint DispatchMessage([In] ref MSG lpmsg);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PostThreadMessage(uint idThread, uint msg, nint wParam, nint lParam);
 }

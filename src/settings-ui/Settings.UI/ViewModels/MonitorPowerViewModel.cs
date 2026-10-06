@@ -15,17 +15,19 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.UI.Dispatching;
 using MonitorPower;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public sealed class MonitorPowerViewModel : Observable
     {
-        private bool _xboxControllerEnabled = LoadXboxControllerEnabled();
+        private bool _xboxControllerEnabled = true;
         private readonly DispatcherQueue _dispatcher;
         private readonly ObservableCollection<MonitorDisplayInfo> _displays = new();
         private readonly ObservableCollection<ProfileInfo> _profiles = new();
@@ -34,6 +36,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _newProfileName = string.Empty;
         private string _statusMessage = string.Empty;
         private bool _isLoading;
+        private bool _isProfilesLoading;
+        private bool _hasDisplays;
+        private bool _hasProfiles;
+        private string _controllerStatus = "Controller status has not been checked.";
+        private string _diagnosticsText = "No diagnostics loaded.";
         private bool _isApplying;
         private string _activationShortcut = "Win + Shift + P";
         private string _controllerShortcut = "Guide + View";
@@ -45,8 +52,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_xboxControllerEnabled != value)
                 {
+                    var previousValue = _xboxControllerEnabled;
                     _xboxControllerEnabled = value;
-                    SaveXboxControllerEnabled();
+                    if (!TrySaveSettings())
+                    {
+                        _xboxControllerEnabled = previousValue;
+                        return;
+                    }
+
                     OnPropertyChanged(nameof(XboxControllerEnabled));
                     UpdateControllerPolling(value);
                 }
@@ -87,6 +100,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => Set(ref _isLoading, value);
         }
 
+        public bool IsProfilesLoading
+        {
+            get => _isProfilesLoading;
+            set => Set(ref _isProfilesLoading, value);
+        }
+
+        public bool HasDisplays
+        {
+            get => _hasDisplays;
+            private set => Set(ref _hasDisplays, value);
+        }
+
+        public bool HasProfiles
+        {
+            get => _hasProfiles;
+            private set => Set(ref _hasProfiles, value);
+        }
+
         public bool IsApplying
         {
             get => _isApplying;
@@ -96,20 +127,88 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string ActivationShortcut
         {
             get => _activationShortcut;
-            set => Set(ref _activationShortcut, value);
+            set
+            {
+                if (!KeyboardActivationShortcut.TryParse(value, out var parsed, out var error))
+                {
+                    StatusMessage = error;
+                    OnPropertyChanged(nameof(ActivationShortcut));
+                    return;
+                }
+
+                var previousValue = _activationShortcut;
+                if (Set(ref _activationShortcut, parsed!.Text))
+                {
+                    if (!TrySaveSettings())
+                    {
+                        _activationShortcut = previousValue;
+                        OnPropertyChanged(nameof(ActivationShortcut));
+                        return;
+                    }
+
+                    if (!DisplayHelpers.RegisterActivationShortcut(_activationShortcut))
+                    {
+                        StatusMessage = "The activation shortcut could not be registered.";
+                    }
+                }
+            }
         }
 
         public string ControllerShortcut
         {
             get => _controllerShortcut;
-            set => Set(ref _controllerShortcut, value);
+            set
+            {
+                if (!ControllerChord.TryParse(value, out _))
+                {
+                    StatusMessage = "Enter exactly two supported controller buttons, for example 'Guide + View'.";
+                    OnPropertyChanged(nameof(ControllerShortcut));
+                    return;
+                }
+
+                var previousValue = _controllerShortcut;
+                if (Set(ref _controllerShortcut, value))
+                {
+                    if (!TrySaveSettings())
+                    {
+                        _controllerShortcut = previousValue;
+                        OnPropertyChanged(nameof(ControllerShortcut));
+                    }
+
+                    UpdateControllerPolling(XboxControllerEnabled);
+                }
+            }
+        }
+
+        public string ControllerStatus
+        {
+            get => _controllerStatus;
+            set => Set(ref _controllerStatus, value);
+        }
+
+        public string DiagnosticsText
+        {
+            get => _diagnosticsText;
+            set => Set(ref _diagnosticsText, value);
         }
 
         public MonitorPowerViewModel()
         {
             _dispatcher = DispatcherQueue.GetForCurrentThread();
+            LoadSettings();
+        }
+
+        public void OnPageLoaded()
+        {
+            UpdateControllerPolling(XboxControllerEnabled);
+            if (!DisplayHelpers.RegisterActivationShortcut(ActivationShortcut))
+            {
+                StatusMessage = "The saved activation shortcut is invalid.";
+            }
+
             LoadDisplays();
             LoadProfiles();
+            RefreshDiagnostics();
         }
 
         private static string SettingsPath => Path.Combine(
@@ -117,40 +216,97 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "MonitorPower",
             "settings.json");
 
-        private static bool LoadXboxControllerEnabled()
+        private void LoadSettings()
         {
             try
             {
                 if (!File.Exists(SettingsPath))
                 {
-                    return true;
+                    return;
                 }
 
                 using var document = JsonDocument.Parse(File.ReadAllText(SettingsPath));
-                return !document.RootElement.TryGetProperty("xboxGuideViewEnabled", out var enabled) || enabled.GetBoolean();
+                if (document.RootElement.TryGetProperty("xboxGuideViewEnabled", out var enabled) &&
+                    (enabled.ValueKind == JsonValueKind.True || enabled.ValueKind == JsonValueKind.False))
+                {
+                    _xboxControllerEnabled = enabled.GetBoolean();
+                }
+
+                if (document.RootElement.TryGetProperty("controllerShortcut", out var controllerShortcut) &&
+                    controllerShortcut.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrWhiteSpace(controllerShortcut.GetString()))
+                {
+                    _controllerShortcut = controllerShortcut.GetString()!;
+                }
+
+                if (document.RootElement.TryGetProperty("activationShortcut", out var activationShortcut) &&
+                    activationShortcut.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrWhiteSpace(activationShortcut.GetString()))
+                {
+                    var configuredShortcut = activationShortcut.GetString();
+                    if (KeyboardActivationShortcut.TryParse(configuredShortcut, out var parsedShortcut, out _))
+                    {
+                        _activationShortcut = parsedShortcut!.Text;
+                    }
+                    else
+                    {
+                        StatusMessage = "The saved activation shortcut is invalid; the default shortcut is in use.";
+                    }
+                }
             }
-            catch
+            catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                return true;
+                StatusMessage = $"Could not load Monitor Power settings: {ex.Message}";
+                Logger.LogError("Could not load Monitor Power settings.", ex);
             }
         }
 
-        private void SaveXboxControllerEnabled()
+        private void SaveSettings()
         {
             var directory = Path.GetDirectoryName(SettingsPath);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }
-            File.WriteAllText(SettingsPath, JsonSerializer.Serialize(new { xboxGuideViewEnabled = _xboxControllerEnabled }));
+
+            var settings = File.Exists(SettingsPath)
+                ? JsonNode.Parse(File.ReadAllText(SettingsPath)) as JsonObject ?? new JsonObject()
+                : new JsonObject();
+            settings["xboxGuideViewEnabled"] = _xboxControllerEnabled;
+            settings["controllerShortcut"] = ControllerShortcut;
+            settings["activationShortcut"] = ActivationShortcut;
+            var tempPath = SettingsPath + ".tmp";
+            File.WriteAllText(tempPath, settings.ToJsonString());
+            File.Move(tempPath, SettingsPath, overwrite: true);
+        }
+
+        private bool TrySaveSettings()
+        {
+            try
+            {
+                SaveSettings();
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            {
+                StatusMessage = $"Could not save Monitor Power settings: {ex.Message}";
+                Logger.LogError("Could not save Monitor Power settings.", ex);
+                return false;
+            }
         }
 
         private void UpdateControllerPolling(bool enabled)
         {
             if (enabled)
             {
-                DisplayHelpers.EnableXboxGuideViewCombo();
-                StatusMessage = "Controller shortcut enabled (Guide + View)";
+                if (DisplayHelpers.EnableControllerChord(ControllerShortcut))
+                {
+                    StatusMessage = $"Controller shortcut enabled ({ControllerShortcut})";
+                }
+                else
+                {
+                    StatusMessage = $"Unsupported controller chord: {ControllerShortcut}";
+                }
             }
             else
             {
@@ -161,22 +317,49 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task LoadDisplaysAsync()
         {
+            IsLoading = true;
+            StatusMessage = "Loading display topology...";
             await Task.Run(() =>
             {
                 try
                 {
-                    var (paths, modes) = DisplayHelpers.GetActivePaths();
+                    var (paths, modes) = DisplayHelpers.GetAllPathsWithModes();
                     var displayInfos = new List<MonitorDisplayInfo>();
+                    var topologyPaths = paths
+                        .Where(path => path.targetInfo.targetAvailable != 0 || (path.flags & 1) != 0)
+                        .GroupBy(path => new DisplayHelpers.DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id))
+                        .Select(group => group.OrderByDescending(path => (path.flags & 1) != 0).First())
+                        .OrderBy(path => path.sourceInfo.id)
+                        .ThenBy(path => path.targetInfo.id)
+                        .ToArray();
 
-                    for (int i = 0; i < paths.Length; i++)
+                    for (int i = 0; i < topologyPaths.Length; i++)
                     {
-                        var targetInfo = paths[i].targetInfo;
+                        var path = topologyPaths[i];
+                        var targetInfo = path.targetInfo;
                         var name = DisplayHelpers.GetTargetFriendlyName(targetInfo);
                         var tech = DisplayHelpers.GetOutputTechnologyName(targetInfo.outputTechnology);
-                        var sourceModeInfoIndex = paths[i].sourceInfo.sourceModeInfoIdx;
-                        var sourceMode = modes.Length > sourceModeInfoIndex ? modes[sourceModeInfoIndex] : default;
-                        var width = sourceMode.modeInfo.sourceMode.width;
-                        var height = sourceMode.modeInfo.sourceMode.height;
+                        var sourceModeInfoIndex = path.sourceInfo.sourceModeInfoIdx;
+                        var sourceMode = sourceModeInfoIndex < modes.Length
+                            ? modes[sourceModeInfoIndex]
+                            : default;
+                        var active = (path.flags & 1) != 0;
+                        var width = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                            ? sourceMode.modeInfo.sourceMode.width
+                            : 0;
+                        var height = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                            ? sourceMode.modeInfo.sourceMode.height
+                            : 0;
+                        if (width == 0 || height == 0)
+                        {
+                            var targetModeInfoIndex = path.targetInfo.targetModeInfoIdx;
+                            if (targetModeInfoIndex < modes.Length &&
+                                modes[targetModeInfoIndex].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Target)
+                            {
+                                width = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cx;
+                                height = modes[targetModeInfoIndex].modeInfo.targetMode.targetVideoSignalInfo.activeSize.cy;
+                            }
+                        }
 
                         displayInfos.Add(new MonitorDisplayInfo
                         {
@@ -185,29 +368,68 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             Technology = tech,
                             AdapterId = targetInfo.adapterId.ToString(),
                             TargetId = targetInfo.id,
-                            IsActive = (paths[i].flags & 1) != 0,
+                            IsActive = active,
                             Resolution = width > 0
                                 ? $"{width}x{height}"
                                 : "Unknown",
-                            PositionX = sourceMode.modeInfo.sourceMode.position.x,
-                            PositionY = sourceMode.modeInfo.sourceMode.position.y,
+                            Orientation = targetInfo.rotation switch
+                            {
+                                DISPLAYCONFIG_ROTATION.Rotate90 => "90°",
+                                DISPLAYCONFIG_ROTATION.Rotate180 => "180°",
+                                DISPLAYCONFIG_ROTATION.Rotate270 => "270°",
+                                _ => "0°",
+                            },
+                            IsPrimary = active &&
+                                sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source &&
+                                sourceMode.modeInfo.sourceMode.position.x == 0 &&
+                                sourceMode.modeInfo.sourceMode.position.y == 0,
+                            PositionX = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                                ? sourceMode.modeInfo.sourceMode.position.x
+                                : 0,
+                            PositionY = sourceMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source
+                                ? sourceMode.modeInfo.sourceMode.position.y
+                                : 0,
                             PixelWidth = width,
                             PixelHeight = height,
                             IsInternal = DisplayHelpers.IsInternalTechnology(targetInfo.outputTechnology)
                         });
                     }
 
-                    var minX = displayInfos.Min(d => d.PositionX);
-                    var minY = displayInfos.Min(d => d.PositionY);
-                    var maxX = displayInfos.Max(d => d.PositionX + (int)d.PixelWidth);
-                    var maxY = displayInfos.Max(d => d.PositionY + (int)d.PixelHeight);
-                    var scale = Math.Min(680d / Math.Max(1, maxX - minX), 240d / Math.Max(1, maxY - minY));
-                    foreach (var display in displayInfos)
+                    var activeDisplays = displayInfos.Where(display => display.IsActive).ToArray();
+                    if (activeDisplays.Length > 0)
                     {
-                        display.LayoutLeft = 10 + ((display.PositionX - minX) * scale);
-                        display.LayoutTop = 10 + ((display.PositionY - minY) * scale);
-                        display.LayoutWidth = Math.Max(48, display.PixelWidth * scale);
-                        display.LayoutHeight = Math.Max(36, display.PixelHeight * scale);
+                        var minX = activeDisplays.Min(display => display.PositionX);
+                        var minY = activeDisplays.Min(display => display.PositionY);
+                        var maxX = activeDisplays.Max(display => display.PositionX + (int)display.PixelWidth);
+                        var maxY = activeDisplays.Max(display => display.PositionY + (int)display.PixelHeight);
+                        var scale = Math.Min(680d / Math.Max(1, maxX - minX), 210d / Math.Max(1, maxY - minY));
+                        foreach (var display in activeDisplays)
+                        {
+                            display.LayoutLeft = 10 + ((display.PositionX - minX) * scale);
+                            display.LayoutTop = 10 + ((display.PositionY - minY) * scale);
+                            display.LayoutWidth = Math.Max(48, display.PixelWidth * scale);
+                            display.LayoutHeight = Math.Max(36, display.PixelHeight * scale);
+                        }
+
+                        var inactiveLeft = 10d;
+                        foreach (var display in displayInfos.Where(display => !display.IsActive))
+                        {
+                            display.LayoutLeft = inactiveLeft;
+                            display.LayoutTop = 222;
+                            display.LayoutWidth = 120;
+                            display.LayoutHeight = 32;
+                            inactiveLeft += 128;
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < displayInfos.Count; i++)
+                        {
+                            displayInfos[i].LayoutLeft = 10 + (i * 128);
+                            displayInfos[i].LayoutTop = 10;
+                            displayInfos[i].LayoutWidth = 120;
+                            displayInfos[i].LayoutHeight = 32;
+                        }
                     }
 
                     RunOnUiThread(() =>
@@ -217,12 +439,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             _displays.Add(d);
                         }
-                        StatusMessage = $"Found {displayInfos.Count} active display(s)";
+                        HasDisplays = displayInfos.Count > 0;
+                        StatusMessage = displayInfos.Count == 0
+                            ? "No displays are currently available."
+                            : $"Found {activeDisplays.Length} active display(s) and {displayInfos.Count - activeDisplays.Length} inactive display(s).";
                     });
                 }
                 catch (Exception ex)
                 {
-                    RunOnUiThread(() => StatusMessage = $"Error loading displays: {ex.Message}");
+                    RunOnUiThread(() =>
+                    {
+                        _displays.Clear();
+                        HasDisplays = false;
+                        StatusMessage = $"Error loading displays: {ex.Message}";
+                    });
+                }
+                finally
+                {
+                    RunOnUiThread(() => IsLoading = false);
                 }
             });
         }
@@ -234,6 +468,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task LoadProfilesAsync()
         {
+            IsProfilesLoading = true;
             await Task.Run(() =>
             {
                 try
@@ -246,12 +481,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             _profiles.Add(new ProfileInfo { FileName = fileName, Name = name });
                         }
+                        HasProfiles = profiles.Count > 0;
                         StatusMessage = $"Loaded {profiles.Count} saved profile(s)";
                     });
                 }
                 catch (Exception ex)
                 {
                     RunOnUiThread(() => StatusMessage = $"Error loading profiles: {ex.Message}");
+                }
+                finally
+                {
+                    RunOnUiThread(() => IsProfilesLoading = false);
                 }
             });
         }
@@ -261,7 +501,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _ = LoadProfilesAsync();
         }
 
-        public async Task SaveProfileAsync()
+        public bool ProfileExists(string name)
+        {
+            return DisplayHelpers.GetSavedProfiles().Any(
+                profile => string.Equals(profile.Name, name.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task SaveProfileAsync(bool overwrite = false)
         {
             if (string.IsNullOrWhiteSpace(NewProfileName))
             {
@@ -285,7 +531,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 try
                 {
-                    var result = DisplayHelpers.SaveNamedProfile(NewProfileName, selectedTargets);
+                    var result = DisplayHelpers.SaveNamedProfile(NewProfileName, selectedTargets, overwrite);
                     RunOnUiThread(() =>
                     {
                         StatusMessage = result;
@@ -373,15 +619,126 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public async Task OverwriteProfileAsync(ProfileInfo profile)
+        {
+            var selectedTargets = GetSelectedTargets();
+            if (selectedTargets.Count == 0)
+            {
+                StatusMessage = "Select at least one display before overwriting a profile.";
+                return;
+            }
+
+            IsApplying = true;
+            StatusMessage = $"Overwriting profile '{profile.Name}'...";
+            try
+            {
+                var result = await Task.Run(() =>
+                    DisplayHelpers.OverwriteNamedProfile(profile.FileName, profile.Name, selectedTargets));
+                StatusMessage = result;
+                await LoadProfilesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error overwriting profile: {ex.Message}";
+            }
+            finally
+            {
+                IsApplying = false;
+            }
+        }
+
+        public async Task RenameProfileAsync(ProfileInfo profile, string newName)
+        {
+            try
+            {
+                var result = await Task.Run(() => DisplayHelpers.RenameSavedProfile(profile.FileName, newName));
+                StatusMessage = result;
+                await LoadProfilesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error renaming profile: {ex.Message}";
+            }
+        }
+
+        public async Task DuplicateProfileAsync(ProfileInfo profile, string newName)
+        {
+            try
+            {
+                var result = await Task.Run(() => DisplayHelpers.DuplicateSavedProfile(profile.FileName, newName));
+                StatusMessage = result;
+                await LoadProfilesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error duplicating profile: {ex.Message}";
+            }
+        }
+
         public async Task TestControllerAsync()
         {
-            StatusMessage = "Testing controller... Press Guide + View or move sticks";
-            DisplayHelpers.EnableXboxGuideViewCombo();
+            ControllerStatus = "Looking for a supported XInput controller...";
+            try
+            {
+                var controllers = DisplayHelpers.GetConnectedControllerInputs();
+                if (controllers.Count == 0)
+                {
+                    ControllerStatus = "No supported XInput controller detected. Connect an Xbox-compatible controller and try again.";
+                    StatusMessage = ControllerStatus;
+                    return;
+                }
 
-            await Task.Delay(5000);
+                ControllerStatus = $"Detected {controllers.Count} controller(s). Press any controller button within 5 seconds.";
+                var deadline = DateTime.UtcNow.AddSeconds(5);
+                while (DateTime.UtcNow < deadline)
+                {
+                    var current = DisplayHelpers.GetConnectedControllerInputs();
+                    var pressed = current.FirstOrDefault(controller => controller.Buttons != 0);
+                    if (pressed.Buttons != 0)
+                    {
+                        ControllerStatus = $"Controller {pressed.Index} input detected (buttons 0x{pressed.Buttons:X4}).";
+                        StatusMessage = ControllerStatus;
+                        return;
+                    }
 
-            DisplayHelpers.DisableXboxGuideViewCombo();
-            StatusMessage = "Controller test completed. Check diagnostics log for details.";
+                    await Task.Delay(100);
+                }
+
+                ControllerStatus = "Controller detected, but no button input was received.";
+                StatusMessage = ControllerStatus;
+            }
+            catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
+            {
+                ControllerStatus = "Controller input is unsupported on this system (XInput is unavailable).";
+                StatusMessage = ControllerStatus;
+                Logger.LogError("Monitor Power controller diagnostics are unavailable.", ex);
+            }
+        }
+
+        public void RefreshDiagnostics()
+        {
+            try
+            {
+                var diagnostics = DisplayHelpers.ReadDiagnostics();
+                DiagnosticsText = string.Join(Environment.NewLine, diagnostics
+                    .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                    .TakeLast(100));
+            }
+            catch (Exception ex)
+            {
+                DiagnosticsText = $"Could not read diagnostics: {ex.Message}";
+                Logger.LogError("Could not read Monitor Power diagnostics.", ex);
+            }
+        }
+
+        private List<DisplayHelpers.DisplayTargetId> GetSelectedTargets()
+        {
+            return _displays
+                .Where(display => display.IsSelected)
+                .Select(display => new DisplayHelpers.DisplayTargetId(
+                    ParseLuid(display.AdapterId),
+                    display.TargetId))
+                .ToList();
         }
 
         public void SetCurrentAsBaseTopology()
@@ -389,6 +746,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 DisplayHelpers.SaveState();
+                DisplayHelpers.SaveBaseTopology();
                 StatusMessage = "Current display configuration saved as base topology (ESC to restore)";
             }
             catch (Exception ex)
@@ -401,7 +759,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var result = DisplayHelpers.RestoreState();
+                var result = DisplayHelpers.RestoreBaseTopology();
                 StatusMessage = result;
                 LoadDisplays();
             }
@@ -485,7 +843,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            _dispatcher.TryEnqueue(() => action());
+            if (!_dispatcher.TryEnqueue(() => action()))
+            {
+                throw new InvalidOperationException("The Settings UI dispatcher is no longer available.");
+            }
         }
     }
 
@@ -505,10 +866,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public int PositionY { get; set; }
         public uint PixelWidth { get; set; }
         public uint PixelHeight { get; set; }
+        public string Orientation { get; set; } = "0°";
+        public bool IsPrimary { get; set; }
         public double LayoutLeft { get; set; }
         public double LayoutTop { get; set; }
         public double LayoutWidth { get; set; }
         public double LayoutHeight { get; set; }
+        public string State => IsPrimary ? "Primary" : IsActive ? "Active" : "Inactive";
+        public string AccessibilityDescription => $"{Name}, {Technology}, {Resolution}, {Orientation}, {State}";
 
         public bool IsSelected
         {
