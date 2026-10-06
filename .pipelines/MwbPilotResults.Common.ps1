@@ -16,7 +16,8 @@ function Assert-MwbPilotTestResults {
             'StartMenuIdentityRequiresExactOsPathClassAndInteractiveSession',
             'ControllerExitBeforePairingRestoresOriginalSettings',
             'KilledClipboardOwnerRequiresBaselineReset',
-            'AbortedSandboxStartupRefusesUnownedInstance'
+            'AbortedSandboxStartupRefusesUnownedInstance',
+            'StaleRunDirectoryRefusalPreservesRecoveryJournals'
         )
     )
 

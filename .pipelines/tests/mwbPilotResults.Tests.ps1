@@ -94,7 +94,7 @@ Describe 'MWB full-suite results gate' {
         $source | Should Match 'ARM64 and Release/installed builds are not supported'
     }
 
-    It 'requires all three recovery methods as well as the ordered smoke' {
+    It 'requires all recovery methods and the stale-journal guard as well as the ordered smoke' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\MwbPilotResults.Common.ps1') -Raw
         $function = [scriptblock]::Create($source).Ast.Find({
             param($node)
@@ -104,10 +104,11 @@ Describe 'MWB full-suite results gate' {
         $names = $function.Body.ParamBlock.Parameters |
             Where-Object { $_.Name.VariablePath.UserPath -eq 'RequiredMethods' } |
             ForEach-Object { $_.DefaultValue.SafeGetValue() }
-        $names.Count | Should Be 10
+        $names.Count | Should Be 11
         ($names -ccontains 'AutonomousSandboxSmoke') | Should Be $true
         ($names -ccontains 'ControllerExitBeforePairingRestoresOriginalSettings') | Should Be $true
         ($names -ccontains 'KilledClipboardOwnerRequiresBaselineReset') | Should Be $true
         ($names -ccontains 'AbortedSandboxStartupRefusesUnownedInstance') | Should Be $true
+        ($names -ccontains 'StaleRunDirectoryRefusalPreservesRecoveryJournals') | Should Be $true
     }
 }
