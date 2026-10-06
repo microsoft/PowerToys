@@ -31,6 +31,17 @@ silently reduce resources or claim a smaller profile passed. Fresh CI images
 provide the clean-profile evidence; retained local VMs provide iteration and
 failure-injection evidence.
 
+The retained Win11 four-vCPU/8-GB profile has an observed **first-creation-after-
+boot limitation**: the modern client's initial `wsb start` can exhaust the
+unchanged ten-minute provider deadline before guest acknowledgement. A cold VM
+reset reproduced it, while later real owned creation/abort/stop cycles completed
+within a minute. Preserve those failed runs and their `Incomplete` recovery
+verdict; neither a later readiness probe nor a warm full-suite pass retroactively
+signs off that cold start. This local profile is not a cold-start guarantee.
+Fresh CI sign-off must independently pass after the pipeline's client setup,
+without reducing assertions, extending deadlines or silently priming a failed
+smoke.
+
 | Deadline | Legacy | Modern |
 |---|---|---|
 | Guest bootstrap, including provider setup/transfer | 15 minutes | 35 minutes, including at most 10 minutes of provider start |
