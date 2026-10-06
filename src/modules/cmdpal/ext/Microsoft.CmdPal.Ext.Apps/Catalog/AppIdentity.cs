@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
@@ -17,6 +18,14 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 internal static class AppIdentity
 {
     private const string PackagedPrefix = "packaged:";
+    private const string Win32Prefix = "win32:";
+    private const string Win32CommandPrefix = "app-v1-win32-";
+    private const string PackagedCommandPrefix = "app-v1-packaged-";
+
+    private const int HashLength = 64;
+    private const int MaxCommandIdLength = 512;
+
+    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
     /// <summary>Creates a typed command ID, including the actual target filename when available.</summary>
     internal static string ForCommand(string catalogIdentity)
@@ -34,22 +43,11 @@ internal static class AppIdentity
             : $"{Win32CommandPrefix}{filename}-{hash}";
     }
 
+    /// <summary>Determines whether a value parses as a supported typed app command ID.</summary>
     internal static bool IsCommandId(string id)
-        => TryNormalizeCommandId(id, out _);
-
-    /// <summary>Creates the stable catalog identity for a packaged application.</summary>
-    internal static string ForPackaged(string aumid)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(aumid);
-        return $"{PackagedPrefix}{aumid}";
+        return TryNormalizeCommandId(id, out _);
     }
-
-    private const string Win32Prefix = "win32:";
-    private const string Win32CommandPrefix = "app-v1-win32-";
-    private const string PackagedCommandPrefix = "app-v1-packaged-";
-    private const int HashLength = 64;
-    private const int MaxCommandIdLength = 512;
-    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
     /// <summary>Provides the canonical ID and its supported nameless Win32 form.</summary>
     internal static IEnumerable<string> GetCommandIds(string catalogIdentity)
@@ -142,5 +140,71 @@ internal static class AppIdentity
     private static string GetHash(string catalogIdentity)
     {
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(catalogIdentity.ToUpperInvariant())));
+    }
+
+    /// <summary>Creates the stable catalog identity for a packaged application.</summary>
+    internal static string ForPackaged(string aumid)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(aumid);
+        return $"{PackagedPrefix}{aumid}";
+    }
+
+    /// <summary>Normalizes launch profiles without distinguishing default executable or installer directories.</summary>
+    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
+    {
+        if (string.IsNullOrEmpty(workingDirectory))
+        {
+            return string.Empty;
+        }
+
+        var expandedDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
+        if (!Path.IsPathFullyQualified(expandedDirectory))
+        {
+            return expandedDirectory;
+        }
+
+        var normalizedDirectory = PathHelpers.NormalizePath(expandedDirectory);
+        var expandedTarget = Environment.ExpandEnvironmentVariables(targetPath);
+        if (Path.IsPathFullyQualified(expandedDirectory) && Path.IsPathFullyQualified(expandedTarget))
+        {
+            try
+            {
+                var targetDirectory = PathHelpers.NormalizePath(Path.GetDirectoryName(expandedTarget)!);
+                if (PathHelpers.IsExecutablePath(expandedTarget)
+                    && (string.Equals(normalizedDirectory, targetDirectory, StringComparison.OrdinalIgnoreCase)
+                        || IsSquirrelVersionDirectory(expandedTarget, targetDirectory, normalizedDirectory, explicitAppUserModelId)))
+                {
+                    return string.Empty;
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // Keep malformed launch profiles distinct.
+            }
+        }
+
+        return normalizedDirectory;
+    }
+
+    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
+    {
+        if (string.IsNullOrEmpty(explicitAppUserModelId)
+            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
+        var directoryName = Path.GetFileName(workingDirectory);
+        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
+            || !Version.TryParse(directoryName.AsSpan(4), out _))
+        {
+            return false;
+        }
+
+        // Squirrel's root launcher chooses the installed version and its working directory itself.
+        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
+        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -43,12 +43,11 @@ public partial class MainListPageTests
             new AppItem
             {
                 Name = "Editor",
-                AppIdentifier = "editor",
                 Subtitle = "DescriptionNeedle",
-                Type = "Application",
-                ExePath = @"C:\Tools\LaunchNeedle.lnk",
-                FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe",
-                UserModelId = "Contoso.PackagedIdentityNeedle!Editor",
+                AppTypeLabel = "Application",
+                LaunchTarget = @"C:\Tools\LaunchNeedle.lnk",
+                ResolvedTarget = @"C:\ResolvedTargetNeedle\Editor.exe",
+                AppUserModelId = "Contoso.PackagedIdentityNeedle!Editor",
                 PackageFamilyName = "Contoso.FamilyNeedle_publisher",
                 MatchTerms = ["LegacyAliasNeedle", @"C:\Aliases\wt.exe", "vv"],
             },
@@ -111,25 +110,25 @@ public partial class MainListPageTests
             new AppItem
             {
                 Name = "Command Prompt",
-                ExePath = @"C:\Start Menu\Command Prompt.lnk",
-                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+                LaunchTarget = @"C:\Start Menu\Command Prompt.lnk",
+                ResolvedTarget = @"C:\Windows\System32\cmd.exe",
             },
             useThumbnails: false);
         var developerPrompt = new AppListItem(
             new AppItem
             {
                 Name = "Developer Command Prompt for VS",
-                ExePath = @"C:\Start Menu\Developer Command Prompt.lnk",
-                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
-                Arguments = "/k setup.bat",
+                LaunchTarget = @"C:\Start Menu\Developer Command Prompt.lnk",
+                ResolvedTarget = @"C:\Windows\System32\cmd.exe",
+                LaunchArguments = "/k setup.bat",
             },
             useThumbnails: false);
         var perlPrompt = new AppListItem(
             new AppItem
             {
                 Name = "Perl (command line)",
-                ExePath = @"C:\Start Menu\Perl.lnk",
-                FullExecutablePath = @"C:\Windows\SysWOW64\cmd.exe",
+                LaunchTarget = @"C:\Start Menu\Perl.lnk",
+                ResolvedTarget = @"C:\Windows\SysWOW64\cmd.exe",
             },
             useThumbnails: false);
         var cmdPal = CreateApp("CmdPalCatFunExtension");
@@ -169,17 +168,17 @@ public partial class MainListPageTests
             new AppItem
             {
                 Name = "Command Prompt",
-                ExePath = @"C:\Start Menu\Command Prompt.lnk",
-                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+                LaunchTarget = @"C:\Start Menu\Command Prompt.lnk",
+                ResolvedTarget = @"C:\Windows\System32\cmd.exe",
             },
             new AppItem
             {
                 Name = "Developer Command Prompt",
-                ExePath = @"C:\Start Menu\Developer Command Prompt.lnk",
-                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
-                Arguments = "/k setup.bat",
+                LaunchTarget = @"C:\Start Menu\Developer Command Prompt.lnk",
+                ResolvedTarget = @"C:\Windows\System32\cmd.exe",
+                LaunchArguments = "/k setup.bat",
             },
-            new AppItem { Name = "cmd.exe helper", ExePath = @"C:\Tools\Helper.exe" },
+            new AppItem { Name = "cmd.exe helper", LaunchTarget = @"C:\Tools\Helper.exe" },
         };
         var rows = apps.Select(app => new AppListItem(app, useThumbnails: false)).ToArray();
         var snapshot = new AppListItemSnapshot(rows, []);
@@ -225,16 +224,16 @@ public partial class MainListPageTests
     public async Task Search_ExecutionAliasOwnershipPublicationReranksUnchangedHomeQuery(string query, bool pinned)
     {
         var stable = new AppListItem(
-            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            new AppItem { Name = "Terminal", AppUserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
             useThumbnails: false);
         var preview = new AppListItem(
-            new AppItem { Name = "Terminal Preview", UserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            new AppItem { Name = "Terminal Preview", AppUserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
             useThumbnails: false);
         AppListItem[] rows = [stable, preview];
         AppListItem[] hiddenRows = [];
         AppListItem[] patternHiddenRows = [];
         var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase)
-            .Add("wt.exe", stable.App.UserModelId);
+            .Add("wt.exe", stable.App.AppUserModelId);
         var initialSnapshot = new AppListItemSnapshot(
             rows,
             hiddenRows,
@@ -255,7 +254,7 @@ public partial class MainListPageTests
             foreach (var activeOwner in new[] { preview, stable })
             {
                 var previousSnapshot = snapshot;
-                owners = owners.SetItem("wt.exe", activeOwner.App.UserModelId);
+                owners = owners.SetItem("wt.exe", activeOwner.App.AppUserModelId);
                 snapshot = new AppListItemSnapshot(
                     rows,
                     hiddenRows,
@@ -275,7 +274,7 @@ public partial class MainListPageTests
                 CollectionAssert.AreEqual(rows, snapshot.VisibleItems.ToArray());
             }
 
-            Assert.AreEqual(stable.App.UserModelId, initialSnapshot.ExecutionAliasOwners["wt.exe"], "Published ownership maps remain immutable.");
+            Assert.AreEqual(stable.App.AppUserModelId, initialSnapshot.ExecutionAliasOwners["wt.exe"], "Published ownership maps remain immutable.");
             source.Verify(service => service.RefreshAsync(), Times.Never);
         });
     }
@@ -284,11 +283,11 @@ public partial class MainListPageTests
     public async Task Search_AppsDisabledDoesNotRequestExecutionAliasRefresh()
     {
         var terminal = new AppListItem(
-            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            new AppItem { Name = "Terminal", AppUserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
             useThumbnails: false);
         AppListItem[] rows = [terminal];
         var owners = ImmutableDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase)
-            .Add("wt.exe", terminal.App.UserModelId);
+            .Add("wt.exe", terminal.App.AppUserModelId);
         var snapshot = new AppListItemSnapshot(rows, [], executionAliasOwners: owners);
         var source = new Mock<IAppListItemSource>();
         source.Setup(service => service.GetSnapshot()).Returns(() => snapshot);
@@ -321,7 +320,7 @@ public partial class MainListPageTests
     {
         var title = CreateApp(query);
         var executable = new AppListItem(
-            new AppItem { Name = "Command Prompt", ExePath = @"C:\Windows\System32\cmd.exe" },
+            new AppItem { Name = "Command Prompt", LaunchTarget = @"C:\Windows\System32\cmd.exe" },
             useThumbnails: false);
         await WithSearchPages(new AppListItemSnapshot([executable, title], []), false, (home, allApps, _) =>
         {
@@ -344,10 +343,9 @@ public partial class MainListPageTests
             new AppItem
             {
                 Name = "Editor",
-                AppIdentifier = "editor",
-                ExePath = shortcutPath,
-                FullExecutablePath = targetPath,
-                DirPath = programs,
+                LaunchTarget = shortcutPath,
+                ResolvedTarget = targetPath,
+                DirectoryPath = programs,
                 MatchTerms = [shortcutPath, targetPath, programs],
             },
             useThumbnails: false);
@@ -377,7 +375,7 @@ public partial class MainListPageTests
     public async Task ExtendingQuery_ReconsidersAppsRejectedByMetadataAndShortQueryRules(bool pinned)
     {
         var app = new AppListItem(
-            new AppItem { Name = "Editor", AppIdentifier = "editor", MatchTerms = ["xxneedle", @"C:\Aliases\wt.exe"] },
+            new AppItem { Name = "Editor", MatchTerms = ["xxneedle", @"C:\Aliases\wt.exe"] },
             useThumbnails: false);
         var companion = CreateApp("Needle Word");
         await WithSearchPages(new AppListItemSnapshot([app, companion], []), pinned, (home, _, _) =>
@@ -449,7 +447,7 @@ public partial class MainListPageTests
     public async Task PinAndUnpin_PreserveMetadataSearchWithoutDuplicates(bool useSavedAlias)
     {
         var app = new AppListItem(
-            new AppItem { Name = "Editor", AppIdentifier = "editor", MatchTerms = ["Needle"] },
+            new AppItem { Name = "Editor", MatchTerms = ["Needle"] },
             useThumbnails: false);
         var commandId = useSavedAlias ? CreateApp("Legacy Editor").Command!.Id : app.Command!.Id;
         app.App.CommandIds = [commandId];
@@ -527,7 +525,7 @@ public partial class MainListPageTests
         var apps = Enumerable.Range(1, 2).Select(index =>
         {
             var aumid = $"Contoso.App{index}!app";
-            var app = new AppItem { Name = "Editor", Subtitle = "Text editor", UserModelId = aumid, IsPackaged = true };
+            var app = new AppItem { Name = "Editor", Subtitle = "Text editor", AppUserModelId = aumid, IsPackaged = true };
             app.CommandIds = [new AppListItem(app, useThumbnails: false).Command!.Id];
             app.CatalogId = $"packaged:{aumid}";
             return new AppListItem(app, useThumbnails: false);
@@ -559,11 +557,11 @@ public partial class MainListPageTests
     {
         var exact = CreateApp("Needle");
         var metadata = new AppListItem(
-            new AppItem { Name = "Editor", AppIdentifier = "editor", MatchTerms = ["Needle"] },
+            new AppItem { Name = "Editor", MatchTerms = ["Needle"] },
             useThumbnails: false);
         var weakTitle = CreateApp("NxxOxxTxxE");
         var description = new AppListItem(
-            new AppItem { Name = "Editor", AppIdentifier = "description", Subtitle = "NxxOxxTxxE" },
+            new AppItem { Name = "Editor", Subtitle = "NxxOxxTxxE" },
             useThumbnails: false) { Subtitle = string.Empty };
         var history = new RecentCommandsManager();
         for (var i = 0; i < 100; i++)
@@ -603,8 +601,8 @@ public partial class MainListPageTests
             new AppItem
             {
                 Name = "Shell",
-                ExePath = @"C:\Start Menu\Shell.lnk",
-                FullExecutablePath = @"C:\Windows\System32\cmd.exe",
+                LaunchTarget = @"C:\Start Menu\Shell.lnk",
+                ResolvedTarget = @"C:\Windows\System32\cmd.exe",
             },
             useThumbnails: false);
         var matcher = new PrecomputedFuzzyMatcher();
@@ -630,13 +628,13 @@ public partial class MainListPageTests
         RankTier executableTier)
     {
         var stable = new AppListItem(
-            new AppItem { Name = "Terminal", UserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            new AppItem { Name = "Terminal", AppUserModelId = "Terminal_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
             useThumbnails: false);
         var preview = new AppListItem(
-            new AppItem { Name = "Terminal Preview", UserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
+            new AppItem { Name = "Terminal Preview", AppUserModelId = "TerminalPreview_123!App", IsPackaged = true, MatchTerms = ["wt.exe"] },
             useThumbnails: false);
         var executable = new AppListItem(
-            new AppItem { Name = "Standalone Console", ExePath = @"C:\Tools\wt.exe", FullExecutablePath = @"C:\Tools\wt.exe" },
+            new AppItem { Name = "Standalone Console", LaunchTarget = @"C:\Tools\wt.exe", ResolvedTarget = @"C:\Tools\wt.exe" },
             useThumbnails: false);
         var exactTitle = CreateApp(queryText);
         var history = new RecentCommandsManager();
@@ -647,7 +645,7 @@ public partial class MainListPageTests
 
         var matcher = new PrecomputedFuzzyMatcher();
         var query = matcher.PrecomputeQuery(queryText);
-        var search = new AppSearch(queryText, matcher, mode, preview.App.UserModelId);
+        var search = new AppSearch(queryText, matcher, mode, preview.App.AppUserModelId);
         var stableScore = MainListPage.ScoreTopLevelItem(query, stable, history, matcher, search);
         var previewScore = MainListPage.ScoreTopLevelItem(query, preview, history, matcher, search);
         var executableScore = MainListPage.ScoreTopLevelItem(query, executable, history, matcher, search);
@@ -669,10 +667,10 @@ public partial class MainListPageTests
     public void AppScores_ActiveStoreAliasBeatsExactPythonExecutableDespiteHistory(string queryText, ExecutableNameMatchMode mode)
     {
         var storePython = new AppListItem(
-            new AppItem { Name = "Store Python", UserModelId = "StorePython_123!App", IsPackaged = true, MatchTerms = ["python.exe"] },
+            new AppItem { Name = "Store Python", AppUserModelId = "StorePython_123!App", IsPackaged = true, MatchTerms = ["python.exe"] },
             useThumbnails: false);
         var pythonOrg = new AppListItem(
-            new AppItem { Name = "Python.org", ExePath = @"C:\Python\python.exe", FullExecutablePath = @"C:\Python\python.exe" },
+            new AppItem { Name = "Python.org", LaunchTarget = @"C:\Python\python.exe", ResolvedTarget = @"C:\Python\python.exe" },
             useThumbnails: false);
         var history = new RecentCommandsManager();
         for (var i = 0; i < 100; i++)
@@ -682,7 +680,7 @@ public partial class MainListPageTests
 
         var matcher = new PrecomputedFuzzyMatcher();
         var query = matcher.PrecomputeQuery(queryText);
-        var search = new AppSearch(queryText, matcher, mode, storePython.App.UserModelId);
+        var search = new AppSearch(queryText, matcher, mode, storePython.App.AppUserModelId);
         Assert.IsTrue(search.Evaluate(pythonOrg).IsExactExecutableMatch, "The competing executable must exercise ordinary exact-executable priority.");
         Assert.IsFalse(search.Evaluate(pythonOrg).IsPreferredExecutionAliasMatch);
         Assert.IsTrue(search.Evaluate(storePython).IsPreferredExecutionAliasMatch);
@@ -774,14 +772,16 @@ public partial class MainListPageTests
         CollectionAssert.AreEquivalent(new[] { original, added }, page.GetItems().OfType<AppListItem>().ToArray());
     }
 
-    private static AppListItem CreateApp(string name) => new(
-        new AppItem
-        {
-            Name = name,
-            AppIdentifier = name,
-            ExePath = $@"C:\Tools\{name}.exe",
-        },
-        useThumbnails: false);
+    private static AppListItem CreateApp(string name)
+    {
+        return new(
+            new AppItem
+            {
+                Name = name,
+                LaunchTarget = $@"C:\Tools\{name}.exe",
+            },
+            useThumbnails: false);
+    }
 
     private static async Task WithSearchPages(AppListItemSnapshot snapshot, bool pinFirstApp, Func<MainListPage, AllAppsPage, TopLevelCommandManager, Task> check, string? pinnedCommandId = null, Mock<IAppStateService>? appStateService = null, Mock<IAppListItemSource>? appListItemSource = null, bool appsEnabled = true)
     {

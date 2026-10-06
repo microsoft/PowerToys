@@ -101,7 +101,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                             Interlocked.Exchange(ref coverageUnknown, 1);
                         }
 
-                        if (Win32Program.IsRetryableReadFailure(error))
+                        if (PathHelpers.IsRetryableReadFailure(error))
                         {
                             Interlocked.Exchange(ref retrySource, 1);
                         }
@@ -128,7 +128,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                         isComplete = false;
                         onlyMissingManifests = 0;
                         failedFamilies.Add(app.Package.FamilyName);
-                        if (Win32Program.IsRetryableReadFailure(ex))
+                        if (PathHelpers.IsRetryableReadFailure(ex))
                         {
                             retrySource = 1;
                         }

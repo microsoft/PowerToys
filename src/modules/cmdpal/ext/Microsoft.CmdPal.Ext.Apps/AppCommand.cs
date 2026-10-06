@@ -26,7 +26,7 @@ internal sealed partial class AppCommand : InvokableCommand
         _app = app;
         Name = Resources.run_command_action!;
         Id = string.IsNullOrEmpty(app.CatalogId)
-            ? GenerateId(app.Name, app.Subtitle, app.ExePath)
+            ? GenerateId(app.Name, app.Subtitle, app.LaunchTarget)
             : AppIdentity.ForCommand(app.CatalogId);
         Icon = Icons.GenericAppIcon;
     }
@@ -75,11 +75,11 @@ internal sealed partial class AppCommand : InvokableCommand
     {
         if (_app.IsPackaged)
         {
-            await StartApp(_app.UserModelId);
+            await StartApp(_app.AppUserModelId);
         }
         else
         {
-            await StartExe(_app.ExePath);
+            await StartExe(_app.LaunchTarget);
         }
     }
 

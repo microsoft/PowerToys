@@ -14,16 +14,16 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 public sealed class MockAppCatalog : IAppCatalog
 {
-    private readonly List<AppItem> _items = [];
-    private readonly List<AppItem> _hiddenItems = [];
-    private Task _initializationTask = Task.CompletedTask;
-    private bool _disposed;
-
     public event EventHandler<AppCatalogChangedEventArgs>? Changed;
 
     public event EventHandler? RefreshStateChanged;
 
     public event EventHandler<AppVisibilityChangedEventArgs>? VisibilityChanged;
+
+    private readonly List<AppItem> _items = [];
+    private readonly List<AppItem> _hiddenItems = [];
+    private Task _initializationTask = Task.CompletedTask;
+    private bool _disposed;
 
     public bool IsRefreshing { get; private set; }
 
@@ -33,7 +33,10 @@ public sealed class MockAppCatalog : IAppCatalog
 
     public Task RefreshCompletion { get; set; } = Task.CompletedTask;
 
-    public AppCatalogSnapshot GetSnapshot() => new(_items.AsReadOnly(), _hiddenItems.AsReadOnly());
+    public AppCatalogSnapshot GetSnapshot()
+    {
+        return new(_items.AsReadOnly(), _hiddenItems.AsReadOnly());
+    }
 
     public Task InitializeAsync()
     {
@@ -62,7 +65,7 @@ public sealed class MockAppCatalog : IAppCatalog
         RefreshStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public void AddWin32Program(Win32Program program)
+    internal void AddWin32Program(Win32AppMetadata program)
     {
         ArgumentNullException.ThrowIfNull(program);
         AddAndRaise(Win32AppPayload.From(program));
@@ -111,7 +114,12 @@ public sealed class MockAppCatalog : IAppCatalog
     private void AddAndRaise(IAppCatalogPayload payload)
     {
         var app = payload.ToAppItem();
-        app.CatalogId = app.AppIdentifier;
+        app.CatalogId = payload switch
+        {
+            Win32AppPayload win32 => $"{win32.Name}|{win32.TargetPath}",
+            PackagedAppSnapshot packaged => packaged.UserModelId,
+            _ => throw new ArgumentException("Unsupported application payload.", nameof(payload)),
+        };
         app.CommandIds = [payload.GetCommandId(), .. AppIdentity.GetCommandIds(app.CatalogId)];
         _items.Add(app);
         Changed?.Invoke(

@@ -13,7 +13,10 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 /// </summary>
 public static class TestDataHelper
 {
-    internal static FuzzyMatcherProvider CreateFuzzyMatcherProvider() => new(new(), new());
+    internal static FuzzyMatcherProvider CreateFuzzyMatcherProvider()
+    {
+        return new(new(), new());
+    }
 
     internal static void DeleteSettingsFiles(string settingsPath)
     {
@@ -22,26 +25,26 @@ public static class TestDataHelper
     }
 
     /// <summary>
-    /// Creates a test Win32 program with the specified parameters.
+    /// Creates transient Win32 metadata for catalog indexing tests.
     /// </summary>
     /// <param name="name">The name of the application.</param>
     /// <param name="fullPath">The full path to the application executable.</param>
     /// <param name="valid">A value indicating whether the application is valid.</param>
-    /// <returns>A new Win32Program instance with the specified parameters.</returns>
-    public static Win32Program CreateTestWin32Program(
+    /// <returns>A new Win32AppMetadata instance with the specified parameters.</returns>
+    internal static Win32AppMetadata CreateTestWin32Metadata(
         string name = "Test App",
         string fullPath = "C:\\TestApp\\app.exe",
         bool valid = true)
     {
-        return new Win32Program
+        return new Win32AppMetadata
         {
             Name = name,
-            FullPath = fullPath,
+            TargetPath = fullPath,
             Valid = valid,
             Description = $"Test description for {name}",
-            ExecutableName = "app.exe",
+            SourceFilename = "app.exe",
             ParentDirectory = "C:\\TestApp",
-            AppType = Win32Program.ApplicationType.Win32Application,
+            AppType = Win32AppType.Win32Application,
         };
     }
 

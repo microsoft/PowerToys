@@ -43,8 +43,8 @@ public class RegistryAppSourceTests
         var match = new AppSearch(query, new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem).Evaluate(row);
 
         Assert.AreEqual("Editor", row.Title);
-        Assert.AreEqual(shortcut.LnkFilePath, row.App.ExePath);
-        Assert.AreEqual(shortcut.FullPath, row.App.FullExecutablePath);
+        Assert.AreEqual(shortcut.LnkFilePath, row.App.LaunchTarget);
+        Assert.AreEqual(shortcut.TargetPath, row.App.ResolvedTarget);
         Assert.AreEqual(new AppCommand(shortcutItem.ToAppItem()).Id, row.Command!.Id);
         Assert.IsTrue(match.HasMatch);
         Assert.IsTrue(match.IsExactMetadataMatch);
@@ -206,10 +206,10 @@ public class RegistryAppSourceTests
         Assert.AreEqual(0, removed.Count);
     }
 
-    private static Win32Program LoadProgram(string path, bool asRunCommand)
+    private static Win32AppMetadata LoadProgram(string path, bool asRunCommand)
     {
-        var program = TestDataHelper.CreateTestWin32Program("Bar", path);
-        program.ExecutableName = Path.GetFileName(path);
+        var program = TestDataHelper.CreateTestWin32Metadata("Bar", path);
+        program.SourceFilename = Path.GetFileName(path);
         program.ParentDirectory = Path.GetDirectoryName(path)!;
         return program;
     }

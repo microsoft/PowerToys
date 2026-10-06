@@ -21,7 +21,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public void AppListItemSource_ResultLimitChangeNotifiesConsumersAndReusesRows()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         var original = AppListItemSource.GetSnapshot().VisibleItems.Single();
         var originalSnapshot = AppListItemSource.GetSnapshot();
         var notified = false;
@@ -44,14 +44,14 @@ public class AllAppsPageTests : AppsTestBase
     {
         var settingsForm = (SettingsForm)Settings.Settings.ToContent().Single();
         settingsForm.SubmitForm("{\"apps.ExecutableNameMatchMode\":\"filenameAndStem\"}", "{}");
-        var commandPrompt = TestDataHelper.CreateTestWin32Program("Command Prompt", @"C:\Windows\System32\cmd.exe");
+        var commandPrompt = TestDataHelper.CreateTestWin32Metadata("Command Prompt", @"C:\Windows\System32\cmd.exe");
         commandPrompt.LnkFilePath = @"C:\Start Menu\Command Prompt.lnk";
-        var developerPrompt = TestDataHelper.CreateTestWin32Program("Developer Command Prompt", commandPrompt.FullPath);
+        var developerPrompt = TestDataHelper.CreateTestWin32Metadata("Developer Command Prompt", commandPrompt.TargetPath);
         developerPrompt.LnkFilePath = @"C:\Start Menu\Developer Command Prompt.lnk";
         developerPrompt.Arguments = "/k setup.bat";
         MockCatalog.AddWin32Program(commandPrompt);
         MockCatalog.AddWin32Program(developerPrompt);
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("cmd.exe helper", @"C:\Tools\Helper.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("cmd.exe helper", @"C:\Tools\Helper.exe"));
         var originalSnapshot = AppListItemSource.GetSnapshot();
         var originalRows = originalSnapshot.VisibleItems.ToDictionary(item => item.Command!.Id);
         var commandPromptId = originalRows.Values.Single(item => item.Title == commandPrompt.Name).Command!.Id;
@@ -107,7 +107,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public void AppListItemSource_UnrelatedSettingDoesNotReprojectOrNotify()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         var snapshot = AppListItemSource.GetSnapshot();
         var notifications = 0;
         AppListItemSource.Changed += (_, _) => notifications++;
@@ -132,7 +132,7 @@ public class AllAppsPageTests : AppsTestBase
         };
         using var source = new AppListItemSource(catalog, Settings);
 
-        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Removed"));
+        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Removed"));
 
         Assert.AreEqual(0, source.GetSnapshot().VisibleItems.Count);
     }
@@ -141,7 +141,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AppListItemSource_LateVisibilityChangeUsesCurrentSnapshot()
     {
         using var catalog = new MockAppCatalog();
-        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         catalog.VisibilityChanged += (_, args) =>
         {
             if (args.Hidden)
@@ -162,7 +162,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AppListItemSource_VisibilityNotificationCanChangeVisibilityAgain()
     {
         using var catalog = new MockAppCatalog();
-        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        catalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         using var source = new AppListItemSource(catalog, Settings);
         var original = source.GetSnapshot().VisibleItems.Single();
         var unhidden = false;
@@ -241,7 +241,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_ReturnsAppsFromCatalogAsync()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Windows\System32\notepad.exe"));
         mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("Calculator"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
@@ -258,10 +258,10 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_UsesCultureAwareNumericTitleOrdering()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Zulu", @"C:\Apps\Zulu.exe"));
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("alpha", @"C:\Apps\alpha.exe"));
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("App 10", @"C:\Apps\App10.exe"));
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("app 2", @"C:\Apps\App2.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Zulu", @"C:\Apps\Zulu.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("alpha", @"C:\Apps\alpha.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("App 10", @"C:\Apps\App10.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("app 2", @"C:\Apps\App2.exe"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
@@ -278,9 +278,9 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AppListItemSource_UnhiddenItemPreservesAlphabeticalOrderIgnoringCase()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("alpha", @"C:\Apps\alpha.exe"));
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Beta", @"C:\Apps\Beta.exe"));
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Zulu", @"C:\Apps\Zulu.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("alpha", @"C:\Apps\alpha.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Beta", @"C:\Apps\Beta.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Zulu", @"C:\Apps\Zulu.exe"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
@@ -298,7 +298,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public void AppListItemSnapshot_ResolvesPublishedItemWithoutReloading()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Windows\System32\notepad.exe"));
         var snapshot = AppListItemSource.GetSnapshot();
         var expected = snapshot.VisibleItems.Single();
 
@@ -312,7 +312,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_HidesSubtitlesWhenSettingEnabled()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Windows\System32\notepad.exe"));
 
         try
         {
@@ -334,7 +334,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_SearchesSubtitleWhenDescriptionDisplayIsDisabled()
     {
-        var program = TestDataHelper.CreateTestWin32Program("Utility", @"C:\Apps\Utility.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata("Utility", @"C:\Apps\Utility.exe");
         program.Description = "ContainsHiddenNeedle";
 
         try
@@ -362,7 +362,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_ShowsSubtitlesWhenSettingDisabled()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Windows\System32\notepad.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Windows\System32\notepad.exe"));
 
         try
         {
@@ -387,9 +387,9 @@ public class AllAppsPageTests : AppsTestBase
         var app = new AppItem
         {
             Name = "Test App",
-            IcoPath = "C:\\Windows\\System32\\shell32.dll,1",
-            JumboIconPath = "C:\\Windows\\System32\\imageres.dll,2",
-            ExePath = "C:\\Program Files\\Example\\app.exe",
+            IconSource = "C:\\Windows\\System32\\shell32.dll,1",
+            JumboIconSource = "C:\\Windows\\System32\\imageres.dll,2",
+            LaunchTarget = "C:\\Program Files\\Example\\app.exe",
         };
 
         var item = new AppListItem(app, useThumbnails: true);
@@ -397,14 +397,14 @@ public class AllAppsPageTests : AppsTestBase
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
         Assert.IsFalse(rowJumbo);
-        CollectionAssert.AreEqual(new[] { app.IcoPath, app.ExePath }, rowCandidates);
+        CollectionAssert.AreEqual(new[] { app.IconSource, app.LaunchTarget }, rowCandidates);
         Assert.AreSame(rowIcon, item.Command.Icon);
 
         var details = (Details)item.Details!;
         var heroIcon = (IconInfo)details.HeroImage;
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
         Assert.IsTrue(heroJumbo);
-        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.ExePath }, heroCandidates);
+        CollectionAssert.AreEqual(new[] { app.JumboIconSource, app.IconSource, app.LaunchTarget }, heroCandidates);
     }
 
     [TestMethod]
@@ -415,21 +415,21 @@ public class AllAppsPageTests : AppsTestBase
         var app = new AppItem
         {
             Name = "Java",
-            IcoPath = @"C:\Program Files\Java\java.exe,0",
-            ExePath = @"C:\Start Menu\Java" + extension,
-            FullExecutablePath = @"C:\Program Files\Java\javacpl.exe",
+            IconSource = @"C:\Program Files\Java\java.exe,0",
+            LaunchTarget = @"C:\Start Menu\Java" + extension,
+            ResolvedTarget = @"C:\Program Files\Java\javacpl.exe",
         };
         var item = new AppListItem(app, useThumbnails: true);
 
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
         Assert.IsFalse(rowJumbo);
-        CollectionAssert.AreEqual(new[] { app.IcoPath, app.FullExecutablePath }, rowCandidates);
+        CollectionAssert.AreEqual(new[] { app.IconSource, app.ResolvedTarget }, rowCandidates);
 
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var heroCandidates, out var heroJumbo));
         Assert.IsTrue(heroJumbo);
-        CollectionAssert.AreEqual(new[] { app.ExePath, app.IcoPath, app.FullExecutablePath }, heroCandidates);
+        CollectionAssert.AreEqual(new[] { app.LaunchTarget, app.IconSource, app.ResolvedTarget }, heroCandidates);
     }
 
     [TestMethod]
@@ -438,17 +438,17 @@ public class AllAppsPageTests : AppsTestBase
         var app = new AppItem
         {
             Name = "Custom App",
-            IcoPath = @"C:\Icons\small.ico,0",
-            JumboIconPath = @"C:\Icons\large.ico,0",
-            ExePath = @"C:\Start Menu\Custom App.lnk",
-            FullExecutablePath = @"C:\Apps\custom.exe",
+            IconSource = @"C:\Icons\small.ico,0",
+            JumboIconSource = @"C:\Icons\large.ico,0",
+            LaunchTarget = @"C:\Start Menu\Custom App.lnk",
+            ResolvedTarget = @"C:\Apps\custom.exe",
         };
         var item = new AppListItem(app, useThumbnails: true);
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
 
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
         Assert.IsTrue(jumbo);
-        CollectionAssert.AreEqual(new[] { app.JumboIconPath, app.IcoPath, app.FullExecutablePath }, candidates);
+        CollectionAssert.AreEqual(new[] { app.JumboIconSource, app.IconSource, app.ResolvedTarget }, candidates);
     }
 
     [TestMethod]
@@ -458,8 +458,8 @@ public class AllAppsPageTests : AppsTestBase
         var app = new AppItem
         {
             Name = "About Java",
-            IcoPath = shortcutPath,
-            ExePath = shortcutPath,
+            IconSource = shortcutPath,
+            LaunchTarget = shortcutPath,
         };
         var item = new AppListItem(app, useThumbnails: true);
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
@@ -475,19 +475,19 @@ public class AllAppsPageTests : AppsTestBase
         var app = new AppItem
         {
             Name = "Test Packaged App",
-            IcoPath = "C:\\Program Files\\WindowsApps\\Example\\small.png",
-            JumboIconPath = "C:\\Program Files\\WindowsApps\\Example\\large.png",
+            IconSource = "C:\\Program Files\\WindowsApps\\Example\\small.png",
+            JumboIconSource = "C:\\Program Files\\WindowsApps\\Example\\large.png",
             IsPackaged = true,
         };
 
         var item = new AppListItem(app, useThumbnails: true);
 
         var rowIcon = (IconInfo)item.Icon!;
-        Assert.AreEqual(app.IcoPath, rowIcon.Light.Icon);
+        Assert.AreEqual(app.IconSource, rowIcon.Light.Icon);
 
         var details = (Details)item.Details!;
         var heroIcon = (IconInfo)details.HeroImage;
-        Assert.AreEqual(app.JumboIconPath, heroIcon.Light.Icon);
+        Assert.AreEqual(app.JumboIconSource, heroIcon.Light.Icon);
     }
 
     [TestMethod]
@@ -498,7 +498,7 @@ public class AllAppsPageTests : AppsTestBase
         {
             var settings = new AllAppsSettings(settingsPath);
             using var mockCatalog = new MockAppCatalog();
-            mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+            mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
             using var itemSource = new AppListItemSource(mockCatalog, settings);
             using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
@@ -559,7 +559,7 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_BackgroundRefreshKeepsExistingRowsWithoutLoadingBanner()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
@@ -577,12 +577,12 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_RefreshesAppsWhenIndexingCompletes()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         mockCatalog.SetRefreshing(true);
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Paint"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Paint"));
 
         mockCatalog.SetRefreshing(false);
         await WaitForPageInitializationAsync(page);
@@ -599,14 +599,14 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_AppliesCatalogDeltaWhileIndexing()
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
         var notepadItem = page.GetItems().Single(item => item.Title == "Notepad");
         mockCatalog.SetRefreshing(true);
 
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Paint"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Paint"));
         var items = page.GetItems();
 
         Assert.IsFalse(page.IsLoading);
@@ -638,7 +638,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_UserRefreshRemainsLoadingUntilAllRequestsFinish()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         var firstCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var secondCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         MockCatalog.RefreshCompletion = firstCompletion.Task;
@@ -679,7 +679,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_SearchesApplicationMetadata()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Editor", @"C:\Portable\NeedleTool.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Portable\NeedleTool.exe"));
         await WaitForPageInitializationAsync();
 
         Page.SearchText = "NeedleTool";
@@ -694,9 +694,9 @@ public class AllAppsPageTests : AppsTestBase
     {
         foreach (var name in new[] { "Editor", "Apple" })
         {
-            var program = TestDataHelper.CreateTestWin32Program(name, $@"C:\Tools\{name}.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata(name, $@"C:\Tools\{name}.exe");
             program.ParentDirectory = @"C:\Tools";
-            program.ExecutableName = $"{name}.exe";
+            program.SourceFilename = $"{name}.exe";
             MockCatalog.AddWin32Program(program);
         }
 
@@ -712,11 +712,11 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_SearchesAggregatedAndDirectMetadata(string query)
     {
         using var mockCatalog = new MockAppCatalog();
-        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe"));
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Apps\Editor.exe"));
         var app = mockCatalog.GetSnapshot().Items[0];
         app.MatchTerms = ["LegacyAliasNeedle"];
-        app.FullExecutablePath = @"C:\ResolvedTargetNeedle\Editor.exe";
-        app.UserModelId = "Contoso.PackagedIdentityNeedle!Editor";
+        app.ResolvedTarget = @"C:\ResolvedTargetNeedle\Editor.exe";
+        app.AppUserModelId = "Contoso.PackagedIdentityNeedle!Editor";
         using var itemSource = new AppListItemSource(mockCatalog, Settings);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await WaitForPageInitializationAsync(page);
@@ -733,12 +733,12 @@ public class AllAppsPageTests : AppsTestBase
     [DataRow("cptr", "Capture")]
     public async Task AllAppsPage_MissingLettersMatchNamesAndDescriptions(string query, string name)
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program(query, $@"C:\Apps\{query}.exe"));
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program(name, $@"C:\Apps\{name}.exe"));
-        var describedApp = TestDataHelper.CreateTestWin32Program("Utility", @"C:\Tools\Utility.exe");
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata(query, $@"C:\Apps\{query}.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata(name, $@"C:\Apps\{name}.exe"));
+        var describedApp = TestDataHelper.CreateTestWin32Metadata("Utility", @"C:\Tools\Utility.exe");
         describedApp.Description = name;
         MockCatalog.AddWin32Program(describedApp);
-        var unrelatedApp = TestDataHelper.CreateTestWin32Program("Unrelated", @"C:\Tools\Unrelated.exe");
+        var unrelatedApp = TestDataHelper.CreateTestWin32Metadata("Unrelated", @"C:\Tools\Unrelated.exe");
         unrelatedApp.Description = string.Empty;
         MockCatalog.AddWin32Program(unrelatedApp);
         await WaitForPageInitializationAsync();
@@ -751,9 +751,9 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_SearchRanksStrongNameMatchesFirstAndExcludesWeakMetadata()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad", @"C:\Apps\Notepad.exe"));
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("NxxOxxTxxE", @"C:\Apps\NxxOxxTxxE.exe"));
-        var metadataOnly = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Metadata\NxxOxxTxxE.exe");
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad", @"C:\Apps\Notepad.exe"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("NxxOxxTxxE", @"C:\Apps\NxxOxxTxxE.exe"));
+        var metadataOnly = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Metadata\NxxOxxTxxE.exe");
         metadataOnly.Description = string.Empty;
         MockCatalog.AddWin32Program(metadataOnly);
         await WaitForPageInitializationAsync();
@@ -769,7 +769,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_TypeFiltersOnlyReturnMatchingApplications()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         MockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("Calculator"));
         await WaitForPageInitializationAsync();
 
@@ -787,7 +787,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_HideAndUnhideCommandsMoveApplicationBetweenFilters()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         await WaitForPageInitializationAsync();
 
         var visibleItem = (AppListItem)Page.GetItems().Single();
@@ -819,7 +819,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AllAppsPage_HideCommandMovesApplicationWhileCatalogIsRefreshing()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         await WaitForPageInitializationAsync();
         MockCatalog.SetRefreshing(true);
 
@@ -842,7 +842,7 @@ public class AllAppsPageTests : AppsTestBase
     [TestMethod]
     public async Task AppListItemSource_CatalogVisibilityUpdatePreservesExistingListItem()
     {
-        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
         await WaitForPageInitializationAsync();
         var originalItem = AppListItemSource.GetSnapshot().VisibleItems.Single();
 

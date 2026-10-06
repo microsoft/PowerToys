@@ -122,6 +122,13 @@ applies only to an exact metadata match. Missing or disabled aliases have no own
 cache scan retains the last map. A changed map reranks active queries without rebuilding rows,
 commands or provider entries. Ownership is not persisted in the catalog.
 
+Win32 origins enumerate candidate paths and source-specific search terms. `Win32AppReader`
+reads each file into transient `Win32AppMetadata`; `Win32AppSource` captures the retained
+data in an immutable `Win32AppPayload`. Identity and deduplication belong to the catalog,
+so discovery metadata has no separate equality, query filtering or deduplication policy.
+Shortcut launch paths, arguments and working directories remain intact; resolved targets
+supply identity and search metadata rather than replacing shortcut activation.
+
 ### 2.1 Deduplication
 
 - Merge equivalent shortcut, executable, execution-alias and packaged representations when their
@@ -519,6 +526,13 @@ classDiagram
         String CacheKey
     }
     class Win32AppSource
+    class Win32AppReader
+    class Win32AppMetadata
+    class Win32AppPayload
+    Win32AppSource ..> Win32AppReader : reads candidate files
+    Win32AppReader ..> Win32AppMetadata : returns transient metadata
+    Win32AppSource ..> Win32AppPayload : captures immutable launch data
+    Win32AppMetadata ..> Win32AppPayload : supplies retained metadata
     class PackagedAppSource
     Win32AppSource ..|> IAppSource
     PackagedAppSource ..|> IAppSource

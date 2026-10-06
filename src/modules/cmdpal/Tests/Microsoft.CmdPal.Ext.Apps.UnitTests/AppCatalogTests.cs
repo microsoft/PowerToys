@@ -17,7 +17,6 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-
 using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -60,11 +59,11 @@ public partial class AppCatalogTests
     public void AppCatalogItem_CopiesMutableMatchTerms()
     {
         var terms = new List<string> { "Original" };
-        var program = TestDataHelper.CreateTestWin32Program("App", @"C:\Apps\App.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata("App", @"C:\Apps\App.exe");
         var item = new AppCatalogItem(
             "win32:app",
             priority: 0,
-            new AppCatalogSourceReference("test", program.FullPath),
+            new AppCatalogSourceReference("test", program.TargetPath),
             terms,
             Win32AppPayload.From(program));
 
@@ -863,8 +862,8 @@ public partial class AppCatalogTests
     {
         const string identity = "win32:conflict";
         const string itemId = @"C:\Apps\app.exe";
-        var firstProgram = TestDataHelper.CreateTestWin32Program("First", itemId);
-        var secondProgram = TestDataHelper.CreateTestWin32Program("Second", itemId);
+        var firstProgram = TestDataHelper.CreateTestWin32Metadata("First", itemId);
+        var secondProgram = TestDataHelper.CreateTestWin32Metadata("Second", itemId);
         var sourceReference = new AppCatalogSourceReference("same-origin", itemId);
         var firstItem = new AppCatalogItem(identity, 0, sourceReference, ["First"], Win32AppPayload.From(firstProgram));
         var secondItem = new AppCatalogItem(identity, 0, sourceReference, ["Second"], Win32AppPayload.From(secondProgram));
@@ -888,7 +887,7 @@ public partial class AppCatalogTests
         var aliasPath = $@"C:\Users\test\AppData\Local\Microsoft\WindowsApps\{aliasName}.exe";
         const string targetPath = @"C:\Program Files\WindowsApps\CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc\ubuntu.exe";
         var aliasProgram = CreateAppExecutionAliasProgram(aliasName, aliasPath, targetPath, aumid);
-        var targetProgram = TestDataHelper.CreateTestWin32Program("ubuntu.exe", targetPath);
+        var targetProgram = TestDataHelper.CreateTestWin32Metadata("ubuntu.exe", targetPath);
         var packagedIdentity = AppIdentity.ForPackaged(aumid);
         var aliasItem = CreateWin32CatalogItem(
             aliasProgram,
@@ -949,7 +948,7 @@ public partial class AppCatalogTests
         const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\ubuntu.exe";
         const string targetPath = @"C:\Program Files\WindowsApps\CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc\ubuntu.exe";
         var aliasProgram = CreateAppExecutionAliasProgram("ubuntu", aliasPath, targetPath, aumid);
-        var targetProgram = TestDataHelper.CreateTestWin32Program("ubuntu.exe", targetPath);
+        var targetProgram = TestDataHelper.CreateTestWin32Metadata("ubuntu.exe", targetPath);
         if (defaultWorkingDirectory)
         {
             aliasProgram.WorkingDirectory = Path.GetDirectoryName(targetPath)!;
@@ -967,9 +966,9 @@ public partial class AppCatalogTests
 
         Assert.AreEqual(1, catalog.GetSnapshot().Items.Count);
         Assert.AreEqual("ubuntu", catalog.GetSnapshot().Items[0].Name);
-        Assert.AreEqual(aliasPath, catalog.GetSnapshot().Items[0].ExePath);
-        Assert.AreEqual(targetPath, catalog.GetSnapshot().Items[0].FullExecutablePath);
-        Assert.AreEqual(aumid, catalog.GetSnapshot().Items[0].UserModelId);
+        Assert.AreEqual(aliasPath, catalog.GetSnapshot().Items[0].LaunchTarget);
+        Assert.AreEqual(targetPath, catalog.GetSnapshot().Items[0].ResolvedTarget);
+        Assert.AreEqual(aumid, catalog.GetSnapshot().Items[0].AppUserModelId);
         Assert.AreEqual(packagedIdentity, catalog.GetSnapshot().Items[0].CatalogId);
         Assert.IsFalse(catalog.GetSnapshot().Items[0].IsPackaged);
 
@@ -977,7 +976,7 @@ public partial class AppCatalogTests
         {
             Name = aliasProgram.Name,
             Subtitle = aliasProgram.Description,
-            ExePath = aliasPath,
+            LaunchTarget = aliasPath,
         });
         var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
         var snapshot = new AppListItemSnapshot([row], []);
@@ -991,8 +990,8 @@ public partial class AppCatalogTests
     {
         const string aumid = "Microsoft.Microsoft3DViewer_8wekyb3d8bbwe!Microsoft.Microsoft3DViewer";
         const string shortcutPath = @"C:\Users\test\Desktop\3D Viewer - Shortcut.lnk";
-        var shortcutProgram = TestDataHelper.CreateTestWin32Program("3D Viewer - Shortcut", shortcutPath);
-        shortcutProgram.AppType = Win32Program.ApplicationType.ShortcutApplication;
+        var shortcutProgram = TestDataHelper.CreateTestWin32Metadata("3D Viewer - Shortcut", shortcutPath);
+        shortcutProgram.AppType = Win32AppType.ShortcutApplication;
         shortcutProgram.PackagedAppUserModelId = aumid;
         var shortcutItem = CreateWin32CatalogItem(shortcutProgram, "win32:3d-viewer-shortcut", 20, "desktop");
         var packagedIdentity = AppIdentity.ForPackaged(aumid);
@@ -1030,7 +1029,7 @@ public partial class AppCatalogTests
         const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\app.exe";
         const string targetPath = @"C:\Program Files\WindowsApps\Contoso.App_1.0.0.0_x64__123\app.exe";
         var aliasProgram = CreateAppExecutionAliasProgram("app", aliasPath, targetPath, aumid);
-        var targetProgram = TestDataHelper.CreateTestWin32Program("App profile", targetPath);
+        var targetProgram = TestDataHelper.CreateTestWin32Metadata("App profile", targetPath);
         targetProgram.Arguments = arguments;
         targetProgram.WorkingDirectory = workingDirectory;
         targetProgram.PackagedAppUserModelId = hasPackagedIdentity ? aumid : string.Empty;
@@ -1061,7 +1060,7 @@ public partial class AppCatalogTests
             @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\second.exe",
             targetPath,
             "Contoso.Second_123!app");
-        var targetProgram = TestDataHelper.CreateTestWin32Program("Shared executable", targetPath);
+        var targetProgram = TestDataHelper.CreateTestWin32Metadata("Shared executable", targetPath);
         using var firstSource = new TestAppSource(
             "first-path",
             [CreateWin32CatalogItem(firstAlias, "win32:first-alias", 40, "first-path")]);
@@ -1564,7 +1563,7 @@ public partial class AppCatalogTests
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
         try
         {
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Apps\Editor.exe");
             program.Description = "Editor description";
             var preferred = CreateWin32CatalogItem(program, "win32:editor", 0, "test");
             program.Name = "Legacy Editor";
@@ -1763,7 +1762,7 @@ public partial class AppCatalogTests
         try
         {
             File.WriteAllText(settingsPath, "{\"futureSetting\":\"preserved\"}");
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Apps\Editor.exe");
             program.LnkFilePath = @"C:\Links\Editor.lnk";
             IAppCatalogPayload originalPayload = packaged
                 ? new PackagedAppSnapshot { Name = "Editor", Description = "Text editor", UserModelId = "Contoso.Editor_123!app" }
@@ -1823,10 +1822,10 @@ public partial class AppCatalogTests
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-snapshot-{Guid.NewGuid():N}.json");
         try
         {
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Old\Editor.exe");
             program.LnkFilePath = @"C:\Links\Editor.lnk";
             var original = CreateWin32CatalogItem(program, @"win32:C:\Old\Editor.exe|args:", 0, "test").ToAppItem();
-            program.FullPath = @"D:\New\Editor.exe";
+            program.TargetPath = @"D:\New\Editor.exe";
             var moved = CreateWin32CatalogItem(program, @"win32:D:\New\Editor.exe|args:", 0, "test").ToAppItem();
             var originalSnapshot = new AppCatalogSnapshot([original], []);
             var movedSnapshot = new AppCatalogSnapshot([moved], []);
@@ -1863,16 +1862,16 @@ public partial class AppCatalogTests
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
         try
         {
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Program Files (x86)\Editor\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Program Files (x86)\Editor\Editor.exe");
             program.LnkFilePath = @"C:\Links\Editor.lnk";
-            var original = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var original = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             var legacyId = original.Payload.GetCommandId();
             var originalId = new AppCommand(original.ToAppItem()).Id;
             program.Name = "Renamed Editor";
             var renamed = CreateWin32CatalogItem(program, original.Identity, 0, "test");
             var renamedId = renamed.Payload.GetCommandId();
-            program.FullPath = @"C:\Program Files\Editor\Editor.exe";
-            var moved = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            program.TargetPath = @"C:\Program Files\Editor\Editor.exe";
+            var moved = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             var movedId = new AppCommand(moved.ToAppItem()).Id;
             Assert.AreNotEqual(originalId, movedId);
 
@@ -1894,8 +1893,8 @@ public partial class AppCatalogTests
             }
 
             // A second install move after a restart must redirect the entire saved alias group again.
-            program.FullPath = @"D:\Apps\Editor\Editor.exe";
-            var movedAgain = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            program.TargetPath = @"D:\Apps\Editor\Editor.exe";
+            var movedAgain = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             using var freshSource = new TestAppSource("test", [movedAgain]);
             using var freshCatalog = CreateCatalog([freshSource], new TestCache(null));
             using var freshList = new AppListItemSource(freshCatalog, new AllAppsSettings(settingsPath));
@@ -1904,7 +1903,7 @@ public partial class AppCatalogTests
             foreach (var id in new[] { originalId, movedId, legacyId, renamedId })
             {
                 Assert.AreEqual("Renamed Editor", freshList.GetSnapshot().GetCommandItem(id)?.Title);
-                Assert.AreEqual(program.FullPath, freshList.GetSnapshot().GetVisibleApp(id)?.App.FullExecutablePath);
+                Assert.AreEqual(program.TargetPath, freshList.GetSnapshot().GetVisibleApp(id)?.App.ResolvedTarget);
             }
         }
         finally
@@ -1923,7 +1922,7 @@ public partial class AppCatalogTests
         {
             const string shortcut = @"C:\Links\Editor.lnk";
             const string launchIdentity = @"win32:C:\Links\Editor.lnk|args:";
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Old\Editor.exe");
             program.LnkFilePath = shortcut;
             var originalPayload = Win32AppPayload.From(program);
             var original = new AppCatalogItem(
@@ -1938,7 +1937,7 @@ public partial class AppCatalogTests
                 0,
                 new AppCatalogSourceReference("test", shortcut),
                 [],
-                originalPayload with { Name = "Renamed Editor", FullPath = @"D:\New\Editor.exe" },
+                originalPayload with { Name = "Renamed Editor", TargetPath = @"D:\New\Editor.exe" },
                 identityAliases: [launchIdentity]);
             var settings = new AllAppsSettings(settingsPath);
             if (legacyHide)
@@ -2000,12 +1999,12 @@ public partial class AppCatalogTests
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
         try
         {
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Old\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Old\Editor.exe");
             program.LnkFilePath = @"C:\Links\Editor.lnk";
-            var original = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            var original = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             var originalId = new AppCommand(original.ToAppItem()).Id;
-            program.FullPath = @"C:\New\Editor.exe";
-            var replacement = CreateWin32CatalogItem(program, $"win32:{program.FullPath}|args:", 0, "test");
+            program.TargetPath = @"C:\New\Editor.exe";
+            var replacement = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             var settings = new AllAppsSettings(settingsPath);
             using var source = new TestAppSource("test", [original]);
             using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
@@ -2032,7 +2031,7 @@ public partial class AppCatalogTests
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-app-command-aliases-{Guid.NewGuid():N}.json");
         try
         {
-            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Apps\Editor.exe");
             var win32 = CreateWin32CatalogItem(program, @"win32:C:\Apps\Editor.exe|args:", 0, "test");
             var legacyId = win32.Payload.GetCommandId();
             var win32Id = new AppCommand(win32.ToAppItem()).Id;
@@ -2143,24 +2142,24 @@ public partial class AppCatalogTests
         string? identity = null,
         string sourceId = "test")
     {
-        var program = TestDataHelper.CreateTestWin32Program(name, $@"C:\Apps\{name}.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata(name, $@"C:\Apps\{name}.exe");
         return new AppCatalogItem(
             identity ?? $"win32:{name}",
             priority,
-            new AppCatalogSourceReference(sourceId, program.FullPath),
+            new AppCatalogSourceReference(sourceId, program.TargetPath),
             [name],
             Win32AppPayload.From(program));
     }
 
-    private static Win32Program CreateAppExecutionAliasProgram(
+    private static Win32AppMetadata CreateAppExecutionAliasProgram(
         string name,
         string aliasPath,
         string targetPath,
         string aumid)
     {
-        var program = TestDataHelper.CreateTestWin32Program(name, aliasPath);
-        program.AppType = Win32Program.ApplicationType.RunCommand;
-        program.IcoPath = targetPath;
+        var program = TestDataHelper.CreateTestWin32Metadata(name, aliasPath);
+        program.AppType = Win32AppType.RunCommand;
+        program.IconLocation = targetPath;
         program.AppExecutionAlias = new ReparsePoint.AppExecutionAliasInfo
         {
             Aumid = aumid,
@@ -2170,7 +2169,7 @@ public partial class AppCatalogTests
     }
 
     private static AppCatalogItem CreateWin32CatalogItem(
-        Win32Program program,
+        Win32AppMetadata program,
         string identity,
         int priority,
         string sourceId)
@@ -2178,7 +2177,7 @@ public partial class AppCatalogTests
         return new(
             identity,
             priority,
-            new AppCatalogSourceReference(sourceId, program.FullPath),
+            new AppCatalogSourceReference(sourceId, program.TargetPath),
             [program.Name],
             Win32AppPayload.From(program));
     }

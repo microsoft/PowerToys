@@ -43,7 +43,7 @@ public partial class TopLevelCommandManagerTests
                 args: [settingsPath],
                 culture: null)!;
             var app = new AppListItem(
-                new AppItem { Name = "Portable Editor", Subtitle = "Edit documents", CatalogId = @"win32:E:\Apps\Editor.exe|args:", ExePath = @"E:\Apps\Editor.exe" },
+                new AppItem { Name = "Portable Editor", Subtitle = "Edit documents", CatalogId = @"win32:E:\Apps\Editor.exe|args:", LaunchTarget = @"E:\Apps\Editor.exe" },
                 useThumbnails: false);
             var id = app.Command!.Id.ToUpperInvariant();
             var snapshot = new AppListItemSnapshot([app], []);
@@ -167,7 +167,7 @@ public partial class TopLevelCommandManagerTests
                 args: [settingsPath],
                 culture: null)!;
             var app = new AppListItem(
-                new AppItem { Name = "Hidden Editor", CatalogId = @"win32:E:\Apps\Editor.exe|args:", ExePath = @"E:\Apps\Editor.exe" },
+                new AppItem { Name = "Hidden Editor", CatalogId = @"win32:E:\Apps\Editor.exe|args:", LaunchTarget = @"E:\Apps\Editor.exe" },
                 useThumbnails: false);
             var id = app.Command!.Id.ToUpperInvariant();
             var snapshot = new AppListItemSnapshot([], patternHidden ? [] : [app], patternHidden ? [app] : []);

@@ -23,14 +23,21 @@ public partial class AllAppsCommandProvider : CommandProvider
     private readonly CommandItem _listItem;
     private AppListItemSnapshot _snapshot;
 
+    public int TopLevelResultLimit => _appListItemSource.TopLevelResultLimit;
+
+    /// <summary>Initializes a new instance of the <see cref="AllAppsCommandProvider"/> class. Creates the Apps provider over the shared application page, snapshot source, and preferences.</summary>
     public AllAppsCommandProvider(
         AllAppsPage page,
         IAppListItemSource appListItemSource,
         AllAppsSettings settings)
     {
-        _page = page ?? throw new ArgumentNullException(nameof(page));
-        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(page);
+        ArgumentNullException.ThrowIfNull(appListItemSource);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        _page = page;
+        _appListItemSource = appListItemSource;
+        _settings = settings;
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = Icons.AllAppsIcon;
@@ -48,9 +55,10 @@ public partial class AllAppsCommandProvider : CommandProvider
         _appListItemSource.Changed += OnAppListChanged;
     }
 
-    public int TopLevelResultLimit => _appListItemSource.TopLevelResultLimit;
-
-    public override ICommandItem[] TopLevelCommands() => [_listItem];
+    public override ICommandItem[] TopLevelCommands()
+    {
+        return [_listItem];
+    }
 
     private void OnAppListChanged(object? sender, EventArgs args)
     {
@@ -62,6 +70,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
     }
 
+    /// <inheritdoc />
     public override void Dispose()
     {
         _appListItemSource.Changed -= OnAppListChanged;
@@ -112,14 +121,14 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         foreach (var item in items)
         {
-            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.ResolvedTarget))
             {
                 continue;
             }
 
             foreach (var candidate in candidates)
             {
-                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(appListItem.App.ResolvedTarget, candidate, StringComparison.OrdinalIgnoreCase))
                 {
                     matches.Add(item);
                     if (!requireSingleMatch)
@@ -134,5 +143,7 @@ public partial class AllAppsCommandProvider : CommandProvider
     }
 
     public override ICommandItem? GetCommandItem(string id)
-        => _appListItemSource.GetSnapshot().GetCommandItem(id);
+    {
+        return _appListItemSource.GetSnapshot().GetCommandItem(id);
+    }
 }

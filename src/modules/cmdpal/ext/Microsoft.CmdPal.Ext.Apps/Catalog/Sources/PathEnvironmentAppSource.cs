@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
@@ -28,26 +28,58 @@ internal sealed class PathEnvironmentAppSource : IWin32ProgramSource
 
     public IReadOnlyList<string> WatchPaths => [];
 
+    /// <summary>Initializes a new instance of the <see cref="PathEnvironmentAppSource"/> class. Creates PATH discovery using the configured Run command suffixes.</summary>
     public PathEnvironmentAppSource(AllAppsSettings settings)
     {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+
+        _settings = settings;
     }
 
+    /// <inheritdoc />
     public IEnumerable<string> GetPaths()
     {
-        return Win32Program.EnumeratePathEnvironmentPrograms(_settings.RunCommandSuffixes);
+        return EnumeratePaths(_settings.RunCommandSuffixes);
     }
 
+    /// <inheritdoc />
     public IEnumerable<Win32ProgramCandidate> GetCandidates(Action<string, Exception>? onError = null, CancellationToken cancellationToken = default)
     {
-        foreach (var path in Win32Program.EnumeratePathEnvironmentPrograms(_settings.RunCommandSuffixes, onError, cancellationToken))
+        foreach (var path in EnumeratePaths(_settings.RunCommandSuffixes, onError, cancellationToken))
         {
             yield return new Win32ProgramCandidate(path, []);
         }
     }
 
+    /// <inheritdoc />
     public bool IsRelevantPath(string path)
     {
         return false;
+    }
+
+    private static IEnumerable<string> EnumeratePaths(
+        IList<string> suffixes,
+        Action<string, Exception>? onError = null,
+        CancellationToken cancellationToken = default)
+    {
+        // To get all the locations stored in the PATH env variable
+        var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
+        var searchPaths = pathEnvVariable?.Split(System.IO.Path.PathSeparator);
+        var toFilterAllPaths = new List<string>();
+        if (searchPaths is not null)
+        {
+            foreach (var path in searchPaths)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var directory = Environment.ExpandEnvironmentVariables(path).Trim('"', ' ');
+                if (directory.Length > 0)
+                {
+                    var paths = Win32FileEnumerator.EnumerateFiles(directory, suffixes, maximumDepth: 0, onError: onError, cancellationToken: cancellationToken);
+                    toFilterAllPaths.AddRange(paths);
+                }
+            }
+        }
+
+        return toFilterAllPaths;
     }
 }

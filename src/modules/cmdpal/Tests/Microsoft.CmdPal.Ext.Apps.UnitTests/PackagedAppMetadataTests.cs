@@ -68,10 +68,10 @@ public partial class PackagedAppMetadataTests
 
         Assert.AreEqual(executable, payload.Executable);
         CollectionAssert.Contains(item.MatchTerms.ToArray(), Path.GetFileName(executable));
-        Assert.AreEqual(app.UserModelId, row.App.UserModelId);
+        Assert.AreEqual(app.UserModelId, row.App.AppUserModelId);
         Assert.IsTrue(row.App.IsPackaged);
-        Assert.AreEqual(string.Empty, row.App.ExePath);
-        Assert.IsNull(row.App.FullExecutablePath);
+        Assert.AreEqual(string.Empty, row.App.LaunchTarget);
+        Assert.IsNull(row.App.ResolvedTarget);
         Assert.IsNull(item.Payload.GetCanonicalTargetPath());
         Assert.AreEqual(0, row.ExecutableNames.Count);
         foreach (var mode in Enum.GetValues<ExecutableNameMatchMode>())
@@ -134,7 +134,7 @@ public partial class PackagedAppMetadataTests
 
         Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.AreEqual(2, rows.Select(row => row.Command!.Id).Distinct(StringComparer.Ordinal).Count());
-        CollectionAssert.AreEquivalent(new[] { first.UserModelId, second.UserModelId }, rows.Select(row => row.App.UserModelId).ToArray());
+        CollectionAssert.AreEquivalent(new[] { first.UserModelId, second.UserModelId }, rows.Select(row => row.App.AppUserModelId).ToArray());
         foreach (var item in items)
         {
             Assert.AreEqual(AppIdentity.ForPackaged(((PackagedAppSnapshot)item.Payload).UserModelId), item.Identity);
@@ -171,7 +171,7 @@ public partial class PackagedAppMetadataTests
         Assert.IsFalse(updated.MatchTerms.Contains("old-launcher.exe", StringComparer.OrdinalIgnoreCase));
         CollectionAssert.Contains(updated.MatchTerms.ToArray(), Path.GetFileName(app.Executable));
         Assert.IsNull(updated.Payload.GetCanonicalTargetPath());
-        Assert.AreEqual(app.UserModelId, updated.ToAppItem().UserModelId);
+        Assert.AreEqual(app.UserModelId, updated.ToAppItem().AppUserModelId);
     }
 
     [TestMethod]
@@ -206,10 +206,10 @@ public partial class PackagedAppMetadataTests
         Assert.AreEqual(string.Empty, new PackagedAppSnapshot().Executable);
         Assert.AreEqual(string.Empty, ((PackagedAppSnapshot)item.Payload).Executable);
         Assert.AreEqual(AppIdentity.ForPackaged(app.UserModelId), item.Identity);
-        Assert.AreEqual(app.UserModelId, row.App.UserModelId);
+        Assert.AreEqual(app.UserModelId, row.App.AppUserModelId);
         Assert.AreEqual(app.Name, row.Title);
-        Assert.AreEqual(string.Empty, row.App.ExePath);
-        Assert.IsNull(row.App.FullExecutablePath);
+        Assert.AreEqual(string.Empty, row.App.LaunchTarget);
+        Assert.IsNull(row.App.ResolvedTarget);
         Assert.IsNull(item.Payload.GetCanonicalTargetPath());
         Assert.AreEqual(0, row.ExecutableNames.Count);
         Assert.IsFalse(item.MatchTerms.Any(string.IsNullOrWhiteSpace));
@@ -239,7 +239,7 @@ public partial class PackagedAppMetadataTests
             var item = PackagedAppSource.CreateCatalogItem(app);
             Assert.AreEqual(executable, ((PackagedAppSnapshot)item.Payload).Executable);
             Assert.AreEqual(AppIdentity.ForPackaged(app.UserModelId), item.Identity);
-            Assert.AreEqual(app.UserModelId, item.ToAppItem().UserModelId);
+            Assert.AreEqual(app.UserModelId, item.ToAppItem().AppUserModelId);
             Assert.IsNull(item.Payload.GetCanonicalTargetPath());
             if (!string.IsNullOrEmpty(executable))
             {
@@ -274,8 +274,8 @@ public partial class PackagedAppMetadataTests
             var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
             CollectionAssert.Contains(item.MatchTerms.ToArray(), "wt.exe");
             Assert.AreEqual(AppIdentity.ForPackaged(app.UserModelId), item.Identity);
-            Assert.AreEqual(app.UserModelId, row.App.UserModelId);
-            Assert.AreEqual(string.Empty, row.App.ExePath);
+            Assert.AreEqual(app.UserModelId, row.App.AppUserModelId);
+            Assert.AreEqual(string.Empty, row.App.LaunchTarget);
             Assert.IsNull(item.Payload.GetCanonicalTargetPath());
             Assert.AreEqual(0, row.ExecutableNames.Count);
             foreach (var mode in Enum.GetValues<ExecutableNameMatchMode>())

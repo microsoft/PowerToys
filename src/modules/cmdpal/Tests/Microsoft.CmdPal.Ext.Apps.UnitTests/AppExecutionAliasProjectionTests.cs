@@ -140,11 +140,11 @@ public class AppExecutionAliasProjectionTests : AppsTestBase
         Assert.AreEqual(1, reads);
     }
 
-    private static Win32Program CreateTerminal(string name, string aumid)
+    private static Win32AppMetadata CreateTerminal(string name, string aumid)
     {
-        var program = TestDataHelper.CreateTestWin32Program(name, $@"C:\{name}\wt.exe");
+        var program = TestDataHelper.CreateTestWin32Metadata(name, $@"C:\{name}\wt.exe");
         program.PackagedAppUserModelId = aumid;
-        program.ExecutableName = "wt.exe";
+        program.SourceFilename = "wt.exe";
         return program;
     }
 

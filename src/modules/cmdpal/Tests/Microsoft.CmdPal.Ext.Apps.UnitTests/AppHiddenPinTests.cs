@@ -25,7 +25,7 @@ public class AppHiddenPinTests : AppsTestBase
     public void SavedRedirect_HiddenTargetRemainsUsableWithoutDiscovery(bool patternHidden)
     {
         var hidden = CreateItem("Hidden", @"E:\Apps\Hidden.exe");
-        var legacyId = AppCommand.GenerateId(hidden.App.Name, hidden.App.Subtitle, hidden.App.ExePath);
+        var legacyId = AppCommand.GenerateId(hidden.App.Name, hidden.App.Subtitle, hidden.App.LaunchTarget);
         hidden.App.CommandIds = [legacyId];
         var oldId = AppIdentity.ForCommand("win32:old-location");
         var snapshot = new AppListItemSnapshot(
@@ -252,7 +252,7 @@ public class AppHiddenPinTests : AppsTestBase
         var notifications = 0;
         provider.ItemsChanged += (_, _) => notifications++;
 
-        var renamed = CreateItem("Renamed", hidden.App.ExePath);
+        var renamed = CreateItem("Renamed", hidden.App.LaunchTarget);
         snapshot = new AppListItemSnapshot([], [renamed]);
         source.Raise(service => service.Changed += null, source.Object, EventArgs.Empty);
         Assert.AreEqual(1, notifications);
@@ -268,7 +268,7 @@ public class AppHiddenPinTests : AppsTestBase
 
     private static AppListItem CreateItem(string name, string path)
     {
-        return new(new AppItem { Name = name, CatalogId = $"win32:{path}|args:", ExePath = path }, useThumbnails: false);
+        return new(new AppItem { Name = name, CatalogId = $"win32:{path}|args:", LaunchTarget = path }, useThumbnails: false);
     }
 
     private static AppListItem CreatePackagedItem(string name, string aumid)

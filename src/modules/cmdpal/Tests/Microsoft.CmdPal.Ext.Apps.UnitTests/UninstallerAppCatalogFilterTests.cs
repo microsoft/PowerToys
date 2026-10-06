@@ -142,7 +142,7 @@ public class UninstallerAppCatalogFilterTests
     private static AppCatalogItem CreateWin32Item(string executablePath, string? shortcutPath = null)
     {
         var name = Path.GetFileNameWithoutExtension(executablePath);
-        var program = TestDataHelper.CreateTestWin32Program(name, executablePath);
+        var program = TestDataHelper.CreateTestWin32Metadata(name, executablePath);
         program.LnkFilePath = shortcutPath ?? string.Empty;
         return new AppCatalogItem(
             $"win32:{name}",
@@ -160,5 +160,7 @@ public class UninstallerAppCatalogFilterTests
     }
 
     private static string TemporarySettingsPath()
-        => Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+    {
+        return Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+    }
 }

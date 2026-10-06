@@ -73,27 +73,34 @@ internal sealed record PackagedAppSnapshot : IAppCatalogPayload
         {
             Name = Name,
             Subtitle = Description,
-            Type = Resources.packaged_application,
-            IcoPath = LogoPath,
-            JumboIconPath = JumboLogoPath,
-            DirPath = PackageLocation,
-            UserModelId = UserModelId,
+            AppTypeLabel = Resources.packaged_application,
+            IconSource = LogoPath,
+            JumboIconSource = JumboLogoPath,
+            DirectoryPath = PackageLocation,
+            AppUserModelId = UserModelId,
             IsPackaged = true,
             Commands = GetCommands(),
-            AppIdentifier = UserModelId,
             PackageFamilyName = PackageFamilyName,
         };
     }
 
     /// <inheritdoc />
-    public string GetCommandId() => AppCommand.GenerateId(Name, Description, string.Empty);
+    public string GetCommandId()
+    {
+        return AppCommand.GenerateId(Name, Description, string.Empty);
+    }
 
     /// <inheritdoc />
     string? IAppCatalogPayload.GetCanonicalIdentityHint()
-        => string.IsNullOrWhiteSpace(UserModelId) ? null : AppIdentity.ForPackaged(UserModelId);
+    {
+        return string.IsNullOrWhiteSpace(UserModelId) ? null : AppIdentity.ForPackaged(UserModelId);
+    }
 
     /// <inheritdoc />
-    string? IAppCatalogPayload.GetCanonicalTargetPath() => null;
+    string? IAppCatalogPayload.GetCanonicalTargetPath()
+    {
+        return null;
+    }
 
     private List<IContextItem> GetCommands()
     {

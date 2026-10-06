@@ -205,8 +205,8 @@ public partial class AppCatalogTests
                 {
                     Interlocked.Increment(ref reads);
                     return File.Exists(target)
-                        ? TestDataHelper.CreateTestWin32Program("Installed", target)
-                        : new Win32Program { Valid = false };
+                        ? TestDataHelper.CreateTestWin32Metadata("Installed", target)
+                        : new Win32AppMetadata { Valid = false };
                 },
                 createWatchers: false);
             var cache = new TestCache(null);
@@ -281,12 +281,12 @@ public partial class AppCatalogTests
                     {
                         Interlocked.Increment(ref rejectedReads);
                         return installed
-                            ? TestDataHelper.CreateTestWin32Program("Installed", Path.ChangeExtension(path, ".exe"))
-                            : new Win32Program { Valid = false };
+                            ? TestDataHelper.CreateTestWin32Metadata("Installed", Path.ChangeExtension(path, ".exe"))
+                            : new Win32AppMetadata { Valid = false };
                     }
 
                     Interlocked.Increment(ref unchangedReads);
-                    return TestDataHelper.CreateTestWin32Program("Unchanged", Path.ChangeExtension(path, ".exe"));
+                    return TestDataHelper.CreateTestWin32Metadata("Unchanged", Path.ChangeExtension(path, ".exe"));
                 },
                 createWatchers: false);
             using var catalog = CreateRecoveryCatalog([blocker, source], clock);
@@ -743,7 +743,7 @@ public partial class AppCatalogTests
     private static AppCatalogItem CreateRecoveryItem(string name, string sourcePath, string? targetPath = null)
     {
         targetPath ??= $@"C:\Targets\{name}.exe";
-        var payload = Win32AppPayload.From(TestDataHelper.CreateTestWin32Program(name, targetPath));
+        var payload = Win32AppPayload.From(TestDataHelper.CreateTestWin32Metadata(name, targetPath));
         payload = payload with { LnkFilePath = sourcePath };
         return new AppCatalogItem(
             $"win32:{targetPath}|args:",

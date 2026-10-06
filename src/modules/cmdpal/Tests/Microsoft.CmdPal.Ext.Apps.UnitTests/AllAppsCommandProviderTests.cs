@@ -31,7 +31,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         var stopwatch = Stopwatch.StartNew();
         for (var i = 0; i < publicationCount; i++)
         {
-            catalog.AddWin32Program(TestDataHelper.CreateTestWin32Program($"App {i}", $@"C:\Apps\app{i}.exe"));
+            catalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata($"App {i}", $@"C:\Apps\app{i}.exe"));
         }
 
         stopwatch.Stop();
@@ -52,7 +52,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         using var source = new AppListItemSource(catalog, Settings);
         using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
         using var provider = new AllAppsCommandProvider(page, source, Settings);
-        var program = TestDataHelper.CreateTestWin32Program("Editor");
+        var program = TestDataHelper.CreateTestWin32Metadata("Editor");
         var id = new AppListItem(Catalog.Win32AppPayload.From(program).ToAppItem(), false).Command.Id;
         var notifications = 0;
         provider.ItemsChanged += (_, _) => notifications++;

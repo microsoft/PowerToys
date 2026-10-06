@@ -452,8 +452,8 @@ public partial class AllAppsSettings : JsonSettingsManager
 
             var commandId = Catalog.AppIdentity.ForCommand(app.CatalogId);
             identities[commandId] = app.CatalogId;
-            var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.ExePath);
-            if (!string.IsNullOrEmpty(app.ExePath))
+            var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.LaunchTarget);
+            if (!string.IsNullOrEmpty(app.LaunchTarget))
             {
                 launchAliases.Add(legacyId);
             }

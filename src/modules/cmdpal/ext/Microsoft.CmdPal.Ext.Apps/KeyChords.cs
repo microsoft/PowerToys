@@ -4,6 +4,8 @@
 
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
@@ -20,4 +22,6 @@ internal static class KeyChords
     internal static KeyChord RunAsDifferentUser { get; } = WellKnownKeyChords.RunAsDifferentUser;
 
     internal static KeyChord TogglePin { get; } = WellKnownKeyChords.TogglePin;
+
+    public static KeyChord Delete { get; } = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete);
 }

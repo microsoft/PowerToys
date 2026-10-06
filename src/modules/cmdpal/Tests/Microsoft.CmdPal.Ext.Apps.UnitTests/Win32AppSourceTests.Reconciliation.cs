@@ -42,7 +42,7 @@ public partial class Win32AppSourceTests
                 (path, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), path);
+                    return TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), path);
                 },
                 createWatchers: false);
             var initial = await source.LoadAsync(CancellationToken.None);
@@ -82,8 +82,8 @@ public partial class Win32AppSourceTests
                 {
                     Interlocked.Increment(ref loads);
                     return File.Exists(target)
-                        ? TestDataHelper.CreateTestWin32Program(File.ReadAllText(target), target)
-                        : new Win32Program { Valid = false, FullPath = target };
+                        ? TestDataHelper.CreateTestWin32Metadata(File.ReadAllText(target), target)
+                        : new Win32AppMetadata { Valid = false, TargetPath = target };
                 },
                 createWatchers: false);
             await source.LoadAsync(CancellationToken.None);
@@ -128,8 +128,8 @@ public partial class Win32AppSourceTests
                 {
                     Interlocked.Increment(ref loads);
                     return File.Exists(target)
-                        ? TestDataHelper.CreateTestWin32Program("Installed", target)
-                        : new Win32Program { Valid = false, FullPath = knownTarget ? target : string.Empty };
+                        ? TestDataHelper.CreateTestWin32Metadata("Installed", target)
+                        : new Win32AppMetadata { Valid = false, TargetPath = knownTarget ? target : string.Empty };
                 },
                 createWatchers: false);
             var initial = (AppSourceScanResult)await source.LoadAsync(CancellationToken.None);
@@ -182,8 +182,8 @@ public partial class Win32AppSourceTests
                 (_, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    var program = TestDataHelper.CreateTestWin32Program("Document", target);
-                    program.AppType = Win32Program.ApplicationType.GenericFile;
+                    var program = TestDataHelper.CreateTestWin32Metadata("Document", target);
+                    program.AppType = Win32AppType.GenericFile;
                     return program;
                 },
                 createWatchers: false);
@@ -217,7 +217,7 @@ public partial class Win32AppSourceTests
                 (_, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return new Win32Program { Valid = false, Unreadable = true, RetryableReadFailure = retryable };
+                    return new Win32AppMetadata { Valid = false, Unreadable = true, RetryableReadFailure = retryable };
                 },
                 createWatchers: false);
             await source.LoadAsync(CancellationToken.None);
@@ -253,7 +253,7 @@ public partial class Win32AppSourceTests
                 (path, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return TestDataHelper.CreateTestWin32Program(Path.GetFileNameWithoutExtension(path), path);
+                    return TestDataHelper.CreateTestWin32Metadata(Path.GetFileNameWithoutExtension(path), path);
                 },
                 createWatchers: false);
             await source.LoadAsync(CancellationToken.None);
@@ -290,7 +290,7 @@ public partial class Win32AppSourceTests
                 (candidate, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return TestDataHelper.CreateTestWin32Program("App", candidate);
+                    return TestDataHelper.CreateTestWin32Metadata("App", candidate);
                 },
                 createWatchers: false);
             await source.LoadAsync(CancellationToken.None);
@@ -325,7 +325,7 @@ public partial class Win32AppSourceTests
                 (_, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    var program = TestDataHelper.CreateTestWin32Program(selected, path);
+                    var program = TestDataHelper.CreateTestWin32Metadata(selected, path);
                     program.AppExecutionAlias = new ReparsePoint.AppExecutionAliasInfo
                     {
                         Aumid = $"Contoso.{selected}_123!App",
@@ -361,7 +361,7 @@ public partial class Win32AppSourceTests
                 (_, _) =>
                 {
                     Interlocked.Increment(ref loads);
-                    return TestDataHelper.CreateTestWin32Program("App", Path.Combine(root, "App.exe"));
+                    return TestDataHelper.CreateTestWin32Metadata("App", Path.Combine(root, "App.exe"));
                 },
                 createWatchers: false);
             var initial = await source.LoadAsync(CancellationToken.None);

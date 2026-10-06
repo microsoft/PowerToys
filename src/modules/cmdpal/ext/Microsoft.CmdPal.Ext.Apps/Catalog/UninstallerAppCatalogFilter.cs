@@ -15,6 +15,9 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 /// </summary>
 internal sealed partial class UninstallerAppCatalogFilter : IAppCatalogFilter
 {
+    /// <inheritdoc />
+    public event EventHandler? Changed;
+
     private const string ExecutableSuffix = ".exe";
     private const string ShortcutSuffix = ".lnk";
 
@@ -57,17 +60,16 @@ internal sealed partial class UninstallerAppCatalogFilter : IAppCatalogFilter
     private InterlockedBoolean _disposed;
 
     /// <summary>
-    /// Initializes a filter backed by the supplied Apps settings.
+    /// Initializes a new instance of the <see cref="UninstallerAppCatalogFilter"/> class. Initializes a filter backed by the supplied Apps settings.
     /// </summary>
     public UninstallerAppCatalogFilter(AllAppsSettings settings)
     {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+
+        _settings = settings;
         _hideUninstallers.Value = settings.HideUninstallers;
         _settings.Settings.SettingsChanged += OnSettingsChanged;
     }
-
-    /// <inheritdoc />
-    public event EventHandler? Changed;
 
     /// <inheritdoc />
     public bool Includes(AppCatalogItem item)
@@ -84,7 +86,7 @@ internal sealed partial class UninstallerAppCatalogFilter : IAppCatalogFilter
             return false;
         }
 
-        if (IsUninstallerPath(program.FullPath) || IsUninstallerPath(program.LnkFilePath))
+        if (IsUninstallerPath(program.TargetPath) || IsUninstallerPath(program.LnkFilePath))
         {
             return true;
         }
