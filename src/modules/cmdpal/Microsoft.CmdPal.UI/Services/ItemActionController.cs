@@ -77,7 +77,7 @@ internal sealed partial class ItemActionController :
     }
 
     /// <summary>
-    /// Handles Enter, Ctrl+Enter, and Ctrl+K during normal key routing.
+    /// Handles Ctrl+K during normal key routing. Page interaction targets handle Enter and Ctrl+Enter.
     /// </summary>
     /// <returns>True when the key is consumed, even if no applicable action or menu exists.</returns>
     public bool TryHandleKey(KeyChord chord)

@@ -32,22 +32,18 @@ public class ItemActionControllerTests
     private int _closeCount;
 
     [TestMethod]
-    [DataRow(VirtualKeyModifiers.None, false, "primary")]
-    [DataRow(VirtualKeyModifiers.None, true, "primary")]
-    [DataRow(VirtualKeyModifiers.Control, false, "secondary")]
-    [DataRow(VirtualKeyModifiers.Control, true, "secondary")]
-    public void Activation_UsesPageMessagesWithoutRequiringAMenu(VirtualKeyModifiers modifiers, bool hasContext, string expected)
+    [DataRow(VirtualKeyModifiers.None, false)]
+    [DataRow(VirtualKeyModifiers.None, true)]
+    [DataRow(VirtualKeyModifiers.Control, false)]
+    [DataRow(VirtualKeyModifiers.Control, true)]
+    public void Activation_IsLeftToThePageInteractionTarget(VirtualKeyModifiers modifiers, bool hasContext)
     {
         _context = hasContext ? Mock.Of<ICommandBarContext>() : null;
-        List<string> activations = [];
-        _messenger.Register<ActivateSelectedListItemMessage>(this, (_, _) => activations.Add("primary"));
-        _messenger.Register<ActivateSecondaryCommandMessage>(this, (_, _) => activations.Add("secondary"));
-        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("Page activation must retain its existing invocation path."));
+        _messenger.Register<PerformCommandMessage>(this, (_, _) => Assert.Fail("The page interaction target owns activation."));
         using var controller = CreateController();
 
-        Assert.IsTrue(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));
+        Assert.IsFalse(controller.TryHandleKey(new KeyChord(modifiers, (int)VirtualKey.Enter, 0)));
 
-        CollectionAssert.AreEqual(new[] { expected }, activations);
         Assert.IsEmpty(_callbacks);
         Assert.IsEmpty(_opened);
     }
