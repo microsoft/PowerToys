@@ -18,7 +18,8 @@ Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
 ERROR DETAILS
-When a build fails, check the logs written next to the solution/project folder:
+When a build fails, check the logs in <repo>\artifacts\logs\<project name>\, where <project name> is the
+solution or project file name without its extension:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
 - build.<configuration>.<platform>.errors.log — extracted errors only
 - build.<configuration>.<platform>.warnings.log — extracted warnings only
@@ -36,9 +37,12 @@ function RunMSBuild {
         [string]$Configuration
     )
 
-    # Prefer the solution's folder for logs; fall back to current directory
-    $logRoot = Split-Path -Path $Solution
-    if (-not $logRoot) { $logRoot = '.' }
+    # Logs go to <repo>\artifacts\logs\<project name>\, not the project folder: the context-menu
+    # projects run MakeAppx on their own folder before compiling, and MSBuild's open log files
+    # there make it fail with 0x80070020 (file in use).
+    $projectName = [System.IO.Path]::GetFileNameWithoutExtension($Solution)
+    $logRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\artifacts\logs\$projectName"))
+    New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 
     $cfg = $null
     if ($Configuration) { $cfg = $Configuration.ToLower() } else { $cfg = 'unknown' }

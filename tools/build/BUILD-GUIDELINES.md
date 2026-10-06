@@ -34,7 +34,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
      - `./tools/build/build-installer.ps1 -Platform x64 -Configuration Release -PerUser true -InstallerSuffix wix5`
 
 ## Logs and troubleshooting
-- On failure, see logs next to the solution/project being built:
+- On failure, see logs in `artifacts\logs\<project>\` at the repo root, where `<project>` is the solution/project file name without its extension:
   - `build.<configuration>.<platform>.all.log` — full text log
   - `build.<configuration>.<platform>.errors.log` — errors only
   - `build.<configuration>.<platform>.warnings.log` — warnings only

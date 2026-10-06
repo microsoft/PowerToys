@@ -61,12 +61,12 @@ These instruction files are automatically applied when working in their respecti
 3. Use scripts to build: `tools/build/build.ps1` or `tools/build/build.cmd`
 4. For first build or missing NuGet packages, run `build-essentials.cmd` first
 5. **Exit code 0 = success; non-zero = failure** – treat this as absolute
-6. On failure, read the errors log: `build.<config>.<platform>.errors.log`
+6. On failure, read the errors log: `artifacts\logs\<project>\build.<config>.<platform>.errors.log`
 7. Do not start tests or launch Runner until the build succeeds
 
 ### Build logs
 
-Located next to the solution/project being built:
+Located in `artifacts\logs\<project>\` at the repo root, where `<project>` is the solution/project file name without its extension (for example, `artifacts\logs\PowerToys.Settings\`):
 
 - `build.<configuration>.<platform>.errors.log` – errors only (check this first)
 - `build.<configuration>.<platform>.all.log` – full log
