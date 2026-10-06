@@ -62,14 +62,14 @@ internal static partial class NativeMethods
         ref uint pcchOut);
 
     // SHDefExtractIconW lets us ask for specific sizes (incl. 256)
-    // nIconSize: HIWORD = large size, LOWORD = small size
+    // nIconSize: LOWORD = large size, HIWORD = small size
     [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = false)]
     internal static partial int SHDefExtractIconW(
         string pszIconFile,
         int iIndex,
         uint uFlags,
         out nint phiconLarge,
-        out nint phiconSmall,
+        nint phiconSmall,
         int nIconSize);
 
     [Flags]
