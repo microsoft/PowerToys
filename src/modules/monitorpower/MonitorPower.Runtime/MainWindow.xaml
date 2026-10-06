@@ -5,7 +5,7 @@
     Title="Display profile selector">
     <Grid Padding="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="16" MinWidth="420" MinHeight="300">
         <TextBlock x:Uid="MonitorPower_Selector_Title" Text="Choose a display profile" FontSize="20" FontWeight="SemiBold" />
-        <ListView x:Uid="MonitorPower_Selector_ProfileList" x:Name="ProfileList" Grid.Row="1" SelectionMode="Single" AutomationProperties.Name="Saved display profiles" KeyDown="ProfileList_KeyDown" />
+        <ListView x:Uid="MonitorPower_Selector_ProfileList" x:Name="ProfileList" Grid.Row="1" SelectionMode="Single" AutomationProperties.Name="Display profiles" KeyDown="ProfileList_KeyDown" />
         <TextBlock x:Name="StatusText" Grid.Row="2" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
             <Button x:Uid="MonitorPower_Selector_CancelButton" Content="Cancel" Click="Cancel_Click" />

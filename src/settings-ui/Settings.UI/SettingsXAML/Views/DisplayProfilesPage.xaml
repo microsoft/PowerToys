@@ -133,7 +133,7 @@
                                         </Style>
                                     </ListView.ItemContainerStyle>
                                 </ListView>
-                                <TextBlock Grid.Row="3" Text="No saved profiles yet. Select one or more displays and save a profile." Visibility="{x:Bind ViewModel.HasProfiles, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Uid="DisplayProfiles_SavedProfiles_EmptyState" Grid.Row="3" Visibility="{x:Bind ViewModel.HasProfiles, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </Grid>
                         </tkcontrols:SettingsCard>
                     </controls:SettingsGroup>

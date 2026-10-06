@@ -21,6 +21,13 @@ using Properties = MonitorPowerCore;
 
 namespace MonitorPower;
 
+public enum BuiltInDisplayProfile
+{
+    None,
+    AllDisplays,
+    PrimaryDisplayOnly,
+}
+
 internal enum DISPLAYCONFIG_TOPOLOGY_ID : uint
 {
     Zero = 0,

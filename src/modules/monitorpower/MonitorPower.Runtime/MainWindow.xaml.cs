@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using MonitorPower;
 using Windows.System;
 
@@ -21,6 +22,7 @@ public sealed partial class MainWindow : Window
     private const ushort ControllerBButton = 0x2000;
     private const ushort ControllerDpadUp = 0x0001;
     private const ushort ControllerDpadDown = 0x0002;
+    private static readonly ResourceLoader Resources = new("PowerToys.MonitorPower.Runtime.pri");
     private string _topologyAtOpen = string.Empty;
 
     public MainWindow()
@@ -30,7 +32,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         var profileCount = InitializeSelectorState();
         AppWindow.Closing += AppWindow_Closing;
-        RuntimeLog.Info($"Profile selector initialized in {startupTimer.ElapsedMilliseconds} ms with {profileCount} saved profile(s).");
+        RuntimeLog.Info($"Profile selector initialized in {startupTimer.ElapsedMilliseconds} ms with {profileCount} selectable profile(s).");
     }
 
     public void PrepareForActivation()
@@ -44,17 +46,21 @@ public sealed partial class MainWindow : Window
         _topologyAtOpen = GetActiveTopologySignature();
         RuntimeLog.Info($"Selector topology snapshot captured in {topologyTimer.ElapsedMilliseconds} ms.");
 
-        var profiles = DisplayHelpers.GetSavedProfiles()
-            .Select(profile => new RuntimeProfile(profile.FileName, profile.Name))
-            .ToList();
+        var savedProfiles = DisplayHelpers.GetSavedProfiles();
+        var profiles = new List<RuntimeProfile>
+        {
+            new(string.Empty, GetResourceString("MonitorPower_Selector_AllDisplays"), BuiltInDisplayProfile.AllDisplays),
+            new(string.Empty, GetResourceString("MonitorPower_Selector_PrimaryDisplayOnly"), BuiltInDisplayProfile.PrimaryDisplayOnly),
+        };
+        profiles.AddRange(savedProfiles.Select(profile => new RuntimeProfile(profile.FileName, profile.Name)));
         ProfileList.ItemsSource = profiles;
         ProfileList.DisplayMemberPath = nameof(RuntimeProfile.Name);
         ProfileList.SelectedIndex = profiles.Count == 0 ? -1 : 0;
         ProfileList.Focus(FocusState.Programmatic);
         ApplyButton.IsEnabled = profiles.Count > 0;
-        StatusText.Text = profiles.Count == 0
-            ? "No saved profiles. Save a profile in Monitor Power Settings first."
-            : "Use the arrow keys or controller D-pad to select a profile. Press A or Apply to confirm; B or Cancel to close.";
+        StatusText.Text = savedProfiles.Count == 0
+            ? GetResourceString("MonitorPower_Selector_NoSavedProfiles")
+            : GetResourceString("MonitorPower_Selector_Instructions");
         return profiles.Count;
     }
 
@@ -119,7 +125,7 @@ public sealed partial class MainWindow : Window
         if (ProfileList.SelectedItem is not RuntimeProfile profile)
         {
             RuntimeLog.Warning("Profile apply requested without a selected profile.");
-            SetStatus("Select a saved display profile first.");
+            SetStatus("Select a display profile first.");
             return;
         }
 
@@ -137,9 +143,15 @@ public sealed partial class MainWindow : Window
                     return null;
                 }
 
-                return DisplayHelpers.ApplyNamedProfile(
-                    profile.FileName,
-                    message => DispatcherQueue.TryEnqueue(() => SetStatus(message)));
+                return profile.BuiltInProfile switch
+                {
+                    BuiltInDisplayProfile.AllDisplays => DisplayHelpers.SetAllDisplays(),
+                    BuiltInDisplayProfile.PrimaryDisplayOnly => DisplayHelpers.SetPrimaryDisplayOnly(
+                        message => DispatcherQueue.TryEnqueue(() => SetStatus(message))),
+                    _ => DisplayHelpers.ApplyNamedProfile(
+                        profile.FileName,
+                        message => DispatcherQueue.TryEnqueue(() => SetStatus(message))),
+                };
             });
             if (result is null)
             {
@@ -184,5 +196,11 @@ public sealed partial class MainWindow : Window
             .OrderBy(target => target, StringComparer.Ordinal));
     }
 
-    private sealed record RuntimeProfile(string FileName, string Name);
+    private static string GetResourceString(string key)
+        => Resources.GetString(key);
+
+    private sealed record RuntimeProfile(
+        string FileName,
+        string Name,
+        BuiltInDisplayProfile BuiltInProfile = BuiltInDisplayProfile.None);
 }

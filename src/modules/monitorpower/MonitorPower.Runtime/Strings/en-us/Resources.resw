@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <data name="MonitorPower_Selector_Title.Text" xml:space="preserve"><value>Choose a display profile</value></data>
-  <data name="MonitorPower_Selector_ProfileList.AutomationProperties.Name" xml:space="preserve"><value>Saved display profiles</value></data>
+  <data name="MonitorPower_Selector_ProfileList.AutomationProperties.Name" xml:space="preserve"><value>Display profiles</value></data>
+  <data name="MonitorPower_Selector_AllDisplays" xml:space="preserve"><value>All displays</value></data>
+  <data name="MonitorPower_Selector_PrimaryDisplayOnly" xml:space="preserve"><value>Primary display only</value></data>
+  <data name="MonitorPower_Selector_NoSavedProfiles" xml:space="preserve"><value>No custom profiles are saved yet. Built-in profiles are still available. Use the arrow keys or controller D-pad to select a profile, then press A or Apply to confirm.</value></data>
+  <data name="MonitorPower_Selector_Instructions" xml:space="preserve"><value>Use the arrow keys or controller D-pad to select a profile. Press A or Apply to confirm; B or Cancel to close.</value></data>
   <data name="MonitorPower_Selector_ApplyButton.Content" xml:space="preserve"><value>Apply</value></data>
   <data name="MonitorPower_Selector_CancelButton.Content" xml:space="preserve"><value>Cancel</value></data>
 </root>

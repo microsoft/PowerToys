@@ -1173,12 +1173,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
     }
 
-    public enum BuiltInDisplayProfile
-    {
-        None,
-        AllDisplays,
-        PrimaryDisplayOnly,
-    }
 }
 
 #pragma warning restore CA1846, SA1214, SA1402, SA1413, SA1513, SA1516

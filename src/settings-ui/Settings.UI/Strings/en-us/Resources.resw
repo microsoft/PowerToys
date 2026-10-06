@@ -6597,6 +6597,7 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_NewProfileName.Header" xml:space="preserve"><value>Profile Name</value></data>
   <data name="DisplayProfiles_SaveProfile.Header" xml:space="preserve"><value>Save Profile</value></data>
   <data name="DisplayProfiles_SavedProfiles_Description.Header" xml:space="preserve"><value>Click Apply to activate a saved display configuration. Profiles store monitor positions, resolutions, and orientations.</value></data>
+  <data name="DisplayProfiles_SavedProfiles_EmptyState.Text" xml:space="preserve"><value>No custom profiles saved yet. Built-in profiles are available above. Select displays and save a profile to add one.</value></data>
   <data name="DisplayProfiles_ActivationShortcut.Header" xml:space="preserve"><value>Activation Shortcut</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Header.Header" xml:space="preserve"><value>Open Profile Selector</value></data>
   <data name="DisplayProfiles_ActivationShortcut_Description.Header" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
