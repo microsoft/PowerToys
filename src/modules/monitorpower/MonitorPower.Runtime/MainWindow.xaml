@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="Display profile selector">
-    <Grid Padding="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="16" MinWidth="420" MinHeight="300">
+    <!-- Overlay semitrasparente: lo sfondo acrilico e' impostato da SystemBackdrop nel code-behind, quindi la griglia resta trasparente. -->
+    <Grid Padding="24" Background="Transparent" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="16">
         <TextBlock x:Uid="MonitorPower_Selector_Title" Text="Choose a display profile" FontSize="20" FontWeight="SemiBold" />
         <ListView x:Uid="MonitorPower_Selector_ProfileList" x:Name="ProfileList" Grid.Row="1" SelectionMode="Single" AutomationProperties.Name="Display profiles" KeyDown="ProfileList_KeyDown" />
         <TextBlock x:Name="StatusText" Grid.Row="2" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

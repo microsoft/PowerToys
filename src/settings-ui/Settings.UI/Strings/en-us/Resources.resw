@@ -6583,7 +6583,7 @@ The break timer font matches the text font.</value>
   <data name="DisplayProfiles_ControllerSection.Title" xml:space="preserve"><value>Controller shortcut</value></data>
   <data name="DisplayProfiles_ControllerSection.Subtitle" xml:space="preserve"><value>Use an Xbox controller chord to open the quick display profile selector overlay.</value></data>
   <data name="DisplayProfiles_DiagnosticsSection.Title" xml:space="preserve"><value>Diagnostics</value></data>
-  <data name="DisplayProfiles_ActivationSection.Title" xml:space="preserve"><value>Activation Shortcut</value></data>
+  <data name="DisplayProfiles_ActivationSection.Title" xml:space="preserve"><value>Keyboard shortcut</value></data>
   <data name="DisplayProfiles_ActivationSection.Subtitle" xml:space="preserve"><value>Press this shortcut to open the quick display profile selector overlay.</value></data>
 <data name="DisplayProfiles_TopologySection.Title" xml:space="preserve"><value>Current Display Topology</value></data>
   <data name="DisplayProfiles_TopologySection.Subtitle" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>

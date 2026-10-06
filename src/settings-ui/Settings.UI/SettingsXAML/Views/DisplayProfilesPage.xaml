@@ -46,7 +46,7 @@
             </Button>
         </DataTemplate>
 
-        <!-- TEMPLATE: riga di un profilo salvato (nome, badge built-in, Apply, Overwrite/Rename/Duplicate/Delete) -->
+        <!-- TEMPLATE: riga di un profilo salvato (radio, nome, sottotitolo, menu Rename/Delete) -->
         <DataTemplate x:Key="ProfileTemplate" x:DataType="vm:ProfileInfo">
             <tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard.Header>
@@ -120,64 +120,54 @@
                         </StackPanel>
                     </controls:Section>
 
-                    <!-- ===== SEZIONE 3: CONTROLLER SHORTCUT (attivazione da controller Xbox) ===== -->
-                    <controls:Section x:Uid="DisplayProfiles_ControllerSection">
-                        <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_Controller_Expander"
-                            Header="Enable controller shortcut"
-                            HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}"
-                            IsExpanded="True"
-                            Description="Use an Xbox controller to open the display profile selector.">
-                        <!-- CONTROLLER - Header (destra): abilita/disabilita attivazione da controller -->
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" AutomationProperties.Name="Enable controller activation" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <!-- CONTROLLER - Riquadro assegnazione combinazione (stile dialog "Activation shortcut") -->
-                            <tkcontrols:SettingsCard ContentAlignment="Vertical" HorizontalContentAlignment="Stretch">
-                                <StackPanel Spacing="12">
-                                    <TextBlock TextWrapping="Wrap">
-                                        <Run Text="A controller shortcut is made of exactly two buttons held together. Press" />
-                                        <Run Text="Change" FontWeight="SemiBold" />
-                                        <Run Text="and hold the two buttons you want to use. The Guide button may be reserved by Windows." />
-                                    </TextBlock>
-
-                                    <!-- Riquadro scuro con i due tasti del controller centrati -->
-                                    <Border Background="{ThemeResource ControlFillColorDefaultBrush}" CornerRadius="8" Padding="24">
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
-                                            <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerFirstButton, Mode=OneWay}" MinWidth="64" MinHeight="56" Padding="12" FontSize="18" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
-                                            <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerSecondButton, Mode=OneWay}" MinWidth="64" MinHeight="56" Padding="12" FontSize="18" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <!-- Azioni sotto il riquadro: Change (cattura) e Reset -->
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-                                        <Button Click="CaptureControllerShortcut_Click" IsEnabled="{x:Bind ViewModel.IsCapturingControllerShortcut, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" Style="{StaticResource SubtleButtonStyle}">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <FontIcon Glyph="&#xE70F;" FontSize="14" />
-                                                <TextBlock Text="Change" />
-                                            </StackPanel>
-                                        </Button>
-                                        <Button Click="ResetControllerShortcut_Click" IsEnabled="{x:Bind ViewModel.IsCapturingControllerShortcut, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" Style="{StaticResource SubtleButtonStyle}">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <FontIcon Glyph="&#xE777;" FontSize="14" />
-                                                <TextBlock Text="Reset" />
-                                            </StackPanel>
-                                        </Button>
-                                        <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsCapturingControllerShortcut, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsCapturingControllerShortcut, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                    </StackPanel>
-
-                                    <!-- Messaggio di stato della cattura (come l'avviso nel dialog) -->
-                                    <InfoBar Severity="Warning" IsClosable="False" IsOpen="{x:Bind HasText(ViewModel.ControllerStatus), Mode=OneWay}" Message="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" />
-                                </StackPanel>
-                            </tkcontrols:SettingsCard>
-
-                            <!-- CONTROLLER - Test di connessione/lettura del controller -->
-                            <tkcontrols:SettingsCard Header="Test controller" Description="Check whether an XInput controller is connected and whether its buttons are readable.">
-                                <Button Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                    <!-- ===== SEZIONE 3: KEYBOARD SHORTCUT (scorciatoia da tastiera) ===== -->
+                    <controls:Section x:Uid="DisplayProfiles_ActivationSection">
+                        <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
+                        <!-- ACTIVATION SHORTCUT - Card: editor della scorciatoia da tastiera -->
+                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" AllowDisable="True" HotkeySettings="{x:Bind ViewModel.ActivationHotkeySettings, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    
+                        </StackPanel>
                     </controls:Section>
 
-                    <!-- ===== SEZIONE 4: DIAGNOSTICS (apri il file di log) ===== -->
+                    <!-- ===== SEZIONE 4: CONTROLLER SHORTCUT (attivazione da controller Xbox) ===== -->
+                    <controls:Section x:Uid="DisplayProfiles_ControllerSection">
+                        <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
+                            <!-- CONTROLLER - Riga: abilita/disabilita attivazione da controller -->
+                            <tkcontrols:SettingsCard Header="Enable controller shortcut" Description="Use an Xbox controller to open the display profile selector." HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" AutomationProperties.Name="Enable controller activation" />
+                            </tkcontrols:SettingsCard>
+
+                            <!-- CONTROLLER - Riga: icona, testo, [spazio], combinazione + matita (oppure pulsante per assegnarla) -->
+                            <tkcontrols:SettingsCard Header="Open Profile Selector" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
+                                <Grid>
+                                    <!-- Combinazione assegnata: tasti del controller + matita; il clic apre il modale -->
+                                    <Button Click="EditControllerShortcut_Click" Padding="0" Background="Transparent" BorderThickness="0" Style="{StaticResource SubtleButtonStyle}" AutomationProperties.Name="Edit controller shortcut" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4" Padding="4,0">
+                                            <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerFirstButton, Mode=OneWay}" MinWidth="36" Padding="8,8" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
+                                            <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerSecondButton, Mode=OneWay}" MinWidth="36" Padding="8,8" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
+                                            <FontIcon Glyph="&#xE70F;" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <!-- Nessuna combinazione: pulsante Assign shortcut -->
+                                    <Button Click="EditControllerShortcut_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                                            <TextBlock Text="Assign shortcut" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </tkcontrols:SettingsCard>
+
+                            <!-- CONTROLLER - Riga: test di connessione/lettura del controller (il risultato appare come descrizione) -->
+                            <tkcontrols:SettingsCard Header="Test controller" Description="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
+                                <Button Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
+                            </tkcontrols:SettingsCard>
+                        </StackPanel>
+                    </controls:Section>
+
+                    <!-- ===== SEZIONE 5: DIAGNOSTICS (apri il file di log) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_DiagnosticsSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_Diagnostics_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
@@ -187,20 +177,6 @@
                         </StackPanel>
                     </controls:Section>
 
-                    <!-- ===== SEZIONE 5: ACTIVATION SHORTCUT (scorciatoia da tastiera) ===== -->
-                    <controls:Section x:Uid="DisplayProfiles_ActivationSection">
-                        <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
-                        <!-- ACTIVATION SHORTCUT - Card: editor della scorciatoia da tastiera -->
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" AllowDisable="True" HotkeySettings="{x:Bind ViewModel.ActivationHotkeySettings, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
-                        <!-- ACTIVATION SHORTCUT - Card: testo descrittivo -->
-                        <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Description">
-                            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </tkcontrols:SettingsCard>
-                    
-                        </StackPanel>
-                    </controls:Section>
 
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>

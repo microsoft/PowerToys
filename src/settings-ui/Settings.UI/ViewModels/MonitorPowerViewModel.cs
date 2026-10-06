@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -45,7 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _activationShortcut = "Win + Shift + P";
         private HotkeySettings _activationHotkeySettings = new(win: true, ctrl: false, alt: false, shift: true, code: 'P');
         private string _controllerShortcut = "View + A";
-        private bool _isCapturingControllerShortcut;
 
         public bool XboxControllerEnabled
         {
@@ -216,6 +216,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _controllerShortcut = previousValue;
                         OnPropertyChanged(nameof(ControllerShortcut));
                     }
+
+                    OnPropertyChanged(nameof(ControllerFirstButton));
+                    OnPropertyChanged(nameof(ControllerSecondButton));
+                    OnPropertyChanged(nameof(HasControllerShortcut));
                 }
             }
         }
@@ -224,14 +228,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string ControllerSecondButton => GetControllerButton(1);
 
-        public bool IsCapturingControllerShortcut
+        public bool HasControllerShortcut =>
+            !string.IsNullOrEmpty(ControllerFirstButton) && !string.IsNullOrEmpty(ControllerSecondButton);
+
+        public static string FormatControllerButton(string name) => name switch
         {
-            get => _isCapturingControllerShortcut;
-            private set
-            {
-                Set(ref _isCapturingControllerShortcut, value);
-            }
-        }
+            "DPadUp" => "D-pad ↑",
+            "DPadDown" => "D-pad ↓",
+            "DPadLeft" => "D-pad ←",
+            "DPadRight" => "D-pad →",
+            "LeftShoulder" => "LB",
+            "RightShoulder" => "RB",
+            "LeftThumb" => "LS",
+            "RightThumb" => "RS",
+            _ => name,
+        };
 
         public string ControllerStatus
         {
@@ -242,13 +253,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string GetControllerButton(int index)
         {
             var buttons = ControllerShortcut.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            return buttons.Length > index ? buttons[index] : string.Empty;
-        }
-
-        public void ResetControllerShortcut()
-        {
-            ControllerShortcut = "View + A";
-            ControllerStatus = "Controller chord reset to View + A.";
+            return buttons.Length > index ? FormatControllerButton(buttons[index]) : string.Empty;
         }
 
         public MonitorPowerViewModel()
@@ -973,64 +978,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public async Task CaptureControllerShortcutAsync()
+        public async Task RunControllerCaptureAsync(
+            Action<IReadOnlyList<string>> onPressed,
+            Action<string> onStatus,
+            CancellationToken token)
         {
-            if (IsCapturingControllerShortcut)
-            {
-                return;
-            }
-
-            IsCapturingControllerShortcut = true;
             var previousEnabledState = XboxControllerEnabled;
             try
             {
-                ControllerStatus = "Pausing the listener, then hold exactly two supported controller buttons together. The Xbox/Guide button is not supported.";
-                XboxControllerEnabled = false;
-                if (previousEnabledState && XboxControllerEnabled)
+                if (previousEnabledState)
                 {
-                    ControllerStatus = "Could not pause the controller listener because the setting could not be saved.";
-                    return;
-                }
-
-                await Task.Delay(1200);
-                var deadline = DateTime.UtcNow.AddSeconds(15);
-                var controllerDetected = false;
-                while (DateTime.UtcNow < deadline)
-                {
-                    var controllers = await Task.Run(DisplayHelpers.GetConnectedControllerInputs);
-                    controllerDetected |= controllers.Count > 0;
-                    foreach (var controller in controllers)
+                    XboxControllerEnabled = false;
+                    if (XboxControllerEnabled)
                     {
-                        if (!ControllerChord.TryCapture(controller.Buttons, out var chord))
-                        {
-                            continue;
-                        }
-
-                        ControllerShortcut = chord;
-                        ControllerStatus = string.Equals(ControllerShortcut, chord, StringComparison.Ordinal)
-                            ? $"Controller activation chord set to {chord}."
-                            : "Could not save the controller activation chord.";
-                        StatusMessage = ControllerStatus;
-                        Logger.LogInfo($"Controller chord captured from controller {controller.Index}: '{chord}'.");
+                        onStatus("Could not pause the controller listener because the setting could not be saved.");
                         return;
                     }
 
-                    ControllerStatus = controllerDetected
-                        ? "Controller detected. Hold exactly two supported buttons together..."
-                        : "No XInput controller detected yet. Connect a supported controller and press two buttons together...";
-                    await Task.Delay(100);
+                    await Task.Delay(1200, token);
                 }
 
-                ControllerStatus = controllerDetected
-                    ? "Timed out waiting for two supported buttons to be pressed together."
-                    : "No supported XInput controller was detected. Try an Xbox-compatible XInput controller.";
-                StatusMessage = ControllerStatus;
-                Logger.LogInfo($"Controller chord capture timed out. ControllerDetected={controllerDetected}.");
+                while (!token.IsCancellationRequested)
+                {
+                    var controllers = await Task.Run(DisplayHelpers.GetConnectedControllerInputs, token);
+                    onStatus(controllers.Count > 0 ? string.Empty : "No XInput controller detected. Connect an Xbox-compatible controller.");
+
+                    ushort buttons = 0;
+                    foreach (var controller in controllers)
+                    {
+                        buttons |= controller.Buttons;
+                    }
+
+                    var names = buttons == 0
+                        ? Array.Empty<string>()
+                        : ControllerChord.DescribeButtons(buttons).Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    onPressed(names);
+
+                    await Task.Delay(30, token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
             {
-                ControllerStatus = "Controller input is unsupported on this system (XInput is unavailable).";
-                StatusMessage = ControllerStatus;
+                onStatus("Controller input is unsupported on this system (XInput is unavailable).");
                 Logger.LogError("Monitor Power controller chord capture is unavailable.", ex);
             }
             finally
@@ -1039,8 +1031,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     XboxControllerEnabled = previousEnabledState;
                 }
-
-                IsCapturingControllerShortcut = false;
             }
         }
 

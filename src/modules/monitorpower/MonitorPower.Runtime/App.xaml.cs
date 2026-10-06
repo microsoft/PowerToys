@@ -223,21 +223,17 @@ public sealed partial class App : Application
 
     private void ShowSelector()
     {
-        if (_selectorWindow != null)
+        if (_selectorWindow == null)
         {
-            RuntimeLog.Info("Existing profile selector activated.");
-            if (!_selectorWindow.AppWindow.IsVisible)
-            {
-                _selectorWindow.PrepareForActivation();
-            }
-
-            _selectorWindow.Activate();
-            return;
+            RuntimeLog.Info("Creating profile selector window.");
+            _selectorWindow = new MainWindow();
+        }
+        else
+        {
+            RuntimeLog.Info($"Existing profile selector re-shown (visible before: {_selectorWindow.AppWindow.IsVisible}).");
         }
 
-        RuntimeLog.Info("Creating profile selector window.");
-        _selectorWindow = new MainWindow();
-        _selectorWindow.Activate();
+        _selectorWindow.ShowOverlay();
     }
 
     private void App_Exiting(object? sender, EventArgs e)

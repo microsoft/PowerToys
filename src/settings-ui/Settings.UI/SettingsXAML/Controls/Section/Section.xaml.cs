@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Markup;
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     /// <summary>
-    /// Shared section layout: title, canvas, subtitle, then content.
+    /// Shared section layout: title, subtitle, canvas, then content.
     /// Any part left empty is collapsed.
     /// </summary>
     [ContentProperty(Name = nameof(SectionContent))]
@@ -92,6 +92,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             section.TitleVisibility = string.IsNullOrWhiteSpace(section.Title) ? Visibility.Collapsed : Visibility.Visible;
             section.SubtitleVisibility = string.IsNullOrWhiteSpace(section.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
             section.CanvasVisibility = section.CanvasContent == null ? Visibility.Collapsed : Visibility.Visible;
+            if (section.ContentHost != null)
+            {
+                // Attached to the canvas card when there is one, otherwise spaced from the header.
+                section.ContentHost.Margin = new Thickness(0, section.CanvasContent == null ? 8 : 4, 0, 0);
+            }
         }
     }
 }

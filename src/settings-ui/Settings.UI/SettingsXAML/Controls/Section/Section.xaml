@@ -5,8 +5,8 @@
     x:Name="Root"
     HorizontalContentAlignment="Stretch">
 
-    <!-- Section condivisa: titolo, canvas, sottotitolo, contenuto (in questo ordine). -->
-    <StackPanel Spacing="8">
+    <!-- Section condivisa: titolo, sottotitolo, canvas, contenuto (in questo ordine). -->
+    <StackPanel Spacing="0">
         <!-- SECTION - Titolo -->
         <TextBlock
             Margin="1,24,0,0"
@@ -15,8 +15,18 @@
             Text="{Binding Title, ElementName=Root}"
             Visibility="{Binding TitleVisibility, ElementName=Root}" />
 
+        <!-- SECTION - Sottotitolo (subito sotto il titolo) -->
+        <TextBlock
+            Margin="1,4,0,0"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Style="{ThemeResource CaptionTextBlockStyle}"
+            Text="{Binding Subtitle, ElementName=Root}"
+            TextWrapping="WrapWholeWords"
+            Visibility="{Binding SubtitleVisibility, ElementName=Root}" />
+
         <!-- SECTION - Canvas: card con il contenuto grafico (slot CanvasContent) -->
         <Border
+            Margin="0,8,0,0"
             Padding="16"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -26,16 +36,12 @@
             <ContentPresenter Content="{Binding CanvasContent, ElementName=Root}" HorizontalContentAlignment="Center" />
         </Border>
 
-        <!-- SECTION - Sottotitolo -->
-        <TextBlock
-            Margin="1,0,0,0"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Style="{ThemeResource CaptionTextBlockStyle}"
-            Text="{Binding Subtitle, ElementName=Root}"
-            TextWrapping="WrapWholeWords"
-            Visibility="{Binding SubtitleVisibility, ElementName=Root}" />
-
-        <!-- SECTION - Contenuto (slot SectionContent, e' anche il contenuto XAML di default) -->
-        <ContentPresenter Content="{Binding SectionContent, ElementName=Root}" HorizontalContentAlignment="Stretch" />
+        <!-- SECTION - Contenuto (slot SectionContent, e' anche il contenuto XAML di default).
+             Il margine superiore e' 8 da solo, 4 se attaccato al canvas (come due card impilate). -->
+        <ContentPresenter
+            x:Name="ContentHost"
+            Margin="0,8,0,0"
+            Content="{Binding SectionContent, ElementName=Root}"
+            HorizontalContentAlignment="Stretch" />
     </StackPanel>
 </UserControl>
