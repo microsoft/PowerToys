@@ -9,7 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/TextExtractor.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_TextExtractor" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/TextExtractor.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
