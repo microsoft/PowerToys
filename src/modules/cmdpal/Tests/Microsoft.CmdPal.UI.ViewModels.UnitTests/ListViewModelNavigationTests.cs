@@ -1070,7 +1070,6 @@ public sealed partial class ListViewModelNavigationTests
         var page = new StaticPage([alpha, beta]);
         var viewModel = CreateViewModel(page, scheduler);
         viewModel.IsRootPage = isRootPage;
-        var recipient = new object();
         var commandBars = 0;
         var details = 0;
         var suggestions = 0;
@@ -1082,10 +1081,9 @@ public sealed partial class ListViewModelNavigationTests
             scheduler.Drain();
             var first = viewModel.FilteredItems[0];
             var later = viewModel.FilteredItems[1];
-            WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, _) => Interlocked.Increment(ref commandBars));
-            WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
-            WeakReferenceMessenger.Default.Register<HideDetailsMessage>(recipient, (_, _) => Interlocked.Increment(ref details));
-            WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(recipient, (_, _) => Interlocked.Increment(ref suggestions));
+            viewModel.CommandBarContextChanged += OnCommandBarContextChanged;
+            viewModel.DetailsChanged += OnDetailsChanged;
+            viewModel.SearchSuggestionChanged += OnSearchSuggestionChanged;
             viewModel.UpdateSelectedItemCommand.Execute(first);
             scheduler.DrainUntil(() => Volatile.Read(ref suggestions) > 0);
             var selectedWork = GetPrivateField<CancellationTokenSource>(viewModel, "_selectedItemCts");
@@ -1123,11 +1121,19 @@ public sealed partial class ListViewModelNavigationTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            viewModel.CommandBarContextChanged -= OnCommandBarContextChanged;
+            viewModel.DetailsChanged -= OnDetailsChanged;
+            viewModel.SearchSuggestionChanged -= OnSearchSuggestionChanged;
             viewModel.Dispose();
             scheduler.Drain();
             viewModel.SafeCleanup();
         }
+
+        void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => Interlocked.Increment(ref commandBars);
+
+        void OnDetailsChanged(object? sender, PageDetailsChangedEventArgs e) => Interlocked.Increment(ref details);
+
+        void OnSearchSuggestionChanged(object? sender, PageSearchSuggestionChangedEventArgs e) => Interlocked.Increment(ref suggestions);
     }
 
     [DataTestMethod]
