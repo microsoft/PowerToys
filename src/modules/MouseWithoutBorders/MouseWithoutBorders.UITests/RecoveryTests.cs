@@ -31,10 +31,27 @@ public sealed class RecoveryTests
     [TestCategory("NestedSandboxDebugPilot")]
     public void KilledClipboardOwnerRequiresBaselineReset()
     {
-        using var fixture = new EndpointRecoveryFixture(TestContext, clipboardLost: true);
-        fixture.StartBeforePairing();
-        fixture.KillClipboardOwner();
-        fixture.AssertRecovery();
+        var (_, _, _, runId) = EndpointRecoveryFixture.ReadProvisioning();
+        using var baseline = new ReceiverController("Host", runId);
+        try
+        {
+            var originalDigest = baseline.PublishClipboard();
+            RunFiles.Wait(() => baseline.ClipboardDigest() == originalDigest, TimeSpan.FromSeconds(15),
+                "The known synthetic clipboard baseline was not published.");
+            using (var fixture = new EndpointRecoveryFixture(TestContext, clipboardLost: true))
+            {
+                fixture.StartBeforePairing();
+                fixture.KillClipboardOwner();
+                fixture.AssertRecovery();
+            }
+
+            RunFiles.Wait(() => baseline.ClipboardDigest() == originalDigest, TimeSpan.FromSeconds(15),
+                "The independent recovery guard did not restore the known clipboard baseline.");
+        }
+        finally
+        {
+            baseline.RestoreClipboard();
+        }
     }
 
     [TestMethod]

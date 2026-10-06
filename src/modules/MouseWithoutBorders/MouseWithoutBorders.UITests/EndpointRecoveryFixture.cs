@@ -143,7 +143,7 @@ internal sealed class EndpointRecoveryFixture : IDisposable
         {
             // This independent, in-memory guard is test isolation, not a recovery fallback.
             // Recover-Host must still report that the killed worker lost its own snapshot.
-            clipboardGuard = new ReceiverController("Recovery isolation", RunId);
+            clipboardGuard = new ReceiverController("Host", RunId);
             clipboardGuard.PublishClipboard();
         }
 
