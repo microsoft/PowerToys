@@ -25,17 +25,17 @@ public sealed partial class ContextMenuViewModelTests
     }
 
     [TestMethod]
-    public void SetCommandContext_UpdatesOnlyThatContextMenu()
+    public void PrepareForOpen_UpdatesOnlyThatContextMenu()
     {
         var firstContext = CreateContext();
         var secondContext = CreateContext();
         var replacementContext = CreateContext();
         var firstMenu = new ContextMenuViewModel(Mock.Of<IFuzzyMatcherProvider>());
         var secondMenu = new ContextMenuViewModel(Mock.Of<IFuzzyMatcherProvider>());
-        firstMenu.SetCommandContext(firstContext);
-        secondMenu.SetCommandContext(secondContext);
+        firstMenu.PrepareForOpen(firstContext);
+        secondMenu.PrepareForOpen(secondContext);
 
-        firstMenu.SetCommandContext(replacementContext);
+        firstMenu.PrepareForOpen(replacementContext);
 
         Assert.AreSame(replacementContext, firstMenu.SelectedItem);
         Assert.AreSame(secondContext, secondMenu.SelectedItem);
@@ -48,7 +48,10 @@ public sealed partial class ContextMenuViewModelTests
             new Page(),
             TaskScheduler.Default,
             new TestAppExtensionHost(),
-            CommandProviderContext.Empty);
+            CommandProviderContext.Empty)
+        {
+            DockRoute = new DockCommandRoute((nint)42, Guid.NewGuid()),
+        };
         var model = new ListItem(new NoOpCommand { Name = "Run" });
         var command = new CommandItemViewModel(
             new ExtensionObject<ICommandItem>(model),
@@ -76,6 +79,11 @@ public sealed partial class ContextMenuViewModelTests
             Assert.AreEqual(ContextKeybindingResult.Hide, contextMenu.InvokeCommand(command));
             Assert.AreEqual(1, recipient.Messages.Count);
             Assert.IsTrue(commandInvoked);
+            var message = recipient.Messages[0];
+            Assert.AreEqual(page.DockRoute, message.DockRoute);
+            Assert.AreSame(page, message.SourcePage);
+            Assert.AreSame(page, message.Context?.Page);
+            Assert.AreSame(model, message.CommandContext);
         }
         finally
         {
@@ -89,7 +97,6 @@ public sealed partial class ContextMenuViewModelTests
     {
         var context = new Mock<ICommandBarContext>();
         context.SetupGet(x => x.AllCommands).Returns([]);
-        context.SetupGet(x => x.MoreCommands).Returns([]);
         return context.Object;
     }
 

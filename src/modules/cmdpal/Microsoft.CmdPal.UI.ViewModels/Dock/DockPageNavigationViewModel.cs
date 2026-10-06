@@ -79,8 +79,8 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
             var currentHost = message.SourceExtensionHost ?? CurrentPage?.ExtensionHost;
             var currentProviderContext = message.SourceProviderContext ?? CurrentPage?.ProviderContext;
-            var host = _appHostService.GetHostForCommand(message.Context, currentHost);
-            var providerContext = _appHostService.GetProviderContextForCommand(message.Context, currentProviderContext);
+            var host = _appHostService.GetHostForCommand(message.CommandContext, currentHost);
+            var providerContext = _appHostService.GetProviderContextForCommand(message.CommandContext, currentProviderContext);
             var nested = _pages.Count > 0;
             var pageViewModel = _pageFactory.TryCreatePageViewModel(page, nested, host, providerContext);
             if (pageViewModel is null)

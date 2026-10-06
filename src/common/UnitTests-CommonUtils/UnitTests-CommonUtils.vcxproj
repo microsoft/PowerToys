@@ -47,6 +47,7 @@
     <ClCompile Include="Json.Tests.cpp" />
     <ClCompile Include="OsDetect.Tests.cpp" />
     <ClCompile Include="Threading.Tests.cpp" />
+    <ClCompile Include="ContextMenuLifecycle.Tests.cpp" />
     <ClCompile Include="ProcessPath.Tests.cpp" />
     <ClCompile Include="PipeCallerAuth.Tests.cpp" />
     <ClCompile Include="..\interop\pipe_caller_auth.cpp">

@@ -34,6 +34,19 @@ Filename patterns to sign. Defaults to *.msix and *.appx.
 Filename patterns that must be found and end with a Valid signature. Missing, unsigned, or untrusted
 matches make the script fail after attempting all packages.
 
+.PARAMETER RequiredAuthenticodeFile
+Filename patterns for unpackaged companion binaries that must be found and signed with the same
+machine-trusted TEST identity. This is used for authenticated PowerToys IPC on unsigned CI builds.
+
+.PARAMETER AuthenticodePublisher
+Certificate subject used to sign RequiredAuthenticodeFile matches. The default matches the
+Microsoft publisher identity required by PowerToys' Release IPC caller authentication.
+
+.PARAMETER CertificateMarkerPath
+Optional durable text file that receives each test certificate thumbprint used by this invocation.
+CI uses the marker before signing and from an <c>always()</c> cleanup step to remove the trust anchor
+and private key, including after an interrupted prior job.
+
 .PARAMETER Force
 Re-sign even packages that already carry a valid signature.
 
@@ -68,6 +81,15 @@ param(
     [Parameter()]
     [string[]]$RequiredPackage = @(),
 
+    [Parameter()]
+    [string[]]$RequiredAuthenticodeFile = @(),
+
+    [Parameter()]
+    [string]$AuthenticodePublisher = 'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US',
+
+    [Parameter()]
+    [string]$CertificateMarkerPath,
+
     [switch]$Force,
 
     [switch]$SkipLocalTrust,
@@ -78,6 +100,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+$testCertificateFriendlyName = 'PowerToys UI Test Signing'
 
 function Select-SignToolByArch {
     param([string[]]$Paths)
@@ -94,7 +117,7 @@ function Select-SignToolByArch {
 }
 
 # Locate signtool.exe on the agent: PATH, then any Windows Kits install (all versions/layouts,
-# including the App Certification Kit), then a restored SDK BuildTools NuGet package.
+# including the App Certification Kit). The pinned, signature-verified NuGet fallback is separate.
 function Find-SignTool {
     $cmd = Get-Command signtool.exe -ErrorAction SilentlyContinue
     if ($cmd) { return $cmd.Source }
@@ -116,34 +139,50 @@ function Find-SignTool {
         }
     }
 
-    $nugetRoots = @($env:NUGET_PACKAGES, (Join-Path $env:USERPROFILE '.nuget\packages')) |
-        Where-Object { $_ } |
-        ForEach-Object { Join-Path $_ 'microsoft.windows.sdk.buildtools' } |
-        Where-Object { Test-Path $_ } | Select-Object -Unique
-    foreach ($root in $nugetRoots) {
-        $found += Get-ChildItem -Path $root -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty FullName
-    }
-
     return Select-SignToolByArch -Paths $found
 }
 
 # Last resort when the agent has no Windows SDK: fetch signtool from the public
-# Microsoft.Windows.SDK.BuildTools NuGet package (cached in TEMP across runs). Best-effort.
+# Microsoft.Windows.SDK.BuildTools NuGet package. Best-effort.
 function Get-SignToolFromNuget {
+    $nupkg = $null
+    $archive = $null
     try {
-        $index = Invoke-RestMethod 'https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/index.json' -UseBasicParsing
-        $version = @($index.versions | Where-Object { $_ -match '^\d+\.\d+\.\d+\.\d+$' })[-1]
-        if (-not $version) { return $null }
+        [xml]$centralPackages = Get-Content (Join-Path $PSScriptRoot '..\Directory.Packages.props') -Raw
+        $versionNode = $centralPackages.SelectSingleNode(
+            "/Project/ItemGroup/PackageVersion[@Include='Microsoft.Windows.SDK.BuildTools']")
+        $version = if ($versionNode) { $versionNode.GetAttribute('Version') } else { $null }
+        if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+            throw 'Microsoft.Windows.SDK.BuildTools must have a concrete four-part version in Directory.Packages.props.'
+        }
 
         $dest = Join-Path $env:TEMP "pt-sdk-buildtools-$version"
-        if (-not (Get-ChildItem -Path $dest -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue)) {
-            Write-Host "signtool not found on the agent; fetching Windows SDK BuildTools $version from NuGet."
-            $nupkg = Join-Path $env:TEMP "sdk-buildtools-$version.zip"
-            Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/$version/microsoft.windows.sdk.buildtools.$version.nupkg" -OutFile $nupkg -UseBasicParsing
-            Expand-Archive -Path $nupkg -DestinationPath $dest -Force
-            Remove-Item $nupkg -Force -ErrorAction SilentlyContinue
+        $nupkg = Join-Path $env:TEMP "sdk-buildtools-$version.nupkg"
+        $archive = Join-Path $env:TEMP "sdk-buildtools-$version.zip"
+        $packageFileName = "microsoft.windows.sdk.buildtools.$version.nupkg"
+        $cachedPackage = @($env:NUGET_PACKAGES, (Join-Path $env:USERPROFILE '.nuget\packages')) |
+            Where-Object { $_ } |
+            ForEach-Object { Join-Path $_ "microsoft.windows.sdk.buildtools\$version\$packageFileName" } |
+            Where-Object { Test-Path -LiteralPath $_ } |
+            Select-Object -First 1
+        if ($cachedPackage) {
+            Write-Host "signtool not found on the agent; verifying cached Windows SDK BuildTools $version."
+            Copy-Item -LiteralPath $cachedPackage -Destination $nupkg -Force
         }
+        else {
+            Write-Host "signtool not found on the agent; fetching Windows SDK BuildTools $version from NuGet."
+            Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/$version/$packageFileName" -OutFile $nupkg -UseBasicParsing
+        }
+
+        $verificationOutput = @(& dotnet nuget verify $nupkg --all 2>&1)
+        if ($LASTEXITCODE -ne 0) {
+            throw "NuGet signature verification failed for Microsoft.Windows.SDK.BuildTools ${version}: $($verificationOutput -join [Environment]::NewLine)"
+        }
+        $verificationOutput | ForEach-Object { Write-Host $_ }
+
+        Copy-Item $nupkg $archive -Force
+        Remove-Item $dest -Recurse -Force -ErrorAction SilentlyContinue
+        Expand-Archive -Path $archive -DestinationPath $dest -Force
         $paths = Get-ChildItem -Path $dest -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue |
             Select-Object -ExpandProperty FullName
         return Select-SignToolByArch -Paths $paths
@@ -152,6 +191,28 @@ function Get-SignToolFromNuget {
         Write-Warning "Could not obtain signtool from NuGet: $($_.Exception.Message)"
         return $null
     }
+    finally {
+        @($nupkg, $archive) | Where-Object { $_ } | ForEach-Object {
+            Remove-Item -LiteralPath $_ -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Get-VerifiedSignTool {
+    $path = Find-SignTool
+    if (-not $path) { $path = Get-SignToolFromNuget }
+    if (-not $path) {
+        throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.'
+    }
+
+    $signature = Get-AuthenticodeSignature -FilePath $path
+    if ($signature.Status -ne 'Valid' -or
+        -not $signature.SignerCertificate -or
+        $signature.SignerCertificate.Subject -notmatch '(^|,\s*)O=Microsoft Corporation(,|$)') {
+        throw "signtool.exe is not validly signed by Microsoft: $path"
+    }
+
+    return $path
 }
 
 # Read <Identity Publisher="..."> straight out of the .msix/.appx (a zip) without extracting it.
@@ -202,16 +263,37 @@ function Get-TrustedSigningCert {
     if ($certCache.ContainsKey($Subject)) { return $certCache[$Subject] }
 
     $cert = Get-ChildItem Cert:\CurrentUser\My |
-        Where-Object { $_.Subject -eq $Subject -and $_.HasPrivateKey } |
+        Where-Object {
+            $_.Subject -eq $Subject -and
+            $_.HasPrivateKey -and
+            $_.FriendlyName -eq $testCertificateFriendlyName
+        } |
         Sort-Object NotAfter -Descending | Select-Object -First 1
 
     if (-not $cert) {
         Write-Host "Creating self-signed test certificate for: $Subject"
         $cert = New-SelfSignedCertificate -Subject $Subject `
             -CertStoreLocation Cert:\CurrentUser\My `
+            -FriendlyName $testCertificateFriendlyName `
             -KeyAlgorithm RSA -KeyLength 2048 `
             -Type CodeSigningCert -HashAlgorithm SHA256 `
             -NotAfter (Get-Date).AddYears(1)
+    }
+
+    if ($CertificateMarkerPath) {
+        $markerParent = Split-Path $CertificateMarkerPath -Parent
+        if ($markerParent -and -not (Test-Path $markerParent)) {
+            New-Item $markerParent -ItemType Directory -Force | Out-Null
+        }
+
+        $recordedThumbprints = if (Test-Path $CertificateMarkerPath) {
+            @(Get-Content $CertificateMarkerPath | Where-Object { $_ })
+        } else {
+            @()
+        }
+        if ($recordedThumbprints -notcontains $cert.Thumbprint) {
+            Add-Content -Path $CertificateMarkerPath -Value $cert.Thumbprint -Encoding ascii
+        }
     }
 
     # Force-trust so AddPackageByUriAsync accepts the signature. A self-signed cert is its own root,
@@ -258,12 +340,30 @@ foreach ($root in $PackageRoot) {
 }
 $packages = $packages | Sort-Object FullName -Unique
 
-if (-not $packages) {
-    if ($RequiredPackage.Count -gt 0) {
-        throw "No packages found under '$($PackageRoot -join ', ')' while requiring: $($RequiredPackage -join ', ')."
+$requiredAuthenticodeFiles = @()
+foreach ($pattern in ($RequiredAuthenticodeFile | Where-Object { $_ } | Select-Object -Unique)) {
+    $matches = @()
+    foreach ($root in $PackageRoot) {
+        if (Test-Path $root) {
+            $matches += Get-ChildItem -Path $root -Recurse -File -Filter $pattern -ErrorAction SilentlyContinue
+        }
     }
 
-    Write-Host "No packages found under: $($PackageRoot -join ', ')"
+    $matches = @($matches | Sort-Object FullName -Unique)
+    if ($matches.Count -eq 0) {
+        throw "Required Authenticode file '$pattern' was not found under: $($PackageRoot -join ', ')."
+    }
+
+    $requiredAuthenticodeFiles += $matches
+}
+$requiredAuthenticodeFiles = @($requiredAuthenticodeFiles | Sort-Object FullName -Unique)
+
+if (-not $packages -and $RequiredPackage.Count -gt 0) {
+    throw "No packages found under '$($PackageRoot -join ', ')' while requiring: $($RequiredPackage -join ', ')."
+}
+
+if (-not $packages -and $requiredAuthenticodeFiles.Count -eq 0) {
+    Write-Host "No packages or required Authenticode files found under: $($PackageRoot -join ', ')"
     return
 }
 
@@ -297,9 +397,7 @@ foreach ($pkg in $packages) {
     }
 
     if (-not $signtool) {
-        $signtool = Find-SignTool
-        if (-not $signtool) { $signtool = Get-SignToolFromNuget }
-        if (-not $signtool) { throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.' }
+        $signtool = Get-VerifiedSignTool
         Write-Host "Using signtool: $signtool"
     }
 
@@ -329,6 +427,58 @@ if ($requiredPackages.Count -gt 0) {
     }
 
     Write-Host "Verified required sparse package(s): $($requiredPackages.FullName -join ', ')"
+}
+
+if ($requiredAuthenticodeFiles.Count -gt 0) {
+    if (-not $signtool) {
+        $signtool = Get-VerifiedSignTool
+        Write-Host "Using signtool: $signtool"
+    }
+
+    $filesToSign = @($requiredAuthenticodeFiles | Where-Object {
+        $existing = Get-AuthenticodeSignature -FilePath $_.FullName
+        $Force -or $existing.Status -ne 'Valid'
+    })
+    $testSignedPaths = @{}
+    $cert = if ($filesToSign.Count -gt 0) {
+        Get-TrustedSigningCert -Subject $AuthenticodePublisher
+    } else {
+        $null
+    }
+
+    foreach ($file in $filesToSign) {
+
+        Write-Host "Signing companion binary: $($file.FullName)"
+        & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $file.FullName
+        if ($LASTEXITCODE -ne 0) {
+            throw "signtool failed for required Authenticode file '$($file.FullName)' (exit $LASTEXITCODE)."
+        }
+
+        $testSignedPaths[$file.FullName] = $true
+    }
+
+    $invalidAuthenticodeFiles = @($requiredAuthenticodeFiles | Where-Object {
+        $signature = Get-AuthenticodeSignature -FilePath $_.FullName
+        $signerName = if ($signature.SignerCertificate) {
+            $signature.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+        } else {
+            $null
+        }
+        if ($testSignedPaths.ContainsKey($_.FullName)) {
+            -not $signature.SignerCertificate -or
+                $signature.SignerCertificate.Thumbprint -ne $cert.Thumbprint -or
+                (-not $SkipLocalTrust -and $signature.Status -ne 'Valid')
+        } else {
+            -not $signature.SignerCertificate -or
+                $signerName -ne 'Microsoft Corporation' -or
+                $signature.Status -ne 'Valid'
+        }
+    })
+    if ($invalidAuthenticodeFiles.Count -gt 0) {
+        throw "Required Authenticode file(s) are not signed with the trusted test identity: $($invalidAuthenticodeFiles.FullName -join ', ')."
+    }
+
+    Write-Host "Verified required Authenticode file(s): $($requiredAuthenticodeFiles.FullName -join ', ')"
 }
 
 Write-Host "Signed $signed package(s) with a trusted test certificate."

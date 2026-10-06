@@ -5,7 +5,6 @@
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -67,6 +66,11 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IListIntera
 
     public void ActivateSecondary() => ListView.ActivateSecondary();
 
+    internal void HandleNumberedShortcut(NumberedItemShortcuts.Shortcut shortcut)
+    {
+        ListView.HandleNumberedShortcut(shortcut);
+    }
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is not AsyncNavigationRequest navigationRequest)
@@ -93,18 +97,20 @@ public sealed partial class ListPage : Page, IPageInteractionTarget, IListIntera
         base.OnNavigatedTo(e);
     }
 
-    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        base.OnNavigatingFrom(e);
+        base.OnNavigatedFrom(e);
+
+        var viewModel = ViewModel;
+        Bindings.StopTracking();
+        ViewModel = null;
+        ListView.DetachFromPage();
+        CleanupHelper.ClearItemsSources(this);
 
         if (e.NavigationMode != NavigationMode.New)
         {
-            ViewModel?.SafeCleanup();
-            CleanupHelper.Cleanup(this);
+            _ = viewModel?.CleanupAsync();
         }
-
-        // Clean-up event listeners
-        ViewModel = null;
 
         ExtensionObjectReleaser.AfterNavigation();
     }

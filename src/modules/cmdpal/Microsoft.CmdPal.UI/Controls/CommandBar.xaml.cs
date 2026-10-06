@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -19,9 +21,13 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
 {
     private long _commandContextVersion;
 
-    public CommandBarViewModel ViewModel { get; } = new();
+    public static readonly DependencyProperty CommandContextProperty =
+        DependencyProperty.Register(nameof(CommandContext), typeof(ICommandBarContext), typeof(CommandBar), new PropertyMetadata(null, CommandContextChanged));
 
-    public event EventHandler? FocusSearchRequested;
+    public static readonly DependencyProperty CurrentPageViewModelProperty =
+        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
+
+    public CommandBarViewModel ViewModel { get; } = new();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -29,15 +35,17 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
         set => SetValue(CurrentPageViewModelProperty, value);
     }
 
-    // Using a DependencyProperty as the backing store for CurrentPage.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty CurrentPageViewModelProperty =
-        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(CommandBar), new PropertyMetadata(null));
+    public ICommandBarContext? CommandContext
+    {
+        get => (ICommandBarContext?)GetValue(CommandContextProperty);
+        set => SetValue(CommandContextProperty, value);
+    }
 
     public CommandBar()
     {
         this.InitializeComponent();
-        ContextControl.CloseRequested += (_, _) => CloseContextMenu();
-        ContextControl.FocusSearchRequested += (_, _) => FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+        Loaded += CommandBar_Loaded;
+        Unloaded += CommandBar_Unloaded;
     }
 
     public void SetCommandContext(ICommandBarContext? context)
@@ -59,8 +67,7 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
             return;
         }
 
-        ViewModel.QueueSelectedItem(context);
-        ContextControl.SetCommandContext(context);
+        CommandContext = context;
     }
 
     public void OpenContextMenu() =>
@@ -78,83 +85,82 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
             SetCommandContext(context);
         }
 
-        if (element is null)
+        var menuContext = context ?? CommandContext;
+        if (menuContext?.CanOpenContextMenu != true)
         {
-            // This is invoked from the "More" button on the command bar
-            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
-            {
-                return;
-            }
+            return;
+        }
 
-            ContextControl.PrepareForOpen(filterLocation);
-
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
+        WeakReferenceMessenger.Default.Send(
+            new OpenContextMenuMessage(
+                new ContextMenuRequest(menuContext)
                 {
-                    ContextMenuFlyout.ShowAt(
-                        MoreCommandsButton,
-                        new FlyoutShowOptions()
-                        {
-                            ShowMode = FlyoutShowMode.Standard,
-                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                        });
-                });
-        }
-        else
-        {
-            // This is invoked from a specific element
-            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
-            {
-                return;
-            }
-
-            ContextControl.PrepareForOpen(filterLocation);
-
-            _ = DispatcherQueue.TryEnqueue(
-            () =>
-            {
-                ContextMenuFlyout.ShowAt(
-                    element,
-                    new FlyoutShowOptions()
-                    {
-                        ShowMode = FlyoutShowMode.Standard,
-                        Placement = placement ?? FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        Position = position,
-                    });
-            });
-        }
+                    Anchor = new ContextMenuAnchor(
+                        element ?? MoreCommandsButton,
+                        position,
+                        placement ?? (element is null ? FlyoutPlacementMode.TopEdgeAlignedRight : FlyoutPlacementMode.BottomEdgeAlignedLeft),
+                        filterLocation),
+                }));
     }
 
-    public void CloseContextMenu()
-    {
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
-        }
-    }
+    public void CloseContextMenu() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>();
 
     public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
+        var context = CommandContext;
+        if (context?.CanOpenContextMenu != true)
         {
             return false;
         }
 
-        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key);
-
-        if (result == ContextKeybindingResult.Hide)
+        var chord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+        if (context.FindKeybinding(chord) is not { } command)
         {
-            CloseContextMenu();
-            return true;
+            return false;
         }
 
-        if (result == ContextKeybindingResult.KeepOpen)
+        if (command.HasSubmenu)
         {
-            OpenContextMenu();
-            return true;
+            // Finish routing the key before the flyout takes focus.
+            _ = DispatcherQueue.TryEnqueue(() =>
+            {
+                if (ReferenceEquals(context, CommandContext) && context.AllCommands.Contains(command))
+                {
+                    WeakReferenceMessenger.Default.Send(
+                        new OpenContextMenuMessage(new ContextMenuRequest(context) { InitialSubmenu = command }));
+                }
+            });
+        }
+        else
+        {
+            ViewModel.InvokeContextCommand(command);
         }
 
-        return false;
+        return true;
+    }
+
+    private static void CommandContextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        var bar = (CommandBar)sender;
+        if (bar.IsLoaded)
+        {
+            bar.ViewModel.SetContext((ICommandBarContext?)e.NewValue);
+        }
+    }
+
+    private void CommandBar_Loaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SetContext(CommandContext);
+    }
+
+    private void CommandBar_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (IsLoaded)
+        {
+            return;
+        }
+
+        ViewModel.ClearContext();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -179,20 +185,8 @@ public sealed partial class CommandBar : UserControl, ICurrentPageAware, IComman
         OpenContextMenu();
     }
 
-    /// <summary>
-    /// Sets focus to the "More" button after closing the context menu,
-    /// keeping keyboard navigation intuitive.
-    /// </summary>
     public void FocusMoreCommandsButton()
     {
         MoreCommandsButton?.Focus(FocusState.Programmatic);
-    }
-
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        // Focus the filter box so the flyout captures keyboard input,
-        // then fire a single consolidated Narrator announcement.
-        ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened();
     }
 }

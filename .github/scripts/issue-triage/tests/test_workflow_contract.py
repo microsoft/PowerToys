@@ -52,6 +52,22 @@ class WorkflowContractTests(unittest.TestCase):
             self.assertNotIn("desiredVersionLabel", workflow)
         self.assertRegex(source, r"never adds or removes\s+version labels")
 
+    def test_closed_issues_are_gated_before_publication(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+
+        self.assertIn("id: refresh", source)
+        self.assertEqual(
+            source.count("if: steps.refresh.outputs.should_process == 'true'"),
+            3,
+        )
+        for workflow in (source, generated):
+            self.assertIn("Issue is closed; ${action} was skipped.", workflow)
+            self.assertIn(
+                "currentIssue.closed_by?.login === 'github-actions[bot]'",
+                workflow,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

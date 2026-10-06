@@ -22,6 +22,7 @@ namespace ScreenRuler.UITests
         public const string HorizontalSpacingButtonName = "Button_SpacingHorizontal";
         public const string VerticalSpacingButtonName = "Button_SpacingVertical";
         public const string CloseButtonId = "Button_Close";
+        public const string UnitsOfMeasureComboBoxId = "ComboBox_ScreenRuler_UnitsOfMeasure";
 
         /// <summary>
         /// Performs common test initialization: navigate to settings, enable toggle, verify shortcut
@@ -37,6 +38,8 @@ namespace ScreenRuler.UITests
             Assert.IsTrue(
                 toggleSwitch.IsOn,
                 $"Screen Ruler toggle switch should be ON for {testName}");
+
+            SetExtraMeasurementUnit(testBase, "Show only pixels");
 
             var activationKeys = ReadActivationShortcut(testBase);
             Assert.IsNotNull(activationKeys, "Should be able to read activation shortcut");
@@ -97,6 +100,23 @@ namespace ScreenRuler.UITests
             }
 
             return toggleSwitch;
+        }
+
+        /// <summary>
+        /// Select the Screen Ruler extra measurement unit.
+        /// </summary>
+        public static void SetExtraMeasurementUnit(UITestBase testBase, string unitName)
+        {
+            var comboBox = testBase.Session.Find<ComboBox>(By.AccessibilityId(UnitsOfMeasureComboBoxId), 5000);
+            Assert.IsNotNull(comboBox, "Extra measurement unit combo box should be found");
+
+            if (!string.Equals(comboBox.Text, unitName, StringComparison.Ordinal))
+            {
+                comboBox.SelectTxt(unitName);
+                Task.Delay(500).Wait();
+            }
+
+            Assert.AreEqual(unitName, comboBox.Text, "Extra measurement unit selection should be updated");
         }
 
         /// <summary>
@@ -375,7 +395,7 @@ namespace ScreenRuler.UITests
         /// <summary>
         /// Perform a bounds tool test operation
         /// </summary>
-        public static void PerformBoundsToolTest(UITestBase testBase)
+        public static void PerformBoundsToolTest(UITestBase testBase, string expectedUnit = "px")
         {
             ClearClipboard();
 
@@ -419,9 +439,21 @@ namespace ScreenRuler.UITests
             // Validate results
             string clipboardText = GetClipboardText();
             Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
-            Assert.IsTrue(
-                clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
-                $"Clipboard should contain '100 x 100', but contained: '{clipboardText}'");
+            if (expectedUnit == "px")
+            {
+                Assert.IsTrue(
+                    clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
+                    $"Clipboard should contain '100 x 100', but contained: '{clipboardText}'");
+            }
+            else
+            {
+                Assert.IsTrue(
+                    Regex.IsMatch(
+                        clipboardText,
+                        $@"^\d+(?:\.\d+)?\s*[x×]\s*\d+(?:\.\d+)?\s+{Regex.Escape(expectedUnit)}$"),
+                    $"Clipboard should contain one {expectedUnit} measurement, but contained: '{clipboardText}'");
+                Assert.IsFalse(clipboardText.Contains(" px", StringComparison.Ordinal), "Clipboard should not include an extra pixel measurement");
+            }
 
             // Cleanup - this will handle session attachment properly
             CloseScreenRulerUI(testBase);

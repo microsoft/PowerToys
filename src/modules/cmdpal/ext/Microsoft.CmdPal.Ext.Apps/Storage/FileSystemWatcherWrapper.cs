@@ -17,15 +17,5 @@ public sealed partial class FileSystemWatcherWrapper : FileSystemWatcher, IFileS
     Collection<string> IFileSystemWatcherWrapper.Filters
     {
         get => this.Filters;
-        set
-        {
-            if (value is not null)
-            {
-                foreach (var filter in value)
-                {
-                    this.Filters.Add(filter);
-                }
-            }
-        }
     }
 }

@@ -9,24 +9,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <Style
-            x:Key="ContextMenuFlyoutStyle"
-            BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
-            TargetType="FlyoutPresenter">
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
-        </Style>
-
-        <Flyout
-            x:Name="ContextMenuFlyout"
-            FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
-            Opened="ContextMenuFlyout_Opened"
-            ShouldConstrainToRootBounds="False"
-            SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-            <controls:ContextMenu x:Name="ContextControl" />
-        </Flyout>
+        <controls:ContextMenuFlyout x:Name="ContextMenuFlyout" />
     </UserControl.Resources>
 
     <Grid
@@ -71,7 +54,7 @@
             AutomationProperties.AutomationId="MoreContextMenuButton"
             Click="MoreCommandsButton_Click"
             Style="{StaticResource SubtleButtonStyle}"
-            Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShouldShowMoreCommandsButton, Mode=OneWay}">
             <FontIcon Glyph="&#xE712;" />
         </Button>
     </Grid>

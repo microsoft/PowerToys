@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -16,7 +19,9 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class DockPageCommandBar : UserControl, ICommandBarInteractionTarget, IDisposable
 {
+    private readonly ContextMenuHost _menuHost;
     private long _commandContextVersion;
+    private ICommandBarContext? _commandContext;
 
     public static readonly DependencyProperty CurrentPageProperty =
         DependencyProperty.Register(nameof(CurrentPage), typeof(PageViewModel), typeof(DockPageCommandBar), new PropertyMetadata(null));
@@ -34,8 +39,11 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
     public DockPageCommandBar()
     {
         InitializeComponent();
-        ContextControl.CloseRequested += ContextControl_CloseRequested;
-        ContextControl.FocusSearchRequested += ContextControl_FocusSearchRequested;
+        _menuHost = new ContextMenuHost(
+            () => new(MoreCommandsButton, null, FlyoutPlacementMode.TopEdgeAlignedRight, ContextMenuFilterLocation.Bottom),
+            ContextMenuFlyout);
+        ContextMenuFlyout.BackRequested += ContextMenuFlyout_BackRequested;
+        Unloaded += DockPageCommandBar_Unloaded;
     }
 
     internal bool HasOpenTransientUi => ContextMenuFlyout.IsOpen;
@@ -59,8 +67,8 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
             return;
         }
 
-        ViewModel.QueueSelectedItem(context);
-        ContextControl.SetCommandContext(context);
+        _commandContext = context;
+        ViewModel.SetContext(context);
     }
 
     internal void ShowContextMenu(
@@ -76,43 +84,46 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
         }
 
         SetCommandContext(context);
-        ContextControl.PrepareForOpen(filterLocation);
-        PreparePopupForShow(ContextMenuFlyout, target);
-        ContextMenuFlyout.ShowAt(
-            target,
-            new FlyoutShowOptions
-            {
-                ShowMode = FlyoutShowMode.Standard,
-                Placement = placement,
-                Position = position,
-            });
+        _menuHost.Show(new ContextMenuRequest(context)
+        {
+            Anchor = new(target, position, placement, filterLocation),
+        });
     }
 
     public bool TryCommandKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var result = ViewModel.CheckKeybinding(ctrl, alt, shift, win, key);
-        if (result == ContextKeybindingResult.KeepOpen && ViewModel.SelectedItem is ICommandBarContext context)
+        var context = _commandContext;
+        if (context?.CanOpenContextMenu != true)
         {
-            ShowContextMenu(
-                context,
-                MoreCommandsButton,
-                FlyoutPlacementMode.TopEdgeAlignedRight,
-                null,
-                ContextMenuFilterLocation.Bottom);
-        }
-        else if (result == ContextKeybindingResult.Hide)
-        {
-            CloseContextMenu();
+            return false;
         }
 
-        return result != ContextKeybindingResult.Unhandled;
+        var chord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+        if (context.FindKeybinding(chord) is not { } command)
+        {
+            return false;
+        }
+
+        if (command.HasSubmenu)
+        {
+            _menuHost.ShowAfterKeyEvent(() =>
+                ReferenceEquals(context, _commandContext) && context.AllCommands.Contains(command)
+                    ? new ContextMenuRequest(context) { InitialSubmenu = command }
+                    : null);
+        }
+        else
+        {
+            ViewModel.InvokeContextCommand(command);
+        }
+
+        return true;
     }
 
     public void OpenContextMenu() => OpenSelectedItemContextMenu();
 
     internal void OpenSelectedItemContextMenu()
     {
-        if (ViewModel.SelectedItem is ICommandBarContext context)
+        if (_commandContext is ICommandBarContext context)
         {
             ShowContextMenu(
                 context,
@@ -123,21 +134,7 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
         }
     }
 
-    public void CloseContextMenu()
-    {
-        if (ContextMenuFlyout.IsOpen)
-        {
-            ContextMenuFlyout.Hide();
-        }
-    }
-
-    private static void PreparePopupForShow(FlyoutBase popup, FrameworkElement placementTarget)
-    {
-        if (placementTarget.XamlRoot is not null && popup.XamlRoot != placementTarget.XamlRoot)
-        {
-            popup.XamlRoot = placementTarget.XamlRoot;
-        }
-    }
+    public void CloseContextMenu() => _menuHost.Close();
 
     private void PrimaryButton_Click(object sender, RoutedEventArgs e) => ViewModel.InvokePrimaryCommand();
 
@@ -145,23 +142,22 @@ public sealed partial class DockPageCommandBar : UserControl, ICommandBarInterac
 
     private void MoreCommandsButton_Click(object sender, RoutedEventArgs e) => OpenSelectedItemContextMenu();
 
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        ContextControl.FocusSearchBox();
-        ContextControl.AnnounceOpened();
-    }
-
-    private void ContextControl_CloseRequested(object? sender, EventArgs e) => CloseContextMenu();
-
-    private void ContextControl_FocusSearchRequested(object? sender, EventArgs e) =>
+    private void ContextMenuFlyout_BackRequested(object? sender, EventArgs e) =>
         FocusSearchRequested?.Invoke(this, EventArgs.Empty);
+
+    private void DockPageCommandBar_Unloaded(object sender, RoutedEventArgs e)
+    {
+        CloseContextMenu();
+        ViewModel.ClearContext();
+    }
 
     public void Dispose()
     {
         CloseContextMenu();
-        ContextControl.CloseRequested -= ContextControl_CloseRequested;
-        ContextControl.FocusSearchRequested -= ContextControl_FocusSearchRequested;
+        ContextMenuFlyout.BackRequested -= ContextMenuFlyout_BackRequested;
+        Unloaded -= DockPageCommandBar_Unloaded;
         SetCommandContext(null);
+        ViewModel.ClearContext();
         GC.SuppressFinalize(this);
     }
 }
