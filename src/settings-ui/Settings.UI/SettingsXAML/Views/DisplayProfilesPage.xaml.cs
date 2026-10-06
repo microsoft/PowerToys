@@ -70,77 +70,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 Canvas.SetTop(tile, display.LayoutTop);
                 DisplayTopologyCanvas.Children.Add(tile);
             }
-
-            // Allinea il menu della modalita' allo stato reale: Extend se tutti i display sono attivi.
-            var allActive = ViewModel.PreviewDisplays.Count > 0 && ViewModel.PreviewDisplays.All(display => display.IsActive);
-            _updatingDisplayMode = true;
-            DisplayModeComboBox.SelectedIndex = allActive ? 0 : 1;
-            _updatingDisplayMode = false;
-        }
-
-        private bool _updatingDisplayMode;
-
-        private async void DisplayModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_updatingDisplayMode || DisplayModeComboBox.SelectedIndex < 0 || ViewModel.PreviewDisplays.Count == 0)
-            {
-                return;
-            }
-
-            var extend = DisplayModeComboBox.SelectedIndex == 0;
-            var allActive = ViewModel.PreviewDisplays.All(display => display.IsActive);
-            if (extend == allActive)
-            {
-                return;
-            }
-
-            await ViewModel.ApplyDisplayModeAsync(extend);
-        }
-
-        private void IdentifyDisplays_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (var display in ViewModel.PreviewDisplays.Where(d => d.IsActive))
-            {
-                var overlay = new Window
-                {
-                    Content = new Grid
-                    {
-                        Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black),
-                        Children =
-                        {
-                            new TextBlock
-                            {
-                                Text = display.Index.ToString(System.Globalization.CultureInfo.CurrentCulture),
-                                FontSize = 72,
-                                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                            },
-                        },
-                    },
-                };
-
-                var presenter = OverlappedPresenter.Create();
-                presenter.SetBorderAndTitleBar(false, false);
-                presenter.IsResizable = false;
-                presenter.IsAlwaysOnTop = true;
-                overlay.AppWindow.SetPresenter(presenter);
-                overlay.AppWindow.IsShownInSwitchers = false;
-                overlay.AppWindow.MoveAndResize(new RectInt32(display.PositionX + 24, display.PositionY + 24, 160, 160));
-                overlay.Activate();
-
-                var timer = DispatcherQueue.CreateTimer();
-                timer.Interval = TimeSpan.FromSeconds(3);
-                timer.IsRepeating = false;
-                timer.Tick += (_, _) => overlay.Close();
-                timer.Start();
-            }
         }
 
         private void DisplayProfilesPage_Loaded(object sender, RoutedEventArgs e)
         {
             Logger.LogInfo("Monitor Power Settings page Loaded event fired; starting data initialization.");
             ViewModel.OnPageLoaded();
+        }
+
+        private void ClearSelection_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ClearPreviewSelection();
         }
 
         private void PreviewDisplay_Click(object sender, RoutedEventArgs e)
@@ -225,7 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await ViewModel.TestControllerAsync();
         }
 
-        private static bool HasText(string? value) => !string.IsNullOrWhiteSpace(value);
+        private bool HasText(string? value) => !string.IsNullOrWhiteSpace(value);
 
         private async void CaptureControllerShortcut_Click(object sender, RoutedEventArgs e)
         {
@@ -251,42 +191,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private async void OverwriteProfile_Click(object sender, RoutedEventArgs e)
-        {
-            if (TryGetProfile(sender, out var profile))
-            {
-                var dialog = new ContentDialog
-                {
-                    XamlRoot = XamlRoot,
-                    Title = "Overwrite profile?",
-                    Content = $"Replace '{profile.Name}' with the current active displays and layout?",
-                    PrimaryButtonText = "Overwrite",
-                    CloseButtonText = "Cancel",
-                    DefaultButton = ContentDialogButton.Close,
-                };
-
-                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-                {
-                    await ViewModel.OverwriteProfileAsync(profile);
-                }
-            }
-        }
-
         private async void RenameProfile_Click(object sender, RoutedEventArgs e)
         {
             if (TryGetProfile(sender, out var profile) &&
                 await PromptForProfileNameAsync("Rename profile", profile.Name) is { } newName)
             {
                 await ViewModel.RenameProfileAsync(profile, newName);
-            }
-        }
-
-        private async void DuplicateProfile_Click(object sender, RoutedEventArgs e)
-        {
-            if (TryGetProfile(sender, out var profile) &&
-                await PromptForProfileNameAsync("Duplicate profile", $"{profile.Name} Copy") is { } newName)
-            {
-                await ViewModel.DuplicateProfileAsync(profile, newName);
             }
         }
 

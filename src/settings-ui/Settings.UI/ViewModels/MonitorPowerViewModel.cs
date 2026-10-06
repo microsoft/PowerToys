@@ -728,6 +728,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(CanSaveProfile));
         }
 
+        public void ClearPreviewSelection()
+        {
+            foreach (var display in _displays)
+            {
+                display.IsSelected = false;
+            }
+
+            OnPropertyChanged(nameof(CanSaveProfile));
+        }
+
         public bool TryValidateProfileName(string name, out string validationMessage)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -803,34 +813,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             });
         }
 
-        public async Task ApplyDisplayModeAsync(bool extend)
-        {
-            IsApplying = true;
-            StatusMessage = extend ? "Extending desktop to all displays..." : "Switching to primary display only...";
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var result = extend
-                        ? DisplayHelpers.SetAllDisplays()
-                        : DisplayHelpers.SetPrimaryDisplayOnly(progress => RunOnUiThread(() => StatusMessage = progress));
-                    RunOnUiThread(() =>
-                    {
-                        StatusMessage = result;
-                        LoadDisplays();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    RunOnUiThread(() => StatusMessage = $"Error changing display mode: {ex.Message}");
-                }
-                finally
-                {
-                    RunOnUiThread(() => IsApplying = false);
-                }
-            });
-        }
-
         public async Task ApplyProfileAsync()
         {
             var profile = SelectedProfile;
@@ -897,39 +879,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public async Task OverwriteProfileAsync(ProfileInfo profile)
-        {
-            var selectedTargets = GetSelectedTargets();
-            if (selectedTargets.Count == 0)
-            {
-                StatusMessage = "There are no active displays to save.";
-                return;
-            }
-
-            IsApplying = true;
-            StatusMessage = $"Overwriting profile '{profile.Name}' with the selected displays...";
-            try
-            {
-                var result = await Task.Run(() =>
-                    DisplayHelpers.OverwriteNamedProfile(profile.FileName, profile.Name, selectedTargets));
-                StatusMessage = result;
-                await LoadProfilesAsync();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error overwriting profile: {ex.Message}";
-            }
-            finally
-            {
-                IsApplying = false;
-            }
-        }
-
         public async Task RenameProfileAsync(ProfileInfo profile, string newName)
         {
             if (profile.IsBuiltIn || IsBuiltInProfileName(newName))
             {
                 StatusMessage = "Built-in profile names are reserved.";
+                return;
+            }
+
+            // Un profilo con lo stesso nome non puo' esistere (confronto senza distinzione maiuscole/minuscole).
+            var trimmedName = newName.Trim();
+            var duplicate = _profiles.FirstOrDefault(other =>
+                !ReferenceEquals(other, profile) &&
+                string.Equals(other.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
+            if (duplicate != null)
+            {
+                StatusMessage = $"A profile named '{duplicate.Name}' already exists.";
                 return;
             }
 
@@ -942,26 +907,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 StatusMessage = $"Error renaming profile: {ex.Message}";
-            }
-        }
-
-        public async Task DuplicateProfileAsync(ProfileInfo profile, string newName)
-        {
-            if (profile.IsBuiltIn || IsBuiltInProfileName(newName))
-            {
-                StatusMessage = "Built-in profile names are reserved.";
-                return;
-            }
-
-            try
-            {
-                var result = await Task.Run(() => DisplayHelpers.DuplicateSavedProfile(profile.FileName, newName));
-                StatusMessage = result;
-                await LoadProfilesAsync();
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error duplicating profile: {ex.Message}";
             }
         }
 
@@ -1186,7 +1131,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
     }
 
-    public class MonitorDisplayInfo
+    public class MonitorDisplayInfo : INotifyPropertyChanged
     {
         private bool _isSelected;
 

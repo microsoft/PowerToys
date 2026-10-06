@@ -6588,7 +6588,9 @@ The break timer font matches the text font.</value>
 <data name="DisplayProfiles_TopologySection.Title" xml:space="preserve"><value>Current Display Topology</value></data>
   <data name="DisplayProfiles_TopologySection.Subtitle" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
 <data name="DisplayProfiles_Preview_Description.Text" xml:space="preserve"><value>Select active displays directly in the topology preview. Selected displays are highlighted; mirrored outputs share a tile.</value></data>
-<data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
+<data name="DisplayProfiles_ConnectedDisplays.Header" xml:space="preserve"><value>Connected displays</value></data>
+  <data name="DisplayProfiles_ConnectedDisplays.Description" xml:space="preserve"><value>Monitor names, connection type, resolution, orientation, and active status.</value></data>
+  <data name="DisplayProfiles_ActiveDisplays_Title.Text" xml:space="preserve"><value>Connected displays</value></data>
 <data name="DisplayProfiles_RefreshDisplays.Content" xml:space="preserve"><value>Refresh</value></data>
 <data name="DisplayProfiles_DisplayList_Description.Text" xml:space="preserve"><value>Monitor names, connection type, resolution, orientation, and active status are shown below. Saving a profile captures the current active display topology.</value></data>
 <data name="DisplayProfiles_EmptyState.Text" xml:space="preserve"><value>No displays are available. Connect or enable a display, then refresh.</value></data>

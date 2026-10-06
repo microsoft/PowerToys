@@ -21,32 +21,26 @@
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <!-- TEMPLATE: riga di un monitor nella lista "Active displays" (nome, dettagli, badge primario, stato, indice) -->
         <DataTemplate x:Key="DisplayTemplate" x:DataType="vm:MonitorDisplayInfo">
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Margin="0,3" Padding="10">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel VerticalAlignment="Center" Spacing="3">
-                        <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
-                        <TextBlock Text="{x:Bind Details}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-                        <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="10" Padding="8,3" Visibility="{x:Bind IsPrimary, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock x:Uid="DisplayProfiles_PrimaryBadge" FontSize="12" FontWeight="SemiBold" />
-                        </Border>
-                        <TextBlock Text="{x:Bind State}" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <TextBlock Text="{x:Bind Index}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <tkcontrols:SettingsCard Header="{x:Bind Name}" Description="{x:Bind Details}">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                    <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="10" Padding="8,3" Visibility="{x:Bind IsPrimary, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock x:Uid="DisplayProfiles_PrimaryBadge" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                    </Border>
+                    <TextBlock Text="{x:Bind State}" VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind Index}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </tkcontrols:SettingsCard>
         </DataTemplate>
 
         <!-- TEMPLATE: tile cliccabile di un monitor nell'anteprima della topologia (usato nel Canvas) -->
         <DataTemplate x:Key="PreviewTileTemplate" x:DataType="vm:MonitorDisplayInfo">
             <Button Width="{Binding LayoutWidth}" Height="{Binding LayoutHeight}" IsEnabled="{Binding IsActive}" Click="PreviewDisplay_Click" Padding="0" Background="Transparent" BorderThickness="0" Style="{StaticResource SubtleButtonStyle}" AutomationProperties.Name="{Binding AccessibilityDescription}" ToolTipService.ToolTip="{Binding Name}">
                 <Grid Width="{Binding LayoutWidth}" Height="{Binding LayoutHeight}" Opacity="{Binding PreviewOpacity}">
-                    <!-- Tile: sfondo grigio neutro come in Windows Settings -->
+                    <!-- Tile non selezionato: grigio neutro -->
                     <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" />
-                    <!-- Tile selezionato: riempimento con colore accento -->
+                    <!-- Tile selezionato: cambia solo il colore di riempimento (accento) -->
                     <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <!-- Solo il numero del monitor, centrato -->
+                    <!-- Numero del monitor -->
                     <TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" />
                 </Grid>
             </Button>
@@ -69,9 +63,7 @@
                     <FontIcon Glyph="&#xE712;" FontSize="16" />
                     <Button.Flyout>
                         <MenuFlyout Placement="BottomEdgeAlignedRight">
-                            <MenuFlyoutItem Text="Overwrite" Tag="{x:Bind}" Click="OverwriteProfile_Click" />
                             <MenuFlyoutItem Text="Rename" Tag="{x:Bind}" Click="RenameProfile_Click" />
-                            <MenuFlyoutItem Text="Duplicate" Tag="{x:Bind}" Click="DuplicateProfile_Click" />
                             <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="DeleteProfile_Click" />
                         </MenuFlyout>
                     </Button.Flyout>
@@ -93,59 +85,35 @@
                                 <Grid Height="296" AutomationProperties.Name="Display topology preview">
                                     <Canvas x:Name="DisplayTopologyCanvas" Width="700" Height="296" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Grid>
-                                <!-- CURRENT TOPOLOGY - Barra sotto la topologia: Identify + modalita di visualizzazione -->
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
-                                    <Button Content="Identify" Click="IdentifyDisplays_Click" MinWidth="160" Style="{StaticResource DefaultButtonStyle}" />
-                                    <ComboBox x:Name="DisplayModeComboBox" MinWidth="280" SelectedIndex="0" SelectionChanged="DisplayModeComboBox_SelectionChanged" IsEnabled="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
-                                        <ComboBoxItem Content="Extend desktop to these displays" />
-                                        <ComboBoxItem Content="Show only on primary display" />
-                                    </ComboBox>
+                                <!-- CURRENT TOPOLOGY - Azioni sotto il canvas: Refresh (sempre) + Save profile / Deselect all (solo con monitor selezionati) -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                                    <Button x:Uid="DisplayProfiles_RefreshDisplays" Click="{x:Bind ViewModel.LoadDisplays}" MinWidth="120" Style="{StaticResource DefaultButtonStyle}" />
+                                    <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                    <Button x:Uid="DisplayProfiles_SaveProfile" Click="SaveProfile_Click" MinWidth="160" Style="{StaticResource AccentButtonStyle}" Visibility="{x:Bind ViewModel.CanSaveProfile, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                    <Button Content="Deselect all" Click="ClearSelection_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.CanSaveProfile, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                 </StackPanel>
                             </StackPanel>
                         </controls:Section.CanvasContent>
 
-                        <!-- CURRENT TOPOLOGY - Contenuto: elenco dei monitor attivi -->
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
-                            <StackPanel Spacing="12">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Spacing="4">
-                                        <!-- CURRENT TOPOLOGY - Card 2: header "Active displays" + pulsante Refresh -->
-                                        <TextBlock x:Uid="DisplayProfiles_ActiveDisplays_Title" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock x:Uid="DisplayProfiles_DisplayList_Description" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                        <Button x:Uid="DisplayProfiles_RefreshDisplays" Click="{x:Bind ViewModel.LoadDisplays}" Style="{StaticResource DefaultButtonStyle}" />
-                                        <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                    </StackPanel>
-                                </Grid>
-                                <!-- CURRENT TOPOLOGY - Lista dei monitor attivi (usa DisplayTemplate) -->
-                                <ListView ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" SelectionMode="None" MaxHeight="340" ScrollViewer.VerticalScrollBarVisibility="Auto" BorderThickness="0">
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                            <Setter Property="Padding" Value="0" />
-                                            <Setter Property="Margin" Value="0" />
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                </ListView>
-                                <!-- CURRENT TOPOLOGY - Messaggio mostrato quando non ci sono display -->
-                                <TextBlock x:Uid="DisplayProfiles_EmptyState" Visibility="{x:Bind ViewModel.HasDisplays, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                        </Border>
+                        <!-- CURRENT TOPOLOGY - Contenuto: accordion (chiuso di default) con i dettagli dei monitor -->
+                        <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
+                            <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_ConnectedDisplays" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}" IsExpanded="False" ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" />
+                            <!-- CURRENT TOPOLOGY - Messaggio mostrato quando non ci sono display -->
+                            <TextBlock x:Uid="DisplayProfiles_EmptyState" Visibility="{x:Bind ViewModel.HasDisplays, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
                     </controls:Section>
 
                     <!-- ===== SEZIONE 2: PROFILES (salva e gestisci i profili display) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_ProfilesSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
-                        <!-- PROFILES - Barra azioni: Save profile + indicatori di caricamento/applicazione -->
+                        <!-- PROFILES - Indicatori di caricamento/applicazione -->
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Uid="DisplayProfiles_SaveProfile" Click="SaveProfile_Click" Style="{StaticResource AccentButtonStyle}" IsEnabled="{x:Bind ViewModel.CanSaveProfile, Mode=OneWay}" />
                             <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                             <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsProfilesLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                         </StackPanel>
 
                         <!-- PROFILES - Accordion: header con profilo scelto a destra, righe con radio button (usa ProfileTemplate) -->
-                        <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_Profiles_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE73D;}" IsExpanded="True" ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}" ItemTemplate="{StaticResource ProfileTemplate}">
+                        <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_Profiles_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE8F1;}" IsExpanded="True" ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}" ItemTemplate="{StaticResource ProfileTemplate}">
                             <TextBlock Text="{x:Bind ViewModel.SelectedProfile.Name, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </tkcontrols:SettingsExpander>
                     
