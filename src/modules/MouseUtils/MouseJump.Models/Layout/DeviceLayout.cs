@@ -29,7 +29,7 @@ public sealed class DeviceLayout
 
         /// <summary>
         /// Gets or sets the layout bounds for the device.
-        /// Coordinates are relative to the origin on the containing Form.
+        /// Coordinates are relative to the origin on the containing Preview.
         /// </summary>
         public BoxBounds DeviceBounds
         {
@@ -46,7 +46,12 @@ public sealed class DeviceLayout
         public List<ScreenLayout.Builder>? ScreenLayouts
         {
             get;
-            init;
+#pragma warning disable CA2227 // Collection properties should be read only
+            // allow writing to collection property in DeviceLayout.Builder
+            // (it's a builder designed for convenience, and converted into
+            // an immutable CanvasLayout instance once initialised)
+            set;
+#pragma warning restore CA2227
         }
 
         public DeviceLayout Build()
