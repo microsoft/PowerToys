@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -133,4 +134,31 @@ public partial class PersistenceServiceTests
         Assert.AreEqual("NestedTest", result.Name);
         Assert.AreEqual(321, result.Value);
     }
+
+#if DEBUG
+    [TestMethod]
+    [DoNotParallelize]
+    public void Save_WhenFileIsLocked_LogsCallerAndOriginalException()
+    {
+        using var fileLock = new FileStream(_testFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var output = new StringWriter();
+        using var listener = new TextWriterTraceListener(output);
+        Trace.Listeners.Add(listener);
+        try
+        {
+            _service.Save(new TestModel(), _testFilePath, TestJsonContext.Default.TestModel);
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+
+        var log = output.ToString();
+        StringAssert.Contains(log, $"Failed to save to {_testFilePath}:");
+        StringAssert.Contains(log, "System.IO.IOException");
+        StringAssert.Contains(log, "Stack trace:");
+        StringAssert.Contains(log, "Save caller stack:");
+        StringAssert.Contains(log, nameof(Save_WhenFileIsLocked_LogsCallerAndOriginalException));
+    }
+#endif
 }

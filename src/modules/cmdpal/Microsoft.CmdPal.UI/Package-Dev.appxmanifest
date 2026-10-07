@@ -81,7 +81,11 @@
             Id="App"
             DisplayName="ms-resource:AppNameDev"
             Description="ms-resource:AppDescriptionDev"
-            PublicFolder="Public" />
+            PublicFolder="Public">
+            <uap3:Properties>
+              <SingleTap MessageWParam="0">x-cmdpal://</SingleTap>
+            </uap3:Properties>
+          </uap3:AppExtension>
         </uap3:Extension>
       </Extensions>
 
