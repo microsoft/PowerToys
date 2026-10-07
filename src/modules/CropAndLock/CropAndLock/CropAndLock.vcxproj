@@ -67,7 +67,6 @@
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
       <AdditionalIncludeDirectories>$(RepoRoot)src\common\Telemetry;$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

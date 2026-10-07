@@ -34,11 +34,6 @@
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VCToolsInstallDir)\lib\$(Platform)</LibraryPath>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerRename.FuzzTests\</OutDir>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <ConformanceMode>false</ConformanceMode>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

@@ -30,7 +30,6 @@
       <PreprocessorDefinitions>WIN32;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(RepoRoot)src\;$(RepoRoot)src\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
-      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>windowscodecs.lib;propsys.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>

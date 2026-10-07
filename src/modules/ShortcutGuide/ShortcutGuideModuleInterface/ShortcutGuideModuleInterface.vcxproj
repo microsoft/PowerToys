@@ -42,7 +42,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Dwmapi.lib;Dcomp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>

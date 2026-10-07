@@ -32,7 +32,6 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(RepoRoot)src\;$(RepoRoot)src\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Pathcch.lib;comctl32.lib;shlwapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
