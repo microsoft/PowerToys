@@ -28,7 +28,7 @@ public static class LayoutHelper
     /// will be placed into in order to ensure the preview is rendered at 100% and avoid
     /// distorting bezels and screenshots.
     /// </param>
-    public static FormLayout GetFormLayout(
+    public static PreviewLayout GetPreviewLayout(
         PreviewStyle previewStyle, DisplayInfo displayInfo, SizeInfo maximumSize)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
@@ -74,7 +74,7 @@ public static class LayoutHelper
         */
 
         // arrange the form, canvas, devices and screens
-        var formLayout = LayoutHelper.CreateInitialFormLayout(previewStyle, displayInfo, maximumSize);
+        var formLayout = LayoutHelper.CreateInitialPreviewLayout(previewStyle, displayInfo, maximumSize);
         LayoutHelper.ArrangeAndScaleDeviceLayouts(formLayout);
         LayoutHelper.ArrangeAndScaleScreenLayouts(formLayout);
         LayoutHelper.ArrangeAndResizeCanvasLayout(formLayout);
@@ -102,7 +102,7 @@ public static class LayoutHelper
             .MoveInside(activatedScreen.DisplayArea);
     }
 
-    internal static FormLayout.Builder CreateInitialFormLayout(
+    internal static PreviewLayout.Builder CreateInitialPreviewLayout(
         PreviewStyle previewStyle, DisplayInfo displayInfo, SizeInfo maximumSize)
     {
         ArgumentNullException.ThrowIfNull(previewStyle);
@@ -139,7 +139,7 @@ public static class LayoutHelper
         // create an initial form layout.
         // this is a nested structure of mutable "builder" objects that can be used to
         // build the final immutable layout objects once all the bounds have been calculated
-        var formLayout = new FormLayout.Builder
+        var previewLayout = new PreviewLayout.Builder
         {
             CanvasLayout = new()
             {
@@ -164,7 +164,7 @@ public static class LayoutHelper
             },
         };
 
-        return formLayout;
+        return previewLayout;
     }
 
     internal static IEnumerable<BoxStyle> GetDeviceScreenStyles(PreviewStyle previewStyle, int screenCount)
@@ -202,7 +202,7 @@ public static class LayoutHelper
     /// <summary>
     /// Arranges the device layouts into a non-overlapping grid and scales them to fit inside the specified content bounds.
     /// </summary>
-    internal static void ArrangeAndScaleDeviceLayouts(FormLayout.Builder formLayout)
+    internal static void ArrangeAndScaleDeviceLayouts(PreviewLayout.Builder formLayout)
     {
         var deviceLayouts = formLayout.CanvasLayout?.DeviceLayouts
             ?? throw new InvalidOperationException();
@@ -344,9 +344,9 @@ public static class LayoutHelper
     /// Arranges the screen layouts inside their respective device cells and
     /// scales them to fit inside their parent device layouts.
     /// </summary>
-    internal static void ArrangeAndScaleScreenLayouts(FormLayout.Builder formLayout)
+    internal static void ArrangeAndScaleScreenLayouts(PreviewLayout.Builder previewLayout)
     {
-        var deviceLayouts = formLayout.CanvasLayout?.DeviceLayouts
+        var deviceLayouts = previewLayout.CanvasLayout?.DeviceLayouts
             ?? throw new InvalidOperationException();
 
         foreach (var deviceLayout in deviceLayouts)
@@ -392,9 +392,9 @@ public static class LayoutHelper
         }
     }
 
-    internal static void ArrangeAndResizeCanvasLayout(FormLayout.Builder formLayout)
+    internal static void ArrangeAndResizeCanvasLayout(PreviewLayout.Builder previewLayout)
     {
-        var canvasLayout = formLayout.CanvasLayout ?? throw new InvalidOperationException();
+        var canvasLayout = previewLayout.CanvasLayout ?? throw new InvalidOperationException();
 
         // work out how big the canvas needs to be in order to contain the device layouts
         var canvasContentBounds = RectangleInfo.Union(
@@ -402,7 +402,7 @@ public static class LayoutHelper
                 .Select(deviceLayout => deviceLayout.DeviceBounds.OuterBounds));
         var canvasOuterBounds = BoxBounds.CreateFromContentBounds(
             contentBounds: canvasContentBounds,
-            boxStyle: formLayout.CanvasLayout.CanvasStyle);
+            boxStyle: previewLayout.CanvasLayout.CanvasStyle);
 
         // move the canvas into position
         var positionedOuterBounds = canvasOuterBounds.OuterBounds.MoveTo(
@@ -411,6 +411,6 @@ public static class LayoutHelper
 
         canvasLayout.CanvasBounds = BoxBounds.CreateFromOuterBounds(
             outerBounds: positionedOuterBounds,
-            boxStyle: formLayout.CanvasLayout.CanvasStyle);
+            boxStyle: previewLayout.CanvasLayout.CanvasStyle);
     }
 }
