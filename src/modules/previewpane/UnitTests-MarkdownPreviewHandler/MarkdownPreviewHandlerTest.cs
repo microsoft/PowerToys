@@ -265,7 +265,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
         private static void AssertUsesTempFileNavigation(MarkdownPreviewHandlerControl markdownPreviewHandlerControl)
         {
-            Uri localFileUri = GetLocalFileUri(markdownPreviewHandlerControl);
+            Uri? localFileUri = GetLocalFileUri(markdownPreviewHandlerControl);
 
             Assert.IsNotNull(localFileUri);
             Assert.IsTrue(File.Exists(localFileUri.LocalPath));
@@ -277,13 +277,13 @@ namespace MarkdownPreviewHandlerUnitTests
             Assert.IsNull(GetLocalFileUri(markdownPreviewHandlerControl));
         }
 
-        private static Uri GetLocalFileUri(MarkdownPreviewHandlerControl markdownPreviewHandlerControl)
+        private static Uri? GetLocalFileUri(MarkdownPreviewHandlerControl markdownPreviewHandlerControl)
         {
-            FieldInfo localFileUriField = typeof(MarkdownPreviewHandlerControl).GetField("_localFileURI", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo? localFileUriField = typeof(MarkdownPreviewHandlerControl).GetField("_localFileURI", BindingFlags.Instance | BindingFlags.NonPublic);
 
             Assert.IsNotNull(localFileUriField);
 
-            return (Uri)localFileUriField.GetValue(markdownPreviewHandlerControl);
+            return (Uri?)localFileUriField.GetValue(markdownPreviewHandlerControl);
         }
 
         private static string CreateMarkdownFile(string content)
