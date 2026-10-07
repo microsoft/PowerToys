@@ -8,6 +8,29 @@ $Root = $PSScriptRoot
 $DebugDir    = Join-Path $Root "x64\Debug\WinUI3Apps\CmdPal"
 $Manifest    = Join-Path $DebugDir "AppxManifest.xml"
 $CmdPalExe   = Join-Path $DebugDir "Microsoft.CmdPal.UI.exe"
+$ProcessesToStop = @("Microsoft.CmdPal.UI", "MonitorPowerExtension")
+$ProcessStopTimeoutSeconds = 10
+
+function Stop-ProcessAndWait {
+    param([string]$Name)
+
+    $processes = @(Get-Process -Name $Name -ErrorAction SilentlyContinue)
+    if ($processes.Count -eq 0) {
+        return
+    }
+
+    $processes | Stop-Process -Force
+    $deadline = [DateTime]::UtcNow.AddSeconds($ProcessStopTimeoutSeconds)
+    do {
+        Start-Sleep -Milliseconds 200
+        $remaining = @(Get-Process -Name $Name -ErrorAction SilentlyContinue)
+    } while ($remaining.Count -gt 0 -and [DateTime]::UtcNow -lt $deadline)
+
+    if ($remaining.Count -gt 0) {
+        $processIds = ($remaining.Id -join ", ")
+        throw "Unable to stop $Name within $ProcessStopTimeoutSeconds seconds. Processes still running: $processIds. Close them and retry."
+    }
+}
 
 if (-not (Test-Path $Manifest)) {
     Write-Error "AppxManifest.xml not found.`nRun build-cmdpal.cmd first to build the full CmdPal."
@@ -16,6 +39,11 @@ if (-not (Test-Path $Manifest)) {
 if (-not (Test-Path $CmdPalExe)) {
     Write-Error "Microsoft.CmdPal.UI.exe not found.`nRun build-cmdpal.cmd first."
     exit 1
+}
+
+Write-Host "=== Stopping CmdPal and MonitorPowerExtension ==="
+foreach ($processName in $ProcessesToStop) {
+    Stop-ProcessAndWait -Name $processName
 }
 
 Write-Host "=== Building MonitorPowerExtension (x64 Debug) ==="
@@ -36,9 +64,11 @@ if (-not (Test-Path $extensionManifest)) {
     exit 1
 }
 
-Write-Host "=== Stopping any running CmdPal ==="
-Get-Process -Name "Microsoft.CmdPal.UI" -ErrorAction SilentlyContinue | Stop-Process -Force
-Start-Sleep -Milliseconds 500
+foreach ($processName in $ProcessesToStop) {
+    if (Get-Process -Name $processName -ErrorAction SilentlyContinue) {
+        throw "$processName restarted or remained running after the build. Close it and retry to release package files."
+    }
+}
 
 Write-Host "=== Registering dev packages ==="
 Add-AppxPackage -Register $Manifest -ForceUpdateFromAnyVersion -ForceApplicationShutdown

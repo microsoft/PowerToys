@@ -1,5 +1,0 @@
-#include <windows.h>
-// Preprocess check
-DISPLAYCONFIG_PATH_SOURCE_INFO dummy1;
-DISPLAYCONFIG_PATH_TARGET_INFO dummy2;
-DISPLAYCONFIG_PATH_INFO dummy3;

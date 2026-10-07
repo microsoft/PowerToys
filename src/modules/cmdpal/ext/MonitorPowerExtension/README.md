@@ -17,6 +17,5 @@ The last pre-switch recovery snapshot is stored in:
 %LOCALAPPDATA%\MonitorPower\snapshot.json
 ```
 
-`Snapshot-Display.ps1` can replace this file with a manually verified layout.
 The snapshot is a recovery artifact; named profiles keep their own layout and
 must not depend on this file for normal activation.

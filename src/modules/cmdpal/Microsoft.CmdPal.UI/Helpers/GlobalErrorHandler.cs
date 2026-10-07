@@ -83,11 +83,11 @@ internal sealed partial class GlobalErrorHandler : IDisposable
             }
             catch
             {
+                // The resource loader may not be available if the exception occurred during startup.
+                // Fall back to hardcoded strings in that case.
                 message = "Command Palette has encountered a fatal error and must close.";
                 caption = "Command Palette - Fatal error";
             }
-
-            message += $"\n\n{ex.GetType().Name}: {ex.Message}";
 
             PInvoke.MessageBox(
                 HWND.Null,

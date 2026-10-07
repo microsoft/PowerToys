@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MonitorPower;
@@ -23,6 +25,7 @@ public sealed partial class MonitorPowerListPage : ListPage
     private static readonly KeyChord CreateProfileShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.N);
     private static readonly KeyChord EditProfileShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.E);
     private static readonly KeyChord DeleteProfileShortcut = KeyChordHelpers.FromModifiers(vkey: VirtualKey.Delete);
+    private static int _isApplyingProfile;
 
     public MonitorPowerListPage()
     {
@@ -71,7 +74,7 @@ public sealed partial class MonitorPowerListPage : ListPage
                 });
             }
 
-            moreCommands.Add(new CommandContextItem(new DeleteSavedProfileCommand(this, fileName))
+            moreCommands.Add(new CommandContextItem(new ConfirmDeleteSavedProfileCommand(this, fileName, profileName))
             {
                 Title = Resources.delete_profile_title,
                 Subtitle = Resources.delete_profile_subtitle,
@@ -110,6 +113,34 @@ public sealed partial class MonitorPowerListPage : ListPage
         ShowStatus(message, DisplayHelpers.IsErrorResult(message) ? MessageState.Error : MessageState.Success);
     }
 
+    private static CommandResult StartProfileApplication(Func<string> apply)
+    {
+        if (Interlocked.CompareExchange(ref _isApplyingProfile, 1, 0) != 0)
+        {
+            ShowStatus(Resources.apply_profile_busy, MessageState.Info);
+            return CommandResult.KeepOpen();
+        }
+
+        ShowStatus(Resources.apply_profile_status, MessageState.Info);
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                ShowOperationResult(apply());
+            }
+            catch (Exception ex)
+            {
+                ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isApplyingProfile, 0);
+            }
+        });
+
+        return CommandResult.KeepOpen();
+    }
+
     private static void ShowStatus(string message, MessageState state)
     {
         ExtensionHost.ShowStatus(
@@ -130,26 +161,12 @@ public sealed partial class MonitorPowerListPage : ListPage
 
         public override CommandResult Invoke()
         {
-            ShowStatus(Resources.apply_profile_status, MessageState.Info);
-            _ = System.Threading.Tasks.Task.Run(() =>
+            return StartProfileApplication(() => _profile switch
             {
-                try
-                {
-                    var message = _profile switch
-                    {
-                        BuiltInDisplayProfile.AllDisplays => DisplayHelpers.SetAllDisplays(),
-                        BuiltInDisplayProfile.PrimaryDisplayOnly => DisplayHelpers.SetPrimaryDisplayOnly(progress => ShowStatus(progress, MessageState.Info)),
-                        _ => throw new InvalidOperationException(),
-                    };
-                    ShowOperationResult(message);
-                }
-                catch (Exception ex)
-                {
-                    ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
-                }
+                BuiltInDisplayProfile.AllDisplays => DisplayHelpers.SetAllDisplays(),
+                BuiltInDisplayProfile.PrimaryDisplayOnly => DisplayHelpers.SetPrimaryDisplayOnly(progress => ShowStatus(progress, MessageState.Info)),
+                _ => throw new InvalidOperationException(),
             });
-
-            return CommandResult.KeepOpen();
         }
     }
 
@@ -166,44 +183,45 @@ public sealed partial class MonitorPowerListPage : ListPage
 
         public override CommandResult Invoke()
         {
-            ShowStatus(Resources.apply_profile_status, MessageState.Info);
-
-            _ = System.Threading.Tasks.Task.Run(() =>
-            {
-                try
-                {
-                    var message = DisplayHelpers.ApplyNamedProfile(_fileName, progress => ShowStatus(progress, MessageState.Info));
-                    ShowOperationResult(message);
-                }
-                catch (Exception ex)
-                {
-                    ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
-                }
-            });
-
-            return CommandResult.KeepOpen();
+            return StartProfileApplication(() =>
+                DisplayHelpers.ApplyNamedProfile(_fileName, progress => ShowStatus(progress, MessageState.Info)));
         }
     }
 
-    private sealed partial class DeleteSavedProfileCommand : InvokableCommand
+    private sealed partial class ConfirmDeleteSavedProfileCommand(
+        MonitorPowerListPage page,
+        string fileName,
+        string profileName) : InvokableCommand
     {
-        private readonly MonitorPowerListPage _page;
-        private readonly string _fileName;
-
-        public DeleteSavedProfileCommand(MonitorPowerListPage page, string fileName)
-        {
-            _page = page;
-            _fileName = fileName;
-            Name = Resources.delete_profile_title;
-        }
-
         public override CommandResult Invoke()
         {
-            DisplayHelpers.DeleteSavedProfile(_fileName);
-            _page.RefreshProfiles();
-            ExtensionHost.ShowStatus(
-                new StatusMessage() { Message = Resources.profile_deleted, State = MessageState.Success },
-                StatusContext.Extension);
+            return CommandResult.Confirm(new ConfirmationArgs
+            {
+                Title = Resources.confirm_delete_profile_title,
+                Description = string.Format(Resources.confirm_delete_profile_description, profileName),
+                PrimaryCommand = new DeleteSavedProfileCommand(page, fileName),
+                IsPrimaryCommandCritical = true,
+            });
+        }
+    }
+
+    private sealed partial class DeleteSavedProfileCommand(
+        MonitorPowerListPage page,
+        string fileName) : InvokableCommand
+    {
+        public override CommandResult Invoke()
+        {
+            try
+            {
+                DisplayHelpers.DeleteSavedProfile(fileName);
+                page.RefreshProfiles();
+                ShowStatus(Resources.profile_deleted, MessageState.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
+            }
+
             return CommandResult.KeepOpen();
         }
     }

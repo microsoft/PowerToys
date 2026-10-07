@@ -20,6 +20,7 @@ internal sealed partial class CreateProfilePage : DynamicListPage
     private readonly MonitorPowerListPage? _parentPage;
     private readonly List<TargetState> _targets;
     private readonly string? _existingFileName;
+    private bool _hasUnavailableSavedTargets;
     private static readonly KeyChord ToggleMonitorShortcut = KeyChordHelpers.FromModifiers(vkey: VirtualKey.Space);
     private static readonly KeyChord SaveProfileShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.S);
 
@@ -91,14 +92,12 @@ internal sealed partial class CreateProfilePage : DynamicListPage
                     .Select(p => new DisplayHelpers.DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id))
                     .ToHashSet();
 
-            // Collect named targets: include those flagged targetAvailable AND all currently-active
-            // paths. On Windows Insider builds QDC_ALL_PATHS may report targetAvailable==0 for
-            // monitors that are physically active, so we union both sets.
+            var (allPaths, modes) = DisplayHelpers.GetAllPathsWithModes();
             var activeIds = DisplayHelpers.GetActivePaths().paths
                 .Select(p => new DisplayHelpers.DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id))
                 .ToHashSet();
 
-            var candidates = DisplayHelpers.GetAllPaths()
+            var candidates = allPaths
                 .Where(p => p.targetInfo.targetAvailable != 0 ||
                             activeIds.Contains(new DisplayHelpers.DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id)))
                 .GroupBy(p => new DisplayHelpers.DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id))
@@ -107,17 +106,16 @@ internal sealed partial class CreateProfilePage : DynamicListPage
                     var path = g.First();
                     var id = new DisplayHelpers.DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id);
                     var name = GetTargetName(path.targetInfo);
-                    var layoutSummary = GetTargetLayoutSummary(id);
+                    var layoutSummary = GetTargetLayoutSummary(path, modes);
                     return (id, name, layoutSummary, keepOn: preselectedSet.Contains(id));
                 })
                 .Where(t => !string.IsNullOrEmpty(t.name) && t.name != Resources.unknown_display)
                 .ToList();
 
-            // Filter out ghost targets (Intel GPU) that share a GDI device name
             var deviceNameMap = DisplayHelpers.BuildTargetToDeviceNameMap();
             candidates = candidates.Where(t => deviceNameMap.ContainsKey(t.id)).ToList();
+            _hasUnavailableSavedTargets = preSelected is not null && preselectedSet.Except(candidates.Select(target => target.id)).Any();
 
-            // Disambiguate when the same physical name appears on multiple target IDs
             var nameCounts = candidates.GroupBy(t => t.name).ToDictionary(g => g.Key, g => g.Count());
             var nameIndexes = new Dictionary<string, int>();
             var result = new List<TargetState>(candidates.Count);
@@ -176,30 +174,24 @@ internal sealed partial class CreateProfilePage : DynamicListPage
         return new IconInfo(target.KeepOn ? "\uE7F4" : "\uE783");
     }
 
-    private static string GetTargetLayoutSummary(DisplayHelpers.DisplayTargetId id)
+    private static string GetTargetLayoutSummary(DISPLAYCONFIG_PATH_INFO path, DISPLAYCONFIG_MODE_INFO[] modes)
     {
-        try
-        {
-            var (_, modes) = DisplayHelpers.GetAllPathsWithModes();
-            var sourceMode = modes.FirstOrDefault(mode =>
-                mode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.Source &&
-                mode.adapterId.Equals(id.AdapterId));
-            if (sourceMode.infoType != DISPLAYCONFIG_MODE_INFO_TYPE.Source)
-            {
-                return Resources.layout_captured_label;
-            }
-
-            return string.Format(
-                Resources.layout_summary_format,
-                sourceMode.modeInfo.sourceMode.width,
-                sourceMode.modeInfo.sourceMode.height,
-                sourceMode.modeInfo.sourceMode.position.x,
-                sourceMode.modeInfo.sourceMode.position.y);
-        }
-        catch
+        var sourceModeIndex = path.sourceInfo.sourceModeInfoIdx;
+        if (sourceModeIndex >= modes.Length ||
+            modes[sourceModeIndex].infoType != DISPLAYCONFIG_MODE_INFO_TYPE.Source ||
+            !modes[sourceModeIndex].adapterId.Equals(path.sourceInfo.adapterId) ||
+            modes[sourceModeIndex].id != path.sourceInfo.id)
         {
             return Resources.layout_captured_label;
         }
+
+        var sourceMode = modes[sourceModeIndex];
+        return string.Format(
+            Resources.layout_summary_format,
+            sourceMode.modeInfo.sourceMode.width,
+            sourceMode.modeInfo.sourceMode.height,
+            sourceMode.modeInfo.sourceMode.position.x,
+            sourceMode.modeInfo.sourceMode.position.y);
     }
 
     private CommandContextItem CreateToggleMonitorContextItem(int index)
@@ -287,6 +279,12 @@ internal sealed partial class CreateProfilePage : DynamicListPage
             return CommandResult.KeepOpen();
         }
 
+        if (_hasUnavailableSavedTargets)
+        {
+            ShowError(Resources.profile_unavailable_monitors);
+            return CommandResult.KeepOpen();
+        }
+
         var conflict = DisplayHelpers.GetSavedProfileConflict(name, selectedTargets, _existingFileName);
         if (conflict is not null)
         {
@@ -308,6 +306,13 @@ internal sealed partial class CreateProfilePage : DynamicListPage
     {
         try
         {
+            var conflict = DisplayHelpers.GetSavedProfileConflict(name, selectedTargets, _existingFileName);
+            if (conflict is not null)
+            {
+                ShowError(conflict);
+                return CommandResult.KeepOpen();
+            }
+
             if (_existingFileName != null)
             {
                 var msg = DisplayHelpers.OverwriteNamedProfile(_existingFileName, name, selectedTargets);

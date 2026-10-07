@@ -204,6 +204,14 @@ namespace MonitorPowerExtension.Properties
 
         public static string profile_deleted => ResourceManager.GetString("profile_deleted", resourceCulture);
 
+        public static string confirm_delete_profile_title => ResourceManager.GetString("confirm_delete_profile_title", resourceCulture);
+
+        public static string confirm_delete_profile_description => ResourceManager.GetString("confirm_delete_profile_description", resourceCulture);
+
+        public static string apply_profile_busy => ResourceManager.GetString("apply_profile_busy", resourceCulture);
+
+        public static string profile_unavailable_monitors => ResourceManager.GetString("profile_unavailable_monitors", resourceCulture);
+
         public static string edit_profile_title => ResourceManager.GetString("edit_profile_title", resourceCulture);
 
         public static string edit_profile_page_title => ResourceManager.GetString("edit_profile_page_title", resourceCulture);

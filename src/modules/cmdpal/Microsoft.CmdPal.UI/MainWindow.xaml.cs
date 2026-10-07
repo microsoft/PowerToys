@@ -1596,47 +1596,38 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
-            if (activatedEventArgs.Kind == ExtendedActivationKind.Launch &&
-                activatedEventArgs.Data is ILaunchActivatedEventArgs backgroundLaunchArgs &&
-                CommandLineParser.ParseArguments(backgroundLaunchArgs.Arguments).Contains("--background", StringComparer.Ordinal))
-            {
-                return;
-            }
-
             if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
             {
-                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs &&
+                    _protocolActivation.TryParse(protocolArgs.Uri, out var route))
                 {
-                    if (_protocolActivation.TryParse(protocolArgs.Uri, out var route))
+                    switch (CmdPalProtocolPolicy.Evaluate(route))
                     {
-                        switch (CmdPalProtocolPolicy.Evaluate(route))
-                        {
-                            case CmdPalProtocolAction.RunInBackground:
-                                // We're running, but this route intentionally does not activate a window.
-                                return;
+                        case CmdPalProtocolAction.RunInBackground:
+                            // We're running, but this route intentionally does not activate a window.
+                            return;
 
-                            case CmdPalProtocolAction.OpenSettings openSettings:
-                                WeakReferenceMessenger.Default.Send(openSettings.Message);
-                                return;
+                        case CmdPalProtocolAction.OpenSettings openSettings:
+                            WeakReferenceMessenger.Default.Send(openSettings.Message);
+                            return;
 
-                            case CmdPalProtocolAction.RequestConsent requestConsent:
-                                var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-                                if (settings.EnableExternalCommandLinks)
-                                {
-                                    WeakReferenceMessenger.Default.Send(new ExternalCommandLinkRequestedMessage(requestConsent.Route));
-                                }
-                                else
-                                {
-                                    Logger.LogInfo("External command links are disabled");
-                                }
+                        case CmdPalProtocolAction.RequestConsent requestConsent:
+                            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                            if (settings.EnableExternalCommandLinks)
+                            {
+                                WeakReferenceMessenger.Default.Send(new ExternalCommandLinkRequestedMessage(requestConsent.Route));
+                            }
+                            else
+                            {
+                                Logger.LogInfo("External command links are disabled");
+                            }
 
-                                return;
+                            return;
 
-                            case CmdPalProtocolAction.Reject:
-                            default:
-                                Logger.LogWarning("Ignoring an unsupported CmdPal protocol route.");
-                                return;
-                        }
+                        case CmdPalProtocolAction.Reject:
+                        default:
+                            Logger.LogWarning("Ignoring an unsupported CmdPal protocol route.");
+                            return;
                     }
                 }
             }
@@ -2132,6 +2123,10 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
+        // This is bad, evil, and I'll have to forgo today's dinner dessert to punish myself
+        // for  writing this. But there's no way to make this work without it.
+        // If the window is not reactivated, the UX breaks down: a deactivated window has to
+        // be activated and then deactivated again to hide.
         var currentThreadId = PInvoke.GetCurrentThreadId();
         var foregroundThreadId = PInvoke.GetWindowThreadProcessId(foregroundWindow, null);
         if (foregroundThreadId != currentThreadId)

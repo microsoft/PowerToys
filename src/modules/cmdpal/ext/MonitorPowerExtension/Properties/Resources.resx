@@ -287,6 +287,19 @@
   <data name="profile_deleted" xml:space="preserve">
     <value>Profile deleted</value>
   </data>
+  <data name="confirm_delete_profile_title" xml:space="preserve">
+    <value>Delete display profile?</value>
+  </data>
+  <data name="confirm_delete_profile_description" xml:space="preserve">
+    <value>Delete "{0}"? This action cannot be undone.</value>
+    <comment>{0} = profile name</comment>
+  </data>
+  <data name="apply_profile_busy" xml:space="preserve">
+    <value>Another display profile is already being applied</value>
+  </data>
+  <data name="profile_unavailable_monitors" xml:space="preserve">
+    <value>This profile contains unavailable displays. Reconnect them before saving changes.</value>
+  </data>
   <data name="edit_profile_title" xml:space="preserve">
     <value>Edit profile</value>
   </data>

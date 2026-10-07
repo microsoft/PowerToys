@@ -108,16 +108,8 @@ public partial class App : Application, IDisposable
 
         // Connect the PT logging to the core project's logging.
         // This way, log statements from the core project will be captured by the PT logs
-        try
-        {
-            var logWrapper = new LogWrapper();
-            CoreLogger.InitializeLogger(logWrapper);
-        }
-        catch (Exception ex)
-        {
-            // Logger non disponibile — continuiamo comunque.
-            System.Diagnostics.Debug.WriteLine($"CoreLogger failed: {ex.Message}");
-        }
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
 
         // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);

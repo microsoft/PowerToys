@@ -1,8 +1,0 @@
-﻿{
-  "targets": [
-    {"DeviceName": "\\\\.\\DISPLAY1", "Width": 3440, "Height": 1440, "Frequency": 165, "PositionX": 0, "PositionY": 0, "Orientation": 0, "BitsPerPel": 32, "IsPrimary": true},
-    {"DeviceName": "\\\\.\\DISPLAY2", "Width": 3840, "Height": 2160, "Frequency": 60, "PositionX": -186, "PositionY": -2405, "Orientation": 0, "BitsPerPel": 32, "IsPrimary": false},
-    {"DeviceName": "\\\\.\\DISPLAY3", "Width": 1080, "Height": 1920, "Frequency": 100, "PositionX": -1080, "PositionY": -245, "Orientation": 1, "BitsPerPel": 32, "IsPrimary": false},
-    {"DeviceName": "\\\\.\\DISPLAY4", "Width": 1080, "Height": 1920, "Frequency": 100, "PositionX": 3440, "PositionY": -245, "Orientation": 3, "BitsPerPel": 32, "IsPrimary": false}
-  ]
-}

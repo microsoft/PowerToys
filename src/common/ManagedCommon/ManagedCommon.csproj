@@ -20,8 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" Condition="'$(UseDotnetMSBuild)' != 'true'" />
-    <CsWinRTInputs Include="$(RepoRoot)$(Platform)\$(Configuration)\PowerToys.Interop.winmd" Condition="'$(UseDotnetMSBuild)' == 'true'" />
+    <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
 

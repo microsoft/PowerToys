@@ -18,7 +18,7 @@ public class Program
             using ExtensionServer server = new();
             var extensionDisposedEvent = new ManualResetEvent(false);
             var extensionInstance = new MonitorPowerExtension(extensionDisposedEvent);
-            server.RegisterExtension(() => extensionInstance);
+            server.RegisterExtension(() => extensionInstance, restrictToMicrosoftExtensionHosts: true);
             extensionDisposedEvent.WaitOne();
         }
     }

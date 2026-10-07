@@ -158,3 +158,11 @@ Ogni agente aggiunge una voce in fondo dopo una sessione significativa usando qu
 - Verifiche eseguite: asset verificati per dimensioni/formato; risorse XML valide senza chiavi duplicate; `git diff --check` riuscito; build Debug x64 di `PowerToys.Settings.csproj` riuscita con 0 errori e 0 warning.
 - Problemi o decisioni richieste: gli asset generati sono funzionali e distinti da Power Display, ma richiedono revisione visiva congiunta prima della PR upstream.
 - Prossimo passo: attendere il completamento CmdPal, quindi eseguire build completa, test e revisione congiunta del diff senza rimuovere modifiche concorrenti.
+
+### 2026-10-08 00:50 — Agente Command Palette / correzioni review
+
+- File modificati: `register-dev-cmdpal.ps1`, `src/modules/cmdpal/ext/MonitorPowerExtension/Program.cs`, `Pages/MonitorPowerListPage.cs`, `Pages/CreateProfilePage.cs`, `Properties/Resources.resx`, `Properties/Resources.Designer.cs`.
+- Attività completate: arresto con timeout di CmdPal ed estensione prima della build/registrazione; restrizione SDK agli host Microsoft; guardia `Interlocked` condivisa per applicazioni profilo; conferma ed error handling eliminazione; layout associato allo specifico source path; blocco localizzato del salvataggio quando un profilo in modifica contiene target non disponibili.
+- Verifiche eseguite: build progetto `MonitorPowerExtension` Debug x64 riuscita dopo arresto del processo che bloccava gli output; build dei tre solution filter in `src/modules/cmdpal` Debug x64 riuscita; `git diff --check` riuscito.
+- Problemi o decisioni richieste: test manuali CmdPal non eseguiti; firma/identità MSIX lasciata invariata e resta un blocco di validazione della registrazione/distribuzione.
+- Prossimo passo: registrare con certificato di sviluppo coerente ed eseguire test manuali su Command Palette ufficiale e Dev.
