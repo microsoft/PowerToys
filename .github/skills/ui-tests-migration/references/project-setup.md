@@ -43,7 +43,6 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
     <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -92,6 +91,12 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
    - `src/modules/<M>/Tests/<M>.UITests.Next/` (4 levels under `src`) → `..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
    - `src/modules/<M>/<M>.UITests/` (3 levels under `src`) → `..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
    - `src/settings-ui/<M>.UITests/` (2 levels under `src`) → `..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
+7. **No `<TreatWarningsAsErrors>false</TreatWarningsAsErrors>` override** — UI-test projects inherit the
+   repo default (warnings are errors), so StyleCop/analyzer/nullable warnings must be fixed, not
+   hidden. If a rule genuinely does not apply (e.g. CA1716 for a `*.UITests.Next` namespace), add a
+   scoped `[assembly: SuppressMessage(..., Scope = "namespace", Target = "~N:...", Justification = "...")]`
+   in a project-local file such as `ProjectSuppressions.cs` (`src\codeAnalysis\GlobalSuppressions.cs`
+   is already linked into every project by `Directory.Build.props`, so don't add it again).
 
 > Use `MSTest` (the meta-package) for a test **Exe**, matching the ColorPicker/Settings examples — not
 > the bare `MSTest.TestFramework` the harness library itself uses.
