@@ -19,7 +19,7 @@ namespace ImageResizer.ViewModels
         private readonly ResizeBatch _batch;
 
         [ObservableProperty]
-        private object _currentPage;
+        public partial object CurrentPage { get; set; }
 
         public MainViewModel(ResizeBatch batch, Settings settings)
         {

@@ -25,29 +25,7 @@ namespace ImageResizer.Models
             ["$phone$"] = "Phone",
         };
 
-        [ObservableProperty]
-        [property: JsonPropertyName("Id")]
-        private int _id;
-
         private string _name;
-
-        [ObservableProperty]
-        [property: JsonPropertyName("fit")]
-        [NotifyPropertyChangedFor(nameof(ShowHeight))]
-        private ResizeFit _fit = ResizeFit.Fit;
-
-        [ObservableProperty]
-        [property: JsonPropertyName("width")]
-        private double _width;
-
-        [ObservableProperty]
-        [property: JsonPropertyName("height")]
-        private double _height;
-
-        [ObservableProperty]
-        [property: JsonPropertyName("unit")]
-        [NotifyPropertyChangedFor(nameof(ShowHeight))]
-        private ResizeUnit _unit = ResizeUnit.Pixel;
 
         public ResizeSize(int id, string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {
@@ -74,6 +52,30 @@ namespace ImageResizer.Models
 
         public bool HasAuto
             => Width == 0 || Height == 0 || double.IsNaN(Width) || double.IsNaN(Height);
+
+        // Declared after the hand-written properties so System.Text.Json keeps the existing
+        // settings.json key order (these were previously generated members, emitted last).
+        [ObservableProperty]
+        [JsonPropertyName("Id")]
+        public partial int Id { get; set; }
+
+        [ObservableProperty]
+        [JsonPropertyName("fit")]
+        [NotifyPropertyChangedFor(nameof(ShowHeight))]
+        public partial ResizeFit Fit { get; set; } = ResizeFit.Fit;
+
+        [ObservableProperty]
+        [JsonPropertyName("width")]
+        public partial double Width { get; set; }
+
+        [ObservableProperty]
+        [JsonPropertyName("height")]
+        public partial double Height { get; set; }
+
+        [ObservableProperty]
+        [JsonPropertyName("unit")]
+        [NotifyPropertyChangedFor(nameof(ShowHeight))]
+        public partial ResizeUnit Unit { get; set; } = ResizeUnit.Pixel;
 
         public double GetPixelWidth(int originalWidth, double dpi)
             => ConvertToPixels(Width, Unit, originalWidth, dpi);
