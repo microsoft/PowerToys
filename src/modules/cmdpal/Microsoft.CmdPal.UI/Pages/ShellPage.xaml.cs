@@ -35,7 +35,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
-using IAppListItemSource = Microsoft.CmdPal.Ext.Apps.IAppListItemSource;
+using IAppListItemSource = Microsoft.CmdPal.Ext.Apps.AppList.IAppListItemSource;
 using KeyChordHelpers = Microsoft.CommandPalette.Extensions.Toolkit.KeyChordHelpers;
 using VirtualKey = Windows.System.VirtualKey;
 using VirtualKeyModifiers = Windows.System.VirtualKeyModifiers;

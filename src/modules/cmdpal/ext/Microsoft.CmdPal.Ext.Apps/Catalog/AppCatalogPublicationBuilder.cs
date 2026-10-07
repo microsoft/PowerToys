@@ -5,7 +5,8 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
 

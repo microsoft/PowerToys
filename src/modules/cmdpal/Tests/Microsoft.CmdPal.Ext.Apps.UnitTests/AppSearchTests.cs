@@ -8,8 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

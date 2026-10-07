@@ -4,8 +4,7 @@
 
 using System;
 using System.IO;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using ContrastMode = Microsoft.CmdPal.Common.IconContrastMode;

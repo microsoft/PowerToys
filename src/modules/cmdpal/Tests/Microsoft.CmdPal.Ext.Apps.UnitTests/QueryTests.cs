@@ -6,6 +6,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.AppList;
+using Microsoft.CmdPal.Ext.Apps.Pages;
+using Microsoft.CmdPal.Ext.Apps.Persistence;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

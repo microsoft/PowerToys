@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Enumeration;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 

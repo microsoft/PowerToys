@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
