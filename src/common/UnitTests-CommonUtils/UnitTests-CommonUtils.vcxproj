@@ -29,6 +29,7 @@
       <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;TWO_WAY_PIPE_MESSAGE_IPC_TESTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

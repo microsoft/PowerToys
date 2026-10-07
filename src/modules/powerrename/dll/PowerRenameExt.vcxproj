@@ -22,6 +22,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..\lib\;..\PowerRenameUILib\;..\;$(RepoRoot)src\;$(RepoRoot)src\common\telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Pathcch.lib;comctl32.lib;shcore.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -92,6 +92,11 @@
   </ImportGroup>
 
   <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ConformanceMode>false</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
 
   <ItemGroup>
     <None Include="AppxManifest.xml" />

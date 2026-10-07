@@ -31,6 +31,7 @@
       <AdditionalIncludeDirectories>..\;..\WorkspacesLib\;..\WorkspacesLauncher\;$(RepoRoot)src\;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\\lib;$(RepoRoot)$(Platform)\\$(Configuration)\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

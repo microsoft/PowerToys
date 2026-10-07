@@ -21,6 +21,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <UseFullPaths>true</UseFullPaths>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

@@ -33,6 +33,7 @@
     <ClCompile>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ImageResizerLib;$(RepoRoot)src\common\inc;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>.\ImageResizerExt.def</ModuleDefinitionFile>

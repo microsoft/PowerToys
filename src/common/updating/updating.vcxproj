@@ -27,6 +27,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>Version.lib</AdditionalDependencies>

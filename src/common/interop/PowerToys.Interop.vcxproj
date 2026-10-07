@@ -83,6 +83,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <OmitDefaultLibName>false</OmitDefaultLibName>
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
