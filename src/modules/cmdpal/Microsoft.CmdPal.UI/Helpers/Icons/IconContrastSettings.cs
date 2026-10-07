@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Common;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.System;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.UI.ViewManagement;
@@ -16,9 +17,10 @@ internal static class IconContrastSettings
     internal static event Action? Changed;
 
     private static readonly UISettings UiSettings = new();
-    private static readonly object Sync = new();
+    private static readonly Lock Sync = new();
 
     private static ContrastState _state = new(default);
+    private static DispatcherQueue? _dispatcherQueue;
     private static ThemeSettings? _themeSettings;
 
     internal static IconContrast Current => Volatile.Read(ref _state).Contrast;
@@ -31,10 +33,25 @@ internal static class IconContrastSettings
             return;
         }
 
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _themeSettings = ThemeSettings.CreateForWindowId(windowId);
-        _themeSettings.Changed += (_, _) => Refresh();
-        UiSettings.ColorValuesChanged += (_, _) => Refresh();
+        _themeSettings.Changed += (_, _) => RefreshOnOwnerThread();
+        UiSettings.ColorValuesChanged += (_, _) => RefreshOnOwnerThread();
         Refresh();
+    }
+
+    // ThemeSettings is bound to the UI thread; UISettings raises ColorValuesChanged on a worker thread.
+    private static void RefreshOnOwnerThread()
+    {
+        var queue = _dispatcherQueue!;
+        if (queue.HasThreadAccess)
+        {
+            Refresh();
+        }
+        else
+        {
+            queue.TryEnqueue(Refresh);
+        }
     }
 
     private static void Refresh()
