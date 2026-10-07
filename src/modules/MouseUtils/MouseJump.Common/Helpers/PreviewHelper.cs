@@ -17,8 +17,8 @@ namespace MouseJump.Common.Helpers;
 /// and per-screen bezels/screenshots all baked into one image, with each screen's content
 /// supplied by <paramref name="captureProvider"/> (see <see cref="ComposePreviewAsync"/>). This is a
 /// fallback for contexts that can't render the layout as native, separately-composited UI
-/// elements the way <c>FancyMouse.WinUI3</c>'s <c>PreviewWindow</c>/<c>PreviewPane</c> do -
-/// currently used by <c>FancyMouse.SettingsUI</c>'s live style preview (against a bundled
+/// elements the way the WinUI3 app's <c>PreviewWindow</c>/<c>PreviewPane</c> do -
+/// currently used by the Settings UI's live style preview (against a bundled
 /// fake-desktop image, via <see cref="StaticScreenshotCaptureProvider"/>) and by
 /// <c>DrawingHelperTests</c> (to keep comparing against golden images captured under this same
 /// flattened layout).

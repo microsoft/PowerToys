@@ -224,13 +224,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         $"Unhandled {nameof(MouseJumpPreviewType)} '{previewType}'"),
                 };
 
-                var activatedScreen = displayInfo.Devices[0].Screens[0];
-
-                var previewLayout = LayoutHelper.GetPreviewLayout(
-                    previewStyle: previewStyle,
-                    displayInfo: displayInfo,
-                    maximumSize: canvasSize);
-
                 // StaticScreenshotCaptureProvider does no real async work (it just crops/scales
                 // an in-memory Bitmap), so blocking on it here is safe - this getter is a
                 // synchronous XAML binding and has no natural async path of its own.
