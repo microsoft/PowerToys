@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Xml.Linq;
 using ManagedCommon;
@@ -112,6 +113,46 @@ internal static class PackagedAppReader
         return items;
     }
 
+    /// <summary>Extracts one recognized Edge PWA launch from the manifest XML already loaded by discovery.</summary>
+    /// <param name="application">The application element in the loaded manifest.</param>
+    /// <returns>Complete launch metadata, or <see langword="null"/> when equivalence cannot be established.</returns>
+    internal static EdgePwaLaunchInfo? ReadEdgePwaLaunchInfo(XElement? application)
+    {
+        var root = application?.Document?.Root;
+        if (application is null || root is null
+            || (string?)application.Attribute(Uap10Namespace + "HostId") != "PWA"
+            || !string.IsNullOrEmpty((string?)application.Attribute("Executable"))
+            || !string.IsNullOrEmpty((string?)application.Attribute("EntryPoint"))
+            || !string.IsNullOrEmpty((string?)application.Attribute("StartPage")))
+        {
+            return null;
+        }
+
+        var ns = root.Name.Namespace;
+        var hosts = root.Element(ns + "Dependencies")?.Elements(Uap10Namespace + "HostRuntimeDependency").Take(2).ToArray();
+        var extensions = application.Element(ns + "Extensions")?.Elements(Uap3Namespace + "Extension")
+            .Where(extension => (string?)extension.Attribute("Category") == "windows.appExtension")
+            .Elements(Uap3Namespace + "AppExtension")
+            .Where(extension => ((string?)extension.Attribute("Name"))?.StartsWith("com.ms.webapp.internals.", StringComparison.Ordinal) == true)
+            .Take(2).ToArray();
+        if (hosts is not { Length: 1 } || extensions is not { Length: 1 }
+            || (string?)extensions[0].Attribute("Name") != "com.ms.webapp.internals.2")
+        {
+            return null;
+        }
+
+        var info = new EdgePwaLaunchInfo
+        {
+            PackagePublisher = (string?)root.Element(ns + "Identity")?.Attribute("Publisher") ?? string.Empty,
+            HostPackageName = (string?)hosts[0].Attribute("Name") ?? string.Empty,
+            HostPackagePublisher = (string?)hosts[0].Attribute("Publisher") ?? string.Empty,
+            HostId = (string?)application.Attribute(Uap10Namespace + "HostId") ?? string.Empty,
+            Parameters = (string?)application.Attribute(Uap10Namespace + "Parameters") ?? string.Empty,
+            LaunchContext = (string?)extensions[0].Attribute("Description") ?? string.Empty,
+        };
+        return info.IsSupported ? info : null;
+    }
+
     private static unsafe PackagedAppMetadata? ReadApplication(
         IAppxManifestApplication* application,
         XElement? element,
@@ -137,6 +178,7 @@ internal static class PackagedAppReader
             AppUserModelId = id,
             Executable = ReadStringValue(application, "Executable"),
             ExecutionAliases = GetExecutionAliases(element),
+            EdgePwaLaunch = ReadEdgePwaLaunchInfo(element),
             CanRunElevated = ReadStringValue(application, "EntryPoint") == "Windows.FullTrustApplication"
                 || (string?)element?.Attribute(Uap10Namespace + "TrustLevel") == "mediumIL",
             Package = package,

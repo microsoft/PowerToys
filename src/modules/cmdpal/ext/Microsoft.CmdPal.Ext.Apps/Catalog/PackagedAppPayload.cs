@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -33,6 +34,10 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
     /// <summary>Gets the manifest-declared executable without assuming a resolved activation target.</summary>
     /// <remarks>This may be a relative path or empty. Only its filename contributes search metadata; activation uses <see cref="AppUserModelId"/>.</remarks>
     public string Executable { get; init => field = value ?? string.Empty; } = string.Empty;
+
+    /// <summary>Gets the recognized Edge PWA launch metadata retained for deduplication after loading the cache.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public EdgePwaLaunchInfo? EdgePwaLaunch { get; init; }
 
     /// <summary>Gets the package family identity shared by versions and architectures of the package.</summary>
     public string PackageFamilyName { get; init; } = string.Empty;
@@ -71,6 +76,7 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
             Description = app.Description,
             AppUserModelId = app.AppUserModelId,
             Executable = app.Executable,
+            EdgePwaLaunch = app.EdgePwaLaunch,
             PackageFamilyName = app.Package.FamilyName,
             PackageFullName = app.Package.FullName,
             PackageLocation = app.Package.InstalledLocation,

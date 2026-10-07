@@ -21,6 +21,9 @@ internal sealed class PackagedAppMetadata
     /// <summary>Gets or sets execution alias filenames declared by this application.</summary>
     public IReadOnlyList<string> ExecutionAliases { get; set; } = [];
 
+    /// <summary>Gets or sets recognized Edge PWA launch metadata used to associate equivalent packages.</summary>
+    public EdgePwaLaunchInfo? EdgePwaLaunch { get; set; }
+
     /// <summary>Gets or sets the manifest's small-logo reference, with asset selection deferred to rendering.</summary>
     public string SmallLogoUri { get; set; } = string.Empty;
 

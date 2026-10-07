@@ -359,6 +359,52 @@ public partial class Win32AppSourceTests
     }
 
     [TestMethod]
+    [DataRow(@"C:\Program Files\Google\Chrome\Application\chrome_proxy.exe", @"C:\Program Files\BraveSoftware\Brave-Browser\Application\chrome_proxy.exe")]
+    [DataRow(@"C:\Program Files\BraveSoftware\Brave-Browser\Application\chrome_proxy.exe", @"C:\Program Files\Google\Chrome\Application\chrome_proxy.exe")]
+    public async Task LoadAsync_ChromiumPwasMergeDuplicateShortcutsAndKeepLaunchProfilesSeparate(string browser, string otherBrowser)
+    {
+        const string arguments = "--profile-directory=Default --app-id=agimnkijcaahngcdmfeangaknmldooml";
+        var programs = new Dictionary<string, Win32AppMetadata>(StringComparer.OrdinalIgnoreCase);
+        var entries = new[]
+        {
+            (Path: @"C:\Desktop\YouTube.lnk", Target: browser, Arguments: arguments),
+            (Path: @"C:\Start Menu\YouTube renamed.lnk", Target: browser, Arguments: arguments),
+            (Path: @"C:\Start Menu\YouTube work.lnk", Target: browser, Arguments: arguments.Replace("=Default", "=Work", StringComparison.Ordinal)),
+            (Path: @"C:\Start Menu\YouTube other data.lnk", Target: browser, Arguments: arguments + " --user-data-dir=\"C:\\Profiles\\Other\""),
+            (Path: @"C:\Start Menu\YouTube other browser.lnk", Target: otherBrowser, Arguments: arguments),
+            (Path: @"C:\Start Menu\Another app.lnk", Target: browser, Arguments: arguments.Replace("agimnkijcaahngcdmfeangaknmldooml", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", StringComparison.Ordinal)),
+        };
+        foreach (var entry in entries)
+        {
+            var program = CreateExecutable(Path.GetFileNameWithoutExtension(entry.Path), entry.Target, entry.Path);
+            program.AppType = Win32AppType.WebApplication;
+            program.Arguments = entry.Arguments;
+            program.WorkingDirectory = Path.GetDirectoryName(entry.Target)!;
+            programs.Add(entry.Path, program);
+        }
+
+        using var source = new Win32AppSource(
+            new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, programs.Keys.ToArray()),
+            (path, _) => programs[path],
+            createWatchers: false);
+
+        var items = await source.LoadAsync(CancellationToken.None);
+
+        Assert.AreEqual(5, items.Count);
+        var duplicate = items.Single(item => item.Provenance.References.Length == 2);
+        CollectionAssert.AreEquivalent(entries.Take(2).Select(entry => entry.Path).ToArray(), duplicate.Provenance.References.Select(reference => reference.ItemId).ToArray());
+        var app = duplicate.ToAppItem();
+        Assert.AreEqual(arguments, app.LaunchArguments);
+        Assert.AreEqual(browser, app.ResolvedTarget);
+        var row = new AppListItem(app, useThumbnails: false);
+        var snapshot = new AppListItemSnapshot([row], []);
+        foreach (var entry in entries.Take(2))
+        {
+            Assert.AreSame(row, snapshot.GetApp(Win32AppPayload.From(programs[entry.Path]).GetCommandId()));
+        }
+    }
+
+    [TestMethod]
     public async Task LoadAsync_SameTargetWithArgumentsDifferingByCase_KeepsDistinctIdentities()
     {
         const string targetPath = @"C:\Apps\app.exe";
