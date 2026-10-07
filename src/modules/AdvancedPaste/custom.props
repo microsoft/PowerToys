@@ -7,5 +7,23 @@
     <VersionMajor>0</VersionMajor>
     <VersionMinor>9</VersionMinor>
     <VersionInfoProductName>PowerToys Advanced Paste</VersionInfoProductName>
+    <!--
+      Keep the .NET SDK's generated assembly info. Otherwise XES sets GenerateAssemblyInfo=false,
+      which drops [SupportedOSPlatform], [TargetPlatform] and [NeutralResourcesLanguage] from
+      release builds and makes CA1416 fire on every Windows API call. XES still stamps the
+      native version resource; PTUseXesAssemblyVersion below feeds its versions to the SDK.
+    -->
+    <XesDisableAssemblyInfoWrite>True</XesDisableAssemblyInfoWrite>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
+
+  <Target Name="PTUseXesAssemblyVersion" BeforeTargets="GetAssemblyAttributes">
+    <PropertyGroup>
+      <AssemblyVersion>$(AssemblyStringVersion)</AssemblyVersion>
+      <FileVersion>$(XefFileStringVersion)</FileVersion>
+      <Company>$(VersionInfoCompanyName)</Company>
+      <Product>$(VersionInfoProductName)</Product>
+      <Description>$(VersionInfoFileDescription)</Description>
+    </PropertyGroup>
+  </Target>
 </Project>
