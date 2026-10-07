@@ -133,7 +133,43 @@ worker snapshot is lost.
 
 ## Recorded evidence
 
-**Status: official winappcli v0.7.0 passed the full seven-test pilot on both
+**Final x64 Debug pilot: the complete eleven-case suite passed on both fresh CI
+jobs in [build 159677767](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159677767).**
+The build completed successfully on October 7, 2026 UTC at source
+`078299d71e685f445332bf44057cf52565405916`.
+
+| Fresh CI job | Executed/passed | Smoke duration | Persisted key/peer acknowledgement |
+|---|---|---|---|
+| Win10 Legacy, test run 1706270707 | 11/11, no skipped cases | 13m 46s | Both true, 640 ms |
+| Win11 modern, test run 1706269035 | 11/11, no skipped cases | 7m 16s | Both true, 685 ms |
+
+Both jobs passed all eight ordered smoke phases, including physical input and
+clipboard negatives/both transfer directions. Each asserted real 45-second
+controller-loss recovery, the exact incomplete/lost-clipboard reset verdict,
+owned creation-abort/unowned-instance refusal, and byte-for-byte stale-journal
+preservation with zero prior-owner attachments. Normal fixture and external
+recovery were clean; client setup, exact-rule cleanup and artifact publication
+succeeded. Recording manifests report capture/finalization available and complete.
+
+The first expanded fresh-CI attempt,
+[159647941](https://dev.azure.com/microsoft/Dart/_build/results?buildId=159647941),
+executed all eleven cases on each OS but passed ten: only guest smoke startup
+failed. Inspection of the actual native Runner imports and failed runtime bundle
+identified the missing SDK `ucrtbased.dll` dependency, not a Settings timeout.
+Adding only that signed SDK file to the actual CI runtime made the full Win10
+suite pass locally; the private-staging fix then passed the fresh CI matrix above
+without changing deadlines or assertions. Four of the six authorized attempts
+were used, including the two earlier green ordered smokes.
+
+The final local eleven-case backing runs were Win10
+`localvm-20261006-165358-e25fe5be` and Win11
+`localvm-20261006-183216-1bf7c9f2`, with the documented provider-ready retained
+Win11 profile. The attachment-observer follow-up passed on both OSes; the actual
+corrected CI runtime passed locally in `localvm-20261006-215628-5275908c`.
+These local results do not replace the independent fresh CI evidence or erase
+the retained-profile cold-start limitation above.
+
+**Historical seven-test baseline: official winappcli v0.7.0 passed the full seven-test pilot on both
 Windows 10 and Windows 11 on October 2, 2026.**
 The Start-menu focus fix adds three infrastructure regressions. Windows 11 run
 `localvm-20261002-221219-4822b84c` passed 7/7 tests and all eight
