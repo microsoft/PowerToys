@@ -24,7 +24,6 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
-#include <common/utils/clean_video_conference.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -65,26 +64,6 @@ namespace
 {
     const wchar_t PT_URI_PROTOCOL_SCHEME[] = L"powertoys://";
     const wchar_t POWER_TOYS_MODULE_LOAD_FAIL[] = L"Failed to load "; // Module name will be appended on this message and it is not localized.
-
-    const wchar_t POWERTOYS_REGISTRY_KEY[] = L"Software\\Microsoft\\PowerToys";
-    const wchar_t VIDEO_CONFERENCE_CLEANUP_DONE_VALUE[] = L"VideoConferenceMuteCleanupDone";
-
-    bool is_video_conference_cleanup_done()
-    {
-        DWORD value = 0;
-        DWORD size = sizeof(value);
-        return RegGetValueW(HKEY_CURRENT_USER, POWERTOYS_REGISTRY_KEY, VIDEO_CONFERENCE_CLEANUP_DONE_VALUE, RRF_RT_REG_DWORD, nullptr, &value, &size) == ERROR_SUCCESS && value == 1;
-    }
-
-    void mark_video_conference_cleanup_done()
-    {
-        const DWORD value = 1;
-        const LSTATUS result = RegSetKeyValueW(HKEY_CURRENT_USER, POWERTOYS_REGISTRY_KEY, VIDEO_CONFERENCE_CLEANUP_DONE_VALUE, REG_DWORD, &value, sizeof(value));
-        if (result != ERROR_SUCCESS)
-        {
-            Logger::warn(L"Failed to record Video Conference Mute cleanup marker, error: {}", result);
-        }
-    }
 }
 
 void chdir_current_executable()
@@ -254,16 +233,6 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
 
         chdir_current_executable();
-
-        // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
-        // When running elevated, we try to clean up the device registration from previous installations.
-        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
-        // The cleanup only needs to happen once, so a marker is recorded after the first elevated run and checked on later starts.
-        if (isProcessElevated && !is_video_conference_cleanup_done())
-        {
-            clean_video_conference();
-            mark_video_conference_cleanup_done();
-        }
 
         // Load PowerToys DLLs
 
