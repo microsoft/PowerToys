@@ -75,11 +75,8 @@ public sealed partial class ListItemsView : UserControl,
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
-    // A single search-text change can produce multiple ItemsUpdated calls
-    // dispatched as separate UI-thread callbacks. A later "soft" update
-    // (ForceFirstItem = false) must not overwrite a prior force-first
-    // intent. This flag latches true whenever any update requests
-    // force-first and is only cleared once selection stabilizes.
+    // Retain reset intent until selection is applied. The main page keeps following
+    // the first result as late results arrive, until the user changes selection.
     private bool _forceFirstPending;
 
     private bool _isLoaded;
@@ -322,13 +319,25 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel { IsInteractive: true } vm)
+        if (sender is not ListViewBase itemView || !ReferenceEquals(itemView, ItemView) || ViewModel is not { } viewModel)
         {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
+            return;
+        }
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var item = ListItemDoubleTapTarget.Resolve<DependencyObject, SelectorItem>(
+            e.OriginalSource as DependencyObject,
+            itemView,
+            settings.SingleClickActivates,
+            VisualTreeHelper.GetParent,
+            container => ReferenceEquals(ItemsControl.ItemsControlFromItemContainer(container), itemView)
+                ? itemView.ItemFromContainer(container) as ListItemViewModel
+                : null);
+
+        if (item is not null)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            e.Handled = true;
         }
     }
 
@@ -685,7 +694,7 @@ public sealed partial class ListItemsView : UserControl,
         _selectedGridSectionCommand?.SetSectionCommandSelected(true);
     }
 
-    private void PushSelectionToVm()
+    private void PushSelectionToVm(bool force = false)
     {
         if (ViewModel is null)
         {
@@ -694,26 +703,35 @@ public sealed partial class ListItemsView : UserControl,
 
         var selectedGridSection = SelectedGridSectionCommand;
         var item = SelectedCommandItem;
-        if (item?.IsKeyboardNavigable != true)
+        if (item?.IsKeyboardNavigable == true)
+        {
+            SetSectionCommandSelection(
+                listHeader: !ViewModel.IsGridView && item.IsSectionCommandTarget ? item : null,
+                gridGroup: selectedGridSection);
+            _stickySelectedItem = item;
+
+            if (!force && ReferenceEquals(_lastPushedToVm, item))
+            {
+                return;
+            }
+
+            _lastPushedToVm = item;
+        }
+        else
         {
             SetSectionCommandSelection(null, null);
+            item = null;
             _lastPushedToVm = null;
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
-            return;
         }
 
-        SetSectionCommandSelection(
-            listHeader: !ViewModel.IsGridView && item.IsSectionCommandTarget ? item : null,
-            gridGroup: selectedGridSection);
-        _stickySelectedItem = item;
-
-        if (ReferenceEquals(_lastPushedToVm, item))
+        if (force)
         {
-            return;
+            ViewModel.AcknowledgeSelection(item);
         }
-
-        _lastPushedToVm = item;
-        ViewModel.UpdateSelectedItemCommand.Execute(item);
+        else
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(item);
+        }
     }
 
     public void Receive(NavigateNextCommand message)
@@ -1096,8 +1114,8 @@ public sealed partial class ListItemsView : UserControl,
 
         // Try to handle selection immediately after updating the presentation.
         // The grouped CollectionViewSource may still be processing its changes.
-        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
-        // selection stabilizes (no repair needed), so we don't clear it here.
+        // TrySetSelectionAfterUpdate consumes resets once selection is applied
+        // and retains main-page tracking until user navigation.
         if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
         {
             return;
@@ -1449,6 +1467,8 @@ public sealed partial class ListItemsView : UserControl,
             return false;
         }
 
+        // User navigation can cancel a reset while its retry is queued.
+        forceFirstItem &= _forceFirstPending;
         var selectedGridSection = _selectedGridSectionCommand;
         var selectedGridSectionIsCurrent =
             vm.IsGridView &&
@@ -1471,8 +1491,7 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         if (!forceFirstItem && vm.IsGridView && !selectedGridSectionIsCurrent &&
@@ -1480,8 +1499,7 @@ public sealed partial class ListItemsView : UserControl,
             GridItems.Groups.FirstOrDefault(group => ReferenceEquals(group.Header, stickyHeader) && group.HasSectionCommand) is { } restoredGroup)
         {
             SelectGridSectionCommand(restoredGroup, 0, ensureSelectionVisible, announceSelection: false);
-            _forceFirstPending = false;
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         if (vm.IsGridView && GridItems.ItemCount == 0 && firstGridSectionCommand is not null)
@@ -1490,17 +1508,12 @@ public sealed partial class ListItemsView : UserControl,
             {
                 SelectGridSectionCommand(firstGridSectionCommand, 0, announceSelection: false);
             }
-            else
+            else if (ensureSelectionVisible)
             {
-                PushSelectionToVm();
-                if (ensureSelectionVisible)
-                {
-                    ScrollGridToSectionCommand(selectedGridSection!);
-                }
+                ScrollGridToSectionCommand(selectedGridSection!);
             }
 
-            _forceFirstPending = false;
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         // If ItemView.Items hasn't caught up with the ObservableCollection yet,
@@ -1521,8 +1534,7 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         var shouldUpdateSelection = forceFirstItem;
@@ -1606,10 +1618,6 @@ public sealed partial class ListItemsView : UserControl,
         }
         else
         {
-            // Selection is valid and unchanged: the force-first intent (if any)
-            // has been fully delivered and selection has stabilized.
-            _forceFirstPending = false;
-
             if (ensureSelectionVisible && selectedGridSectionIsCurrent && selectedGridSection is not null)
             {
                 ScrollGridToSectionCommand(selectedGridSection);
@@ -1632,7 +1640,17 @@ public sealed partial class ListItemsView : UserControl,
             }
         }
 
-        PushSelectionToVm();
+        return CompleteSelectionUpdate(sender, version, forceFirstItem);
+    }
+
+    private bool CompleteSelectionUpdate(ListViewModel sender, long version, bool forceSelection)
+    {
+        if (version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(sender, ViewModel))
+        {
+            _forceFirstPending &= sender.IsMainPage;
+            PushSelectionToVm(forceSelection);
+        }
+
         return true;
     }
 

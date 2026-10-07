@@ -1,9 +1,0 @@
-namespace Microsoft.Terminal.UI {
-//     runtimeclass ResourceString : Windows.UI.Xaml.Markup.MarkupExtension
-//     {
-//         ResourceString();
-//         String Tree { get; set; };
-//         String Name { get; set; };
-//         Object ProvideValue();
-//     };
-}

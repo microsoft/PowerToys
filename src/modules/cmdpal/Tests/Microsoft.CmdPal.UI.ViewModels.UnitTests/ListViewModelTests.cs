@@ -128,6 +128,8 @@ public partial class ListViewModelTests
 
         public string? FilterWhenSearchChanged { get; private set; }
 
+        public IListItem[] Items { get; set; } = [new ListItem(new NoOpCommand() { Name = "Result" })];
+
         public SearchableDynamicPage()
         {
             Filters = new LaunchFilters();
@@ -136,6 +138,7 @@ public partial class ListViewModelTests
         public override void UpdateSearchText(string oldSearch, string newSearch)
         {
             FilterWhenSearchChanged = Filters?.CurrentFilterId;
+            RaiseItemsChanged(Items.Length);
         }
 
         public override IListItem[] GetItems()
@@ -143,8 +146,10 @@ public partial class ListViewModelTests
             GetItemsCallCount++;
             SearchAtFirstGetItems ??= SearchText;
             FilterAtFirstGetItems ??= Filters?.CurrentFilterId;
-            return [new ListItem(new NoOpCommand() { Name = "Result" })];
+            return Items;
         }
+
+        public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
     }
 
     private static ListViewModel CreateViewModel(IListPage page) =>
@@ -209,6 +214,98 @@ public partial class ListViewModelTests
         }
     }
 
+    [DataTestMethod]
+    [DataRow(false, -1, false, true)]
+    [DataRow(false, 1, false, true)]
+    [DataRow(false, 2, false, false)]
+    [DataRow(false, 1, true, false)]
+    [DataRow(false, 2, true, false)]
+    [DataRow(false, -1, true, false)]
+    [DataRow(true, 2, false, true)]
+    [DataRow(true, 1, true, false)]
+    public async Task ReorderedStableResults_PreserveSelectionIntent(bool isRootPage, int selectedIndex, bool incremental, bool forceFirst)
+    {
+        var section = new Separator("Apps");
+        var winaero = new ListItem(new NoOpCommand() { Name = "Winaero" });
+        var word = new ListItem(new NoOpCommand() { Name = "Word" });
+        var page = new SearchableDynamicPage { Items = [section, winaero, word] };
+        var viewModel = CreateViewModel(page);
+        viewModel.IsRootPage = isRootPage;
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+            var originalWinaero = viewModel.FilteredItems[1];
+            var originalWord = viewModel.FilteredItems[2];
+            viewModel.UpdateSelectedItemCommand.Execute(selectedIndex < 0 ? null : viewModel.FilteredItems[selectedIndex]);
+            page.Items = [section, word, winaero];
+
+            var update = await ObserveNextItemsUpdateAsync(viewModel, () =>
+            {
+                if (incremental)
+                {
+                    page.TriggerItemsChanged(ListViewModel.IncrementalRefresh);
+                }
+                else
+                {
+                    viewModel.SearchTextBox = "winword";
+                }
+            });
+
+            Assert.AreSame(originalWord, viewModel.FilteredItems[1]);
+            Assert.AreSame(originalWinaero, viewModel.FilteredItems[2]);
+            Assert.AreEqual(forceFirst, update.ForceFirstItem);
+
+            if (incremental)
+            {
+                // Moving a selected row can change its position without changing selection.
+                page.Items = [section, winaero, word];
+                var nextUpdate = await ObserveNextItemsUpdateAsync(viewModel, () => viewModel.SearchTextBox = "winword");
+                Assert.AreEqual(isRootPage || selectedIndex < 0 || selectedIndex == 2, nextUpdate.ForceFirstItem);
+            }
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false, 0, true)]
+    [DataRow(false, 1, false)]
+    [DataRow(true, 0, false)]
+    [DataRow(true, 1, false)]
+    [DataRow(true, 2, true)]
+    public async Task SubpageRefreshWithSectionCommands_ResetsOnlyFromDefaultSelection(bool hasOrdinaryItem, int selectedIndex, bool forceFirst)
+    {
+        var recent = new Separator("Recent", new NoOpCommand { Name = "Open recent" });
+        var favorites = new Separator("Favorites", new NoOpCommand { Name = "Open favorites" });
+        var page = new SearchableDynamicPage
+        {
+            Items = hasOrdinaryItem
+                ? [recent, favorites, new ListItem(new NoOpCommand { Name = "Open item" })]
+                : [recent, favorites],
+        };
+        var viewModel = CreateViewModel(page);
+        viewModel.IsRootPage = false;
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+            viewModel.AcknowledgeSelection(viewModel.FilteredItems[selectedIndex]);
+
+            var update = await ObserveNextItemsUpdateAsync(viewModel, () => page.TriggerItemsChanged(0));
+
+            Assert.AreEqual(forceFirst, update.ForceFirstItem);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
     [TestMethod]
     public async Task UnknownFilter_ShowsPageErrorAndPreventsInitialFetch()
     {
@@ -258,7 +355,7 @@ public partial class ListViewModelTests
 
         Assert.AreEqual(1, messages.Count);
         Assert.AreSame(command, messages[0].Command.Unsafe);
-        Assert.AreSame(item, messages[0].Context);
+        Assert.AreSame(item, messages[0].CommandContext);
     }
 
     [TestMethod]
@@ -271,7 +368,7 @@ public partial class ListViewModelTests
 
         Assert.AreEqual(1, messages.Count);
         Assert.AreSame(command, messages[0].Command.Unsafe);
-        Assert.AreSame(item, messages[0].Context);
+        Assert.AreSame(item, messages[0].CommandContext);
     }
 
     [TestMethod]
@@ -368,6 +465,11 @@ public partial class ListViewModelTests
         {
             itemViewModel.InitializeProperties();
             listViewModel.InvokeItemCommand.Execute(itemViewModel);
+            foreach (var message in messages)
+            {
+                Assert.AreSame(listViewModel, message.Context?.Page);
+            }
+
             return messages;
         }
         finally

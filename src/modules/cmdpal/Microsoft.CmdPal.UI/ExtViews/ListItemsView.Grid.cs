@@ -548,7 +548,11 @@ public sealed partial class ListItemsView
 
         SetSectionCommandSelection(null, group);
         _gridNavigationColumn = column;
-        _forceFirstPending = false;
+        if (announceSelection)
+        {
+            _forceFirstPending = false;
+        }
+
         _scrollOnNextSelectionChange = false;
         PushSelectionToVm();
         if (announceSelection && selectionChanged)
