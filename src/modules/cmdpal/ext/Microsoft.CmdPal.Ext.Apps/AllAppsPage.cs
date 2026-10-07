@@ -231,6 +231,7 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         {
             AllAppsFilters.Win32FilterId => !item.App.IsPackaged,
             AllAppsFilters.PackagedFilterId => item.App.IsPackaged,
+            AllAppsFilters.WebFilterId => item.App.IsWebApp,
             _ => true,
         };
     }

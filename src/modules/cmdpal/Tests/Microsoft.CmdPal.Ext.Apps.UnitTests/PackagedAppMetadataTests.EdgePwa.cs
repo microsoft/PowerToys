@@ -36,12 +36,64 @@ public partial class PackagedAppMetadataTests
             Assert.AreEqual(app.EdgePwaLaunch, ((PackagedAppPayload)item.Payload).EdgePwaLaunch);
             Assert.AreEqual(AppIdentity.ForPackaged(app.AppUserModelId), item.Identity);
             Assert.AreEqual(app.AppUserModelId, item.ToAppItem().AppUserModelId);
+            Assert.IsTrue(item.ToAppItem().IsWebApp);
+            Assert.IsTrue(item.ToAppItem().IsPackaged);
             Assert.IsNull(item.Payload.GetCanonicalTargetPath());
             using var writer = File.Open(Path.Combine(root, "AppxManifest.xml"), FileMode.Open, FileAccess.Write, FileShare.None);
         }
         finally
         {
             Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [STATestMethod]
+    [DataRow("com.ms.webapp.internals.3", "PWA", true)]
+    [DataRow(null, "PWA", true)]
+    [DataRow("com.ms.webapp.internals.3", "OtherHost", false)]
+    public void ReadManifest_WebAppClassificationDoesNotRequireRecognizedEdgeLaunch(string? extensionName, string hostId, bool webApp)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"cmdpal-web-app-host-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var manifestPath = Path.Combine(root, "AppxManifest.xml");
+        try
+        {
+            var manifest = CreateEdgePwaManifest();
+            var ns = manifest.Root!.Name.Namespace;
+            XNamespace uap10 = "http://schemas.microsoft.com/appx/manifest/uap/windows10/10";
+            var application = manifest.Root.Element(ns + "Applications")!.Elements().Single();
+            application.SetAttributeValue(uap10 + "HostId", hostId);
+            var extensions = application.Element(ns + "Extensions")!;
+            if (extensionName is null)
+            {
+                extensions.Remove();
+            }
+            else
+            {
+                extensions.Elements().Single().Elements().Single().SetAttributeValue("Name", extensionName);
+            }
+
+            File.WriteAllText(manifestPath, manifest.ToString());
+            var package = TestDataHelper.CreateTestPackagedMetadata(packageLocation: root).Package;
+
+            var apps = PackagedAppReader.ReadManifest(package, out var complete);
+
+            Assert.IsTrue(complete);
+            var metadata = apps.Single();
+            Assert.AreEqual(webApp, metadata.IsWebApp);
+            Assert.IsNull(metadata.EdgePwaLaunch);
+            var item = PackagedAppSource.CreateCatalogItem(metadata);
+            var app = item.ToAppItem();
+            Assert.AreEqual(webApp, app.IsWebApp);
+            Assert.AreEqual(AppIdentity.ForPackaged(metadata.AppUserModelId), item.Identity);
+            Assert.AreEqual(metadata.AppUserModelId, app.AppUserModelId);
+            var rows = AllAppsPage.FilterAppItems([new AppListItem(app)], AllAppsFilters.WebFilterId, search: null);
+            Assert.AreEqual(webApp ? 1 : 0, rows.Length);
+        }
+        finally
+        {
+            File.Delete(manifestPath);
+            Directory.Delete(root);
         }
     }
 
