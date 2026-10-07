@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -18,10 +22,62 @@ public static class TestDataHelper
         return new(new(), new());
     }
 
+    internal static FrozenDictionary<string, string> RetainCommandAliases(AppCommandAliasStore store, IEnumerable<AppItem> apps)
+    {
+        var aliases = AppCatalogCommandAliases.Retain(store.GetSnapshot(), apps);
+        store.SetSnapshot(aliases);
+        return aliases;
+    }
+
+    internal static AppVisibility GetVisibility(
+        IAppVisibilityStore store,
+        AppCatalogItem item,
+        AllAppsSettings settings = null,
+        AppCommandAliasStore aliases = null)
+    {
+        var rules = new AppCatalogVisibility(settings?.ExcludedAppNames ?? [], settings?.ExcludedAppPaths ?? []);
+        var hiddenIdentities = store.GetSnapshot();
+        var hiddenCommands = AppCatalogVisibility.ResolveHiddenCommandIds(
+            hiddenIdentities, aliases?.GetSnapshot() ?? FrozenDictionary<string, string>.Empty);
+        return rules.GetVisibility(item, hiddenIdentities, hiddenCommands);
+    }
+
+    internal static bool SetHidden(
+        IAppVisibilityStore store,
+        AppCatalogItem item,
+        bool hidden,
+        AppCommandAliasStore aliases = null)
+    {
+        return store.SetSnapshot(AppCatalogVisibility.UpdateHiddenIdentities(
+            store.GetSnapshot(), item, hidden, aliases?.GetSnapshot() ?? FrozenDictionary<string, string>.Empty));
+    }
+
+    internal static string GetAliasesPath(string settingsPath)
+    {
+        return Path.ChangeExtension(settingsPath, "aliases.json");
+    }
+
+    internal static string GetVisibilityPath(string settingsPath)
+    {
+        return Path.ChangeExtension(settingsPath, "visibility.json");
+    }
+
+    internal static void WriteHiddenIdentities(string settingsPath, params string[] identities)
+    {
+        var values = new JsonArray();
+        foreach (var identity in identities)
+        {
+            values.Add((JsonNode)JsonValue.Create(identity)!);
+        }
+
+        File.WriteAllText(GetVisibilityPath(settingsPath), new JsonObject { ["HiddenAppIdentities"] = values }.ToJsonString());
+    }
+
     internal static void DeleteSettingsFiles(string settingsPath)
     {
         File.Delete(settingsPath);
-        File.Delete(AllAppsSettings.AppCommandAliasesPath(settingsPath));
+        File.Delete(GetAliasesPath(settingsPath));
+        File.Delete(GetVisibilityPath(settingsPath));
     }
 
     /// <summary>

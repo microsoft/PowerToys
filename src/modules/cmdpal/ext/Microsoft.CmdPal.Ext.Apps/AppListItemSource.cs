@@ -26,6 +26,9 @@ namespace Microsoft.CmdPal.Ext.Apps;
 /// </summary>
 public sealed partial class AppListItemSource : IAppListItemSource
 {
+    /// <inheritdoc />
+    public event EventHandler? Changed;
+
     private const CompareOptions TitleCompareOptions = CompareOptions.IgnoreCase | CompareOptions.NumericOrdering;
     private static readonly CompareInfo TitleCompareInfo = CultureInfo.CurrentCulture.CompareInfo;
 
@@ -46,8 +49,14 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private InterlockedBoolean _synchronizing;
     private InterlockedBoolean _disposed;
 
+    /// <inheritdoc />
+    public bool IsLoading => Volatile.Read(ref _publishedState).IsLoading;
+
+    /// <inheritdoc />
+    public int TopLevelResultLimit => _settings.EffectiveSearchResultLimit;
+
     /// <summary>
-    /// Initializes a new application list-item source backed by the supplied catalog and presentation settings.
+    /// Initializes a new instance of the <see cref="AppListItemSource"/> class. Initializes a new application list-item source backed by the supplied catalog and presentation settings.
     /// </summary>
     /// <param name="appCatalog">The canonical application catalog to project.</param>
     /// <param name="settings">Settings that control presentation-only projection choices.</param>
@@ -57,7 +66,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
     }
 
     /// <summary>
-    /// Initializes a new application list-item source with injected presentation settings and logging.
+    /// Initializes a new instance of the <see cref="AppListItemSource"/> class. Initializes a new application list-item source with injected presentation settings and logging.
     /// </summary>
     /// <param name="appCatalog">The canonical application catalog to project.</param>
     /// <param name="settings">Settings that control presentation-only projection choices.</param>
@@ -69,9 +78,13 @@ public sealed partial class AppListItemSource : IAppListItemSource
         MEL.ILogger<AppListItemSource> logger,
         AppExecutionAliasCache? executionAliasCache = null)
     {
-        _appCatalog = appCatalog ?? throw new ArgumentNullException(nameof(appCatalog));
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(appCatalog);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _appCatalog = appCatalog;
+        _settings = settings;
+        _logger = logger;
         _executionAliasCache = executionAliasCache;
         if (ShouldLogDiagnostics())
         {
@@ -104,16 +117,10 @@ public sealed partial class AppListItemSource : IAppListItemSource
     }
 
     /// <inheritdoc />
-    public event EventHandler? Changed;
-
-    /// <inheritdoc />
-    public AppListItemSnapshot GetSnapshot() => Volatile.Read(ref _publishedState).Snapshot;
-
-    /// <inheritdoc />
-    public bool IsLoading => Volatile.Read(ref _publishedState).IsLoading;
-
-    /// <inheritdoc />
-    public int TopLevelResultLimit => _settings.EffectiveSearchResultLimit;
+    public AppListItemSnapshot GetSnapshot()
+    {
+        return Volatile.Read(ref _publishedState).Snapshot;
+    }
 
     /// <inheritdoc />
     public void RequestExecutionAliasRefresh()
@@ -193,9 +200,15 @@ public sealed partial class AppListItemSource : IAppListItemSource
         RaiseChanged();
     }
 
-    private void OnCatalogChanged(object? sender, AppCatalogChangedEventArgs args) => SynchronizeWithCatalog();
+    private void OnCatalogChanged(object? sender, AppCatalogChangedEventArgs args)
+    {
+        SynchronizeWithCatalog();
+    }
 
-    private void OnCatalogVisibilityChanged(object? sender, AppVisibilityChangedEventArgs args) => SynchronizeWithCatalog();
+    private void OnCatalogVisibilityChanged(object? sender, AppVisibilityChangedEventArgs args)
+    {
+        SynchronizeWithCatalog();
+    }
 
     private void OnSettingsChanged(object sender, Settings args)
     {
@@ -296,12 +309,11 @@ public sealed partial class AppListItemSource : IAppListItemSource
             existingItems[item.App.CatalogId] = (item, AppVisibility.HiddenByPattern);
         }
 
-        var commandAliases = _settings.RetainAppCommandAliases(catalogSnapshot.Items.Concat(catalogSnapshot.HiddenItems).Concat(catalogSnapshot.PatternHiddenItems));
         var updated = new AppListItemSnapshot(
             BuildList(catalogSnapshot.Items, AppVisibility.Visible, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
             BuildList(catalogSnapshot.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems),
             BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems),
-            commandAliases,
+            catalogSnapshot.CommandAliases,
             executableNameMatchMode,
             snapshot.ExecutionAliasOwners);
 
@@ -498,11 +510,8 @@ public sealed partial class AppListItemSource : IAppListItemSource
         }
 
         Changed = null;
-        _settings.WaitForAliasSavesAsync().GetAwaiter().GetResult();
         GC.SuppressFinalize(this);
     }
-
-    private sealed record PublishedState(AppListItemSnapshot Snapshot, bool IsLoading, bool HideDescriptions, int ResultLimit);
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Failed to initialize the application index.")]
     private static partial void LogInitializationFailed(MEL.ILogger logger, Exception exception);
@@ -521,4 +530,6 @@ public sealed partial class AppListItemSource : IAppListItemSource
 
     [LoggerMessage(EventId = 5, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] {Kind} loading completed after {DurationMs} ms.")]
     private static partial void LogDiagnosticLoadingCompleted(MEL.ILogger logger, string kind, double durationMs);
+
+    private sealed record PublishedState(AppListItemSnapshot Snapshot, bool IsLoading, bool HideDescriptions, int ResultLimit);
 }

@@ -47,7 +47,7 @@ public abstract class AppsTestBase
         _settingsPath = Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json");
         Settings = new AllAppsSettings(_settingsPath);
         MockCatalog = new MockAppCatalog();
-        AppListItemSource = new AppListItemSource(MockCatalog, Settings);
+        AppListItemSource = new AppListItemSource(MockCatalog, Settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
         Page = new AllAppsPage(AppListItemSource, TestDataHelper.CreateFuzzyMatcherProvider());
 
         await WaitForPageInitializationAsync();

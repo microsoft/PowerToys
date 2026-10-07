@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,6 +40,8 @@ public sealed partial class AppCatalog : IAppCatalog
     private readonly Dictionary<string, SourceRetryState> _sourceRetries = new(StringComparer.Ordinal);
     private readonly IAppCatalogCache _cache;
     private readonly IAppVisibilityStore _visibilityStore;
+    private readonly AppCommandAliasStore _commandAliases;
+    private readonly AllAppsSettings _settings;
     private readonly IReadOnlyList<IAppCatalogFilter> _filters;
     private readonly MEL.ILogger<AppCatalog> _logger;
     private readonly AppCatalogPublicationBuilder _publicationBuilder;
@@ -55,6 +58,7 @@ public sealed partial class AppCatalog : IAppCatalog
     private IReadOnlyList<IAppSource> _sources;
 
     private PublishedState _publishedState = PublishedState.Empty;
+    private AppCatalogVisibility _visibilityRules;
     private Task? _initializationTask;
     private Task? _refreshTask;
     private long _sourceProviderGeneration;
@@ -74,23 +78,45 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    /// <summary>Initializes a new instance of the <see cref="AppCatalog"/> class. Creates a catalog over the supplied discovery sources, persistence stores, and visibility rules.</summary>
+    /// <param name="sourceProvider">The provider of active discovery sources; owned by this catalog.</param>
+    /// <param name="cache">The cache of raw source snapshots.</param>
+    /// <param name="visibilityStore">The store of explicitly hidden identities.</param>
+    /// <param name="commandAliases">The retained-alias store; owned and flushed by this catalog.</param>
+    /// <param name="settings">Preferences that supply global name and path exclusions.</param>
+    /// <param name="filters">Optional catalog filters, disposed with this catalog.</param>
+    /// <param name="timeProvider">The clock and timer provider, or the system provider when omitted.</param>
+    /// <param name="invalidationDelay">The watcher invalidation debounce interval, or the default interval when omitted.</param>
+    /// <param name="logger">The catalog diagnostic logger, or a disabled logger when omitted.</param>
+    /// <param name="diagnosticsEnabled">Optional predicate controlling detailed timing diagnostics.</param>
     internal AppCatalog(
         IAppSourceProvider sourceProvider,
         IAppCatalogCache cache,
         IAppVisibilityStore visibilityStore,
+        AppCommandAliasStore commandAliases,
+        AllAppsSettings settings,
         IReadOnlyList<IAppCatalogFilter>? filters = null,
         TimeProvider? timeProvider = null,
         TimeSpan? invalidationDelay = null,
         MEL.ILogger<AppCatalog>? logger = null,
         Func<bool>? diagnosticsEnabled = null)
     {
-        _sourceProvider = sourceProvider ?? throw new ArgumentNullException(nameof(sourceProvider));
+        ArgumentNullException.ThrowIfNull(sourceProvider);
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(visibilityStore);
+        ArgumentNullException.ThrowIfNull(commandAliases);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        _sourceProvider = sourceProvider;
         _sources = _sourceProvider.GetSources();
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        _visibilityStore = visibilityStore ?? throw new ArgumentNullException(nameof(visibilityStore));
+        _cache = cache;
+        _visibilityStore = visibilityStore;
         _filters = filters ?? [];
         _logger = logger ?? NullLogger<AppCatalog>.Instance;
-        _publicationBuilder = new(_visibilityStore, _filters, _logger);
+        _commandAliases = commandAliases;
+        _settings = settings;
+        _visibilityRules = new(settings.ExcludedAppNames, settings.ExcludedAppPaths);
+        _publicationBuilder = new(_filters, _logger);
         _timeProvider = timeProvider ?? TimeProvider.System;
         _invalidationDelay = invalidationDelay ?? DefaultInvalidationDelay;
         _diagnosticsEnabled = diagnosticsEnabled ?? (() => false);
@@ -114,14 +140,16 @@ public sealed partial class AppCatalog : IAppCatalog
         }
 
         _sourceProvider.Changed += OnSourceProviderChanged;
-        _visibilityStore.Changed += OnFilterChanged;
+        _settings.Settings.SettingsChanged += OnVisibilitySettingsChanged;
     }
 
+    /// <inheritdoc />
     public AppCatalogSnapshot GetSnapshot()
     {
         return Volatile.Read(ref _publishedState).Snapshot;
     }
 
+    /// <inheritdoc />
     public Task InitializeAsync()
     {
         lock (_stateLock)
@@ -131,6 +159,7 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    /// <inheritdoc />
     public Task RefreshAsync()
     {
         IReadOnlyList<IAppSource> sources;
@@ -839,6 +868,7 @@ public sealed partial class AppCatalog : IAppCatalog
         }
     }
 
+    /// <inheritdoc />
     public Task SetAppHiddenAsync(string catalogId, bool hidden)
     {
         if (string.IsNullOrWhiteSpace(catalogId))
@@ -860,8 +890,14 @@ public sealed partial class AppCatalog : IAppCatalog
                 hidden ? publishedState.Snapshot.Items : publishedState.Snapshot.HiddenItems,
                 catalogId);
             if (!publishedState.CatalogItems.TryGetValue(catalogId, out var catalogItem)
-                || sourceIndex < 0
-                || !_visibilityStore.SetHidden(catalogItem, hidden))
+                || sourceIndex < 0)
+            {
+                return;
+            }
+
+            var hiddenIdentities = AppCatalogVisibility.UpdateHiddenIdentities(
+                _visibilityStore.GetSnapshot(), catalogItem, hidden, publishedState.Snapshot.CommandAliases);
+            if (!_visibilityStore.SetSnapshot(hiddenIdentities))
             {
                 return;
             }
@@ -892,8 +928,8 @@ public sealed partial class AppCatalog : IAppCatalog
         };
 
         var snapshot = hidden
-            ? new AppCatalogSnapshot(newSource, newDestination, publishedState.Snapshot.PatternHiddenItems)
-            : new AppCatalogSnapshot(newDestination, newSource, publishedState.Snapshot.PatternHiddenItems);
+            ? new AppCatalogSnapshot(newSource, newDestination, publishedState.Snapshot.PatternHiddenItems, publishedState.Snapshot.CommandAliases)
+            : new AppCatalogSnapshot(newDestination, newSource, publishedState.Snapshot.PatternHiddenItems, publishedState.Snapshot.CommandAliases);
         Volatile.Write(
             ref _publishedState,
             publishedState with
@@ -922,10 +958,28 @@ public sealed partial class AppCatalog : IAppCatalog
     {
         var diagnostics = ShouldLogDiagnostics();
         var started = diagnostics ? _timeProvider.GetTimestamp() : 0;
-        var publication = _publicationBuilder.Build(snapshots, _publishedState);
+        var publication = _publicationBuilder.Build(
+            snapshots, _publishedState, _commandAliases.GetSnapshot(), _visibilityStore.GetSnapshot(), _visibilityRules);
         buildMs = diagnostics ? _timeProvider.GetElapsedTime(started).TotalMilliseconds : null;
         Volatile.Write(ref _publishedState, publication.State);
+        _commandAliases.SetSnapshot(publication.State.Snapshot.CommandAliases);
         return publication.Changes;
+    }
+
+    private void OnVisibilitySettingsChanged(object sender, Settings args)
+    {
+        var updated = new AppCatalogVisibility(_settings.ExcludedAppNames, _settings.ExcludedAppPaths);
+        lock (_stateLock)
+        {
+            if (_disposed || _visibilityRules.HasSamePatterns(updated))
+            {
+                return;
+            }
+
+            _visibilityRules = updated;
+        }
+
+        OnFilterChanged(this, EventArgs.Empty);
     }
 
     private void OnFilterChanged(object? sender, EventArgs e)
@@ -1470,6 +1524,7 @@ public sealed partial class AppCatalog : IAppCatalog
         ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         IReadOnlyList<IAppSource> sources;
@@ -1497,8 +1552,7 @@ public sealed partial class AppCatalog : IAppCatalog
         _disposeCancellation.Cancel();
         _sourceProvider.Changed -= OnSourceProviderChanged;
         _sourceProvider.Dispose();
-        _visibilityStore.Changed -= OnFilterChanged;
-        _visibilityStore.Dispose();
+        _settings.Settings.SettingsChanged -= OnVisibilitySettingsChanged;
 
         foreach (var filter in _filters)
         {
@@ -1512,6 +1566,7 @@ public sealed partial class AppCatalog : IAppCatalog
             source.Dispose();
         }
 
+        _commandAliases.Dispose();
         _disposeCancellation.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -1524,6 +1579,7 @@ public sealed partial class AppCatalog : IAppCatalog
 
         public Dictionary<string, PendingRetry> Paths { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>Initializes a new instance of the <see cref="SourceRetryState"/> class. Creates retry tracking for one active source instance.</summary>
         public SourceRetryState(IAppSource source)
         {
             Source = source;

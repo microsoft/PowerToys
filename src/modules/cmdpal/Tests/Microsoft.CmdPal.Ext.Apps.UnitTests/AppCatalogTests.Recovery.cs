@@ -28,7 +28,7 @@ public partial class AppCatalogTests
         var cacheSave = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var source = new TestAppSource("test", new AppSourceScanResult([item], retryPaths: [string.Empty], failedPaths: []));
         var cache = new TestCache(null) { DeferredSave = cacheSave.Task };
-        using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
         catalog.Changed += (_, _) =>
         {
             source.DeferNextLoad(backgroundLoad.Task);
@@ -210,7 +210,7 @@ public partial class AppCatalogTests
                 },
                 createWatchers: false);
             var cache = new TestCache(null);
-            using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+            using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
             await catalog.InitializeAsync();
             await WaitForConditionAsync(() => !catalog.IsRefreshing);
 
@@ -332,7 +332,7 @@ public partial class AppCatalogTests
         var cache = new TestCache(null);
         using var first = new TestAppSource("test", [CreateCatalogItem("Original")]);
         using var second = new TestAppSource("other", [CreateCatalogItem("Other", sourceId: "other")]);
-        using var catalog = new AppCatalog(new MutableSourceProvider([first, second]), cache, new VisibleApps(), [filter], timeProvider: clock, invalidationDelay: TimeSpan.Zero, logger: logger);
+        using var catalog = new AppCatalog(new MutableSourceProvider([first, second]), cache, new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), [filter], timeProvider: clock, invalidationDelay: TimeSpan.Zero, logger: logger);
         await catalog.InitializeAsync();
         await WaitForConditionAsync(() => !catalog.IsRefreshing);
         first.SetItems([CreateCatalogItem("Rejected")]);
@@ -360,7 +360,7 @@ public partial class AppCatalogTests
         var clock = new RecoveryTimeProvider();
         using var source = new TestAppSource("test", new AppSourceScanResult([], retryPaths: [first]));
         var cache = new TestCache(null);
-        using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(new MutableSourceProvider([source]), cache, new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
         await catalog.InitializeAsync();
 
         clock.Advance(TimeSpan.FromSeconds(2));
@@ -498,7 +498,7 @@ public partial class AppCatalogTests
         using var source = new TestAppSource("test", new AppSourceScanResult([], retryPaths: [@"C:\Apps\Missing.lnk"]));
         using var replacement = new TestAppSource("test", [CreateCatalogItem("Replacement")]);
         var provider = new MutableSourceProvider([source]);
-        using var catalog = new AppCatalog(provider, new TestCache(null), new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
         await catalog.InitializeAsync();
         provider.SetSources([replacement]);
         await WaitForConditionAsync(() => replacement.LoadCount == 1 && !catalog.IsRefreshing);
@@ -668,7 +668,7 @@ public partial class AppCatalogTests
     {
         var clock = new RecoveryTimeProvider();
         using var source = new TestAppSource("test", [CreateCatalogItem("Initial")]);
-        using var catalog = new AppCatalog(new MutableSourceProvider([source]), new TestCache(null), new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.FromSeconds(5));
+        using var catalog = new AppCatalog(new MutableSourceProvider([source]), new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.FromSeconds(5));
         await catalog.InitializeAsync();
         var background = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         source.DeferNextLoad(background.Task);
@@ -702,7 +702,7 @@ public partial class AppCatalogTests
         var clock = new RecoveryTimeProvider();
         using var blocker = new TestAppSource("other", [CreateCatalogItem("Other", sourceId: "other")]);
         using var source = new TestAppSource("test", [CreateCatalogItem("Initial")]);
-        using var catalog = new AppCatalog(new MutableSourceProvider([blocker, source]), new TestCache(null), new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.FromSeconds(5));
+        using var catalog = new AppCatalog(new MutableSourceProvider([blocker, source]), new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.FromSeconds(5));
         await catalog.InitializeAsync();
         var blocked = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         blocker.DeferNextLoad(blocked.Task);
@@ -754,9 +754,9 @@ public partial class AppCatalogTests
             identityAliases: [$"win32:{sourcePath}|args:"]);
     }
 
-    private static AppCatalog CreateRecoveryCatalog(IReadOnlyList<IAppSource> sources, TimeProvider clock)
+    private AppCatalog CreateRecoveryCatalog(IReadOnlyList<IAppSource> sources, TimeProvider clock)
     {
-        return new AppCatalog(new MutableSourceProvider(sources), new TestCache(null), new VisibleApps(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
+        return new AppCatalog(new MutableSourceProvider(sources), new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), timeProvider: clock, invalidationDelay: TimeSpan.Zero);
     }
 
     private sealed class RecoveryTimeProvider : TimeProvider

@@ -497,9 +497,10 @@ public class AllAppsPageTests : AppsTestBase
         try
         {
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             using var mockCatalog = new MockAppCatalog();
             mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
-            using var itemSource = new AppListItemSource(mockCatalog, settings);
+            using var itemSource = new AppListItemSource(mockCatalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
             var originalItem = (AppListItem)page.GetItems().Single();
@@ -507,6 +508,7 @@ public class AllAppsPageTests : AppsTestBase
             var snapshotReadCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var readerReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var readRequested = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             // Start a dedicated reader before triggering the callback, so thread-pool starvation
             // cannot look like a held state lock.
             var snapshotRead = Task.Factory.StartNew(
@@ -529,6 +531,7 @@ public class AllAppsPageTests : AppsTestBase
                     if (string.Equals(args.PropertyName, nameof(AppListItem.Subtitle), StringComparison.Ordinal))
                     {
                         readRequested.TrySetResult(true);
+
                         // The read must finish during the callback; reading afterward would miss a held lock.
                         snapshotReadCompleted.TrySetResult(snapshotRead.Wait(TimeSpan.FromSeconds(5)));
                     }

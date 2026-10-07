@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
@@ -11,26 +12,29 @@ using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
-/// <summary>Builds catalog snapshots and change sets without owning refresh scheduling or synchronization.</summary>
+/// <summary>Builds catalog snapshots and change sets without scheduling refreshes or persisting data.</summary>
 internal sealed partial class AppCatalogPublicationBuilder
 {
-    private readonly IAppVisibilityStore _visibilityStore;
     private readonly IReadOnlyList<IAppCatalogFilter> _filters;
     private readonly MEL.ILogger<AppCatalog> _logger;
 
+    /// <summary>Initializes a new instance of the <see cref="AppCatalogPublicationBuilder"/> class. Creates a publication builder using the catalog's filters and diagnostic logger.</summary>
     internal AppCatalogPublicationBuilder(
-        IAppVisibilityStore visibilityStore,
         IReadOnlyList<IAppCatalogFilter> filters,
         MEL.ILogger<AppCatalog> logger)
     {
-        _visibilityStore = visibilityStore;
         _filters = filters;
         _logger = logger;
     }
 
+    /// <summary>Builds merged app projections, retained aliases, and deltas without committing or persisting them.</summary>
+    /// <remarks>Unchanged app objects are reused; aliases and visibility are calculated from the same merged inventory.</remarks>
     internal Publication Build(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots,
-        PublishedState previousState)
+        PublishedState previousState,
+        FrozenDictionary<string, string> savedAliases,
+        IReadOnlySet<string> hiddenIdentities,
+        AppCatalogVisibility visibilityRules)
     {
         var merged = MergeSnapshots(snapshots);
         var catalogItems = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
@@ -67,10 +71,18 @@ internal sealed partial class AppCatalogPublicationBuilder
                 }
             }
 
-            var visibility = _visibilityStore.GetVisibility(item);
-            var hidden = visibility != AppVisibility.Visible;
             catalogItems[item.Identity] = item;
             publishedApps[item.Identity] = app!;
+        }
+
+        // Retain redirects before classifying visibility so moved apps are hidden in their first publication.
+        var commandAliases = AppCatalogCommandAliases.Retain(savedAliases, publishedApps.Values);
+        var hiddenCommandIds = AppCatalogVisibility.ResolveHiddenCommandIds(hiddenIdentities, commandAliases);
+        foreach (var item in catalogItems.Values)
+        {
+            var app = publishedApps[item.Identity];
+            var visibility = visibilityRules.GetVisibility(item, hiddenIdentities, hiddenCommandIds);
+            var hidden = visibility != AppVisibility.Visible;
             visibilityById[item.Identity] = visibility;
             if (visibility == AppVisibility.HiddenByPattern)
             {
@@ -85,6 +97,9 @@ internal sealed partial class AppCatalogPublicationBuilder
                 visibleItems.Add(app!);
             }
 
+            var existed = previousState.CatalogItems.ContainsKey(item.Identity);
+            var unchanged = previousState.PublishedApps.TryGetValue(item.Identity, out var previousApp)
+                && ReferenceEquals(app, previousApp);
             previousState.VisibilityById.TryGetValue(item.Identity, out var previousVisibility);
             if (!existed)
             {
@@ -107,7 +122,7 @@ internal sealed partial class AppCatalogPublicationBuilder
         return new Publication(
             new PublishedState(
                 snapshots,
-                new AppCatalogSnapshot(visibleItems.AsReadOnly(), hiddenItems.AsReadOnly(), patternHiddenItems.AsReadOnly()),
+                new AppCatalogSnapshot(visibleItems.AsReadOnly(), hiddenItems.AsReadOnly(), patternHiddenItems.AsReadOnly(), commandAliases),
                 catalogItems,
                 publishedApps,
                 visibilityById),

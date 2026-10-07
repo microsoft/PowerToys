@@ -39,7 +39,9 @@ public partial class AppCatalogTests
         using var catalog = new AppCatalog(
             new MutableSourceProvider([first, second]),
             cache,
-            new VisibleApps(),
+            new MutableVisibilityStore(),
+            CreateCommandAliases(),
+            CreateSettings(),
             timeProvider: clock,
             invalidationDelay: TimeSpan.Zero,
             logger: logger,
@@ -112,7 +114,9 @@ public partial class AppCatalogTests
         using var catalog = new AppCatalog(
             new MutableSourceProvider([source]),
             new TestCache(null),
-            new VisibleApps(),
+            new MutableVisibilityStore(),
+            CreateCommandAliases(),
+            CreateSettings(),
             timeProvider: clock,
             logger: logger);
 
@@ -134,6 +138,7 @@ public partial class AppCatalogTests
         try
         {
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             var item = CreateCatalogItem("Cached", sourceId: "cached");
             using var source = new TestAppSource("cached", [item]);
             var cache = new TestCache(new AppCatalogCacheFile
@@ -146,6 +151,8 @@ public partial class AppCatalogTests
                 new MutableSourceProvider([source]),
                 cache,
                 new MutableVisibilityStore(),
+                settingsAliases,
+                settings,
                 logger: catalogLogger,
                 diagnosticsEnabled: () => settings.EnableCatalogDiagnostics);
             using var rows = new AppListItemSource(catalog, settings, rowLogger);

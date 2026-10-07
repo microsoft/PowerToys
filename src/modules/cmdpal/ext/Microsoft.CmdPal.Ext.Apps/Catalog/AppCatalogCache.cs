@@ -25,6 +25,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
     private readonly MEL.ILogger<AppCatalogCache> _logger;
     private AppCatalogCacheFile? _lastCache;
 
+    /// <summary>Initializes a new instance of the <see cref="AppCatalogCache"/> class. Creates a cache reader and writer for the supplied catalog-file path.</summary>
     public AppCatalogCache(string cachePath, MEL.ILogger<AppCatalogCache>? logger = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cachePath);
@@ -32,12 +33,14 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
         _logger = logger ?? NullLogger<AppCatalogCache>.Instance;
     }
 
+    /// <summary>Gets the catalog-cache path in the current host settings directory.</summary>
     public static string DefaultPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         return Path.Combine(directory, "apps.catalog.json");
     }
 
+    /// <inheritdoc />
     public async Task<AppCatalogCacheFile?> LoadAsync(
         AppCatalogCacheContext context,
         CancellationToken cancellationToken)
@@ -54,7 +57,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
             await using var stream = File.OpenRead(_cachePath);
             var cache = await JsonSerializer.DeserializeAsync(
                 stream,
-                JsonSerializationContext.Default.AppCatalogCacheFile,
+                AppCatalogCacheJsonSerializationContext.Default.AppCatalogCacheFile,
                 cancellationToken).ConfigureAwait(false);
 
             if (cache?.IsCompatible(context) != true || cache.Sources is null)
@@ -98,6 +101,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
         }
     }
 
+    /// <inheritdoc />
     public async Task SaveAsync(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> sourceSnapshots,
         IReadOnlyCollection<string> fullyReconciledSourceIds,
@@ -188,7 +192,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
                 await JsonSerializer.SerializeAsync(
                     stream,
                     cache,
-                    JsonSerializationContext.Default.AppCatalogCacheFile,
+                    AppCatalogCacheJsonSerializationContext.Default.AppCatalogCacheFile,
                     cancellationToken).ConfigureAwait(false);
             }
 

@@ -336,12 +336,13 @@ public partial class Win32AppSourceTests
             var shortcutId = AppIdentity.ForCommand($"win32:{shortcutPath}|args:");
             var releasedId = item.Payload.GetCommandId();
             var settings = new AllAppsSettings(Path.Combine(root, "settings.json"));
-            var aliases = settings.RetainAppCommandAliases([item.ToAppItem()]);
-            await settings.WaitForAliasSavesAsync();
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [item.ToAppItem()]);
+            await settingsAliases.WaitForSavesAsync();
 
             Assert.AreEqual($"win32:{targetPath}|args:", item.Identity);
             Assert.IsFalse(aliases.ContainsKey(syntheticId));
-            var savedAliases = JsonNode.Parse(File.ReadAllText(settings.AppCommandAliasesFilePath))!["AppCommandAliases"]!.AsObject();
+            var savedAliases = JsonNode.Parse(File.ReadAllText(settingsAliases.FilePath))!["AppCommandAliases"]!.AsObject();
             Assert.IsFalse(savedAliases.ContainsKey(syntheticId));
             Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[shortcutId]!.GetValue<string>());
             Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[releasedId]!.GetValue<string>());
@@ -496,12 +497,15 @@ public partial class Win32AppSourceTests
             Assert.AreEqual(programs[desktopPayload.LnkFilePath].WorkingDirectory, desktopPayload.WorkingDirectory);
             var settingsPath = Path.Combine(root, "settings.json");
             var settings = new AllAppsSettings(settingsPath);
-            settings.SetAppHidden($"win32:{desktopPaths[0]}|args:", hidden: true);
-            using var visibility = new SettingsAppVisibilityStore(settings);
-            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(merged));
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            TestDataHelper.WriteHiddenIdentities(settingsPath, $"win32:{desktopPaths[0]}|args:");
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(visibility, merged, settings: settings, aliases: settingsAliases));
             visibility.Persist();
-            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
-            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(merged));
+            var reloadedVisibilitySettings = new AllAppsSettings(settingsPath);
+            using var reloadedVisibilityAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(reloadedVisibilitySettings.FilePath));
+            var reloadedVisibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(reloadedVisibilitySettings.FilePath));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(reloadedVisibility, merged, settings: reloadedVisibilitySettings, aliases: reloadedVisibilityAliases));
         }
         finally
         {
@@ -560,11 +564,12 @@ public partial class Win32AppSourceTests
                 createWatchers: false);
             var original = (await source.LoadAsync(CancellationToken.None)).Single();
             var settings = new AllAppsSettings(Path.Combine(root, "settings.json"));
-            settings.RetainAppCommandAliases([original.ToAppItem()]);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            TestDataHelper.RetainCommandAliases(settingsAliases, [original.ToAppItem()]);
             name = "Localized";
             var renamed = (await source.LoadAsync(CancellationToken.None)).Single();
-            var aliases = settings.RetainAppCommandAliases([renamed.ToAppItem()]);
-            await settings.WaitForAliasSavesAsync();
+            var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [renamed.ToAppItem()]);
+            await settingsAliases.WaitForSavesAsync();
 
             Assert.AreEqual(original.Identity, renamed.Identity);
             Assert.AreEqual(new AppCommand(original.ToAppItem()).Id, new AppCommand(renamed.ToAppItem()).Id);
@@ -605,20 +610,22 @@ public partial class Win32AppSourceTests
             var primaryId = new AppCommand(original.ToAppItem()).Id;
             var legacyId = original.Payload.GetCommandId();
             var settings = new AllAppsSettings(settingsPath);
-            settings.RetainAppCommandAliases([original.ToAppItem()]);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            TestDataHelper.RetainCommandAliases(settingsAliases, [original.ToAppItem()]);
 
             program.Name = "Éditeur";
             program.Description = "Éditeur de texte";
             program.TargetPath = @"D:\New\Editor.exe";
             var current = (await source.LoadAsync(CancellationToken.None)).Single();
             Assert.AreNotEqual(original.Identity, current.Identity);
-            var aliases = settings.RetainAppCommandAliases([current.ToAppItem()]);
+            var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [current.ToAppItem()]);
             var row = new AppListItem(current.ToAppItem(), useThumbnails: false);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
             Assert.AreSame(row, snapshot.GetVisibleApp(primaryId));
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
-            await settings.WaitForAliasSavesAsync();
-            aliases = new AllAppsSettings(settingsPath).RetainAppCommandAliases([current.ToAppItem()]);
+            await settingsAliases.WaitForSavesAsync();
+            using var reloadedAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
+            aliases = TestDataHelper.RetainCommandAliases(reloadedAliases, [current.ToAppItem()]);
             snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
             Assert.AreEqual("Éditeur", snapshot.GetCommandItem(primaryId)?.Title);
             Assert.AreEqual(program.TargetPath, snapshot.GetVisibleApp(legacyId)?.App.ResolvedTarget);
@@ -682,10 +689,12 @@ public partial class Win32AppSourceTests
             var original = (await source.LoadAsync(CancellationToken.None)).Single();
             var settingsPath = Path.Combine(root, "settings.json");
             var settings = new AllAppsSettings(settingsPath);
-            var aliases = settings.RetainAppCommandAliases([original.ToAppItem()]);
-            settings.SetAppHidden(original.Identity, hidden: true);
-            settings.SaveSettings();
-            await settings.WaitForAliasSavesAsync();
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [original.ToAppItem()]);
+            var originalVisibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settingsPath));
+            TestDataHelper.SetHidden(originalVisibility, original, hidden: true, aliases: settingsAliases);
+            originalVisibility.Persist();
+            await settingsAliases.WaitForSavesAsync();
 
             Environment.CurrentDirectory = Directory.CreateDirectory(Path.Combine(root, "second")).FullName;
             var current = (await source.LoadAsync(CancellationToken.None)).Single();
@@ -695,8 +704,10 @@ public partial class Win32AppSourceTests
             var snapshot = new AppListItemSnapshot([new AppListItem(current.ToAppItem(), useThumbnails: false)], [], commandAliases: aliases);
             Assert.IsNotNull(snapshot.GetCommandItem(new AppCommand(original.ToAppItem()).Id));
             Assert.IsNotNull(snapshot.GetCommandItem(original.Payload.GetCommandId()));
-            using var visibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
-            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(current));
+            var visibilitySettings = new AllAppsSettings(settingsPath);
+            using var visibilityAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(visibilitySettings.FilePath));
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(visibilitySettings.FilePath));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(visibility, current, settings: visibilitySettings, aliases: visibilityAliases));
         }
         finally
         {
@@ -728,20 +739,25 @@ public partial class Win32AppSourceTests
             var second = items.Single(item => ((Win32AppPayload)item.Payload).TargetPath == secondUrl);
             var settingsPath = Path.Combine(root, "settings.json");
             var settings = new AllAppsSettings(settingsPath);
-            var aliases = settings.RetainAppCommandAliases(items.Select(item => item.ToAppItem()));
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, items.Select(item => item.ToAppItem()));
             var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray(), [], commandAliases: aliases);
             Assert.AreEqual(firstUrl, snapshot.GetVisibleApp(first.Payload.GetCommandId())?.App.LaunchTarget);
             Assert.AreEqual(secondUrl, snapshot.GetVisibleApp(second.Payload.GetCommandId())?.App.LaunchTarget);
 
-            using var visibility = new SettingsAppVisibilityStore(settings);
-            Assert.IsTrue(visibility.SetHidden(first, hidden: true));
-            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(first));
-            Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(second));
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath));
+            Assert.IsTrue(TestDataHelper.SetHidden(visibility, first, hidden: true, aliases: settingsAliases));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(visibility, first, settings: settings, aliases: settingsAliases));
+            Assert.AreEqual(AppVisibility.Visible, TestDataHelper.GetVisibility(visibility, second, settings: settings, aliases: settingsAliases));
             settings.SaveSettings();
-            await settings.WaitForAliasSavesAsync();
-            using var reloadedVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
-            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(first));
-            Assert.AreEqual(AppVisibility.Visible, reloadedVisibility.GetVisibility(second));
+            Assert.IsFalse(File.Exists(visibility.FilePath), "Saving preferences must not persist manual hides.");
+            visibility.Persist();
+            await settingsAliases.WaitForSavesAsync();
+            var reloadedVisibilitySettings = new AllAppsSettings(settingsPath);
+            using var reloadedVisibilityAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(reloadedVisibilitySettings.FilePath));
+            var reloadedVisibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(reloadedVisibilitySettings.FilePath));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(reloadedVisibility, first, settings: reloadedVisibilitySettings, aliases: reloadedVisibilityAliases));
+            Assert.AreEqual(AppVisibility.Visible, TestDataHelper.GetVisibility(reloadedVisibility, second, settings: reloadedVisibilitySettings, aliases: reloadedVisibilityAliases));
         }
         finally
         {
