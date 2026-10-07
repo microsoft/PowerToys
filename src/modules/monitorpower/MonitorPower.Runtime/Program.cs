@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 namespace MonitorPower.Runtime;
@@ -45,6 +46,10 @@ public static class Program
             RuntimeLog.Info($"Runtime host owns the single-instance mutex. Owner PID: {OwnerProcessId?.ToString(CultureInfo.InvariantCulture) ?? "not provided"}.");
             Application.Start(_ =>
             {
+                // Without this, code after an await resumes on a thread-pool thread and touching the UI throws
+                // RPC_E_WRONG_THREAD (0x8001010E), which broke applying a profile from the overlay.
+                SynchronizationContext.SetSynchronizationContext(
+                    new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
                 _application = new App();
             });
             RuntimeLog.Info("WinUI application loop exited.");
