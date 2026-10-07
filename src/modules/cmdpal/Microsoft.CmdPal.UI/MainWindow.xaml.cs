@@ -145,6 +145,11 @@ public sealed partial class MainWindow : WindowEx,
 
     public MainWindow()
     {
+        if (!ShellIconCacheInvalidator.InitializeShellIconCache())
+        {
+            Logger.LogWarning("Failed to initialize the Shell image lists");
+        }
+
         _protocolActivation = App.Current.Services.GetRequiredService<ICmdPalProtocolActivation>();
         _monitorService = App.Current.Services.GetRequiredService<ViewModels.Models.IMonitorService>();
         _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
@@ -1950,6 +1955,10 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_DISPLAYCHANGE:
                 Logger.LogDebug("MainWindow WM_DISPLAYCHANGE");
                 _monitorService.NotifyMonitorsChanged();
+                break;
+
+            case PInvoke.WM_SETTINGCHANGE when wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETNONCLIENTMETRICS:
+                _shellIconCacheInvalidator?.OnNonClientMetricsChanged();
                 break;
 
             default:
