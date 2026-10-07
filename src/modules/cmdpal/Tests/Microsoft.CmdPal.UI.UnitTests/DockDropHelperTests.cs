@@ -65,9 +65,10 @@ public class DockDropHelperTests
     [TestMethod]
     [DataRow("Unknown.Package_1234567890123!App")]
     [DataRow("Unknown.Desktop.Application.15")]
+    [DataRow("Microsoft.Windows.Explorer")]
     [DataRow("shell:Downloads")]
     [DataRow("example.txt")]
-    public void GetBookmark_UnrecognizedItem_PreservesTarget(string path)
+    public void GetBookmark_UnresolvedItem_PreservesTarget(string path)
     {
         var bookmark = DockDropHelper.GetBookmark(path, static _ => null);
 
@@ -83,18 +84,6 @@ public class DockDropHelperTests
 
         Assert.AreEqual(appUserModelId, bookmark.Name);
         Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
-    }
-
-    [TestMethod]
-    public void GetBookmark_FileExplorer_ResolvesDesktopAppThroughShell()
-    {
-        const string appUserModelId = "Microsoft.Windows.Explorer";
-
-        var bookmark = DockDropHelper.GetBookmark(appUserModelId);
-
-        Assert.AreEqual("shell:AppsFolder\\" + appUserModelId, bookmark.Target);
-        Assert.IsFalse(string.IsNullOrWhiteSpace(bookmark.Name));
-        Assert.AreNotEqual(appUserModelId, bookmark.Name);
     }
 
     [TestMethod]
