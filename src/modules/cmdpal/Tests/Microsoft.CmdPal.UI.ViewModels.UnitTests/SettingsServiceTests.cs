@@ -4,6 +4,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -303,6 +305,67 @@ public class SettingsServiceTests
         // Assert
         Assert.AreSame(service, receivedSender);
         Assert.AreSame(service.Settings, receivedSettings);
+    }
+
+    [TestMethod]
+    [Timeout(10000)]
+    public async Task UpdateSettings_ConcurrentSavesDoNotOverlapOrPersistAnOlderSnapshotLast()
+    {
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        using var firstSaveEntered = new ManualResetEventSlim();
+        using var releaseFirstSave = new ManualResetEventSlim();
+        using var secondTransformEntered = new ManualResetEventSlim();
+        using var secondSaveEntered = new ManualResetEventSlim();
+        var saveCount = 0;
+        SettingsModel? lastSaved = null;
+
+        _mockPersistence.Setup(p => p.Save(
+            It.IsAny<SettingsModel>(),
+            It.IsAny<string>(),
+            It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Callback<SettingsModel, string, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>((model, _, _) =>
+            {
+                if (Interlocked.Increment(ref saveCount) == 1)
+                {
+                    firstSaveEntered.Set();
+                    Assert.IsTrue(releaseFirstSave.Wait(TimeSpan.FromSeconds(5)));
+                }
+                else
+                {
+                    secondSaveEntered.Set();
+                }
+
+                Volatile.Write(ref lastSaved, model);
+            });
+
+        var first = Task.Run(() => service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false));
+        var second = Task.CompletedTask;
+        var savesOverlapped = false;
+        try
+        {
+            Assert.IsTrue(firstSaveEntered.Wait(TimeSpan.FromSeconds(5)));
+            second = Task.Run(() => service.UpdateSettings(
+                s =>
+                {
+                    secondTransformEntered.Set();
+                    return s with { SingleClickActivates = true };
+                },
+                hotReload: false));
+
+            Assert.IsTrue(secondTransformEntered.Wait(TimeSpan.FromSeconds(5)));
+            savesOverlapped = secondSaveEntered.Wait(TimeSpan.FromMilliseconds(250));
+        }
+        finally
+        {
+            releaseFirstSave.Set();
+            await Task.WhenAll(first, second);
+        }
+
+        Assert.IsFalse(savesOverlapped, "Concurrent updates must not write the settings file at the same time.");
+        Assert.AreSame(service.Settings, lastSaved);
+        Assert.IsNotNull(lastSaved);
+        Assert.IsTrue(lastSaved.ShowAppDetails);
+        Assert.IsTrue(lastSaved.SingleClickActivates);
     }
 
     [TestMethod]
