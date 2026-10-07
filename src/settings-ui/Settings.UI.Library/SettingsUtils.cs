@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
+        private const string UnreadableFileSuffix = ".corrupt";
 
         // A file that another process has open is only held for a moment, so a few short retries are enough.
         private const int FileInUseRetries = 5;
@@ -116,6 +117,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             catch (JsonException ex)
             {
                 Logger.LogError($"Exception encountered while loading {powertoy} settings.", ex);
+                KeepUnreadableSettings(powertoy, fileName);
             }
             catch (FileNotFoundException)
             {
@@ -202,6 +204,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     // do nothing, the problem wasn't that the settings was stored in the previous format, continue with the default settings
                     Logger.LogError($"{powertoy} settings are corrupt or the format is not supported any longer. Using default settings instead.", ex);
+                    KeepUnreadableSettings(powertoy, fileName);
                 }
             }
             catch (FileNotFoundException)
@@ -296,6 +299,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
 
                 WriteFileAtomically(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
+            }
+        }
+
+        /// <summary>
+        /// Keeps a copy of a settings file that could not be parsed next to the original, because the
+        /// caller is about to replace that file with default settings.
+        /// </summary>
+        private void KeepUnreadableSettings(string powertoy, string fileName)
+        {
+            try
+            {
+                string path = _settingsPath.GetSettingsPath(powertoy, fileName);
+                byte[] contents = _file.ReadAllBytes(path);
+
+                // A file that is empty, or only holds the zero bytes of an interrupted write, has nothing
+                // worth keeping and must not replace an earlier copy that has.
+                if (Array.Exists(contents, b => b != 0 && !char.IsWhiteSpace((char)b)))
+                {
+                    _file.WriteAllBytes(path + UnreadableFileSuffix, contents);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to keep a copy of the unreadable {powertoy} settings.", e);
             }
         }
 

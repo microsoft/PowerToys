@@ -25,6 +25,7 @@ namespace CommonLibTest
         private const string ModuleName = "SettingsUtilsTests";
         private const string OldSettings = "{\"name\":\"old name\",\"version\":\"1.0\"}";
         private const string NewSettings = "{\"name\":\"new name\",\"version\":\"2.0\"}";
+        private const string UnreadableSettings = "{\"name\":\"my module\",\"version\":";
 
         [TestMethod]
         public void SaveSettingsSaveSettingsToFileWhenFilePathExists()
@@ -254,6 +255,64 @@ namespace CommonLibTest
             file.ReadsThatFail = int.MaxValue;
             Assert.ThrowsExactly<IOException>(() => settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(ModuleName));
             Assert.AreEqual(OldSettings, fileSystem.File.ReadAllText(settingsPath));
+        }
+
+        [TestMethod]
+        public void GetSettingsOrDefaultKeepsACopyOfSettingsItCannotParse()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var file = new FaultyFile(fileSystem);
+            var settingsUtils = CreateSettingsUtils(fileSystem, file);
+            string settingsPath = settingsUtils.GetSettingsFilePath(ModuleName);
+            fileSystem.AddFile(settingsPath, new MockFileData(UnreadableSettings));
+
+            // Act
+            BasePTSettingsTest settings = settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(ModuleName);
+
+            // Assert
+            Assert.AreEqual(string.Empty, settings.Name);
+            Assert.IsTrue(fileSystem.File.Exists(settingsPath + ".corrupt"), "No copy of the unreadable settings file was kept.");
+            Assert.AreEqual(UnreadableSettings, fileSystem.File.ReadAllText(settingsPath + ".corrupt"));
+        }
+
+        [TestMethod]
+        public void GetSettingsOrDefaultWithAnUpgraderKeepsACopyOfSettingsItCannotParse()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var file = new FaultyFile(fileSystem);
+            var settingsUtils = CreateSettingsUtils(fileSystem, file);
+            string settingsPath = settingsUtils.GetSettingsFilePath(ModuleName);
+            fileSystem.AddFile(settingsPath, new MockFileData(UnreadableSettings));
+
+            // Act
+            BasePTSettingsTest settings = settingsUtils.GetSettingsOrDefault<BasePTSettingsTest, BasePTSettingsTest>(ModuleName, SettingsUtils.DefaultFileName, oldSettings => oldSettings);
+
+            // Assert
+            Assert.AreEqual(string.Empty, settings.Name);
+            Assert.IsTrue(fileSystem.File.Exists(settingsPath + ".corrupt"), "No copy of the unreadable settings file was kept.");
+            Assert.AreEqual(UnreadableSettings, fileSystem.File.ReadAllText(settingsPath + ".corrupt"));
+        }
+
+        [TestMethod]
+        public void GetSettingsOrDefaultKeepsTheEarlierCopyWhenTheSettingsFileHoldsNothing()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var file = new FaultyFile(fileSystem);
+            var settingsUtils = CreateSettingsUtils(fileSystem, file);
+            string settingsPath = settingsUtils.GetSettingsFilePath(ModuleName);
+
+            // An interrupted write can leave a file that holds nothing but zero bytes.
+            fileSystem.AddFile(settingsPath, new MockFileData(new string((char)0, 16)));
+            fileSystem.AddFile(settingsPath + ".corrupt", new MockFileData(UnreadableSettings));
+
+            // Act
+            settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(ModuleName);
+
+            // Assert
+            Assert.AreEqual(UnreadableSettings, fileSystem.File.ReadAllText(settingsPath + ".corrupt"));
         }
 
         public static string RandomString()
