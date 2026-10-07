@@ -10,12 +10,15 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.ApplicationModel.Resources;
 using MonitorPower;
 
 namespace MonitorPower.Runtime;
 
 public sealed partial class App : Application
 {
+    private static readonly ResourceLoader RuntimeResources = new("PowerToys.MonitorPower.Runtime.pri");
+
     private const string DefaultActivationShortcut = "Win + Shift + P";
     private const string DefaultControllerShortcut = "View + A";
     private readonly string _settingsPath = Path.Combine(
@@ -160,7 +163,7 @@ public sealed partial class App : Application
                 {
                     DisplayHelpers.UnregisterActivationShortcut();
                     RuntimeLog.Warning($"Activation shortcut registration rejected: '{activationShortcut}'.");
-                    _selectorWindow?.SetStatus($"Unsupported activation shortcut: {activationShortcut}");
+                    _selectorWindow?.SetStatus(FormatResourceString("MonitorPower_Selector_Error_UnsupportedActivation", activationShortcut));
                 }
                 else
                 {
@@ -176,7 +179,7 @@ public sealed partial class App : Application
                 if (controllerEnabled && !DisplayHelpers.EnableControllerChord(controllerShortcut))
                 {
                     RuntimeLog.Warning($"Controller chord registration rejected: '{controllerShortcut}'.");
-                    _selectorWindow?.SetStatus($"Unsupported controller chord: {controllerShortcut}");
+                    _selectorWindow?.SetStatus(FormatResourceString("MonitorPower_Selector_Error_UnsupportedChord", controllerShortcut));
                 }
                 else
                 {
@@ -194,7 +197,7 @@ public sealed partial class App : Application
             _settingsReadFailed = true;
             _retrySettingsReadAfterUtc = DateTime.UtcNow.AddSeconds(10);
             RuntimeLog.Error("Could not read Monitor Power settings; retrying in 10 seconds unless the file changes.", ex);
-            _selectorWindow?.SetStatus($"Could not read Monitor Power settings: {ex.Message}");
+            _selectorWindow?.SetStatus(FormatResourceString("MonitorPower_Selector_Error_SettingsRead", ex.Message));
         }
     }
 
@@ -218,7 +221,7 @@ public sealed partial class App : Application
     private void ControllerInputUnavailable(string error)
     {
         RuntimeLog.Warning($"Controller input is unavailable: {error}");
-        _ = _dispatcherQueue?.TryEnqueue(() => _selectorWindow?.SetStatus("Controller input is unsupported on this system (XInput is unavailable)."));
+        _ = _dispatcherQueue?.TryEnqueue(() => _selectorWindow?.SetStatus(GetResourceString("MonitorPower_Selector_Error_ControllerUnavailable")));
     }
 
     private void ShowSelector()
@@ -235,6 +238,12 @@ public sealed partial class App : Application
 
         _selectorWindow.ShowOverlay();
     }
+
+    private static string GetResourceString(string key)
+        => RuntimeResources.GetString(key);
+
+    private static string FormatResourceString(string key, params object[] arguments)
+        => string.Format(CultureInfo.CurrentCulture, GetResourceString(key), arguments);
 
     private void App_Exiting(object? sender, EventArgs e)
     {

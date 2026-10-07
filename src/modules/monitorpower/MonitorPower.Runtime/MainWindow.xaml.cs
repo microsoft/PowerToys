@@ -312,10 +312,15 @@ public sealed partial class MainWindow : Window
 
     private async Task ApplySelectedProfileAsync()
     {
+        if (_isApplying)
+        {
+            return;
+        }
+
         if (ProfileList.SelectedItem is not RuntimeProfile profile)
         {
             RuntimeLog.Warning("Profile apply requested without a selected profile.");
-            SetStatus("Select a display profile first.");
+            SetStatus(GetResourceString("MonitorPower_Selector_Error_NoProfileSelected"));
             return;
         }
 
@@ -323,7 +328,7 @@ public sealed partial class MainWindow : Window
         RuntimeLog.Info("Profile apply started.");
         _isApplying = true;
         ApplyButton.IsEnabled = false;
-        SetStatus($"Applying '{profile.Name}'...");
+        SetStatus(FormatResourceString("MonitorPower_Selector_Applying", profile.Name));
         try
         {
             var result = await Task.Run(() =>
@@ -346,12 +351,12 @@ public sealed partial class MainWindow : Window
             });
             if (result is null)
             {
-                SetStatus("The connected display topology changed while the selector was open. Close this window and reopen it to review the current displays.");
+                SetStatus(GetResourceString("MonitorPower_Selector_Error_TopologyChanged"));
                 return;
             }
 
             SetStatus(result);
-            if (result.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+            if (DisplayHelpers.IsErrorResult(result))
             {
                 RuntimeLog.Warning($"Profile apply returned an error after {applyTimer.ElapsedMilliseconds} ms: {result}");
                 ApplyButton.IsEnabled = true;
@@ -364,7 +369,7 @@ public sealed partial class MainWindow : Window
         catch (Exception ex)
         {
             RuntimeLog.Error($"Profile apply threw after {applyTimer.ElapsedMilliseconds} ms.", ex);
-            SetStatus($"Could not apply '{profile.Name}': {ex.Message}");
+            SetStatus(FormatResourceString("MonitorPower_Selector_Error_ApplyFailed", profile.Name, ex.Message));
             ApplyButton.IsEnabled = true;
         }
         finally
@@ -391,6 +396,14 @@ public sealed partial class MainWindow : Window
             .OrderBy(target => target, StringComparer.Ordinal));
     }
 
+    internal static string GetProfileDescription(BuiltInDisplayProfile profile)
+        => GetResourceString(profile == BuiltInDisplayProfile.None
+            ? "MonitorPower_Selector_Profile_Saved"
+            : "MonitorPower_Selector_Profile_BuiltIn");
+
     private static string GetResourceString(string key)
         => Resources.GetString(key);
+
+    private static string FormatResourceString(string key, params object[] arguments)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, GetResourceString(key), arguments);
 }

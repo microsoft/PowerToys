@@ -1,12 +1,14 @@
-# MonitorPower Command Palette proposal
+# Display Profiles proposal
+
+Related issue: [#48286 — Power Display: Display Profiles for Windows Display Configuration Switching](https://github.com/microsoft/PowerToys/issues/48286)
 
 ## Summary
 
-MonitorPower is a proposed display-topology workflow for PowerToys Command Palette. It is intended to complement Power Display, not duplicate it.
+Display Profiles is a proposed display-topology workflow for PowerToys Settings, with an optional standalone Command Palette extension as a complementary access point. The technical identifier remains `MonitorPower` for compatibility. The feature is intended to complement Power Display, not duplicate it.
 
 Power Display already covers per-monitor DDC/CI and VCP controls such as brightness, contrast, volume, input source, rotation, color temperature, power state, and profiles for those monitor settings.
 
-MonitorPower focuses on Windows display setup workflows:
+Display Profiles focuses on Windows display setup workflows:
 
 - "Play on TV"
 - "Back to PC"
@@ -15,9 +17,11 @@ MonitorPower focuses on Windows display setup workflows:
 - restore primary monitor and layout
 - optionally integrate with Windows display topology APIs or a profile-oriented backend
 
-The initial PowerToys surface should be a small Command Palette entry that exposes accepted profile actions, not a full utility or a second display-control flyout.
+The primary PowerToys surface is a dedicated Settings page backed by a lightweight runtime host for activation shortcuts and the profile selector. A standalone Command Palette extension provides complementary access to the same profiles while the feature is not yet available in a published PowerToys build.
 
-This proposal intentionally starts as a spec rather than a feature implementation. Per `CONTRIBUTING.md`, new features should have an issue, conversation, and agreement on product fit and implementation approach before code is added.
+Both surfaces reuse `MonitorPower.Core` and the profile store at `%LOCALAPPDATA%\MonitorPower\profiles`; neither duplicates display-topology or persistence logic. The standalone extension does not register another global keyboard or controller listener.
+
+Per `CONTRIBUTING.md`, the implementation and final product placement still require maintainer agreement through the linked issue before an upstream feature PR is accepted.
 
 ## Problem
 
@@ -33,22 +37,20 @@ Power Display handles monitor controls, but it does not target higher-level Wind
 
 ## Proposed direction
 
-Use Command Palette as the first integration point. A top-level `MonitorPower` command would list a small set of user-defined or PowerToys-defined display setup profiles.
+Use Settings as the primary integration point for inspecting the current topology, creating profiles, configuring activation, and viewing diagnostics. The runtime host provides a quick selector that can be opened with a keyboard shortcut or controller chord.
 
-Example commands:
+A standalone Command Palette extension named **Display Profiles** lists the same user-defined and built-in profiles. It remains independently deployable so users can access the workflow with a published PowerToys installation before the built-in module is accepted and released.
+
+Example actions:
 
 - `Play on TV`
 - `Back to PC`
 - `Apply selected display profile`
 - `Choose active monitors`
 
-The extension should initially act as an orchestration surface. The underlying implementation can be decided after maintainer feedback:
+`MonitorPower.Core` is the shared implementation for display discovery, topology changes, profile validation, persistence, and application. Settings, the runtime host, and the standalone Command Palette extension consume that shared implementation.
 
-- Power Display profile extension, if topology actions are considered in scope there.
-- Command Palette extension backed by shared PowerToys display-topology services.
-- External or sample Command Palette extension, if this workflow should stay outside the main PowerToys binary.
-
-The implementation should not depend on local scripts, local JSON files, or third-party binaries. The local prototype only demonstrates the workflow and planning logic.
+The implementation does not depend on local scripts, machine-specific mappings, or third-party binaries.
 
 ## Command Palette shape
 
@@ -68,12 +70,13 @@ If accepted for implementation, the likely project location would be:
 src/modules/cmdpal/ext/MonitorPowerExtension/
 ```
 
-The first implementation should remain intentionally small:
+The standalone extension remains intentionally focused:
 
-- one top-level `MonitorPower` command
-- a list page of display setup profiles
-- one command per profile
-- clear boundaries that avoid brightness, contrast, volume, input source, rotation, color temperature, monitor power-state sliders, and other Power Display responsibilities
+- one top-level `Display Profiles` command;
+- a list page backed by the shared profile store;
+- built-in actions for all displays and the primary display only;
+- commands to create, edit, delete, and apply profiles;
+- clear boundaries that avoid brightness, contrast, volume, input source, color temperature, monitor power-state sliders, and other Power Display responsibilities.
 
 ## Prototype evidence
 
@@ -106,4 +109,6 @@ This means the user selects one or more monitors to keep active/on, and the plan
 
 ## Upstream process
 
-This should not move directly to a feature PR without maintainer agreement. Per `CONTRIBUTING.md`, the next upstream step is to open or join an issue first, describe the workflow, and agree on the product surface and implementation approach before adding code.
+Discussion should continue in issue #48286 before the built-in Settings/runtime integration is proposed for merge. Maintainers should confirm whether display-topology profiles belong in Power Display or remain a separate Display Profiles module, and whether the standalone Command Palette extension should be distributed independently or included in the repository.
+
+Before a PR is opened, the implementation must pass the complete PowerToys build, relevant unit tests, localization validation, spell-check, and manual multi-monitor safety testing.

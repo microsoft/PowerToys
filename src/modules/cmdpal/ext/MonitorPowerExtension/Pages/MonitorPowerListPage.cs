@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MonitorPower;
 using MonitorPowerExtension.Properties;
+using Windows.System;
 
 #pragma warning disable CA1305, CA1863
 
@@ -18,6 +20,9 @@ public sealed partial class MonitorPowerListPage : ListPage
 
     private static readonly IconInfo AppIcon = new("\uE7F4");
     private static readonly IconInfo ProfileIcon = new("\uE81C");
+    private static readonly KeyChord CreateProfileShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.N);
+    private static readonly KeyChord EditProfileShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.E);
+    private static readonly KeyChord DeleteProfileShortcut = KeyChordHelpers.FromModifiers(vkey: VirtualKey.Delete);
 
     public MonitorPowerListPage()
     {
@@ -31,17 +36,28 @@ public sealed partial class MonitorPowerListPage : ListPage
     {
         var items = new List<IListItem>
         {
-            new ListItem(new CommandItem(new CreateProfilePage(this)))
+            new ListItem(new ApplyBuiltInProfileCommand(BuiltInDisplayProfile.AllDisplays))
             {
-                Title = Resources.save_profile_title,
-                Subtitle = Resources.save_profile_subtitle,
+                Title = Resources.all_displays_title,
+                Subtitle = Resources.all_displays_subtitle,
                 Icon = ProfileIcon,
+                MoreCommands = [CreateProfileContextItem()],
+            },
+            new ListItem(new ApplyBuiltInProfileCommand(BuiltInDisplayProfile.PrimaryDisplayOnly))
+            {
+                Title = Resources.primary_display_only_title,
+                Subtitle = Resources.primary_display_only_subtitle,
+                Icon = ProfileIcon,
+                MoreCommands = [CreateProfileContextItem()],
             },
         };
 
         foreach (var (fileName, profileName) in DisplayHelpers.GetSavedProfiles())
         {
-            var moreCommands = new List<IContextItem>();
+            var moreCommands = new List<IContextItem>
+            {
+                CreateProfileContextItem(),
+            };
 
             var profileData = DisplayHelpers.LoadNamedProfile(fileName);
             if (profileData != null)
@@ -49,15 +65,19 @@ public sealed partial class MonitorPowerListPage : ListPage
                 moreCommands.Add(new CommandContextItem(new CreateProfilePage(this, fileName, profileData.Value.Name, profileData.Value.Targets))
                 {
                     Title = Resources.edit_profile_title,
+                    Subtitle = Resources.edit_profile_subtitle,
                     Icon = new IconInfo("\uE70F"),
+                    RequestedShortcut = EditProfileShortcut,
                 });
             }
 
             moreCommands.Add(new CommandContextItem(new DeleteSavedProfileCommand(this, fileName))
             {
                 Title = Resources.delete_profile_title,
+                Subtitle = Resources.delete_profile_subtitle,
                 Icon = new IconInfo("\uE74D"),
                 IsCritical = true,
+                RequestedShortcut = DeleteProfileShortcut,
             });
 
             items.Add(new ListItem(new ApplySavedProfileCommand(fileName))
@@ -74,6 +94,65 @@ public sealed partial class MonitorPowerListPage : ListPage
 
     internal void RefreshProfiles() => RaiseItemsChanged();
 
+    private CommandContextItem CreateProfileContextItem()
+    {
+        return new CommandContextItem(new CreateProfilePage(this))
+        {
+            Title = Resources.save_profile_title,
+            Subtitle = Resources.save_profile_subtitle,
+            Icon = new IconInfo("\uE710"),
+            RequestedShortcut = CreateProfileShortcut,
+        };
+    }
+
+    private static void ShowOperationResult(string message)
+    {
+        ShowStatus(message, DisplayHelpers.IsErrorResult(message) ? MessageState.Error : MessageState.Success);
+    }
+
+    private static void ShowStatus(string message, MessageState state)
+    {
+        ExtensionHost.ShowStatus(
+            new StatusMessage() { Message = message, State = state },
+            StatusContext.Extension);
+    }
+
+    private sealed partial class ApplyBuiltInProfileCommand : InvokableCommand
+    {
+        private readonly BuiltInDisplayProfile _profile;
+
+        public ApplyBuiltInProfileCommand(BuiltInDisplayProfile profile)
+        {
+            _profile = profile;
+            Name = Resources.apply_profile_title;
+            Icon = ProfileIcon;
+        }
+
+        public override CommandResult Invoke()
+        {
+            ShowStatus(Resources.apply_profile_status, MessageState.Info);
+            _ = System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    var message = _profile switch
+                    {
+                        BuiltInDisplayProfile.AllDisplays => DisplayHelpers.SetAllDisplays(),
+                        BuiltInDisplayProfile.PrimaryDisplayOnly => DisplayHelpers.SetPrimaryDisplayOnly(progress => ShowStatus(progress, MessageState.Info)),
+                        _ => throw new InvalidOperationException(),
+                    };
+                    ShowOperationResult(message);
+                }
+                catch (Exception ex)
+                {
+                    ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
+                }
+            });
+
+            return CommandResult.KeepOpen();
+        }
+    }
+
     private sealed partial class ApplySavedProfileCommand : InvokableCommand
     {
         private readonly string _fileName;
@@ -87,31 +166,18 @@ public sealed partial class MonitorPowerListPage : ListPage
 
         public override CommandResult Invoke()
         {
-            ExtensionHost.ShowStatus(
-                new StatusMessage() { Message = "Attivazione profilo in corso... Attendi l'accensione dei monitor.", State = MessageState.Info },
-                StatusContext.Extension);
+            ShowStatus(Resources.apply_profile_status, MessageState.Info);
 
-            System.Threading.Tasks.Task.Run(() =>
+            _ = System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
-                    var msg = DisplayHelpers.ApplyNamedProfile(_fileName, (progressMsg, state) =>
-                    {
-                        ExtensionHost.ShowStatus(
-                            new StatusMessage() { Message = progressMsg, State = state },
-                            StatusContext.Extension);
-                    });
-
-                    var isError = msg.StartsWith(Resources.error_prefix, StringComparison.OrdinalIgnoreCase);
-                    ExtensionHost.ShowStatus(
-                        new StatusMessage() { Message = msg, State = isError ? MessageState.Error : MessageState.Success },
-                        StatusContext.Extension);
+                    var message = DisplayHelpers.ApplyNamedProfile(_fileName, progress => ShowStatus(progress, MessageState.Info));
+                    ShowOperationResult(message);
                 }
                 catch (Exception ex)
                 {
-                    ExtensionHost.ShowStatus(
-                        new StatusMessage() { Message = "Errore: " + ex.Message, State = MessageState.Error },
-                        StatusContext.Extension);
+                    ShowStatus(string.Format(Resources.error_format, ex.Message), MessageState.Error);
                 }
             });
 

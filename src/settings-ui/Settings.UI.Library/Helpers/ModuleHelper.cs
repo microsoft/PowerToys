@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
-                ModuleType.MonitorPower => "ms-appx:///Assets/Settings/Icons/PowerDisplay.png",
+                ModuleType.MonitorPower => "ms-appx:///Assets/Settings/Icons/DisplayProfiles.png",
                 ModuleType.GeneralSettings => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
                 _ => $"ms-appx:///Assets/Settings/Icons/{moduleType}.png",
             };

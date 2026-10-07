@@ -58,7 +58,7 @@ public sealed class MonitorPowerTests
         var store = new MonitorPowerProfilePersistence(directory);
         var first = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 12, HighPart = 34 }, 5);
         var second = new DisplayHelpers.DisplayTargetId(new LUID { LowPart = 56, HighPart = 78 }, 9);
-        var targets = new[] { first, second };
+        var targets = new List<DisplayHelpers.DisplayTargetId> { first, second };
 
         try
         {

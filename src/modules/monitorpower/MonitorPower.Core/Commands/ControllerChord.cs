@@ -70,7 +70,7 @@ internal readonly record struct ControllerChord(ushort Buttons)
             .Where(button => (buttons & button.Value) != 0)
             .Select(button => button.Key)
             .ToArray();
-        return pressed.Length == 0 ? "No buttons pressed" : string.Join(" + ", pressed);
+        return pressed.Length == 0 ? MonitorPowerCore.Resources.controller_no_buttons_pressed : string.Join(" + ", pressed);
     }
 
     public bool IsPressed(ushort buttons) => (buttons & Buttons) == Buttons;

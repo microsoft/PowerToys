@@ -4,13 +4,14 @@
 
 #nullable enable
 
-#pragma warning disable CA1846, SA1214, SA1402, SA1413, SA1513, SA1516
+#pragma warning disable CA1846, CA1863, SA1214, SA1402, SA1413, SA1513, SA1516
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -41,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isLoading;
         private bool _isProfilesLoading;
         private bool _hasDisplays;
-        private string _controllerStatus = "Controller status has not been checked.";
+        private string _controllerStatus = GetResourceString("DisplayProfiles_ControllerStatus_NotChecked", "Controller status has not been checked.");
         private bool _isApplying;
         private string _activationShortcut = "Win + Shift + P";
         private HotkeySettings _activationHotkeySettings = new(win: true, ctrl: false, alt: false, shift: true, code: 'P');
@@ -97,8 +98,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string StatusMessage
         {
             get => _statusMessage;
-            set => Set(ref _statusMessage, value);
+            set
+            {
+                if (Set(ref _statusMessage, value))
+                {
+                    OnPropertyChanged(nameof(HasStatusMessage));
+                }
+            }
         }
+
+        public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
         public bool IsLoading
         {
@@ -203,7 +212,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (!ControllerChord.TryParse(value, out _))
                 {
-                    StatusMessage = "Enter exactly two supported controller buttons, for example 'View + A'.";
+                    StatusMessage = GetResourceString("DisplayProfiles_ControllerShortcut_Invalid", "Enter exactly two supported controller buttons, for example 'View + A'.");
                     OnPropertyChanged(nameof(ControllerShortcut));
                     return;
                 }
@@ -309,7 +318,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     else
                     {
                         _controllerShortcut = "View + A";
-                        StatusMessage = "The saved controller chord used an unsupported button. Capture a new chord; View + A is the default.";
+                        StatusMessage = GetResourceString("DisplayProfiles_ControllerShortcut_InvalidSaved", "The saved controller chord used an unsupported button. Capture a new chord; View + A is the default.");
                     }
                 }
 
@@ -334,7 +343,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                     else
                     {
-                        StatusMessage = "The saved activation shortcut is invalid; the default shortcut is in use.";
+                        StatusMessage = GetResourceString("DisplayProfiles_ActivationShortcut_InvalidSaved", "The saved activation shortcut is invalid; the default shortcut is in use.");
                     }
                 }
 
@@ -342,7 +351,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                StatusMessage = $"Could not load Monitor Power settings: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Status_LoadSettingsFailed", "Could not load Display Profiles settings: {0}", ex.Message);
                 Logger.LogError("Could not load Monitor Power settings.", ex);
             }
         }
@@ -375,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
             {
-                StatusMessage = $"Could not save Monitor Power settings: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Status_SaveSettingsFailed", "Could not save Display Profiles settings: {0}", ex.Message);
                 Logger.LogError("Could not save Monitor Power settings.", ex);
                 return false;
             }
@@ -398,7 +407,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var runtimePath = Path.Combine(AppContext.BaseDirectory, "PowerToys.MonitorPower.Runtime.exe");
             if (!File.Exists(runtimePath))
             {
-                StatusMessage = "The Monitor Power runtime host is not installed beside Settings.";
+                StatusMessage = GetResourceString("DisplayProfiles_Status_RuntimeMissing", "The Display Profiles runtime host is not installed beside Settings.");
                 Logger.LogError($"Monitor Power runtime host was not found: {runtimePath}");
                 return;
             }
@@ -416,7 +425,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (runtime is null)
                 {
                     _runtimeHostStartAttempted = false;
-                    StatusMessage = "Could not start the Monitor Power runtime host.";
+                    StatusMessage = GetResourceString("DisplayProfiles_Status_RuntimeStartFailed", "Could not start the Display Profiles runtime host.");
                     Logger.LogError("Process.Start returned no process for the Monitor Power runtime host.");
                 }
                 else
@@ -427,7 +436,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or Win32Exception)
             {
                 _runtimeHostStartAttempted = false;
-                StatusMessage = $"Could not start the Monitor Power runtime host: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Status_RuntimeStartFailedWithDetails", "Could not start the Display Profiles runtime host: {0}", ex.Message);
                 Logger.LogError("Could not start the Monitor Power runtime host.", ex);
             }
         }
@@ -437,7 +446,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var loadTimer = Stopwatch.StartNew();
             var previouslySelectedTargets = GetSelectedTargets().ToHashSet();
             IsLoading = true;
-            StatusMessage = "Loading display topology...";
+            StatusMessage = GetResourceString("DisplayProfiles_Status_LoadingDisplays", "Loading display topology...");
             Logger.LogInfo("Monitor Power display topology query started.");
             await Task.Run(() =>
             {
@@ -630,8 +639,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         HasDisplays = displayInfos.Count > 0;
                         StatusMessage = displayInfos.Count == 0
-                            ? "No displays are currently available."
-                            : $"Found {activeDisplays.Length} active display(s) and {displayInfos.Count - activeDisplays.Length} inactive display(s).";
+                            ? GetResourceString("DisplayProfiles_Status_NoDisplays", "No displays are currently available.")
+                            : string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_Status_DisplaysFound", "Found {0} active display(s) and {1} inactive display(s)."), activeDisplays.Length, displayInfos.Count - activeDisplays.Length);
                         Logger.LogInfo($"Monitor Power display topology query completed in {loadTimer.ElapsedMilliseconds} ms. Paths={paths.Length}, targets={displayInfos.Count}, active={activeDisplays.Length}.");
                     });
                 }
@@ -643,7 +652,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         _displays.Clear();
                         _previewDisplays.Clear();
                         HasDisplays = false;
-                        StatusMessage = $"Error loading displays: {ex.Message}";
+                        StatusMessage = FormatResourceString("DisplayProfiles_Status_LoadDisplaysFailed", "Error loading displays: {0}", ex.Message);
                     });
                 }
                 finally
@@ -687,20 +696,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             _profiles.Add(new ProfileInfo { FileName = fileName, Name = name });
                         }
 
-                        // Profilo di default: "All displays". Se c'era gia' una selezione ancora valida, la mantiene.
                         SelectedProfile = _profiles.FirstOrDefault(profile =>
                                 previousProfile != null &&
                                 profile.BuiltInProfile == previousProfile.BuiltInProfile &&
                                 string.Equals(profile.FileName, previousProfile.FileName, StringComparison.Ordinal))
                             ?? _profiles[0];
-                        StatusMessage = $"Loaded {savedProfiles.Count} saved profile(s)";
+                        StatusMessage = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_Status_ProfilesLoaded", "Loaded {0} saved profile(s)"), savedProfiles.Count);
                         Logger.LogInfo($"Monitor Power loaded {savedProfiles.Count} saved profile(s) in {loadTimer.ElapsedMilliseconds} ms.");
                     });
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"Monitor Power profile list query failed after {loadTimer.ElapsedMilliseconds} ms.", ex);
-                    RunOnUiThread(() => StatusMessage = $"Error loading profiles: {ex.Message}");
+                    RunOnUiThread(() => StatusMessage = FormatResourceString("DisplayProfiles_Status_LoadProfilesFailed", "Error loading profiles: {0}", ex.Message));
                 }
                 finally
                 {
@@ -788,7 +796,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var selectedTargets = GetSelectedTargets();
             IsApplying = true;
-            StatusMessage = "Saving selected displays as a profile...";
+            StatusMessage = GetResourceString("DisplayProfiles_Status_SavingProfile", "Saving selected displays as a profile...");
 
             await Task.Run(() =>
             {
@@ -798,7 +806,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     RunOnUiThread(() =>
                     {
                         StatusMessage = result;
-                        if (!result.StartsWith("Error", StringComparison.OrdinalIgnoreCase))
+                        if (!DisplayHelpers.IsErrorResult(result))
                         {
                             LoadProfiles();
                         }
@@ -808,7 +816,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     RunOnUiThread(() =>
                     {
-                        StatusMessage = $"Error saving profile: {ex.Message}";
+                        StatusMessage = FormatResourceString("DisplayProfiles_Status_SaveProfileFailed", "Error saving profile: {0}", ex.Message);
                     });
                 }
                 finally
@@ -820,15 +828,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task ApplyProfileAsync()
         {
+            if (IsApplying)
+            {
+                return;
+            }
+
             var profile = SelectedProfile;
             if (profile == null)
             {
-                StatusMessage = "Please select a profile";
+                StatusMessage = GetResourceString("DisplayProfiles_Status_SelectProfile", "Please select a profile");
                 return;
             }
 
             IsApplying = true;
-            StatusMessage = $"Applying profile '{profile.Name}'...";
+            StatusMessage = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_Status_ApplyingProfile", "Applying profile '{0}'..."), profile.Name);
 
             await Task.Run(() =>
             {
@@ -854,7 +867,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     RunOnUiThread(() =>
                     {
-                        StatusMessage = $"Error applying profile: {ex.Message}";
+                        StatusMessage = FormatResourceString("DisplayProfiles_Status_ApplyProfileFailed", "Error applying profile: {0}", ex.Message);
                     });
                 }
                 finally
@@ -868,38 +881,55 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (SelectedProfile == null || SelectedProfile.IsBuiltIn)
             {
-                StatusMessage = "Please select a profile to delete";
+                StatusMessage = GetResourceString("DisplayProfiles_Status_SelectProfileToDelete", "Please select a profile to delete");
                 return;
             }
 
             try
             {
                 DisplayHelpers.DeleteSavedProfile(SelectedProfile.FileName);
-                StatusMessage = $"Deleted profile '{SelectedProfile.Name}'";
+                StatusMessage = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_Status_ProfileDeleted", "Deleted profile '{0}'"), SelectedProfile.Name);
                 LoadProfiles();
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error deleting profile: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Status_DeleteProfileFailed", "Error deleting profile: {0}", ex.Message);
             }
         }
 
-        public async Task RenameProfileAsync(ProfileInfo profile, string newName)
+        public bool TryValidateProfileRename(ProfileInfo profile, string newName, out string validationMessage)
         {
-            if (profile.IsBuiltIn || IsBuiltInProfileName(newName))
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                StatusMessage = "Built-in profile names are reserved.";
-                return;
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_Required", "Enter a profile name.");
+                return false;
             }
 
-            // Un profilo con lo stesso nome non puo' esistere (confronto senza distinzione maiuscole/minuscole).
+            if (profile.IsBuiltIn || IsBuiltInProfileName(newName))
+            {
+                validationMessage = GetResourceString("DisplayProfiles_ProfileName_Reserved", "Built-in profile names are reserved.");
+                return false;
+            }
+
             var trimmedName = newName.Trim();
             var duplicate = _profiles.FirstOrDefault(other =>
                 !ReferenceEquals(other, profile) &&
                 string.Equals(other.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
             if (duplicate != null)
             {
-                StatusMessage = $"A profile named '{duplicate.Name}' already exists.";
+                validationMessage = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_Status_DuplicateProfile", "A profile named '{0}' already exists."), duplicate.Name);
+                return false;
+            }
+
+            validationMessage = string.Empty;
+            return true;
+        }
+
+        public async Task RenameProfileAsync(ProfileInfo profile, string newName)
+        {
+            if (!TryValidateProfileRename(profile, newName, out var validationMessage))
+            {
+                StatusMessage = validationMessage;
                 return;
             }
 
@@ -911,7 +941,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"Error renaming profile: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Status_RenameProfileFailed", "Error renaming profile: {0}", ex.Message);
             }
         }
 
@@ -921,24 +951,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Logger.LogInfo("Monitor Power controller input test started.");
             if (!ControllerChord.TryParse(ControllerShortcut, out var chord))
             {
-                ControllerStatus = "The configured controller chord is invalid. Capture a new chord before testing.";
+                ControllerStatus = GetResourceString("DisplayProfiles_ControllerTest_InvalidChord", "The configured controller chord is invalid. Capture a new chord before testing.");
                 StatusMessage = ControllerStatus;
                 return;
             }
 
-            ControllerStatus = $"Looking for a supported XInput controller. Hold {ControllerShortcut} together to test the chord.";
+            ControllerStatus = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_Looking", "Looking for a supported XInput controller. Hold {0} together to test the chord."), ControllerShortcut);
             try
             {
                 var controllers = DisplayHelpers.GetConnectedControllerInputs();
                 if (controllers.Count == 0)
                 {
-                    ControllerStatus = "No supported XInput controller detected. Connect an Xbox-compatible controller and try again.";
+                    ControllerStatus = GetResourceString("DisplayProfiles_ControllerTest_NoneDetected", "No supported XInput controller detected. Connect an Xbox-compatible controller and try again.");
                     StatusMessage = ControllerStatus;
                     Logger.LogInfo($"Controller input test found no connected controllers in {testTimer.ElapsedMilliseconds} ms.");
                     return;
                 }
 
-                ControllerStatus = $"Detected {controllers.Count} XInput controller(s). Hold {ControllerShortcut} at the same time within 5 seconds.";
+                ControllerStatus = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_Detected", "Detected {0} XInput controller(s). Hold {1} at the same time within 5 seconds."), controllers.Count, ControllerShortcut);
                 var deadline = DateTime.UtcNow.AddSeconds(5);
                 var individualInputDetected = false;
                 while (DateTime.UtcNow < deadline)
@@ -948,7 +978,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         if (chord.IsPressed(controller.Buttons))
                         {
-                            ControllerStatus = $"Controller {controller.Index} detected {ControllerShortcut} pressed together.";
+                            ControllerStatus = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_Pressed", "Controller {0} detected {1} pressed together."), controller.Index, ControllerShortcut);
                             StatusMessage = ControllerStatus;
                             Logger.LogInfo($"Controller chord test detected '{ControllerShortcut}' on controller {controller.Index} after {testTimer.ElapsedMilliseconds} ms.");
                             return;
@@ -957,7 +987,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         if (controller.Buttons != 0 && !individualInputDetected)
                         {
                             individualInputDetected = true;
-                            ControllerStatus = $"Individual button input is detected ({ControllerChord.DescribeButtons(controller.Buttons)}). Hold {ControllerShortcut} together; pressing the buttons separately does not activate the selector.";
+                            ControllerStatus = string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_IndividualInput", "Individual button input is detected ({0}). Hold {1} together; pressing the buttons separately does not activate the selector."), ControllerChord.DescribeButtons(controller.Buttons), ControllerShortcut);
                         }
                     }
 
@@ -965,14 +995,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 ControllerStatus = individualInputDetected
-                    ? $"Individual buttons are readable, but {ControllerShortcut} was not detected. Hold both buttons at the same time."
-                    : $"Controller detected, but no button input was received. Hold {ControllerShortcut} at the same time.";
+                    ? string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_IndividualTimeout", "Individual buttons are readable, but {0} was not detected. Hold both buttons at the same time."), ControllerShortcut)
+                    : string.Format(CultureInfo.CurrentCulture, GetResourceString("DisplayProfiles_ControllerTest_NoInput", "Controller detected, but no button input was received. Hold {0} at the same time."), ControllerShortcut);
                 StatusMessage = ControllerStatus;
                 Logger.LogInfo($"Monitor Power controller chord test timed out after {testTimer.ElapsedMilliseconds} ms. IndividualInputDetected={individualInputDetected}.");
             }
             catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
             {
-                ControllerStatus = "Controller input is unsupported on this system (XInput is unavailable).";
+                ControllerStatus = GetResourceString("DisplayProfiles_Controller_Unsupported", "Controller input is unsupported on this system (XInput is unavailable).");
                 StatusMessage = ControllerStatus;
                 Logger.LogError("Monitor Power controller diagnostics are unavailable.", ex);
             }
@@ -991,7 +1021,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     XboxControllerEnabled = false;
                     if (XboxControllerEnabled)
                     {
-                        onStatus("Could not pause the controller listener because the setting could not be saved.");
+                        onStatus(GetResourceString("DisplayProfiles_ControllerCapture_CouldNotPause", "Could not pause the controller listener because the setting could not be saved."));
                         return;
                     }
 
@@ -1001,7 +1031,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 while (!token.IsCancellationRequested)
                 {
                     var controllers = await Task.Run(DisplayHelpers.GetConnectedControllerInputs, token);
-                    onStatus(controllers.Count > 0 ? string.Empty : "No XInput controller detected. Connect an Xbox-compatible controller.");
+                    onStatus(controllers.Count > 0 ? string.Empty : GetResourceString("DisplayProfiles_ControllerCapture_NoneDetected", "No XInput controller detected. Connect an Xbox-compatible controller."));
 
                     ushort buttons = 0;
                     foreach (var controller in controllers)
@@ -1022,7 +1052,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
             {
-                onStatus("Controller input is unsupported on this system (XInput is unavailable).");
+                onStatus(GetResourceString("DisplayProfiles_Controller_Unsupported", "Controller input is unsupported on this system (XInput is unavailable)."));
                 Logger.LogError("Monitor Power controller chord capture is unavailable.", ex);
             }
             finally
@@ -1056,12 +1086,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     throw new InvalidOperationException("Windows did not open the Monitor Power diagnostics log.");
                 }
 
-                StatusMessage = "Opened the Monitor Power diagnostics log.";
+                StatusMessage = GetResourceString("DisplayProfiles_Diagnostics_LogOpened", "Opened the Display Profiles diagnostics log.");
                 Logger.LogInfo($"Opened Monitor Power diagnostics log at '{path}'.");
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
             {
-                StatusMessage = $"Could not open the Monitor Power diagnostics log: {ex.Message}";
+                StatusMessage = FormatResourceString("DisplayProfiles_Diagnostics_LogOpenFailed", "Could not open the Display Profiles diagnostics log: {0}", ex.Message);
                 Logger.LogError("Could not open the Monitor Power diagnostics log.", ex);
             }
         }
@@ -1106,6 +1136,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return string.IsNullOrWhiteSpace(value) ? fallback : value;
         }
 
+        private static string FormatResourceString(string resourceKey, string fallback, params object[] arguments)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetResourceString(resourceKey, fallback), arguments);
+        }
+
         private void RunOnUiThread(Action action)
         {
             if (_dispatcher.HasThreadAccess)
@@ -1124,6 +1159,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public class MonitorDisplayInfo : INotifyPropertyChanged
     {
         private bool _isSelected;
+
+        private static string GetDisplayResourceString(string resourceKey, string fallback)
+        {
+            var value = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
+            return string.IsNullOrWhiteSpace(value) ? fallback : value;
+        }
 
         public int Index { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -1146,12 +1187,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public double LayoutWidth { get; set; }
         public double LayoutHeight { get; set; }
         public double PreviewOpacity => IsActive ? 1 : 0.55;
-        public string State => IsActive ? "Active" : "Inactive";
+        public string State => IsActive
+            ? GetDisplayResourceString("DisplayProfiles_DisplayState_Active", "Active")
+            : GetDisplayResourceString("DisplayProfiles_DisplayState_Inactive", "Inactive");
         public string PreviewStatus => IsSelected
-            ? IsPrimary ? "Selected · Primary" : "Selected"
-            : IsPrimary ? "Primary" : MirroredDisplayCount > 1 ? $"Mirrored x{MirroredDisplayCount}" : State;
-        public string Details => $"{Technology} · {Resolution} · {Orientation}";
-        public string AccessibilityDescription => $"{Name}, {Details}, {(IsSelected ? "Selected, " : string.Empty)}{(IsPrimary ? "Primary" : State)}";
+            ? IsPrimary
+                ? GetDisplayResourceString("DisplayProfiles_DisplayState_SelectedPrimary", "Selected · Primary")
+                : GetDisplayResourceString("DisplayProfiles_DisplayState_Selected", "Selected")
+            : IsPrimary
+                ? GetDisplayResourceString("DisplayProfiles_DisplayState_Primary", "Primary")
+                : MirroredDisplayCount > 1
+                    ? string.Format(CultureInfo.CurrentCulture, GetDisplayResourceString("DisplayProfiles_DisplayState_Mirrored", "Mirrored x{0}"), MirroredDisplayCount)
+                    : State;
+        public string Details => string.Format(CultureInfo.CurrentCulture, GetDisplayResourceString("DisplayProfiles_DisplayDetails", "{0} · {1} · {2}"), Technology, Resolution, Orientation);
+        public string AccessibilityDescription => string.Format(CultureInfo.CurrentCulture, GetDisplayResourceString("DisplayProfiles_DisplayAccessibility", "{0}, {1}, {2}{3}"), Name, Details, IsSelected ? GetDisplayResourceString("DisplayProfiles_DisplayState_Selected", "Selected") + ", " : string.Empty, IsPrimary ? GetDisplayResourceString("DisplayProfiles_DisplayState_Primary", "Primary") : State);
 
         public bool IsSelected
         {
@@ -1184,7 +1233,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Name { get; set; } = string.Empty;
         public BuiltInDisplayProfile BuiltInProfile { get; set; }
         public bool IsBuiltIn => BuiltInProfile != BuiltInDisplayProfile.None;
-        public string Description => IsBuiltIn ? "Built-in profile" : "Saved profile";
+        public string Description => IsBuiltIn
+            ? ResourceLoaderInstance.ResourceLoader.GetString("DisplayProfiles_ProfileDescription_BuiltIn")
+            : ResourceLoaderInstance.ResourceLoader.GetString("DisplayProfiles_ProfileDescription_Saved");
 
         private bool _isCurrent;
 

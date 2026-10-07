@@ -146,7 +146,37 @@ namespace MonitorPowerExtension.Properties
 
         public static string select_monitors_label => ResourceManager.GetString("select_monitors_label", resourceCulture);
 
+        public static string select_monitors_subtitle => ResourceManager.GetString("select_monitors_subtitle", resourceCulture);
+
         public static string save_profile_button => ResourceManager.GetString("save_profile_button", resourceCulture);
+
+        public static string save_profile_command_subtitle => ResourceManager.GetString("save_profile_command_subtitle", resourceCulture);
+
+        public static string cancel_profile_title => ResourceManager.GetString("cancel_profile_title", resourceCulture);
+
+        public static string cancel_profile_subtitle => ResourceManager.GetString("cancel_profile_subtitle", resourceCulture);
+
+        public static string turn_monitor_on_title => ResourceManager.GetString("turn_monitor_on_title", resourceCulture);
+
+        public static string turn_monitor_off_title => ResourceManager.GetString("turn_monitor_off_title", resourceCulture);
+
+        public static string toggle_monitor_subtitle => ResourceManager.GetString("toggle_monitor_subtitle", resourceCulture);
+
+        public static string monitor_summary_format => ResourceManager.GetString("monitor_summary_format", resourceCulture);
+
+        public static string monitor_on_label => ResourceManager.GetString("monitor_on_label", resourceCulture);
+
+        public static string monitor_off_label => ResourceManager.GetString("monitor_off_label", resourceCulture);
+
+        public static string layout_summary_format => ResourceManager.GetString("layout_summary_format", resourceCulture);
+
+        public static string layout_captured_label => ResourceManager.GetString("layout_captured_label", resourceCulture);
+
+        public static string confirm_create_profile_title => ResourceManager.GetString("confirm_create_profile_title", resourceCulture);
+
+        public static string confirm_update_profile_title => ResourceManager.GetString("confirm_update_profile_title", resourceCulture);
+
+        public static string confirm_profile_description => ResourceManager.GetString("confirm_profile_description", resourceCulture);
 
         public static string profile_name_required => ResourceManager.GetString("profile_name_required", resourceCulture);
 
@@ -158,7 +188,19 @@ namespace MonitorPowerExtension.Properties
 
         public static string profile_applied => ResourceManager.GetString("profile_applied", resourceCulture);
 
+        public static string all_displays_title => ResourceManager.GetString("all_displays_title", resourceCulture);
+
+        public static string all_displays_subtitle => ResourceManager.GetString("all_displays_subtitle", resourceCulture);
+
+        public static string primary_display_only_title => ResourceManager.GetString("primary_display_only_title", resourceCulture);
+
+        public static string primary_display_only_subtitle => ResourceManager.GetString("primary_display_only_subtitle", resourceCulture);
+
+        public static string edit_profile_subtitle => ResourceManager.GetString("edit_profile_subtitle", resourceCulture);
+
         public static string delete_profile_title => ResourceManager.GetString("delete_profile_title", resourceCulture);
+
+        public static string delete_profile_subtitle => ResourceManager.GetString("delete_profile_subtitle", resourceCulture);
 
         public static string profile_deleted => ResourceManager.GetString("profile_deleted", resourceCulture);
 

@@ -8,6 +8,8 @@ using System.Globalization;
 
 namespace MonitorPower;
 
+#pragma warning disable CA1305, CA1863
+
 internal sealed record KeyboardActivationShortcut(
     string Text,
     int VirtualKey,
@@ -40,14 +42,14 @@ internal sealed record KeyboardActivationShortcut(
         error = string.Empty;
         if (string.IsNullOrWhiteSpace(value))
         {
-            error = "Enter a keyboard shortcut.";
+            error = MonitorPowerCore.Resources.shortcut_required;
             return false;
         }
 
         var parts = value.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2)
         {
-            error = "The shortcut must include at least one modifier and one key.";
+            error = MonitorPowerCore.Resources.shortcut_modifier_key_required;
             return false;
         }
 
@@ -65,14 +67,14 @@ internal sealed record KeyboardActivationShortcut(
 
             if (normalized.Length == 0 || !modifiers.Add(normalized))
             {
-                error = $"Unsupported or duplicate modifier '{modifier}'.";
+                error = string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.shortcut_modifier_invalid, modifier);
                 return false;
             }
         }
 
         if (!TryGetVirtualKey(parts[^1], out var virtualKey, out var keyName))
         {
-            error = $"Unsupported shortcut key '{parts[^1]}'.";
+            error = string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.shortcut_key_invalid, parts[^1]);
             return false;
         }
 
@@ -99,13 +101,13 @@ internal sealed record KeyboardActivationShortcut(
         error = string.Empty;
         if (!TryGetKeyName(virtualKey, out var keyName))
         {
-            error = $"Unsupported shortcut key code '{virtualKey}'.";
+            error = string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.shortcut_key_code_invalid, virtualKey);
             return false;
         }
 
         if (IsReservedCombination(win, control, alt, shift, keyName))
         {
-            error = "This shortcut is reserved by Windows.";
+            error = MonitorPowerCore.Resources.shortcut_reserved;
             return false;
         }
 

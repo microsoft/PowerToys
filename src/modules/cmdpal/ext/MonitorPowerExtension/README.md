@@ -1,9 +1,9 @@
-# Monitor Power Extension
+# Display Profiles Command Palette extension
 
 Monitor profiles are stored in:
 
 ```text
-%LOCALAPPDATA%\MonitorPowerExtension\profiles
+%LOCALAPPDATA%\MonitorPower\profiles
 ```
 
 Each profile stores the selected display target IDs and, when available, the
@@ -14,7 +14,7 @@ Profiles created by older builds contain only target IDs and remain supported.
 The last pre-switch recovery snapshot is stored in:
 
 ```text
-%LOCALAPPDATA%\MonitorPowerExtension\snapshot.json
+%LOCALAPPDATA%\MonitorPower\snapshot.json
 ```
 
 `Snapshot-Display.ps1` can replace this file with a manually verified layout.

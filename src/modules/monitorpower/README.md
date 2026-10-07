@@ -1,6 +1,6 @@
-# Monitor Power
+# Display Profiles
 
-Monitor Power stores settings, display profiles, diagnostics, and topology recovery data under
+Display Profiles stores settings, display profiles, diagnostics, and topology recovery data under
 `%LOCALAPPDATA%\MonitorPower`.
 
 The PowerToys runner starts `PowerToys.MonitorPower.Runtime.exe`, a single-instance WinUI host that

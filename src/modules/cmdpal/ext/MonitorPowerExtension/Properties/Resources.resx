@@ -38,13 +38,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="provider_display_name" xml:space="preserve">
-    <value>MonitorPower</value>
+    <value>Display Profiles</value>
   </data>
   <data name="provider_subtitle" xml:space="preserve">
-    <value>Display topology profiles</value>
+    <value>Apply and manage PowerToys display profiles</value>
   </data>
   <data name="page_title" xml:space="preserve">
-    <value>MonitorPower</value>
+    <value>Display Profiles</value>
   </data>
   <data name="switch_to_external_title" xml:space="preserve">
     <value>Switch to {0}</value>
@@ -197,8 +197,56 @@
   <data name="select_monitors_label" xml:space="preserve">
     <value>Select monitors to include</value>
   </data>
+  <data name="select_monitors_subtitle" xml:space="preserve">
+    <value>Toggle each monitor and confirm the profile name</value>
+  </data>
   <data name="save_profile_button" xml:space="preserve">
     <value>Save profile</value>
+  </data>
+  <data name="save_profile_command_subtitle" xml:space="preserve">
+    <value>Review and save the profile name and selected displays</value>
+  </data>
+  <data name="cancel_profile_title" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="cancel_profile_subtitle" xml:space="preserve">
+    <value>Discard changes and return to Display Profiles</value>
+  </data>
+  <data name="turn_monitor_on_title" xml:space="preserve">
+    <value>Turn monitor on</value>
+  </data>
+  <data name="turn_monitor_off_title" xml:space="preserve">
+    <value>Turn monitor off</value>
+  </data>
+  <data name="toggle_monitor_subtitle" xml:space="preserve">
+    <value>Toggle whether this monitor is included in the profile</value>
+  </data>
+  <data name="monitor_summary_format" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>{0} = monitor inclusion state; {1} = captured layout summary</comment>
+  </data>
+  <data name="monitor_on_label" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="monitor_off_label" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="layout_summary_format" xml:space="preserve">
+    <value>{0} × {1} at {2}, {3}</value>
+    <comment>{0} = width; {1} = height; {2} = X position; {3} = Y position</comment>
+  </data>
+  <data name="layout_captured_label" xml:space="preserve">
+    <value>Current layout will be captured</value>
+  </data>
+  <data name="confirm_create_profile_title" xml:space="preserve">
+    <value>Create display profile?</value>
+  </data>
+  <data name="confirm_update_profile_title" xml:space="preserve">
+    <value>Update display profile?</value>
+  </data>
+  <data name="confirm_profile_description" xml:space="preserve">
+    <value>Save "{0}" with these displays: {1}. Their current resolution, position, orientation, refresh rate, color depth, and primary-display state will be captured.</value>
+    <comment>{0} = profile name; {1} = selected display names</comment>
   </data>
   <data name="profile_name_required" xml:space="preserve">
     <value>Profile name is required</value>
@@ -215,8 +263,26 @@
   <data name="profile_applied" xml:space="preserve">
     <value>Profile applied</value>
   </data>
+  <data name="all_displays_title" xml:space="preserve">
+    <value>All displays</value>
+  </data>
+  <data name="all_displays_subtitle" xml:space="preserve">
+    <value>Enable all connected displays</value>
+  </data>
+  <data name="primary_display_only_title" xml:space="preserve">
+    <value>Primary display only</value>
+  </data>
+  <data name="primary_display_only_subtitle" xml:space="preserve">
+    <value>Keep only the primary display active</value>
+  </data>
+  <data name="edit_profile_subtitle" xml:space="preserve">
+    <value>Change the profile name or selected displays</value>
+  </data>
   <data name="delete_profile_title" xml:space="preserve">
     <value>Delete profile</value>
+  </data>
+  <data name="delete_profile_subtitle" xml:space="preserve">
+    <value>Remove this saved display profile</value>
   </data>
   <data name="profile_deleted" xml:space="preserve">
     <value>Profile deleted</value>

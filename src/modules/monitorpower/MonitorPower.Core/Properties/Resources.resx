@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Monitor Power display profile strings. -->
+<!-- Display Profiles resource strings. -->
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -231,4 +231,45 @@
   <data name="edit_profile_page_title" xml:space="preserve">
     <value>Edit profile</value>
   </data>
+  <data name="controller_no_buttons_pressed" xml:space="preserve"><value>No buttons pressed</value></data>
+  <data name="shortcut_required" xml:space="preserve"><value>Enter a keyboard shortcut.</value></data>
+  <data name="shortcut_modifier_key_required" xml:space="preserve"><value>The shortcut must include at least one modifier and one key.</value></data>
+  <data name="shortcut_modifier_invalid" xml:space="preserve"><value>Unsupported or duplicate modifier '{0}'.</value></data>
+  <data name="shortcut_key_invalid" xml:space="preserve"><value>Unsupported shortcut key '{0}'.</value></data>
+  <data name="shortcut_key_code_invalid" xml:space="preserve"><value>Unsupported shortcut key code '{0}'.</value></data>
+  <data name="shortcut_reserved" xml:space="preserve"><value>This shortcut is reserved by Windows.</value></data>
+  <data name="profile_filename_invalid" xml:space="preserve"><value>The profile filename is invalid.</value></data>
+  <data name="profile_already_exists" xml:space="preserve"><value>Profile '{0}' already exists.</value></data>
+  <data name="profile_name_already_exists" xml:space="preserve"><value>A profile named '{0}' already exists.</value></data>
+  <data name="profile_combination_already_exists" xml:space="preserve"><value>The same display combination is already saved as '{0}'.</value></data>
+  <data name="profile_name_required_error" xml:space="preserve"><value>A profile name is required.</value></data>
+  <data name="profile_name_invalid" xml:space="preserve"><value>The profile name does not contain any valid filename characters.</value></data>
+  <data name="profile_name_exists" xml:space="preserve"><value>A profile with this name already exists.</value></data>
+  <data name="profile_valid_name_required" xml:space="preserve"><value>A valid profile name is required.</value></data>
+  <data name="profile_renamed" xml:space="preserve"><value>Profile renamed.</value></data>
+  <data name="profile_duplicated" xml:space="preserve"><value>Profile duplicated.</value></data>
+  <data name="layout_empty" xml:space="preserve"><value>The display layout is empty.</value></data>
+  <data name="layout_missing_displays" xml:space="preserve"><value>The layout does not contain every selected display.</value></data>
+  <data name="layout_invalid_targets" xml:space="preserve"><value>The layout contains duplicate or unexpected display targets.</value></data>
+  <data name="layout_invalid_display" xml:space="preserve"><value>The layout contains a display without a valid device name or mode.</value></data>
+  <data name="layout_duplicate_device" xml:space="preserve"><value>Multiple display targets are mapped to the same device.</value></data>
+  <data name="layout_primary_count" xml:space="preserve"><value>The layout must contain exactly one primary display.</value></data>
+  <data name="layout_overlap" xml:space="preserve"><value>Displays {0} and {1} overlap.</value></data>
+  <data name="progress_checking_displays" xml:space="preserve"><value>Checking active displays ({0}s)...</value></data>
+  <data name="progress_activating_displays" xml:space="preserve"><value>Activating profile... Wait for displays to turn on ({0}s)...</value></data>
+  <data name="progress_activating_profile" xml:space="preserve"><value>Activating profile... Please wait ({0}s)...</value></data>
+  <data name="query_buffer_sizes_failed" xml:space="preserve"><value>Could not query the display configuration buffer sizes.</value></data>
+  <data name="query_topology_failed" xml:space="preserve"><value>Could not query the display topology.</value></data>
+  <data name="query_topology_changed" xml:space="preserve"><value>The display topology changed repeatedly while it was being queried.</value></data>
+  <data name="capture_topology_failed" xml:space="preserve"><value>The current display topology could not be captured.</value></data>
+  <data name="recovery_result_format" xml:space="preserve"><value>{0} Recovery: {1}</value></data>
+  <data name="win32_invalid_parameters" xml:space="preserve"><value>ERROR_INVALID_PARAMETER: One or more parameters are invalid</value></data>
+  <data name="win32_not_supported" xml:space="preserve"><value>ERROR_NOT_SUPPORTED: The requested operation is not supported</value></data>
+  <data name="win32_access_denied" xml:space="preserve"><value>ERROR_ACCESS_DENIED: Access denied</value></data>
+  <data name="win32_not_enough_memory" xml:space="preserve"><value>ERROR_NOT_ENOUGH_MEMORY: Not enough memory</value></data>
+  <data name="win32_incorrect_parameter" xml:space="preserve"><value>ERROR_INVALID_PARAMETER: The parameter is incorrect</value></data>
+  <data name="win32_invalid_name" xml:space="preserve"><value>ERROR_INVALID_NAME: The filename or extension is invalid</value></data>
+  <data name="win32_no_more_items" xml:space="preserve"><value>ERROR_NO_MORE_ITEMS: No more data is available</value></data>
+  <data name="win32_timeout" xml:space="preserve"><value>ERROR_TIMEOUT: The operation timed out</value></data>
+  <data name="win32_unknown_error" xml:space="preserve"><value>Unknown error code: {0}</value></data>
 </root>

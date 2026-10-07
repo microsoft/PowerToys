@@ -11,5 +11,5 @@ internal sealed record RuntimeProfile(
     string Name,
     BuiltInDisplayProfile BuiltInProfile = BuiltInDisplayProfile.None)
 {
-    public string Description => BuiltInProfile == BuiltInDisplayProfile.None ? "Saved profile" : "Built-in profile";
+    public string Description => MainWindow.GetProfileDescription(BuiltInProfile);
 }

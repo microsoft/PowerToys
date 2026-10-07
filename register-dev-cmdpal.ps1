@@ -8,7 +8,6 @@ $Root = $PSScriptRoot
 $DebugDir    = Join-Path $Root "x64\Debug\WinUI3Apps\CmdPal"
 $Manifest    = Join-Path $DebugDir "AppxManifest.xml"
 $CmdPalExe   = Join-Path $DebugDir "Microsoft.CmdPal.UI.exe"
-$ExtDll      = Join-Path $DebugDir "MonitorPowerExtension.dll"
 
 if (-not (Test-Path $Manifest)) {
     Write-Error "AppxManifest.xml not found.`nRun build-cmdpal.cmd first to build the full CmdPal."
@@ -26,8 +25,14 @@ dotnet build "$Root\src\modules\cmdpal\ext\MonitorPowerExtension\MonitorPowerExt
     -p:AppendRuntimeIdentifierToOutputPath=false --nologo -v:m
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-if (-not (Test-Path $ExtDll)) {
+$extensionOutput = Join-Path $Root "x64\Debug\WinUI3Apps\CmdPalExtensions\MonitorPowerExtension"
+$extensionManifest = Join-Path $extensionOutput "AppxManifest.xml"
+if (-not (Test-Path (Join-Path $extensionOutput "MonitorPowerExtension.dll"))) {
     Write-Error "MonitorPowerExtension.dll still missing after build."
+    exit 1
+}
+if (-not (Test-Path $extensionManifest)) {
+    Write-Error "MonitorPowerExtension AppxManifest.xml still missing after build."
     exit 1
 }
 
@@ -35,8 +40,9 @@ Write-Host "=== Stopping any running CmdPal ==="
 Get-Process -Name "Microsoft.CmdPal.UI" -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Milliseconds 500
 
-Write-Host "=== Registering dev package ==="
+Write-Host "=== Registering dev packages ==="
 Add-AppxPackage -Register $Manifest -ForceUpdateFromAnyVersion -ForceApplicationShutdown
+Add-AppxPackage -Register $extensionManifest -ForceUpdateFromAnyVersion -ForceApplicationShutdown
 Write-Host ""
 Write-Host "Done! The dev CmdPal (Microsoft.CommandPalette.Dev) is now registered."
 Write-Host "To use it as your daily CmdPal:"

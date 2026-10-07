@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MonitorPower;
 using MonitorPowerExtension.Properties;
 
 namespace MonitorPowerExtension;
@@ -25,8 +26,6 @@ public partial class MonitorPowerCommandsProvider : CommandProvider
             Subtitle = Resources.provider_subtitle,
             Icon = Icon,
         };
-
-        DisplayHelpers.EnableXboxGuideViewCombo();
     }
 
     public override ICommandItem[] TopLevelCommands() => [_pageItem];

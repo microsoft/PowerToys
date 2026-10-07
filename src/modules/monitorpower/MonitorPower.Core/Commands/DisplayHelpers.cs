@@ -744,7 +744,7 @@ internal static partial class DisplayHelpers
             var result = GetDisplayConfigBufferSizes(flags, out var pathCount, out var modeCount);
             if (result != 0)
             {
-                throw new Win32Exception(result, "Could not query the display configuration buffer sizes.");
+                throw new Win32Exception(result, MonitorPowerCore.Resources.query_buffer_sizes_failed);
             }
 
             var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
@@ -764,7 +764,7 @@ internal static partial class DisplayHelpers
 
             if (result != 0)
             {
-                throw new Win32Exception(result, "Could not query the display topology.");
+                throw new Win32Exception(result, MonitorPowerCore.Resources.query_topology_failed);
             }
 
             Array.Resize(ref paths, (int)pathCount);
@@ -772,7 +772,7 @@ internal static partial class DisplayHelpers
             return (paths, modes);
         }
 
-        throw new InvalidOperationException("The display topology changed repeatedly while it was being queried.");
+        throw new InvalidOperationException(MonitorPowerCore.Resources.query_topology_changed);
     }
 
     // manageState: when true (default), SaveState() is called before the switch and
@@ -804,6 +804,9 @@ internal static partial class DisplayHelpers
 
     internal static uint GetTopologyFlags(DISPLAYCONFIG_TOPOLOGY_ID topology)
         => SDC_APPLY | SDC_ALLOW_CHANGES | (uint)topology;
+
+    public static bool IsErrorResult(string result)
+        => result.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase);
 
     public static string SetExternalOnly()
     {
@@ -844,11 +847,11 @@ internal static partial class DisplayHelpers
 
         LogDiagnostic($"SetPrimaryDisplayOnly: selected target={primaryTarget.Value} from {primaryTargets.Length} primary-source target(s).");
         var result = ActivateDisplays([primaryTarget.Value], onProgress);
-        if (result.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase))
+        if (IsErrorResult(result))
         {
             var recoveryResult = RestoreState();
             RetainEscRecoveryIfNeeded(recoveryResult);
-            return $"{result} Recovery: {recoveryResult}";
+            return string.Format(MonitorPowerCore.Resources.recovery_result_format, result, recoveryResult);
         }
 
         return result;
@@ -903,15 +906,15 @@ internal static partial class DisplayHelpers
         return errorCode switch
         {
             0 => "Success",
-            -1 => "ERROR_INVALID_PARAMETER: One or more parameters are invalid",
-            -2 => "ERROR_NOT_SUPPORTED: The requested operation is not supported",
-            -5 => "ERROR_ACCESS_DENIED: Access denied",
-            8 => "ERROR_NOT_ENOUGH_MEMORY: Not enough memory",
-            87 => "ERROR_INVALID_PARAMETER: The parameter is incorrect",
-            123 => "ERROR_INVALID_NAME: The filename or extension is invalid",
-            1601 => "ERROR_NO_MORE_ITEMS: No more data is available",
-            1460 => "ERROR_TIMEOUT: The operation timed out",
-            _ => $"Unknown error code: {errorCode}",
+            -1 => MonitorPowerCore.Resources.win32_invalid_parameters,
+            -2 => MonitorPowerCore.Resources.win32_not_supported,
+            -5 => MonitorPowerCore.Resources.win32_access_denied,
+            8 => MonitorPowerCore.Resources.win32_not_enough_memory,
+            87 => MonitorPowerCore.Resources.win32_incorrect_parameter,
+            123 => MonitorPowerCore.Resources.win32_invalid_name,
+            1601 => MonitorPowerCore.Resources.win32_no_more_items,
+            1460 => MonitorPowerCore.Resources.win32_timeout,
+            _ => string.Format(MonitorPowerCore.Resources.win32_unknown_error, errorCode),
         };
     }
 
@@ -1384,7 +1387,7 @@ internal static partial class DisplayHelpers
     private static DISPLAYCONFIG_TOPOLOGY_ID ClassifyTopology(List<DisplayTargetId> targets)
     {
         // Use all paths (not just active) so profiles targeting inactive displays
-        // are classified correctly â€” active-only misses disconnected/off monitors.
+        // are classified correctly because active-only misses disconnected or powered-off monitors.
         var techByTarget = GetAllPaths()
             .GroupBy(p => new DisplayTargetId(p.targetInfo.adapterId, p.targetInfo.id))
             .ToDictionary(g => g.Key, g => g.First().targetInfo.outputTechnology);
@@ -1442,7 +1445,7 @@ internal static partial class DisplayHelpers
         }
 
         // Resolve targets to unique device names. Ghost targets (Intel GPU) that
-        // share a GDI device name are skipped — they can't be activated individually.
+        // share a GDI device name are skipped because they cannot be activated individually.
         var deviceNameMap = BuildTargetToDeviceNameMap();
         var realTargets = targets.Where(t => deviceNameMap.ContainsKey(t)).ToList();
 
@@ -1462,11 +1465,11 @@ internal static partial class DisplayHelpers
         var topology = ClassifyTopology(targets);
         LogDiagnostic($"ActivateDisplays: topology={topology} targets=[{string.Join(",", targets)}]");
 
-        // manageState:false — SaveState() already called above; must not null _savedState on failure.
+        // manageState:false preserves the state saved above if the operation fails.
         var result = SetTopology(topology, manageState: false);
         var activeBeforeFallback = GetActivePaths().paths.Length;
         LogDiagnostic($"ActivateDisplays: SetTopology result='{result}' activePaths={activeBeforeFallback}");
-        if (!result.StartsWith(Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase) &&
+        if (!IsErrorResult(result) &&
             WaitForActiveTargets(targets, onProgress: onProgress))
         {
             LogDiagnostic($"ActivateDisplays: topology switch succeeded for {targets.Count} target(s)");
@@ -1475,7 +1478,7 @@ internal static partial class DisplayHelpers
 
         LogDiagnostic($"ActivateDisplays: topology switch failed, trying path array fallback");
 
-        // Topology fallback failed — try with path array as last resort.
+        // The topology fallback failed, so try the path array as a last resort.
         // QDC_ALL_PATHS returns multiple paths per target (one per possible source),
         // so deduplicate by target and prefer active paths to avoid ERROR_INVALID_PARAMETER.
         var allPaths = GetAllPaths(virtualModeAware: false);
@@ -1568,7 +1571,7 @@ internal static partial class DisplayHelpers
             if (onProgress != null)
             {
                 int remainingSecs = (maxWaitMs - elapsed + 999) / 1000;
-                onProgress.Invoke($"Verifica monitor attivi in corso ({remainingSecs}s)...");
+                onProgress.Invoke(string.Format(MonitorPowerCore.Resources.progress_checking_displays, remainingSecs));
             }
 
             Thread.Sleep(pollMs);
@@ -1622,7 +1625,7 @@ internal static partial class DisplayHelpers
             new DisplayTargetId(path.targetInfo.adapterId, path.targetInfo.id)));
         if (targets.Count == 0)
         {
-            throw new InvalidOperationException("The current display topology could not be captured.");
+            throw new InvalidOperationException(MonitorPowerCore.Resources.capture_topology_failed);
         }
 
         Directory.CreateDirectory(SnapshotDir);
@@ -1780,7 +1783,7 @@ internal static partial class DisplayHelpers
 
     private static unsafe int TryActivateViaCDSE(List<DisplayTargetId>? targetsToActivate = null)
     {
-        // Build target → GDI device name map using correct source IDs
+        // Build the target-to-GDI-device-name map using the correct source IDs.
         var targetToDevice = BuildTargetToDeviceNameMap();
         if (targetToDevice.Count == 0)
         {
@@ -1956,13 +1959,13 @@ internal static partial class DisplayHelpers
         validationError = string.Empty;
         if (layout.Count == 0)
         {
-            validationError = "The display layout is empty.";
+            validationError = MonitorPowerCore.Resources.layout_empty;
             return false;
         }
 
         if (expectedTargets != null && layout.Count != expectedTargets.Count)
         {
-            validationError = "The layout does not contain every selected display.";
+            validationError = MonitorPowerCore.Resources.layout_missing_displays;
             return false;
         }
 
@@ -1974,7 +1977,7 @@ internal static partial class DisplayHelpers
         if (targetIds.Distinct().Count() != targetIds.Count ||
             (expectedTargets != null && !targetIds.ToHashSet().SetEquals(expectedTargets)))
         {
-            validationError = "The layout contains duplicate or unexpected display targets.";
+            validationError = MonitorPowerCore.Resources.layout_invalid_targets;
             return false;
         }
 
@@ -1983,19 +1986,19 @@ internal static partial class DisplayHelpers
             entry.Width <= 0 ||
             entry.Height <= 0))
         {
-            validationError = "The layout contains a display without a valid device name or mode.";
+            validationError = MonitorPowerCore.Resources.layout_invalid_display;
             return false;
         }
 
         if (layout.Select(entry => entry.DeviceName).Distinct(StringComparer.OrdinalIgnoreCase).Count() != layout.Count)
         {
-            validationError = "Multiple display targets are mapped to the same device.";
+            validationError = MonitorPowerCore.Resources.layout_duplicate_device;
             return false;
         }
 
         if (layout.Count > 1 && layout.Count(entry => entry.IsPrimary) != 1)
         {
-            validationError = "The layout must contain exactly one primary display.";
+            validationError = MonitorPowerCore.Resources.layout_primary_count;
             return false;
         }
 
@@ -2016,7 +2019,7 @@ internal static partial class DisplayHelpers
                     firstBottom > second.PositionY;
                 if (overlaps)
                 {
-                    validationError = $"Displays {first.DeviceName} and {second.DeviceName} overlap.";
+                    validationError = string.Format(MonitorPowerCore.Resources.layout_overlap, first.DeviceName, second.DeviceName);
                     return false;
                 }
             }
@@ -2033,7 +2036,7 @@ internal static partial class DisplayHelpers
             return DISP_CHANGE_BADPARAM;
         }
 
-        // Resolve current device names — saved names may be stale after replug/reboot
+        // Resolve current device names because saved names may be stale after reconnecting or rebooting.
         var currentDeviceMap = BuildTargetToDeviceNameMap();
         var resolved = new List<(SnapshotTarget Entry, string DeviceName)>();
         foreach (var entry in layout)
@@ -2212,7 +2215,7 @@ internal static partial class DisplayHelpers
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return string.Format(Properties.Resources.error_format, "A profile name is required.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_name_required_error);
         }
 
         if (targets.Count == 0)
@@ -2223,7 +2226,7 @@ internal static partial class DisplayHelpers
         var safeName = SanitizeFileName(name);
         if (string.IsNullOrWhiteSpace(safeName))
         {
-            return string.Format(Properties.Resources.error_format, "The profile name does not contain any valid filename characters.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_name_invalid);
         }
 
         var fileName = $"{safeName}.json";
@@ -2235,7 +2238,7 @@ internal static partial class DisplayHelpers
 
         if (File.Exists(ProfileStore.GetPath(fileName)) && !overwrite)
         {
-            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_name_exists);
         }
 
         var data = new MonitorPowerProfile
@@ -2332,8 +2335,7 @@ internal static partial class DisplayHelpers
         // can time out before physical monitors finish waking. ApplyLayout sends
         // ChangeDisplaySettingsEx to each monitor and gives Windows another chance
         // to bring them fully online.
-        bool activateError = activateResult.StartsWith(
-            Properties.Resources.error_prefix, StringComparison.OrdinalIgnoreCase);
+        bool activateError = IsErrorResult(activateResult);
 
         var activePaths = GetActivePaths().paths;
         bool enablingMonitors = activePaths.Length < profile.Targets.Count;
@@ -2349,7 +2351,7 @@ internal static partial class DisplayHelpers
             // and expose display modes before applying the layout (resolution/orientation).
             for (int i = 3; i > 0; i--)
             {
-                onProgress?.Invoke($"Attivazione profilo in corso... Attendi l'accensione dei monitor ({i}s)...");
+                onProgress?.Invoke(string.Format(MonitorPowerCore.Resources.progress_activating_displays, i));
                 Thread.Sleep(1000);
             }
         }
@@ -2357,7 +2359,7 @@ internal static partial class DisplayHelpers
         {
             for (int i = 2; i > 0; i--)
             {
-                onProgress?.Invoke($"Attivazione profilo in corso... Attendi ({i}s)...");
+                onProgress?.Invoke(string.Format(MonitorPowerCore.Resources.progress_activating_profile, i));
                 Thread.Sleep(750);
             }
         }
@@ -2393,13 +2395,13 @@ internal static partial class DisplayHelpers
         var safeName = SanitizeFileName(newName);
         if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(safeName))
         {
-            return string.Format(Properties.Resources.error_format, "A valid profile name is required.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_valid_name_required);
         }
 
         var targetPath = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
         if (!string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase) && File.Exists(targetPath))
         {
-            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_name_exists);
         }
 
         var profile = ProfileStore.Load(Path.GetFileName(sourcePath));
@@ -2415,7 +2417,7 @@ internal static partial class DisplayHelpers
             File.Delete(sourcePath);
         }
 
-        return "Profile renamed.";
+        return MonitorPowerCore.Resources.profile_renamed;
     }
 
     public static string DuplicateSavedProfile(string fileName, string newName)
@@ -2429,13 +2431,13 @@ internal static partial class DisplayHelpers
         var safeName = SanitizeFileName(newName);
         if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(safeName))
         {
-            return string.Format(Properties.Resources.error_format, "A valid profile name is required.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_valid_name_required);
         }
 
         var targetPath = System.IO.Path.Combine(ProfilesDir, $"{safeName}.json");
         if (File.Exists(targetPath))
         {
-            return string.Format(Properties.Resources.error_format, "A profile with this name already exists.");
+            return string.Format(Properties.Resources.error_format, MonitorPowerCore.Resources.profile_name_exists);
         }
 
         var profile = ProfileStore.Load(Path.GetFileName(sourcePath));
@@ -2446,7 +2448,7 @@ internal static partial class DisplayHelpers
 
         profile.Name = newName.Trim();
         ProfileStore.Save(Path.GetFileName(targetPath), profile, overwrite: false);
-        return "Profile duplicated.";
+        return MonitorPowerCore.Resources.profile_duplicated;
     }
 
     private static string GetProfilePath(string fileName)

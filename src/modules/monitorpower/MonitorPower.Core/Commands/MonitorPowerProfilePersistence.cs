@@ -4,11 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 
 namespace MonitorPower;
+
+#pragma warning disable CA1305, CA1863
 
 internal sealed class MonitorPowerProfilePersistence(string directory)
 {
@@ -20,7 +23,7 @@ internal sealed class MonitorPowerProfilePersistence(string directory)
             !string.Equals(Path.GetFileName(fileName), fileName, StringComparison.Ordinal) ||
             !string.Equals(Path.GetExtension(fileName), ".json", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("The profile filename is invalid.", nameof(fileName));
+            throw new ArgumentException(MonitorPowerCore.Resources.profile_filename_invalid, nameof(fileName));
         }
 
         return Path.Combine(_directory, fileName);
@@ -32,7 +35,7 @@ internal sealed class MonitorPowerProfilePersistence(string directory)
         Directory.CreateDirectory(_directory);
         if (File.Exists(path) && !overwrite)
         {
-            throw new IOException($"Profile '{profile.Name}' already exists.");
+            throw new IOException(string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.profile_already_exists, profile.Name));
         }
 
         var tempPath = path + ".tmp";
@@ -94,7 +97,7 @@ internal sealed class MonitorPowerProfilePersistence(string directory)
             profile => string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase));
         if (nameConflict != default)
         {
-            return $"A profile named '{nameConflict.Name}' already exists.";
+            return string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.profile_name_already_exists, nameConflict.Name);
         }
 
         var targetSet = targets.ToHashSet();
@@ -103,7 +106,7 @@ internal sealed class MonitorPowerProfilePersistence(string directory)
             var savedProfile = Load(profile.FileName);
             if (savedProfile != null && savedProfile.Targets.ToHashSet().SetEquals(targetSet))
             {
-                return $"The same display combination is already saved as '{savedProfile.Name}'.";
+                return string.Format(CultureInfo.CurrentCulture, MonitorPowerCore.Resources.profile_combination_already_exists, savedProfile.Name);
             }
         }
 

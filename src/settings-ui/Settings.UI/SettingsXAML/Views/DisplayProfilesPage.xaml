@@ -11,15 +11,14 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    x:Name="DisplayProfilesRoot"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
     <local:NavigablePage.Resources>
-        <!-- CONVERTERS: bool -> Visibility (normal / inverted) and bool negation -->
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" FalseValue="Collapsed" TrueValue="Visible" />
         <tkconverters:BoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" FalseValue="Visible" TrueValue="Collapsed" />
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <!-- TEMPLATE: riga di un monitor nella lista "Active displays" (nome, dettagli, badge primario, stato, indice) -->
         <DataTemplate x:Key="DisplayTemplate" x:DataType="vm:MonitorDisplayInfo">
             <tkcontrols:SettingsCard Header="{x:Bind Name}" Description="{x:Bind Details}">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
@@ -31,143 +30,114 @@
                 </StackPanel>
             </tkcontrols:SettingsCard>
         </DataTemplate>
-
-        <!-- TEMPLATE: tile cliccabile di un monitor nell'anteprima della topologia (usato nel Canvas) -->
         <DataTemplate x:Key="PreviewTileTemplate" x:DataType="vm:MonitorDisplayInfo">
             <Button Width="{Binding LayoutWidth}" Height="{Binding LayoutHeight}" IsEnabled="{Binding IsActive}" Click="PreviewDisplay_Click" Padding="0" Background="Transparent" BorderThickness="0" Style="{StaticResource SubtleButtonStyle}" AutomationProperties.Name="{Binding AccessibilityDescription}" ToolTipService.ToolTip="{Binding Name}">
                 <Grid Width="{Binding LayoutWidth}" Height="{Binding LayoutHeight}" Opacity="{Binding PreviewOpacity}">
-                    <!-- Tile non selezionato: grigio neutro -->
                     <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" />
-                    <!-- Tile selezionato: cambia solo il colore di riempimento (accento) -->
                     <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <!-- Numero del monitor -->
                     <TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" />
                 </Grid>
             </Button>
         </DataTemplate>
-
-        <!-- TEMPLATE: riga di un profilo salvato (radio, nome, sottotitolo, menu Rename/Delete) -->
         <DataTemplate x:Key="ProfileTemplate" x:DataType="vm:ProfileInfo">
             <tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard.Header>
-                    <!-- Radio button: selezionare un profilo lo applica (come la scelta del dispositivo audio in Windows) -->
-                    <RadioButton GroupName="DisplayProfileSelection" IsChecked="{x:Bind IsCurrent, Mode=OneWay}" Click="ApplyProfile_Click" MinWidth="0">
+                    <RadioButton GroupName="DisplayProfileSelection" IsChecked="{x:Bind IsCurrent, Mode=OneWay}" Click="ApplyProfile_Click" MinWidth="0" IsEnabled="{Binding DataContext.IsApplying, ElementName=DisplayProfilesRoot, Converter={StaticResource BoolNegationConverter}}">
                         <StackPanel Spacing="2">
                             <TextBlock Text="{x:Bind Name}" />
                             <TextBlock Text="{x:Bind Description}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                     </RadioButton>
                 </tkcontrols:SettingsCard.Header>
-                <!-- Menu azioni del profilo (solo profili salvati) -->
-                <Button Style="{StaticResource SubtleButtonStyle}" Visibility="{x:Bind IsBuiltIn, Converter={StaticResource InvertedBoolToVisibilityConverter}}" AutomationProperties.Name="More actions">
+                <Button x:Uid="DisplayProfiles_ProfileActions" Style="{StaticResource SubtleButtonStyle}" Visibility="{x:Bind IsBuiltIn, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                     <FontIcon Glyph="&#xE712;" FontSize="16" />
                     <Button.Flyout>
                         <MenuFlyout Placement="BottomEdgeAlignedRight">
-                            <MenuFlyoutItem Text="Rename" Tag="{x:Bind}" Click="RenameProfile_Click" />
-                            <MenuFlyoutItem Text="Delete" Tag="{x:Bind}" Click="DeleteProfile_Click" />
+                            <MenuFlyoutItem x:Uid="DisplayProfiles_RenameProfile" Tag="{x:Bind}" Click="RenameProfile_Click" />
+                            <MenuFlyoutItem x:Uid="DisplayProfiles_DeleteProfile" Tag="{x:Bind}" Click="DeleteProfile_Click" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
             </tkcontrols:SettingsCard>
         </DataTemplate>
     </local:NavigablePage.Resources>
-
-    <!-- PAGINA: contenitore scrollabile + SettingsPageControl con tutto il contenuto -->
     <ScrollViewer VerticalScrollBarVisibility="Auto" VerticalScrollMode="Auto">
-        <controls:SettingsPageControl x:Uid="DisplayProfiles" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
+        <controls:SettingsPageControl x:Uid="DisplayProfiles" ModuleImageSource="ms-appx:///Assets/Settings/Modules/DisplayProfiles.png">
             <controls:SettingsPageControl.ModuleContent>
                 <StackPanel Spacing="24">
-                    <!-- ===== SEZIONE 1: CURRENT TOPOLOGY (anteprima + elenco monitor attivi) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_TopologySection">
                         <controls:Section.CanvasContent>
                             <StackPanel Spacing="16">
-                                <!-- CURRENT TOPOLOGY - Canvas: anteprima grafica del layout dei monitor -->
-                                <Grid Height="296" AutomationProperties.Name="Display topology preview">
+                                <Grid x:Uid="DisplayProfiles_TopologyPreview" Height="296">
                                     <Canvas x:Name="DisplayTopologyCanvas" Width="700" Height="296" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Grid>
-                                <!-- CURRENT TOPOLOGY - Azioni sotto il canvas: Refresh (sempre) + Save profile / Deselect all (solo con monitor selezionati) -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
                                     <Button x:Uid="DisplayProfiles_RefreshDisplays" Click="{x:Bind ViewModel.LoadDisplays}" MinWidth="120" Style="{StaticResource DefaultButtonStyle}" />
                                     <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                     <Button x:Uid="DisplayProfiles_SaveProfile" Click="SaveProfile_Click" MinWidth="160" Style="{StaticResource AccentButtonStyle}" Visibility="{x:Bind ViewModel.CanSaveProfile, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                    <Button Content="Deselect all" Click="ClearSelection_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.CanSaveProfile, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                    <Button x:Uid="DisplayProfiles_DeselectAll" Click="ClearSelection_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.CanSaveProfile, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                                 </StackPanel>
                             </StackPanel>
                         </controls:Section.CanvasContent>
-
-                        <!-- CURRENT TOPOLOGY - Contenuto: accordion (chiuso di default) con i dettagli dei monitor -->
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
                             <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_ConnectedDisplays" HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}" IsExpanded="False" ItemsSource="{x:Bind ViewModel.Displays, Mode=OneWay}" ItemTemplate="{StaticResource DisplayTemplate}" />
-                            <!-- CURRENT TOPOLOGY - Messaggio mostrato quando non ci sono display -->
                             <TextBlock x:Uid="DisplayProfiles_EmptyState" Visibility="{x:Bind ViewModel.HasDisplays, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
                     </controls:Section>
-
-                    <!-- ===== SEZIONE 2: PROFILES (salva e gestisci i profili display) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_ProfilesSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
-                        <!-- PROFILES - Indicatori di caricamento/applicazione -->
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsApplying, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                             <ProgressRing Width="20" Height="20" IsActive="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsProfilesLoading, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
                         </StackPanel>
-
-                        <!-- PROFILES - Accordion: header con profilo scelto a destra, righe con radio button (usa ProfileTemplate) -->
                         <tkcontrols:SettingsExpander x:Uid="DisplayProfiles_Profiles_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE8F1;}" IsExpanded="True" ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}" ItemTemplate="{StaticResource ProfileTemplate}">
                             <TextBlock Text="{x:Bind ViewModel.SelectedProfile.Name, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </tkcontrols:SettingsExpander>
                     
                         </StackPanel>
                     </controls:Section>
-
-                    <!-- ===== SEZIONE 3: KEYBOARD SHORTCUT (scorciatoia da tastiera) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_ActivationSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
-                        <!-- ACTIVATION SHORTCUT - Card: editor della scorciatoia da tastiera -->
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ActivationShortcut_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" AllowDisable="True" HotkeySettings="{x:Bind ViewModel.ActivationHotkeySettings, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     
                         </StackPanel>
                     </controls:Section>
-
-                    <!-- ===== SEZIONE 4: CONTROLLER SHORTCUT (attivazione da controller Xbox) ===== -->
                     <controls:Section x:Uid="DisplayProfiles_ControllerSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
-                            <!-- CONTROLLER - Riga: abilita/disabilita attivazione da controller -->
-                            <tkcontrols:SettingsCard Header="Enable controller shortcut" Description="Use an Xbox controller to open the display profile selector." HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
-                                <ToggleSwitch IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" AutomationProperties.Name="Enable controller activation" />
+                            <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerEnabled" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                                <ToggleSwitch x:Uid="DisplayProfiles_ControllerEnabledToggle" IsOn="{x:Bind ViewModel.XboxControllerEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-
-                            <!-- CONTROLLER - Riga: icona, testo, [spazio], combinazione + matita (oppure pulsante per assegnarla) -->
-                            <tkcontrols:SettingsCard Header="Open Profile Selector" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
+                            <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE72D;}">
                                 <Grid>
-                                    <!-- Combinazione assegnata: tasti del controller + matita; il clic apre il modale -->
-                                    <Button Click="EditControllerShortcut_Click" Padding="0" Background="Transparent" BorderThickness="0" Style="{StaticResource SubtleButtonStyle}" AutomationProperties.Name="Edit controller shortcut" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                    <Button x:Uid="DisplayProfiles_ControllerShortcut_Edit" Click="EditControllerShortcut_Click" Padding="0" Background="Transparent" BorderThickness="0" Style="{StaticResource SubtleButtonStyle}" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                         <StackPanel Orientation="Horizontal" Spacing="4" Padding="4,0">
                                             <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerFirstButton, Mode=OneWay}" MinWidth="36" Padding="8,8" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
                                             <ptcontrols:KeyVisual Content="{x:Bind ViewModel.ControllerSecondButton, Mode=OneWay}" MinWidth="36" Padding="8,8" CornerRadius="{StaticResource ControlCornerRadius}" Style="{StaticResource AccentKeyVisualStyle}" IsHitTestVisible="False" />
                                             <FontIcon Glyph="&#xE70F;" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </StackPanel>
                                     </Button>
-                                    <!-- Nessuna combinazione: pulsante Assign shortcut -->
-                                    <Button Click="EditControllerShortcut_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}">
+                                    <Button x:Uid="DisplayProfiles_AssignControllerShortcut" Click="EditControllerShortcut_Click" Style="{StaticResource DefaultButtonStyle}" Visibility="{x:Bind ViewModel.HasControllerShortcut, Converter={StaticResource InvertedBoolToVisibilityConverter}, Mode=OneWay}">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <FontIcon Glyph="&#xE710;" FontSize="14" />
-                                            <TextBlock Text="Assign shortcut" />
+                                            <TextBlock x:Uid="DisplayProfiles_AssignControllerShortcutText" />
                                         </StackPanel>
                                     </Button>
                                 </Grid>
                             </tkcontrols:SettingsCard>
-
-                            <!-- CONTROLLER - Riga: test di connessione/lettura del controller (il risultato appare come descrizione) -->
-                            <tkcontrols:SettingsCard Header="Test controller" Description="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
-                                <Button Content="Test Controller" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
+                            <tkcontrols:SettingsCard x:Uid="DisplayProfiles_ControllerTestCard" Description="{x:Bind ViewModel.ControllerStatus, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
+                                <Button x:Uid="DisplayProfiles_TestController" Click="TestController_Click" Style="{StaticResource DefaultButtonStyle}" />
                             </tkcontrols:SettingsCard>
                         </StackPanel>
                     </controls:Section>
-
-                    <!-- ===== SEZIONE 5: DIAGNOSTICS (apri il file di log) ===== -->
+                    <InfoBar
+                        x:Name="StatusInfoBar"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasStatusMessage, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                        Severity="Informational"
+                        AutomationProperties.LiveSetting="Polite" />
                     <controls:Section x:Uid="DisplayProfiles_DiagnosticsSection">
                         <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
                         <tkcontrols:SettingsCard x:Uid="DisplayProfiles_Diagnostics_Header" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
