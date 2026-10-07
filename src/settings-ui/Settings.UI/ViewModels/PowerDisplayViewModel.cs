@@ -684,6 +684,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 nameof(MonitorInfo.EnableRotation) or
                 nameof(MonitorInfo.EnableColorTemperature) or
                 nameof(MonitorInfo.EnablePowerState) or
+                nameof(MonitorInfo.EnableRefreshRate) or
                 nameof(MonitorInfo.IsHidden)))
             {
                 return;
