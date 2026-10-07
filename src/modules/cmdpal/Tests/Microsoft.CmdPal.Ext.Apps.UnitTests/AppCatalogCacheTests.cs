@@ -373,6 +373,7 @@ public class AppCatalogCacheTests
                     SmallLogoUri = @"Assets\Logo.png",
                     LargeLogoUri = @"Assets\JumboLogo.png",
                     Executable = @"Tools\Editor.exe",
+                    EdgePwaLaunch = TestDataHelper.CreateEdgePwaLaunchInfo(),
                 });
             var cache = new AppCatalogCache(cachePath);
 
@@ -401,6 +402,7 @@ public class AppCatalogCacheTests
             Assert.AreEqual(@"Assets\Logo.png", savedPayload[nameof(PackagedAppPayload.SmallLogoUri)]!.GetValue<string>());
             Assert.IsNull(savedPayload["LogoPath"]);
             Assert.AreEqual(@"Tools\Editor.exe", ((PackagedAppPayload)payload).Executable);
+            Assert.AreEqual(TestDataHelper.CreateEdgePwaLaunchInfo(), ((PackagedAppPayload)payload).EdgePwaLaunch);
             CollectionAssert.Contains(loaded.Sources[0].Items[0].MatchTerms.ToArray(), "edit.exe");
             Assert.IsTrue(item.HasSamePersistedContent(loaded.Sources[0].Items[0]));
         }
