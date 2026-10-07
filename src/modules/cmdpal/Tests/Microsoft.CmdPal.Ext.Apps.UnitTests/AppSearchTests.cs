@@ -123,8 +123,7 @@ public class AppSearchTests
                 AppUserModelId = "Contoso.PackagedIdentityNeedle!Editor",
                 PackageFamilyName = "Contoso.FamilyNeedle_publisher",
                 MatchTerms = ["LegacyAliasNeedle"],
-            },
-            useThumbnails: false);
+            });
         var search = new AppSearch(query, new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem);
         var withDescription = search.Evaluate(item);
         item.Subtitle = string.Empty;
@@ -163,8 +162,7 @@ public class AppSearchTests
                 LnkFilePath = @"C:\Start Menu\Command Prompt.lnk",
                 TargetPath = @"C:\Windows\System32\cmd.exe",
                 Arguments = arguments,
-            }.ToAppItem(),
-            useThumbnails: false);
+            }.ToAppItem());
         var matcher = new PrecomputedFuzzyMatcher();
         var match = new AppSearch(query, matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(item);
 
@@ -199,8 +197,8 @@ public class AppSearchTests
             TargetPath = @"C:\Windows\System32\cmd.exe",
             Arguments = arguments,
         }.ToAppItem();
-        var item = new AppListItem(app, useThumbnails: false);
-        var defaultItem = new AppListItem(app, useThumbnails: false);
+        var item = new AppListItem(app);
+        var defaultItem = new AppListItem(app);
         var matcher = new PrecomputedFuzzyMatcher();
         var search = new AppSearch(query, matcher, mode);
         var match = search.Evaluate(item);
@@ -224,8 +222,7 @@ public class AppSearchTests
         const int warmupIterations = 1000;
         const long extraBytesPerAppBudget = 16;
         var item = new AppListItem(
-            new AppItem { Name = "Shell", LaunchTarget = @"C:\Tools\cmd.exe" },
-            useThumbnails: false);
+            new AppItem { Name = "Shell", LaunchTarget = @"C:\Tools\cmd.exe" });
         var matcher = new PrecomputedFuzzyMatcher();
         var enabledSearch = new AppSearch("cmd", matcher, ExecutableNameMatchMode.FilenameAndStem);
         var disabledSearch = new AppSearch("cmd", matcher, ExecutableNameMatchMode.Disabled);
@@ -266,8 +263,7 @@ public class AppSearchTests
     public void Evaluate_SearchesExecutableSourcesWithoutOtherLaunchMetadata(string query)
     {
         var item = new AppListItem(
-            new AppItem { Name = "Terminal", ExecutableSourcePaths = [@"C:\Aliases\wt.exe"] },
-            useThumbnails: false);
+            new AppItem { Name = "Terminal", ExecutableSourcePaths = [@"C:\Aliases\wt.exe"] });
         var match = new AppSearch(query, new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem).Evaluate(item);
 
         Assert.IsTrue(match.IsExactExecutableMatch);
@@ -279,8 +275,7 @@ public class AppSearchTests
     public void Evaluate_ExecutableExtensionRequiresTheCompleteFilename()
     {
         var item = new AppListItem(
-            new AppItem { Name = "Another shell", LaunchTarget = @"C:\Tools\cmd.exe.exe" },
-            useThumbnails: false);
+            new AppItem { Name = "Another shell", LaunchTarget = @"C:\Tools\cmd.exe.exe" });
 
         Assert.IsFalse(new AppSearch("cmd.exe", new PrecomputedFuzzyMatcher(), ExecutableNameMatchMode.FilenameAndStem).Evaluate(item).IsExactExecutableMatch);
     }
@@ -300,8 +295,7 @@ public class AppSearchTests
                 Name = "Terminal",
                 LaunchTarget = @"C:\Aliases\wt.exe",
                 ResolvedTarget = @"C:\WindowsApps\Microsoft.WindowsTerminal\WindowsTerminal.exe",
-            },
-            useThumbnails: false);
+            });
 
         var match = new AppSearch(query, new PrecomputedFuzzyMatcher(), mode).Evaluate(item);
 
@@ -320,8 +314,7 @@ public class AppSearchTests
     {
         var path = Path.Combine(Environment.GetFolderPath(folder), relativePath);
         var item = new AppListItem(
-            new AppItem { Name = "Editor", LaunchTarget = path, DirectoryPath = Path.GetDirectoryName(path)!, MatchTerms = [path] },
-            useThumbnails: false);
+            new AppItem { Name = "Editor", LaunchTarget = path, DirectoryPath = Path.GetDirectoryName(path)!, MatchTerms = [path] });
         var matcher = new PrecomputedFuzzyMatcher();
 
         Assert.IsFalse(new AppSearch(commonWord, matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(item).HasMetadataMatch, commonWord);
@@ -389,8 +382,7 @@ public class AppSearchTests
     private static AppListItem CreateExecutionAliasItem(string name, string aumid)
     {
         return new(
-            new AppItem { Name = name, AppUserModelId = aumid, IsPackaged = true, MatchTerms = ["wt.exe"] },
-            useThumbnails: false);
+            new AppItem { Name = name, AppUserModelId = aumid, IsPackaged = true, MatchTerms = ["wt.exe"] });
     }
 
     private static AppListItem CreateItem(params string[] terms)
@@ -400,7 +392,6 @@ public class AppSearchTests
             {
                 Name = "Editor",
                 MatchTerms = terms,
-            },
-            useThumbnails: false);
+            });
     }
 }

@@ -87,8 +87,7 @@ internal static partial class ScoringTestCatalog
                     AppUserModelId = packaged ? $"Contoso.App{i}_publisher!App" : string.Empty,
                     PackageFamilyName = packaged ? $"Contoso.App{i}_publisher" : string.Empty,
                     MatchTerms = [$"alias{i}", $"Profile{i % 8}", shortcut],
-                },
-                useThumbnails: false);
+                });
         }).ToArray();
     }
 

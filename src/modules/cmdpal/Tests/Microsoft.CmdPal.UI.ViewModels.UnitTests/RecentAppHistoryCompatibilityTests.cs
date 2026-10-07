@@ -20,7 +20,7 @@ public sealed class RecentAppHistoryCompatibilityTests
         const string otherLegacyId = "Older Editor_456";
         const string ambiguousId = "Shared Editor_789";
         const string unrelatedId = "other-command";
-        var app = new AppListItem(new AppItem { Name = "Editor", CatalogId = "packaged:Contoso.Editor!App" }, useThumbnails: false);
+        var app = new AppListItem(new AppItem { Name = "Editor", CatalogId = "packaged:Contoso.Editor!App" });
         var canonicalId = app.Command!.Id;
         var snapshot = new AppListItemSnapshot(
             [app],

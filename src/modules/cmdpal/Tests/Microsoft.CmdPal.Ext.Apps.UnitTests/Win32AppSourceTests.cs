@@ -139,7 +139,7 @@ public partial class Win32AppSourceTests
         var after = (await source.LoadAsync(CancellationToken.None)).Single();
         var payload = (Win32AppPayload)after.Payload;
         var app = after.ToAppItem();
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
 
         Assert.AreEqual(program.DisplayName, row.Title);
@@ -300,7 +300,7 @@ public partial class Win32AppSourceTests
         CollectionAssert.Contains(merged.CommandIds.ToArray(), shortcutItems[0].Payload.GetCommandId());
         CollectionAssert.Contains(merged.CommandIds.ToArray(), registryItems[0].Payload.GetCommandId());
         Assert.AreEqual(new AppCommand(shortcutItems[0].ToAppItem()).Id, new AppCommand(registryItems[0].ToAppItem()).Id);
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         var shortcutIdentity = $"win32:{shortcutPath}|args:";
         CollectionAssert.Contains(merged.IdentityAliases.ToArray(), shortcutIdentity);
@@ -347,7 +347,7 @@ public partial class Win32AppSourceTests
             Assert.IsFalse(savedAliases.ContainsKey(syntheticId));
             Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[shortcutId]!.GetValue<string>());
             Assert.AreEqual(AppIdentity.ForCommand(item.Identity), savedAliases[releasedId]!.GetValue<string>());
-            var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+            var row = new AppListItem(item.ToAppItem());
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
             Assert.IsNull(snapshot.GetCommandItem(syntheticId));
             Assert.AreSame(row, snapshot.GetVisibleApp(shortcutId));
@@ -397,7 +397,7 @@ public partial class Win32AppSourceTests
         var app = duplicate.ToAppItem();
         Assert.AreEqual(arguments, app.LaunchArguments);
         Assert.AreEqual(browser, app.ResolvedTarget);
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         foreach (var entry in entries.Take(2))
         {
@@ -525,7 +525,7 @@ public partial class Win32AppSourceTests
             Assert.AreEqual(targetPath, merged.Payload.GetCanonicalTargetPath());
             Assert.IsNull(merged.Payload.GetCanonicalIdentityHint());
             Assert.AreEqual(startMenuPath, merged.ToAppItem().LaunchTarget);
-            var row = new AppListItem(merged.ToAppItem(), useThumbnails: false);
+            var row = new AppListItem(merged.ToAppItem());
             var snapshot = new AppListItemSnapshot([row], []);
             foreach (var program in programs.Values)
             {
@@ -620,7 +620,7 @@ public partial class Win32AppSourceTests
 
             Assert.AreEqual(original.Identity, renamed.Identity);
             Assert.AreEqual(new AppCommand(original.ToAppItem()).Id, new AppCommand(renamed.ToAppItem()).Id);
-            var row = new AppListItem(renamed.ToAppItem(), useThumbnails: false);
+            var row = new AppListItem(renamed.ToAppItem());
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
             foreach (var item in new[] { original, renamed })
             {
@@ -666,7 +666,7 @@ public partial class Win32AppSourceTests
             var current = (await source.LoadAsync(CancellationToken.None)).Single();
             Assert.AreNotEqual(original.Identity, current.Identity);
             var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [current.ToAppItem()]);
-            var row = new AppListItem(current.ToAppItem(), useThumbnails: false);
+            var row = new AppListItem(current.ToAppItem());
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
             Assert.AreSame(row, snapshot.GetVisibleApp(primaryId));
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
@@ -748,7 +748,7 @@ public partial class Win32AppSourceTests
             Assert.AreEqual($"win32:{LaunchTarget.Url(uri).IdentityToken}|args:", current.Identity);
             Assert.AreEqual(original.Identity, current.Identity);
             Assert.AreEqual(uri, current.ToAppItem().LaunchTarget);
-            var snapshot = new AppListItemSnapshot([new AppListItem(current.ToAppItem(), useThumbnails: false)], [], commandAliases: aliases);
+            var snapshot = new AppListItemSnapshot([new AppListItem(current.ToAppItem())], [], commandAliases: aliases);
             Assert.IsNotNull(snapshot.GetCommandItem(new AppCommand(original.ToAppItem()).Id));
             Assert.IsNotNull(snapshot.GetCommandItem(original.Payload.GetCommandId()));
             var visibilitySettings = new AllAppsSettings(settingsPath);
@@ -788,7 +788,7 @@ public partial class Win32AppSourceTests
             var settings = new AllAppsSettings(settingsPath);
             using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, items.Select(item => item.ToAppItem()));
-            var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray(), [], commandAliases: aliases);
+            var snapshot = new AppListItemSnapshot(items.Select(item => new AppListItem(item.ToAppItem())).ToArray(), [], commandAliases: aliases);
             Assert.AreEqual(firstUrl, snapshot.GetVisibleApp(first.Payload.GetCommandId())?.App.LaunchTarget);
             Assert.AreEqual(secondUrl, snapshot.GetVisibleApp(second.Payload.GetCommandId())?.App.LaunchTarget);
 

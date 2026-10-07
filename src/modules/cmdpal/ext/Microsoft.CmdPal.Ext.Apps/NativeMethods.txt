@@ -24,9 +24,3 @@ PropVariantClear
 PropVariantToStringAlloc
 CoTaskMemFree
 IUnknown
-IShellItemImageFactory
-DeleteObject
-GetDIBits
-GetDC
-ReleaseDC
-SIIGBF

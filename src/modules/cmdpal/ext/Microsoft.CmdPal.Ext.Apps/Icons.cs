@@ -22,12 +22,6 @@ internal static class Icons
 
     internal static IconInfo OpenPathIcon { get; } = new("\ue838"); // Folder Open icon
 
-    internal static IconInfo CopyIcon { get; } = new("\ue8c8"); // Copy icon
-
-    public static IconInfo UnpinIcon { get; } = new("\uE77A"); // Unpin icon
-
-    public static IconInfo PinIcon { get; } = new("\uE840"); // Pin icon
-
     public static IconInfo UninstallApplicationIcon { get; } = new("\uE74D"); // Uninstall icon
 
     public static IconInfo GenericAppIcon { get; } = new("\uE737"); // Favicon
