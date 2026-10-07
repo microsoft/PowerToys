@@ -250,7 +250,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _dialogHost = new ShellContentDialogHost(this, SetContentDialogMode);
         _externalCommandLinks = externalCommandLinkCoordinatorFactory.Create(_dialogHost, DispatcherQueue);
         _itemActions = new ItemActionController(
-            () => ViewModel.CurrentCommandContext,
+            () => _pageInteractions.CurrentCommandContext,
             () => IsLoaded && ItemActionsAllowed && !IsContentDialogActive,
             new ContextMenuHost(GetDefaultContextMenuAnchor, ItemContextMenuFlyout),
             WeakReferenceMessenger.Default);
@@ -2100,6 +2100,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     }
 
                     if (shellPage.TryHandleQuickAccessShelfItemKeyDown(e, modifiers))
+                    {
+                        break;
+                    }
+
+                    if (!shellPage.ItemActionsAllowed)
                     {
                         break;
                     }

@@ -12,9 +12,15 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     private PageViewModel? _page;
     private IPageInteractionTarget? _target;
     private IPageInteractionEventSource? _eventSource;
+    private ICommandBarContext? _commandContext;
     private bool _isDisposed;
 
     public PageViewModel? CurrentPage => _page;
+
+    /// <summary>
+    /// Gets the attached page's latest command context, without waiting for the command bar to apply it.
+    /// </summary>
+    public ICommandBarContext? CurrentCommandContext => Volatile.Read(ref _commandContext);
 
     public IPageInteractionTarget? CurrentTarget => _target;
 
@@ -40,7 +46,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page = page;
         if (_page is null)
         {
-            commandBar.SetCommandContext(null);
+            SetCommandContext(null);
             return;
         }
 
@@ -50,7 +56,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
         _page.FocusSearchRequested += Page_FocusSearchRequested;
         _page.ParameterFocusRequested += Page_ParameterFocusRequested;
 
-        commandBar.SetCommandContext(GetInitialCommandContext(_page));
+        SetCommandContext(GetInitialCommandContext(_page));
         DetailsChanged?.Invoke(this, new(GetInitialDetails(_page)));
         SearchSuggestionChanged?.Invoke(this, new(_page.TextToSuggest));
     }
@@ -103,8 +109,14 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
     {
         if (ReferenceEquals(sender, _page))
         {
-            commandBar.SetCommandContext(e.Context);
+            SetCommandContext(e.Context);
         }
+    }
+
+    private void SetCommandContext(ICommandBarContext? context)
+    {
+        Volatile.Write(ref _commandContext, context);
+        commandBar.SetCommandContext(context);
     }
 
     private void Page_DetailsChanged(object? sender, PageDetailsChangedEventArgs e)
@@ -211,6 +223,7 @@ public sealed class PageInteractionCoordinator(ICommandBarInteractionTarget comm
 
         DetachPage();
         DetachTarget();
+        Volatile.Write(ref _commandContext, null);
         _isDisposed = true;
         GC.SuppressFinalize(this);
     }

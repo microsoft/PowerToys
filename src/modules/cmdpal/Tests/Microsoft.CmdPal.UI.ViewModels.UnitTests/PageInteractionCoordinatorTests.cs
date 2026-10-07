@@ -225,6 +225,32 @@ public sealed partial class PageInteractionCoordinatorTests
     }
 
     [TestMethod]
+    public void CurrentCommandContext_FollowsTheActivePageImmediately()
+    {
+        var oldPage = CreatePage();
+        var currentPage = CreatePage();
+        using var host = new PageInteractionCoordinator(new TestCommandBar());
+        var oldContext = Mock.Of<ICommandBarContext>();
+        var currentContext = Mock.Of<ICommandBarContext>();
+
+        host.AttachPage(oldPage);
+        oldPage.SetCommandBarContext(oldContext);
+        Assert.AreSame(oldContext, host.CurrentCommandContext);
+
+        host.AttachPage(currentPage);
+        Assert.IsNull(host.CurrentCommandContext);
+
+        oldPage.SetCommandBarContext(Mock.Of<ICommandBarContext>());
+        Assert.IsNull(host.CurrentCommandContext);
+
+        currentPage.SetCommandBarContext(currentContext);
+        Assert.AreSame(currentContext, host.CurrentCommandContext);
+
+        host.AttachPage(null);
+        Assert.IsNull(host.CurrentCommandContext);
+    }
+
+    [TestMethod]
     public void DragState_AffectsOnlyTheOwningHost()
     {
         using var hostA = new PageInteractionCoordinator(new TestCommandBar());
