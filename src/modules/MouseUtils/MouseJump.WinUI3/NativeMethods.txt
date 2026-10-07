@@ -6,9 +6,9 @@ SetWindowLong
 USER_DEFAULT_SCREEN_DPI
 GetDpiForWindow
 
-SetLastError
-
-ShowWindow
 SetForegroundWindow
-SetFocus
-SetActiveWindow
+SetWindowRgn
+
+CreateRectRgn
+CreateRoundRectRgn
+DeleteObject

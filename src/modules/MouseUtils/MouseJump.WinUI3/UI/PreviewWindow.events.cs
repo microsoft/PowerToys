@@ -2,13 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Input;
 
 using MouseJump.Common.Helpers;
-using MouseJump.Models.Display;
-
-using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,6 +20,8 @@ internal sealed partial class PreviewWindow
     private void InitializeEvents()
     {
         this.Activated += this.PreviewWindow_Activated;
+        this.PreviewPane.NavigateTo += this.PreviewPane_NavigateTo;
+        this.PreviewPane.Cancel += this.PreviewPane_Cancel;
     }
 
     private void PreviewWindow_Activated(object sender, WindowActivatedEventArgs e)
@@ -30,16 +29,36 @@ internal sealed partial class PreviewWindow
         switch (e.WindowActivationState)
         {
             case WindowActivationState.CodeActivated:
-                this.PreviewImage.Focus(FocusState.Programmatic);
+                this.FocusPreviewPane();
                 break;
             case WindowActivationState.Deactivated:
                 this.HideWindow();
                 break;
-            case WindowActivationState.PointerActivated:
-                this.PreviewImage.Focus(FocusState.Pointer);
-                break;
             default:
                 throw new InvalidOperationException();
         }
+    }
+
+    /// <summary>
+    /// Handles a navigation signal from <see cref="PreviewPane"/> - a screenshot click or the
+    /// equivalent keyboard shortcut (see <see cref="PreviewPane.NavigateTo"/>).
+    /// </summary>
+    private void PreviewPane_NavigateTo(object? sender, NavigateToEventArgs e)
+    {
+        Logger.LogInfo(string.Join(
+            '\n',
+            "-----------",
+            nameof(PreviewWindow.PreviewPane_NavigateTo),
+            "-----------",
+            $"device   = {e.Device.Hostname}",
+            $"location = {e.Location}"));
+
+        MouseHelper.SetCursorPosition(e.Location);
+        this.HideWindow();
+    }
+
+    private void PreviewPane_Cancel(object? sender, EventArgs e)
+    {
+        this.HideWindow();
     }
 }

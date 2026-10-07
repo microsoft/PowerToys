@@ -75,7 +75,8 @@ internal static class MouseJumpEventLoop
     /// Based on NativeEventWaiter.WaitForEventLoop,
     /// but takes an async callback.
     /// </summary>
-    public static void RunAsyncEventHandler(string eventName, Func<Task> callback, DispatcherQueue dispatcherQueue, CancellationToken cancel)
+    public static void RunAsyncEventHandler(
+        string eventName, Func<CancellationToken, Task> callback, DispatcherQueue dispatcherQueue, CancellationToken cancel)
     {
         Logger.LogDebug($"starting event handler for event '{eventName}'");
         var thread = new Thread(() =>
@@ -95,7 +96,7 @@ internal static class MouseJumpEventLoop
                         {
                             try
                             {
-                                _ = callback().ContinueWith(
+                                _ = callback(cancel).ContinueWith(
                                     t =>
                                     {
                                         if (t.IsFaulted)
