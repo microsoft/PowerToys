@@ -128,6 +128,11 @@ public partial class MainViewModel
             // RefreshMonitorsAsync, so this is a no-op-safe redundant push.
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
+            if (IsInitialized && !IsScanning)
+            {
+                ApplyBatteryRefreshRate();
+            }
+
             // Reload profiles in case they were added/updated/deleted in Settings UI.
             _ = ReloadProfilesAsync(_cancellationTokenSource.Token);
 
@@ -539,6 +544,16 @@ public partial class MainViewModel
 
             // Update monitors list
             settings.Properties.Monitors = monitors;
+
+            var internalDisplays = _monitorManager.Monitors
+                .Where(m => m.CommunicationMethod == "WMI")
+                .ToList();
+            settings.Properties.InternalDisplayRefreshRates = internalDisplays.Count == 0
+                ? new List<int>()
+                : internalDisplays.Select(m => m.AvailableRefreshRates.AsEnumerable())
+                    .Aggregate((rates, next) => rates.Intersect(next))
+                    .OrderBy(rate => rate)
+                    .ToList();
 
             // Save back to settings.json using source-generated context for AOT
             _settingsUtils.SaveSettings(

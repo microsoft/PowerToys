@@ -96,6 +96,8 @@ public partial class MainViewModel
             IsScanning = false;
             IsInitialized = true;
 
+            ApplyBatteryRefreshRate();
+
             // Start watching for display changes after initialization
             StartDisplayWatching();
 
@@ -129,6 +131,7 @@ public partial class MainViewModel
             {
                 UpdateMonitorList(monitors);
                 IsScanning = false;
+                ApplyBatteryRefreshRate();
             });
         }
         catch (Exception ex)
@@ -143,6 +146,8 @@ public partial class MainViewModel
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
     {
+        // Keep a UI-thread-owned snapshot usable while background discovery rebuilds the manager.
+        _batteryRefreshRateMonitors = monitors.Where(m => m.CommunicationMethod == "WMI").ToArray();
         CancelPendingLinkedBrightnessCommit();
 
         // Dispose old ViewModels to unsubscribe PropertyChanged handlers

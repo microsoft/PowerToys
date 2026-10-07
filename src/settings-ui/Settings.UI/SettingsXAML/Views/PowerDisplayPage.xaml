@@ -128,6 +128,44 @@
                         </controls:SettingsGroup>
 
                         <controls:SettingsGroup x:Uid="PowerDisplay_AdvancedSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <StackPanel Spacing="0">
+                                <tkcontrols:SettingsCard
+                                    x:Uid="PowerDisplay_BatteryRefreshRate"
+                                    BorderThickness="1,1,1,0"
+                                    CornerRadius="4,4,0,0"
+                                    IsEnabled="{x:Bind ViewModel.CanUseBatteryRefreshRate, Mode=OneWay}">
+                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8BE;" />
+                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                    <ComboBox x:Uid="PowerDisplay_BatteryRefreshRateMode" SelectedIndex="{x:Bind ViewModel.BatteryRefreshRateModeIndex, Mode=TwoWay}">
+                                        <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_Off" />
+                                        <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnBattery" />
+                                        <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnEnergySaverMode" />
+                                        <ComboBoxItem x:Uid="PowerDisplay_BatteryRefreshRateMode_OnBatteryAndEnergySaver" />
+                                    </ComboBox>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="PowerDisplay_BatteryRefreshRatePreset"
+                                    Padding="58,8,16,8"
+                                    BorderThickness="1"
+                                    CornerRadius="0,0,4,4"
+                                    IsEnabled="{x:Bind ViewModel.CanSetBatteryRefreshRate, Mode=OneWay}"
+                                    Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                    <ComboBox
+                                        x:Uid="PowerDisplay_BatteryRefreshRateComboBox"
+                                        ItemsSource="{x:Bind ViewModel.BatteryRefreshRateOptions, Mode=OneWay}"
+                                        SelectedIndex="{x:Bind ViewModel.BatteryRefreshRateIndex, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="x:Int32">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{x:Bind}" />
+                                                    <TextBlock Text="Hz" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </tkcontrols:SettingsCard>
+                            </StackPanel>
                             <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
