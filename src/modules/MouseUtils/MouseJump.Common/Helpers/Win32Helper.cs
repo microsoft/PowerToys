@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using MouseJump.Common.Interop;
+using MouseJump.Common.Win32Gen;
 
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -40,8 +41,8 @@ public static class Win32Helper
         ArgumentNullException.ThrowIfNullOrEmpty(className);
         ArgumentNullException.ThrowIfNull(windowProcDelegate);
 
-        using var hModule = PInvoke.GetModuleHandle(null);
-        var hInstance = (HINSTANCE)hModule.DangerousGetHandle();
+        // see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
+        var hInstance = (HINSTANCE)Process.GetCurrentProcess().Handle;
 
         // register the window class
         // see https://stackoverflow.com/a/30992796/3156906
@@ -66,11 +67,11 @@ public static class Win32Helper
                     lpszClassName = new PCWSTR(classNamePtr),
                     hIconSm = HICON.Null,
                 };
-                classAtom = PInvoke.RegisterClassEx(wndClass);
+                classAtom = User32.RegisterClassEx(wndClass)
+                    .ThrowIfFailed()
+                    .GetValue();
             }
         }
-
-        ResultHandler.ThrowIfZero(result: classAtom, getLastError: true, memberName: nameof(PInvoke.RegisterClassEx));
 
         var windowClass = new Win32WindowClass(classAtom, className, windowProc);
         return windowClass;
@@ -83,12 +84,9 @@ public static class Win32Helper
         //     https://devblogs.microsoft.com/oldnewthing/20171218-00/?p=97595
         //     https://stackoverflow.com/a/30992796/3156906
         var hWnd = default(HWND);
-
-        using var hModule = PInvoke.GetModuleHandle(null);
-
         unsafe
         {
-            hWnd = PInvoke.CreateWindowEx(
+            hWnd = User32.CreateWindowEx(
                 dwExStyle: 0,
                 lpClassName: windowClass.ClassName,
                 lpWindowName: windowName,
@@ -99,11 +97,11 @@ public static class Win32Helper
                 nHeight: 400,
                 hWndParent: HWND.HWND_MESSAGE, // message-only window
                 hMenu: null,
-                hInstance: hModule,
-                lpParam: null);
+                hInstance: null,
+                lpParam: null)
+                .ThrowIfFailed()
+                .GetValue();
         }
-
-        ResultHandler.ThrowIfZero(result: hWnd, getLastError: true, memberName: nameof(PInvoke.CreateWindowEx));
 
         var window = new Win32Window(windowClass, windowName, hWnd);
         return window;
