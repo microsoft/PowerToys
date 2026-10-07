@@ -126,6 +126,20 @@ public static class TestDataHelper
         };
     }
 
+    internal static EdgePwaLaunchInfo CreateEdgePwaLaunchInfo()
+    {
+        const string parameters = "--app-id=agimnkijcaahngcdmfeangaknmldooml --ip-edge-aumid=Microsoft.MicrosoftEdge.Dev_8wekyb3d8bbwe!MSEDGE";
+        return new EdgePwaLaunchInfo
+        {
+            PackagePublisher = "CN=www.youtube.com, OID.2.25.311729368913984317654407730594956997722=1",
+            HostPackageName = "Microsoft.MicrosoftEdge.Dev",
+            HostPackagePublisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+            HostId = "PWA",
+            Parameters = parameters,
+            LaunchContext = $"parameters?{parameters};profile-directory?Default;start-url?https://www.youtube.com/?feature=ytca",
+        };
+    }
+
     /// <summary>
     /// Creates package metadata for testing purposes.
     /// </summary>

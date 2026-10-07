@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -145,7 +146,8 @@ internal sealed partial class AppCatalogPublicationBuilder
     private Dictionary<string, AppCatalogItem> MergeSnapshots(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
     {
-        var canonicalIdentityByTarget = BuildCanonicalIdentityByTarget(snapshots);
+        var canonicalPackagedIdentities = BuildCanonicalPackagedIdentities(snapshots);
+        var canonicalIdentityByTarget = BuildCanonicalIdentityByTarget(snapshots, canonicalPackagedIdentities);
         var merged = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
         foreach (var snapshot in snapshots.Values)
         {
@@ -156,7 +158,7 @@ internal sealed partial class AppCatalogPublicationBuilder
                     continue;
                 }
 
-                var canonicalItem = CanonicalizeItem(item, canonicalIdentityByTarget);
+                var canonicalItem = CanonicalizeItem(item, canonicalIdentityByTarget, canonicalPackagedIdentities);
                 if (!merged.TryGetValue(canonicalItem.Identity, out var existing))
                 {
                     merged.Add(canonicalItem.Identity, canonicalItem);
@@ -177,15 +179,53 @@ internal sealed partial class AppCatalogPublicationBuilder
         return merged;
     }
 
-    private static Dictionary<string, string?> BuildCanonicalIdentityByTarget(
+    private static Dictionary<string, string> BuildCanonicalPackagedIdentities(
         IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots)
+    {
+        var preferredByLaunch = new Dictionary<EdgePwaLaunchInfo, AppCatalogItem>();
+
+        // Use the payload preference for PWA identity selection so activation and uninstall target the same package.
+        foreach (var snapshot in snapshots.Values)
+        {
+            foreach (var item in snapshot)
+            {
+                if (item.Payload is PackagedAppPayload { EdgePwaLaunch: { IsSupported: true } launch }
+                    && !string.IsNullOrWhiteSpace(item.Payload.GetCanonicalIdentityHint())
+                    && (!preferredByLaunch.TryGetValue(launch, out var preferred)
+                        || item.Provenance.ComparePreferenceTo(preferred.Provenance) < 0))
+                {
+                    preferredByLaunch[launch] = item;
+                }
+            }
+        }
+
+        var identities = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var snapshot in snapshots.Values)
+        {
+            foreach (var item in snapshot)
+            {
+                if (item.Payload is PackagedAppPayload { EdgePwaLaunch: { } launch }
+                    && item.Payload.GetCanonicalIdentityHint() is { } identity
+                    && preferredByLaunch.TryGetValue(launch, out var preferred))
+                {
+                    identities[identity] = preferred.Payload.GetCanonicalIdentityHint()!;
+                }
+            }
+        }
+
+        return identities;
+    }
+
+    private static Dictionary<string, string?> BuildCanonicalIdentityByTarget(
+        IReadOnlyDictionary<string, IReadOnlyList<AppCatalogItem>> snapshots,
+        IReadOnlyDictionary<string, string> canonicalPackagedIdentities)
     {
         var canonicalIdentityByTarget = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var snapshot in snapshots.Values)
         {
             foreach (var item in snapshot)
             {
-                var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
+                var canonicalIdentity = GetCanonicalIdentityHint(item, canonicalPackagedIdentities);
                 var targetPath = item.Payload.GetCanonicalTargetPath();
                 if (string.IsNullOrWhiteSpace(canonicalIdentity)
                     || string.IsNullOrWhiteSpace(targetPath))
@@ -210,9 +250,10 @@ internal sealed partial class AppCatalogPublicationBuilder
 
     private static AppCatalogItem CanonicalizeItem(
         AppCatalogItem item,
-        IReadOnlyDictionary<string, string?> canonicalIdentityByTarget)
+        IReadOnlyDictionary<string, string?> canonicalIdentityByTarget,
+        IReadOnlyDictionary<string, string> canonicalPackagedIdentities)
     {
-        var canonicalIdentity = item.Payload.GetCanonicalIdentityHint();
+        var canonicalIdentity = GetCanonicalIdentityHint(item, canonicalPackagedIdentities);
         if (!string.IsNullOrWhiteSpace(canonicalIdentity))
         {
             return item.WithIdentity(canonicalIdentity);
@@ -229,6 +270,16 @@ internal sealed partial class AppCatalogPublicationBuilder
         }
 
         return item.WithIdentity(canonicalIdentity);
+    }
+
+    private static string? GetCanonicalIdentityHint(
+        AppCatalogItem item,
+        IReadOnlyDictionary<string, string> canonicalPackagedIdentities)
+    {
+        var identity = item.Payload.GetCanonicalIdentityHint();
+        return identity is not null && canonicalPackagedIdentities.TryGetValue(identity, out var canonicalIdentity)
+            ? canonicalIdentity
+            : identity;
     }
 
     [LoggerMessage(EventId = 7, Level = LogLevel.Warning, Message = "Failed to materialize cached application '{Identity}'.")]
