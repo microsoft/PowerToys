@@ -11,9 +11,26 @@ internal static partial class DockDropHelper
     private const string AppsFolderPrefix = "shell:AppsFolder\\";
     private const uint SigdnNormalDisplay = 0;
 
-    public static (string Name, string Target) GetBookmark(string path)
+    public static Task<(string Name, string Target)> GetBookmarkAsync(string path, CancellationToken cancellationToken)
     {
-        return GetBookmark(path, GetAppsFolderDisplayName);
+        return GetBookmarkAsync(path, GetAppsFolderDisplayName, cancellationToken);
+    }
+
+    internal static Task<(string Name, string Target)> GetBookmarkAsync(string path, Func<string, string?> getAppDisplayName, CancellationToken cancellationToken)
+    {
+        var lookup = Task.Run(() => GetBookmark(path, getAppDisplayName), cancellationToken);
+
+        // Observe failures even if the caller stops waiting for the Shell lookup.
+        _ = lookup.ContinueWith(
+            static task =>
+            {
+                _ = task.Exception;
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+        return lookup.WaitAsync(cancellationToken);
     }
 
     internal static (string Name, string Target) GetBookmark(string path, Func<string, string?> getAppDisplayName)
