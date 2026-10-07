@@ -138,9 +138,6 @@
   <data name="DOWNLOAD_UPDATE_ERROR" xml:space="preserve">
     <value>Couldn't download PowerToys update! Please report the issue on GitHub.</value>
   </data>
-  <data name="OLDER_MSIX_UNINSTALLED" xml:space="preserve">
-    <value>An older MSIX version of PowerToys was uninstalled.</value>
-  </data>
   <data name="PT_UPDATE_MESSAGE_BOX_TEXT" xml:space="preserve">
     <value>PowerToys was updated successfully!</value>
   </data>
