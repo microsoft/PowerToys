@@ -11,7 +11,7 @@ using MouseJump.Models.Layout;
 
 namespace MouseJump.WinUI3.UI;
 
-public sealed partial class PreviewPane : UserControl
+internal sealed partial class PreviewPane : UserControl
 {
     public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(
         nameof(PreviewPane.Layout),

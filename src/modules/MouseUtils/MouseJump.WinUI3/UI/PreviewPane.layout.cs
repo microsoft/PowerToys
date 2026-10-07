@@ -18,7 +18,7 @@ using Image = Microsoft.UI.Xaml.Controls.Image;
 
 namespace MouseJump.WinUI3.UI;
 
-public sealed partial class PreviewPane
+internal sealed partial class PreviewPane
 {
     private static void OnLayoutChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         => ((PreviewPane)sender).ApplyLayout((PreviewLayout?)e.NewValue);
