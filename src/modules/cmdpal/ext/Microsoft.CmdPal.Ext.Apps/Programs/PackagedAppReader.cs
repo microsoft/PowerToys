@@ -178,6 +178,7 @@ internal static class PackagedAppReader
             AppUserModelId = id,
             Executable = ReadStringValue(application, "Executable"),
             ExecutionAliases = GetExecutionAliases(element),
+            IsWebApp = (string?)element?.Attribute(Uap10Namespace + "HostId") == "PWA",
             EdgePwaLaunch = ReadEdgePwaLaunchInfo(element),
             CanRunElevated = ReadStringValue(application, "EntryPoint") == "Windows.FullTrustApplication"
                 || (string?)element?.Attribute(Uap10Namespace + "TrustLevel") == "mediumIL",

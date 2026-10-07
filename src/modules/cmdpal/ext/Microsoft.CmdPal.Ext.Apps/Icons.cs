@@ -16,6 +16,8 @@ internal static class Icons
 
     internal static IconInfo PackagedAppsFilterIcon { get; } = new("\uE7B8"); // Package
 
+    internal static IconInfo WebAppsFilterIcon { get; } = new("\uE774"); // Globe
+
     internal static IconInfo RunAsUserIcon { get; } = new("\uE7EE"); // OtherUser icon
 
     internal static IconInfo RunAsAdminIcon { get; } = new("\uE7EF"); // Admin icon

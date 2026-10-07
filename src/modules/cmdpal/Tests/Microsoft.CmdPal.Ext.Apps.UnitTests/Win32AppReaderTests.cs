@@ -163,6 +163,56 @@ public class Win32AppReaderTests
     }
 
     [TestMethod]
+    [DataRow("firefox.exe", "\"-taskbar-tab\" \"6f25dcaa-f1c8-4507-a2b2-8150cd671148\" \"-new-window\" \"https://www.youtube.com\" \"-profile\" \"C:\\Profiles\\Default Profile\" \"-container\" \"0\"", true)]
+    [DataRow("firefox.exe", "-taskbar-tab web-app-id -new-window https://example.test", true)]
+    [DataRow("firefox.exe", "--taskbar-tab web-app-id", true)]
+    [DataRow("FIREFOX.EXE", "-TASKBAR-TAB web-app-id", true)]
+    [DataRow("firefox.exe", "-new-window https://example.test", false)]
+    [DataRow("firefox.exe", "-new-window https://example.test/-taskbar-tab", false)]
+    [DataRow("firefox.exe", "-profile \"C:\\Profiles\\-taskbar-tab\"", false)]
+    [DataRow("firefox.exe", "-taskbar-tab-extra web-app-id", false)]
+    [DataRow("firefox.exe", "-taskbar-tab", false)]
+    [DataRow("firefox.exe", "-taskbar-tab \"\"", false)]
+    [DataRow("firefox.exe", "-taskbar-tab -new-window https://example.test", false)]
+    [DataRow("notfirefox.exe", "-taskbar-tab web-app-id", false)]
+    [DataRow("chrome_proxy.exe", "--profile-directory=Default --app-id=web-app-id", true)]
+    public void Shortcut_ClassifiesBrowserWebAppsWithoutChangingActivation(string targetFilename, string arguments, bool webApp)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"CmdPal-web-app-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var targetPath = Path.Combine(directory, targetFilename);
+        var shortcutPath = Path.Combine(directory, "Web app.lnk");
+        dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!);
+        dynamic shortcut = shell.CreateShortcut(shortcutPath);
+        try
+        {
+            // Use an existing PE file so the test does not require any installed browser.
+            File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), targetPath);
+            shortcut.TargetPath = targetPath;
+            shortcut.Arguments = arguments;
+            shortcut.Save();
+
+            var metadata = Win32AppReader.LoadFromPath(shortcutPath, asRunCommand: false);
+
+            Assert.IsTrue(metadata.Valid);
+            Assert.AreEqual(webApp ? Win32AppType.WebApplication : Win32AppType.Win32Application, metadata.AppType);
+            Assert.AreEqual(arguments, metadata.Arguments);
+            var app = Win32AppPayload.From(metadata).ToAppItem();
+            Assert.AreEqual(webApp, app.IsWebApp);
+            Assert.AreEqual(shortcutPath, app.LaunchTarget);
+            Assert.AreEqual(arguments, app.LaunchArguments);
+        }
+        finally
+        {
+            Marshal.FinalReleaseComObject(shortcut);
+            Marshal.FinalReleaseComObject(shell);
+            File.Delete(shortcutPath);
+            File.Delete(targetPath);
+            Directory.Delete(directory);
+        }
+    }
+
+    [TestMethod]
     public void Shortcut_MissingTargetRetainsItsPathWithoutSearchingNearbyFolders()
     {
         var root = Path.Combine(Path.GetTempPath(), $"CmdPal-missing-target-{Guid.NewGuid():N}");

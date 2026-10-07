@@ -351,6 +351,54 @@ public class AppCatalogCacheTests
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    public async Task SaveAndLoadAsync_WebAppsRemainFilterable(bool packaged, bool recognizedLaunch)
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var browserApp = TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Chrome\chrome_proxy.exe");
+            browserApp.AppType = Programs.Win32AppType.WebApplication;
+            browserApp.Arguments = "--app-id=portal";
+            var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
+            packagedApp.IsWebApp = true;
+            packagedApp.EdgePwaLaunch = recognizedLaunch ? TestDataHelper.CreateEdgePwaLaunchInfo() : null;
+            IAppCatalogPayload webPayload = packaged ? PackagedAppPayload.From(packagedApp) : Win32AppPayload.From(browserApp);
+            IAppCatalogPayload nativePayload = packaged
+                ? PackagedAppPayload.From(TestDataHelper.CreateTestPackagedMetadata("Desktop", "Contoso.Desktop!App"))
+                : Win32AppPayload.From(TestDataHelper.CreateTestWin32Metadata("Desktop", @"C:\Tools\Desktop.exe"));
+            var sourceId = packaged ? "packaged" : "win32";
+            var items = new AppCatalogItem[]
+            {
+                new($"{sourceId}:web", 0, new AppCatalogSourceReference(sourceId, "web"), [], webPayload),
+                new($"{sourceId}:native", 0, new AppCatalogSourceReference(sourceId, "native"), [], nativePayload),
+            };
+            var context = Context(new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero), (sourceId, "web-apps-key"));
+            var cache = new AppCatalogCache(cachePath);
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { [sourceId] = items },
+                [sourceId],
+                context,
+                CancellationToken.None);
+
+            var loaded = await new AppCatalogCache(cachePath).LoadAsync(context, CancellationToken.None);
+
+            Assert.IsNotNull(loaded);
+            var rows = loaded.Sources.Single().Items.Select(item => new Programs.AppListItem(item.ToAppItem())).ToArray();
+            var webRows = AllAppsPage.FilterAppItems(rows, AllAppsFilters.WebFilterId, search: null);
+            Assert.AreEqual("Portal", webRows.Single().Title);
+            Assert.AreEqual(packaged, webRows.Single().App.IsPackaged);
+            Assert.IsFalse(rows.Single(row => row.Title == "Desktop").App.IsWebApp);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
     public async Task SaveAndLoadAsync_PackagedPayload_RoundTripsPolymorphically()
     {
         var cachePath = TemporaryCachePath();

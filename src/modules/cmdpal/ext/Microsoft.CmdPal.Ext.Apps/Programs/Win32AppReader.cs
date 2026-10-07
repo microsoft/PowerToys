@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text.RegularExpressions;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
@@ -24,6 +25,8 @@ internal static partial class Win32AppReader
     private const string InternetShortcutExtension = "url";
     private const string ProxyWebApp = "_proxy.exe";
     private const string AppIdArgument = "--app-id";
+    private const string FirefoxExecutable = "firefox.exe";
+    private const string FirefoxTaskbarTabArgument = "-taskbar-tab";
 
     private static readonly Win32AppMetadata InvalidMetadata = new() { Valid = false };
     private static readonly Regex InternetShortcutUrlPrefixes = InternetShortcutURLPrefixesGenerator();
@@ -209,7 +212,7 @@ internal static partial class Win32AppReader
 
                 program.Arguments = link.Arguments;
 
-                // A .lnk could be a (Chrome) PWA, set correct AppType
+                // Browser-hosted web apps still launch through their original shortcuts.
                 program.AppType = IsWebApplication(program)
                     ? Win32AppType.WebApplication
                     : GetAppTypeFromPath(target);
@@ -366,11 +369,37 @@ internal static partial class Win32AppReader
 
     private static bool IsWebApplication(Win32AppMetadata metadata)
     {
+        if (string.IsNullOrEmpty(metadata.TargetPath) || string.IsNullOrEmpty(metadata.Arguments))
+        {
+            return false;
+        }
+
         // Chromium PWA shortcuts launch the proxy executable with an application ID.
-        return !string.IsNullOrEmpty(metadata.TargetPath)
-            && !string.IsNullOrEmpty(metadata.Arguments)
-            && metadata.TargetPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase)
-            && metadata.Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
+        if (metadata.TargetPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase)
+            && metadata.Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (!Path.GetFileName(metadata.TargetPath).Equals(FirefoxExecutable, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // Match Firefox's web-app switch as a token, not text inside a URL or profile path.
+        var arguments = CommandLineParser.ParseArguments(metadata.Arguments);
+        for (var i = 0; i < arguments.Length - 1; i++)
+        {
+            if ((arguments[i].Equals(FirefoxTaskbarTabArgument, StringComparison.OrdinalIgnoreCase)
+                || arguments[i].Equals("-" + FirefoxTaskbarTabArgument, StringComparison.OrdinalIgnoreCase))
+                && !string.IsNullOrEmpty(arguments[i + 1])
+                && !arguments[i + 1].StartsWith('-'))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     [GeneratedRegex(

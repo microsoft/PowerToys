@@ -205,6 +205,9 @@
   <data name="filter_packaged_apps" xml:space="preserve">
     <value>Packaged</value>
   </data>
+  <data name="filter_web_apps" xml:space="preserve">
+    <value>Web apps</value>
+  </data>
   <data name="filter_hidden_apps" xml:space="preserve">
     <value>Hidden</value>
   </data>
