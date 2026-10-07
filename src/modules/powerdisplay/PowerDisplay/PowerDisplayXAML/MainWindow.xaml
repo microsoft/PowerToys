@@ -609,26 +609,33 @@
                                                          VerticalAlignment="Center"
                                                          FontSize="{StaticResource FlyoutActionGlyphSmallFontSize}"
                                                          Glyph="&#xE7F4;" />
-                                                      <ItemsControl
-                                                          Grid.Column="1"
-                                                          IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
-                                                          ItemsSource="{x:Bind RefreshRateOptions, Mode=OneWay}">
-                                                          <ItemsControl.ItemsPanel>
-                                                              <ItemsPanelTemplate>
-                                                                  <StackPanel Orientation="Horizontal" Spacing="4" />
-                                                              </ItemsPanelTemplate>
-                                                          </ItemsControl.ItemsPanel>
-                                                          <ItemsControl.ItemTemplate>
-                                                              <DataTemplate x:DataType="vm:RefreshRateOption">
-                                                                  <ToggleButton
-                                                                      Padding="8,4"
-                                                                      Command="{x:Bind SelectCommand}"
-                                                                      CommandParameter="{x:Bind Rate}"
-                                                                      Content="{x:Bind DisplayText}"
-                                                                      IsChecked="{x:Bind IsSelected, Mode=OneWay}" />
-                                                              </DataTemplate>
-                                                          </ItemsControl.ItemTemplate>
-                                                      </ItemsControl>
+                                                       <ScrollViewer
+                                                           Grid.Column="1"
+                                                           HorizontalScrollBarVisibility="Hidden"
+                                                           HorizontalScrollMode="Enabled"
+                                                           IsTabStop="False"
+                                                           VerticalScrollBarVisibility="Disabled"
+                                                           VerticalScrollMode="Disabled">
+                                                           <ItemsControl
+                                                               IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                               ItemsSource="{x:Bind RefreshRateOptions, Mode=OneWay}">
+                                                               <ItemsControl.ItemsPanel>
+                                                                   <ItemsPanelTemplate>
+                                                                       <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                   </ItemsPanelTemplate>
+                                                               </ItemsControl.ItemsPanel>
+                                                               <ItemsControl.ItemTemplate>
+                                                                   <DataTemplate x:DataType="vm:RefreshRateOption">
+                                                                       <ToggleButton
+                                                                           Padding="8,4"
+                                                                           Command="{x:Bind SelectCommand}"
+                                                                           CommandParameter="{x:Bind Rate}"
+                                                                           Content="{x:Bind DisplayText}"
+                                                                           IsChecked="{x:Bind IsSelected, Mode=OneWay}" />
+                                                                   </DataTemplate>
+                                                               </ItemsControl.ItemTemplate>
+                                                           </ItemsControl>
+                                                       </ScrollViewer>
                                                  </Grid>
 
                                                  <!--  Rotation Controls  -->
