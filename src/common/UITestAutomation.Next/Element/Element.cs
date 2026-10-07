@@ -224,9 +224,13 @@ public class Element
     {
         EnsureBound();
         WinappCli.InvokeAssertSuccess(
-            "ui", "scroll", Selector,
-            Owner!.TargetFlag, Owner!.TargetValue,
-            "--direction", direction.ToString().ToLowerInvariant());
+            "ui",
+            "scroll",
+            Selector,
+            Owner!.TargetFlag,
+            Owner!.TargetValue,
+            "--direction",
+            direction.ToString().ToLowerInvariant());
     }
 
     /// <summary>Jump the element's scrollable container to the top or bottom via <c>winapp ui scroll --to</c>.</summary>
@@ -234,9 +238,13 @@ public class Element
     {
         EnsureBound();
         WinappCli.InvokeAssertSuccess(
-            "ui", "scroll", Selector,
-            Owner!.TargetFlag, Owner!.TargetValue,
-            "--to", toBottom ? "bottom" : "top");
+            "ui",
+            "scroll",
+            Selector,
+            Owner!.TargetFlag,
+            Owner!.TargetValue,
+            "--to",
+            toBottom ? "bottom" : "top");
     }
 
     /// <summary>
@@ -325,13 +333,13 @@ public class Element
     /// ShortcutControl to surface the current shortcut as readable text on the EditButton
     /// (e.g. <c>"Win + Shift + C"</c>).
     /// </summary>
-    public string HelpText => GetProperty("HelpText");
+    public string HelpText => GetProperty(nameof(HelpText));
 
     /// <summary>True when UIA reports the element as enabled (defaults to true when unknown).</summary>
-    public bool IsEnabled => ParseBool(GetProperty("IsEnabled"), defaultValue: true);
+    public bool IsEnabled => ParseBool(GetProperty(nameof(IsEnabled)), defaultValue: true);
 
     /// <summary>True when UIA reports the element off-screen (defaults to false when unknown).</summary>
-    public bool IsOffscreen => ParseBool(GetProperty("IsOffscreen"), defaultValue: false);
+    public bool IsOffscreen => ParseBool(GetProperty(nameof(IsOffscreen)), defaultValue: false);
 
     /// <summary>Convenience inverse of <see cref="IsOffscreen"/> — mirrors the legacy harness's <c>Displayed</c>.</summary>
     public bool Displayed => !IsOffscreen;
@@ -340,7 +348,7 @@ public class Element
     public bool Selected => ParseBool(GetProperty("IsSelected"), defaultValue: false);
 
     /// <summary>The element's UIA AutomationId (empty when it has none).</summary>
-    public string AutomationId => GetProperty("AutomationId");
+    public string AutomationId => GetProperty(nameof(AutomationId));
 
     /// <summary>
     /// Read any UIA property by name via <c>winapp ui get-property</c>. Alias of
@@ -375,11 +383,17 @@ public class Element
     {
         EnsureBound();
         var r = WinappCli.Invoke(
-            "ui", "wait-for", Selector,
-            Owner!.TargetFlag, Owner!.TargetValue,
-            "--property", propertyName,
-            "--value", expectedValue,
-            "-t", timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            "ui",
+            "wait-for",
+            Selector,
+            Owner!.TargetFlag,
+            Owner!.TargetValue,
+            "--property",
+            propertyName,
+            "--value",
+            expectedValue,
+            "-t",
+            timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
         return r.ExitCode == 0;
     }
 
@@ -415,10 +429,14 @@ public class Element
     {
         EnsureBound();
         var r = WinappCli.Invoke(
-            "ui", "wait-for", Selector,
-            Owner!.TargetFlag, Owner!.TargetValue,
+            "ui",
+            "wait-for",
+            Selector,
+            Owner!.TargetFlag,
+            Owner!.TargetValue,
             "--gone",
-            "-t", timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            "-t",
+            timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
         return r.ExitCode == 0;
     }
 

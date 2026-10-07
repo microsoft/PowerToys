@@ -20,7 +20,7 @@ public static class WindowControl
 {
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool PostMessageW(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -85,11 +85,15 @@ public static class WindowControl
 
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+#pragma warning restore SA1310
     private const uint GaParent = 1;
     private const uint GaRoot = 2;
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant name
     private const int SW_RESTORE = 9;
+#pragma warning restore SA1310
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
@@ -213,11 +217,13 @@ public static class WindowControl
         try
         {
             EnumWindows(
-                (hWnd, _) =>
+                (hWnd, lParam) =>
                 {
                     try
                     {
-                        GetWindowThreadProcessId(hWnd, out var pid);
+                        // A zero return (window already gone) leaves pid at 0; the window is then
+                        // filtered out by pid or reported with pid 0, same as before.
+                        _ = GetWindowThreadProcessId(hWnd, out var pid);
                         var pidInt = (int)pid;
                         if (pidFilter is null || pidFilter(pidInt))
                         {
@@ -589,7 +595,8 @@ public static class WindowControl
     {
         try
         {
-            var w = WindowsFinder.ListByApp(appNameOrPid).FirstOrDefault();
+            var windows = WindowsFinder.ListByApp(appNameOrPid);
+            var w = windows.Count > 0 ? windows[0] : null;
             if (w is null || w.Hwnd == 0)
             {
                 return false;
