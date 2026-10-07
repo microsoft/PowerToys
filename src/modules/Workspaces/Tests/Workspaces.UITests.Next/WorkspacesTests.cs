@@ -28,6 +28,7 @@ namespace Microsoft.Workspaces.UITests
             "PowerToys.WorkspacesSnapshotTool",
             EditorProcess,
         ];
+
         private static WorkspaceTestState? state;
         private Session? editor;
         private Session? settingsUi;
@@ -181,6 +182,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(
                 WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
+
             // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
             launch.Click(msPostAction: 0);
             AttachEditor();
@@ -288,8 +290,9 @@ namespace Microsoft.Workspaces.UITests
                 .ToArray();
             Assert.HasCount(1, more, "The workspace actions button was not uniquely addressable.");
             more[0].Invoke(msPostAction: 0);
+
+            // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
             Assert.IsTrue(
-                // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
                 Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess).Has<Button>(By.Name("Remove"), 10_000),
                 "The workspace actions menu did not open.");
         }

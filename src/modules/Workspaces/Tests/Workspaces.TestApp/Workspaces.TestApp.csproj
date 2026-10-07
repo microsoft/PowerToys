@@ -12,7 +12,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AssemblyName>Workspaces.TestApp</AssemblyName>
     <RootNamespace>Microsoft.Workspaces.TestApp</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
