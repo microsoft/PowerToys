@@ -497,9 +497,10 @@ public class AllAppsPageTests : AppsTestBase
         try
         {
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             using var mockCatalog = new MockAppCatalog();
             mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Notepad"));
-            using var itemSource = new AppListItemSource(mockCatalog, settings);
+            using var itemSource = new AppListItemSource(mockCatalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
             await WaitForPageInitializationAsync(page);
             var originalItem = (AppListItem)page.GetItems().Single();

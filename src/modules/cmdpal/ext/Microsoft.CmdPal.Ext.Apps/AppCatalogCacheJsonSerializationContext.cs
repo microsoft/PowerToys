@@ -12,6 +12,4 @@ namespace Microsoft.CmdPal.Ext.Apps;
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(AppCatalogCacheFile))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
-internal sealed partial class JsonSerializationContext : JsonSerializerContext
-{
-}
+internal sealed partial class AppCatalogCacheJsonSerializationContext : JsonSerializerContext;

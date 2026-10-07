@@ -5,6 +5,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,6 +29,24 @@ public partial class AppCatalogTests
 {
     private static readonly TimeProvider TestTimeProvider = new FixedTimeProvider(
         new DateTimeOffset(2026, 8, 1, 12, 0, 0, TimeSpan.Zero));
+
+    private readonly List<AppCommandAliasStore> _commandAliasStores = [];
+    private readonly List<string> _settingsPaths = [];
+
+    [TestCleanup]
+    public void CleanupStoresAndSettings()
+    {
+        foreach (var store in _commandAliasStores)
+        {
+            store.Dispose();
+            File.Delete(store.FilePath);
+        }
+
+        foreach (var path in _settingsPaths)
+        {
+            TestDataHelper.DeleteSettingsFiles(path);
+        }
+    }
 
     [TestMethod]
     public void Provenance_CaseVariantsRemainAdjacentWhenNormalizingAndMerging()
@@ -183,6 +202,7 @@ public partial class AppCatalogTests
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-cached-notification-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         var cacheRead = new TaskCompletionSource<AppCatalogCacheFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var cachedInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var missingLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -197,10 +217,10 @@ public partial class AppCatalogTests
         missing.DeferNextLoad(missingLoad.Task);
         var logger = new RecordingLogger<AppCatalog>();
         IAppSource[] sources = partialCache ? [cached, missing] : [cached];
-        using var catalog = CreateCatalog(sources, new TestCache(cacheFile) { DeferredLoad = cacheRead.Task }, logger: logger);
+        using var catalog = CreateCatalog(sources, new TestCache(cacheFile) { DeferredLoad = cacheRead.Task }, logger: logger, commandAliases: settingsAliases, settings: settings);
         try
         {
-            using var list = new AppListItemSource(catalog, settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             catalog.Changed += (_, _) =>
             {
                 throw new InvalidOperationException("Test cached notification failure.");
@@ -236,7 +256,7 @@ public partial class AppCatalogTests
             cacheRead.TrySetResult(cacheFile);
             cachedInitialization.TrySetResult();
             missingLoad.TrySetResult([]);
-            await settings.WaitForAliasSavesAsync();
+            await settingsAliases.WaitForSavesAsync();
             TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
@@ -246,19 +266,20 @@ public partial class AppCatalogTests
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-observer-isolation-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         var cacheRead = new TaskCompletionSource<AppCatalogCacheFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var observedTitle = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var cache = new TestCache(null) { DeferredLoad = cacheRead.Task };
         var logger = new RecordingLogger<AppCatalog>();
         using var source = new TestAppSource("test", [CreateCatalogItem("Fresh")]);
-        using var catalog = CreateCatalog([source], cache, logger: logger);
+        using var catalog = CreateCatalog([source], cache, logger: logger, commandAliases: settingsAliases, settings: settings);
         catalog.Changed += (_, _) =>
         {
             throw new InvalidOperationException("Test first change listener failure.");
         };
         try
         {
-            using var list = new AppListItemSource(catalog, settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             catalog.Changed += (_, _) =>
             {
                 observedTitle.TrySetResult(list.GetSnapshot().VisibleItems.SingleOrDefault()?.Title);
@@ -278,7 +299,7 @@ public partial class AppCatalogTests
         finally
         {
             cacheRead.TrySetResult(null);
-            await settings.WaitForAliasSavesAsync();
+            await settingsAliases.WaitForSavesAsync();
             TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
@@ -313,7 +334,7 @@ public partial class AppCatalogTests
         };
         var logger = new RecordingLogger<AppCatalog>();
         using var provider = new MutableSourceProvider([first, retired, last]);
-        using var catalog = new AppCatalog(provider, new TestCache(useCache ? cacheFile : null), new VisibleApps(), logger: logger, invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(useCache ? cacheFile : null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), logger: logger, invalidationDelay: TimeSpan.Zero);
         try
         {
             var initialization = catalog.InitializeAsync();
@@ -373,6 +394,7 @@ public partial class AppCatalogTests
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-replacement-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         var earlierLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var originalLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var replacementInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -387,7 +409,7 @@ public partial class AppCatalogTests
             Sources = [new AppCatalogSourceSnapshot { SourceId = earlier.Id, Items = [] }],
         };
         using var provider = new MutableSourceProvider([earlier, original]);
-        using var catalog = new AppCatalog(provider, new TestCache(partialCache ? cacheFile : null), new VisibleApps(), invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(partialCache ? cacheFile : null), new MutableVisibilityStore(), settingsAliases, settings, invalidationDelay: TimeSpan.Zero);
         try
         {
             if (pendingRequest)
@@ -401,7 +423,7 @@ public partial class AppCatalogTests
                 original.DeferNextLoad(originalLoad.Task);
             }
 
-            using var list = new AppListItemSource(catalog, settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             var initialization = catalog.InitializeAsync();
             await WaitForConditionAsync(() => pendingRequest ? original.InitializeCount == 1 : original.LoadCount == 1);
             await Assert.ThrowsExceptionAsync<TimeoutException>(() => initialization.WaitAsync(TimeSpan.FromMilliseconds(250)));
@@ -432,7 +454,7 @@ public partial class AppCatalogTests
             originalLoad.TrySetResult([]);
             replacementInitialization.TrySetResult();
             replacementLoad.TrySetResult([]);
-            await settings.WaitForAliasSavesAsync();
+            await settingsAliases.WaitForSavesAsync();
             TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
@@ -446,7 +468,7 @@ public partial class AppCatalogTests
         var removalNotification = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         using var original = new TestAppSource("removed", [CreateCatalogItem("Original", sourceId: "removed")]);
         using var provider = new MutableSourceProvider([original]);
-        using var catalog = new AppCatalog(provider, new TestCache(null), new VisibleApps(), invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), invalidationDelay: TimeSpan.Zero);
         try
         {
             if (throwingListener)
@@ -489,6 +511,7 @@ public partial class AppCatalogTests
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-notification-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         var originalLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var replacementInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var replacementLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -505,10 +528,10 @@ public partial class AppCatalogTests
         };
         var logger = new RecordingLogger<AppCatalog>();
         using var provider = new MutableSourceProvider([cached, original]);
-        using var catalog = new AppCatalog(provider, new TestCache(cacheFile), new VisibleApps(), logger: logger, invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(cacheFile), new MutableVisibilityStore(), settingsAliases, settings, logger: logger, invalidationDelay: TimeSpan.Zero);
         try
         {
-            using var list = new AppListItemSource(catalog, settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             catalog.Changed += (_, _) =>
             {
                 if (catalog.GetSnapshot().Items.Count == 0)
@@ -542,7 +565,7 @@ public partial class AppCatalogTests
             originalLoad.TrySetResult([]);
             replacementInitialization.TrySetResult();
             replacementLoad.TrySetResult([]);
-            await settings.WaitForAliasSavesAsync();
+            await settingsAliases.WaitForSavesAsync();
             TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
@@ -554,6 +577,7 @@ public partial class AppCatalogTests
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-startup-loading-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         var desktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var laterDesktopLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
         var cachedSourceInitialization = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -578,7 +602,7 @@ public partial class AppCatalogTests
             }
 
             desktopSource.DeferNextLoad(desktopLoad.Task);
-            using var catalog = CreateCatalog([packagedSource, desktopSource], cache);
+            using var catalog = CreateCatalog([packagedSource, desktopSource], cache, commandAliases: settingsAliases, settings: settings);
             var cachedPublication = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             catalog.Changed += (_, _) =>
             {
@@ -593,7 +617,7 @@ public partial class AppCatalogTests
                     desktopSource.Invalidate();
                 }
             };
-            using var list = new AppListItemSource(catalog, settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
 
             var initialization = catalog.InitializeAsync();
             if (partialCache)
@@ -638,7 +662,7 @@ public partial class AppCatalogTests
             desktopLoad.TrySetResult([]);
             laterDesktopLoad.TrySetResult([]);
             cachedSourceInitialization.TrySetResult();
-            await settings.WaitForAliasSavesAsync();
+            await settingsAliases.WaitForSavesAsync();
             TestDataHelper.DeleteSettingsFiles(settingsPath);
         }
     }
@@ -703,7 +727,7 @@ public partial class AppCatalogTests
         using var first = new TestAppSource("first", [CreateCatalogItem("Original")]);
         using var replacement = new TestAppSource("first", [CreateCatalogItem("Replacement")]);
         using var provider = new MutableSourceProvider([first]);
-        using var catalog = new AppCatalog(provider, new TestCache(null), new VisibleApps(), invalidationDelay: TimeSpan.Zero);
+        using var catalog = new AppCatalog(provider, new TestCache(null), new MutableVisibilityStore(), CreateCommandAliases(), CreateSettings(), invalidationDelay: TimeSpan.Zero);
         await catalog.InitializeAsync();
 
         var firstLoad = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1010,7 +1034,7 @@ public partial class AppCatalogTests
         var packagedItem = PackagedAppSource.CreateCatalogItem(packagedApp);
         using var executableSource = new TestAppSource("registry", [executableItem]);
         using var packagedSource = new TestAppSource("packaged", [packagedItem]);
-        using var catalog = new AppCatalog(new MutableSourceProvider([executableSource, packagedSource]), new TestCache(null), new VisibleApps());
+        using var catalog = CreateCatalog([executableSource, packagedSource], new TestCache(null));
 
         await catalog.RefreshAsync();
 
@@ -1027,6 +1051,7 @@ public partial class AppCatalogTests
             var executableCommandId = AppIdentity.ForCommand(executableItem.Identity);
             Assert.AreSame(row, rows.GetVisibleApp(executableCommandId));
             Assert.AreSame(row, rows.GetVisibleApp(executableItem.Payload.GetCommandId()));
+            Assert.AreEqual(AppIdentity.ForCommand(app.CatalogId), snapshot.CommandAliases[executableCommandId]);
             CollectionAssert.Contains(app.ExecutableSourcePaths.ToArray(), targetPath);
         }
         else
@@ -1048,7 +1073,7 @@ public partial class AppCatalogTests
         var executableItem = CreateWin32CatalogItem(program, $"win32:{targetPath}|args:", 30, "registry");
         using var packagedSource = new TestAppSource("packaged", [PackagedAppSource.CreateCatalogItem(first), PackagedAppSource.CreateCatalogItem(second)]);
         using var executableSource = new TestAppSource("registry", [executableItem]);
-        using var catalog = new AppCatalog(new MutableSourceProvider([packagedSource, executableSource]), new TestCache(null), new VisibleApps());
+        using var catalog = CreateCatalog([packagedSource, executableSource], new TestCache(null));
 
         await catalog.RefreshAsync();
 
@@ -1287,7 +1312,9 @@ public partial class AppCatalogTests
         using var catalog = new AppCatalog(
             provider,
             new TestCache(null),
-            new VisibleApps(),
+            new MutableVisibilityStore(),
+            CreateCommandAliases(),
+            CreateSettings(),
             invalidationDelay: TimeSpan.Zero);
         await catalog.RefreshAsync();
         var replacement = new TestAppSource("a", [CreateCatalogItem("A2")]);
@@ -1450,6 +1477,8 @@ public partial class AppCatalogTests
             new MutableSourceProvider([source]),
             new TestCache(null),
             visibility,
+            CreateCommandAliases(),
+            CreateSettings(),
             invalidationDelay: TimeSpan.Zero);
         await catalog.RefreshAsync();
         var originalItem = catalog.GetSnapshot().Items[0];
@@ -1500,7 +1529,7 @@ public partial class AppCatalogTests
 
         Assert.AreEqual(0, catalog.GetSnapshot().Items.Count);
         Assert.AreSame(originalItem, catalog.GetSnapshot().HiddenItems.Single());
-        Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(item));
+        Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(visibility, item));
         Assert.AreEqual(1, visibility.PersistCount);
         Assert.AreEqual(1, notifications.Count);
         Assert.AreEqual(catalogId, notifications[0].CatalogId);
@@ -1511,7 +1540,7 @@ public partial class AppCatalogTests
 
         Assert.AreSame(originalItem, catalog.GetSnapshot().Items.Single());
         Assert.AreEqual(0, catalog.GetSnapshot().HiddenItems.Count);
-        Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(item));
+        Assert.AreEqual(AppVisibility.Visible, TestDataHelper.GetVisibility(visibility, item));
         Assert.AreEqual(2, visibility.PersistCount);
         Assert.AreEqual(2, notifications.Count);
         Assert.AreEqual(catalogId, notifications[1].CatalogId);
@@ -1545,14 +1574,13 @@ public partial class AppCatalogTests
 
         try
         {
-            File.WriteAllText(
-                settingsPath,
-                "{\"DisabledProgramSources\":[{\"UniqueIdentifier\":\"win32:hidden\"}]}");
+            TestDataHelper.WriteHiddenIdentities(settingsPath, "win32:hidden");
             var settings = new AllAppsSettings(settingsPath);
-            using var visibility = new SettingsAppVisibilityStore(settings);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath));
             var item = CreateCatalogItem("Hidden", identity: "win32:hidden");
 
-            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(item));
+            Assert.AreEqual(AppVisibility.Hidden, TestDataHelper.GetVisibility(visibility, item, settings: settings, aliases: settingsAliases));
         }
         finally
         {
@@ -1569,7 +1597,9 @@ public partial class AppCatalogTests
         using var catalog = new AppCatalog(
             new MutableSourceProvider([source]),
             cache,
-            new VisibleApps(),
+            new MutableVisibilityStore(),
+            CreateCommandAliases(),
+            CreateSettings(),
             [filter],
             timeProvider: TestTimeProvider,
             invalidationDelay: TimeSpan.Zero);
@@ -1645,8 +1675,9 @@ public partial class AppCatalogTests
             var legacyId = legacy.Payload.GetCommandId();
             using var source = new TestAppSource("test", [preferred.MergeProvenance(legacy)]);
             var settings = new AllAppsSettings(settingsPath);
-            using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
-            using var list = new AppListItemSource(catalog, settings);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
+            using var catalog = CreateCatalog([source], new TestCache(null), new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath)), commandAliases: settingsAliases, settings: settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             using var page = new AllAppsPage(list, TestDataHelper.CreateFuzzyMatcherProvider());
             using var provider = new AllAppsCommandProvider(page, list, settings);
             await catalog.InitializeAsync();
@@ -1712,12 +1743,13 @@ public partial class AppCatalogTests
             };
             var cache = new TestCache(useCache ? cached : null);
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             settings.Settings.Update(new JsonObject
             {
                 ["apps.ExcludedAppPaths"] = new JsonArray(JsonValue.Create(@"C:\Apps\Portable.exe")),
             }.ToJsonString());
-            using var catalog = CreateCatalog([source], cache, new SettingsAppVisibilityStore(settings));
-            using var list = new AppListItemSource(catalog, settings);
+            using var catalog = CreateCatalog([source], cache, new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath)), commandAliases: settingsAliases, settings: settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             using var page = new AllAppsPage(list, TestDataHelper.CreateFuzzyMatcherProvider());
             await catalog.InitializeAsync();
             await WaitForConditionAsync(() => !list.IsLoading);
@@ -1795,6 +1827,8 @@ public partial class AppCatalogTests
                 new MutableSourceProvider([source]),
                 cache,
                 visibility,
+                CreateCommandAliases(),
+                settings,
                 [filter],
                 timeProvider: TestTimeProvider,
                 invalidationDelay: TimeSpan.Zero);
@@ -1849,10 +1883,11 @@ public partial class AppCatalogTests
                 : ((Win32AppPayload)originalPayload) with { Name = "Renamed Editor", Description = "Updated description", LnkFilePath = @"C:\Links\Renamed Editor.lnk" };
             var renamed = new AppCatalogItem(identity, 0, new AppCatalogSourceReference("test", "renamed"), [], renamedPayload);
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
 
             using (var source = new TestAppSource("test", [original]))
-            using (var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings)))
-            using (var list = new AppListItemSource(catalog, settings))
+            using (var catalog = CreateCatalog([source], new TestCache(null), new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath)), commandAliases: settingsAliases, settings: settings))
+            using (var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance))
             {
                 await catalog.InitializeAsync();
                 await WaitForConditionAsync(() => !list.IsLoading);
@@ -1872,8 +1907,10 @@ public partial class AppCatalogTests
             }
 
             // Start with a fresh catalog so compatibility does not depend on the discovery cache.
+            await settingsAliases.WaitForSavesAsync();
+            using var reloadedAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
             using var reloadedSource = new TestAppSource("test", [renamed]);
-            using var reloadedCatalog = CreateCatalog([reloadedSource], new TestCache(null));
+            using var reloadedCatalog = CreateCatalog([reloadedSource], new TestCache(null), commandAliases: reloadedAliases);
             using var reloadedList = new AppListItemSource(reloadedCatalog, new AllAppsSettings(settingsPath));
             await reloadedCatalog.InitializeAsync();
             await WaitForConditionAsync(() => !reloadedList.IsLoading);
@@ -1881,7 +1918,128 @@ public partial class AppCatalogTests
             Assert.AreEqual(legacyId, reloadedList.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
             Assert.AreEqual(renamedPayload.ToAppItem().Name, reloadedList.GetSnapshot().GetCommandItem(legacyId)?.Title);
             Assert.IsNotNull(reloadedList.GetSnapshot().GetCommandItem(renamedPayload.GetCommandId()));
-            StringAssert.Contains(File.ReadAllText(settingsPath), "\"futureSetting\": \"preserved\"");
+            Assert.AreEqual("{\"futureSetting\":\"preserved\"}", File.ReadAllText(settingsPath));
+        }
+        finally
+        {
+            TestDataHelper.DeleteSettingsFiles(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task Dispose_DrainsAliasChangesQueuedDuringAnActiveSave()
+    {
+        var writerStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseWriter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logger = new RecordingLogger<AppCommandAliasStore>
+        {
+            OnLog = eventId =>
+            {
+                if (eventId.Id == 7)
+                {
+                    writerStarted.TrySetResult();
+                    releaseWriter.Task.GetAwaiter().GetResult();
+                }
+            },
+        };
+        var aliases = CreateCommandAliases(logger);
+        var latest = CreateCatalogItem("Latest");
+        using var source = new TestAppSource("test", [CreateCatalogItem("Original")]);
+        using var catalog = CreateCatalog([source], new TestCache(null), commandAliases: aliases);
+        Task? disposal = null;
+        try
+        {
+            // Hold the failed writer in its logger while a later publication queues another save.
+            Directory.CreateDirectory(aliases.FilePath);
+            await catalog.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await writerStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Directory.Delete(aliases.FilePath);
+            source.SetItems([latest]);
+            await catalog.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(5));
+
+            disposal = Task.Run(catalog.Dispose);
+            await WaitForConditionAsync(() => source.IsDisposed);
+            await Assert.ThrowsExceptionAsync<TimeoutException>(() => disposal.WaitAsync(TimeSpan.FromMilliseconds(250)));
+            releaseWriter.TrySetResult();
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+
+            using var reloaded = new AppCommandAliasStore(aliases.FilePath);
+            Assert.AreEqual(AppIdentity.ForCommand(latest.Identity), reloaded.GetSnapshot()[latest.Payload.GetCommandId()]);
+        }
+        finally
+        {
+            releaseWriter.TrySetResult();
+            if (disposal is not null)
+            {
+                await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
+            catalog.Dispose();
+            if (Directory.Exists(aliases.FilePath))
+            {
+                Directory.Delete(aliases.FilePath);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void PublicationBuilder_CalculatesAliasesWithoutChangingStores()
+    {
+        var item = CreateCatalogItem("Editor");
+        var aliases = CreateCommandAliases();
+        var visibility = new MutableVisibilityStore();
+        var originalAliases = aliases.GetSnapshot();
+        var originalHidden = visibility.GetSnapshot();
+        var builder = new AppCatalogPublicationBuilder(
+            [], Microsoft.Extensions.Logging.Abstractions.NullLogger<AppCatalog>.Instance);
+
+        var publication = builder.Build(
+            new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["test"] = [item] },
+            AppCatalogPublicationBuilder.PublishedState.Empty,
+            originalAliases,
+            originalHidden,
+            new AppCatalogVisibility([], []));
+
+        Assert.AreEqual(AppIdentity.ForCommand(item.Identity), publication.State.Snapshot.CommandAliases[item.Payload.GetCommandId()]);
+        Assert.AreSame(originalAliases, aliases.GetSnapshot(), "Calculating a publication must not commit its aliases.");
+        Assert.AreSame(originalHidden, visibility.GetSnapshot());
+        Assert.IsFalse(File.Exists(aliases.FilePath), "A builder must not queue persistence.");
+    }
+
+    [TestMethod]
+    public async Task Publication_ResolvesMovedHidesBeforeNotifyingWithoutAProjection()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-publication-aliases-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Metadata("Editor", @"C:\Old\Editor.exe");
+            program.LnkFilePath = @"C:\Links\Editor.lnk";
+            var original = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
+            program.TargetPath = @"D:\New\Editor.exe";
+            var moved = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
+            var originalId = AppIdentity.ForCommand(original.Identity);
+            var movedId = AppIdentity.ForCommand(moved.Identity);
+            TestDataHelper.WriteHiddenIdentities(settingsPath, original.Identity);
+            var settings = new AllAppsSettings(settingsPath);
+            using var aliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
+            var visibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settingsPath));
+            using var source = new TestAppSource("test", [original]);
+            using var catalog = CreateCatalog([source], new TestCache(null), visibility, commandAliases: aliases, settings: settings);
+            await catalog.InitializeAsync();
+            var originalSnapshot = catalog.GetSnapshot();
+            Assert.AreEqual(original.Identity, originalSnapshot.HiddenItems.Single().CatalogId);
+
+            var publications = new List<AppCatalogSnapshot>();
+            catalog.Changed += (_, _) => publications.Add(catalog.GetSnapshot());
+            source.SetItems([moved]);
+            await catalog.RefreshAsync();
+
+            var publication = publications.Single();
+            Assert.AreEqual(0, publication.Items.Count);
+            Assert.AreEqual(moved.Identity, publication.HiddenItems.Single().CatalogId);
+            Assert.AreEqual(movedId, publication.CommandAliases[originalId]);
+            Assert.IsFalse(originalSnapshot.CommandAliases.ContainsKey(originalId), "A later redirect must not change the earlier immutable alias map.");
+            Assert.AreEqual(originalId, originalSnapshot.CommandAliases[original.Payload.GetCommandId()]);
         }
         finally
         {
@@ -1900,8 +2058,9 @@ public partial class AppCatalogTests
             var original = CreateWin32CatalogItem(program, @"win32:C:\Old\Editor.exe|args:", 0, "test").ToAppItem();
             program.TargetPath = @"D:\New\Editor.exe";
             var moved = CreateWin32CatalogItem(program, @"win32:D:\New\Editor.exe|args:", 0, "test").ToAppItem();
-            var originalSnapshot = new AppCatalogSnapshot([original], []);
-            var movedSnapshot = new AppCatalogSnapshot([moved], []);
+            var aliases = CreateCommandAliases();
+            var originalSnapshot = new AppCatalogSnapshot([original], [], commandAliases: TestDataHelper.RetainCommandAliases(aliases, [original]));
+            var movedSnapshot = new AppCatalogSnapshot([moved], [], commandAliases: TestDataHelper.RetainCommandAliases(aliases, [moved]));
             var currentSnapshot = originalSnapshot;
             var catalog = new Mock<IAppCatalog>();
             catalog.Setup(value => value.InitializeAsync()).Returns(Task.CompletedTask);
@@ -1922,6 +2081,7 @@ public partial class AppCatalogTests
 
             Assert.AreSame(moved, list.GetSnapshot().VisibleItems.Single().App);
             Assert.AreSame(moved, list.GetSnapshot().GetVisibleApp(originalId)?.App);
+            catalog.Verify(value => value.GetSnapshot(), Times.Exactly(2));
         }
         finally
         {
@@ -1948,8 +2108,9 @@ public partial class AppCatalogTests
             var movedId = new AppCommand(moved.ToAppItem()).Id;
             Assert.AreNotEqual(originalId, movedId);
 
+            using var aliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
             using (var source = new TestAppSource("test", [original]))
-            using (var catalog = CreateCatalog([source], new TestCache(null)))
+            using (var catalog = CreateCatalog([source], new TestCache(null), commandAliases: aliases))
             using (var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath)))
             {
                 await catalog.InitializeAsync();
@@ -1968,8 +2129,10 @@ public partial class AppCatalogTests
             // A second install move after a restart must redirect the entire saved alias group again.
             program.TargetPath = @"D:\Apps\Editor\Editor.exe";
             var movedAgain = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
+            await aliases.WaitForSavesAsync();
+            using var freshAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
             using var freshSource = new TestAppSource("test", [movedAgain]);
-            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null));
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null), commandAliases: freshAliases);
             using var freshList = new AppListItemSource(freshCatalog, new AllAppsSettings(settingsPath));
             await freshCatalog.InitializeAsync();
             await WaitForConditionAsync(() => !freshList.IsLoading);
@@ -2013,22 +2176,24 @@ public partial class AppCatalogTests
                 originalPayload with { Name = "Renamed Editor", TargetPath = @"D:\New\Editor.exe" },
                 identityAliases: [launchIdentity]);
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             if (legacyHide)
             {
-                settings.SetAppHidden(original.Identity, hidden: true);
-                settings.SaveSettings();
+                TestDataHelper.WriteHiddenIdentities(settingsPath, original.Identity);
             }
 
             using (var source = new TestAppSource("test", [original]))
-            using (var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings)))
-            using (var list = new AppListItemSource(catalog, settings))
+            using (var catalog = CreateCatalog([source], new TestCache(null), new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath)), commandAliases: settingsAliases, settings: settings))
+            using (var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance))
             {
                 await catalog.InitializeAsync();
                 await WaitForConditionAsync(() => !list.IsLoading);
                 if (!legacyHide)
                 {
                     await catalog.SetAppHiddenAsync(original.Identity, hidden: true);
-                    Assert.IsTrue(settings.IsAppHidden(launchIdentity));
+                    CollectionAssert.Contains(
+                        JsonNode.Parse(File.ReadAllText(TestDataHelper.GetVisibilityPath(settingsPath)))!["HiddenAppIdentities"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray(),
+                        launchIdentity);
                 }
 
                 source.SetItems([moved]);
@@ -2045,15 +2210,17 @@ public partial class AppCatalogTests
 
             using var freshSource = new TestAppSource("test", [moved]);
             var reloaded = new AllAppsSettings(settingsPath);
-            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null), new SettingsAppVisibilityStore(reloaded));
-            using var freshList = new AppListItemSource(freshCatalog, reloaded);
+            using var reloadedAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(reloaded.FilePath));
+            var freshVisibility = new AppVisibilityStore(TestDataHelper.GetVisibilityPath(reloaded.FilePath));
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null), freshVisibility, commandAliases: reloadedAliases, settings: reloaded);
+            using var freshList = new AppListItemSource(freshCatalog, reloaded, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             await freshCatalog.InitializeAsync();
             await WaitForConditionAsync(() => !freshList.IsLoading);
             Assert.AreEqual(moved.Identity, freshList.GetSnapshot().HiddenItems.Single().App.CatalogId);
             await freshCatalog.SetAppHiddenAsync(moved.Identity, hidden: false);
             Assert.AreEqual(moved.Identity, freshList.GetSnapshot().VisibleItems.Single().App.CatalogId);
-            Assert.IsFalse(reloaded.IsAppHidden(original.Identity));
-            Assert.IsFalse(reloaded.IsAppHidden(launchIdentity));
+            Assert.AreEqual(AppVisibility.Visible, TestDataHelper.GetVisibility(freshVisibility, original, settings: reloaded, aliases: reloadedAliases));
+            Assert.AreEqual(AppVisibility.Visible, TestDataHelper.GetVisibility(freshVisibility, original.WithIdentity(launchIdentity), settings: reloaded, aliases: reloadedAliases));
 
             freshSource.SetItems([original]);
             await freshCatalog.RefreshAsync();
@@ -2079,9 +2246,10 @@ public partial class AppCatalogTests
             program.TargetPath = @"C:\New\Editor.exe";
             var replacement = CreateWin32CatalogItem(program, $"win32:{program.TargetPath}|args:", 0, "test");
             var settings = new AllAppsSettings(settingsPath);
+            using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             using var source = new TestAppSource("test", [original]);
-            using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
-            using var list = new AppListItemSource(catalog, settings);
+            using var catalog = CreateCatalog([source], new TestCache(null), new AppVisibilityStore(TestDataHelper.GetVisibilityPath(settings.FilePath)), commandAliases: settingsAliases, settings: settings);
+            using var list = new AppListItemSource(catalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
             await catalog.InitializeAsync();
             await WaitForConditionAsync(() => !list.IsLoading);
             await catalog.SetAppHiddenAsync(original.Identity, hidden: true);
@@ -2114,8 +2282,9 @@ public partial class AppCatalogTests
                 new AppCatalogSourceReference("test", "packaged"),
                 [],
                 new PackagedAppPayload { Name = "Packaged Editor", AppUserModelId = "Contoso.Editor_123!app" });
+            using var aliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
             using (var source = new TestAppSource("test", [win32]))
-            using (var catalog = CreateCatalog([source], new TestCache(null)))
+            using (var catalog = CreateCatalog([source], new TestCache(null), commandAliases: aliases))
             using (var list = new AppListItemSource(catalog, new AllAppsSettings(settingsPath)))
             {
                 await catalog.InitializeAsync();
@@ -2126,8 +2295,10 @@ public partial class AppCatalogTests
                 Assert.AreEqual(legacyId, list.GetSnapshot().GetCommandItem(legacyId)?.Command?.Id);
             }
 
+            await aliases.WaitForSavesAsync();
+            using var freshAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settingsPath));
             using var freshSource = new TestAppSource("test", [packaged]);
-            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null));
+            using var freshCatalog = CreateCatalog([freshSource], new TestCache(null), commandAliases: freshAliases);
             using var freshList = new AppListItemSource(freshCatalog, new AllAppsSettings(settingsPath));
             await freshCatalog.InitializeAsync();
             await WaitForConditionAsync(() => !freshList.IsLoading);
@@ -2192,21 +2363,40 @@ public partial class AppCatalogTests
         }
     }
 
-    private static AppCatalog CreateCatalog(
+    private AppCatalog CreateCatalog(
         IReadOnlyList<IAppSource> sources,
         IAppCatalogCache cache,
         IAppVisibilityStore? visibilityStore = null,
         IReadOnlyList<IAppCatalogFilter>? filters = null,
-        MEL.ILogger<AppCatalog>? logger = null)
+        MEL.ILogger<AppCatalog>? logger = null,
+        AppCommandAliasStore? commandAliases = null,
+        AllAppsSettings? settings = null)
     {
         return new(
             new MutableSourceProvider(sources),
             cache,
-            visibilityStore ?? new VisibleApps(),
+            visibilityStore ?? new MutableVisibilityStore(),
+            commandAliases ?? CreateCommandAliases(),
+            settings ?? CreateSettings(),
             filters,
             timeProvider: TestTimeProvider,
             invalidationDelay: TimeSpan.Zero,
             logger: logger);
+    }
+
+    private AllAppsSettings CreateSettings()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"cmdpal-catalog-settings-{Guid.NewGuid():N}.json");
+        _settingsPaths.Add(path);
+        return new AllAppsSettings(path);
+    }
+
+    private AppCommandAliasStore CreateCommandAliases(MEL.ILogger<AppCommandAliasStore>? logger = null)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"cmdpal-catalog-aliases-{Guid.NewGuid():N}.json");
+        var store = new AppCommandAliasStore(path, logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<AppCommandAliasStore>.Instance);
+        _commandAliasStores.Add(store);
+        return store;
     }
 
     private static AppCatalogItem CreateCatalogItem(
@@ -2310,55 +2500,28 @@ public partial class AppCatalogTests
         }
     }
 
-    private sealed class VisibleApps : IAppVisibilityStore
-    {
-        public event EventHandler? Changed
-        {
-            add { }
-            remove { }
-        }
-
-        public AppVisibility GetVisibility(AppCatalogItem item)
-        {
-            return AppVisibility.Visible;
-        }
-
-        public bool SetHidden(AppCatalogItem item, bool hidden)
-        {
-            return false;
-        }
-
-        public void Persist()
-        {
-        }
-
-        public void Dispose()
-        {
-        }
-    }
-
     private sealed class MutableVisibilityStore : IAppVisibilityStore
     {
-        public event EventHandler? Changed
-        {
-            add { }
-            remove { }
-        }
-
-        private readonly HashSet<string> _hiddenIds = new(StringComparer.OrdinalIgnoreCase);
+        private IReadOnlySet<string> _hiddenIds = FrozenSet<string>.Empty;
 
         public int PersistCount { get; private set; }
 
         public Exception? PersistException { get; init; }
 
-        public AppVisibility GetVisibility(AppCatalogItem item)
+        public IReadOnlySet<string> GetSnapshot()
         {
-            return _hiddenIds.Contains(item.Identity) ? AppVisibility.Hidden : AppVisibility.Visible;
+            return _hiddenIds;
         }
 
-        public bool SetHidden(AppCatalogItem item, bool hidden)
+        public bool SetSnapshot(IReadOnlySet<string> identities)
         {
-            return hidden ? _hiddenIds.Add(item.Identity) : _hiddenIds.Remove(item.Identity);
+            if (_hiddenIds.SetEquals(identities))
+            {
+                return false;
+            }
+
+            _hiddenIds = identities.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+            return true;
         }
 
         public void Persist()
@@ -2368,10 +2531,6 @@ public partial class AppCatalogTests
             {
                 throw exception;
             }
-        }
-
-        public void Dispose()
-        {
         }
     }
 
@@ -2433,6 +2592,8 @@ public partial class AppCatalogTests
         private readonly HashSet<int> _eventIds = [];
         private readonly List<(int EventId, IReadOnlyDictionary<string, object?> State)> _entries = [];
 
+        public Action<EventId>? OnLog { get; init; }
+
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
         {
@@ -2459,6 +2620,8 @@ public partial class AppCatalogTests
                     _entries.Add((eventId.Id, values.ToDictionary()));
                 }
             }
+
+            OnLog?.Invoke(eventId);
         }
 
         public bool HasEvent(int eventId)
