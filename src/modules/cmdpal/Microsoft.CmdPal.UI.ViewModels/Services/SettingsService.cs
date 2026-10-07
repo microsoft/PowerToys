@@ -25,6 +25,7 @@ public sealed class SettingsService : ISettingsService
     private readonly IPersistenceService _persistence;
     private readonly IApplicationInfoService _appInfoService;
     private readonly string _filePath;
+    private readonly Lock _saveLock = new();
 
     public SettingsService(IPersistenceService persistence, IApplicationInfoService appInfoService)
     {
@@ -58,8 +59,38 @@ public sealed class SettingsService : ISettingsService
         }
         while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
 
-        var newSettings = Volatile.Read(ref _settings);
-        _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+#if DEBUG
+        // Capture the caller outside the lock and exclude tracing from the timings.
+        var saveCaller = new StackTrace(skipFrames: 1, fNeedFileInfo: true);
+        var saveLockRequested = Stopwatch.GetTimestamp();
+        TimeSpan saveLockWait;
+        TimeSpan saveDuration;
+#endif
+
+        SettingsModel newSettings;
+        lock (_saveLock)
+        {
+#if DEBUG
+            var saveStarted = Stopwatch.GetTimestamp();
+            saveLockWait = Stopwatch.GetElapsedTime(saveLockRequested, saveStarted);
+#endif
+
+            // Read after acquiring the lock so an older caller cannot save a stale snapshot last.
+            newSettings = Volatile.Read(ref _settings);
+            _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+
+#if DEBUG
+            saveDuration = Stopwatch.GetElapsedTime(saveStarted);
+#endif
+        }
+
+#if DEBUG
+        Logger.LogDebug(
+            $"Settings save attempt (thread {Environment.CurrentManagedThreadId}, hotReload={hotReload}): " +
+            $"lock wait {saveLockWait.TotalMilliseconds:F2} ms, persistence {saveDuration.TotalMilliseconds:F2} ms." +
+            $"{Environment.NewLine}{saveCaller}");
+#endif
+
         if (hotReload)
         {
             SettingsChanged?.Invoke(this, newSettings);

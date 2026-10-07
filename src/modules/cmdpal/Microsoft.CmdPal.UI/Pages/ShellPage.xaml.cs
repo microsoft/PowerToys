@@ -871,8 +871,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         if (_pendingTopBarFocusRestore &&
             ViewModel.CurrentPage?.HasSearchBox == true)
         {
-            _pendingTopBarFocusRestore = false;
-            SearchBox.FocusActiveControl();
+            SearchBox.FocusActiveControl(() => _pendingTopBarFocusRestore = false);
         }
     }
 
@@ -884,14 +883,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
+        _pendingTopBarFocusRestore = true;
         if (HostWindow?.IsVisibleToUser == true)
         {
-            _pendingTopBarFocusRestore = false;
-            SearchBox.FocusActiveControl();
-            return;
+            SearchBox.FocusActiveControl(() => _pendingTopBarFocusRestore = false);
         }
-
-        _pendingTopBarFocusRestore = true;
     }
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());

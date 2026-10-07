@@ -11,6 +11,89 @@
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
+    <Page.Resources>
+        <!--  Radio semantics keep one option selected; visuals mirror GridViewItem selection.  -->
+        <Style x:Key="PreviewTileRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="{ThemeResource GridViewItemBackground}" />
+            <Setter Property="Foreground" Value="{ThemeResource GridViewItemForeground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource GridViewItemSelectedBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource GridViewItemSelectedBorderThickness}" />
+            <Setter Property="CornerRadius" Value="{ThemeResource GridViewItemCornerRadius}" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid
+                            x:Name="RootGrid"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border
+                                x:Name="CheckedBackground"
+                                Background="{ThemeResource GridViewItemBackgroundSelected}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Opacity="0" />
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                Foreground="{TemplateBinding Foreground}" />
+                            <Border
+                                x:Name="CheckedBorder"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource GridViewItemBackgroundPointerOver}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource GridViewItemBackgroundPressed}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedPressedBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
+                                            <Setter Target="CheckedBorder.BorderBrush" Value="{ThemeResource GridViewItemSelectedDisabledBorderBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Checked">
+                                        <VisualState.Setters>
+                                            <Setter Target="CheckedBackground.Opacity" Value="1" />
+                                            <Setter Target="CheckedBorder.Opacity" Value="1" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Unchecked" />
+                                    <VisualState x:Name="Indeterminate" />
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -308,24 +391,15 @@
                         x:Uid="Settings_GeneralPage_CommandPaletteOpening_SettingsCard"
                         local:SettingsPageTarget.Id="compact-mode"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
-                        <GridView
-                            x:Name="CommandPaletteOpeningModeGridView"
-                            HorizontalAlignment="Right"
+                        <!--
+                            Using radioButtons instead of GriView, because RadioButtons can't be deselected,
+                            and we want to make sure one option is always selected.
+                        -->
+                        <RadioButtons
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_CommandPaletteOpeningMode"
-                            IsItemClickEnabled="True"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            ScrollViewer.HorizontalScrollMode="Disabled"
-                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectedIndex="{x:Bind ViewModel.CommandPaletteOpeningModeIndex, Mode=TwoWay}"
-                            SelectionMode="Single"
-                            SingleSelectionFollowsFocus="False">
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                            <GridViewItem Margin="2" Padding="6">
+                            MaxColumns="2"
+                            SelectedIndex="{x:Bind ViewModel.CommandPaletteOpeningModeIndex, Mode=TwoWay}">
+                            <RadioButton x:Uid="Settings_GeneralPage_CommandPaletteOpening_FullPalette_Automation" Style="{StaticResource PreviewTileRadioButtonStyle}">
                                 <StackPanel Spacing="8">
                                     <Border
                                         Width="160"
@@ -478,8 +552,8 @@
                                         HorizontalAlignment="Center"
                                         Style="{StaticResource BodyTextBlockStyle}" />
                                 </StackPanel>
-                            </GridViewItem>
-                            <GridViewItem Margin="2" Padding="6">
+                            </RadioButton>
+                            <RadioButton x:Uid="Settings_GeneralPage_CommandPaletteOpening_CompactSearchBox_Automation" Style="{StaticResource PreviewTileRadioButtonStyle}">
                                 <StackPanel Spacing="8">
                                     <Border
                                         Width="160"
@@ -537,8 +611,8 @@
                                         HorizontalAlignment="Center"
                                         Style="{StaticResource BodyTextBlockStyle}" />
                                 </StackPanel>
-                            </GridViewItem>
-                        </GridView>
+                            </RadioButton>
+                        </RadioButtons>
                     </controls:SettingsCard>
 
                     <controls:SettingsCard

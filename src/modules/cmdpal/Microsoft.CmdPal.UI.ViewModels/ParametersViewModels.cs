@@ -513,8 +513,9 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
             return;
         }
 
-        PerformCommandMessage m = new(this._commandViewModel.Model);
-        WeakReferenceMessenger.Default.Send(m);
+        var sourcePage = PageContext.TryGetTarget(out var pageContext) ? pageContext as PageViewModel : null;
+        var message = new PerformCommandMessage(this._commandViewModel.Model, sourcePage);
+        WeakReferenceMessenger.Default.Send(message);
     }
 
     protected override void UnsafeCleanup()
@@ -742,7 +743,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
-                WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
+                SendPageUiMessage(new FocusSearchBoxMessage());
             });
     }
 
@@ -786,7 +787,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         DoOnActivePage(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
+               SendPageUiMessage(new UpdateCommandBarMessage(Command));
            });
     }
 
@@ -870,8 +871,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         if (ShowCommand)
         {
-            PerformCommandMessage m = new(this.Command.Command.Model);
-            WeakReferenceMessenger.Default.Send(m);
+            var message = new PerformCommandMessage(this.Command.Command.Model, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -892,7 +893,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     if (found)
                     {
-                        WeakReferenceMessenger.Default.Send(new FocusParamMessage(pv));
+                        SendPageUiMessage(new FocusParamMessage(pv));
                         return;
                     }
                     else if (firstWithoutValue is null && pv.NeedsValue)
@@ -904,7 +905,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
             if (firstWithoutValue is not null)
             {
-                WeakReferenceMessenger.Default.Send(new FocusParamMessage(firstWithoutValue));
+                SendPageUiMessage(new FocusParamMessage(firstWithoutValue));
             }
         }
     }

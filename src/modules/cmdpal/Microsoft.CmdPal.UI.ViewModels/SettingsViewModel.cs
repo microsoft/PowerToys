@@ -718,6 +718,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 }
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
             },

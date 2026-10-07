@@ -70,13 +70,27 @@ public partial class SettingsSearchTests
     [DataRow("compact", SettingsLinkIds.Appearance.CompactMode)]
     [DataRow("compact mode", SettingsLinkIds.Appearance.CompactMode)]
     [DataRow("full mode", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("minimal", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("collapsed", SettingsLinkIds.Appearance.CompactMode)]
     [DataRow("vertical search box position", SettingsLinkIds.Appearance.CompactPosition)]
+    [DataRow("offset", SettingsLinkIds.Appearance.CompactPosition)]
     [DataRow("alt+number shortcuts in lists", SettingsLinkIds.Appearance.ListItemAltNumberBehavior)]
     public void Search_RanksExpectedSettingFirst(string query, string expectedLink)
     {
         var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
 
         Assert.AreEqual(expectedLink, new SettingsSearchCatalog(entries).Search(query, _matcher)[0].Destination!.SettingsLinkId);
+    }
+
+    [TestMethod]
+    [DataRow("monitor")]
+    [DataRow("cursor")]
+    public void Search_KeepsLaunchPositionTermsOffCompactPosition(string query)
+    {
+        var results = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(LoadResources())).Search(query, _matcher);
+
+        Assert.IsTrue(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.LaunchPosition));
+        Assert.IsFalse(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.CompactPosition));
     }
 
     [TestMethod]
