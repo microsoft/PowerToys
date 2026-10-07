@@ -8,7 +8,6 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.CropAndLock.UITests</RootNamespace>
     <AssemblyName>CropAndLock.UITests</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -135,10 +135,10 @@ public sealed partial class NewPlusTests
             timeoutMS: TimeoutMS,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250);
-        Assert.IsTrue(
-            registration.Succeeded,
+        string registrationMessage =
             $"Runner did not {(enabled ? "register" : "unregister")} New+'s handler. Last value: {registration.LastObservation}. " +
-            "Classic-handler registration requires a Release (NDEBUG) product runtime or ENABLE_REGISTRATION.");
+            "Classic-handler registration requires a Release (NDEBUG) product runtime or ENABLE_REGISTRATION.";
+        Assert.IsTrue(registration.Succeeded, registrationMessage);
     }
 
     private void SetDisplayOption(string caption, string property, bool enabled)

@@ -704,11 +704,11 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 (requireStopped && state.ProcessIds.Length != 0),
             timeoutMS: 2_500);
         var observed = unexpectedEffect.LastObservation;
-        Assert.IsFalse(
-            unexpectedEffect.Succeeded,
+        string effectMessage =
             $"An inactive shortcut had an effect: visible={observed.Visible}; processes={string.Join(", ", observed.ProcessIds)}; " +
             $"pasted characters={observed.TargetText.Length}; clipboard matches={observed.ClipboardText == source}; " +
-            $"formats before=[{string.Join(", ", formats)}], after=[{string.Join(", ", observed.Formats)}].");
+            $"formats before=[{string.Join(", ", formats)}], after=[{string.Join(", ", observed.Formats)}].";
+        Assert.IsFalse(unexpectedEffect.Succeeded, effectMessage);
         Assert.AreEqual(source, ReadClipboardText(), "An inactive shortcut changed the text clipboard.");
         Assert.AreEqual(string.Empty, Target.Text, "An inactive shortcut pasted into the destination.");
     }
