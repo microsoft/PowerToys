@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 
@@ -21,6 +22,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
+
+        // A file that another process has open is only held for a moment, so a few short retries are enough.
+        private const int FileInUseRetries = 5;
+        private const int SharingViolation = unchecked((int)0x80070020);
+        private const int LockViolation = unchecked((int)0x80070021);
+
         private readonly IFile _file;
         private readonly SettingPath _settingsPath;
         private readonly JsonSerializerOptions _serializerOptions;
@@ -285,8 +292,78 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     _settingsPath.CreateSettingsFolder(powertoy);
                 }
 
-                _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
+                WriteFileAtomically(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
             }
+        }
+
+        /// <summary>
+        /// Writes a file so that it is always complete on disk: the contents go to a temporary file,
+        /// which then takes the place of the old file in a single step. A write that fails or is
+        /// interrupted halfway leaves the old file as it was.
+        /// </summary>
+        private void WriteFileAtomically(string path, string contents)
+        {
+            // Renaming over a symbolic link would replace the link itself, so write through it instead.
+            if (_file.Exists(path) && _file.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint))
+            {
+                _file.WriteAllText(path, contents);
+                return;
+            }
+
+            string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                using (var stream = _file.Create(temporaryPath))
+                {
+                    // The same bytes File.WriteAllText writes: UTF-8 without a byte order mark.
+                    byte[] bytes = Encoding.UTF8.GetBytes(contents);
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Flush(true);
+                }
+
+                RetryWhileFileIsInUse(() => _file.Move(temporaryPath, path, true));
+            }
+            catch
+            {
+                try
+                {
+                    _file.Delete(temporaryPath);
+                }
+                catch (Exception)
+                {
+                    // A leftover temporary file is harmless, and the failure that brought us here matters more.
+                }
+
+                throw;
+            }
+
+            // A rename does not change the last write time, and that is the only thing the settings
+            // file watchers listen for. Without this they would never see the new file.
+            _file.SetLastWriteTimeUtc(path, DateTime.UtcNow);
+        }
+
+        private static void RetryWhileFileIsInUse(Action action)
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (Exception e) when (attempt < FileInUseRetries && IsFileInUse(e))
+                {
+                    // 10, 20, 40, 80 and 160 ms.
+                    Thread.Sleep(10 << attempt);
+                }
+            }
+        }
+
+        private static bool IsFileInUse(Exception e)
+        {
+            // Renaming over a file that another process has open is reported as access denied.
+            return e is UnauthorizedAccessException
+                || (e is IOException && (e.HResult == SharingViolation || e.HResult == LockViolation));
         }
 
         // Returns the file path to the settings file, that is exposed from the local ISettingsPath instance.
