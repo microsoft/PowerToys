@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.PowerToys.PowerRename.UITests</RootNamespace>
     <AssemblyName>PowerRename.UITests.Next</AssemblyName>
     <!-- Element.Click uses physical winappcli bounds with Win32 cursor input. -->
