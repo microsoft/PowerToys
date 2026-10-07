@@ -16,11 +16,17 @@ public record PerformCommandMessage
 
     public object? CommandContext { get; }
 
-    public SourceContext? Context { get; private set; }
+    public SourceContext? Context { get; init; }
 
     public bool WithAnimation { get; set; } = true;
 
     public bool TransientPage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the dock flyout that owns this command. The shell ignores routed
+    /// messages; the owning dock flyout handles or forwards them.
+    /// </summary>
+    public DockCommandRoute? DockRoute { get; set; }
 
     public Func<ICommandResult, bool>? ResultHandler { get; set; }
 
@@ -49,6 +55,7 @@ public record PerformCommandMessage
     {
         Command = command;
         Context = sourcePage is null ? null : new(sourcePage);
+        DockRoute = sourcePage?.DockRoute;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context, PageViewModel? sourcePage = null)

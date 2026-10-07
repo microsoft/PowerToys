@@ -90,7 +90,30 @@
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
 
+            <x:Double x:Key="DockPageFlyoutWidth">500</x:Double>
+
+            <Style
+                x:Key="DockPageFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <!--  The default presenter MaxWidth is narrower than a dock page.  -->
+                <Setter Property="MinWidth" Value="{StaticResource DockPageFlyoutWidth}" />
+                <Setter Property="MaxWidth" Value="{StaticResource DockPageFlyoutWidth}" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+            </Style>
+
             <cpcontrols:ContextMenuFlyout x:Name="ItemContextMenuFlyout" />
+
+            <Flyout
+                x:Name="DockPageFlyout"
+                FlyoutPresenterStyle="{StaticResource DockPageFlyoutStyle}"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}" />
 
             <!--  Edit mode context menu for dock bands  -->
             <!--  Disable the cached animation because this menu follows changes to the dock side.  -->

@@ -84,9 +84,10 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(bool withSourcePage)
+    [DataRow("none")]
+    [DataRow("page")]
+    [DataRow("owner")]
+    public void PerformCommand_ResolvesHostAndProviderFromSourceContext(string source)
     {
         var currentHost = new TestAppExtensionHost();
         var sourceHost = new TestAppExtensionHost();
@@ -106,15 +107,56 @@ public partial class ShellViewModelTests
         var message = new PerformCommandMessage(
             new ExtensionObject<ICommand>(page),
             new ExtensionObject<IListItem>(item),
-            withSourcePage ? sourcePage : null);
-        var expectedHost = withSourcePage ? sourceHost : shell.CurrentPage.ExtensionHost;
-        var expectedProvider = withSourcePage ? sourceProvider : shell.CurrentPage.ProviderContext;
+            source == "page" ? sourcePage : null);
+        if (source == "owner")
+        {
+            message = message with { Context = new SourceContext(sourceHost, sourceProvider) };
+        }
+
+        var expectedHost = source == "none" ? shell.CurrentPage.ExtensionHost : sourceHost;
+        var expectedProvider = source == "none" ? shell.CurrentPage.ProviderContext : sourceProvider;
 
         shell.Receive(message);
 
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
         pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public void PerformCommand_OnlyCommandsFromThePaletteRootAreTopLevel(bool fromOtherPage, bool expectedTopLevel)
+    {
+        var host = new TestAppExtensionHost();
+        var rootPageService = new Mock<IRootPageService>();
+        using var shell = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPageService.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(host).Object);
+        var rootPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
+        var otherPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
+        var item = new ListItem(new NoOpCommand());
+
+        try
+        {
+            shell.CurrentPage = rootPage;
+
+            // A plain command is neither a page nor invokable, so the shell only reports it.
+            shell.Receive(new PerformCommandMessage(
+                new ExtensionObject<ICommand>(Mock.Of<ICommand>()),
+                new ExtensionObject<IListItem>(item),
+                fromOtherPage ? otherPage : rootPage));
+
+            rootPageService.Verify(service => service.OnPerformCommand(item, expectedTopLevel, host), Times.Once);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+            rootPage.SafeCleanup();
+            otherPage.SafeCleanup();
+        }
     }
 
     [TestMethod]

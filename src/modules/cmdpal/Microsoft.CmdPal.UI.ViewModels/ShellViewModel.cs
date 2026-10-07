@@ -215,6 +215,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(PerformCommandMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         PerformCommand(message);
     }
 
@@ -235,6 +240,11 @@ public partial class ShellViewModel : ObservableObject,
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
+
+        // Only commands sent from the palette's own root page are top-level. Commands from
+        // other surfaces (for example, a dock flyout page) must not update home-page history.
+        var sourcePage = message.Context?.Page;
+        var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
 
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
         var providerContext = isMainPage
@@ -258,7 +268,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -327,13 +337,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
             }
         }
         catch (Exception ex)
@@ -552,6 +562,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
+        if (message.DockRoute is not null)
+        {
+            return;
+        }
+
         UnsafeHandleCommandResult(
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,

@@ -225,7 +225,7 @@ public partial class ContentPageViewModelTests
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
         menu.PrepareForOpen(viewModel);
         PerformCommandMessage? invocation = null;
-        menu.CommandInvoking += (_, message) => invocation = message;
+        menu.CommandInvoking += (_, e) => invocation = e.Message;
         Assert.AreEqual(ContextKeybindingResult.Hide, menu.InvokeCommand(menu.FindKeybinding(primaryKey)));
         Assert.IsNotNull(invocation);
         Assert.AreSame(primary, invocation.CommandContext);

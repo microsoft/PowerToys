@@ -149,6 +149,7 @@ public partial class PageViewModelTests
     public void PerformCommandConstructors_PreserveInvocationPayload(bool withPage)
     {
         var page = new TestPageViewModel(new Page(), TaskScheduler.Default);
+        page.DockRoute = new DockCommandRoute((nint)42, Guid.NewGuid());
         var sourcePage = withPage ? page : null;
         var command = new NoOpCommand();
         var listItem = new ListItem(command);
@@ -173,15 +174,18 @@ public partial class PageViewModelTests
                 Assert.AreSame(page, message.Context.Page);
                 Assert.AreSame(page.ExtensionHost, message.Context.ExtensionHost);
                 Assert.AreSame(page.ProviderContext, message.Context.ProviderContext);
+                Assert.AreEqual(page.DockRoute, message.DockRoute);
             }
             else
             {
                 Assert.IsNull(message.Context);
+                Assert.IsNull(message.DockRoute);
             }
         }
 
         var handled = new HandleCommandResultMessage(new(Mock.Of<ICommandResult>()), sourcePage);
         Assert.AreSame(sourcePage, handled.Context?.Page);
+        Assert.AreEqual(sourcePage?.DockRoute, handled.DockRoute);
     }
 
     [TestMethod]
@@ -190,6 +194,7 @@ public partial class PageViewModelTests
     public void CommandItemConstructor_UsesAvailableSourcePage(bool withPage)
     {
         var page = new TestPageViewModel(new Page(), TaskScheduler.Default);
+        page.DockRoute = new DockCommandRoute((nint)42, Guid.NewGuid());
         IPageContext context = withPage
             ? page
             : Mock.Of<IPageContext>(value => value.Scheduler == TaskScheduler.Default);
@@ -216,10 +221,12 @@ public partial class PageViewModelTests
                     Assert.AreSame(page, message.Context.Page);
                     Assert.AreSame(page.ExtensionHost, message.Context.ExtensionHost);
                     Assert.AreSame(page.ProviderContext, message.Context.ProviderContext);
+                    Assert.AreEqual(page.DockRoute, message.DockRoute);
                 }
                 else
                 {
                     Assert.IsNull(message.Context);
+                    Assert.IsNull(message.DockRoute);
                 }
             }
         }
@@ -252,6 +259,32 @@ public partial class PageViewModelTests
     }
 
     [TestMethod]
+    public void SourceContext_FromPageContext_UsesThePageOrItsOwner()
+    {
+        var page = new TestPageViewModel(new Page(), TaskScheduler.Default);
+        var host = new TestAppExtensionHost();
+        var provider = Mock.Of<ICommandProviderContext>();
+        var owner = new Mock<IPageContext>();
+        owner.As<ICommandContextSource>().SetupGet(source => source.ExtensionHost).Returns(host);
+        owner.As<ICommandContextSource>().SetupGet(source => source.ProviderContext).Returns(provider);
+        var incompleteOwner = new Mock<IPageContext>();
+        incompleteOwner.As<ICommandContextSource>().SetupGet(source => source.ProviderContext).Returns(provider);
+
+        var fromPage = SourceContext.FromPageContext(page);
+        var fromOwner = SourceContext.FromPageContext(owner.Object);
+
+        Assert.IsNotNull(fromPage);
+        Assert.AreSame(page, fromPage.Page);
+        Assert.IsNotNull(fromOwner);
+        Assert.IsNull(fromOwner.Page);
+        Assert.AreSame(host, fromOwner.ExtensionHost);
+        Assert.AreSame(provider, fromOwner.ProviderContext);
+        Assert.IsNull(SourceContext.FromPageContext(incompleteOwner.Object));
+        Assert.IsNull(SourceContext.FromPageContext(Mock.Of<IPageContext>()));
+        Assert.IsNull(SourceContext.FromPageContext(null));
+    }
+
+    [TestMethod]
     public void ContextMenuInvocation_PreservesPageContextAndMessageHandlers()
     {
         var host = new TestAppExtensionHost();
@@ -264,8 +297,9 @@ public partial class PageViewModelTests
         PerformCommandMessage? dispatched = null;
         Action confirmation = () => { };
         Func<ICommandResult, bool> resultHandler = _ => true;
-        menu.CommandInvoking += (_, message) =>
+        menu.CommandInvoking += (_, e) =>
         {
+            var message = e.Message;
             Assert.IsNotNull(message.Context);
             Assert.AreSame(page, message.Context.Page);
             Assert.AreSame(host, message.Context.ExtensionHost);

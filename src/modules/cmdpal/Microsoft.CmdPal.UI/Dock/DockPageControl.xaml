@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Dock.DockPageControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Dock"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <Grid MaxHeight="560" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <!--
+            These transitions are deliberately Storyboards, not the Implicit Show/Hide
+            composition animations that ShellPage uses. In this windowed flyout, the
+            implicit animations broke mouse input.
+        -->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="PageLevelStates">
+                <VisualStateGroup.Transitions>
+                    <VisualTransition From="RootPage" To="NestedPage">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BackButton"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="BackButtonTransform"
+                                Storyboard.TargetProperty="ScaleX"
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="BackButtonTransform"
+                                Storyboard.TargetProperty="ScaleY"
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="BackButtonTransform"
+                                Storyboard.TargetProperty="TranslateX"
+                                From="16"
+                                To="0"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="PageIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="PageIconTransform"
+                                Storyboard.TargetProperty="ScaleX"
+                                From="0.8"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="PageIconTransform"
+                                Storyboard.TargetProperty="ScaleY"
+                                From="0.8"
+                                To="1"
+                                Duration="0:0:0.333" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="PageIconTransform"
+                                Storyboard.TargetProperty="TranslateX"
+                                From="8"
+                                To="0"
+                                Duration="0:0:0.187" />
+                        </Storyboard>
+                    </VisualTransition>
+                    <VisualTransition From="NestedPage" To="RootPage">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="RootPageIcon"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.187" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="RootPageIconTransform"
+                                Storyboard.TargetProperty="ScaleX"
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.187" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="RootPageIconTransform"
+                                Storyboard.TargetProperty="ScaleY"
+                                From="0.5"
+                                To="1"
+                                Duration="0:0:0.187" />
+                        </Storyboard>
+                    </VisualTransition>
+                </VisualStateGroup.Transitions>
+                <VisualState x:Name="RootPage" />
+                <VisualState x:Name="NestedPage" />
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid Padding="0,12,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Border
+                        x:Name="RootPageSpacer"
+                        Margin="20,0,0,0"
+                        Visibility="{x:Bind Navigation.CurrentPage.IsRootPage, Mode=OneWay}" />
+                    <controls:IconBox
+                        x:Name="RootPageIcon"
+                        Width="20"
+                        Height="20"
+                        Margin="0,0,6,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        RenderTransformOrigin="0.5,0.5"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        AutomationProperties.AccessibilityView="Raw"
+                        SourceKey="{x:Bind Navigation.CurrentPage.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
+                        Visibility="{x:Bind Navigation.CurrentPage.IsRootPage, Mode=OneWay}">
+                        <controls:IconBox.RenderTransform>
+                            <CompositeTransform x:Name="RootPageIconTransform" />
+                        </controls:IconBox.RenderTransform>
+                    </controls:IconBox>
+                    <Button
+                        x:Name="BackButton"
+                        x:Uid="BackButton"
+                        Margin="4,0,4,0"
+                        Padding="4"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        RenderTransformOrigin="0.5,0.5"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Click="BackButton_Click"
+                        Content="{ui:FontIcon Glyph=&#xE76B;,
+                                              FontSize=14}"
+                        FontSize="16"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind Navigation.CanGoBack, Mode=OneWay}">
+                        <Button.RenderTransform>
+                            <CompositeTransform x:Name="BackButtonTransform" />
+                        </Button.RenderTransform>
+                    </Button>
+                    <controls:IconBox
+                        x:Name="PageIcon"
+                        Width="20"
+                        Height="20"
+                        Margin="4,0,4,0"
+                        VerticalAlignment="Center"
+                        RenderTransformOrigin="0.5,0.5"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        AutomationProperties.AccessibilityView="Raw"
+                        SourceKey="{x:Bind Navigation.CurrentPage.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
+                        Visibility="{x:Bind Navigation.CanGoBack, Mode=OneWay}">
+                        <controls:IconBox.RenderTransform>
+                            <CompositeTransform x:Name="PageIconTransform" />
+                        </controls:IconBox.RenderTransform>
+                    </controls:IconBox>
+                </StackPanel>
+                <Grid Grid.Column="1" HorizontalAlignment="Stretch">
+                    <controls:SearchBar
+                        x:Name="SearchBox"
+                        HorizontalAlignment="Stretch"
+                        CurrentPageViewModel="{x:Bind Navigation.CurrentPage, Mode=OneWay}"
+                        Visibility="{x:Bind Navigation.CurrentPage.HasSearchBox, Mode=OneWay}" />
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
+                </Grid>
+
+            </Grid>
+
+            <ProgressBar
+                x:Name="PageProgress"
+                VerticalAlignment="Bottom"
+                IsIndeterminate="True"
+                Visibility="{x:Bind Navigation.CurrentPage.IsLoading, Mode=OneWay}" />
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,1">
+            <ContentControl
+                x:Name="PageContent"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch" />
+            <TextBlock
+                x:Name="ErrorText"
+                Margin="24"
+                VerticalAlignment="Top"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Text="{x:Bind Navigation.CurrentPage.ErrorMessage, Mode=OneWay}"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind Navigation.CurrentPage.ErrorMessage, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+        </Grid>
+
+        <local:DockPageCommandBar
+            x:Name="PageCommandBar"
+            Grid.Row="2"
+            CurrentPage="{x:Bind Navigation.CurrentPage, Mode=OneWay}" />
+    </Grid>
+</UserControl>

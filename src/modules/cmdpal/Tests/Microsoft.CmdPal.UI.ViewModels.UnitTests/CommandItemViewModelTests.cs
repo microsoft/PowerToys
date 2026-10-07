@@ -599,9 +599,9 @@ public partial class CommandItemViewModelTests
             PerformCommandMessage? invocation = null;
             var events = new List<string>();
             var recipient = new object();
-            menu.CommandInvoking += (_, message) =>
+            menu.CommandInvoking += (_, e) =>
             {
-                invocation = message;
+                invocation = e.Message;
                 events.Add("invoking");
             };
             menu.CommandInvoked += (_, _) => events.Add("invoked");
@@ -746,7 +746,7 @@ public partial class CommandItemViewModelTests
         var menu = new ContextMenuViewModel(new FuzzyMatcherProvider(new()));
         menu.PrepareForOpen(viewModel);
         var invocations = new List<PerformCommandMessage>();
-        menu.CommandInvoking += (_, message) => invocations.Add(message);
+        menu.CommandInvoking += (_, e) => invocations.Add(e.Message);
 
         try
         {
