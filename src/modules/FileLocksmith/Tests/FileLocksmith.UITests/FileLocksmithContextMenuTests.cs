@@ -169,10 +169,10 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
             TestContext);
 
         Assert.IsTrue(probe.Last.IsOpen, "The classic context menu for the drive did not become ready.");
-        Assert.IsTrue(
-            probe.Succeeded,
+        string driveMenuMessage =
             $"The classic context menu for drive '{fixture.DriveRoot}' did not show " +
-            $"'{FileLocksmithConstants.ContextMenuCaption}'.");
+            $"'{FileLocksmithConstants.ContextMenuCaption}'.";
+        Assert.IsTrue(probe.Succeeded, driveMenuMessage);
     }
 
     /// <summary>
@@ -538,15 +538,14 @@ public sealed class FileLocksmithContextMenuTests : UITestBase
 
         var surface = tier == ContextMenuTier.Classic ? "classic" : "default";
         Assert.IsTrue(probe.Last.IsOpen, $"The {surface} Explorer context menu did not become ready.");
-        Assert.IsTrue(
-            probe.Last.HasSibling,
+        string siblingMessage =
             $"The {surface} Explorer context menu did not render the sibling PowerRename command, so its " +
-            $"'{FileLocksmithConstants.ContextMenuCaption}' state cannot be trusted.");
-        Assert.AreEqual(
-            expected,
-            probe.Last.HasCommand,
+            $"'{FileLocksmithConstants.ContextMenuCaption}' state cannot be trusted.";
+        Assert.IsTrue(probe.Last.HasSibling, siblingMessage);
+        string commandMessage =
             $"The {surface} Explorer context menu did {(expected ? "not show" : "show")} " +
-            $"'{FileLocksmithConstants.ContextMenuCaption}'.");
+            $"'{FileLocksmithConstants.ContextMenuCaption}'.";
+        Assert.AreEqual(expected, probe.Last.HasCommand, commandMessage);
     }
 
     private LockingProcessFixture CreateFixture(string? targetSubFolder = null)
