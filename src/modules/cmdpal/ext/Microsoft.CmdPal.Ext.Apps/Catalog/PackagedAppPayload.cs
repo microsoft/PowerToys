@@ -35,6 +35,11 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
     /// <remarks>This may be a relative path or empty. Only its filename contributes search metadata; activation uses <see cref="AppUserModelId"/>.</remarks>
     public string Executable { get; init => field = value ?? string.Empty; } = string.Empty;
 
+    /// <summary>Gets whether the manifest declares a PWA host, without requiring a recognized launch format.</summary>
+    /// <remarks>Controls Web apps filtering only; deduplication requires complete <see cref="EdgePwaLaunch"/> metadata.</remarks>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsWebApp { get; init; }
+
     /// <summary>Gets the recognized Edge PWA launch metadata retained for deduplication after loading the cache.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public EdgePwaLaunchInfo? EdgePwaLaunch { get; init; }
@@ -76,6 +81,7 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
             Description = app.Description,
             AppUserModelId = app.AppUserModelId,
             Executable = app.Executable,
+            IsWebApp = app.IsWebApp,
             EdgePwaLaunch = app.EdgePwaLaunch,
             PackageFamilyName = app.Package.FamilyName,
             PackageFullName = app.Package.FullName,
@@ -101,6 +107,7 @@ internal sealed record PackagedAppPayload : IAppCatalogPayload
             DirectoryPath = PackageLocation,
             AppUserModelId = AppUserModelId,
             IsPackaged = true,
+            IsWebApp = IsWebApp,
             Commands = GetCommands(),
             PackageFamilyName = PackageFamilyName,
         };

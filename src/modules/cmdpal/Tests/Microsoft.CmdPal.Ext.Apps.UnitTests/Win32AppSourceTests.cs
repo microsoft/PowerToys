@@ -396,6 +396,8 @@ public partial class Win32AppSourceTests
         var app = duplicate.ToAppItem();
         Assert.AreEqual(arguments, app.LaunchArguments);
         Assert.AreEqual(browser, app.ResolvedTarget);
+        Assert.IsTrue(app.IsWebApp);
+        Assert.IsFalse(app.IsPackaged);
         var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         foreach (var entry in entries.Take(2))

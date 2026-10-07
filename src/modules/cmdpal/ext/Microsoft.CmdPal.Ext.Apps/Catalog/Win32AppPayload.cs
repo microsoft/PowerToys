@@ -146,6 +146,7 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
             Name = EffectiveDisplayName,
             Subtitle = Description,
             AppTypeLabel = GetApplicationTypeLabel(),
+            IsWebApp = AppType == Win32AppType.WebApplication,
             IconSource = iconPath,
             LaunchTarget = LaunchPath,
             LaunchArguments = Arguments,

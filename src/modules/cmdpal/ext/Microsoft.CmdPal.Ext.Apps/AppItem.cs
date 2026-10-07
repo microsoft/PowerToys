@@ -65,6 +65,10 @@ public sealed class AppItem
     /// <summary>Gets or sets whether the preferred payload uses packaged activation and presentation.</summary>
     public bool IsPackaged { get; set; }
 
+    /// <summary>Gets or sets whether discovery recognized this entry as a browser-hosted web application.</summary>
+    /// <remarks>This classification is independent of packaged activation.</remarks>
+    public bool IsWebApp { get; set; }
+
     /// <summary>Gets or sets the preferred packaged payload's family name, or null for a Win32 payload.</summary>
     public string? PackageFamilyName { get; set; }
 

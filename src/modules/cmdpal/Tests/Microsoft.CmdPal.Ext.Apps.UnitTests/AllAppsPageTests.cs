@@ -670,13 +670,15 @@ public class AllAppsPageTests : AppsTestBase
         Assert.IsInstanceOfType<DynamicListPage>(Page);
 
         var filters = Page.Filters!.GetFilters();
-        Assert.AreEqual(6, filters.Length);
+        Assert.AreEqual(7, filters.Length);
         Assert.AreEqual(AllAppsFilters.AllFilterId, ((IFilter)filters[0]).Id);
         Assert.IsInstanceOfType<Separator>(filters[1]);
         Assert.AreEqual(AllAppsFilters.Win32FilterId, ((IFilter)filters[2]).Id);
         Assert.AreEqual(AllAppsFilters.PackagedFilterId, ((IFilter)filters[3]).Id);
-        Assert.IsInstanceOfType<Separator>(filters[4]);
-        Assert.AreEqual(AllAppsFilters.HiddenFilterId, ((IFilter)filters[5]).Id);
+        Assert.AreEqual(AllAppsFilters.WebFilterId, ((IFilter)filters[4]).Id);
+        Assert.IsNotNull(((IFilter)filters[4]).Icon);
+        Assert.IsInstanceOfType<Separator>(filters[5]);
+        Assert.AreEqual(AllAppsFilters.HiddenFilterId, ((IFilter)filters[6]).Id);
     }
 
     [TestMethod]
@@ -785,6 +787,103 @@ public class AllAppsPageTests : AppsTestBase
         var packagedItems = Page.GetItems();
         Assert.AreEqual(1, packagedItems.Length);
         Assert.IsTrue(((AppListItem)packagedItems[0]).App.IsPackaged);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("Portal")]
+    public void AllAppsPage_WebFilterReusesRowsAndOverlapsPackagingFilters(string query)
+    {
+        var browserApp = TestDataHelper.CreateTestWin32Metadata("Portal Chrome", @"C:\Chrome\chrome_proxy.exe");
+        browserApp.AppType = Win32AppType.WebApplication;
+        browserApp.Arguments = "--app-id=portal";
+        MockCatalog.AddWin32Program(browserApp);
+        var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal Edge", "Contoso.WebPortal!App");
+        packagedApp.IsWebApp = true;
+        MockCatalog.AddPackagedApp(packagedApp);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Portal Desktop", @"C:\Tools\Portal.exe"));
+        MockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata("Portal Packaged", "Contoso.DesktopPortal!App"));
+        var snapshot = AppListItemSource.GetSnapshot();
+        var originalRows = snapshot.VisibleItems.ToDictionary(item => item.Title);
+        Page.SearchText = query;
+
+        foreach (var (filterId, names) in new[]
+        {
+            (AllAppsFilters.WebFilterId, new[] { "Portal Chrome", "Portal Edge" }),
+            (AllAppsFilters.Win32FilterId, new[] { "Portal Chrome", "Portal Desktop" }),
+            (AllAppsFilters.PackagedFilterId, new[] { "Portal Edge", "Portal Packaged" }),
+            (AllAppsFilters.AllFilterId, originalRows.Keys.ToArray()),
+        })
+        {
+            Page.Filters!.CurrentFilterId = filterId;
+            var rows = Page.GetItems().OfType<AppListItem>().ToArray();
+
+            CollectionAssert.AreEquivalent(names, rows.Select(item => item.Title).ToArray());
+            foreach (var row in rows)
+            {
+                Assert.AreSame(originalRows[row.Title], row);
+            }
+
+            Assert.AreSame(snapshot, AppListItemSource.GetSnapshot());
+        }
+
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
+    }
+
+    [TestMethod]
+    public void AllAppsPage_WebFilterSearchRanksTitlesAboveDescriptions()
+    {
+        var browserApp = TestDataHelper.CreateTestWin32Metadata("Alpha", @"C:\Chrome\chrome_proxy.exe");
+        browserApp.AppType = Win32AppType.WebApplication;
+        browserApp.Arguments = "--app-id=portal";
+        browserApp.Description = "Portal";
+        MockCatalog.AddWin32Program(browserApp);
+        var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
+        packagedApp.IsWebApp = true;
+        MockCatalog.AddPackagedApp(packagedApp);
+        MockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Tools\Portal.exe"));
+
+        Page.Filters!.CurrentFilterId = AllAppsFilters.WebFilterId;
+        Page.SearchText = "Portal";
+
+        var items = Page.GetItems();
+        Assert.AreEqual(2, items.Length);
+        Assert.AreEqual("Portal", items[0].Title);
+        Assert.AreEqual("Alpha", items[1].Title);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task AllAppsPage_HiddenWebAppsRemainInHiddenFilter(bool packaged)
+    {
+        if (packaged)
+        {
+            var app = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
+            app.IsWebApp = true;
+            MockCatalog.AddPackagedApp(app);
+        }
+        else
+        {
+            var app = TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Chrome\chrome_proxy.exe");
+            app.AppType = Win32AppType.WebApplication;
+            app.Arguments = "--app-id=portal";
+            MockCatalog.AddWin32Program(app);
+        }
+
+        Page.Filters!.CurrentFilterId = AllAppsFilters.WebFilterId;
+        var row = Page.GetItems().OfType<AppListItem>().Single();
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, true);
+
+        Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
+        Page.Filters.CurrentFilterId = AllAppsFilters.HiddenFilterId;
+        Assert.AreSame(row, Page.GetItems().OfType<AppListItem>().Single());
+        Assert.IsTrue(row.App.IsWebApp);
+
+        await MockCatalog.SetAppHiddenAsync(row.App.CatalogId, false);
+        Page.Filters.CurrentFilterId = AllAppsFilters.WebFilterId;
+        Assert.AreSame(row, Page.GetItems().Single());
+        Assert.AreEqual(0, MockCatalog.RefreshCallCount);
     }
 
     [TestMethod]

@@ -304,6 +304,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Web apps.
+        /// </summary>
+        internal static string filter_web_apps {
+            get {
+                return ResourceManager.GetString("filter_web_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Win32.
         /// </summary>
         internal static string filter_win32_apps {
