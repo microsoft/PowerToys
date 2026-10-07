@@ -76,7 +76,9 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     internal IReadOnlyList<string> ExecutableNames { get; }
 
-    public AppListItem(AppItem app, bool useThumbnails)
+    /// <summary>Initializes a new instance of the <see cref="AppListItem"/> class with deferred icon requests.</summary>
+    /// <param name="app">The application represented by this row and its command.</param>
+    public AppListItem(AppItem app)
     {
         var appCommand = new AppCommand(app);
         Command = appCommand;
@@ -118,7 +120,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
                 .ToArray()
             : [];
         _pathSearchTerms = terms.Where(Path.IsPathFullyQualified).Except(SearchTerms, StringComparer.OrdinalIgnoreCase).ToArray();
-        Icon = appCommand.Icon = CreateIcon(app, useThumbnails);
+        Icon = appCommand.Icon = CreateIcon(app);
 
         MoreCommands = _app.Commands?.ToArray() ?? [];
 
@@ -181,7 +183,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         });
     }
 
-    private static IconInfo CreateIcon(AppItem app, bool useThumbnails)
+    private static IconInfo CreateIcon(AppItem app)
     {
         var fallbackPath = GetIconFallbackPath(app);
         var iconPath = !string.IsNullOrEmpty(app.IconSource) ? app.IconSource : fallbackPath;
@@ -191,9 +193,9 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
 
         return new IconInfo(
-            !app.IsPackaged && useThumbnails
-                ? AppIconProtocol.Create(iconPath, fallbackPath)
-                : iconPath);
+            app.IsPackaged
+                ? iconPath
+                : AppIconProtocol.Create(iconPath, fallbackPath));
     }
 
     private static IconInfo? CreateHeroIcon(AppItem app)

@@ -71,7 +71,7 @@ public class Win32AppPayloadTests
         var after = (await source.LoadAsync(CancellationToken.None)).Single();
         var payload = (Win32AppPayload)after.Payload;
         var app = after.ToAppItem();
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         var matcher = new PrecomputedFuzzyMatcher();
 

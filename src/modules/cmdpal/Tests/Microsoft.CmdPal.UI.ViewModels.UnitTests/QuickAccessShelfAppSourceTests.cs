@@ -140,7 +140,7 @@ public sealed partial class QuickAccessShelfAppSourceTests
 
     private static AppListItem CreateApp(string name)
     {
-        return new AppListItem(new AppItem { Name = name, CatalogId = $"packaged:Contoso.{name}!App" }, useThumbnails: false);
+        return new AppListItem(new AppItem { Name = name, CatalogId = $"packaged:Contoso.{name}!App" });
     }
 
     private static async Task<QuickAccessShelfItem[]> RebuildAsync(

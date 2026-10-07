@@ -72,7 +72,7 @@ public class AppIdentityTests
         var app = new AppItem { CatalogId = @"win32:C:\Apps\my-app.exe|args:", Name = "Display name", LaunchTarget = @"C:\Apps\my-app.exe" };
         var legacyId = AppCommand.GenerateId(app.Name, app.Subtitle, app.LaunchTarget);
         app.CommandIds = [legacyId, .. AppIdentity.GetCommandIds(app.CatalogId)];
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         var id = row.Command!.Id;
         var equivalent = id.ToUpperInvariant();
@@ -91,7 +91,7 @@ public class AppIdentityTests
     public void CommandResolution_RetainsExplicitHistoricalNamesAndAmbiguityMarkers()
     {
         var app = new AppItem { CatalogId = @"win32:C:\Apps\new.exe|args:", Name = "App", LaunchTarget = @"C:\Apps\new.exe" };
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var historicalId = AppIdentity.ForCommand(@"win32:C:\Apps\old.exe|args:");
         var ambiguousId = AppIdentity.ForCommand("win32:ambiguous");
         var snapshot = new AppListItemSnapshot([row], [], commandAliases: new System.Collections.Generic.Dictionary<string, string>
@@ -123,7 +123,7 @@ public class AppIdentityTests
     {
         const string aumid = "Contoso.App_123!Main";
         var app = new AppItem { CatalogId = AppIdentity.ForPackaged(aumid), Name = "App", AppUserModelId = aumid, IsPackaged = true };
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
 
         Assert.AreSame(row, snapshot.GetVisibleApp(requestedId));
@@ -157,7 +157,7 @@ public class AppIdentityTests
             CommandIds = [alias.ToUpperInvariant()],
         };
         var snapshot = new AppListItemSnapshot(
-            [new AppListItem(first, useThumbnails: false), new AppListItem(second, useThumbnails: false)],
+            [new AppListItem(first), new AppListItem(second)],
             []);
 
         foreach (var requestedId in new[] { alias, alias.ToUpperInvariant(), alias.ToLowerInvariant() })
@@ -181,7 +181,7 @@ public class AppIdentityTests
             IsPackaged = true,
             CommandIds = [legacyId],
         };
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], [], commandAliases: new System.Collections.Generic.Dictionary<string, string>
         {
             [savedLegacyId] = row.Command!.Id.ToUpperInvariant(),
@@ -207,11 +207,9 @@ public class AppIdentityTests
     {
         const string legacyId = "Earlier display name_42";
         var firstRow = new AppListItem(
-            new AppItem { CatalogId = "packaged:Contoso.Current_123!Main", Name = "Current app" },
-            useThumbnails: false);
+            new AppItem { CatalogId = "packaged:Contoso.Current_123!Main", Name = "Current app" });
         var secondRow = new AppListItem(
-            new AppItem { CatalogId = "packaged:Contoso.Other_123!Main", Name = "Other app" },
-            useThumbnails: false);
+            new AppItem { CatalogId = "packaged:Contoso.Other_123!Main", Name = "Other app" });
         var canonicalId = firstRow.Command!.Id;
         var typedKey = canonicalId.ToUpperInvariant();
         var typedTarget = conflictingTarget ? secondRow.Command!.Id : string.Empty;
@@ -251,7 +249,7 @@ public class AppIdentityTests
             new AppCatalogSourceReference("start-menu", @"C:\Start Menu\App.lnk"),
             [],
             new Win32AppPayload { Name = "App shortcut", LnkFilePath = @"C:\Start Menu\App.lnk", PackagedAppUserModelId = shortcutAumid });
-        var shortcutRow = new AppListItem(shortcut.ToAppItem(), useThumbnails: false);
+        var shortcutRow = new AppListItem(shortcut.ToAppItem());
         var requestedId = shortcutRow.Command!.Id;
         Assert.AreSame(shortcutRow, new AppListItemSnapshot([shortcutRow], []).GetVisibleApp(requestedId));
         var packaged = new AppCatalogItem(
@@ -260,7 +258,7 @@ public class AppIdentityTests
             new AppCatalogSourceReference("packaged", packagedAumid),
             [],
             new PackagedAppPayload { Name = "App", AppUserModelId = packagedAumid });
-        var mergedRow = new AppListItem(packaged.MergeProvenance(shortcut).ToAppItem(), useThumbnails: false);
+        var mergedRow = new AppListItem(packaged.MergeProvenance(shortcut).ToAppItem());
         var snapshot = new AppListItemSnapshot([mergedRow], []);
 
         Assert.AreSame(mergedRow, snapshot.GetVisibleApp(requestedId));
@@ -286,15 +284,13 @@ public class AppIdentityTests
                 CatalogId = "packaged:Contoso.Current_123!Main",
                 Name = "Current app",
                 CommandIds = [historicalId],
-            },
-            useThumbnails: false);
+            });
         var secondRow = new AppListItem(
             new AppItem
             {
                 CatalogId = "packaged:Contoso.Other_123!Main",
                 Name = "Other app",
-            },
-            useThumbnails: false);
+            });
         var typedKey = conflictingTarget ? historicalId.ToUpperInvariant() : historicalId;
         var typedTarget = conflictingTarget ? secondRow.Command!.Id : string.Empty;
         var savedAliases = new System.Collections.Generic.Dictionary<string, string>(StringComparer.Ordinal);

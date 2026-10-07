@@ -74,7 +74,7 @@ public partial class PackagedAppMetadataTests
         var app = CreateApplication(executable);
         var item = PackagedAppSource.CreateCatalogItem(app);
         var payload = (PackagedAppPayload)item.Payload;
-        var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+        var row = new AppListItem(item.ToAppItem());
 
         Assert.AreEqual(executable, payload.Executable);
         CollectionAssert.Contains(item.MatchTerms.ToArray(), Path.GetFileName(executable));
@@ -105,10 +105,10 @@ public partial class PackagedAppMetadataTests
     {
         var app = TestDataHelper.CreateTestPackagedMetadata("Editor", "Contoso.Metadata_123!App", @"C:\Packages\Editor");
         app.Description = "A text editor";
-        var baseline = new AppListItem(PackagedAppSource.CreateCatalogItem(app).ToAppItem(), useThumbnails: false);
+        var baseline = new AppListItem(PackagedAppSource.CreateCatalogItem(app).ToAppItem());
         app.Executable = @"VFS\ProgramFilesX64\VendorLayout\PayloadDirectory\launcher.exe";
         var item = PackagedAppSource.CreateCatalogItem(app);
-        var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+        var row = new AppListItem(item.ToAppItem());
 
         Assert.AreEqual(app.Executable, ((PackagedAppPayload)item.Payload).Executable);
         CollectionAssert.Contains(item.MatchTerms.ToArray(), "launcher.exe");
@@ -139,7 +139,7 @@ public partial class PackagedAppMetadataTests
             PackagedAppSource.CreateCatalogItem(first),
             PackagedAppSource.CreateCatalogItem(second),
         };
-        var rows = items.Select(item => new AppListItem(item.ToAppItem(), useThumbnails: false)).ToArray();
+        var rows = items.Select(item => new AppListItem(item.ToAppItem())).ToArray();
 
         Assert.AreEqual(2, items.Select(item => item.Identity).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.AreEqual(2, rows.Select(row => row.Command!.Id).Distinct(StringComparer.Ordinal).Count());
@@ -235,7 +235,7 @@ public partial class PackagedAppMetadataTests
     {
         var app = TestDataHelper.CreateTestPackagedMetadata("Metadata application", "Contoso.Metadata_123!App");
         var item = PackagedAppSource.CreateCatalogItem(app);
-        var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+        var row = new AppListItem(item.ToAppItem());
 
         Assert.AreEqual(string.Empty, app.Executable);
         Assert.AreEqual(string.Empty, new PackagedAppPayload().Executable);
@@ -307,7 +307,7 @@ public partial class PackagedAppMetadataTests
             var app = apps.Single();
             Assert.AreEqual("wt.exe", app.ExecutionAliases.Single());
             var item = PackagedAppSource.CreateCatalogItem(app);
-            var row = new AppListItem(item.ToAppItem(), useThumbnails: false);
+            var row = new AppListItem(item.ToAppItem());
             CollectionAssert.Contains(item.MatchTerms.ToArray(), "wt.exe");
             Assert.AreEqual(AppIdentity.ForPackaged(app.AppUserModelId), item.Identity);
             Assert.AreEqual(app.AppUserModelId, row.App.AppUserModelId);

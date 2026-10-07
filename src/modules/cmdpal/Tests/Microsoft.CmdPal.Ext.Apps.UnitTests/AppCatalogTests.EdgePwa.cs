@@ -67,7 +67,7 @@ public partial class AppCatalogTests
         Assert.IsNotNull(packageTarget);
         Assert.AreEqual(((PackagedAppPayload)preferred.Payload).PackageFullName, packageTarget.GetValue(confirmation.PrimaryCommand));
         Assert.AreNotEqual(((PackagedAppPayload)other.Payload).PackageFullName, packageTarget.GetValue(confirmation.PrimaryCommand));
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var rows = new AppListItemSnapshot([row], [], commandAliases: snapshot.CommandAliases);
         foreach (var item in new[] { first, second, shortcutItem })
         {
@@ -151,7 +151,7 @@ public partial class AppCatalogTests
         var app = (hidden ? snapshot.HiddenItems : snapshot.Items).Single();
         Assert.AreEqual(first.Identity, app.CatalogId);
         Assert.AreEqual(FirstPwaAumid, app.AppUserModelId);
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var rows = new AppListItemSnapshot(hidden ? [] : [row], hidden ? [row] : [], commandAliases: snapshot.CommandAliases);
         Assert.AreSame(row, rows.GetApp(AppIdentity.ForCommand(first.Identity)));
         Assert.AreSame(row, rows.GetApp(AppIdentity.ForCommand(second.Identity)));

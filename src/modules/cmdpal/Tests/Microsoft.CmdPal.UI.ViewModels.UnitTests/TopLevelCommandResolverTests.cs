@@ -337,7 +337,7 @@ public class TopLevelCommandResolverTests
 
     private static AppListItem CreateApp(string name)
     {
-        return new AppListItem(new AppItem { Name = name, CatalogId = $"packaged:Contoso.{name}!App" }, useThumbnails: false);
+        return new AppListItem(new AppItem { Name = name, CatalogId = $"packaged:Contoso.{name}!App" });
     }
 
     private static TopLevelViewModel CreateTopLevelCommand(

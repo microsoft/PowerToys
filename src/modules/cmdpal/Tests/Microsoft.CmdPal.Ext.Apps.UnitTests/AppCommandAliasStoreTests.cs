@@ -168,7 +168,7 @@ public class AppCommandAliasStoreTests
             using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
             var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [app]);
             await settingsAliases.WaitForSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
 
             Assert.AreSame(row, snapshot.GetVisibleApp("Earlier Editor_42"));
@@ -328,7 +328,7 @@ public class AppCommandAliasStoreTests
             Assert.AreEqual("Retrying Apps data file read after an I/O failure.", logger.LastMessage);
             var aliases = TestDataHelper.RetainCommandAliases(settingsAliases, [app]);
             await settingsAliases.WaitForSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
 
             Assert.AreEqual(currentId, aliases[previousId]);
@@ -567,7 +567,7 @@ public class AppCommandAliasStoreTests
             using var reloadedAliasesStore = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(reloaded.FilePath));
             var reloadedAliases = TestDataHelper.RetainCommandAliases(reloadedAliasesStore, [app]);
             await reloadedAliasesStore.WaitForSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: reloadedAliases);
             foreach (var requestedId in new[] { legacyId, historicalLegacyId })
             {

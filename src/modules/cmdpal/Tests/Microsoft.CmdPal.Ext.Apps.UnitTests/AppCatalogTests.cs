@@ -950,7 +950,7 @@ public partial class AppCatalogTests
         Assert.IsTrue(catalog.GetSnapshot().Items[0].IsPackaged);
         Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "ubuntu.exe"));
         Assert.IsTrue(ContainsString(catalog.GetSnapshot().Items[0].MatchTerms, "Ubuntu"));
-        var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
+        var row = new AppListItem(catalog.GetSnapshot().Items[0]);
         var matcher = new Microsoft.CmdPal.Common.Text.PrecomputedFuzzyMatcher();
         Assert.IsTrue(new AppSearch(aliasName, matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(row).IsExactExecutableMatch);
         Assert.IsTrue(new AppSearch($"{aliasName}.exe", matcher, ExecutableNameMatchMode.FilenameAndStem).Evaluate(row).IsExactExecutableMatch);
@@ -1003,7 +1003,7 @@ public partial class AppCatalogTests
             Subtitle = aliasProgram.Description,
             LaunchTarget = aliasPath,
         });
-        var row = new AppListItem(catalog.GetSnapshot().Items[0], useThumbnails: false);
+        var row = new AppListItem(catalog.GetSnapshot().Items[0]);
         var snapshot = new AppListItemSnapshot([row], []);
         Assert.AreNotEqual(legacyCommand.Id, row.Command!.Id);
         Assert.AreSame(row, snapshot.GetVisibleApp(legacyCommand.Id));
@@ -1040,7 +1040,7 @@ public partial class AppCatalogTests
         if (expectedCount == 1)
         {
             // Reidentifying the executable must retain both its typed pin ID and released name-based ID.
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var rows = new AppListItemSnapshot([row], []);
             var executableCommandId = AppIdentity.ForCommand(executableItem.Identity);
             Assert.AreSame(row, rows.GetVisibleApp(executableCommandId));

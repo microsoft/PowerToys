@@ -53,7 +53,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
         using var provider = new AllAppsCommandProvider(page, source, Settings);
         var program = TestDataHelper.CreateTestWin32Metadata("Editor");
-        var id = new AppListItem(Catalog.Win32AppPayload.From(program).ToAppItem(), false).Command.Id;
+        var id = new AppListItem(Catalog.Win32AppPayload.From(program).ToAppItem()).Command.Id;
         var notifications = 0;
         provider.ItemsChanged += (_, _) => notifications++;
 

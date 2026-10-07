@@ -113,8 +113,8 @@ public class AppHiddenPinTests : AppsTestBase
         var hiddenApp = hiddenPayload.ToAppItem();
         hiddenApp.CatalogId = AppIdentity.ForPackaged(hiddenPayload.AppUserModelId);
         hiddenApp.CommandIds = [releasedId];
-        var visible = new AppListItem(visibleApp, useThumbnails: false);
-        var hidden = new AppListItem(hiddenApp, useThumbnails: false);
+        var visible = new AppListItem(visibleApp);
+        var hidden = new AppListItem(hiddenApp);
         var snapshot = new AppListItemSnapshot(
             [visible],
             patternHidden ? [] : [hidden],
@@ -268,7 +268,7 @@ public class AppHiddenPinTests : AppsTestBase
 
     private static AppListItem CreateItem(string name, string path)
     {
-        return new(new AppItem { Name = name, CatalogId = $"win32:{path}|args:", LaunchTarget = path }, useThumbnails: false);
+        return new(new AppItem { Name = name, CatalogId = $"win32:{path}|args:", LaunchTarget = path });
     }
 
     private static AppListItem CreatePackagedItem(string name, string aumid)
@@ -276,6 +276,6 @@ public class AppHiddenPinTests : AppsTestBase
         var payload = new PackagedAppPayload { Name = name, AppUserModelId = aumid };
         var app = payload.ToAppItem();
         app.CatalogId = AppIdentity.ForPackaged(aumid);
-        return new AppListItem(app, useThumbnails: false);
+        return new AppListItem(app);
     }
 }
