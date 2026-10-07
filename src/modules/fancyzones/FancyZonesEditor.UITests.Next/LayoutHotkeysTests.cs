@@ -2,11 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using FancyZonesEditor.UITests.Utils;
 using FancyZonesEditorCommon.Data;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
 
 namespace FancyZonesEditor.UITests;
 
@@ -254,13 +254,14 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
     private static Element RequireHotkeyOption(Session processSession, string optionName)
     {
         Element? option = null;
-        Assert.IsTrue(
-            processSession.WaitFor(() =>
+        bool found = processSession.WaitFor(
+            () =>
             {
                 option = FindHotkeyOption(processSession, optionName);
                 return option is not null;
-            }, 10_000),
-            $"Shortcut option '{optionName}' was not found in the popup.");
+            },
+            10_000);
+        Assert.IsTrue(found, $"Shortcut option '{optionName}' was not found in the popup.");
 
         return option!;
     }
@@ -302,21 +303,21 @@ public class LayoutHotkeysTests : FancyZonesEditorTestBase
 
     private LayoutHotkeys.LayoutHotkeysWrapper SaveHotkeyAndWait(string layoutUuid, int? expectedKey)
     {
-        EditorUiTestHelper.Step(
-            this,
-            expectedKey.HasValue
-                ? $"Saving layout shortcut {expectedKey.Value} for '{layoutUuid}'"
-                : $"Saving removal of the layout shortcut for '{layoutUuid}'");
+        string saveStep = expectedKey.HasValue
+            ? $"Saving layout shortcut {expectedKey.Value} for '{layoutUuid}'"
+            : $"Saving removal of the layout shortcut for '{layoutUuid}'";
+        EditorUiTestHelper.Step(this, saveStep);
         Session.Find<Button>(EditorUiTestHelper.ElementName.Save).Invoke();
 
+        string expectation = expectedKey.HasValue
+            ? $"layout '{layoutUuid}' to own key {expectedKey.Value}"
+            : $"layout '{layoutUuid}' to have no assigned key";
         return EditorUiTestHelper.WaitForLayoutHotkeys(
             this,
             data => expectedKey.HasValue
                                 ? data.LayoutHotkeys.Count(item => item.LayoutId == layoutUuid) == 1 &&
                                     data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid && item.Key == expectedKey.Value)
                 : !data.LayoutHotkeys.Any(item => item.LayoutId == layoutUuid),
-            expectedKey.HasValue
-                ? $"layout '{layoutUuid}' to own key {expectedKey.Value}"
-                : $"layout '{layoutUuid}' to have no assigned key");
+            expectation);
     }
 }
