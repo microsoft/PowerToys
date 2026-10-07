@@ -68,6 +68,35 @@
     </ItemGroup>
   </Target>
 	
+  <!--
+    Official release builds run Microsoft.Windows.Terminal.Versioning (M.W.T.V) Setup.ps1 for
+    src\modules\cmdpal and src\modules\AdvancedPaste (.pipelines\v2\templates\steps-setup-versioning.yml).
+    Its redirector Directory.Build.targets imports M.W.T.V's targets before this file, and those
+    set GenerateAssemblyInfo=false so they can write their own version-only GeneratedAssemblyInfo.cs.
+    That also drops every other SDK-generated attribute (SupportedOSPlatform, TargetPlatform,
+    NeutralResourcesLanguage, InternalsVisibleTo, AssemblyMetadata, ...), which makes the platform
+    analyzer report CA1416 everywhere and ships assemblies without those attributes.
+    XeVersionTargetsFile is only defined by M.W.T.V, so this is a no-op for CI and local builds.
+    Re-enable SDK generation but leave the attributes M.W.T.V writes to it, so release version
+    stamping is unchanged and there are no duplicate attributes (CS0579).
+  -->
+  <PropertyGroup Condition="'$(XeVersionTargetsFile)' != ''
+                            and '$(XesDisableAssemblyInfoWrite)' != 'True'
+                            and '$(GenerateAssemblyInfo)' == 'false'
+                            and '$(_IsSkippedTestProject)' != 'true'
+                            and '$(MSBuildProjectExtension)' == '.csproj'">
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
     <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
   </PropertyGroup>
