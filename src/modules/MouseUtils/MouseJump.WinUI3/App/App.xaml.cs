@@ -7,7 +7,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
-using MouseJump.Common.Helpers;
 using MouseJump.WinUI3.Helpers;
 using MouseJump.WinUI3.UI;
 

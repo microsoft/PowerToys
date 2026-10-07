@@ -23,11 +23,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Page Remove="MouseJumpXAML\App.xaml" />
+        <Page Remove="App\App.xaml" />
     </ItemGroup>
 
     <ItemGroup>
-        <ApplicationDefinition Include="MouseJumpXAML\App.xaml" />
+        <ApplicationDefinition Include="App\App.xaml" />
     </ItemGroup>
 
     <ItemGroup>
