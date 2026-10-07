@@ -39,11 +39,11 @@ presentation.
 - **`IAppCatalog`**
   - Owns discovery, reconciliation, deduplication and visibility.
   - Retains immutable source metadata and provenance from equivalent representations.
-  - Publishes visible, manually hidden and pattern-hidden applications together.
+  - Publishes visible, manually hidden and pattern-hidden applications with their command aliases.
 - **`IAppListItemSource`**
   - Supplies stable app commands shared by All Apps and Home.
   - Reuses unchanged rows.
-  - Builds rows and command aliases from the same catalog publication.
+  - Builds rows and command lookup from the same catalog publication.
 - **All Apps and Home**
   - Own independent queries, filters and presentation.
   - Consume the shared source while retaining their own ranking and result limits.
@@ -54,9 +54,11 @@ command lookup from mixing different catalog versions.
 
 `AppCatalog` coordinates source lifecycle and refresh scheduling. `AppCatalogPublicationBuilder`
 merges source snapshots, applies filters and visibility, reuses unchanged app objects and builds
-change sets. The catalog calls the builder under its existing state lock and publishes the result
-atomically. Keeping the builder free of scheduling and synchronization makes projection changes
-independent of retry and source-replacement policy.
+change sets. `AppCatalogCommandAliases` reconciles retained IDs, and `AppCatalogVisibility`
+evaluates exclusions and hidden references. These catalog helpers use explicit snapshots and do
+not read or write files. The catalog calls the builder under its state lock, publishes the result
+atomically, then queues the resulting alias map for persistence. Keeping calculation separate
+from persistence prevents failed publication builds from saving unpublished aliases.
 
 ## 2 Discovery
 
@@ -247,26 +249,40 @@ still refresh. A complete packaged-source rebuild is the current simplicity/cost
 - Background refresh keeps existing rows without a loading banner; initial loading and explicit
   Refresh expose loading state.
 - No-op and provenance-only updates do not publish content changes.
-- Cache/settings use temporary-file replacement.
-- User preferences, exclusion patterns and manual hides remain in `apps.settings.json`.
-  Durable command aliases, move redirects and ambiguity markers use `apps.aliases.json`.
-- A missing alias file imports the legacy flat map from settings. The new file is written
-  successfully before legacy keys are removed; a valid existing file is authoritative even
-  when empty. Brief I/O failures get bounded retries; unreadable alias files are preserved
-  and do not revive stale legacy mappings.
+- Catalog cache, alias and visibility files use temporary-file replacement.
+- User preferences and exclusion patterns remain in `apps.settings.json`.
+  Manual hides use `apps.visibility.json`; durable command aliases, move redirects and
+  ambiguity markers use `apps.aliases.json`. Stores own data snapshots and persistence only;
+  alias reconciliation and visibility decisions belong to the catalog.
+- Alias and visibility files use typed records and source-generated JSON metadata for Native
+  AOT. Preferences use the Toolkit `JsonSettingsManager`, which preserves unknown keys.
+- The catalog factory creates its internal `AppCommandAliasStore`, which loads and persists
+  aliases independently of preferences. The catalog flushes its writer during disposal.
+  A missing file starts empty; a valid existing file is authoritative even when empty.
+  Brief I/O failures get bounded retries; unreadable alias files are preserved.
+  Loading discards exact self-mappings and preserves case-distinct aliases and ambiguity markers.
+- Catalog publication calculates retained aliases before evaluating visibility, then publishes
+  the alias map with visible and hidden apps in one snapshot. Only a successfully built
+  publication queues its alias map for persistence. The list projection only reads it;
+  alias updates do not schedule a second catalog publication.
+- Alias and visibility files load when their stores are constructed. Unreadable visibility
+  data rejects hide/unhide edits; correcting the file takes effect after restarting CmdPal.
 - One coalescing writer saves aliases; shutdown flushes pending saves and disposes
   subscriptions/watchers.
 
 Routine filesystem/package activity should not flash loading UI or republish unchanged rows. A
 single writer drains changes arriving during an earlier save, so a flush covers all pending
-work. Temporary-file replacement avoids partially written settings; a short shutdown wait is
-accepted for durability.
+work. Temporary-file replacement avoids partially written catalog, alias and visibility files;
+a short shutdown wait is accepted for durability.
 
 Alias-only updates do not serialize or rewrite user preferences. This keeps catalog activity
 from overwriting settings edits and avoids writing the growing alias map on every preferences
 change. Aliases are durable compatibility data, so they remain separate from the disposable
-catalog cache. Migration removes legacy keys from the saved JSON without applying in-memory
-preferences; hidden identities changed by an install move still use the settings writer.
+catalog cache. No released version stored an alias map in settings, so no import is needed.
+The catalog resolves stored hidden identities through proven move redirects without rewriting
+preferences. Unhiding a moved app removes its earlier hidden references as well. Exclusion
+settings changes re-evaluate catalog visibility without involving the data stores.
+Released builds did not persist manual hides; branch-only settings entries are not imported.
 
 ### 3.4 Diagnostics and publication measurements
 
@@ -577,6 +593,9 @@ classDiagram
     }
     class IAppVisibilityStore {
         <<interface>>
+        GetSnapshot() IReadOnlySet
+        SetSnapshot(IReadOnlySet identities) Boolean
+        Persist() void
     }
     class IAppCatalog {
         <<interface>>
@@ -590,7 +609,7 @@ classDiagram
     AppCatalog --> "1" IAppSourceProvider : obtains configured sources
     AppCatalog "1" *-- "*" IAppSource : owns
     AppCatalog --> "1" IAppCatalogCache : persists source snapshots
-    AppCatalog --> "1" IAppVisibilityStore : applies visibility
+    AppCatalog --> "1" IAppVisibilityStore : reads and persists hidden identities
     class AppCatalogPublicationBuilder
     AppCatalog "1" *-- "1" AppCatalogPublicationBuilder : builds projections under catalog lock
 
@@ -606,6 +625,7 @@ classDiagram
         AppItem[] Items
         AppItem[] HiddenItems
         AppItem[] PatternHiddenItems
+        IReadOnlyDictionary CommandAliases
     }
     class AppItem {
         String CatalogId
@@ -633,6 +653,14 @@ classDiagram
         RequestRefresh() void
     }
     class AllAppsSettings
+    class AppCommandAliasStore {
+        GetSnapshot() FrozenDictionary
+        SetSnapshot(IReadOnlyDictionary aliases) void
+        WaitForSavesAsync() Task
+    }
+    class AppVisibilityStore
+    class AppCatalogCommandAliases
+    class AppCatalogVisibility
     class AppListItemSnapshot {
         AppListItem[] VisibleItems
         AppListItem[] HiddenItems
@@ -650,7 +678,13 @@ classDiagram
     }
     AppListItemSource ..|> IAppListItemSource
     AppListItemSource --> "1" IAppCatalog : projects catalog snapshots
-    AppListItemSource --> "1" AllAppsSettings : retains command aliases
+    AppListItemSource --> "1" AllAppsSettings : reads presentation settings
+    AppCatalog *-- "1" AppCommandAliasStore : owns and flushes retained aliases
+    AppCatalog --> "1" AllAppsSettings : observes exclusion patterns
+    AppVisibilityStore ..|> IAppVisibilityStore
+    AppCatalogPublicationBuilder ..> AppCatalogCommandAliases : reconciles aliases
+    AppCatalogPublicationBuilder ..> AppCatalogVisibility : evaluates visibility
+    AppCatalog ..> AppCatalogVisibility : updates hidden identities
     AppListItemSource --> "1" AppExecutionAliasCache : captures background ownership
     AppListItemSource --> "1" AppListItemSnapshot : publishes rows and alias lookup
     AppListItemSnapshot o-- "*" AppListItem : reuses stable rows

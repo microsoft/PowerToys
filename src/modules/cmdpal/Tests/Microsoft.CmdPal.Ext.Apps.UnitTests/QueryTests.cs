@@ -22,6 +22,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Arrange
         _settingsPath = Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json");
         var settings = new AllAppsSettings(_settingsPath);
+        using var settingsAliases = new AppCommandAliasStore(TestDataHelper.GetAliasesPath(settings.FilePath));
         using var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Metadata("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestPackagedMetadata("Calculator");
@@ -34,7 +35,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             mockCatalog.AddPackagedApp(TestDataHelper.CreateTestPackagedMetadata($"UWP App {i}"));
         }
 
-        using var itemSource = new AppListItemSource(mockCatalog, settings);
+        using var itemSource = new AppListItemSource(mockCatalog, settings, Microsoft.Extensions.Logging.Abstractions.NullLogger<AppListItemSource>.Instance);
         using var page = new AllAppsPage(itemSource, TestDataHelper.CreateFuzzyMatcherProvider());
         await AppsTestBase.WaitForPageInitializationAsync(page);
 
