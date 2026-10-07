@@ -11,8 +11,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;

@@ -4,8 +4,10 @@
 
 using System;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;

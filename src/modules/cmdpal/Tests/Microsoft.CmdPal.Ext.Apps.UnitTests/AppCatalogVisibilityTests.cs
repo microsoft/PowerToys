@@ -4,6 +4,7 @@
 
 using System.Collections.Frozen;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;

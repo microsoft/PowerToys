@@ -4,8 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;

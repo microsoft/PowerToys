@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
-using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

@@ -5,9 +5,11 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

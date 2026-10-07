@@ -6,6 +6,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Commands;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 

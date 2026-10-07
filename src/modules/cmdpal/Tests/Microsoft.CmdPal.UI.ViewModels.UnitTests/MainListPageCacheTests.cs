@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;

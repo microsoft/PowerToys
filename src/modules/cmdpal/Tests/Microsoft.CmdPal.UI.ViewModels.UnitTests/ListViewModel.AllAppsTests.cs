@@ -5,9 +5,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
-using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

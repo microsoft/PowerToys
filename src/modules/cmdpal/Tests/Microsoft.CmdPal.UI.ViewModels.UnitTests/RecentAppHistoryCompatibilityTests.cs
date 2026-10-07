@@ -5,7 +5,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.AppList;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
