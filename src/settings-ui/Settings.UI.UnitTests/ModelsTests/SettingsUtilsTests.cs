@@ -223,6 +223,39 @@ namespace CommonLibTest
             CollectionAssert.AreEqual(Encoding.UTF8.GetBytes(settings), fileSystem.File.ReadAllBytes(settingsPath));
         }
 
+        [TestMethod]
+        public void GetSettingsOrDefaultReadsSettingsEvenIfAnotherProcessBrieflyHasTheFileOpen()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var file = new FaultyFile(fileSystem);
+            var settingsUtils = CreateSettingsUtils(fileSystem, file);
+            fileSystem.AddFile(settingsUtils.GetSettingsFilePath(ModuleName), new MockFileData(OldSettings));
+
+            // Act
+            file.ReadsThatFail = 2;
+            BasePTSettingsTest settings = settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(ModuleName);
+
+            // Assert
+            Assert.AreEqual("old name", settings.Name);
+        }
+
+        [TestMethod]
+        public void GetSettingsOrDefaultDoesNotResetSettingsWhileTheFileStaysInUse()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var file = new FaultyFile(fileSystem);
+            var settingsUtils = CreateSettingsUtils(fileSystem, file);
+            string settingsPath = settingsUtils.GetSettingsFilePath(ModuleName);
+            fileSystem.AddFile(settingsPath, new MockFileData(OldSettings));
+
+            // Act and assert
+            file.ReadsThatFail = int.MaxValue;
+            Assert.ThrowsExactly<IOException>(() => settingsUtils.GetSettingsOrDefault<BasePTSettingsTest>(ModuleName));
+            Assert.AreEqual(OldSettings, fileSystem.File.ReadAllText(settingsPath));
+        }
+
         public static string RandomString()
         {
             Random random = new Random();
@@ -280,6 +313,9 @@ namespace CommonLibTest
             // How many of the next attempts to write or replace a file fail because another process has it open.
             public int TimesTheFileIsInUse { get; set; }
 
+            // How many of the next attempts to read a file fail because another process is writing to it.
+            public int ReadsThatFail { get; set; }
+
             // When set, a file can still be created or truncated, but nothing can be written to it.
             public bool DiskIsFull { get; set; }
 
@@ -336,6 +372,17 @@ namespace CommonLibTest
             {
                 base.SetLastWriteTimeUtc(path, lastWriteTimeUtc);
                 LastWrittenPath = path;
+            }
+
+            public override string ReadAllText(string path)
+            {
+                if (ReadsThatFail > 0)
+                {
+                    ReadsThatFail--;
+                    throw new IOException("The process cannot access the file because it is being used by another process.", SharingViolation);
+                }
+
+                return base.ReadAllText(path);
             }
 
             private sealed class FullDiskStream : FileSystemStream

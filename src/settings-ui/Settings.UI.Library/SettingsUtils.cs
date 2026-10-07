@@ -237,7 +237,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Look at issue https://github.com/microsoft/PowerToys/issues/6413 you'll see the file has a large sum of \0 to fill up a 4096 byte buffer for writing to disk
             // This, while not totally ideal, does work around the problem by trimming the end.
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
-            var jsonSettingsString = _file.ReadAllText(_settingsPath.GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
+            string path = _settingsPath.GetSettingsPath(powertoyFolderName, fileName);
+            string fileContents = string.Empty;
+            RetryWhileFileIsInUse(() => fileContents = _file.ReadAllText(path));
+            var jsonSettingsString = fileContents.Trim('\0');
 
             // For Native AOT compatibility, get JsonTypeInfo from the TypeInfoResolver
             var typeInfo = _serializerOptions.TypeInfoResolver?.GetTypeInfo(typeof(T), _serializerOptions);
