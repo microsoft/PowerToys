@@ -8,7 +8,9 @@ using System.IO;
 using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
+using Microsoft.CmdPal.Ext.Apps.Persistence;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 

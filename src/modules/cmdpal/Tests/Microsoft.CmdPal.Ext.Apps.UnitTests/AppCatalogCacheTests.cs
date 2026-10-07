@@ -9,8 +9,14 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.AppList;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Cache;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Packaged;
+using Microsoft.CmdPal.Ext.Apps.Pages;
+using Microsoft.CmdPal.Ext.Apps.Win32;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -182,7 +188,7 @@ public class AppCatalogCacheTests
             program.IconLocation = @"C:\Icons, custom\icons.dll,-4";
             program.Arguments = "--profile cached";
             program.WorkingDirectory = @"C:\Projects\Cached";
-            program.AppExecutionAlias = new Programs.ReparsePoint.AppExecutionAliasInfo
+            program.AppExecutionAlias = new ReparsePoint.AppExecutionAliasInfo
             {
                 Aumid = "Contoso.Cached_123!app",
                 TargetPath = @"C:\Program Files\WindowsApps\Contoso.Cached_1.0.0.0_x64__123\app.exe",
@@ -232,7 +238,7 @@ public class AppCatalogCacheTests
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
             CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
-            var row = new Programs.AppListItem(app);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
             Assert.AreEqual(legacyId, snapshot.GetCommandItem(legacyId)?.Command?.Id);
@@ -253,7 +259,7 @@ public class AppCatalogCacheTests
             var program = TestDataHelper.CreateTestWin32Metadata("Raw shortcut");
             program.DisplayName = "Localized shortcut";
             program.LnkFilePath = @"C:\Links\Raw shortcut.lnk";
-            program.AppType = Programs.Win32AppType.ShortcutApplication;
+            program.AppType = Win32AppType.ShortcutApplication;
             var item = Item("win32:shortcut", program, "start-menu");
             var releasedId = AppCommand.GenerateId(program.Name, program.Description, program.LnkFilePath);
             var canonicalId = new AppCommand(item.ToAppItem()).Id;
@@ -283,7 +289,7 @@ public class AppCatalogCacheTests
             Assert.AreEqual(program.DisplayName, app.Name);
             Assert.AreEqual(program.LnkFilePath, app.LaunchTarget);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(canonicalId));
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
@@ -306,7 +312,7 @@ public class AppCatalogCacheTests
             var context = Context(DateTimeOffset.UtcNow, ("win32", "win32-key"));
             var program = TestDataHelper.CreateTestWin32Metadata("Raw shortcut");
             program.LnkFilePath = @"C:\Links\Raw shortcut.lnk";
-            program.AppType = Programs.Win32AppType.ShortcutApplication;
+            program.AppType = Win32AppType.ShortcutApplication;
             var item = Item("win32:shortcut", program, "start-menu");
             var releasedId = item.Payload.GetCommandId();
             var canonicalId = new AppCommand(item.ToAppItem()).Id;
@@ -340,7 +346,7 @@ public class AppCatalogCacheTests
             var app = cachedItem.ToAppItem();
             Assert.AreEqual(program.Name, app.Name);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
         }
@@ -360,7 +366,7 @@ public class AppCatalogCacheTests
         try
         {
             var browserApp = TestDataHelper.CreateTestWin32Metadata("Portal", @"C:\Chrome\chrome_proxy.exe");
-            browserApp.AppType = Programs.Win32AppType.WebApplication;
+            browserApp.AppType = Win32AppType.WebApplication;
             browserApp.Arguments = "--app-id=portal";
             var packagedApp = TestDataHelper.CreateTestPackagedMetadata("Portal", "Contoso.WebPortal!App");
             packagedApp.IsWebApp = true;
@@ -386,7 +392,7 @@ public class AppCatalogCacheTests
             var loaded = await new AppCatalogCache(cachePath).LoadAsync(context, CancellationToken.None);
 
             Assert.IsNotNull(loaded);
-            var rows = loaded.Sources.Single().Items.Select(item => new Programs.AppListItem(item.ToAppItem())).ToArray();
+            var rows = loaded.Sources.Single().Items.Select(item => new AppListItem(item.ToAppItem())).ToArray();
             var webRows = AllAppsPage.FilterAppItems(rows, AllAppsFilters.WebFilterId, search: null);
             Assert.AreEqual("Portal", webRows.Single().Title);
             Assert.AreEqual(packaged, webRows.Single().App.IsPackaged);
@@ -744,7 +750,7 @@ public class AppCatalogCacheTests
 
     private static AppCatalogItem Item(
         string identity,
-        Programs.Win32AppMetadata program,
+        Win32AppMetadata program,
         string sourceId)
     {
         return new(

@@ -6,7 +6,9 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.AppList;
+using Microsoft.CmdPal.Ext.Apps.Catalog.Payloads;
+using Microsoft.CmdPal.Ext.Apps.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,7 +55,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         using var page = new AllAppsPage(source, TestDataHelper.CreateFuzzyMatcherProvider());
         using var provider = new AllAppsCommandProvider(page, source, Settings);
         var program = TestDataHelper.CreateTestWin32Metadata("Editor");
-        var id = new AppListItem(Catalog.Win32AppPayload.From(program).ToAppItem()).Command.Id;
+        var id = new AppListItem(Win32AppPayload.From(program).ToAppItem()).Command.Id;
         var notifications = 0;
         provider.ItemsChanged += (_, _) => notifications++;
 
