@@ -432,7 +432,7 @@ public class AllAppsSettingsTests
             var settings = new AllAppsSettings(settingsPath);
             var aliases = settings.RetainAppCommandAliases([app]);
             await settings.WaitForAliasSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
 
             Assert.AreSame(row, snapshot.GetVisibleApp("Earlier Editor_42"));
@@ -587,7 +587,7 @@ public class AllAppsSettingsTests
             Assert.AreEqual("Retrying Apps command alias read after an I/O failure.", logger.LastMessage);
             var aliases = settings.RetainAppCommandAliases([app]);
             await settings.WaitForAliasSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: aliases);
 
             Assert.AreEqual(currentId, aliases[previousId]);
@@ -801,7 +801,7 @@ public class AllAppsSettingsTests
             var reloaded = new AllAppsSettings(settingsPath);
             var reloadedAliases = reloaded.RetainAppCommandAliases([app]);
             await reloaded.WaitForAliasSavesAsync();
-            var row = new AppListItem(app, useThumbnails: false);
+            var row = new AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], [], commandAliases: reloadedAliases);
             foreach (var requestedId in new[] { legacyId, historicalLegacyId })
             {

@@ -232,7 +232,7 @@ public class AppCatalogCacheTests
             Assert.IsFalse(app.IsPackaged);
             Assert.AreEqual(new AppCommand(item.ToAppItem()).Id, new AppCommand(app).Id);
             CollectionAssert.AreEqual(item.ToAppItem().CommandIds.ToArray(), app.CommandIds.ToArray());
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(legacyId));
             Assert.AreEqual(legacyId, snapshot.GetCommandItem(legacyId)?.Command?.Id);
@@ -283,7 +283,7 @@ public class AppCatalogCacheTests
             Assert.AreEqual(program.DisplayName, app.Name);
             Assert.AreEqual(program.LnkFilePath, app.LaunchTarget);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(canonicalId));
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
@@ -340,7 +340,7 @@ public class AppCatalogCacheTests
             var app = cachedItem.ToAppItem();
             Assert.AreEqual(program.Name, app.Name);
             Assert.AreEqual(canonicalId, new AppCommand(app).Id);
-            var row = new Programs.AppListItem(app, useThumbnails: false);
+            var row = new Programs.AppListItem(app);
             var snapshot = new AppListItemSnapshot([row], []);
             Assert.AreSame(row, snapshot.GetVisibleApp(releasedId));
         }

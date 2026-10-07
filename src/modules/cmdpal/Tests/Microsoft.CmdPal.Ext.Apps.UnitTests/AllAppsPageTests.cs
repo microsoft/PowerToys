@@ -392,7 +392,7 @@ public class AllAppsPageTests : AppsTestBase
             LaunchTarget = "C:\\Program Files\\Example\\app.exe",
         };
 
-        var item = new AppListItem(app, useThumbnails: true);
+        var item = new AppListItem(app);
 
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
@@ -419,7 +419,7 @@ public class AllAppsPageTests : AppsTestBase
             LaunchTarget = @"C:\Start Menu\Java" + extension,
             ResolvedTarget = @"C:\Program Files\Java\javacpl.exe",
         };
-        var item = new AppListItem(app, useThumbnails: true);
+        var item = new AppListItem(app);
 
         var rowIcon = (IconInfo)item.Icon!;
         Assert.IsTrue(AppIconProtocol.TryParse(rowIcon.Light.Icon, out var rowCandidates, out var rowJumbo));
@@ -443,7 +443,7 @@ public class AllAppsPageTests : AppsTestBase
             LaunchTarget = @"C:\Start Menu\Custom App.lnk",
             ResolvedTarget = @"C:\Apps\custom.exe",
         };
-        var item = new AppListItem(app, useThumbnails: true);
+        var item = new AppListItem(app);
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
 
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
@@ -461,7 +461,7 @@ public class AllAppsPageTests : AppsTestBase
             IconSource = shortcutPath,
             LaunchTarget = shortcutPath,
         };
-        var item = new AppListItem(app, useThumbnails: true);
+        var item = new AppListItem(app);
         var heroIcon = (IconInfo)((Details)item.Details!).HeroImage;
 
         Assert.IsTrue(AppIconProtocol.TryParse(heroIcon.Light.Icon, out var candidates, out var jumbo));
@@ -480,7 +480,7 @@ public class AllAppsPageTests : AppsTestBase
             IsPackaged = true,
         };
 
-        var item = new AppListItem(app, useThumbnails: true);
+        var item = new AppListItem(app);
 
         var rowIcon = (IconInfo)item.Icon!;
         Assert.AreEqual(app.IconSource, rowIcon.Light.Icon);

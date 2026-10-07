@@ -24,7 +24,7 @@ public class CatalogCommandIdUpgradeTests
             new Win32AppPayload { Name = "Editor" });
         var canonical = sourceItem.WithIdentity(AppIdentity.ForPackaged("Contoso.Editor_123!Main"));
         var app = canonical.ToAppItem();
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
 
         Assert.AreNotEqual(issuedId, row.Command!.Id);

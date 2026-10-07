@@ -381,7 +381,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
             }
             else
             {
-                var item = new AppListItem(app, useThumbnails: true)
+                var item = new AppListItem(app)
                 {
                     Subtitle = hideDescriptions ? string.Empty : app.Subtitle,
                 };

@@ -23,7 +23,7 @@ public class CommandIdCompatibilityContractTests
     {
         Assert.AreEqual(issuedId, AppIdentity.ForCommand(identity));
         var app = new AppItem { CatalogId = identity, Name = "Localized name", CommandIds = ["Released name_123"] };
-        var row = new AppListItem(app, useThumbnails: false);
+        var row = new AppListItem(app);
         var snapshot = new AppListItemSnapshot([row], []);
         Assert.AreEqual(issuedId, row.Command!.Id);
         Assert.AreSame(row, snapshot.GetApp(issuedId));
