@@ -2830,19 +2830,19 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="MouseUtils_Enable_AutoHideCursor.Header" xml:space="preserve">
-    <value>Auto Hide Cursor</value>
+    <value>CursorHide</value>
   </data>
   <data name="MouseUtils_AutoHideCursor.Header" xml:space="preserve">
-    <value>Auto Hide Cursor</value>
+    <value>CursorHide</value>
   </data>
   <data name="MouseUtils_AutoHideCursor.Description" xml:space="preserve">
-    <value>Hide the pointer globally after keyboard input, pointer inactivity, or both</value>
+    <value>Hide the mouse cursor after keyboard input, inactivity, or both</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_Behavior.Header" xml:space="preserve">
     <value>Activation and behavior</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_Behavior.Description" xml:space="preserve">
-    <value>Choose one or both ways to hide the pointer</value>
+    <value>Choose one or both ways to hide the cursor</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_HideOnTyping.Header" xml:space="preserve">
     <value>Hide after keyboard input</value>
@@ -2851,10 +2851,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Modifier keys and software-generated input are ignored</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_HideOnIdle.Header" xml:space="preserve">
-    <value>Hide after pointer inactivity</value>
+    <value>Hide after cursor inactivity</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_HideOnIdle.Description" xml:space="preserve">
-    <value>The pointer reappears after intentional movement, a mouse button, or the wheel</value>
+    <value>The cursor reappears after intentional movement, a mouse button, or the wheel</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_IdleDelay.Header" xml:space="preserve">
     <value>Idle delay (seconds)</value>
