@@ -119,6 +119,12 @@ internal static class PerformanceChartData
         return max;
     }
 
+    /// <summary>
+    /// Returns the top of a percentage sparkline: the highest value rounded up to the next 10%,
+    /// and at least 10%, so activity fills the chart while idle noise stays flat.
+    /// </summary>
+    public static double GetSparklineMax(double max) => Math.Clamp(Math.Ceiling(max / 10) * 10, 10, 100);
+
     private static readonly string[] BitsUnits = ["Kbps", "Mbps", "Gbps"];
     private static readonly string[] BytesUnits = ["KB/s", "MB/s", "GB/s"];
     private static readonly string[] BinaryBytesUnits = ["KiB/s", "MiB/s", "GiB/s"];

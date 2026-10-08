@@ -1540,7 +1540,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
                 Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
                 PerformanceChartData.GpuColor,
                 stats.GetGPUHistory(_gpuActiveIndex)));
-            ContentJson["gpuEngines"] = CreateEngines(stats.GetGPUEngines(_gpuActiveIndex));
+            ContentJson["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
 
             var memory = stats.GetGPUMemory(_gpuActiveIndex);
             var dedicated = FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal);
@@ -1587,22 +1587,29 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         };
     }
 
-    /// <summary>Lists the utilization of each engine type, such as 3D and Copy, as in Task Manager.</summary>
-    private static JsonArray CreateEngines(GPUStats.EngineUsage[] engines)
+    /// <summary>Lists each engine type, such as 3D and Copy, with its utilization and history, as in Task Manager.</summary>
+    private static JsonArray CreateEngines(GPUStats stats, int gpuIndex)
     {
         var array = new JsonArray();
-        foreach (var engine in engines)
+        foreach (var engine in stats.GetGPUEngines(gpuIndex))
         {
-            array.Add((JsonNode)new JsonObject
-            {
-                ["name"] = Resources.GetResource($"GPUUsage_Widget_Template/Engine_{GPUStats.EngineTypes[engine.Type]}"),
-                ["text"] = FloatToPercentString(engine.Percent / 100f),
-                ["percent"] = Math.Round(engine.Percent, 1, MidpointRounding.AwayFromZero),
-            });
+            array.Add((JsonNode)CreateEngine(
+                Resources.GetResource($"GPUUsage_Widget_Template/Engine_{GPUStats.EngineTypes[engine.Type]}"),
+                engine.Percent,
+                stats.GetGPUEngineHistory(gpuIndex, engine.Type)));
         }
 
         return array;
     }
+
+    /// <summary>One engine tile: its name, its utilization, and a sparkline of its history.</summary>
+    internal static JsonObject CreateEngine(string name, float percent, float[] history) => new()
+    {
+        ["name"] = name,
+        ["text"] = FloatToPercentString(percent / 100f),
+        ["chartMax"] = PerformanceChartData.GetSparklineMax(PerformanceChartData.Max(history)),
+        ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series(name, PerformanceChartData.GpuColor, history)),
+    };
 
     public string GetItemTitle(bool isBandPage)
     {

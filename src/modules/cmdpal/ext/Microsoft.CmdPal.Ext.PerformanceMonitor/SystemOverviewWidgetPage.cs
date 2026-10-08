@@ -103,10 +103,7 @@ internal sealed partial class SystemOverviewWidgetPage : WidgetPage, IDisposable
         };
     }
 
-    /// <summary>
-    /// Returns the top of a percentage sparkline: the highest value rounded up to the next 10%,
-    /// and at least 10%, so activity fills the tile while idle noise stays flat.
-    /// </summary>
+    /// <summary>Returns the top of a percentage sparkline, as <see cref="PerformanceChartData.GetSparklineMax"/> does.</summary>
     internal static double GetSparklineMax(JsonObject? data, string seriesKey)
     {
         var max = 0d;
@@ -129,7 +126,7 @@ internal sealed partial class SystemOverviewWidgetPage : WidgetPage, IDisposable
             }
         }
 
-        return Math.Clamp(Math.Ceiling(max / 10) * 10, 10, 100);
+        return PerformanceChartData.GetSparklineMax(max);
     }
 
     protected override void OnActivated()

@@ -160,4 +160,15 @@ public class GPUStatsTests
         Assert.AreEqual(default, stats.GetGPUMemory(1));
         Assert.AreEqual(0, stats.GetGPUEngines(0).Length);
     }
+
+    [TestMethod]
+    public void GetGPUEngineHistory_IsEmptyBeforeTheFirstSampleAndForUnknownEngines()
+    {
+        using var stats = new GPUStats(new() { [1] = new("GPU", IsSoftware: false) }, [1]);
+
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(0, 0).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(1, 0).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(0, GPUStats.EngineTypes.Length).Length);
+        Assert.AreEqual(0, stats.GetGPUEngineHistory(-1, -1).Length);
+    }
 }

@@ -103,6 +103,9 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
         /// <summary>Gets or sets the utilization of each engine type the adapter has, in percent.</summary>
         public EngineUsage[] Engines { get; set; } = [];
+
+        /// <summary>Gets the utilization history of each engine type, in <see cref="EngineTypes"/> order.</summary>
+        public List<float>[] EngineChartValues { get; } = Array.ConvertAll(EngineTypes, _ => new List<float>());
     }
 
     public GPUStats()
@@ -265,15 +268,14 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                 foreach (var gpu in _stats)
                 {
                     var engines = adapterEngines.TryGetValue(gpu.LuidKey, out var found) ? found : [];
-                    var usage = 0f;
+                    var percents = new float[EngineTypes.Length];
                     foreach (var engine in engines)
                     {
-                        if (engine.Type == 0)
-                        {
-                            usage = engine.Percent;
-                        }
+                        percents[engine.Type] = engine.Percent;
                     }
 
+                    // The 3D engines give the adapter's overall utilization.
+                    var usage = percents[0];
                     gpu.Usage = usage / 100f;
                     gpu.Engines = engines;
                     if (adapterMemory.TryGetValue(gpu.LuidKey, out var memory))
@@ -285,6 +287,15 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     lock (gpu.GpuChartValues)
                     {
                         ChartHelper.AddNextChartValue(usage, gpu.GpuChartValues, PerformanceChartData.HistoryLength);
+                    }
+
+                    for (var type = 0; type < percents.Length; type++)
+                    {
+                        var history = gpu.EngineChartValues[type];
+                        lock (history)
+                        {
+                            ChartHelper.AddNextChartValue(percents[type], history, PerformanceChartData.HistoryLength);
+                        }
                     }
                 }
             }
@@ -518,6 +529,17 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             }
 
             return PerformanceChartData.Snapshot(_stats[gpuChartIndex].GpuChartValues);
+        }
+    }
+
+    /// <summary>Returns the utilization history of one engine type, as an index into <see cref="EngineTypes"/>.</summary>
+    internal float[] GetGPUEngineHistory(int gpuActiveIndex, int engineType)
+    {
+        lock (_statsLock)
+        {
+            return (uint)gpuActiveIndex < (uint)_stats.Count && (uint)engineType < (uint)EngineTypes.Length
+                ? PerformanceChartData.Snapshot(_stats[gpuActiveIndex].EngineChartValues[engineType])
+                : [];
         }
     }
 

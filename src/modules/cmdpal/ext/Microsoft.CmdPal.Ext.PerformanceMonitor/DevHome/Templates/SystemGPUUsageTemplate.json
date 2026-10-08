@@ -135,10 +135,13 @@
                       "text": "${text}"
                     },
                     {
-                      "type": "ProgressBar",
+                      "type": "Chart.Line",
+                      "style": "sparkline",
                       "spacing": "small",
-                      "value": "${percent}",
-                      "color": "categoricalGreen",
+                      "yMin": 0,
+                      "yMax": "${chartMax}",
+                      "fill": "gradient",
+                      "data": "${series}",
                       "fallback": "drop"
                     }
                   ]

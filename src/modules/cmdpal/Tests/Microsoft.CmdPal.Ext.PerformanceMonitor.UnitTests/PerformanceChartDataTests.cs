@@ -85,4 +85,29 @@ public class PerformanceChartDataTests
         Assert.AreEqual(100d, (double)bars[1]["y"], 1e-9);
         Assert.AreEqual(0, SystemCPUUsageWidgetPage.CreateCoreBars([]).Count);
     }
+
+    [TestMethod]
+    public void SparklinesRoundUpToTheNextTenPercent()
+    {
+        Assert.AreEqual(10d, PerformanceChartData.GetSparklineMax(0));
+        Assert.AreEqual(10d, PerformanceChartData.GetSparklineMax(4.2));
+        Assert.AreEqual(20d, PerformanceChartData.GetSparklineMax(12));
+        Assert.AreEqual(100d, PerformanceChartData.GetSparklineMax(100));
+        Assert.AreEqual(100d, PerformanceChartData.GetSparklineMax(140));
+    }
+
+    [TestMethod]
+    public void EngineTilesHaveASparklineOfTheirHistory()
+    {
+        var engine = SystemGPUUsageWidgetPage.CreateEngine("Video decode", 23f, [5f, 23f]);
+
+        Assert.AreEqual("Video decode", (string)engine["name"]);
+        Assert.AreEqual(30d, (double)engine["chartMax"], 1e-9);
+        var series = (JsonArray)engine["series"];
+        Assert.AreEqual(1, series.Count);
+        Assert.AreEqual(PerformanceChartData.GpuColor, (string)series[0]["color"]);
+        var values = (JsonArray)series[0]["values"];
+        Assert.AreEqual(PerformanceChartData.HistoryLength, values.Count);
+        Assert.AreEqual(23d, (double)values[^1]["y"], 1e-9);
+    }
 }
