@@ -44,10 +44,8 @@
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsAutoHideCursorSettingsExpander"
                         x:Uid="MouseUtils_AutoHideCursor_Behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsAutoHideCursorEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsExpander.HeaderIcon>
-                            <FontIcon Glyph="&#xE713;" />
-                        </tkcontrols:SettingsExpander.HeaderIcon>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_AutoHideCursor_HideOnTyping">
                                 <ToggleSwitch

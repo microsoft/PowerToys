@@ -2839,7 +2839,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Hide the pointer globally after keyboard input, pointer inactivity, or both</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_Behavior.Header" xml:space="preserve">
-    <value>Activation</value>
+    <value>Activation and behavior</value>
   </data>
   <data name="MouseUtils_AutoHideCursor_Behavior.Description" xml:space="preserve">
     <value>Choose one or both ways to hide the pointer</value>
