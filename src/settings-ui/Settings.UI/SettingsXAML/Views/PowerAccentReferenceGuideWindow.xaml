@@ -2,6 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentReferenceGuideWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -32,25 +33,31 @@
             <!--  Subtle copy button that only shows the character until hovered.  -->
             <Style
                 x:Key="CharacterButtonStyle"
-                BasedOn="{StaticResource SubtleButtonStyle}"
-                TargetType="Button">
+                BasedOn="{StaticResource DefaultCopyButtonStyle}"
+                TargetType="controls:CopyButton">
                 <Setter Property="Padding" Value="6,2" />
                 <Setter Property="MinWidth" Value="32" />
                 <Setter Property="MinHeight" Value="0" />
                 <Setter Property="FontSize" Value="18" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="IsTextScaleFactorEnabled" Value="True" />
             </Style>
         </Grid.Resources>
 
-        <TitleBar x:Name="titleBar" x:Uid="QuickAccent_ReferenceGuide_TitleBar">
+        <TitleBar x:Name="titleBar">
+            <TitleBar.Resources>
+                <!--  Let the search box stretch (up to its MaxWidth) instead of sizing to MinWidth.  -->
+                <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Stretch</HorizontalAlignment>
+            </TitleBar.Resources>
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/Settings/icon.ico" />
+                <ImageIconSource ImageSource="/Assets/Settings/Icons/QuickAccent.png" />
             </TitleBar.IconSource>
             <TitleBar.Content>
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="QuickAccent_ReferenceGuide_Search"
-                    MinWidth="200"
-                    MaxWidth="360"
+                    MinWidth="240"
+                    MaxWidth="480"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     QueryIcon="Find"
@@ -136,7 +143,8 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="vm:CharacterModel">
-                                                        <Button
+                                                        <controls:CopyButton
+                                                            x:Uid="QuickAccent_ReferenceGuide_CharacterButton"
                                                             AutomationProperties.Name="{x:Bind Tooltip}"
                                                             Click="CharacterButton_Click"
                                                             Content="{x:Bind DisplayValue}"

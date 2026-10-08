@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
             // Guard against an empty title: an empty native window title can fault the WinUI TitleBar.
             var windowTitle = ResourceLoaderInstance.ResourceLoader.GetString("QuickAccent_ReferenceGuide_WindowTitle");
@@ -107,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
-            AppWindow.SetIcon("Assets\\Settings\\icon.ico");
+            AppWindow.SetIcon("Assets\\Settings\\Icons\\QuickAccent.ico");
         }
     }
 }
