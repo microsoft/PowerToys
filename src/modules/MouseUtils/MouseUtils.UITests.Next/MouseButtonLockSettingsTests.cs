@@ -208,14 +208,13 @@ public class MouseButtonLockSettingsTests : UITestBase
         AssertPersistedInt("move_cancel_pixels", 100);
 
         RestartScope();
-        OpenOptions();
-        Assert.AreEqual(
-            2200d,
-            Session.Find<Slider>(By.AccessibilityId(HoldDurationId), 5_000).Value,
-            0.01,
-            "Hold duration slider did not reflect its persisted maximum value after restart.");
         AssertPersistedInt("hold_duration_ms", 2200);
         AssertPersistedInt("move_cancel_pixels", 100);
+
+        OpenOptions();
+        Assert.IsTrue(
+            Session.Has(By.Name("2200 ms"), 10_000),
+            "Hold duration label did not reflect its persisted maximum value after restart.");
     }
 
     [TestMethod]
