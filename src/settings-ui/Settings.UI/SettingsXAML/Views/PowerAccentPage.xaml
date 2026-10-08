@@ -186,6 +186,8 @@
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
                     <ContentDialog.Resources>
                         <x:Double x:Key="ContentDialogMaxHeight">840</x:Double>
+                        <!--  Undo the app-wide ListViewItem override (App.xaml) so the list uses the stock look  -->
+                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem" />
                     </ContentDialog.Resources>
                     <Grid Width="420" RowSpacing="8">
                         <Grid.RowDefinitions>
@@ -230,11 +232,6 @@
                             </ListView.ItemTemplate>
                             <ListView.GroupStyle>
                                 <GroupStyle>
-                                    <GroupStyle.HeaderContainerStyle>
-                                        <Style TargetType="ListViewHeaderItem">
-                                            <Setter Property="Padding" Value="0,8,0,0" />
-                                        </Style>
-                                    </GroupStyle.HeaderContainerStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate x:DataType="vm:CharacterSetPickerGroup">
                                             <TextBlock
