@@ -98,13 +98,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
         MouseWheelIncrement = 5;
+        MouseWheelControlMode = PowerDisplay.Models.MouseWheelControlMode.Disabled;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
         _stateManager = new MonitorStateManager();
 
         // Initialize the monitor manager
-        _monitorManager = new MonitorManager();
+        _monitorManager = new MonitorManager(_stateManager);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -137,6 +138,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     public partial int MouseWheelIncrement { get; set; }
+
+    /// <summary>
+    /// Gets or sets the mouse-wheel mode used for the tray icon, loaded from PowerDisplay settings.
+    /// </summary>
+    [ObservableProperty]
+    public partial MouseWheelControlMode MouseWheelControlMode { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
@@ -529,6 +536,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
             MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
+            MouseWheelControlMode = settings.Properties.MouseWheelControlMode.Normalize();
 
             // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
             // method runs after monitors are already discovered, the toggle hook can seed the master

@@ -21,6 +21,8 @@ DWORD   g_SnipSaveToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '6';
 DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
 DWORD   g_SnipPanoramaSaveToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
+DWORD   g_MirrorToggleKey = ((HOTKEYF_CONTROL) << 8) | '9';
+BOOLEAN g_MirrorTrackWindow = TRUE;
 
 DWORD	g_ShowExpiredTime = 1;
 DWORD	g_SliderZoomLevel = 3;
@@ -71,6 +73,7 @@ DWORD   g_WebcamBrightness = 50;        // 0=dark, 50=neutral, 100=bright
 BOOLEAN g_RecordAspectRatio = FALSE; // Lock region selection to 16:9
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
+BOOLEAN g_SnipCopyToClipboard = FALSE; // When TRUE, saving a snip also copies it to the clipboard.
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
 DWORD	g_TrimDialogWidth = 0;  // 0 means use default; stored in screen pixels
 DWORD	g_TrimDialogHeight = 0; // 0 means use default; stored in screen pixels
@@ -86,6 +89,8 @@ REG_SETTING RegSettings[] = {
     { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
     { L"SnipPanoramaSaveToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaSaveToggleKey, static_cast<DOUBLE>(g_SnipPanoramaSaveToggleKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
+    { L"MirrorToggleKey", SETTING_TYPE_DWORD, 0, &g_MirrorToggleKey, static_cast<DOUBLE>(g_MirrorToggleKey) },
+    { L"MirrorTrackWindow", SETTING_TYPE_BOOLEAN, 0, &g_MirrorTrackWindow, static_cast<DOUBLE>(g_MirrorTrackWindow) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
     { L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, static_cast<DOUBLE>(g_OptionsShown) },
@@ -136,6 +141,7 @@ REG_SETTING RegSettings[] = {
     { L"RecordAspectRatio", SETTING_TYPE_BOOLEAN, 0, &g_RecordAspectRatio, static_cast<DOUBLE>(g_RecordAspectRatio) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
+    { L"SnipCopyToClipboard", SETTING_TYPE_BOOLEAN, 0, &g_SnipCopyToClipboard, static_cast<DOUBLE>(g_SnipCopyToClipboard) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
     { L"TrimDialogWidth", SETTING_TYPE_DWORD, 0, &g_TrimDialogWidth, static_cast<DOUBLE>(0) },
     { L"TrimDialogHeight", SETTING_TYPE_DWORD, 0, &g_TrimDialogHeight, static_cast<DOUBLE>(0) },

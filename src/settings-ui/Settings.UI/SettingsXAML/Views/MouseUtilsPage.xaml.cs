@@ -38,11 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new MouseUtilsViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                SettingsRepository<AutoHideCursorSettings>.GetInstance(settingsUtils),
                 SettingsRepository<FindMyMouseSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
                 SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
+                SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;

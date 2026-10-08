@@ -11,6 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Awake.ModuleServices.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />

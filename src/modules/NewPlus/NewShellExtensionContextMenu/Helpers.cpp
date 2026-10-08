@@ -9,9 +9,21 @@
 // Minimal subset of PowerRename Helpers used by NewPlus
 // This is a copy from PowerRename main branch to avoid cross-module dependencies
 
+namespace
+{
+    // Use the name's own locale: this runs in Explorer, so it must not change the process-wide C locale.
+    void CapitalizeFirstLetter(_In_ PCWSTR localeName, _Inout_ PWSTR text)
+    {
+        wchar_t upper = L'\0';
+        if (text[0] != L'\0' && LCMapStringEx(localeName, LCMAP_UPPERCASE, text, 1, &upper, 1, nullptr, nullptr, 0) == 1)
+        {
+            text[0] = upper;
+        }
+    }
+}
+
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
 {
-    std::locale::global(std::locale(""));
     HRESULT hr = E_INVALIDARG;
     if (source && wcslen(source) > 0)
     {
@@ -41,12 +53,12 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
-        formattedDate[0] = towupper(formattedDate[0]);
+        CapitalizeFirstLetter(localeName, formattedDate);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMMM"), replaceTerm);
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMM", formattedDate, MAX_PATH, NULL);
-        formattedDate[0] = towupper(formattedDate[0]);
+        CapitalizeFirstLetter(localeName, formattedDate);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM"), replaceTerm);
 
@@ -57,12 +69,12 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"dddd", formattedDate, MAX_PATH, NULL);
-        formattedDate[0] = towupper(formattedDate[0]);
+        CapitalizeFirstLetter(localeName, formattedDate);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDDD"), replaceTerm);
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"ddd", formattedDate, MAX_PATH, NULL);
-        formattedDate[0] = towupper(formattedDate[0]);
+        CapitalizeFirstLetter(localeName, formattedDate);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD"), replaceTerm);
 

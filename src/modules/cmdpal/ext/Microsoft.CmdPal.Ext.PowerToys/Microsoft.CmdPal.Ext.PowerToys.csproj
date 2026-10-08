@@ -12,7 +12,7 @@
 		<EnableMsixTooling>false</EnableMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
-		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>
@@ -25,6 +25,10 @@
 		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
 		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.CmdPal.Ext.PowerToys.UnitTests" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="Assets\Settings\Icons\%(Filename)%(Extension)">

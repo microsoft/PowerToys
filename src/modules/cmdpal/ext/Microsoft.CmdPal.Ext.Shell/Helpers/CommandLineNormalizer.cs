@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
+using Microsoft.CmdPal.Common.Helpers;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
@@ -65,7 +65,7 @@ public static class CommandLineNormalizer
         // One of the most important things this function does is to strip quotes.
         // That way the commandLine "foo.exe -bar" and "\"foo.exe\" \"-bar\"" appear identical.
         // We'll use CommandLineToArgvW for that as it's close to what CreateProcessW uses.
-        var argv = ParseCommandLineToArguments(normalized);
+        var argv = CommandLineParser.Parse(normalized);
 
         if (argv.Length == 0)
         {
@@ -125,38 +125,6 @@ public static class CommandLineNormalizer
         }
 
         return new string(buffer, 0, (int)result - 1); // -1 to exclude null terminator
-    }
-
-    /// <summary>
-    /// Parses a command line string into arguments using CommandLineToArgvW.
-    /// </summary>
-    private static string[] ParseCommandLineToArguments(string commandLine)
-    {
-        unsafe
-        {
-            var argv = PInvoke.CommandLineToArgv(commandLine, out var argc);
-
-            if (argv == null || argc == 0)
-            {
-                return Array.Empty<string>();
-            }
-
-            try
-            {
-                var args = new string[argc];
-
-                for (var i = 0; i < argc; i++)
-                {
-                    args[i] = new string(argv[i]);
-                }
-
-                return args;
-            }
-            finally
-            {
-                PInvoke.LocalFree(new HLOCAL(argv));
-            }
-        }
     }
 
     /// <summary>

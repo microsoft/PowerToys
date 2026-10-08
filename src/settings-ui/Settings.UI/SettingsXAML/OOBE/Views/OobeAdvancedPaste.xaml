@@ -8,7 +8,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_AdvancedPaste" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/AdvancedPaste.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_AdvancedPaste" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/AdvancedPaste.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />

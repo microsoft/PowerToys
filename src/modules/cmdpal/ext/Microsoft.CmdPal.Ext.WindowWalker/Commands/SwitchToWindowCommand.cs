@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Storage.Streams;
@@ -12,68 +13,132 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
 internal sealed partial class SwitchToWindowCommand : InvokableCommand
 {
-    private readonly Window? _window;
+    private readonly Lock _iconLock = new();
+    private Window? _window;
+    private bool _iconLoaded;
+    private bool _iconLoading;
+    private bool _useWindowIcon;
+
+    internal bool NeedsIconLoad
+    {
+        get
+        {
+            if (Volatile.Read(ref _window) is null)
+            {
+                return false;
+            }
+
+            var useWindowIcon = SettingsManager.Instance.UseWindowIcon;
+            lock (_iconLock)
+            {
+                return !_iconLoading && (!_iconLoaded || _useWindowIcon != useWindowIcon);
+            }
+        }
+    }
 
     public SwitchToWindowCommand(Window? window)
     {
         Icon = Icons.GenericAppIcon; // Fallback to default icon
         Name = Resources.switch_to_command_title;
         _window = window;
-        if (_window is not null)
+    }
+
+    internal void UpdateWindow(Window window)
+    {
+        Volatile.Write(ref _window, window);
+    }
+
+    internal void LoadIcon()
+    {
+        var window = Volatile.Read(ref _window);
+        if (window is null)
         {
-            // Use window icon
-            if (SettingsManager.Instance.UseWindowIcon)
+            return;
+        }
+
+        var useWindowIcon = SettingsManager.Instance.UseWindowIcon;
+        lock (_iconLock)
+        {
+            if (_iconLoading || (_iconLoaded && _useWindowIcon == useWindowIcon))
             {
-                if (_window.TryGetWindowIcon(out var icon) && icon is not null)
-                {
-                    try
-                    {
-                        using var bitmap = icon.ToBitmap();
-                        using var memoryStream = new MemoryStream();
-                        bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                        var raStream = new InMemoryRandomAccessStream();
-                        using var outputStream = raStream.GetOutputStreamAt(0);
-                        using var dataWriter = new DataWriter(outputStream);
-                        dataWriter.WriteBytes(memoryStream.ToArray());
-                        dataWriter.StoreAsync().AsTask().Wait();
-                        dataWriter.FlushAsync().AsTask().Wait();
-                        Icon = IconInfo.FromStream(raStream);
-                    }
-                    catch
-                    {
-                    }
-                    finally
-                    {
-                        icon.Dispose();
-                    }
-                }
+                return;
             }
 
-            // Use process icon
-            else
+            _iconLoading = true;
+        }
+
+        IconInfo? icon = null;
+        try
+        {
+            icon = useWindowIcon ? GetWindowIcon(window) : GetProcessIcon(window);
+        }
+        catch
+        {
+        }
+
+        lock (_iconLock)
+        {
+            _useWindowIcon = useWindowIcon;
+            _iconLoaded = true;
+            _iconLoading = false;
+        }
+
+        Icon = icon ?? Icons.GenericAppIcon;
+    }
+
+    private static IconInfo? GetWindowIcon(Window window)
+    {
+        if (!window.TryGetWindowIcon(out var icon) || icon is null)
+        {
+            return null;
+        }
+
+        using (icon)
+        {
+            try
             {
-                var p = Process.GetProcessById((int)_window.Process.ProcessID);
-                try
-                {
-                    var processFileName = p.MainModule?.FileName;
-                    Icon = new IconInfo(processFileName);
-                }
-                catch
-                {
-                }
+                using var bitmap = icon.ToBitmap();
+                using var memoryStream = new MemoryStream();
+                bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                var raStream = new InMemoryRandomAccessStream();
+                using var outputStream = raStream.GetOutputStreamAt(0);
+                using var dataWriter = new DataWriter(outputStream);
+                dataWriter.WriteBytes(memoryStream.ToArray());
+                dataWriter.StoreAsync().AsTask().GetAwaiter().GetResult();
+                dataWriter.FlushAsync().AsTask().GetAwaiter().GetResult();
+                return IconInfo.FromStream(raStream);
             }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+
+    private static IconInfo? GetProcessIcon(Window window)
+    {
+        try
+        {
+            using var process = Process.GetProcessById((int)window.Process.ProcessID);
+            var processFileName = process.MainModule?.FileName;
+            return string.IsNullOrEmpty(processFileName) ? null : new IconInfo(processFileName);
+        }
+        catch
+        {
+            return null;
         }
     }
 
     public override ICommandResult Invoke()
     {
-        if (_window is null)
+        var window = Volatile.Read(ref _window);
+        if (window is null)
         {
             ExtensionHost.LogMessage(new LogMessage { Message = "Cannot switch to the window, because it doesn't exist." });
             return CommandResult.Dismiss();
         }
 
-        _window.SwitchToWindow();
+        window.SwitchToWindow();
 
         return CommandResult.Dismiss();
     }

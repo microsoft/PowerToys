@@ -282,6 +282,14 @@ Shortcuts:
             Keys:
               - "Space"
         Description: To previous option
+      - Name: Peek at desktop temporarily
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - ","
       - Name: Display/Hide desktop
         Shortcut:
           - Win: true

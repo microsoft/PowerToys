@@ -24,17 +24,88 @@ namespace ExprtkCalculator::internal
         return std::tgamma(n + 1.0);
     }
 
-    static double sign(const double n)
+    // The calculator's user-facing names for the inverse trigonometric and
+    // hyperbolic functions (see CalculateHelper.cs) differ from exprtk's
+    // built-in asin/acos/atan/asinh/acosh/atanh, so they are registered
+    // as aliases here.
+    static double arcsin(const double n)
     {
-        // The sign of NaN is undefined.
-        if (std::isnan(n))
-        {
-            return std::numeric_limits<double>::quiet_NaN();
-        }
+        return std::asin(n);
+    }
 
-        if (n > 0.0) return 1.0;
-        if (n < 0.0) return -1.0;
-        return 0.0;
+    static double arccos(const double n)
+    {
+        return std::acos(n);
+    }
+
+    static double arctan(const double n)
+    {
+        return std::atan(n);
+    }
+
+    static double arsinh(const double n)
+    {
+        return std::asinh(n);
+    }
+
+    static double arcosh(const double n)
+    {
+        return std::acosh(n);
+    }
+
+    static double artanh(const double n)
+    {
+        return std::atanh(n);
+    }
+
+    // Reciprocal hyperbolic functions and the inverses of the reciprocal
+    // trigonometric/hyperbolic functions are not provided by exprtk
+    // (it only has cot/sec/csc).
+    static double coth(const double n)
+    {
+        return 1.0 / std::tanh(n);
+    }
+
+    static double sech(const double n)
+    {
+        return 1.0 / std::cosh(n);
+    }
+
+    static double csch(const double n)
+    {
+        return 1.0 / std::sinh(n);
+    }
+
+    // atan2 keeps arccot continuous with range (0, pi), so arccot(0) = pi/2
+    // and negative inputs land in (pi/2, pi).
+    static double arccot(const double n)
+    {
+        return std::atan2(1.0, n);
+    }
+
+    static double arcsec(const double n)
+    {
+        return std::acos(1.0 / n);
+    }
+
+    static double arccsc(const double n)
+    {
+        return std::asin(1.0 / n);
+    }
+
+    static double arcoth(const double n)
+    {
+        return std::atanh(1.0 / n);
+    }
+
+    static double arsech(const double n)
+    {
+        return std::acosh(1.0 / n);
+    }
+
+    static double arcsch(const double n)
+    {
+        return std::asinh(1.0 / n);
     }
 
     // rand(): returns a uniformly distributed random double in [0, 1)
@@ -118,7 +189,25 @@ namespace ExprtkCalculator::internal
         }
 
         symbol_table.add_function("factorial", factorial);
-        symbol_table.add_function("sign", sign);
+
+        symbol_table.add_function("arcsin", arcsin);
+        symbol_table.add_function("arccos", arccos);
+        symbol_table.add_function("arctan", arctan);
+        symbol_table.add_function("arsinh", arsinh);
+        symbol_table.add_function("arcosh", arcosh);
+        symbol_table.add_function("artanh", artanh);
+
+        symbol_table.add_function("coth", coth);
+        symbol_table.add_function("sech", sech);
+        symbol_table.add_function("csch", csch);
+
+        symbol_table.add_function("arccot", arccot);
+        symbol_table.add_function("arcsec", arcsec);
+        symbol_table.add_function("arccsc", arccsc);
+
+        symbol_table.add_function("arcoth", arcoth);
+        symbol_table.add_function("arsech", arsech);
+        symbol_table.add_function("arcsch", arcsch);
 
         // thread_local ensures each thread has its own RNG instance (seeded once,
         // state preserved across calls) without requiring locks.

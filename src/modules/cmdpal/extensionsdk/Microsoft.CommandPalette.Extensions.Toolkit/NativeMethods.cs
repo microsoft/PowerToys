@@ -8,6 +8,12 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 internal static partial class NativeMethods
 {
+    // FileIconInit is exported only by ordinal.
+    [LibraryImport("shell32.dll", EntryPoint = "#660")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool FileIconInit([MarshalAs(UnmanagedType.Bool)] bool restoreCache);
+
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     internal static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
@@ -44,7 +50,7 @@ internal static partial class NativeMethods
     internal static extern int SHGetImageList(int iImageList, ref Guid riid, out IntPtr ppv);
 
     [DllImport("comctl32.dll", SetLastError = true)]
-    internal static extern int ImageList_GetIcon(IntPtr himl, int i, int flags);
+    internal static extern nint ImageList_GetIcon(IntPtr himl, int i, int flags);
 
     [LibraryImport("shlwapi.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = false)]
     internal static unsafe partial int AssocQueryStringW(
@@ -56,14 +62,14 @@ internal static partial class NativeMethods
         ref uint pcchOut);
 
     // SHDefExtractIconW lets us ask for specific sizes (incl. 256)
-    // nIconSize: HIWORD = large size, LOWORD = small size
+    // nIconSize: LOWORD = large size, HIWORD = small size
     [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = false)]
     internal static partial int SHDefExtractIconW(
         string pszIconFile,
         int iIndex,
         uint uFlags,
         out nint phiconLarge,
-        out nint phiconSmall,
+        nint phiconSmall,
         int nIconSize);
 
     [Flags]

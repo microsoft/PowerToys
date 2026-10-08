@@ -112,9 +112,17 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
         {
+            bool isNewWindowSession = settingsWindow == null ||
+                                      !NativeMethods.IsWindowVisible(settingsWindow.GetWindowHandle());
+
             if (settingsWindow == null)
             {
                 settingsWindow = new MainWindow();
+            }
+
+            if (isNewWindowSession)
+            {
+                settingsWindow.BeginWindowSession();
             }
 
             settingsWindow.Activate();
@@ -438,6 +446,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Dashboard": return typeof(DashboardPage);
                 case "Overview": return typeof(GeneralPage);
                 case "AdvancedPaste": return typeof(AdvancedPastePage);
+                case "AltWindowCycle": return typeof(AltWindowCyclePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);

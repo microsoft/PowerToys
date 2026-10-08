@@ -46,6 +46,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7'); // Ctrl+7
 
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultMirrorToggleKey => new HotkeySettings(false, true, false, false, '9'); // Ctrl+9
+
         public KeyboardKeysProperty ToggleKey { get; set; }
 
         public KeyboardKeysProperty LiveZoomToggleKey { get; set; }
@@ -103,6 +106,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty SmoothImage { get; set; }
 
+        public BoolProperty SnipCopyToClipboard { get; set; }
+
         public IntProperty ZoominSliderLevel { get; set; }
 
         public IntProperty RecordScaling { get; set; }
@@ -138,5 +143,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty RecordAspectRatio { get; set; }
 
         public BoolProperty BreakLockWorkstation { get; set; }
+
+        public KeyboardKeysProperty MirrorToggleKey { get; set; }
+
+        public BoolProperty MirrorTrackWindow { get; set; }
     }
 }

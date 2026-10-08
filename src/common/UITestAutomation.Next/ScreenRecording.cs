@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using ScreenRecorderLib;
 
 namespace Microsoft.PowerToys.UITest.Next;
@@ -43,11 +44,33 @@ internal sealed class ScreenRecording : IDisposable
     }
 
     /// <summary>
-    /// True when recording can be attempted. ScreenRecorderLib ships its native encoder in-package,
-    /// so there is nothing to locate at runtime; a missing prerequisite (e.g. Media Foundation on a
-    /// Windows N/Server SKU) is reported through <c>OnRecordingFailed</c> rather than here.
+    /// True when recording can be attempted, i.e. the native encoder assembly actually loads.
+    /// ScreenRecorderLib is a mixed-mode assembly importing VCRUNTIME140/MSVCP140, so a clean Windows
+    /// image without the Visual C++ redistributable cannot load it at all.
     /// </summary>
-    public bool IsAvailable => true;
+    public bool IsAvailable => UnavailableReason is null;
+
+    /// <summary>Null when the native encoder can load; otherwise why it cannot.</summary>
+    public static string? UnavailableReason
+    {
+        get
+        {
+            try
+            {
+                ProbeNativeEncoder();
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return $"{ex.GetType().Name}: {ex.Message}";
+            }
+        }
+    }
+
+    // Kept out of line so the JIT resolves ScreenRecorderLib when this is called rather than when the
+    // caller is compiled - otherwise a missing native dependency throws past the caller's try/catch.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ProbeNativeEncoder() => _ = new RecorderOptions();
 
     /// <summary>Path the encoded MP4 will be written to.</summary>
     public string OutputFilePath => outputFilePath;

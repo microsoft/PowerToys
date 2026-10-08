@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MouseJump.Common.Helpers;
-using MouseJump.Common.Models.Settings;
+using MouseJump.Models.Settings;
 
 namespace Microsoft.PowerToys.Settings.UI.Panels
 {
@@ -128,24 +128,24 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
             // note that we have to replace Named and System colors with their ARGB equivalents
             // so that serialization returns an ARGB string rather than the Named or System color *name*.
             this.ViewModel.MouseJumpPreviewType = selectedPreviewType.ToString();
-            this.ViewModel.MouseJumpBackgroundColor1 = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color1));
-            this.ViewModel.MouseJumpBackgroundColor2 = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color2));
+            this.ViewModel.MouseJumpBackgroundColor1 = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color1));
+            this.ViewModel.MouseJumpBackgroundColor2 = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BackgroundStyle.Color2));
             this.ViewModel.MouseJumpBorderThickness = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Top;
-            this.ViewModel.MouseJumpBorderColor = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BorderStyle.Color));
+            this.ViewModel.MouseJumpBorderColor = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.CanvasStyle.BorderStyle.Color));
             this.ViewModel.MouseJumpBorder3dDepth = (int)selectedPreviewStyle.CanvasStyle.BorderStyle.Depth;
             this.ViewModel.MouseJumpBorderPadding = (int)selectedPreviewStyle.CanvasStyle.PaddingStyle.Top;
             this.ViewModel.MouseJumpBezelThickness = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Top;
-            this.ViewModel.MouseJumpBezelColor = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BorderStyle.Color));
+            this.ViewModel.MouseJumpBezelColor = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BorderStyle.Color));
             this.ViewModel.MouseJumpBezel3dDepth = (int)selectedPreviewStyle.ScreenStyle.BorderStyle.Depth;
             this.ViewModel.MouseJumpScreenMargin = (int)selectedPreviewStyle.ScreenStyle.MarginStyle.Top;
-            this.ViewModel.MouseJumpScreenColor1 = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color1));
-            this.ViewModel.MouseJumpScreenColor2 = ConfigHelper.SerializeToConfigColorString(
-                ConfigHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color2));
+            this.ViewModel.MouseJumpScreenColor1 = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color1));
+            this.ViewModel.MouseJumpScreenColor2 = ColorHelper.SerializeToConfigColorString(
+                ColorHelper.ToUnnamedColor(selectedPreviewStyle.ScreenStyle.BackgroundStyle.Color2));
         }
 
         private PreviewType GetSelectedPreviewType()

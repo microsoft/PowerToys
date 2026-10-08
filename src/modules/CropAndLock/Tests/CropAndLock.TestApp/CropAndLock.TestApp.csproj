@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>CropAndLock.TestApp</AssemblyName>
+    <RootNamespace>Microsoft.CropAndLock.TestApp</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-$([System.String]::Copy('$(Platform)').ToLowerInvariant())</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <UseAppHost>true</UseAppHost>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <!-- Referenced only as an MSIX build artifact, never loaded into the test process. -->
+    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+    <RunVSTest>false</RunVSTest>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\CropAndLock.TestApp\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(RepoRoot)src\PackageIdentity\Images\*.png" Link="Assets\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="BuildFixturePackage"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(_IsSkippedTestProject)' != 'true'"
+          Inputs="$(TargetPath);$(TargetDir)$(AssemblyName).exe;$(TargetDir)$(AssemblyName).deps.json;$(TargetDir)$(AssemblyName).runtimeconfig.json;$(MSBuildProjectFullPath);$(MSBuildProjectDirectory)\AppxManifest.xml;$(MSBuildProjectDirectory)\BuildFixturePackage.ps1;@(Content)"
+          Outputs="$(TargetDir)CropAndLock.TestApp.msix">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\BuildFixturePackage.ps1&quot; -BinaryDirectory &quot;$(TargetDir).&quot; -StagingDirectory &quot;$(IntermediateOutputPath)Package&quot; -Platform &quot;$(Platform)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(TargetDir)CropAndLock.TestApp.msix" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetFixturePackage" DependsOnTargets="GetTargetPath" Returns="$(TargetDir)CropAndLock.TestApp.msix">
+    <Error Condition="!Exists('$(TargetDir)CropAndLock.TestApp.msix')" Text="The Crop And Lock fixture package was not built." />
+  </Target>
+</Project>

@@ -66,6 +66,10 @@
             "description": "Order score for the result if it is a settings app (homepage). Use a score > 0.",
             "type": "integer",
             "minimum": 1
+          },
+          "IsPreferredForNameSearch": {
+            "description": "Whether this setting should be preferred when the query matches its name.",
+            "type": "boolean"
           }
         }
       }

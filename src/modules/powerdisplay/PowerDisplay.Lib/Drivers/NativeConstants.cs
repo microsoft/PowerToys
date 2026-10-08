@@ -29,6 +29,23 @@ namespace PowerDisplay.Common.Drivers
         public const byte VcpCodeVolume = 0x62;
 
         /// <summary>
+        /// The percent-scaled VCP features, in the order discovery walks them. The probe and the
+        /// continuous initializers must agree on this set: a code missing from one of them is
+        /// probed but never applied, or applied but never proven.
+        /// </summary>
+        /// <remarks>
+        /// Discrete-value features (0x14 color preset, 0x60 input source, 0xD6 power mode) are
+        /// excluded: <c>GetVCPFeatureAndVCPFeatureReply</c> returns only current+max, so there is no
+        /// way to synthesize a meaningful supported-value list for them.
+        /// </remarks>
+        internal static readonly byte[] ContinuousVcpCodes =
+        {
+            VcpCodeBrightness,
+            VcpCodeContrast,
+            VcpCodeVolume,
+        };
+
+        /// <summary>
         /// VCP code: Select Color Preset (0x14)
         /// Standard VESA MCCS color temperature preset selection.
         /// Supports discrete values like: 0x01=sRGB, 0x04=5000K, 0x05=6500K, 0x08=9300K.

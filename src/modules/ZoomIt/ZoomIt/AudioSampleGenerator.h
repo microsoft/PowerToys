@@ -16,6 +16,12 @@ public:
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
     winrt::Windows::Media::MediaProperties::AudioEncodingProperties GetEncodingProperties();
 
+    // Takes ownership of a generator whose InitializeAsync may still be in
+    // flight and disposes of it without blocking the calling thread.
+    static winrt::fire_and_forget DisposeAsync(
+        std::unique_ptr<AudioSampleGenerator> generator,
+        winrt::Windows::Foundation::IAsyncAction initAction );
+
     std::optional<winrt::Windows::Media::Core::MediaStreamSample> TryGetNextSample();
     void Start(int64_t videoStartTimestamp = 0);
     void Stop();

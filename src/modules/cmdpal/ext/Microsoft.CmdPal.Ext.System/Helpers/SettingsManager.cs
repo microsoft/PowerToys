@@ -55,6 +55,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public FirmwareType GetSystemFirmwareType() => Win32Helpers.GetSystemFirmwareType();
 
+    public bool IsUpdatePending() => WindowsUpdateHelper.IsUpdatePending();
+
     public SettingsManager()
     {
         FilePath = SettingsJsonPath();

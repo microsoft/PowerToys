@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+    <PropertyGroup>
+        <ProjectGuid>{478C3576-CF1C-4509-B793-AE10DF394347}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.Models</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.Models</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.Models</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+</Project>

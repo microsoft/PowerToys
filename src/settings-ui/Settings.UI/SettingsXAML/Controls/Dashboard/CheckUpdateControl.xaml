@@ -8,73 +8,39 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal">
-        <Button
-            Click="SWVersionButtonClicked"
-            Style="{StaticResource SubtleButtonStyle}"
-            Visibility="{x:Bind UpdateAvailable, Mode=OneTime}">
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border
-                    Width="20"
-                    Height="20"
-                    CornerRadius="10">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                            <GradientStop Offset="0.0" Color="#FFC328" />
-                            <GradientStop Offset="1.0" Color="#FC9A03" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <FontIcon
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="11"
-                        Foreground="Black"
-                        Glyph="&#xEDB1;" />
-                </Border>
-                <StackPanel Grid.Column="1" Orientation="Vertical">
-                    <TextBlock x:Uid="UpdateAvailableTextBlock" FontWeight="SemiBold" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
-                        <Run x:Uid="GeneralVersion" />
-                        <Run Text="{x:Bind UpdateSettingsConfig.NewVersion, Mode=OneTime}" />
-                    </TextBlock>
-                </StackPanel>
-            </Grid>
-        </Button>
-        <Grid
-            Padding="0,0,4,0"
-            VerticalAlignment="Center"
-            ColumnSpacing="16"
-            Visibility="{x:Bind UpdateAvailable, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneTime}">
+    <Button
+        Padding="8,4"
+        AutomationProperties.AutomationId="DashboardUpdateButton"
+        AutomationProperties.Name="{x:Bind ViewModel.StatusTitle, Mode=OneWay}"
+        Click="UpdateButton_Click"
+        Style="{StaticResource SubtleButtonStyle}">
+        <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border
+            <Grid
                 Width="20"
                 Height="20"
-                CornerRadius="10">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                        <GradientStop Offset="0.0" Color="#6FB538" />
-                        <GradientStop Offset="1.0" Color="#397A24" />
-                    </LinearGradientBrush>
-                </Border.Background>
-                <FontIcon
+                VerticalAlignment="Center">
+                <local:UpdateStateBadgeControl State="{x:Bind ViewModel.CurrentUpdateUIState, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsProgressActive, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                <ProgressRing
+                    Width="18"
+                    Height="18"
                     AutomationProperties.AccessibilityView="Raw"
-                    FontSize="11"
-                    Foreground="White"
-                    Glyph="&#xE73E;" />
-            </Border>
-            <StackPanel Grid.Column="1" Orientation="Vertical">
-                <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
-                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
-                    <Run x:Uid="General_VersionLastChecked" />
-                    <Run Text="{x:Bind LastCheckedDateFriendly, Mode=OneTime}" />
-                </TextBlock>
+                    IsActive="{x:Bind ViewModel.IsProgressActive, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.IsProgressActive, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+            </Grid>
+            <StackPanel
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Orientation="Vertical">
+                <TextBlock FontWeight="SemiBold" Text="{x:Bind ViewModel.StatusTitle, Mode=OneWay}" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.StatusDescription, Mode=OneWay}" />
             </StackPanel>
         </Grid>
-    </StackPanel>
+    </Button>
 </UserControl>

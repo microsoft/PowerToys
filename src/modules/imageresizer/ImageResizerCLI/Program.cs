@@ -4,7 +4,7 @@
 
 using System;
 using System.Globalization;
-using System.Text;
+using System.IO;
 
 using ImageResizer.Cli;
 using ImageResizer.Cli.Telemetry;
@@ -30,7 +30,15 @@ internal static class Program
             // Ignore invalid culture and fall back to default.
         }
 
-        Console.InputEncoding = Encoding.Unicode;
+        if (Console.IsInputRedirected)
+        {
+            // Redirecting shells write pipeline data using their output encoding, which can
+            // differ from the console input encoding used by Console.In.
+            Console.SetIn(new StreamReader(
+                Console.OpenStandardInput(),
+                Console.OutputEncoding,
+                detectEncodingFromByteOrderMarks: true));
+        }
 
         // Initialize logger to file (same as other modules)
         CliLogger.Initialize("\\Image Resizer\\CLI");

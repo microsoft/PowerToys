@@ -13,10 +13,12 @@ public static partial class CalculateHelper
     private static readonly Regex RegValidExpressChar = new Regex(
         @"^(" +
         @"%|" +
-        @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
-        @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\((?=[^\)])|" +
+        @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|logn\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|root\s*\(|" +
+        @"factorial\s*\(|si?gn\s*\(|round\s*\(|rand\s*\(\)|randi\s*\((?=[^\)])|" +
         @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
+        @"cot\s*\(|sec\s*\(|csc\s*\(|arccot\s*\(|arcsec\s*\(|arccsc\s*\(|" +
         @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
+        @"coth\s*\(|sech\s*\(|csch\s*\(|arcoth\s*\(|arsech\s*\(|arcsch\s*\(|" +
         @"rad\s*\(|deg\s*\(|grad\s*\(|" + /* trigonometry unit conversion macros */
         @"pi|" +
         @"==|~=|&&|\|\||" +
@@ -365,18 +367,30 @@ public static partial class CalculateHelper
             modifiedInput = ModifyTrigFunction(modifiedInput, "sin", DegToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "cos", DegToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "tan", DegToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "cot", DegToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "sec", DegToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "csc", DegToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arcsin", RadToDeg);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToDeg);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToDeg);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arccot", RadToDeg);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arcsec", RadToDeg);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arccsc", RadToDeg);
         }
         else if (mode == CalculateEngine.TrigMode.Gradians)
         {
             modifiedInput = ModifyTrigFunction(modifiedInput, "sin", GradToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "cos", GradToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "tan", GradToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "cot", GradToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "sec", GradToRad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "csc", GradToRad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arcsin", RadToGrad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToGrad);
             modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToGrad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arccot", RadToGrad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arcsec", RadToGrad);
+            modifiedInput = ModifyTrigFunction(modifiedInput, "arccsc", RadToGrad);
         }
 
         return modifiedInput;

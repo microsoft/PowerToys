@@ -27,6 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralViewModel ViewModel { get; set; }
 
+        public UpdateViewModel SharedUpdateViewModel => ShellPage.ShellHandler.UpdateViewModel;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
         /// General Settings page constructor.
@@ -38,14 +40,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Load string resources
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
             var settingsUtils = SettingsUtils.Default;
-
-            Action stateUpdatingAction = () =>
-            {
-                this.DispatcherQueue.TryEnqueue(() =>
-                {
-                    ViewModel.RefreshUpdatingState();
-                });
-            };
 
             Action hideBackupAndRestoreMessageArea = () =>
             {
@@ -74,9 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.IsUserAnAdmin,
                 ShellPage.SendDefaultIPCMessage,
                 ShellPage.SendRestartAdminIPCMessage,
-                ShellPage.SendCheckForUpdatesIPCMessage,
+                ShellPage.ShellHandler.UpdateViewModel.CheckForUpdates,
                 string.Empty,
-                stateUpdatingAction,
                 hideBackupAndRestoreMessageArea,
                 doRefreshBackupRestoreStatus,
                 PickSingleFolderDialog,
@@ -94,7 +87,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             doRefreshBackupRestoreStatus(100);
 
-            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
+            this.Loaded += GeneralPage_Loaded;
+        }
+
+        private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OnPageLoaded();
+            if (SharedUpdateViewModel.CurrentUpdateUIState != UpdateViewModel.UpdateUIState.UpToDate)
+            {
+                SharedUpdateViewModel.RequestActivity();
+            }
+        }
+
+        private void UpdateStatusCard_Click(object sender, RoutedEventArgs e)
+        {
+            ShellPage.ShellHandler?.OpenUpdateActivity();
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)

@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -9,6 +11,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
+using Windows.Win32;
 using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -26,6 +29,14 @@ public sealed partial class DockWindowManager : IDisposable
     private bool _disposed;
     private int _syncing;
 
+    /// <summary>
+    /// Windows can briefly report a monitor as absent while the graphics stack re-enumerates
+    /// it during a display switch or Modern Standby resume. Waiting for the topology to settle
+    /// keeps us from disposing a dock that is about to come back.
+    /// </summary>
+    private static readonly TimeSpan MonitorsChangedDebounceInterval = TimeSpan.FromSeconds(3);
+    private readonly DispatcherQueueTimer _monitorsChangedDebounceTimer;
+
     private bool? _lastSyncedEnableDock;
     private DockSettings? _lastSyncedDockSettings;
 
@@ -37,6 +48,7 @@ public sealed partial class DockWindowManager : IDisposable
         _monitorService = monitorService;
         _settingsService = settingsService;
         _dispatcherQueue = dispatcherQueue;
+        _monitorsChangedDebounceTimer = _dispatcherQueue.CreateTimer();
 
         _monitorService.MonitorsChanged += OnMonitorsChanged;
         _settingsService.SettingsChanged += OnSettingsChanged;
@@ -74,7 +86,7 @@ public sealed partial class DockWindowManager : IDisposable
     /// <summary>
     /// Synchronizes running dock windows to match the current settings and connected monitors.
     /// </summary>
-    public void SyncDocksToSettings()
+    public void SyncDocksToSettings(bool refreshDockWindows = false)
     {
         if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0)
         {
@@ -83,7 +95,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         try
         {
-            SyncDocksToSettingsCore();
+            SyncDocksToSettingsCore(refreshDockWindows);
         }
         finally
         {
@@ -91,7 +103,7 @@ public sealed partial class DockWindowManager : IDisposable
         }
     }
 
-    private void SyncDocksToSettingsCore()
+    private void SyncDocksToSettingsCore(bool refreshDockWindows)
     {
         var settings = _settingsService.Settings;
         if (!settings.EnableDock)
@@ -102,8 +114,8 @@ public sealed partial class DockWindowManager : IDisposable
 
         var dockSettings = settings.DockSettings;
 
-        // Reconcile stale monitor device IDs with currently connected monitors
-        var monitors = _monitorService.GetMonitors();
+        // Discard snapshots read before the display topology settled.
+        var monitors = _monitorService.GetMonitors(forceRefresh: refreshDockWindows);
         var currentConfigs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
         var reconciled = MonitorConfigReconciler.Reconcile(currentConfigs, monitors);
         if (reconciled != currentConfigs)
@@ -167,6 +179,102 @@ public sealed partial class DockWindowManager : IDisposable
                 dock.ViewModel.Dispose();
             }
         }
+
+        if (!refreshDockWindows)
+        {
+            return;
+        }
+
+        foreach (var (_, (window, _)) in _docks)
+        {
+            window.RefreshForMonitorChange();
+        }
+    }
+
+    /// <summary>
+    /// Cycles from the focused dock, using the navigation settings to choose where a new cycle begins.
+    /// </summary>
+    public void FocusDock(bool reverse = false)
+    {
+        if (_docks.Count == 0)
+        {
+            return;
+        }
+
+        PInvoke.GetCursorPos(out var cursor);
+
+        var monitors = _monitorService.GetMonitors();
+        var focusedDockId = _docks.FirstOrDefault(static dock => dock.Value.Window.HasKeyboardFocus).Key;
+        if (reverse && focusedDockId is null)
+        {
+            return;
+        }
+
+        var targetId = focusedDockId ?? DockFocusTargetResolver.Resolve(
+            monitors,
+            _docks.Keys,
+            cursor.X,
+            cursor.Y,
+            focusPrimaryFirst: _settingsService.Settings.DockFocusPrimaryFirst);
+
+        if (targetId is null)
+        {
+            return;
+        }
+
+        var moveFromCurrent = focusedDockId is not null;
+
+        // Restore only on the starting dock so crossing docks still visits every item.
+        var restoreLastFocus = !moveFromCurrent && _settingsService.Settings.DockRememberLastFocusedItem;
+        if (!_settingsService.Settings.DockFocusAcrossMonitors)
+        {
+            if (!TryFocusDock(targetId, moveFromCurrent, wrap: true, reverse, restoreLastFocus))
+            {
+                _docks[targetId].Window.ReleaseKeyboardFocus(restoreForeground: true);
+            }
+
+            return;
+        }
+
+        var dockOrder = DockFocusTargetResolver.GetTraversalOrder(monitors, _docks.Keys, targetId, reverse);
+        if (DockFocusNavigation.TryFocusAcrossDocks(
+            dockOrder,
+            targetId,
+            moveFromCurrent,
+            restoreLastFocus,
+            (monitorId, move, restore) => TryFocusDock(monitorId, move, wrap: false, reverse, restore),
+            monitorId => _docks[monitorId].Window.ResetRememberedFocus()))
+        {
+            return;
+        }
+
+        // Complete the cycle within the dock where this press started.
+        if (!moveFromCurrent ||
+            !dockOrder.Contains(targetId, StringComparer.OrdinalIgnoreCase) ||
+            !TryFocusDock(targetId, moveFromCurrent: false, wrap: false, reverse, restoreLastFocus: false))
+        {
+            _docks[targetId].Window.ReleaseKeyboardFocus(restoreForeground: true);
+        }
+    }
+
+    private bool TryFocusDock(string monitorId, bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus)
+    {
+        var target = _docks[monitorId].Window;
+        var previousDock = _docks.Values.FirstOrDefault(static dock => dock.Window.HasKeyboardFocus).Window;
+        if (!target.TryFocusNextItem(moveFromCurrent, wrap, reverse, restoreLastFocus, previousDock))
+        {
+            return false;
+        }
+
+        foreach (var (_, (window, _)) in _docks)
+        {
+            if (window != target)
+            {
+                window.ReleaseKeyboardFocus(restoreForeground: false);
+            }
+        }
+
+        return true;
     }
 
     public void Dispose()
@@ -179,6 +287,8 @@ public sealed partial class DockWindowManager : IDisposable
         _disposed = true;
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
+
+        _monitorsChangedDebounceTimer.Stop();
 
         HideDocks();
     }
@@ -211,10 +321,15 @@ public sealed partial class DockWindowManager : IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                SyncDocksToSettings();
+                return;
             }
+
+            _monitorsChangedDebounceTimer.Debounce(
+                () => SyncDocksToSettings(refreshDockWindows: true),
+                interval: MonitorsChangedDebounceInterval,
+                immediate: false);
         });
     }
 
