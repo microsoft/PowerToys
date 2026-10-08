@@ -36,11 +36,17 @@ namespace WorkspacesEditor
 
             if (_mainViewModel.Workspaces.Any(x => x.Id == projectToSave.Id))
             {
-                _mainViewModel.SaveProject(projectToSave);
+                if (!_mainViewModel.SaveProject(projectToSave))
+                {
+                    return;
+                }
             }
             else
             {
-                _mainViewModel.AddNewProject(projectToSave);
+                if (!_mainViewModel.AddNewProject(projectToSave))
+                {
+                    return;
+                }
             }
 
             _mainViewModel.SwitchToMainView();

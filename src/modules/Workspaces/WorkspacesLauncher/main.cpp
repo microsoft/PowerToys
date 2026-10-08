@@ -201,7 +201,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
         }
 
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
+        if (!JsonUtils::Write(WorkspacesData::WorkspacesFile(), workspaces))
+            Logger::error("Updated workspace application metadata could not be saved");
     }
 
     // launch

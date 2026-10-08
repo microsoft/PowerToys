@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="CliHelp" xml:space="preserve"><value>PowerToys Workspaces CLI\n  list [--id GUID | --name NAME] [--details] [--json]\n  launch (--id GUID | --name NAME) [--timeout 1..600] [--json]\nDetails require a selector. Launch waits for window arrangement and permits normal Windows UAC.\nUnverified elevated EXEs require one-time confirmation on the terminal (stderr); Enter skips. Redirected input or stderr cannot approve.\nAdministrator terminals automatically use a non-elevated worker in the same user's desktop session.\nCtrl+C stops further launches when acknowledged; existing applications are not closed.\n</value><comment>Do not translate executable names, commands or options beginning with --.</comment></data>
+  <data name="CliTableHeader" xml:space="preserve"><value>ID\tNAME\tAPPLICATIONS\n</value></data>
+  <data name="CliWarningPrefix" xml:space="preserve"><value>Warning: </value></data>
+  <data name="CliInvalidArguments" xml:space="preserve"><value>Invalid command or arguments. Run --help for supported commands, selectors and timeout values.</value></data>
+  <data name="CliDisabledByUser" xml:space="preserve"><value>Workspaces is disabled. Enable it in PowerToys Settings before using this command.</value></data>
+  <data name="CliDisabledByPolicy" xml:space="preserve"><value>Workspaces is disabled by policy. Contact your system administrator.</value></data>
+  <data name="CliPolicyError" xml:space="preserve"><value>The Workspaces policy could not be determined.</value></data>
+  <data name="CliInvalidData" xml:space="preserve"><value>The saved workspace configuration is invalid or exceeds supported limits.</value></data>
+  <data name="CliStorageError" xml:space="preserve"><value>The workspace configuration could not be read. Check file access and try again.</value></data>
+  <data name="CliNotFound" xml:space="preserve"><value>No saved workspace matches the selector.</value></data>
+  <data name="CliAmbiguousName" xml:space="preserve"><value>More than one workspace matches this name. Select a workspace by ID.</value></data>
+  <data name="CliBusy" xml:space="preserve"><value>Another workspace launch is in progress.</value></data>
+  <data name="CliUnavailable" xml:space="preserve"><value>A required Workspaces component is unavailable. Repair or update PowerToys.</value></data>
+  <data name="CliUnsupportedContext" xml:space="preserve"><value>Workspaces requires a signed-in Windows desktop session and a non-elevated execution worker.</value></data>
+  <data name="CliDeElevationFailed" xml:space="preserve"><value>A non-elevated worker could not be started or verified in the same user's desktop session. Ensure Explorer is running normally for that user. No elevated fallback was used.</value></data>
+  <data name="CliConsentDenied" xml:space="preserve"><value>Required administrator authorization was declined.</value></data>
+  <data name="CliArrangerFailed" xml:space="preserve"><value>The window arranger could not start.</value></data>
+  <data name="CliTimeout" xml:space="preserve"><value>The launch deadline expired. Applications already started remain open. Do not retry automatically.</value></data>
+  <data name="CliOutcomeUnknown" xml:space="preserve"><value>No final launch result was received. The outcome is unknown and applications may have started. Do not retry automatically.</value></data>
+  <data name="CliCanceled" xml:space="preserve"><value>Further application launches were canceled. Applications already started remain open.</value></data>
+  <data name="CliInternalError" xml:space="preserve"><value>The Workspaces command could not complete because of an unexpected error.</value></data>
+  <data name="CliMetadataWarning" xml:space="preserve"><value>The launch result is available, but launch history could not be saved. Do not relaunch solely to update history.</value></data>
+  <data name="CliPersistenceUnverified" xml:space="preserve"><value>The workspace file was replaced but its contents could not be verified. The application results are reported separately. Check the saved workspace before retrying.</value></data>
+  <data name="CliCompleted" xml:space="preserve"><value>Completed</value></data>
+  <data name="CliPartial" xml:space="preserve"><value>Completed with application failures</value></data>
+  <data name="CliFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="CliConfirmationRequired" xml:space="preserve"><value>This application requires one-time confirmation, but an interactive terminal is unavailable. It was not launched.</value></data>
+  <data name="CliConfirmationTimedOut" xml:space="preserve"><value>The confirmation could not be displayed in time. This application was not launched.</value></data>
+  <data name="CliConfirmationFailed" xml:space="preserve"><value>The confirmation exchange failed. This application was not approved.</value></data>
+  <data name="CliSkipped" xml:space="preserve"><value>This application was skipped by your choice.</value></data>
+  <data name="CliApprovalIntroduction" xml:space="preserve"><value>Warning: Workspaces could not verify this executable's signature. It is configured to run as administrator. Only allow it if you trust the target and its arguments.</value></data>
+  <data name="CliApprovalApp" xml:space="preserve"><value>Application: </value></data>
+  <data name="CliApprovalPath" xml:space="preserve"><value>Checked path: </value></data>
+  <data name="CliApprovalArguments" xml:space="preserve"><value>Arguments: </value></data>
+  <data name="CliApprovalReason" xml:space="preserve"><value>Verification: </value></data>
+  <data name="CliApprovalStatus" xml:space="preserve"><value>Status: </value></data>
+  <data name="CliApprovalChoices" xml:space="preserve"><value>[A] Allow once  [S] Skip (default). Type A or S and press Enter: </value><comment>A and S are fixed input keys and must remain unchanged. This approval never replaces Windows UAC.</comment></data>
+  <data name="CliApprovalInvalidChoice" xml:space="preserve"><value>Invalid choice. Enter A to allow once, S to skip, or press Enter to skip.</value><comment>A and S are fixed input keys.</comment></data>
+</root>

@@ -266,6 +266,12 @@ namespace WorkspacesEditor.Properties {
                 return ResourceManager.GetString("Error_Parsing_Message", resourceCulture);
             }
         }
+
+        public static string Error_Save_Message {
+            get {
+                return ResourceManager.GetString("Error_Save_Message", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Height.

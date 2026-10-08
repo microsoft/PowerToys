@@ -20,6 +20,15 @@
     <ClInclude Include="WorkspacesData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CliCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OperationLifetime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkspaceStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="AppUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -80,6 +89,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkspacesData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CliCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkspaceStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AppUtils.cpp">

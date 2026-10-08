@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include <common/interop/two_way_pipe_message_ipc_impl.h>
+#include <common/logger/logger.h>
 
 #include <algorithm>
 #include <iterator>
@@ -116,6 +117,11 @@ void TwoWayPipeMessageIPC::start(HANDLE _restricted_pipe_token)
     impl->start(_restricted_pipe_token);
 }
 
+void TwoWayPipeMessageIPC::start(HANDLE token, const interop_auth::CallerPolicy& policy)
+{
+    impl->start(token, policy);
+}
+
 void TwoWayPipeMessageIPC::end()
 {
     impl->end();
@@ -138,13 +144,18 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send(std::wstring msg)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token)
 {
+    start(_restricted_pipe_token, {});
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& policy)
+{
     std::scoped_lock lock(lifecycle_mutex);
     if (lifecycle_state != LifecycleState::NotStarted)
     {
         return;
     }
 
-    caller_policy = {};
+    caller_policy = policy;
     pipe_security_token = duplicate_pipe_security_token(_restricted_pipe_token);
     closed.store(false);
     lifecycle_state = LifecycleState::Starting;
@@ -292,6 +303,18 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
     if (closed.load() || !output_pipe.valid())
     {
         return;
+    }
+
+    if (caller_policy.enabled)
+    {
+        const auto peer = interop_auth::AuthenticateServer(output_pipe.get(), caller_policy, caller_cache);
+        DWORD ownSession = 0, peerSession = 0;
+        if (!peer.accepted || !ProcessIdToSessionId(GetCurrentProcessId(), &ownSession) ||
+            !ProcessIdToSessionId(peer.pid, &peerSession) || ownSession != peerSession)
+        {
+            Logger::error("Rejected Workspaces IPC server identity");
+            return;
+        }
     }
 
     const HANDLE output_pipe_handle = output_pipe.get();
@@ -622,6 +645,19 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(cons
         return;
     }
 
+    if (caller_policy.enabled)
+    {
+        const auto peer = interop_auth::AuthenticateClient(input_pipe_handle, caller_policy, caller_cache);
+        DWORD ownSession = 0, peerSession = 0;
+        if (!peer.accepted || !ProcessIdToSessionId(GetCurrentProcessId(), &ownSession) ||
+            !ProcessIdToSessionId(peer.pid, &peerSession) || ownSession != peerSession)
+        {
+            Logger::error("Rejected Workspaces IPC client identity");
+            finish_connection_handler(handler);
+            return;
+        }
+    }
+
     if (!closed.load())
     {
         constexpr DWORD readBlockBytes = BUFSIZE;
@@ -631,6 +667,11 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(cons
         bool message_read = false;
         do
         {
+            if (caller_policy.enabled && message.size() >= 1024 * 1024)
+            {
+                Logger::error("Rejected oversized Workspaces IPC message");
+                break;
+            }
             constexpr size_t charsPerBlock = readBlockBytes / sizeof(message[0]);
             message.resize(message.size() + charsPerBlock);
             DWORD bytesRead = 0;

@@ -46,6 +46,22 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WorkspacesDataTests.cpp" />
+    <ClCompile Include="CliContractTests.cpp" />
+    <ClCompile Include="CliJsonOutputTests.cpp" />
+    <ClCompile Include="CliApprovalTests.cpp" />
+    <ClCompile Include="..\WorkspacesCLI\ApprovalChannel.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesCLI\ConsoleApproval.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="WorkspaceStoreTests.cpp" />
+    <ClCompile Include="CliWorkerTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="CliApprovalConsoleTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="CliHandoffTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="..\WorkspacesCLI\WorkerHandoff.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="StringUtilsTests.cpp" />
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
@@ -59,6 +75,16 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WorkspacesCLI\Tests\ApprovalConsoleFixture\ApprovalConsoleFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <Project>{122d79ac-38e7-4549-935e-8b5b58e683e4}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\WorkspacesCLI\Tests\HandoffFixture\HandoffFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <Project>{4cee1f66-be0d-4f04-bcf5-d7dae282ed42}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>

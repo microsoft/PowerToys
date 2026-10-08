@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A3F4CD35-A455-41E7-BC03-1214CB841C9A}</ProjectGuid>
+    <RootNamespace>WorkspacesCLI</RootNamespace>
+    <ProjectName>WorkspacesCLI</ProjectName>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <TargetName>PowerToys.WorkspacesCLI</TargetName>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(ProjectDir)..;$(ProjectDir)..\WorkspacesLauncher;$(RepoRoot)src;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>shcore.lib;shell32.lib;propsys.lib;pathcch.lib;advapi32.lib;ole32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(RepoRoot)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ApprovalChannel.cpp" />
+    <ClCompile Include="ConsoleApproval.cpp" />
+    <ClCompile Include="WorkerHandoff.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files\WorkspacesCLI.rc" />
+    <ClInclude Include="Resources.h" />
+    <ClInclude Include="CommandLogging.h" />
+    <ClInclude Include="ApprovalChannel.h" />
+    <ClInclude Include="ConsoleApproval.h" />
+    <ClInclude Include="JsonOutput.h" />
+    <ClInclude Include="WorkerHandoff.h" />
+    <None Include="resource.base.h" />
+    <None Include="WorkspacesCLI.base.rc" />
+    <EmbeddedResource Include="Resource.resx" />
+  </ItemGroup>
+  <Target Name="GenerateCliResources" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(RepoRoot)tools\build\convert-resx-to-rc.ps1&quot; &quot;$(MSBuildProjectDirectory)&quot; resource.base.h resource.h WorkspacesCLI.base.rc WorkspacesCLI.rc" />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Generated Files\resource.h') Or !Exists('$(MSBuildProjectDirectory)\Generated Files\WorkspacesCLI.rc')" Text="Workspaces CLI resource generation failed." />
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)tools\CliShim\CliShim.vcxproj">
+      <Project>{8a7fb7fa-65ea-4004-ba73-1b237435a57b}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\WorkspacesLib\WorkspacesLib.vcxproj">
+      <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" />
+  <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets" />
+  <Target Name="StageWorkspacesCliShim" AfterTargets="Build">
+    <MakeDir Directories="$(OutDir)bin" />
+    <Copy SourceFiles="$(OutDir)CliShim\PowerToys.CliShim.exe" DestinationFiles="$(OutDir)bin\PowerToys.Workspaces.CLI.exe" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
