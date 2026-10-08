@@ -65,6 +65,8 @@ namespace CommonSharedConstants
 
     const wchar_t TERMINATE_HOSTS_EVENT[] = L"Local\\Hosts-TerminateHostsEvent-d5410d5e-45a6-4d11-bbf0-a4ec2d064888";
 
+    const wchar_t SHOW_DEPIP_EVENT[] = L"Local\\DEPiP-ShowEvent-13c9ae96-3060-473d-90e6-557497d3406d";
+
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
     
@@ -193,4 +195,3 @@ namespace CommonSharedConstants
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
-
