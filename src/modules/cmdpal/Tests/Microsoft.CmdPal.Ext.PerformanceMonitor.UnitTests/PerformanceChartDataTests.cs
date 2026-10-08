@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 public class PerformanceChartDataTests
 {
     [TestMethod]
-    public void ShortHistoryIsPaddedAtTheStart()
+    public void ShortHistoryHasOnlyItsSamples()
     {
         var data = PerformanceChartData.Create(new PerformanceChartData.Series("CPU", "categoricalBlue", [10f, 20.25f]));
 
@@ -23,10 +23,11 @@ public class PerformanceChartDataTests
         var values = (JsonArray)series["values"];
         Assert.AreEqual("CPU", (string)series["legend"]);
         Assert.AreEqual("categoricalBlue", (string)series["color"]);
-        Assert.AreEqual(PerformanceChartData.HistoryLength, values.Count);
-        Assert.IsNull(values[0]["y"]);
-        Assert.AreEqual(10d, (double)values[^2]["y"]);
-        Assert.AreEqual(20.3d, (double)values[^1]["y"], 1e-9);
+
+        // The schema's y is a number, so there's no empty padding before the first sample.
+        Assert.AreEqual(2, values.Count);
+        Assert.AreEqual(10d, (double)values[0]["y"]);
+        Assert.AreEqual(20.3d, (double)values[1]["y"], 1e-9);
     }
 
     [TestMethod]
@@ -149,7 +150,7 @@ public class PerformanceChartDataTests
         Assert.AreEqual(1, series.Count);
         Assert.AreEqual(PerformanceChartData.GpuColor, (string)series[0]["color"]);
         var values = (JsonArray)series[0]["values"];
-        Assert.AreEqual(PerformanceChartData.HistoryLength, values.Count);
+        Assert.AreEqual(2, values.Count);
         Assert.AreEqual(23d, (double)values[^1]["y"], 1e-9);
     }
 

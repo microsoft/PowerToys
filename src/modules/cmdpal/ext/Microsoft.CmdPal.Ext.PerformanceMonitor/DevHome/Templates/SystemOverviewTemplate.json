@@ -70,11 +70,10 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
+                      "showLegend": false,
                       "yMin": 0,
                       "yMax": "${sparkMax.cpu}",
-                      "fill": "gradient",
                       "data": "${cpu.cpuSeries}",
                       "fallback": "drop"
                     }
@@ -148,11 +147,10 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
+                      "showLegend": false,
                       "yMin": 0,
                       "yMax": 100,
-                      "fill": "gradient",
                       "data": "${memory.memSeries}",
                       "fallback": "drop"
                     }
@@ -226,11 +224,10 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
+                      "showLegend": false,
                       "yMin": 0,
                       "yMax": "${sparkMax.gpu}",
-                      "fill": "gradient",
                       "data": "${gpu.gpuSeries}",
                       "fallback": "drop"
                     }
@@ -310,11 +307,10 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
+                      "showLegend": false,
                       "yMin": 0,
                       "yMax": "${sparkMax.disk}",
-                      "fill": "gradient",
                       "data": "${disk.diskActiveSeries}",
                       "fallback": "drop"
                     }
@@ -388,10 +384,9 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
+                      "showLegend": false,
                       "yMin": 0,
-                      "fill": "gradient",
                       "data": "${network.netSeries}",
                       "fallback": "drop"
                     }

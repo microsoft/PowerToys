@@ -51,7 +51,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         var chart = CreateChart(diameter, shares, colors, isDarkTheme);
 
         var root = new StackPanel { Spacing = 12 };
-        if (!string.IsNullOrWhiteSpace(_model.Title))
+        if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
         {
             root.Children.Add(ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle));
         }

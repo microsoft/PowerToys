@@ -93,8 +93,7 @@
           "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
           "yMin": 0,
           "yMax": 100,
-          "valueFormat": "percentage",
-          "fill": "gradient",
+          "showLegend": false,
           "data": "${gpuSeries}",
           "fallback": "drop"
         },
@@ -136,11 +135,10 @@
                     },
                     {
                       "type": "Chart.Line",
-                      "style": "sparkline",
                       "spacing": "small",
                       "yMin": 0,
                       "yMax": "${chartMax}",
-                      "fill": "gradient",
+                      "showLegend": false,
                       "data": "${series}",
                       "fallback": "drop"
                     }
@@ -182,7 +180,7 @@
                       "type": "ProgressBar",
                       "spacing": "small",
                       "value": "${gpuDedicatedPercent}",
-                      "color": "categoricalGreen",
+                      "color": "good",
                       "fallback": "drop"
                     }
                   ]
@@ -216,7 +214,7 @@
                       "type": "ProgressBar",
                       "spacing": "small",
                       "value": "${gpuSharedPercent}",
-                      "color": "categoricalGreen",
+                      "color": "good",
                       "fallback": "drop"
                     }
                   ]

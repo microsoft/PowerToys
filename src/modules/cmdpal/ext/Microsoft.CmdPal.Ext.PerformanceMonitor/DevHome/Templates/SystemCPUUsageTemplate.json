@@ -70,8 +70,7 @@
           "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
           "yMin": 0,
           "yMax": 100,
-          "valueFormat": "percentage",
-          "fill": "gradient",
+          "showLegend": false,
           "data": "${cpuSeries}",
           "fallback": "drop"
         },
@@ -260,15 +259,54 @@
           "showBorder": true,
           "items": [
             {
-              "type": "Chart.HorizontalBar",
-              "title": "%CPUUsage_Widget_Template/Top_Processes%",
-                "yMin": 0,
-                "yMax": 100,
-                "valueFormat": "percentage",
-              "showBarValues": true,
-              "color": "categoricalBlue",
-              "data": "${cpuTopProcesses}",
-              "fallback": "drop"
+              "type": "TextBlock",
+              "text": "%CPUUsage_Widget_Template/Top_Processes%",
+              "weight": "bolder",
+              "wrap": true
+            },
+            {
+              "type": "ColumnSet",
+              "$data": "${cpuTopProcesses}",
+              "spacing": "small",
+              "columns": [
+                {
+                  "type": "Column",
+                  "width": 30,
+                  "verticalContentAlignment": "center",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "text": "${name}",
+                      "isSubtle": true
+                    }
+                  ]
+                },
+                {
+                  "type": "Column",
+                  "width": 55,
+                  "verticalContentAlignment": "center",
+                  "items": [
+                    {
+                      "type": "ProgressBar",
+                      "value": "${percent}",
+                      "fallback": "drop"
+                    }
+                  ]
+                },
+                {
+                  "type": "Column",
+                  "width": 15,
+                  "verticalContentAlignment": "center",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "text": "${text}",
+                      "weight": "bolder",
+                      "horizontalAlignment": "right"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -283,9 +321,10 @@
             {
               "type": "Chart.VerticalBar",
               "title": "%CPUUsage_Widget_Template/Cores_Chart_Title%",
+              "showTitle": true,
+              "yAxisTitle": "%CPUUsage_Widget_Template/Chart_Y_Axis%",
               "yMin": 0,
               "yMax": 100,
-              "valueFormat": "percentage",
               "color": "categoricalBlue",
               "data": "${cpuCores}",
               "fallback": "drop"

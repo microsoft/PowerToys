@@ -4,22 +4,9 @@
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-internal enum ChartValueFormat
-{
-    Number,
-
-    /// <summary>The values are already percentages; labels add a percent sign.</summary>
-    Percentage,
-}
-
 /// <summary>Formats chart values for axis labels and accessible summaries.</summary>
 internal static class ChartValueFormatter
 {
-    public static string Format(double value, ChartValueFormat format, IFormatProvider culture) =>
-        format == ChartValueFormat.Percentage
-            ? string.Format(culture, "{0:0.#}%", value)
-            : FormatCompact(value, culture);
-
     /// <summary>Formats large numbers with a K, M, B, or T suffix so labels stay short.</summary>
     public static string FormatCompact(double value, IFormatProvider culture)
     {

@@ -54,32 +54,6 @@ internal static class ChartJson
         };
     }
 
-    /// <summary>Reads a pixel length written as a number or as a string such as <c>"120px"</c>.</summary>
-    public static double? GetPixels(JsonElement element, string propertyName)
-    {
-        if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(propertyName, out var value))
-        {
-            return null;
-        }
-
-        if (value.ValueKind == JsonValueKind.String)
-        {
-            var text = value.GetString()?.Trim() ?? string.Empty;
-            if (text.EndsWith("px", StringComparison.OrdinalIgnoreCase))
-            {
-                text = text[..^2];
-            }
-
-            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var pixels)
-                && double.IsFinite(pixels)
-                && pixels >= 0
-                    ? pixels
-                    : null;
-        }
-
-        return ToNumber(value) is double number && number >= 0 ? number : null;
-    }
-
     /// <summary>Formats an <c>x</c> value as a label. Strings are kept; numbers use the current culture.</summary>
     public static string? ToLabel(JsonElement value) => value.ValueKind switch
     {
@@ -90,15 +64,14 @@ internal static class ChartJson
 
     /// <summary>
     /// Reads an array of objects such as <c>[{ "legend": "A", "value": 1, "color": "good" }]</c>.
-    /// Missing values read as zero; a <paramref name="fallbackValueProperty"/> covers schema aliases.
+    /// Missing values read as zero, the schema's default.
     /// </summary>
     public static List<ChartDataPoint> GetDataPoints(
         JsonElement element,
         string arrayProperty,
         string labelProperty,
         string valueProperty,
-        ICollection<string> warnings,
-        string? fallbackValueProperty = null)
+        ICollection<string> warnings)
     {
         var points = new List<ChartDataPoint>();
         if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(arrayProperty, out var array))
@@ -120,8 +93,7 @@ internal static class ChartJson
                 continue;
             }
 
-            var value = GetNumber(item, valueProperty)
-                ?? (fallbackValueProperty is null ? null : GetNumber(item, fallbackValueProperty));
+            var value = GetNumber(item, valueProperty);
             var label = item.TryGetProperty(labelProperty, out var labelValue) ? ToLabel(labelValue) : null;
             points.Add(new ChartDataPoint(label, value ?? 0, GetString(item, "color")));
         }

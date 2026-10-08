@@ -49,7 +49,7 @@ internal sealed partial class StackedBarChartControl : AdaptiveVisualControl
         }
 
         var root = new StackPanel { Spacing = 8 };
-        if (!string.IsNullOrWhiteSpace(_model.Title))
+        if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
         {
             root.Children.Add(ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle));
         }

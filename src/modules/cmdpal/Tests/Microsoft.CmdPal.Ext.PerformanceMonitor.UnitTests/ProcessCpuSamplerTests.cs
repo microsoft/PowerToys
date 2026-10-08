@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -68,12 +69,14 @@ public class ProcessCpuSamplerTests
     }
 
     [TestMethod]
-    public void ProcessBarsUseTheName()
+    public void TopProcessRowsHaveTheNameAndPercent()
     {
-        var bars = SystemCPUUsageWidgetPage.CreateProcessBars([new("devenv", 12.34f)]);
+        var rows = SystemCPUUsageWidgetPage.CreateTopProcesses([new("devenv", 12.34f)]);
 
-        Assert.AreEqual("devenv", (string)bars[0]["x"]);
-        Assert.AreEqual(12.3d, (double)bars[0]["y"], 1e-9);
+        Assert.AreEqual(1, rows.Count);
+        Assert.AreEqual("devenv", (string)rows[0]["name"]);
+        Assert.AreEqual(12.3d, (double)rows[0]["percent"], 1e-9);
+        Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0:0.#}%", 12.3), (string)rows[0]["text"]);
     }
 
     [TestMethod]

@@ -50,7 +50,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         var range = ChartScale.Compute(_model.YMin, _model.YMax, Math.Min(0, dataMin), dataMax);
 
         var root = new StackPanel { Spacing = 4 };
-        if (!string.IsNullOrWhiteSpace(_model.Title))
+        if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
         {
             var title = ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle);
             title.Margin = new Thickness(0, 0, 0, 4);
@@ -63,11 +63,11 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         }
         else
         {
-            root.Children.Add(CreateLabelRow(_model.YAxisTitle, ChartValueFormatter.Format(range.Max, _model.ValueFormat, CultureInfo.CurrentCulture), secondary));
+            root.Children.Add(CreateLabelRow(_model.YAxisTitle, FormatValue(range.Max), secondary));
             root.Children.Add(CreateVerticalPlot(range, isDarkTheme, secondary));
 
             // Bars start at zero, so the minimum only needs a label when it isn't zero.
-            var minimum = range.Min == 0 ? string.Empty : ChartValueFormatter.Format(range.Min, _model.ValueFormat, CultureInfo.CurrentCulture);
+            var minimum = range.Min == 0 ? string.Empty : FormatValue(range.Min);
             if (!string.IsNullOrWhiteSpace(_model.XAxisTitle) || minimum.Length > 0)
             {
                 root.Children.Add(CreateLabelRow(_model.XAxisTitle, minimum, secondary));
@@ -117,13 +117,13 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
                 RadiusY = Math.Min(4, barWidth / 2),
                 Fill = ChartTheme.ToBrush(GetBarColor(i, isDarkTheme)),
             };
-            ToolTipService.SetToolTip(bar, $"{point.Label}: {ChartValueFormatter.Format(point.Value, _model.ValueFormat, CultureInfo.CurrentCulture)}");
+            ToolTipService.SetToolTip(bar, $"{point.Label}: {FormatValue(point.Value)}");
             ChartShapes.Place(bar, left, barTop);
             plot.Children.Add(bar);
 
             if (_model.ShowBarValues)
             {
-                var value = ChartShapes.CreateText(ChartValueFormatter.Format(point.Value, _model.ValueFormat, CultureInfo.CurrentCulture), ChartShapes.CaptionStyle);
+                var value = ChartShapes.CreateText(FormatValue(point.Value), ChartShapes.CaptionStyle);
                 var size = ChartShapes.Measure(value);
                 ChartShapes.Place(value, left + ((barWidth - size.Width) / 2), Math.Max(0, barTop - size.Height - 2));
                 plot.Children.Add(value);
@@ -150,10 +150,19 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
 
     private Grid CreateHorizontalBars(ChartAxisRange range, bool isDarkTheme, Brush secondary)
     {
+        // Horizontal bars start at zero and don't support negative values.
+        var mode = _model.DisplayMode;
+        var total = _model.GetPositiveTotal();
+        var showsValues = mode != BarDisplayMode.AbsoluteWithAxis;
+
         var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        if (showsValues)
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        }
+
         var track = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));
         var maximumLabelWidth = LayoutWidth * MaximumLabelShare;
         for (var i = 0; i < _model.Data.Count; i++)
@@ -170,7 +179,10 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
             Grid.SetRow(label, i);
             grid.Children.Add(label);
 
-            var fraction = range.Normalize(point.Value);
+            var value = Math.Max(0, point.Value);
+            var fraction = mode == BarDisplayMode.PartToWhole
+                ? (total > 0 ? value / total : 0)
+                : Math.Clamp(range.Normalize(value), 0, 1);
             var bar = new Grid { Height = HorizontalBarHeight, VerticalAlignment = VerticalAlignment.Center };
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Math.Max(fraction, 0.0001), GridUnitType.Star) });
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Math.Max(1 - fraction, 0.0001), GridUnitType.Star) });
@@ -182,20 +194,62 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
                 Background = ChartTheme.ToBrush(GetBarColor(i, isDarkTheme)),
                 CornerRadius = new CornerRadius(HorizontalBarHeight / 2),
             });
+            ToolTipService.SetToolTip(bar, $"{point.Label}: {FormatValue(point.Value)}");
             Grid.SetRow(bar, i);
             Grid.SetColumn(bar, 1);
             grid.Children.Add(bar);
 
-            var value = ChartShapes.CreateText(ChartValueFormatter.Format(point.Value, _model.ValueFormat, CultureInfo.CurrentCulture), ChartShapes.BodyStrongStyle);
-            value.HorizontalAlignment = HorizontalAlignment.Right;
-            value.VerticalAlignment = VerticalAlignment.Center;
-            Grid.SetRow(value, i);
-            Grid.SetColumn(value, 2);
-            grid.Children.Add(value);
+            if (showsValues)
+            {
+                var text = mode == BarDisplayMode.PartToWhole
+                    ? string.Format(CultureInfo.CurrentCulture, "{0:0.#}%", fraction * 100)
+                    : FormatValue(point.Value);
+                var valueText = ChartShapes.CreateText(text, ChartShapes.BodyStrongStyle);
+                valueText.HorizontalAlignment = HorizontalAlignment.Right;
+                valueText.VerticalAlignment = VerticalAlignment.Center;
+                Grid.SetRow(valueText, i);
+                Grid.SetColumn(valueText, 2);
+                grid.Children.Add(valueText);
+            }
+        }
+
+        if (mode == BarDisplayMode.AbsoluteWithAxis)
+        {
+            // The value axis runs under the bars; the category axis title sits under the labels.
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var row = _model.Data.Count;
+            if (!string.IsNullOrWhiteSpace(_model.XAxisTitle))
+            {
+                var categoryTitle = ChartShapes.CreateText(_model.XAxisTitle, ChartShapes.CaptionStyle, secondary);
+                categoryTitle.MaxWidth = maximumLabelWidth;
+                categoryTitle.TextTrimming = TextTrimming.CharacterEllipsis;
+                Grid.SetRow(categoryTitle, row);
+                grid.Children.Add(categoryTitle);
+            }
+
+            var axis = new Grid { ColumnSpacing = 8 };
+            axis.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            axis.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            axis.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var minimum = ChartShapes.CreateText(FormatValue(range.Min), ChartShapes.CaptionStyle, secondary);
+            var valueTitle = ChartShapes.CreateText(_model.YAxisTitle ?? string.Empty, ChartShapes.CaptionStyle, secondary);
+            valueTitle.HorizontalAlignment = HorizontalAlignment.Center;
+            valueTitle.TextTrimming = TextTrimming.CharacterEllipsis;
+            Grid.SetColumn(valueTitle, 1);
+            var maximum = ChartShapes.CreateText(FormatValue(range.Max), ChartShapes.CaptionStyle, secondary);
+            Grid.SetColumn(maximum, 2);
+            axis.Children.Add(minimum);
+            axis.Children.Add(valueTitle);
+            axis.Children.Add(maximum);
+            Grid.SetRow(axis, row);
+            Grid.SetColumn(axis, 1);
+            grid.Children.Add(axis);
         }
 
         return grid;
     }
+
+    private static string FormatValue(double value) => ChartValueFormatter.FormatCompact(value, CultureInfo.CurrentCulture);
 
     private static Grid CreateLabelRow(string? left, string right, Brush foreground)
     {
@@ -230,7 +284,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
 
             summary.Append(point.Label)
                 .Append(' ')
-                .Append(ChartValueFormatter.Format(point.Value, _model.ValueFormat, CultureInfo.CurrentCulture));
+                .Append(FormatValue(point.Value));
         }
 
         return summary.ToString();

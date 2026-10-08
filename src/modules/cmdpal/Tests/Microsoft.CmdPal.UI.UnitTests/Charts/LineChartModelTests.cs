@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.UI.UnitTests.Charts;
 public class LineChartModelTests
 {
     [TestMethod]
-    public void ParsesStandardAndExtensionProperties()
+    public void ParsesSchemaProperties()
     {
         var warnings = new List<string>();
         var model = LineChartModel.Parse(
@@ -19,18 +19,14 @@ public class LineChartModelTests
             {
               "type": "Chart.Line",
               "title": "CPU",
+              "showTitle": true,
               "xAxisTitle": "60 seconds",
               "yAxisTitle": "% Utilization",
               "color": "categoricalBlue",
               "colorSet": "diverging",
               "yMin": 0,
               "yMax": 100,
-              "valueFormat": "percentage",
-              "fill": "gradient",
-              "curve": "linear",
-              "style": "sparkline",
-              "showLegend": true,
-              "minHeight": "120px",
+              "showLegend": false,
               "data": [{ "legend": "Utilization", "color": "good", "values": [{ "y": 1 }, { "y": 2.5 }] }]
             }
             """,
@@ -38,18 +34,15 @@ public class LineChartModelTests
 
         Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
         Assert.AreEqual("CPU", model.Title);
+        Assert.IsTrue(model.ShowTitle);
         Assert.AreEqual("60 seconds", model.XAxisTitle);
         Assert.AreEqual("% Utilization", model.YAxisTitle);
         Assert.AreEqual("categoricalBlue", model.Color);
         Assert.AreEqual("diverging", model.ColorSet);
         Assert.AreEqual(0d, model.YMin);
         Assert.AreEqual(100d, model.YMax);
-        Assert.AreEqual(ChartValueFormat.Percentage, model.ValueFormat);
-        Assert.AreEqual(ChartFill.Gradient, model.Fill);
-        Assert.AreEqual(ChartInterpolation.Linear, model.Interpolation);
-        Assert.AreEqual(ChartStyle.Sparkline, model.Style);
-        Assert.AreEqual(true, model.ShowLegend);
-        Assert.AreEqual(120d, model.MinHeight);
+        Assert.IsFalse(model.ShowLegend);
+        Assert.IsFalse(model.ShowsLegend);
         Assert.AreEqual(1, model.Series.Count);
         Assert.AreEqual("Utilization", model.Series[0].Legend);
         Assert.AreEqual("good", model.Series[0].Color);
@@ -62,27 +55,52 @@ public class LineChartModelTests
     {
         var model = LineChartModel.Parse("""{ "type": "Chart.Line", "data": [] }""", new List<string>());
 
-        Assert.AreEqual(ChartFill.None, model.Fill);
-        Assert.AreEqual(ChartStyle.Default, model.Style);
-        Assert.AreEqual(ChartValueFormat.Number, model.ValueFormat);
+        Assert.IsFalse(model.ShowTitle);
+        Assert.IsTrue(model.ShowLegend);
         Assert.IsNull(model.YMin);
         Assert.IsNull(model.YMax);
-        Assert.IsFalse(model.ShowsLegend);
     }
 
     [TestMethod]
-    public void NullSamplesBecomeGaps()
+    public void PropertiesOutsideTheSchemaAreIgnored()
     {
-        var model = LineChartModel.Parse(
-            """{ "data": [{ "values": [{ "y": null }, {}, { "y": 4 }, 7] }] }""",
-            new List<string>());
+        var warnings = new List<string>();
+        var plain = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": 1 }] }] }""", warnings);
+        var extended = LineChartModel.Parse(
+            """{ "data": [{ "values": [{ "y": 1 }] }], "fill": "gradient", "curve": "linear", "style": "sparkline", "valueFormat": "percentage", "minHeight": "120px" }""",
+            warnings);
 
+        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
+        Assert.AreEqual(plain.ShowTitle, extended.ShowTitle);
+        Assert.AreEqual(plain.ShowLegend, extended.ShowLegend);
+        Assert.AreEqual(plain.Series[0].Points[0], extended.Series[0].Points[0]);
+    }
+
+    [TestMethod]
+    public void AMissingYIsZero()
+    {
+        var warnings = new List<string>();
+        var model = LineChartModel.Parse("""{ "data": [{ "values": [{}, { "x": "Feb" }, { "y": 4 }] }] }""", warnings);
+
+        Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
         var points = model.Series[0].Points;
-        Assert.AreEqual(4, points.Count);
-        Assert.IsNull(points[0].Y);
-        Assert.IsNull(points[1].Y);
+        Assert.AreEqual(3, points.Count);
+        Assert.AreEqual(0d, points[0].Y);
+        Assert.AreEqual(0d, points[1].Y);
         Assert.AreEqual(4d, points[2].Y);
-        Assert.AreEqual(7d, points[3].Y);
+    }
+
+    [TestMethod]
+    public void ValuesThatArentObjectsWithNumbersWarn()
+    {
+        var warnings = new List<string>();
+        var model = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": null }, 7, { "y": 3 }] }] }""", warnings);
+
+        Assert.AreEqual(2, warnings.Count, string.Join(", ", warnings));
+        var points = model.Series[0].Points;
+        Assert.AreEqual(2, points.Count);
+        Assert.AreEqual(0d, points[0].Y);
+        Assert.AreEqual(3d, points[1].Y);
     }
 
     [TestMethod]
@@ -97,13 +115,26 @@ public class LineChartModelTests
     }
 
     [TestMethod]
-    public void MultipleSeriesShowALegendByDefault()
+    public void TheLegendShowsByDefaultWhenItHasSomethingToShow()
     {
-        var model = LineChartModel.Parse(
-            """{ "data": [{ "legend": "Send", "values": [1] }, { "legend": "Receive", "values": [2] }] }""",
-            new List<string>());
+        var named = LineChartModel.Parse("""{ "data": [{ "legend": "Send", "values": [{ "y": 1 }] }] }""", new List<string>());
+        var unnamed = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": 1 }] }] }""", new List<string>());
+        var several = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": 1 }] }, { "values": [{ "y": 2 }] }] }""", new List<string>());
 
-        Assert.IsTrue(model.ShowsLegend);
+        Assert.IsTrue(named.ShowsLegend);
+        Assert.IsFalse(unnamed.ShowsLegend);
+        Assert.IsTrue(several.ShowsLegend);
+    }
+
+    [TestMethod]
+    [DataRow(0d, false)]
+    [DataRow(240d, true)]
+    [DataRow(399d, true)]
+    [DataRow(400d, false)]
+    [DataRow(776d, false)]
+    public void NarrowChartsAreCompact(double width, bool isCompact)
+    {
+        Assert.AreEqual(isCompact, LineChartLayout.IsCompact(width));
     }
 
     [TestMethod]
@@ -111,7 +142,6 @@ public class LineChartModelTests
     [DataRow("""{ "data": "${missing}" }""")]
     [DataRow("""{ "data": [1, 2] }""")]
     [DataRow("""{ "data": [{ "legend": "no values" }] }""")]
-    [DataRow("""{ "data": [], "fill": "sparkles" }""")]
     public void InvalidContentWarnsWithoutThrowing(string json)
     {
         var warnings = new List<string>();
@@ -135,8 +165,8 @@ public class LineChartModelTests
     [TestMethod]
     public void IncrementalStateIgnoresPropertyOrder()
     {
-        var left = LineChartModel.Parse("""{ "yMax": 100, "data": [{ "values": [1], "legend": "a" }] }""", new List<string>());
-        var right = LineChartModel.Parse("""{ "data": [{ "legend": "a", "values": [1] }], "yMax": 100 }""", new List<string>());
+        var left = LineChartModel.Parse("""{ "yMax": 100, "data": [{ "values": [{ "y": 1 }], "legend": "a" }] }""", new List<string>());
+        var right = LineChartModel.Parse("""{ "data": [{ "legend": "a", "values": [{ "y": 1 }] }], "yMax": 100 }""", new List<string>());
 
         Assert.AreEqual(left.IncrementalState, right.IncrementalState);
     }
@@ -144,8 +174,8 @@ public class LineChartModelTests
     [TestMethod]
     public void IncrementalStateChangesWithData()
     {
-        var before = LineChartModel.Parse("""{ "data": [{ "values": [1] }] }""", new List<string>());
-        var after = LineChartModel.Parse("""{ "data": [{ "values": [2] }] }""", new List<string>());
+        var before = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": 1 }] }] }""", new List<string>());
+        var after = LineChartModel.Parse("""{ "data": [{ "values": [{ "y": 2 }] }] }""", new List<string>());
 
         Assert.AreNotEqual(before.IncrementalState, after.IncrementalState);
     }
@@ -154,7 +184,7 @@ public class LineChartModelTests
     public void ValueExtentSpansAllSeries()
     {
         var model = LineChartModel.Parse(
-            """{ "data": [{ "values": [3, null, 9] }, { "values": [-2, 4] }] }""",
+            """{ "data": [{ "values": [{ "y": 3 }, { "y": 9 }] }, { "values": [{ "y": -2 }, { "y": 4 }] }] }""",
             new List<string>());
 
         Assert.AreEqual((-2d, 9d), model.GetValueExtent());

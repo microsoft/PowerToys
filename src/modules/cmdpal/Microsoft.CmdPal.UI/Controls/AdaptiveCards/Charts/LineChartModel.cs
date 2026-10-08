@@ -6,38 +6,19 @@ using System.Text.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-internal enum ChartFill
-{
-    None,
-    Gradient,
-}
-
-internal enum ChartInterpolation
-{
-    Smooth,
-    Linear,
-}
-
-internal enum ChartStyle
-{
-    Default,
-    Sparkline,
-}
-
 /// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.Line</c> element.
+/// The parsed form of an Adaptive Cards <c>Chart.Line</c> element: <c>title</c>,
+/// <c>showTitle</c>, <c>xAxisTitle</c>, <c>yAxisTitle</c>, <c>yMin</c>, <c>yMax</c>,
+/// <c>color</c>, <c>colorSet</c>, <c>showLegend</c>, and <c>data</c>, with the schema's defaults.
+/// It reads no other properties, so cards that render here render the same way in other hosts.
 /// </summary>
-/// <remarks>
-/// Standard properties follow the Adaptive Cards schema: <c>title</c>, <c>xAxisTitle</c>,
-/// <c>yAxisTitle</c>, <c>color</c>, <c>colorSet</c>, and <c>data</c>. Command Palette also reads
-/// optional properties that other hosts ignore: <c>yMin</c>, <c>yMax</c>, <c>valueFormat</c>,
-/// <c>fill</c>, <c>curve</c>, <c>style</c>, <c>showLegend</c>, and <c>minHeight</c>.
-/// </remarks>
 internal sealed class LineChartModel : IAdaptiveVisualModel
 {
     public static LineChartModel Empty { get; } = new() { IncrementalState = "{}" };
 
     public string? Title { get; init; }
+
+    public bool ShowTitle { get; init; }
 
     public string? XAxisTitle { get; init; }
 
@@ -51,17 +32,7 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
 
     public double? YMax { get; init; }
 
-    public ChartValueFormat ValueFormat { get; init; }
-
-    public ChartFill Fill { get; init; }
-
-    public ChartInterpolation Interpolation { get; init; }
-
-    public ChartStyle Style { get; init; }
-
-    public bool? ShowLegend { get; init; }
-
-    public double? MinHeight { get; init; }
+    public bool ShowLegend { get; init; } = true;
 
     public IReadOnlyList<LineChartSeries> Series { get; init; } = [];
 
@@ -74,7 +45,11 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
     /// <summary>Gets the canonical element JSON, which identifies everything the control renders.</summary>
     public string IncrementalState { get; init; } = "{}";
 
-    public bool ShowsLegend => Style != ChartStyle.Sparkline && (ShowLegend ?? Series.Count > 1);
+    /// <summary>
+    /// Gets a value indicating whether the legend has something to show: it's on, as it is by
+    /// default, and there's more than one series or a series has a legend.
+    /// </summary>
+    public bool ShowsLegend => ShowLegend && (Series.Count > 1 || Series.Any(series => !string.IsNullOrEmpty(series.Legend)));
 
     /// <summary>Returns the smallest and largest sample, or NaN when there are no samples.</summary>
     public (double Min, double Max) GetValueExtent()
@@ -135,18 +110,14 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
         return new LineChartModel
         {
             Title = ChartJson.GetString(element, "title"),
+            ShowTitle = ChartJson.GetBoolean(element, "showTitle") ?? false,
             XAxisTitle = ChartJson.GetString(element, "xAxisTitle"),
             YAxisTitle = ChartJson.GetString(element, "yAxisTitle"),
             Color = ChartJson.GetString(element, "color"),
             ColorSet = ChartJson.GetString(element, "colorSet"),
             YMin = ChartJson.GetNumber(element, "yMin"),
             YMax = ChartJson.GetNumber(element, "yMax"),
-            ValueFormat = ChartJson.GetEnum(element, "valueFormat", ChartValueFormat.Number, warnings),
-            Fill = ChartJson.GetEnum(element, "fill", ChartFill.None, warnings),
-            Interpolation = ChartJson.GetEnum(element, "curve", ChartInterpolation.Smooth, warnings),
-            Style = ChartJson.GetEnum(element, "style", ChartStyle.Default, warnings),
-            ShowLegend = ChartJson.GetBoolean(element, "showLegend"),
-            MinHeight = ChartJson.GetPixels(element, "minHeight"),
+            ShowLegend = ChartJson.GetBoolean(element, "showLegend") ?? true,
             Series = series,
             SlotCount = slotCount,
             HasPointLabels = hasPointLabels,
@@ -199,20 +170,26 @@ internal sealed class LineChartModel : IAdaptiveVisualModel
 
         foreach (var value in values.EnumerateArray())
         {
-            switch (value.ValueKind)
+            if (value.ValueKind != JsonValueKind.Object)
             {
-                case JsonValueKind.Object:
-                    var label = value.TryGetProperty("x", out var x) ? ChartJson.ToLabel(x) : null;
-                    var y = value.TryGetProperty("y", out var yValue) ? ChartJson.ToNumber(yValue) : null;
-                    points.Add(new LineChartPoint(label, y));
-                    break;
-                case JsonValueKind.Number:
-                    points.Add(new LineChartPoint(null, ChartJson.ToNumber(value)));
-                    break;
-                default:
-                    points.Add(new LineChartPoint(null, null));
-                    break;
+                warnings.Add("Each value must be an object with x and y.");
+                continue;
             }
+
+            // y is a number that defaults to 0, so a value without a usable y is plotted at 0.
+            var label = value.TryGetProperty("x", out var x) ? ChartJson.ToLabel(x) : null;
+            double? y = 0;
+            if (value.TryGetProperty("y", out var yValue))
+            {
+                y = ChartJson.ToNumber(yValue);
+                if (y is null)
+                {
+                    warnings.Add("y must be a number.");
+                    y = 0;
+                }
+            }
+
+            points.Add(new LineChartPoint(label, y));
         }
 
         return points;

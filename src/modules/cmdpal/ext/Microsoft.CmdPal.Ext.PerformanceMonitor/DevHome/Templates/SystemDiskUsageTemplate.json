@@ -111,7 +111,6 @@
           "yAxisTitle": "${diskChartAxis}",
           "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
           "yMin": 0,
-          "fill": "gradient",
           "data": "${diskSeries}",
           "fallback": "drop"
         },

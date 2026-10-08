@@ -23,6 +23,11 @@ namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 /// Renders an Adaptive Cards <c>Chart.Line</c> element with XAML shapes. Newer versions of the
 /// element are applied in place, and a one-sample shift of live data animates as a scroll.
 /// </summary>
+/// <remarks>
+/// Lines are smooth and filled with a soft gradient. Narrower than
+/// <see cref="LineChartLayout.CompactWidth"/>, as in a dashboard tile, the chart draws as a
+/// sparkline: just the lines, without the title, axis labels, grid lines, or legend.
+/// </remarks>
 internal sealed partial class LineChartControl : UserControl, IIncrementalAdaptiveElementControl
 {
     private const double LineThickness = 2;
@@ -50,6 +55,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(RS_.GetString("AdaptiveChart_SeriesSummary"));
 
     private LineChartModel _model;
+    private bool _isCompact;
     private Storyboard? _scrollStoryboard;
     private TimeSpan _scrollDuration = DefaultScrollDuration;
     private long _lastUpdateTimestamp;
@@ -90,14 +96,13 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
 
     private void ApplyText()
     {
-        var isSparkline = _model.Style == ChartStyle.Sparkline;
-        var title = isSparkline ? null : _model.Title;
+        var title = _model.ShowTitle && !_isCompact ? _model.Title : null;
         TitleText.Text = title ?? string.Empty;
         TitleText.Visibility = string.IsNullOrEmpty(title) ? Visibility.Collapsed : Visibility.Visible;
         YAxisTitleText.Text = _model.YAxisTitle ?? string.Empty;
         XAxisTitleText.Text = _model.XAxisTitle ?? string.Empty;
-        HeaderRow.Visibility = isSparkline ? Visibility.Collapsed : Visibility.Visible;
-        FooterRow.Visibility = isSparkline ? Visibility.Collapsed : Visibility.Visible;
+        HeaderRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
+        FooterRow.Visibility = _isCompact ? Visibility.Collapsed : Visibility.Visible;
 
         var name = FirstNonEmpty(
             _model.Title,
@@ -111,6 +116,13 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     {
         if (e.NewSize.Width != e.PreviousSize.Width)
         {
+            var isCompact = LineChartLayout.IsCompact(e.NewSize.Width);
+            if (isCompact != _isCompact)
+            {
+                _isCompact = isCompact;
+                ApplyText();
+            }
+
             UpdatePlotHeight(e.NewSize.Width);
         }
     }
@@ -122,14 +134,9 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             return;
         }
 
-        var height = _model.Style == ChartStyle.Sparkline
+        var height = _isCompact
             ? SparklineHeight
             : Math.Clamp(width * PlotHeightToWidth, MinimumPlotHeight, MaximumPlotHeight);
-        if (_model.MinHeight is double minHeight)
-        {
-            height = Math.Max(height, minHeight);
-        }
-
         if (Math.Abs(PlotRow.Height.Value - height) > 0.5)
         {
             PlotRow.Height = new GridLength(height);
@@ -151,26 +158,23 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
 
         var (dataMin, dataMax) = _model.GetValueExtent();
         var range = ChartScale.Compute(_model.YMin, _model.YMax, dataMin, dataMax);
-        MaxLabelText.Text = ChartValueFormatter.Format(range.Max, _model.ValueFormat, CultureInfo.CurrentCulture);
-        MinLabelText.Text = ChartValueFormatter.Format(range.Min, _model.ValueFormat, CultureInfo.CurrentCulture);
+        MaxLabelText.Text = ChartValueFormatter.FormatCompact(range.Max, CultureInfo.CurrentCulture);
+        MinLabelText.Text = ChartValueFormatter.FormatCompact(range.Min, CultureInfo.CurrentCulture);
 
-        var isSparkline = _model.Style == ChartStyle.Sparkline;
         var layout = new LineChartLayout(
             width,
             height,
             range,
             _model.SlotCount,
             PlotTopPadding,
-            isSparkline ? SparklineRightPadding : PlotRightPadding,
+            _isCompact ? SparklineRightPadding : PlotRightPadding,
             PlotBottomPadding);
-        GridLinesPath.Data = isSparkline ? null : CreateGridLines(layout);
+        GridLinesPath.Data = _isCompact ? null : CreateGridLines(layout);
 
         var isDarkTheme = ActualTheme == ElementTheme.Dark;
         var isHighContrast = ChartTheme.IsHighContrast;
-        var fillOpacity = _model.Fill == ChartFill.Gradient && !isHighContrast
-            ? (isDarkTheme ? DarkThemeAreaOpacity : LightThemeAreaOpacity)
-            : 0;
-        var markerScale = isSparkline ? 0.75 : 1;
+        var fillOpacity = isHighContrast ? 0 : (isDarkTheme ? DarkThemeAreaOpacity : LightThemeAreaOpacity);
+        var markerScale = _isCompact ? 0.75 : 1;
         var colors = new ChartColor[_model.Series.Count];
         for (var i = 0; i < _model.Series.Count; i++)
         {
@@ -269,7 +273,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
 
     private void AppendCurve(PathFigure figure, IReadOnlyList<ChartPoint> run)
     {
-        if (_model.Interpolation == ChartInterpolation.Smooth && run.Count > 2)
+        if (run.Count > 2)
         {
             foreach (var segment in ChartCurve.CreateMonotoneSegments(run))
             {
@@ -333,7 +337,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private void UpdateLegend(IReadOnlyList<ChartColor> colors)
     {
         LegendPanel.Children.Clear();
-        if (!_model.ShowsLegend)
+        if (!_model.ShowsLegend || _isCompact)
         {
             LegendPanel.Visibility = Visibility.Collapsed;
             return;
@@ -365,7 +369,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private void UpdateXLabels(LineChartLayout layout)
     {
         XLabelsCanvas.Children.Clear();
-        if (!_model.HasPointLabels || _model.Style == ChartStyle.Sparkline || _model.SlotCount == 0)
+        if (!_model.HasPointLabels || _isCompact || _model.SlotCount == 0)
         {
             XLabelsCanvas.Visibility = Visibility.Collapsed;
             return;
@@ -436,9 +440,9 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 CultureInfo.CurrentCulture,
                 SeriesSummaryFormat,
                 GetSeriesName(i),
-                ChartValueFormatter.Format(last, _model.ValueFormat, CultureInfo.CurrentCulture),
-                ChartValueFormatter.Format(low, _model.ValueFormat, CultureInfo.CurrentCulture),
-                ChartValueFormatter.Format(high, _model.ValueFormat, CultureInfo.CurrentCulture)));
+                ChartValueFormatter.FormatCompact(last, CultureInfo.CurrentCulture),
+                ChartValueFormatter.FormatCompact(low, CultureInfo.CurrentCulture),
+                ChartValueFormatter.FormatCompact(high, CultureInfo.CurrentCulture)));
         }
 
         AutomationProperties.SetHelpText(this, summary.ToString());

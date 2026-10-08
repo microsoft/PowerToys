@@ -27,7 +27,8 @@ public class GaugeChartModelTests
               "valueFormat": "fraction",
               "showLegend": false,
               "showMinMax": false,
-              "color": "accent",
+              "showNeedle": false,
+              "showTitle": true,
               "colorSet": "diverging"
             }
             """,
@@ -35,20 +36,34 @@ public class GaugeChartModelTests
 
         Assert.AreEqual(0, warnings.Count, string.Join(", ", warnings));
         Assert.AreEqual("CPU", model.Title);
+        Assert.IsTrue(model.ShowTitle);
         Assert.AreEqual("Utilization", model.SubLabel);
         Assert.AreEqual(42d, model.Value);
         Assert.AreEqual(200d, model.Max);
         Assert.AreEqual(GaugeValueFormat.Fraction, model.ValueFormat);
         Assert.IsFalse(model.ShowLegend);
         Assert.IsFalse(model.ShowMinMax);
-        Assert.AreEqual("accent", model.Color);
+        Assert.IsFalse(model.ShowNeedle);
         Assert.AreEqual("diverging", model.ColorSet);
         Assert.AreEqual(0.21, model.Fraction, 1e-9);
         Assert.AreEqual("42/200", model.FormatValue(CultureInfo.InvariantCulture));
     }
 
     [TestMethod]
-    public void SegmentsAcceptSizeOrValueAndSetTheDefaultMaximum()
+    public void DefaultsMatchTheAdaptiveCardsSchema()
+    {
+        var model = GaugeChartModel.Parse("""{ "type": "Chart.Gauge", "title": "CPU" }""", new List<string>());
+
+        Assert.IsFalse(model.ShowTitle);
+        Assert.IsTrue(model.ShowLegend);
+        Assert.IsTrue(model.ShowMinMax);
+        Assert.IsTrue(model.ShowNeedle);
+        Assert.AreEqual(GaugeValueFormat.Percentage, model.ValueFormat);
+        Assert.AreEqual(0d, model.Value);
+    }
+
+    [TestMethod]
+    public void SegmentSizesSetTheDefaultMaximum()
     {
         var warnings = new List<string>();
         var model = GaugeChartModel.Parse(
@@ -58,7 +73,7 @@ public class GaugeChartModelTests
               "value": 70,
               "segments": [
                 { "legend": "Low", "size": 50, "color": "good" },
-                { "legend": "Medium", "value": 30, "color": "warning" },
+                { "legend": "Medium", "size": 30, "color": "warning" },
                 { "legend": "High", "size": 20, "color": "attention" }
               ]
             }

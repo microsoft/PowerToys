@@ -721,7 +721,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
                 PerformanceChartData.CpuColor,
                 PerformanceChartData.Snapshot(currentData.CpuChartValues)));
             ContentJson["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
-            ContentJson["cpuTopProcesses"] = CreateProcessBars(currentData.TopProcesses);
+            ContentJson["cpuTopProcesses"] = CreateTopProcesses(currentData.TopProcesses);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -796,20 +796,25 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return bars;
     }
 
-    /// <summary>One bar per busy process, busiest first.</summary>
-    internal static JsonArray CreateProcessBars(ProcessCpuSampler.ProcessUsage[] processes)
+    /// <summary>
+    /// One row per busy process, busiest first: its name, its share of all processors' time in
+    /// percent (0 to 100, the range of a <c>ProgressBar</c>), and that share as text.
+    /// </summary>
+    internal static JsonArray CreateTopProcesses(ProcessCpuSampler.ProcessUsage[] processes)
     {
-        var bars = new JsonArray();
+        var rows = new JsonArray();
         foreach (var process in processes)
         {
-            bars.Add((JsonNode)new JsonObject
+            var percent = Math.Round((double)process.Percent, 1, MidpointRounding.AwayFromZero);
+            rows.Add((JsonNode)new JsonObject
             {
-                ["x"] = process.Name,
-                ["y"] = Math.Round((double)process.Percent, 1, MidpointRounding.AwayFromZero),
+                ["name"] = process.Name,
+                ["percent"] = percent,
+                ["text"] = string.Format(CultureInfo.CurrentCulture, "{0:0.#}%", percent),
             });
         }
 
-        return bars;
+        return rows;
     }
 
     // The card shows per-processor utilization and the busiest processes, which the dock and the
@@ -1724,7 +1729,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
                 ContentData["batteryStatusStyle"] = "default";
                 ContentData["batteryIcon"] = string.Empty;
                 ContentJson["batteryPercent"] = 0;
-                ContentData["batteryColor"] = "neutral";
+                ContentData["batteryColor"] = "accent";
                 return;
             }
 

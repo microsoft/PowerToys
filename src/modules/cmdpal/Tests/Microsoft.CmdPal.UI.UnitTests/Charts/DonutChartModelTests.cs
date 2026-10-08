@@ -84,4 +84,15 @@ public class DonutChartModelTests
 
         Assert.AreEqual(1, warnings.Count);
     }
+
+    [TestMethod]
+    public void TheTitleShowsOnlyWhenAsked()
+    {
+        var hidden = DonutChartModel.Parse("""{ "type": "Chart.Donut", "title": "Storage", "data": [] }""", isPie: false, new List<string>());
+        var shown = DonutChartModel.Parse("""{ "type": "Chart.Pie", "title": "Storage", "showTitle": true, "data": [] }""", isPie: true, new List<string>());
+
+        Assert.IsFalse(hidden.ShowTitle);
+        Assert.IsTrue(shown.ShowTitle);
+        Assert.IsTrue(hidden.ShowLegend);
+    }
 }

@@ -76,7 +76,7 @@ public class ProgressAndBadgeModelTests
         Assert.AreEqual(3, warnings.Count);
         Assert.AreEqual(string.Empty, model.Text);
         Assert.AreEqual(BadgeAppearance.Filled, model.Appearance);
-        Assert.AreEqual(BadgeShape.Rounded, model.Shape);
+        Assert.AreEqual(BadgeShape.Circular, model.Shape);
         Assert.AreEqual(BadgeSize.Medium, model.Size);
     }
 

@@ -12,17 +12,33 @@ internal enum BarOrientation
     Horizontal,
 }
 
+/// <summary>How a <c>Chart.HorizontalBar</c> lays out its bars.</summary>
+internal enum BarDisplayMode
+{
+    /// <summary>Bars on a value axis that starts at zero.</summary>
+    AbsoluteWithAxis,
+
+    /// <summary>Bars scaled like <see cref="AbsoluteWithAxis"/>, with each value at the end of its bar instead of an axis.</summary>
+    AbsoluteNoAxis,
+
+    /// <summary>Each bar shows its share of the total.</summary>
+    PartToWhole,
+}
+
 /// <summary>
 /// The parsed form of an Adaptive Cards <c>Chart.VerticalBar</c> or <c>Chart.HorizontalBar</c>
-/// element: <c>data</c> (<c>x</c>, <c>y</c>, <c>color</c>), <c>title</c>, <c>xAxisTitle</c>,
-/// <c>yAxisTitle</c>, <c>color</c>, <c>colorSet</c>, and <c>showBarValues</c>. Command Palette
-/// also reads <c>yMin</c>, <c>yMax</c>, and <c>valueFormat</c>, as for <c>Chart.Line</c>.
+/// element, with the schema's defaults. Both read <c>data</c> (<c>x</c>, <c>y</c>, <c>color</c>),
+/// <c>title</c>, <c>showTitle</c>, <c>xAxisTitle</c>, <c>yAxisTitle</c>, <c>color</c>, and
+/// <c>colorSet</c>. <c>Chart.VerticalBar</c> also reads <c>showBarValues</c>, <c>yMin</c>, and
+/// <c>yMax</c>, and <c>Chart.HorizontalBar</c> reads <c>displayMode</c>.
 /// </summary>
 internal sealed class BarChartModel : IAdaptiveVisualModel
 {
     public BarOrientation Orientation { get; init; }
 
     public string? Title { get; init; }
+
+    public bool ShowTitle { get; init; }
 
     public string? XAxisTitle { get; init; }
 
@@ -38,7 +54,7 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
 
     public double? YMax { get; init; }
 
-    public ChartValueFormat ValueFormat { get; init; }
+    public BarDisplayMode DisplayMode { get; init; }
 
     public IReadOnlyList<ChartDataPoint> Data { get; init; } = [];
 
@@ -62,6 +78,18 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
         return (min, max);
     }
 
+    /// <summary>Returns the sum of the positive values: the whole of a part-to-whole chart.</summary>
+    public double GetPositiveTotal()
+    {
+        var total = 0d;
+        foreach (var point in Data)
+        {
+            total += Math.Max(0, point.Value);
+        }
+
+        return total;
+    }
+
     public static BarChartModel Parse(string elementJson, BarOrientation orientation, ICollection<string> warnings)
     {
         try
@@ -73,18 +101,22 @@ internal sealed class BarChartModel : IAdaptiveVisualModel
                 warnings.Add("data is required.");
             }
 
+            var isVertical = orientation == BarOrientation.Vertical;
             return new BarChartModel
             {
                 Orientation = orientation,
                 Title = ChartJson.GetString(element, "title"),
+                ShowTitle = ChartJson.GetBoolean(element, "showTitle") ?? false,
                 XAxisTitle = ChartJson.GetString(element, "xAxisTitle"),
                 YAxisTitle = ChartJson.GetString(element, "yAxisTitle"),
                 Color = ChartJson.GetString(element, "color"),
                 ColorSet = ChartJson.GetString(element, "colorSet"),
-                ShowBarValues = ChartJson.GetBoolean(element, "showBarValues") ?? false,
-                YMin = ChartJson.GetNumber(element, "yMin"),
-                YMax = ChartJson.GetNumber(element, "yMax"),
-                ValueFormat = ChartJson.GetEnum(element, "valueFormat", ChartValueFormat.Number, warnings),
+                ShowBarValues = isVertical && (ChartJson.GetBoolean(element, "showBarValues") ?? false),
+                YMin = isVertical ? ChartJson.GetNumber(element, "yMin") : null,
+                YMax = isVertical ? ChartJson.GetNumber(element, "yMax") : null,
+                DisplayMode = isVertical
+                    ? BarDisplayMode.AbsoluteWithAxis
+                    : ChartJson.GetEnum(element, "displayMode", BarDisplayMode.AbsoluteWithAxis, warnings),
                 Data = ChartJson.GetDataPoints(element, "data", "x", "y", warnings),
                 IncrementalState = ChartJson.Canonicalize(element),
             };

@@ -28,8 +28,9 @@ internal static class PerformanceChartData
     internal readonly record struct Series(string Legend, string Color, IReadOnlyList<float> Values);
 
     /// <summary>
-    /// Creates the series array. Each series is padded at the start with empty samples, so the
-    /// chart keeps a fixed time window and fills in from the right.
+    /// Creates the series array, with up to <see cref="HistoryLength"/> of the newest samples.
+    /// Every value is a number: the schema has no way to mark a missing sample, so a short
+    /// history is just a shorter series.
     /// </summary>
     public static JsonArray Create(params Series[] series)
     {
@@ -38,11 +39,6 @@ internal static class PerformanceChartData
         {
             var values = new JsonArray();
             var count = Math.Min(item.Values.Count, HistoryLength);
-            for (var i = count; i < HistoryLength; i++)
-            {
-                values.Add((JsonNode)new JsonObject { ["y"] = null });
-            }
-
             for (var i = item.Values.Count - count; i < item.Values.Count; i++)
             {
                 values.Add((JsonNode)new JsonObject { ["y"] = Math.Round((double)item.Values[i], 1, MidpointRounding.AwayFromZero) });

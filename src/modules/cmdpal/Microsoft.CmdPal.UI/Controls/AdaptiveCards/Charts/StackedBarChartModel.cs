@@ -7,14 +7,16 @@ using System.Text.Json;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.HorizontalBar.Stacked</c> element: <c>data</c>
-/// is a list of bars, each with a <c>title</c> and its own <c>data</c> of <c>legend</c>,
-/// <c>value</c>, and <c>color</c>. Also reads <c>title</c>, <c>color</c>, <c>colorSet</c>, and
-/// Command Palette's <c>showLegend</c>.
+/// The parsed form of an Adaptive Cards <c>Chart.HorizontalBar.Stacked</c> element, with the
+/// schema's defaults: <c>data</c> is a list of bars, each with a <c>title</c> and its own
+/// <c>data</c> of <c>legend</c>, <c>value</c>, and <c>color</c>. Also reads <c>title</c>,
+/// <c>showTitle</c>, <c>color</c>, <c>colorSet</c>, and <c>showLegend</c>.
 /// </summary>
 internal sealed class StackedBarChartModel : IAdaptiveVisualModel
 {
     public string? Title { get; init; }
+
+    public bool ShowTitle { get; init; }
 
     public string? Color { get; init; }
 
@@ -100,6 +102,7 @@ internal sealed class StackedBarChartModel : IAdaptiveVisualModel
             return new StackedBarChartModel
             {
                 Title = ChartJson.GetString(element, "title"),
+                ShowTitle = ChartJson.GetBoolean(element, "showTitle") ?? false,
                 Color = ChartJson.GetString(element, "color"),
                 ColorSet = ChartJson.GetString(element, "colorSet"),
                 ShowLegend = ChartJson.GetBoolean(element, "showLegend") ?? true,

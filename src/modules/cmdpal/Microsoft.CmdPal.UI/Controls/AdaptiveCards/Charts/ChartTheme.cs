@@ -34,17 +34,19 @@ internal static class ChartTheme
             : ChartPalette.ResolveSeriesColor(itemColor, chartColor, colorSet, index, isDarkTheme, GetAccent(isDarkTheme));
 
     /// <summary>
-    /// Resolves a semantic style name such as <c>accent</c>, <c>good</c>, <c>warning</c>, or
-    /// <c>attention</c>. Neutral names (<c>default</c>, <c>subtle</c>) return null.
+    /// Resolves a semantic color name from the schema: <c>accent</c> (and a badge's
+    /// <c>informative</c>), <c>good</c>, <c>warning</c>, or <c>attention</c>. Other names, such as
+    /// <c>default</c> or <c>subtle</c>, return null, so callers fall back to their default.
     /// </summary>
     public static ChartColor? ResolveSemantic(string? style, bool isDarkTheme)
     {
         var name = style?.ToLowerInvariant() switch
         {
-            null or "" or "accent" or "informative" => ChartPalette.AccentColorName,
-            "important" => "attention",
-            "default" or "subtle" or "neutral" => null,
-            var other => other,
+            "accent" or "informative" => ChartPalette.AccentColorName,
+            "good" => "good",
+            "warning" => "warning",
+            "attention" => "attention",
+            _ => null,
         };
 
         if (name is null)

@@ -13,14 +13,16 @@ internal enum GaugeValueFormat
 }
 
 /// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.Gauge</c> element: <c>value</c>, <c>min</c>,
-/// <c>max</c>, <c>segments</c>, <c>valueFormat</c>, <c>subLabel</c>, <c>showLegend</c>,
-/// <c>showMinMax</c>, <c>title</c>, and <c>colorSet</c>. Command Palette also reads <c>color</c>
-/// for the value arc of a gauge without segments.
+/// The parsed form of an Adaptive Cards <c>Chart.Gauge</c> element, with the schema's defaults:
+/// <c>value</c>, <c>min</c>, <c>max</c>, <c>segments</c> (<c>legend</c>, <c>size</c>,
+/// <c>color</c>), <c>valueFormat</c>, <c>subLabel</c>, <c>showLegend</c>, <c>showMinMax</c>,
+/// <c>showNeedle</c>, <c>title</c>, <c>showTitle</c>, and <c>colorSet</c>.
 /// </summary>
 internal sealed class GaugeChartModel : IAdaptiveVisualModel
 {
     public string? Title { get; init; }
+
+    public bool ShowTitle { get; init; }
 
     public string? SubLabel { get; init; }
 
@@ -36,7 +38,7 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
 
     public bool ShowMinMax { get; init; } = true;
 
-    public string? Color { get; init; }
+    public bool ShowNeedle { get; init; } = true;
 
     public string? ColorSet { get; init; }
 
@@ -77,8 +79,7 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
             using var document = JsonDocument.Parse(elementJson);
             var element = document.RootElement;
 
-            // The schema documents the segment size as "value"; Teams samples use "size".
-            var segments = ChartJson.GetDataPoints(element, "segments", "legend", "size", warnings, fallbackValueProperty: "value");
+            var segments = ChartJson.GetDataPoints(element, "segments", "legend", "size", warnings);
             var min = ChartJson.GetNumber(element, "min") ?? 0;
             var segmentTotal = 0d;
             foreach (var segment in segments)
@@ -96,6 +97,7 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
             return new GaugeChartModel
             {
                 Title = ChartJson.GetString(element, "title"),
+                ShowTitle = ChartJson.GetBoolean(element, "showTitle") ?? false,
                 SubLabel = ChartJson.GetString(element, "subLabel"),
                 Value = ChartJson.GetNumber(element, "value") ?? 0,
                 Min = min,
@@ -103,7 +105,7 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
                 ValueFormat = ChartJson.GetEnum(element, "valueFormat", GaugeValueFormat.Percentage, warnings),
                 ShowLegend = ChartJson.GetBoolean(element, "showLegend") ?? true,
                 ShowMinMax = ChartJson.GetBoolean(element, "showMinMax") ?? true,
-                Color = ChartJson.GetString(element, "color"),
+                ShowNeedle = ChartJson.GetBoolean(element, "showNeedle") ?? true,
                 ColorSet = ChartJson.GetString(element, "colorSet"),
                 Segments = segments,
                 IncrementalState = ChartJson.Canonicalize(element),

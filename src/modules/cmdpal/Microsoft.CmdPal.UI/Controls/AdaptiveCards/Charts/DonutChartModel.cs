@@ -7,15 +7,18 @@ using System.Text.Json;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
-/// The parsed form of an Adaptive Cards <c>Chart.Donut</c> or <c>Chart.Pie</c> element:
-/// <c>data</c> (<c>legend</c>, <c>value</c>, <c>color</c>), <c>title</c>, and <c>colorSet</c>.
-/// Command Palette also reads <c>showLegend</c>, and a donut's <c>value</c> as its center label.
+/// The parsed form of an Adaptive Cards <c>Chart.Donut</c> or <c>Chart.Pie</c> element, with the
+/// schema's defaults: <c>data</c> (<c>legend</c>, <c>value</c>, <c>color</c>), <c>title</c>,
+/// <c>showTitle</c>, <c>colorSet</c>, <c>showLegend</c>, and a donut's <c>value</c>, shown in its
+/// center.
 /// </summary>
 internal sealed class DonutChartModel : IAdaptiveVisualModel
 {
     public bool IsPie { get; init; }
 
     public string? Title { get; init; }
+
+    public bool ShowTitle { get; init; }
 
     public string? CenterLabel { get; init; }
 
@@ -72,6 +75,7 @@ internal sealed class DonutChartModel : IAdaptiveVisualModel
             {
                 IsPie = isPie,
                 Title = ChartJson.GetString(element, "title"),
+                ShowTitle = ChartJson.GetBoolean(element, "showTitle") ?? false,
                 CenterLabel = isPie ? null : centerLabel,
                 ColorSet = ChartJson.GetString(element, "colorSet"),
                 ShowLegend = ChartJson.GetBoolean(element, "showLegend") ?? true,

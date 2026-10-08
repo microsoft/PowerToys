@@ -88,13 +88,6 @@ public class ChartPaletteTests
     }
 
     [TestMethod]
-    public void PercentageValuesGetAPercentSign()
-    {
-        Assert.AreEqual("37%", ChartValueFormatter.Format(37, ChartValueFormat.Percentage, CultureInfo.InvariantCulture));
-        Assert.AreEqual("12.5%", ChartValueFormatter.Format(12.5, ChartValueFormat.Percentage, CultureInfo.InvariantCulture));
-    }
-
-    [TestMethod]
     [DataRow(5.0, "5")]
     [DataRow(0.25, "0.25")]
     [DataRow(1234.0, "1,234")]
@@ -103,6 +96,6 @@ public class ChartPaletteTests
     [DataRow(3000000000.0, "3B")]
     public void LargeNumbersUseCompactSuffixes(double value, string expected)
     {
-        Assert.AreEqual(expected, ChartValueFormatter.Format(value, ChartValueFormat.Number, CultureInfo.InvariantCulture));
+        Assert.AreEqual(expected, ChartValueFormatter.FormatCompact(value, CultureInfo.InvariantCulture));
     }
 }

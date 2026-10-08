@@ -15,7 +15,7 @@ Command Palette renders these elements from the current Adaptive Cards schema na
 
 Containers, column sets, and columns also accept `roundedCorners` and `showBorder`, for card-style tiles.
 
-The elements follow the [Adaptive Cards schema](https://adaptivecards.microsoft.com/), so the same JSON renders in other hosts that support it. Older versions of Command Palette, and hosts without chart support, drop unknown elements. **Always set a `fallback`**: `"drop"`, or a simpler element such as a `TextBlock` with the value.
+The elements follow the [Adaptive Cards schema](https://adaptivecards.microsoft.com/). Command Palette reads only the properties that the schema defines, with the schema's defaults, so a card that renders here renders the same way in other hosts that support the elements. Older versions of Command Palette, and hosts without chart support, drop unknown elements. **Always set a `fallback`**: `"drop"`, or a simpler element such as a `TextBlock` with the value.
 
 ## Bind live data
 
@@ -33,8 +33,7 @@ TemplateJson = """
       "xAxisTitle": "60 seconds",
       "yMin": 0,
       "yMax": 100,
-      "valueFormat": "percentage",
-      "fill": "gradient",
+      "showLegend": false,
       "data": "${series}",
       "fallback": { "type": "TextBlock", "text": "${current}" }
     }
@@ -62,78 +61,94 @@ var data = new JsonObject
 DataJson = data.ToJsonString();
 ```
 
+Every value is an object, and `y` is a number that defaults to `0`. The schema has no way to mark a missing sample, so send only the samples you have: a history that's still filling up is a shorter series.
+
 ## Colors
 
-Every `color` property accepts:
+Chart colors (`color` on a chart, a series, a bar, a slice, or a segment) are names from the schema:
 
-- Semantic names: `accent` (the user's accent color), `good`, `warning`, `attention`, and `neutral`.
-- Categorical names: `categoricalBlue`, `categoricalLightBlue`, `categoricalTeal`, `categoricalGreen`, `categoricalLime`, `categoricalMarigold`, `categoricalRed`, `categoricalPurple`, and `categoricalLavender`.
-- Sequential (`sequential1`-`sequential8`) and diverging (`divergingBlue`, `divergingTeal`, `divergingYellow`, `divergingRed`, and others) names.
+- Semantic: `good`, `warning`, `attention`, and `neutral`.
+- Categorical: `categoricalBlue`, `categoricalLightBlue`, `categoricalTeal`, `categoricalGreen`, `categoricalLime`, `categoricalMarigold`, `categoricalRed`, `categoricalPurple`, and `categoricalLavender`.
+- Sequential (`sequential1`-`sequential8`) and diverging (`divergingBlue`, `divergingTeal`, `divergingYellow`, `divergingRed`, and others).
 
-Names have a light theme and a dark theme variant, and switch to system colors in high contrast. Prefer names over hex values so charts stay readable in every theme. Set `colorSet` (`categorical`, `sequential`, or `diverging`) to color items in order without naming each color.
+Names have a light theme and a dark theme variant, and switch to system colors in high contrast. Without a color, a single series uses the user's accent color. Set `colorSet` (`categorical`, `sequential`, or `diverging`) to color items in order without naming each color.
+
+`ProgressBar`, `Badge`, and `Icon` have their own, shorter lists, below.
 
 ## Chart.Line
 
 | Property | Description |
 |----------|-------------|
-| `data` | Series: `[{ "legend": "...", "color": "...", "values": [{ "x": "...", "y": 1 }] }]`. A `null` `y` leaves a gap, so pad the start of a history to keep a fixed time window. `x` labels are optional. |
-| `title`, `xAxisTitle`, `yAxisTitle` | Labels around the plot. |
+| `data` | Series: `[{ "legend": "...", "color": "...", "values": [{ "x": "...", "y": 1 }] }]`. `x` labels are optional. |
+| `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
+| `xAxisTitle`, `yAxisTitle` | Labels under and above the plot. Put the unit in the axis title, such as `% Utilization`. |
 | `yMin`, `yMax` | Fix the value range. Without them, the range fits the data. |
-| `valueFormat` | `number` (default) or `percentage` for values that are already percentages. |
 | `color`, `colorSet` | Series colors when a series doesn't set its own. |
-| `fill` | Command Palette: `gradient` fills under each line. Default `none`. |
-| `curve` | Command Palette: `smooth` (default, never overshoots the data) or `linear`. |
-| `style` | Command Palette: `sparkline` draws a compact line without axes or labels, for tiles. |
-| `showLegend` | Command Palette: shows the legend. By default, charts with more than one series show one. |
-| `minHeight` | Command Palette: the smallest plot height, such as `"120px"`. |
+| `showLegend` | Shows the legend; the default is `true`. A single series without a `legend` has nothing to show. |
+
+Command Palette draws smooth lines with a soft fill under them. A chart narrower than 400 pixels, such as one in a dashboard tile, draws as a sparkline: just the lines, without the title, axis labels, grid lines, or legend.
 
 ## Chart.Gauge
 
 | Property | Description |
 |----------|-------------|
 | `value`, `min`, `max` | The value and its range. Without `max`, the segments' total sets it. |
-| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. A marker shows where the value falls. Without segments, the gauge fills up to the value. |
-| `valueFormat` | `percentage` (default) or `fraction`, such as `3/5`. |
-| `title`, `subLabel` | A title, and a label under the value. |
-| `showMinMax`, `showLegend` | Show the range labels and the segment legend. Both default to `true`. |
-| `color` | Command Palette: the fill color of a gauge without segments. |
+| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. Without segments, the gauge fills up to the value. |
+| `valueFormat` | `Percentage` (default) or `Fraction`, such as `3/5`. |
+| `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
+| `subLabel` | A label under the value. |
+| `showNeedle`, `showMinMax`, `showLegend` | Show the needle (a marker where the value falls), the range labels, and the segment legend. All default to `true`. |
 
 ## Chart.Donut and Chart.Pie
 
 | Property | Description |
 |----------|-------------|
 | `data` | Slices: `[{ "legend": "Apps", "value": 182, "color": "categoricalBlue" }]`. The legend shows each slice's share. |
-| `title`, `colorSet` | A title, and colors for slices that don't set one. |
-| `value` | Command Palette, `Chart.Donut` only: a label in the center, such as `"512 GB"`. |
-| `showLegend` | Command Palette: set `false` to hide the legend. |
+| `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
+| `colorSet` | Colors for slices that don't set one. |
+| `value` | `Chart.Donut`: a label in the center, such as `"512 GB"`. |
+| `showLegend` | Shows the legend; the default is `true`. |
 
-## Chart.VerticalBar and Chart.HorizontalBar
+## Chart.VerticalBar
 
 | Property | Description |
 |----------|-------------|
 | `data` | Bars: `[{ "x": "Mon", "y": 12, "color": "..." }]`. |
-| `title`, `xAxisTitle`, `yAxisTitle` | Labels. |
-| `showBarValues` | Shows each bar's value. |
+| `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
+| `xAxisTitle`, `yAxisTitle` | Labels. |
+| `showBarValues` | Shows each bar's value; the default is `false`. |
+| `yMin`, `yMax` | The value range. Without them, the range fits the data. |
 | `color`, `colorSet` | One color for every bar, or a color per bar. |
-| `yMin`, `yMax`, `valueFormat` | Command Palette: the value range and format, as for `Chart.Line`. |
 
-A vertical bar chart skips labels that would overlap. A horizontal bar chart trims labels longer than 40% of its width, and shows the full label in a tooltip.
+Labels that would overlap are skipped.
+
+## Chart.HorizontalBar
+
+| Property | Description |
+|----------|-------------|
+| `data` | Bars: `[{ "x": "Browser", "y": 34, "color": "..." }]`. Values can't be negative. |
+| `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
+| `xAxisTitle`, `yAxisTitle` | The category axis title, under the labels, and the value axis title, under the bars. |
+| `displayMode` | `AbsoluteWithAxis` (default): a value axis under the bars. `AbsoluteNoAxis`: each value at the end of its bar. `PartToWhole`: each bar's share of the total, as a percentage. |
+| `color`, `colorSet` | One color for every bar, or a color per bar. |
+
+Labels longer than 40% of the chart's width are trimmed, with the full label in a tooltip.
 
 ## Chart.HorizontalBar.Stacked
 
-`data` is a list of bars, each with a `title` and its own `data` of parts: `[{ "title": "Desktop", "data": [{ "legend": "In use", "value": 18, "color": "categoricalPurple" }] }]`. A legend appears once for all bars, and a legend keeps the same color in every bar. Bars are scaled to the longest bar, so a single bar fills the width. Set `showLegend` to `false` to hide the legend.
+`data` is a list of bars, each with a `title` and its own `data` of parts: `[{ "title": "Desktop", "data": [{ "legend": "In use", "value": 18, "color": "categoricalPurple" }] }]`. A legend appears once for all bars, and a legend keeps the same color in every bar. Bars are scaled to the longest bar, so a single bar fills the width. `showLegend` defaults to `true`, and `title` shows only when `showTitle` is `true`.
 
 ## ProgressBar
 
-`value` and `max` (default 100). Without `value`, the bar is indeterminate. `color` takes a color name; the default is the accent color.
+`value` and `max` (default 100). Without `value`, the bar is indeterminate. `color` is `accent` (default), `good`, `warning`, or `attention`.
 
 ## Badge
 
 `text`, plus:
 
-- `style`: `default`, `subtle`, `accent`, `informative`, `good`, `warning`, `attention`, or `important`.
+- `style`: `default`, `subtle`, `informative`, `accent`, `good`, `warning`, or `attention`.
 - `appearance`: `filled` (default) or `tint`.
-- `shape`: `rounded` (default), `square`, or `circular`.
+- `shape`: `circular` (default), `rounded`, or `square`.
 - `size`: `medium` (default), `large`, or `extraLarge`.
 - `icon`: a Fluent icon name, optionally followed by `,filled`, such as `"CheckmarkCircle,filled"`.
 - `iconPosition`: `before` (default) or `after` the text.
@@ -171,9 +186,13 @@ Put a small icon in an `auto` column before a title, and center it vertically:
 }
 ```
 
+## Not supported yet
+
+Command Palette doesn't render `Chart.VerticalBar.Grouped` or `ProgressRing`, so they show their `fallback`. It also ignores these properties: `thickness`, `valueColor`, and `showOutlines` on donut, pie, and gauge charts; `maxWidth` on charts; and `selectAction` on `Icon`. A `Chart.Line` spaces its points evenly, even when its `x` values are numbers or dates. Charts with any of these still render.
+
 ## Tiles with roundedCorners and showBorder
 
-Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up:
+Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up. A line chart in a tile is narrow, so it draws as a sparkline:
 
 ```json
 {
@@ -192,7 +211,7 @@ Use an emphasis container with rounded corners and a border for a dashboard tile
           "items": [
             { "type": "TextBlock", "text": "CPU", "size": "small", "weight": "bolder" },
             { "type": "TextBlock", "text": "${cpu}", "size": "extraLarge", "weight": "bolder", "spacing": "none" },
-            { "type": "Chart.Line", "style": "sparkline", "yMin": 0, "fill": "gradient", "data": "${cpuSeries}", "fallback": "drop" }
+            { "type": "Chart.Line", "yMin": 0, "showLegend": false, "data": "${cpuSeries}", "fallback": "drop" }
           ]
         }
       ]

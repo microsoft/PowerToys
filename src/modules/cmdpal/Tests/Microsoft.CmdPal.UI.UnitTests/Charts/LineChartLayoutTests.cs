@@ -62,8 +62,8 @@ public class LineChartLayoutTests
     [TestMethod]
     public void ShiftByOneSampleIsDetected()
     {
-        var before = Model("[null, 1, 2, 3]");
-        var after = Model("[1, 2, 3, 4]");
+        var before = Model(0, 1, 2, 3);
+        var after = Model(1, 2, 3, 4);
 
         Assert.IsTrue(LineChartUpdate.IsScrolledByOne(before, after));
     }
@@ -71,11 +71,13 @@ public class LineChartLayoutTests
     [TestMethod]
     public void OtherChangesAreNotAScroll()
     {
-        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(Model("[1, 2, 3, 4]"), Model("[1, 2, 3, 5]")));
-        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(Model("[1, 2, 3]"), Model("[2, 3, 4, 5]")));
-        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(LineChartModel.Empty, Model("[1, 2]")));
+        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(Model(1, 2, 3, 4), Model(1, 2, 3, 5)));
+        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(Model(1, 2, 3), Model(2, 3, 4, 5)));
+        Assert.IsFalse(LineChartUpdate.IsScrolledByOne(LineChartModel.Empty, Model(1, 2)));
     }
 
-    private static LineChartModel Model(string values) =>
-        LineChartModel.Parse($$"""{ "data": [{ "values": {{values}} }] }""", new List<string>());
+    private static LineChartModel Model(params int[] values) =>
+        LineChartModel.Parse(
+            $$"""{ "data": [{ "values": [{{string.Join(", ", values.Select(value => $$"""{ "y": {{value}} }"""))}}] }] }""",
+            new List<string>());
 }

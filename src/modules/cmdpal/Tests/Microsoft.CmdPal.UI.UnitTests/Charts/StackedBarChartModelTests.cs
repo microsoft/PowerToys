@@ -61,4 +61,14 @@ public class StackedBarChartModelTests
 
         Assert.AreEqual(1, warnings.Count);
     }
+
+    [TestMethod]
+    public void TheTitleShowsOnlyWhenAsked()
+    {
+        var hidden = StackedBarChartModel.Parse("""{ "type": "Chart.HorizontalBar.Stacked", "title": "Memory", "data": [] }""", new List<string>());
+        var shown = StackedBarChartModel.Parse("""{ "type": "Chart.HorizontalBar.Stacked", "title": "Memory", "showTitle": true, "data": [] }""", new List<string>());
+
+        Assert.IsFalse(hidden.ShowTitle);
+        Assert.IsTrue(shown.ShowTitle);
+    }
 }

@@ -70,11 +70,10 @@ internal static class SampleChartsTemplate
                     {
                       "type": "Chart.Line",
                       "title": "Requests per second",
+                      "showTitle": true,
                       "xAxisTitle": "Last 30 seconds",
                       "yAxisTitle": "Requests",
                       "yMin": 0,
-                      "fill": "gradient",
-                      "showLegend": true,
                       "data": "${traffic}",
                       "fallback": {
                         "type": "TextBlock",
@@ -100,6 +99,7 @@ internal static class SampleChartsTemplate
                     {
                       "type": "Chart.Gauge",
                       "title": "Server load",
+                      "showTitle": true,
                       "subLabel": "Load",
                       "value": "${load}",
                       "min": 0,
@@ -143,6 +143,7 @@ internal static class SampleChartsTemplate
                     {
                       "type": "Chart.Donut",
                       "title": "Storage",
+                      "showTitle": true,
                       "value": "512 GB",
                       "data": [
                         { "legend": "Apps", "value": 182 },
@@ -170,6 +171,7 @@ internal static class SampleChartsTemplate
                     {
                       "type": "Chart.Pie",
                       "title": "Time by app",
+                      "showTitle": true,
                       "colorSet": "categorical",
                       "data": [
                         { "legend": "Editor", "value": 48 },
@@ -203,6 +205,7 @@ internal static class SampleChartsTemplate
                     {
                       "type": "Chart.VerticalBar",
                       "title": "Builds per week",
+                      "showTitle": true,
                       "showBarValues": true,
                       "color": "categoricalTeal",
                       "data": [
@@ -231,9 +234,9 @@ internal static class SampleChartsTemplate
                   "items": [
                     {
                       "type": "Chart.HorizontalBar",
-                      "title": "Busiest processes",
-                      "valueFormat": "percentage",
-                      "showBarValues": true,
+                      "title": "Busiest processes (% CPU)",
+                      "showTitle": true,
+                      "displayMode": "AbsoluteNoAxis",
                       "color": "categoricalPurple",
                       "data": [
                         { "x": "Browser", "y": 34 },
@@ -259,6 +262,7 @@ internal static class SampleChartsTemplate
             {
               "type": "Chart.HorizontalBar.Stacked",
               "title": "Memory by device",
+              "showTitle": true,
               "data": [
                 {
                   "title": "Desktop",

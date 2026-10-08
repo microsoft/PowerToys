@@ -30,7 +30,20 @@
                   "value": "${batteryPercent}",
                   "min": 0,
                   "max": 100,
-                  "color": "${batteryColor}",
+                  "segments": [
+                    {
+                      "size": 20,
+                      "color": "attention"
+                    },
+                    {
+                      "size": 30,
+                      "color": "warning"
+                    },
+                    {
+                      "size": 50,
+                      "color": "good"
+                    }
+                  ],
                   "subLabel": "%Battery_Widget_Template/Charge%",
                   "showMinMax": false,
                   "showLegend": false,

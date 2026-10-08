@@ -33,11 +33,11 @@ internal enum BadgeIconPosition
 }
 
 /// <summary>
-/// The parsed form of an Adaptive Cards <c>Badge</c> element: <c>text</c>, <c>style</c>
-/// (<c>default</c>, <c>subtle</c>, <c>informative</c>, <c>accent</c>, <c>good</c>,
-/// <c>attention</c>, <c>warning</c>), <c>appearance</c>, <c>shape</c>, <c>size</c>,
-/// <c>icon</c> (a Fluent icon name, optionally followed by <c>,filled</c>), <c>iconPosition</c>,
-/// and <c>tooltip</c>.
+/// The parsed form of an Adaptive Cards <c>Badge</c> element, with the schema's defaults:
+/// <c>text</c>, <c>style</c> (<c>default</c>, <c>subtle</c>, <c>informative</c>, <c>accent</c>,
+/// <c>good</c>, <c>attention</c>, <c>warning</c>), <c>appearance</c>, <c>shape</c> (circular by
+/// default), <c>size</c>, <c>icon</c> (a Fluent icon name, optionally followed by
+/// <c>,filled</c>), <c>iconPosition</c>, and <c>tooltip</c>.
 /// </summary>
 internal sealed class BadgeModel : IAdaptiveVisualModel
 {
@@ -71,7 +71,7 @@ internal sealed class BadgeModel : IAdaptiveVisualModel
                 Text = ChartJson.GetString(element, "text") ?? string.Empty,
                 Style = ChartJson.GetString(element, "style"),
                 Appearance = ChartJson.GetEnum(element, "appearance", BadgeAppearance.Filled, warnings),
-                Shape = ChartJson.GetEnum(element, "shape", BadgeShape.Rounded, warnings),
+                Shape = ChartJson.GetEnum(element, "shape", BadgeShape.Circular, warnings),
                 Size = ChartJson.GetEnum(element, "size", BadgeSize.Medium, warnings),
                 IconGlyph = GetIconGlyph(ChartJson.GetString(element, "icon"), warnings),
                 IconPosition = ChartJson.GetEnum(element, "iconPosition", BadgeIconPosition.Before, warnings),

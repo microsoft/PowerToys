@@ -48,7 +48,8 @@ internal sealed partial class ProgressBarControl : AdaptiveVisualControl
             _bar.Value = _model.ClampedValue;
         }
 
-        var color = ChartTheme.ResolveSemantic(_model.Color ?? ChartPalette.AccentColorName, isDarkTheme)
+        // The schema's colors are accent (the default), good, warning, and attention.
+        var color = ChartTheme.ResolveSemantic(_model.Color, isDarkTheme)
             ?? ChartTheme.GetAccent(isDarkTheme);
         _bar.Foreground = ChartTheme.ToBrush(color);
         _bar.Background = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));

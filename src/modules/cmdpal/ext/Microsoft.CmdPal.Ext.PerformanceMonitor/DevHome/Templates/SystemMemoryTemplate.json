@@ -77,8 +77,7 @@
           "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
           "yMin": 0,
           "yMax": 100,
-          "valueFormat": "percentage",
-          "fill": "gradient",
+          "showLegend": false,
           "data": "${memSeries}",
           "fallback": "drop"
         },
@@ -86,6 +85,7 @@
           "type": "Chart.HorizontalBar.Stacked",
           "spacing": "medium",
           "title": "%Memory_Widget_Template/Composition%",
+          "showTitle": true,
           "data": "${memComposition}",
           "fallback": "drop"
         },

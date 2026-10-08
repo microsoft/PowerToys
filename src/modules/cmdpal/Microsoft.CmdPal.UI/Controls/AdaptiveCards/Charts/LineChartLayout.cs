@@ -18,6 +18,9 @@ internal readonly record struct LineChartLayout(
     double RightPadding,
     double BottomPadding)
 {
+    /// <summary>The width below which a line chart draws as a sparkline, as in a dashboard tile.</summary>
+    public const double CompactWidth = 400;
+
     public double PlotLeft => 0;
 
     public double PlotRight => Math.Max(PlotLeft, Width - RightPadding);
@@ -31,6 +34,9 @@ internal readonly record struct LineChartLayout(
     public double MapX(int slot) => SlotCount > 1 ? PlotLeft + (slot * SlotWidth) : PlotRight;
 
     public double MapY(double value) => PlotBottom - (Range.Normalize(value) * (PlotBottom - PlotTop));
+
+    /// <summary>Returns whether a chart this wide draws as a sparkline.</summary>
+    public static bool IsCompact(double width) => width > 0 && width < CompactWidth;
 
     /// <summary>Returns the slot of the first sample of a series with <paramref name="pointCount"/> samples.</summary>
     public int GetFirstSlot(int pointCount) => Math.Max(0, SlotCount - pointCount);

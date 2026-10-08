@@ -38,7 +38,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         var isDarkTheme = IsDarkTheme;
         var secondary = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: true));
         var root = new StackPanel { Spacing = 8 };
-        if (!string.IsNullOrWhiteSpace(_model.Title))
+        if (_model.ShowTitle && !string.IsNullOrWhiteSpace(_model.Title))
         {
             root.Children.Add(ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle));
         }
@@ -57,19 +57,21 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         }
 
         var fraction = _model.Fraction;
+        ChartColor needleColor;
         if (_model.Segments.Count == 0)
         {
+            // Without segments, the arc fills up to the value.
             var track = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));
             canvas.Children.Add(ChartShapes.CreateArc(center, radius, 180, 0, track, thickness, PenLineCap.Round));
+            needleColor = ChartTheme.Resolve(
+                _model.ColorSet is null ? ChartPalette.AccentColorName : null,
+                null,
+                _model.ColorSet,
+                0,
+                isDarkTheme);
             if (fraction > 0.001)
             {
-                var valueColor = ChartTheme.Resolve(
-                    _model.Color ?? (_model.ColorSet is null ? ChartPalette.AccentColorName : null),
-                    null,
-                    _model.ColorSet,
-                    0,
-                    isDarkTheme);
-                canvas.Children.Add(ChartShapes.CreateArc(center, radius, 180, ChartArc.GaugeAngle(fraction), ChartTheme.ToBrush(valueColor), thickness, PenLineCap.Round));
+                canvas.Children.Add(ChartShapes.CreateArc(center, radius, 180, ChartArc.GaugeAngle(fraction), ChartTheme.ToBrush(needleColor), thickness, PenLineCap.Round));
             }
         }
         else
@@ -97,13 +99,17 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
                 }
             }
 
-            // A marker on the arc shows where the value falls.
             var active = _model.GetActiveSegment();
-            var markerColor = active >= 0 ? colors[active] : ChartTheme.GetAccent(isDarkTheme);
+            needleColor = active >= 0 ? colors[active] : ChartTheme.GetAccent(isDarkTheme);
+        }
+
+        // The needle is a marker on the arc where the value falls.
+        if (_model.ShowNeedle)
+        {
             canvas.Children.Add(ChartShapes.CreateCircle(
                 ChartArc.PointAt(center, radius, ChartArc.GaugeAngle(fraction)),
                 thickness + 6,
-                ChartTheme.ToBrush(markerColor),
+                ChartTheme.ToBrush(needleColor),
                 ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: false)),
                 3));
         }

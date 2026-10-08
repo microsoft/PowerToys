@@ -11,6 +11,8 @@ Each element has two parts, joined in `AdaptiveVisualElements`:
 - **Model** (`*Model.cs`): parses the element JSON with `ChartJson`, leniently. Invalid values read as missing and add a warning. Models don't use WinUI, so the unit tests link them directly. `IncrementalState` is the element's canonical JSON.
 - **Control** (`*Control.cs`): an `AdaptiveVisualControl` that draws the model with shapes and text. It re-renders when the theme or, for width-dependent layouts, the width changes.
 
+Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, and a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline.
+
 `AdaptiveVisualElements.Types` lists every element with its parser and control factory. `ContentFormControl` registers the parsers, the renderers, and `PatchableElements`, so the incremental updater can move a new model into an existing control instead of rebuilding the card. A line chart that gains one sample scrolls instead of redrawing.
 
 `AdaptiveContainerDecoratorRenderer` (one folder up) adds `roundedCorners` and `showBorder` to containers, column sets, and columns with the `CmdPal.Adaptive.Container.*` styles in `ContentFormControl.xaml`.
@@ -29,7 +31,7 @@ To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName
 
 ## Add an element
 
-1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`.
+1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
 2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`.
 3. Add the element to `AdaptiveVisualElements.Types`.
 4. Link the model in `Tests\Microsoft.CmdPal.UI.UnitTests` and add parsing tests.
