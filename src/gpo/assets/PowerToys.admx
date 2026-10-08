@@ -32,6 +32,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_99_0" displayName="$(string.SUPPORTED_POWERTOYS_0_99_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_102_0" displayName="$(string.SUPPORTED_POWERTOYS_0_102_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -389,6 +390,16 @@
     <policy name="ConfigureEnabledUtilityCursorWrap" class="Both" displayName="$(string.ConfigureEnabledUtilityCursorWrap)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCursorWrap">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_97_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityMouseButtonLock" class="Both" displayName="$(string.ConfigureEnabledUtilityMouseButtonLock)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityMouseButtonLock">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_102_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
