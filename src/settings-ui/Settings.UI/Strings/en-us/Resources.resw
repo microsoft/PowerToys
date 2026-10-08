@@ -3580,18 +3580,17 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>No character sets selected</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Summary_All" xml:space="preserve">
-    <value>All {0} character sets</value>
-    <comment>{0} is the total number of character sets</comment>
+    <value>All</value>
+    <comment>Shown when every character set is selected</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Summary_More" xml:space="preserve">
-    <value>{0} and {1} more</value>
-    <comment>{0} is a comma-separated list of character set names, {1} is the number of additional character sets that are not listed</comment>
+  <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
+    <value>Choose which languages and symbol sets Quick Accent shows characters for</value>
   </data>
   <data name="QuickAccent_EditCharacterSets_Button.Content" xml:space="preserve">
-    <value>Edit</value>
+    <value>Manage</value>
   </data>
   <data name="QuickAccent_EditCharacterSets_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Edit character sets</value>
+    <value>Manage character sets</value>
   </data>
   <data name="QuickAccent_CharacterSetsDialog.Title" xml:space="preserve">
     <value>Choose character sets</value>

@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
@@ -371,30 +369,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ? "ALL"
                     : string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
 
-                SelectedLanguages.Clear();
-                foreach (var language in _selectedLanguageOptions)
-                {
-                    SelectedLanguages.Add(language);
-                }
-
                 OnPropertyChanged(nameof(HasSelectedLanguages));
                 OnPropertyChanged(nameof(SelectedLanguagesSummary));
                 RaisePropertyChanged(nameof(SelectedLanguageOptions));
             }
         }
 
-        /// <summary>
-        /// Gets the active character sets, in display order. Shown as read-only rows
-        /// inside the "Character sets" expander in the Settings UI.
-        /// </summary>
-        public ObservableCollection<PowerAccentLanguageModel> SelectedLanguages { get; } = new();
-
         public bool HasSelectedLanguages => _selectedLanguageOptions.Length > 0;
 
-        private const int SummaryMaxNames = 3;
-
         /// <summary>
-        /// Gets a short summary of the active character sets, e.g. "French, German, Spanish and 2 more".
+        /// Gets the active character sets as display text: "All" when every set is selected,
+        /// otherwise a comma-separated list of the selected set names.
         /// </summary>
         public string SelectedLanguagesSummary
         {
@@ -408,14 +393,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (AllSelected)
                 {
-                    return string.Format(CultureInfo.CurrentCulture, loader.GetString("QuickAccent_SelectedLanguage_Summary_All"), Languages.Count);
+                    return loader.GetString("QuickAccent_SelectedLanguage_Summary_All");
                 }
 
-                string names = string.Join(", ", _selectedLanguageOptions.Take(SummaryMaxNames).Select(l => l.Language));
-                int remaining = _selectedLanguageOptions.Length - SummaryMaxNames;
-                return remaining > 0
-                    ? string.Format(CultureInfo.CurrentCulture, loader.GetString("QuickAccent_SelectedLanguage_Summary_More"), names, remaining)
-                    : names;
+                return string.Join(", ", _selectedLanguageOptions.Select(l => l.Language));
             }
         }
 

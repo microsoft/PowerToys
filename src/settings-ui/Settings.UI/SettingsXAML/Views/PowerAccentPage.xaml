@@ -70,18 +70,22 @@
                     <tkcontrols:SettingsExpander
                         Name="QuickAccentSelectedLanguage"
                         x:Uid="QuickAccent_SelectedLanguage"
-                        Description="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
-                        ItemsSource="{x:Bind ViewModel.SelectedLanguages, Mode=OneWay}">
+                        IsExpanded="True">
                         <Button
                             x:Uid="QuickAccent_EditCharacterSets_Button"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Click="EditCharacterSetsButton_Click" />
-                        <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="Lib:PowerAccentLanguageModel">
-                                <tkcontrols:SettingsCard Description="{x:Bind CharacterPreview}" Header="{x:Bind Language}" />
-                            </DataTemplate>
-                        </tkcontrols:SettingsExpander.ItemTemplate>
+                            Click="EditCharacterSetsButton_Click"
+                            Style="{ThemeResource AccentButtonStyle}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
+                                <TextBlock
+                                    x:Name="SelectedCharacterSetsText"
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                     <InfoBar
                         x:Uid="QuickAccent_NoCharacterSets"
@@ -180,6 +184,9 @@
                     DefaultButton="Primary"
                     PrimaryButtonClick="CharacterSetsDialog_PrimaryButtonClick"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+                    <ContentDialog.Resources>
+                        <x:Double x:Key="ContentDialogMaxHeight">840</x:Double>
+                    </ContentDialog.Resources>
                     <Grid Width="420" RowSpacing="8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -206,28 +213,19 @@
                         <ListView
                             x:Name="AvailableCharacterSetsList"
                             Grid.Row="2"
-                            Height="360"
-                            IsItemClickEnabled="True"
-                            ItemClick="AvailableCharacterSetsList_ItemClick"
-                            SelectionMode="None">
+                            Height="520"
+                            SelectionChanged="AvailableCharacterSetsList_SelectionChanged"
+                            SelectionMode="Multiple">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CharacterSetPickerItem">
-                                    <CheckBox
-                                        Padding="8,6,0,6"
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.Name="{x:Bind Language.Language}"
-                                        Checked="CharacterSetCheckBox_CheckedChanged"
-                                        IsChecked="{x:Bind IsChecked, Mode=TwoWay}"
-                                        Unchecked="CharacterSetCheckBox_CheckedChanged">
-                                        <StackPanel>
-                                            <TextBlock Text="{x:Bind Language.Language}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind Language.CharacterPreview}"
-                                                TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                    </CheckBox>
+                                    <StackPanel Padding="0,6" AutomationProperties.Name="{x:Bind Language.Language}">
+                                        <TextBlock Text="{x:Bind Language.Language}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Language.CharacterPreview}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                             <ListView.GroupStyle>

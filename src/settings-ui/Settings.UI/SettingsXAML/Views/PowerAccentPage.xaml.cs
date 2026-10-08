@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private List<CharacterSetPickerGroup> _characterSetGroups = [];
         private List<CharacterSetPickerGroup> _visibleCharacterSetGroups = [];
+        private bool _suppressSelectionSync;
 
         private async void EditCharacterSetsButton_Click(object sender, RoutedEventArgs e)
         {
@@ -62,7 +63,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     .ToList();
 
             AvailableCharacterSetsViewSource.Source = _visibleCharacterSetGroups;
+
+            // Rebuilding ItemsSource clears the ListView selection; don't let that uncheck items.
+            _suppressSelectionSync = true;
             AvailableCharacterSetsList.ItemsSource = AvailableCharacterSetsViewSource.View;
+            _suppressSelectionSync = false;
+            SyncListSelection();
+
             NoCharacterSetsFoundText.Visibility = _visibleCharacterSetGroups.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             UpdateCharacterSetsDialogState();
         }
@@ -75,21 +82,42 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void AvailableCharacterSetsList_ItemClick(object sender, ItemClickEventArgs e)
+        /// <summary>
+        /// Mirrors <see cref="CharacterSetPickerItem.IsChecked"/> (the source of truth, which survives filtering)
+        /// onto the ListView's selection.
+        /// </summary>
+        private void SyncListSelection()
         {
-            if (e.ClickedItem is CharacterSetPickerItem item)
+            _suppressSelectionSync = true;
+            try
             {
-                item.IsChecked = !item.IsChecked;
-                UpdateCharacterSetsDialogState();
+                AvailableCharacterSetsList.SelectedItems.Clear();
+                foreach (var item in _visibleCharacterSetGroups.SelectMany(group => group).Where(item => item.IsChecked))
+                {
+                    AvailableCharacterSetsList.SelectedItems.Add(item);
+                }
+            }
+            finally
+            {
+                _suppressSelectionSync = false;
             }
         }
 
-        private void CharacterSetCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        private void AvailableCharacterSetsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Checked/Unchecked fire before the TwoWay binding writes back, so sync the item explicitly.
-            if (sender is CheckBox { DataContext: CharacterSetPickerItem item } checkBox)
+            if (_suppressSelectionSync)
             {
-                item.IsChecked = checkBox.IsChecked == true;
+                return;
+            }
+
+            foreach (var item in e.AddedItems.OfType<CharacterSetPickerItem>())
+            {
+                item.IsChecked = true;
+            }
+
+            foreach (var item in e.RemovedItems.OfType<CharacterSetPickerItem>())
+            {
+                item.IsChecked = false;
             }
 
             UpdateCharacterSetsDialogState();
@@ -105,6 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 item.IsChecked = check;
             }
 
+            SyncListSelection();
             UpdateCharacterSetsDialogState();
         }
 

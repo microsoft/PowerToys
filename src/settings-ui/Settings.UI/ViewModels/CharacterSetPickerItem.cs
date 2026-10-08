@@ -8,8 +8,8 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     /// <summary>
-    /// A character set entry in the "Add character sets" dialog. Tracks its own
-    /// checked state so that selections survive search filtering.
+    /// A character set entry in the "Choose character sets" dialog. Tracks its own
+    /// selected state so that selections survive search filtering.
     /// </summary>
     public partial class CharacterSetPickerItem : Observable
     {
