@@ -36,8 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\WindowsRunHistory.cs" Link="Helpers\WindowsRunHistory.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ListItemDoubleTapTarget.cs" Link="Helpers\ListItemDoubleTapTarget.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuFlyoutSession.cs" Link="Helpers\ContextMenuFlyoutSession.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuAnchor.cs" Link="Helpers\ContextMenuAnchor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\ContextMenuRequest.cs" Link="Helpers\ContextMenuRequest.cs" />
@@ -46,7 +49,9 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ContextMenuHost.cs" Link="Services\ContextMenuHost.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\ItemActionController.cs" Link="Services\ItemActionController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRefreshState.cs" Link="Controls\IconRefreshState.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconUnloadController.cs" Link="Controls\IconUnloadController.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\AppIconProtocolProcessor.cs" Link="Helpers\Icons\AppIconProtocolProcessor.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ShellItemImageFactoryIconExtractor.cs" Link="Helpers\Icons\ShellItemImageFactoryIconExtractor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconRequestSite.cs" Link="Controls\IconRequestSite.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\IconPresentationState`1.cs" Link="Controls\IconPresentationState`1.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCache`2.cs" Link="Helpers\AdaptiveCache`2.cs" />

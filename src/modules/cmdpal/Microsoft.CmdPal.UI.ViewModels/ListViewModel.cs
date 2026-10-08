@@ -40,6 +40,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly ExtensionObject<IListPage> _model;
 
+    // When both locks are needed, take the list lock before the fetch-state lock.
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
@@ -130,10 +131,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ListItemViewModel? _lastSelectedItem;
 
+    // Cache UI-owned selection position so background fetches never inspect FilteredItems.
+    private volatile bool _selectionIsFirstOrAbsent = true;
+
+    // Retain logical first-row selection until the view reports its deferred move.
+    private bool _awaitingFirstSelection;
+
+    private int _selectionNavigationVersion;
+
     // Persists across cancelled FetchItems calls so a forceFirstItem=true
     // intent is never lost when FetchItems(false) is cancelled by a
-    // subsequent FetchItems(true).
-    private volatile bool _forceFirstItemPending;
+    // subsequent FetchItems(true), unless the user selects a later row.
+    private int? _forceFirstItemSelectionVersion;
 
     // For cancelling a deferred SafeSlowInit when the user navigates rapidly
     private CancellationTokenSource? _selectedItemCts;
@@ -197,6 +206,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -239,6 +254,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
+                _awaitingFirstSelection = true;
+                UpdateSelectionPosition();
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
@@ -346,6 +363,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
         CancellationToken cancellationToken;
@@ -358,9 +381,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             fetchGeneration = work.Generation;
-            if (!work.KeepSelection)
+
+            // Capture selection intent before reused items are reordered.
+            // Read the version first so newer navigation cannot pair its version with an old first-row position.
+            var selectionVersion = Volatile.Read(ref _selectionNavigationVersion);
+            if (!work.KeepSelection && (IsRootPage || _selectionIsFirstOrAbsent))
             {
-                _forceFirstItemPending = true;
+                _forceFirstItemSelectionVersion = selectionVersion;
             }
 
             // Capture the token before publishing its owner: navigation can cancel
@@ -477,11 +504,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
-            lock (_fetchStateLock)
+            lock (_listLock)
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                lock (_listLock)
+                lock (_fetchStateLock)
                 {
                     ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
@@ -555,15 +582,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         DoOnUiThread(() =>
         {
-            lock (_fetchStateLock)
+            lock (_listLock)
             {
-                if (!IsCurrentFetch(fetchGeneration))
+                lock (_fetchStateLock)
                 {
-                    return;
-                }
+                    if (!IsCurrentFetch(fetchGeneration))
+                    {
+                        return;
+                    }
 
-                lock (_listLock)
-                {
                     _pendingPublication = fetchGeneration;
                     RunFilteredItemsUpdate(() => ApplyFetchedItemsUnderLock(fetchGeneration));
                 }
@@ -596,21 +623,29 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void CompleteItemsPublication(int fetchGeneration)
     {
         UpdateEmptyContent();
-        var work = Volatile.Read(ref _workState);
-        if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+        ListPageWorkState work;
+        bool forceFirst;
+        lock (_fetchStateLock)
         {
-            return;
-        }
+            work = Volatile.Read(ref _workState);
+            if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+            {
+                return;
+            }
 
-        // Consume selection intent only when the retained snapshot reaches the
-        // UI, including a request originally received while suspended.
-        var forceFirst = _forceFirstItemPending || !work.KeepSelection;
-        _forceFirstItemPending = false;
+            // Consume selection intent only when the retained snapshot reaches the
+            // UI, including a request originally received while suspended.
+            forceFirst = (_forceFirstItemSelectionVersion == Volatile.Read(ref _selectionNavigationVersion)) ||
+                (IsRootPage && !work.KeepSelection);
+            _forceFirstItemSelectionVersion = null;
+            _awaitingFirstSelection |= forceFirst;
+            UpdateSelectionPosition();
+        }
 
         ItemsUpdated?.Invoke(
             this,
             new ItemsUpdatedEventArgs(
-                forceFirstItem: IsRootPage && forceFirst,
+                forceFirstItem: forceFirst,
                 ensureSelectionVisible: work.EnsureSelectionVisible));
         _isLoadingMore.Clear();
         AdvanceFetchPhase(fetchGeneration, ListPageFetchPhase.Published);
@@ -724,6 +759,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
                 else
                 {
+                    UpdateSelectionPosition();
                     break;
                 }
             }
@@ -876,13 +912,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+            var message = new PerformCommandMessage(item.Command.Model, item.Model, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+            var message = new PerformCommandMessage(
                 EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
+                EmptyContent.PrimaryCommand.Model,
+                this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -894,14 +933,30 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             if (item.SecondaryCommand is not null)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+                var message = new PerformCommandMessage(item.SecondaryCommand.Command.Model, item.Model, this);
+                WeakReferenceMessenger.Default.Send(message);
             }
         }
         else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+            var message = new PerformCommandMessage(
                 EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
+                EmptyContent.SecondaryCommand.Model,
+                this);
+            WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    public void AcknowledgeSelection(ListItemViewModel? item)
+    {
+        if (!ReferenceEquals(_lastSelectedItem, item))
+        {
+            UpdateSelectedItem(item);
+        }
+        else if (Volatile.Read(ref _workState).Status != ListPageWorkStatus.Stopped)
+        {
+            _awaitingFirstSelection = false;
+            UpdateSelectionPosition();
         }
     }
 
@@ -920,7 +975,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         // Retain selection changes, including clearing selection, during navigation.
         // Only the active page may update the shared command bar and details.
+        var selectionChanged = !ReferenceEquals(_lastSelectedItem, item);
         _lastSelectedItem = item;
+        _awaitingFirstSelection = false;
+        UpdateSelectionPosition();
+        if (selectionChanged && !_selectionIsFirstOrAbsent)
+        {
+            // Publish the new position before invalidating older reset requests.
+            Interlocked.Increment(ref _selectionNavigationVersion);
+        }
+
         if (!IsWorkActive)
         {
             return;
@@ -936,11 +1000,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    private void UpdateSelectionPosition()
+        => _selectionIsFirstOrAbsent = _awaitingFirstSelection || _lastSelectedItem is null ||
+            ReferenceEquals(_lastSelectedItem, FilteredItems.FirstOrDefault(item => item.IsInteractive));
+
     private void SetSelectedItem(ListItemViewModel item)
     {
         item.PropertyChanged += SelectedItemPropertyChanged;
 
-        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+        SendPageUiMessage(new UpdateCommandBarMessage(item));
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -965,7 +1033,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         if (!ct.IsCancellationRequested)
                         {
-                            WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                            SendPageUiMessage(new HideDetailsMessage());
                         }
 
                         return;
@@ -978,7 +1046,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                             return;
                         }
 
-                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                        SendPageUiMessage(new HideDetailsMessage());
 
                         return;
                     }
@@ -992,11 +1060,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     // messages will be marshalled to the UI thread by the receiver.
                     if (ShowDetails && item.HasDetails)
                     {
-                        WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                        SendPageUiMessage(new ShowDetailsMessage(item.Details));
                     }
                     else
                     {
-                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                        SendPageUiMessage(new HideDetailsMessage());
                     }
 
                     var suggestion = item.TextToSuggest;
@@ -1008,7 +1076,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         }
 
                         TextToSuggest = suggestion;
-                        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                        SendPageUiMessage(new UpdateSuggestionMessage(suggestion));
                     });
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -1019,7 +1087,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     CoreLogger.LogError("Failed to initialize the selected list item", ex);
                     if (!ct.IsCancellationRequested)
                     {
-                        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                        SendPageUiMessage(new HideDetailsMessage());
                     }
                 }
             },
@@ -1041,16 +1109,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.SecondaryCommand):
             case nameof(item.AllCommands):
             case nameof(item.Name):
-                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+                SendPageUiMessage(new UpdateCommandBarMessage(item));
                 break;
             case nameof(item.Details):
                 if (ShowDetails && item.HasDetails)
                 {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                    SendPageUiMessage(new ShowDetailsMessage(item.Details));
                 }
                 else
                 {
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    SendPageUiMessage(new HideDetailsMessage());
                 }
 
                 break;
@@ -1064,14 +1132,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
-        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
+        SendPageUiMessage(new UpdateCommandBarMessage(null));
+        SendPageUiMessage(new HideDetailsMessage());
+        SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
         TextToSuggest = string.Empty;
     }
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         _initializationStarted = true;
         base.InitializeProperties();
 
@@ -1284,10 +1358,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
+               SendPageUiMessage(new UpdateCommandBarMessage(EmptyContent));
            });
     }
 
@@ -1308,16 +1382,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // The shell serializes navigation transitions on the UI thread. Terminal
     // cleanup may race them, but resumption can only transition Suspended -> Active.
-    internal void SuspendForNavigation()
+    internal override void SuspendForNavigation()
     {
+        base.SuspendForNavigation();
         if (TryChangeWorkStatus(ListPageWorkStatus.Active, ListPageWorkStatus.Suspended) is not null)
         {
             CancelPendingWork();
         }
     }
 
-    internal Task ResumeAfterNavigation()
+    internal override Task ResumeAfterNavigation()
     {
+        base.ResumeAfterNavigation();
         var work = TryChangeWorkStatus(ListPageWorkStatus.Suspended, ListPageWorkStatus.Active);
         if (work is null)
         {
@@ -1502,6 +1578,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         CancelPendingWork();
     }
+
+    protected override void OnCleanupRequested() => StopWork();
 
     protected override void UnsafeCleanup()
     {

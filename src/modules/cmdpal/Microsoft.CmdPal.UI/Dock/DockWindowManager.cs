@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -191,10 +192,9 @@ public sealed partial class DockWindowManager : IDisposable
     }
 
     /// <summary>
-    /// Handles the dock focus shortcut. Picks the dock under the mouse cursor, since that is
-    /// where the user is looking, and hands the toggle decision to that window.
+    /// Cycles from the focused dock, using the navigation settings to choose where a new cycle begins.
     /// </summary>
-    public void FocusDock()
+    public void FocusDock(bool reverse = false)
     {
         if (_docks.Count == 0)
         {
@@ -203,27 +203,78 @@ public sealed partial class DockWindowManager : IDisposable
 
         PInvoke.GetCursorPos(out var cursor);
 
-        var targetId = DockFocusTargetResolver.Resolve(
-            _monitorService.GetMonitors(),
-            _docks.Keys,
-            cursor.X,
-            cursor.Y);
-
-        if (targetId is null || !_docks.TryGetValue(targetId, out var target))
+        var monitors = _monitorService.GetMonitors();
+        var focusedDockId = _docks.FirstOrDefault(static dock => dock.Value.Window.HasKeyboardFocus).Key;
+        if (reverse && focusedDockId is null)
         {
             return;
         }
 
-        // Only one dock holds keyboard focus at a time, so drop it everywhere else first.
-        foreach (var (id, (window, _)) in _docks)
+        var targetId = focusedDockId ?? DockFocusTargetResolver.Resolve(
+            monitors,
+            _docks.Keys,
+            cursor.X,
+            cursor.Y,
+            focusPrimaryFirst: _settingsService.Settings.DockFocusPrimaryFirst);
+
+        if (targetId is null)
         {
-            if (!string.Equals(id, targetId, StringComparison.OrdinalIgnoreCase))
+            return;
+        }
+
+        var moveFromCurrent = focusedDockId is not null;
+
+        // Restore only on the starting dock so crossing docks still visits every item.
+        var restoreLastFocus = !moveFromCurrent && _settingsService.Settings.DockRememberLastFocusedItem;
+        if (!_settingsService.Settings.DockFocusAcrossMonitors)
+        {
+            if (!TryFocusDock(targetId, moveFromCurrent, wrap: true, reverse, restoreLastFocus))
+            {
+                _docks[targetId].Window.ReleaseKeyboardFocus(restoreForeground: true);
+            }
+
+            return;
+        }
+
+        var dockOrder = DockFocusTargetResolver.GetTraversalOrder(monitors, _docks.Keys, targetId, reverse);
+        if (DockFocusNavigation.TryFocusAcrossDocks(
+            dockOrder,
+            targetId,
+            moveFromCurrent,
+            restoreLastFocus,
+            (monitorId, move, restore) => TryFocusDock(monitorId, move, wrap: false, reverse, restore),
+            monitorId => _docks[monitorId].Window.ResetRememberedFocus()))
+        {
+            return;
+        }
+
+        // Complete the cycle within the dock where this press started.
+        if (!moveFromCurrent ||
+            !dockOrder.Contains(targetId, StringComparer.OrdinalIgnoreCase) ||
+            !TryFocusDock(targetId, moveFromCurrent: false, wrap: false, reverse, restoreLastFocus: false))
+        {
+            _docks[targetId].Window.ReleaseKeyboardFocus(restoreForeground: true);
+        }
+    }
+
+    private bool TryFocusDock(string monitorId, bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus)
+    {
+        var target = _docks[monitorId].Window;
+        var previousDock = _docks.Values.FirstOrDefault(static dock => dock.Window.HasKeyboardFocus).Window;
+        if (!target.TryFocusNextItem(moveFromCurrent, wrap, reverse, restoreLastFocus, previousDock))
+        {
+            return false;
+        }
+
+        foreach (var (_, (window, _)) in _docks)
+        {
+            if (window != target)
             {
                 window.ReleaseKeyboardFocus(restoreForeground: false);
             }
         }
 
-        target.Window.ToggleKeyboardFocus();
+        return true;
     }
 
     public void Dispose()

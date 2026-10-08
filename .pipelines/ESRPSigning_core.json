@@ -394,11 +394,6 @@
                 "WinUI3Apps\\Google.GenAI.dll",
                 "WinUI3Apps\\YamlDotNet.dll",
 
-                "boost_regex-vc143-mt-gd-x32-1_87.dll",
-                "boost_regex-vc143-mt-gd-x64-1_87.dll",
-                "boost_regex-vc143-mt-x32-1_87.dll",
-                "boost_regex-vc143-mt-x64-1_87.dll",
-
                 "Microsoft.ML.OnnxRuntime.dll",
 
                 "UnitsNet.dll",
