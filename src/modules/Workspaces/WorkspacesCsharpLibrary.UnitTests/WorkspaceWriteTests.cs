@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
+using WorkspacesEditor.Models;
+using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesCsharpLibrary.UnitTests;
 
@@ -52,6 +55,99 @@ public class WorkspaceWriteTests
         Assert.AreEqual(original.Id, copy.Id);
         Assert.AreEqual(100L, copy.CreationTime);
         Assert.AreEqual(200L, copy.LastLaunchedTime);
+    }
+
+    [TestMethod]
+    public void FailedNewWorkspaceSavePreservesDraft()
+    {
+        var draft = CreateDraft();
+        var applications = draft.Applications.ToArray();
+        var existing = CreateDraft();
+        existing.Name = "Existing workspace";
+        List<Project> workspaces = [existing];
+        int attempts = 0;
+
+        Assert.IsFalse(MainViewModel.TryPersistNewProject(draft, workspaces, candidates =>
+        {
+            attempts++;
+            CollectionAssert.AreEqual(new[] { existing, draft }, candidates);
+            return false;
+        }));
+
+        Assert.AreEqual(1, attempts);
+        CollectionAssert.AreEqual(applications, draft.Applications);
+        Assert.IsTrue(draft.Applications[0].IsIncluded);
+        Assert.IsFalse(draft.Applications[1].IsIncluded);
+        Assert.AreEqual("--edited", draft.Applications[1].CommandLineArguments);
+        Assert.AreEqual("New workspace", draft.Name);
+        CollectionAssert.AreEqual(new[] { existing }, workspaces);
+    }
+
+    [TestMethod]
+    public void FailedNewWorkspaceSaveCanReincludeApplicationAndRetry()
+    {
+        var draft = CreateDraft();
+        var excluded = draft.Applications[1];
+        List<Project> workspaces = [];
+        Assert.IsFalse(MainViewModel.TryPersistNewProject(draft, workspaces, _ => false));
+        Assert.IsTrue(draft.Applications.Contains(excluded));
+        excluded.IsIncluded = true;
+        excluded.CommandLineArguments = "--retry";
+        int attempts = 0;
+
+        Assert.IsTrue(MainViewModel.TryPersistNewProject(draft, workspaces, candidates =>
+        {
+            attempts++;
+            Assert.AreEqual(1, candidates.Count);
+            Assert.AreSame(draft, candidates[0]);
+            Assert.AreEqual(2, candidates[0].Applications.Count);
+            Assert.IsTrue(candidates[0].Applications[1].IsIncluded);
+            Assert.AreEqual("--retry", candidates[0].Applications[1].CommandLineArguments);
+            return true;
+        }));
+
+        Assert.AreEqual(1, attempts);
+        Assert.AreEqual(2, draft.Applications.Count);
+        Assert.AreSame(excluded, draft.Applications[1]);
+        Assert.AreEqual(0, workspaces.Count);
+    }
+
+    [TestMethod]
+    public void SuccessfulNewWorkspaceSaveRemovesExcludedApplicationsAfterPersistence()
+    {
+        var draft = CreateDraft();
+        var applications = draft.Applications.ToArray();
+        int attempts = 0;
+
+        Assert.IsTrue(MainViewModel.TryPersistNewProject(draft, [], candidates =>
+        {
+            attempts++;
+            Assert.AreEqual(1, candidates.Count);
+            Assert.AreSame(draft, candidates[0]);
+            CollectionAssert.AreEqual(applications, candidates[0].Applications);
+            Assert.IsFalse(candidates[0].Applications[1].IsIncluded);
+            return true;
+        }));
+
+        Assert.AreEqual(1, attempts);
+        CollectionAssert.AreEqual(new[] { applications[0] }, draft.Applications);
+    }
+
+    private static Project CreateDraft()
+    {
+        var project = new Project(new ProjectWrapper
+        {
+            Id = Guid.NewGuid().ToString("B"),
+            Name = "New workspace",
+            Applications =
+            [
+                new ApplicationWrapper { Id = Guid.NewGuid().ToString("B"), Application = "Included", CommandLineArguments = string.Empty },
+                new ApplicationWrapper { Id = Guid.NewGuid().ToString("B"), Application = "Excluded", CommandLineArguments = "--edited" },
+            ],
+            MonitorConfiguration = [],
+        });
+        project.Applications[1].IsIncluded = false;
+        return project;
     }
 
     [TestMethod]

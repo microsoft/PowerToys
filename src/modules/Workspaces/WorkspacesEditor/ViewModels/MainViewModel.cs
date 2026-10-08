@@ -367,20 +367,30 @@ namespace WorkspacesEditor.ViewModels
 
         public bool AddNewProject(Project project)
         {
-            project.Applications.RemoveAll(app => !app.IsIncluded);
-            project.Initialize(App.GetCurrentTheme());
-            var updated = Workspaces.ToList();
-            updated.Add(project);
-            if (!_workspacesEditorIO.SerializeWorkspaces(updated))
+            if (!TryPersistNewProject(project, Workspaces, projects => _workspacesEditorIO.SerializeWorkspaces(projects)))
             {
                 return false;
             }
 
+            project.Initialize(App.GetCurrentTheme());
             Workspaces.Add(project);
             TempProjectData.DeleteTempFile();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             ApplyShortcut(project);
             SendCreateTelemetryEvent(project);
+            return true;
+        }
+
+        internal static bool TryPersistNewProject(Project project, IEnumerable<Project> workspaces, Func<List<Project>, bool> serializeWorkspaces)
+        {
+            var updated = workspaces.ToList();
+            updated.Add(project);
+            if (!serializeWorkspaces(updated))
+            {
+                return false;
+            }
+
+            project.Applications.RemoveAll(app => !app.IsIncluded);
             return true;
         }
 
