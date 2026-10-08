@@ -30,10 +30,8 @@
                         <tkcontrols:SettingsCard
                             Name="MouseUtilsEnableAutoHideCursor"
                             x:Uid="MouseUtils_Enable_AutoHideCursor"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorHide.png}"
                             IsEnabled="{x:Bind ViewModel.IsAutoHideCursorEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                            <tkcontrols:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xE7B3;" />
-                            </tkcontrols:SettingsCard.HeaderIcon>
                             <ToggleSwitch
                                 x:Uid="ToggleSwitch"
                                 AutomationProperties.AutomationId="MouseUtils_AutoHideCursorToggleId"
