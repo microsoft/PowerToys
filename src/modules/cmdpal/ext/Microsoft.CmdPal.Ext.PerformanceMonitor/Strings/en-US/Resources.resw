@@ -535,9 +535,9 @@
   <data name="Disk_Usage_Title" xml:space="preserve">
     <value>Disk Usage</value>
   </data>
-  <data name="Disk_Usage_Label" xml:space="preserve">
-    <value>Disk ({0}): {1}</value>
-    <comment>{0} is the disk interface name, {1} is the usage percentage</comment>
+  <data name="Disk_Usage_Display_Label" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} is the disk name, such as Disk 0 (C:), and {1} is the usage percentage</comment>
   </data>
   <data name="Disk_Usage_Unknown" xml:space="preserve">
     <value>???</value>

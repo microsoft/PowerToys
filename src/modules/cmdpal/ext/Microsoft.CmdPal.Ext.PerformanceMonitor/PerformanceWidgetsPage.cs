@@ -1101,13 +1101,17 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     {
         if (ContentData.TryGetValue("diskName", out var name) && ContentData.TryGetValue("diskUsage", out var usage))
         {
-            return isBandPage ? usage : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
+            return isBandPage ? usage : GetListTitle(name, usage);
         }
         else
         {
             return isBandPage ? Resources.GetResource("Disk_Usage_Unknown") : Resources.GetResource("Disk_Usage_Unknown_Label");
         }
     }
+
+    /// <summary>Names the disk in the list as the card does, such as <c>Disk 0 (C:): 3%</c>.</summary>
+    internal static string GetListTitle(string instanceName, string usage) =>
+        string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Display_Label"), DiskVolumes.GetDisplayName(instanceName), usage);
 
     // read/write speed is always used for bands
     public string GetReadSpeed()

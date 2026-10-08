@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
@@ -42,6 +43,15 @@ public class CardFormattingTests
         Assert.AreEqual(withVolumes, DiskVolumes.GetDisplayName("0 C: D:"));
         Assert.AreEqual(withoutVolumes, DiskVolumes.GetDisplayName("2"));
         Assert.AreEqual("_Total", DiskVolumes.GetDisplayName("_Total"));
+    }
+
+    [TestMethod]
+    public void ListTitleNamesTheDiskLikeTheCard()
+    {
+        var expected = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Display_Label"), DiskVolumes.GetDisplayName("0 C:"), "3%");
+
+        Assert.AreEqual(expected, SystemDiskUsageWidgetPage.GetListTitle("0 C:", "3%"));
+        Assert.IsFalse(SystemDiskUsageWidgetPage.GetListTitle("0 C:", "3%").Contains("(0 C:)", StringComparison.Ordinal));
     }
 
     [TestMethod]
