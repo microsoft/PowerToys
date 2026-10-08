@@ -22,14 +22,15 @@
     deps.json files that reference them. Exits with code 1 if any mismatches are found,
     and with 0 if all dlls are referenced with the same version.
 #>
+#Requires -Version 7
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$targetDir
 )
 
+$ErrorActionPreference = 'Stop'
 $references = @(
-    'System.Runtime',
     'System.Collections',
     'System.Memory',
     'System.Linq',
@@ -45,6 +46,46 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+// Custom comparer to ensure versions like "10.0.0" sort after "9.0.0".
+public class SemanticVersionComparer : IComparer<string>
+{
+    public int Compare(string x, string y)
+    {
+        if (string.Equals(x, y, StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+
+        if (x == null)
+        {
+            return -1;
+        }
+
+        if (y == null)
+        {
+            return 1;
+        }
+
+        // Strip pre-release suffixes for proper System.Version parsing (e.g. "8.0.0-preview" becomes "8.0.0").
+        int dashX = x.IndexOf('-');
+        int dashY = y.IndexOf('-');
+        string cleanX = dashX > 0 ? x.Substring(0, dashX) : x;
+        string cleanY = dashY > 0 ? y.Substring(0, dashY) : y;
+
+        if (Version.TryParse(cleanX, out var vx) && Version.TryParse(cleanY, out var vy))
+        {
+            int cmp = vx.CompareTo(vy);
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+        }
+
+        // Fallback to alphabetical if base versions are identical, or if they couldn't be parsed.
+        return StringComparer.OrdinalIgnoreCase.Compare(x, y);
+    }
+}
 
 public static class DepsJsonAudit
 {
@@ -69,6 +110,18 @@ public static class DepsJsonAudit
     }
 
     private static List<KeyValuePair<string, string>> ReadFile(string path)
+    {
+        try
+        {
+            return ReadFileCore(path);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException($"Failed to parse {path}: {ex.Message}", ex);
+        }
+    }
+
+    private static List<KeyValuePair<string, string>> ReadFileCore(string path)
     {
         var result = new List<KeyValuePair<string, string>>();
 
@@ -102,7 +155,7 @@ public static class DepsJsonAudit
 
                     foreach (var entry in runtime.EnumerateObject())
                     {
-                        if (!entry.Name.EndsWith(".dll", StringComparison.Ordinal))
+                        if (!entry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -148,7 +201,7 @@ public static class DepsJsonAudit
         var perFile = new List<KeyValuePair<string, string>>[files.Count];
         Parallel.For(0, files.Count, i => perFile[i] = ReadFile(files[i]));
 
-        var all = new SortedDictionary<string, SortedDictionary<string, List<string>>>(StringComparer.Ordinal);
+        var all = new SortedDictionary<string, SortedDictionary<string, List<string>>>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < files.Count; i++)
         {
             string fileName = Path.GetFileName(files[i]);
@@ -156,7 +209,7 @@ public static class DepsJsonAudit
             {
                 if (!all.TryGetValue(kv.Key, out var versions))
                 {
-                    versions = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+                    versions = new SortedDictionary<string, List<string>>(new SemanticVersionComparer());
                     all[kv.Key] = versions;
                 }
                 if (!versions.TryGetValue(kv.Value, out var list))
@@ -186,24 +239,35 @@ public static class DepsJsonAudit
 $referencedFileVersionsPerDll = [DepsJsonAudit]::Collect((Resolve-Path $targetDir).Path)
 $totalFailures = 0
 
+if ($referencedFileVersionsPerDll.Count -eq 0) {
+    Write-Host -ForegroundColor Yellow "No *.deps.json files found under $targetDir; check the path."
+    exit 1
+}
+
 # Report dlls referenced with more than one version.
+$report = [System.Text.StringBuilder]::new()
+
 foreach ($dll in $referencedFileVersionsPerDll.GetEnumerator()) {
     if ($dll.Value.Count -gt 1) {
-        Write-Host $dll.Key
+        [void]$report.AppendLine($dll.Key)
         foreach ($version in $dll.Value.GetEnumerator()) {
-            Write-Host "`t" $version.Key
+            [void]$report.AppendLine("`t" + $version.Key)
             foreach ($file in $version.Value) {
-                Write-Host "`t`t" $file
+                [void]$report.AppendLine("`t`t" + $file)
             }
         }
         $totalFailures++
     }
 }
 
+if ($report.Length -gt 0) {
+    Write-Host $report.ToString() -NoNewline
+}
+
 if ($totalFailures -gt 0) {
-    Write-Host -ForegroundColor Red "Detected $totalFailures libraries that are mentioned with different version across the dependencies.`r`n"
+    Write-Host -ForegroundColor Red "Detected  $totalFailures  libraries that are mentioned with different version across the dependencies.`r`n"
     exit 1
 }
 
-Write-Host -ForegroundColor Green "All $($referencedFileVersionsPerDll.Count) libraries are mentioned with the same version across the dependencies.`r`n"
+Write-Host -ForegroundColor Green "All  $($referencedFileVersionsPerDll.Count)  libraries are mentioned with the same version across the dependencies.`r`n"
 exit 0
