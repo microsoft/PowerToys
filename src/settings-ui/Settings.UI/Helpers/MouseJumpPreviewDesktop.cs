@@ -107,23 +107,18 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             // centered start button and pinned apps
             var iconSize = TaskbarHeight / 2;
             var slotWidth = (int)(TaskbarHeight * 0.85);
-            var appColors = new[]
-            {
-                Color.FromArgb(255, 255, 185, 0),
-                Color.FromArgb(255, 16, 137, 226),
-                Color.FromArgb(255, 19, 161, 14),
-                Color.FromArgb(255, 135, 100, 184),
-            };
-            var slotCount = 1 + appColors.Length;
+            const int appCount = 4;
+            var foregroundColor = lightTheme ? Color.FromArgb(150, 0, 0, 0) : Color.FromArgb(190, 255, 255, 255);
+            var slotCount = 1 + appCount;
             var slotsLeft = (width - (slotCount * slotWidth)) / 2;
             var iconTop = taskbar.Top + ((TaskbarHeight - iconSize) / 2);
             var indicatorColor = lightTheme ? Color.FromArgb(140, 0, 0, 0) : Color.FromArgb(160, 255, 255, 255);
 
             DrawStartLogo(graphics, new Rectangle(slotsLeft + ((slotWidth - iconSize) / 2), iconTop, iconSize, iconSize));
-            for (var i = 0; i < appColors.Length; i++)
+            for (var i = 0; i < appCount; i++)
             {
                 var iconLeft = slotsLeft + ((i + 1) * slotWidth) + ((slotWidth - iconSize) / 2);
-                using var brush = new SolidBrush(appColors[i]);
+                using var brush = new SolidBrush(foregroundColor);
                 FillRoundedRectangle(graphics, brush, new RectangleF(iconLeft, iconTop, iconSize, iconSize), iconSize * 0.22f);
 
                 // "running app" indicator under the first two apps
@@ -141,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             if (showTray)
             {
-                using var foreground = new SolidBrush(lightTheme ? Color.FromArgb(150, 0, 0, 0) : Color.FromArgb(190, 255, 255, 255));
+                using var foreground = new SolidBrush(foregroundColor);
                 var clockWidth = TaskbarHeight * 1.2f;
                 var clockLeft = width - clockWidth - 14;
                 var center = taskbar.Top + (TaskbarHeight / 2f);
