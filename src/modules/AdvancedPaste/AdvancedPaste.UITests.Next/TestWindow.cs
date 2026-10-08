@@ -21,7 +21,7 @@ internal static class TestWindow
             var button = buttons[0];
             Assert.IsTrue(button.Width > 0 && button.Height > 0 && !button.IsOffscreen, $"{processName}'s taskbar button is not visible.");
 
-                        // Clicking an already-active taskbar button minimizes it. Recheck after UIA lookup.
+            // Clicking an already-active taskbar button minimizes it. Recheck after UIA lookup.
             if (WindowControl.GetForegroundWindowHandle() != handle)
             {
                 MouseHelper.LeftClickAt(button.X + (button.Width / 2), button.Y + (button.Height / 2));
