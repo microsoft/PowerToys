@@ -8,10 +8,9 @@
 //==============================================================================
 #include "pch.h"
 #include "ClipboardPayload.h"
+#include "ImageEncoder.h"
 #include <chrono>
 
-// Defined in Zoomit.cpp
-int GetEncoderClsid( const WCHAR* format, CLSID* pClsid );
 void OutputDebug( const TCHAR* format, ... );
 
 namespace
