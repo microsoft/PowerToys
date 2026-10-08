@@ -76,6 +76,7 @@ static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
 static bool enable_quick_access = true;
+static bool enable_monitor_power = false;
 static PowerToysSettings::HotkeyObject quick_access_shortcut;
 static DashboardSortOrder dashboard_sort_order = DashboardSortOrder::Alphabetical;
 static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
@@ -139,6 +140,11 @@ json::JsonObject load_general_settings()
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+    enable_monitor_power = false;
+    if (json::has(loaded, L"enabled", json::JsonValueType::Object))
+    {
+        enable_monitor_power = loaded.GetNamedObject(L"enabled").GetNamedBoolean(L"MonitorPower", false);
+    }
     enable_quick_access = loaded.GetNamedBoolean(L"enable_quick_access", true);
     if (json::has(loaded, L"quick_access_shortcut", json::JsonValueType::Object))
     {
@@ -218,6 +224,22 @@ void apply_module_status_update(const json::JsonObject& module_config, bool save
     }
 
     const std::wstring name{ element.Key().c_str() };
+    if (name == L"MonitorPower")
+    {
+        enable_monitor_power = value.GetBoolean();
+        if (save)
+        {
+            json::JsonObject current_settings = PTSettingsHelper::load_general_settings();
+            auto enabled = current_settings.GetNamedObject(L"enabled", json::JsonObject());
+            enabled.SetNamedValue(name, json::value(enable_monitor_power));
+            current_settings.SetNamedValue(L"enabled", enabled);
+            PTSettingsHelper::save_general_settings(current_settings);
+        }
+
+        Logger::info(L"apply_module_status_update: MonitorPower enabled state updated to {}. The runtime state will be applied after restarting PowerToys.", enable_monitor_power);
+        return;
+    }
+
     if (modules().find(name) == modules().end())
     {
         Logger::warn(L"apply_module_status_update: Module {} not found", name);

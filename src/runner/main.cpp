@@ -354,7 +354,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
         // Start initial powertoys
         start_enabled_powertoys();
-        start_monitorpower_runtime();
+        if (load_general_settings().GetNamedObject(L"enabled", json::JsonObject()).GetNamedBoolean(L"MonitorPower", false))
+        {
+            start_monitorpower_runtime();
+        }
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);
