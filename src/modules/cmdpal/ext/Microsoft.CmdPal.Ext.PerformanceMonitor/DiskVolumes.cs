@@ -38,8 +38,7 @@ internal static class DiskVolumes
     /// <summary>Formats <c>0 C: Z:</c> as <c>Disk 0 (C: Z:)</c>.</summary>
     public static string GetDisplayName(string instanceName)
     {
-        var parts = instanceName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+        if (!TryGetDiskNumber(instanceName, out var number))
         {
             return instanceName;
         }
@@ -48,6 +47,36 @@ internal static class DiskVolumes
         return letters.Count == 0
             ? string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Disk_Number"), number)
             : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Disk_Number_Volumes"), number, string.Join(' ', letters));
+    }
+
+    /// <summary>Reads the disk number, such as 0, from an instance name such as <c>0 C: Z:</c>.</summary>
+    public static bool TryGetDiskNumber(string instanceName, out int number)
+    {
+        number = 0;
+        var parts = instanceName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length > 0 && int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out number);
+    }
+
+    /// <summary>
+    /// Describes a disk the way Task Manager does, such as <c>SSD (NVMe)</c>, or returns null when
+    /// the disk's kind is unknown.
+    /// </summary>
+    public static string? GetTypeText(DiskDeviceInfo info)
+    {
+        var type = info.IsSolidState switch
+        {
+            true => Resources.GetResource("DiskUsage_Widget_Template/Type_SSD"),
+            false => Resources.GetResource("DiskUsage_Widget_Template/Type_HDD"),
+            null => null,
+        };
+        var bus = DiskDevices.GetBusName(info.BusType);
+        return (type, bus) switch
+        {
+            (not null, not null) => string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Type_With_Bus"), type, bus),
+            (not null, null) => type,
+            (null, not null) => bus,
+            _ => null,
+        };
     }
 
     /// <summary>

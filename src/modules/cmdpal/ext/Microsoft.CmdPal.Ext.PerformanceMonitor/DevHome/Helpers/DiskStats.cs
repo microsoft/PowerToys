@@ -39,6 +39,12 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
         {
             get; set;
         }
+
+        /// <summary>Gets or sets the average time each transfer took, in seconds.</summary>
+        public float ResponseTime
+        {
+            get; set;
+        }
     }
 
     public DiskStats()
@@ -78,6 +84,13 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
                     }
 
                     var instanceCounters = new List<PerformanceCounter> { bytesRead, bytesWritten, diskTime };
+
+                    // Optional: Task Manager's average response time.
+                    if (CreatePerformanceCounter("PhysicalDisk", "Avg. Disk sec/Transfer", instanceName, logFailure: false) is PerformanceCounter responseTime)
+                    {
+                        instanceCounters.Add(responseTime);
+                    }
+
                     _diskCounters.Add(instanceName, instanceCounters);
                     DiskHistories.Add(instanceName, new DiskHistory(new SampleHistory(), new SampleHistory(), new SampleHistory()));
                     DiskUsages.Add(instanceName, new Data());
@@ -109,6 +122,10 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
                 DiskUsages[name].Read = read;
                 DiskUsages[name].Written = written;
                 DiskUsages[name].Usage = diskTimePercent / 100f;
+                if (diskCounterWithName.Value.Count > 3)
+                {
+                    DiskUsages[name].ResponseTime = Math.Max(0f, diskCounterWithName.Value[3].NextValue());
+                }
 
                 var history = DiskHistories[name];
                 history.ActiveTime.Add(diskTimePercent);

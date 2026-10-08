@@ -12,11 +12,6 @@ namespace CoreWidgetProvider.Helpers;
 /// </summary>
 internal sealed class ChartHelper
 {
-    private const int MaxChartValues = 34;
-
-    public static void AddNextChartValue(float value, List<float> chartValues) =>
-        AddNextChartValue(value, chartValues, MaxChartValues);
-
     public static void AddNextChartValue(float value, List<float> chartValues, int maxValues)
     {
         while (chartValues.Count >= maxValues)

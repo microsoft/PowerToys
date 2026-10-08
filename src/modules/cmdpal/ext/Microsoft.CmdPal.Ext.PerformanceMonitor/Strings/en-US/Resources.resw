@@ -294,6 +294,22 @@
     <value>{0} free of {1}</value>
     <comment>{0} is free space and {1} is total size, such as 412 GB and 953 GB</comment>
   </data>
+  <data name="DiskUsage_Widget_Template.Response_Time" xml:space="preserve">
+    <value>Response time</value>
+    <comment>Label for the average time the disk takes to complete a read or write, such as 0.4 ms</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_SSD" xml:space="preserve">
+    <value>SSD</value>
+    <comment>Solid-state drive</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_HDD" xml:space="preserve">
+    <value>HDD</value>
+    <comment>Hard disk drive</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Type_With_Bus" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>{0} is the disk type, such as SSD; {1} is how it's connected, such as NVMe</comment>
+  </data>
   <data name="Previous_Disk_Title" xml:space="preserve">
     <value>Previous disk</value>
   </data>

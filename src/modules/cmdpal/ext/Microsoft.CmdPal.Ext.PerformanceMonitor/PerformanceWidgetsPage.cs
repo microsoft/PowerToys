@@ -1014,6 +1014,12 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
             ContentData["diskDisplayName"] = DiskVolumes.GetDisplayName(diskName);
+            ContentData["diskResponseTime"] = ResponseTimeToString(diskStats.ResponseTime);
+            if (DiskVolumes.TryGetDiskNumber(diskName, out var diskNumber)
+                && DiskVolumes.GetTypeText(DiskDevices.Get(diskNumber)) is string diskType)
+            {
+                ContentData["diskType"] = diskType;
+            }
 
             var history = currentData.GetHistory(_diskIndex);
             var read = history.Read.Snapshot();
@@ -1051,6 +1057,10 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             _ => throw new NotImplementedException(),
         };
     }
+
+    /// <summary>Formats an average response time given in seconds, such as <c>0.4 ms</c>.</summary>
+    internal static string ResponseTimeToString(float seconds) =>
+        string.Format(CultureInfo.CurrentCulture, "{0:0.#} ms", Math.Max(0, seconds) * 1000);
 
     public string GetItemTitle(bool isBandPage)
     {

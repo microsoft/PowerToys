@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Win32.Storage.FileSystem;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
@@ -49,6 +50,33 @@ public class CardFormattingTests
         Assert.AreEqual("accent", DiskVolumes.GetCapacityColor(50));
         Assert.AreEqual("warning", DiskVolumes.GetCapacityColor(85));
         Assert.AreEqual("attention", DiskVolumes.GetCapacityColor(95));
+    }
+
+    [TestMethod]
+    public void DiskNumberIsReadFromTheInstanceName()
+    {
+        Assert.IsTrue(DiskVolumes.TryGetDiskNumber("2 D:", out var number));
+        Assert.AreEqual(2, number);
+        Assert.IsFalse(DiskVolumes.TryGetDiskNumber("_Total", out _));
+    }
+
+    [TestMethod]
+    public void DiskTypeNamesTheKindAndTheBus()
+    {
+        var withBus = string.Format(CultureInfo.InvariantCulture, Resources.GetResource("DiskUsage_Widget_Template/Type_With_Bus"), Resources.GetResource("DiskUsage_Widget_Template/Type_SSD"), "NVMe");
+
+        Assert.AreEqual(withBus, DiskVolumes.GetTypeText(new(true, STORAGE_BUS_TYPE.BusTypeNvme)));
+        Assert.AreEqual(Resources.GetResource("DiskUsage_Widget_Template/Type_HDD"), DiskVolumes.GetTypeText(new(false, STORAGE_BUS_TYPE.BusTypeUnknown)));
+        Assert.AreEqual("USB", DiskVolumes.GetTypeText(new(null, STORAGE_BUS_TYPE.BusTypeUsb)));
+        Assert.IsNull(DiskVolumes.GetTypeText(new(null, STORAGE_BUS_TYPE.BusTypeUnknown)));
+    }
+
+    [TestMethod]
+    public void ResponseTimeIsInMilliseconds()
+    {
+        Assert.AreEqual("0.4 ms", SystemDiskUsageWidgetPage.ResponseTimeToString(0.0004f));
+        Assert.AreEqual("12 ms", SystemDiskUsageWidgetPage.ResponseTimeToString(0.012f));
+        Assert.AreEqual("0 ms", SystemDiskUsageWidgetPage.ResponseTimeToString(-1f));
     }
 
     [TestMethod]

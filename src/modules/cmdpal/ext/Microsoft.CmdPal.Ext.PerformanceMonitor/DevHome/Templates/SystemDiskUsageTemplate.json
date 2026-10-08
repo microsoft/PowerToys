@@ -23,7 +23,7 @@
           "columns": [
             {
               "type": "Column",
-              "width": "stretch",
+              "width": "auto",
               "items": [
                 {
                   "type": "TextBlock",
@@ -37,6 +37,26 @@
                   "weight": "bolder",
                   "spacing": "none",
                   "text": "${diskUsage}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "spacing": "large",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "text": "%DiskUsage_Widget_Template/Response_Time%"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "text": "${diskResponseTime}"
                 }
               ]
             },
@@ -96,10 +116,37 @@
           "fallback": "drop"
         },
         {
-          "type": "TextBlock",
+          "type": "ColumnSet",
           "spacing": "medium",
-          "weight": "bolder",
-          "text": "${diskDisplayName}"
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "weight": "bolder",
+                  "text": "${diskDisplayName}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
+              "$when": "${diskType != null}",
+              "verticalContentAlignment": "center",
+              "items": [
+                {
+                  "type": "Badge",
+                  "text": "${diskType}",
+                  "style": "informative",
+                  "appearance": "tint",
+                  "fallback": "drop"
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "Container",
