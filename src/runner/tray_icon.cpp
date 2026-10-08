@@ -229,6 +229,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         }
         break;
     case WM_DESTROY:
+        cancel_settings_window_startup();
         // On OS-initiated shutdown skip cross-process cleanup: the shell is tearing
         // down and close_settings_window() blocks up to 1.5s waiting on
         // PowerToys.Settings.exe, which the OS is reaping in parallel. That wait, plus

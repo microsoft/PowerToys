@@ -44,6 +44,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
 ESettingsWindowNames ESettingsWindowNames_from_string(std::string value);
 
 void open_settings_window(std::optional<std::wstring> settings_window);
+void complete_settings_window_startup();
+void cancel_settings_window_startup();
 void close_settings_window();
 
 void open_oobe_window();

@@ -344,6 +344,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             open_scoobe_window();
         }
 
+        // Settings snapshots runtime module state when it launches. Requests received
+        // through a nested startup message loop must wait until all modules are ready.
+        complete_settings_window_startup();
+
         settings_telemetry::init();
         result = run_message_loop();
     }
