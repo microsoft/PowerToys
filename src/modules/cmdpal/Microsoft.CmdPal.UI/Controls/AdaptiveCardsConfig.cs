@@ -14,10 +14,13 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// </summary>
 public sealed class AdaptiveCardsConfig
 {
+    // Accent and contrast changes create new configs, so keep only the latest few.
+    private const int MaximumCachedConfigs = 4;
+
     private static readonly UISettings UserInterfaceSettings = new();
     private static readonly AccessibilitySettings AccessibilitySettings = new();
-    private static string? _cachedJson;
-    private static AdaptiveHostConfig? _cachedConfig;
+    private static readonly Lock CacheLock = new();
+    private static readonly Dictionary<string, AdaptiveHostConfig> CachedConfigs = new(StringComparer.Ordinal);
 
     public static AdaptiveHostConfig Light => Create(ElementTheme.Light);
 
@@ -25,19 +28,28 @@ public sealed class AdaptiveCardsConfig
 
     /// <summary>
     /// Returns the host config for content shown in <paramref name="theme"/>. Calls that resolve
-    /// to the same colors return the same instance, so callers can compare by reference.
+    /// to the same colors return the same instance, so callers can compare by reference, even
+    /// when light and dark content are on screen at the same time.
     /// </summary>
     public static AdaptiveHostConfig Create(ElementTheme theme)
     {
         var json = AdaptiveHostConfigJson.Create(GetTokens(theme));
-        if (_cachedConfig is not null && string.Equals(json, _cachedJson, StringComparison.Ordinal))
+        lock (CacheLock)
         {
-            return _cachedConfig;
-        }
+            if (CachedConfigs.TryGetValue(json, out var cached))
+            {
+                return cached;
+            }
 
-        _cachedJson = json;
-        _cachedConfig = AdaptiveHostConfig.FromJsonString(json).HostConfig;
-        return _cachedConfig;
+            if (CachedConfigs.Count >= MaximumCachedConfigs)
+            {
+                CachedConfigs.Clear();
+            }
+
+            var config = AdaptiveHostConfig.FromJsonString(json).HostConfig;
+            CachedConfigs[json] = config;
+            return config;
+        }
     }
 
     private static AdaptiveCardThemeTokens GetTokens(ElementTheme theme)
