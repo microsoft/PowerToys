@@ -66,7 +66,7 @@ These instruction files are automatically applied when working in their respecti
 
 ### Build logs
 
-Located in `artifacts\logs\<project>\` at the repo root, where `<project>` is the solution/project file name without its extension (for example, `artifacts\logs\PowerToys.Settings\`):
+Located in `artifacts\logs\<project>\` at the root of the repo/worktree containing the project being built, where `<project>` is the solution/project file name without its extension (for example, `artifacts\logs\PowerToys.Settings\`):
 
 - `build.<configuration>.<platform>.errors.log` – errors only (check this first)
 - `build.<configuration>.<platform>.all.log` – full log

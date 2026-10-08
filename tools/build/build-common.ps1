@@ -18,7 +18,8 @@ Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
 ERROR DETAILS
-When a build fails, check the logs in <repo>\artifacts\logs\<project name>\, where <project name> is the
+When a build fails, check the logs in <repo>\artifacts\logs\<project name>\, where <repo> is the repo/worktree
+containing the project being built (first parent folder with PowerToys.slnx) and <project name> is the
 solution or project file name without its extension:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
 - build.<configuration>.<platform>.errors.log — extracted errors only
@@ -28,6 +29,39 @@ solution or project file name without its extension:
 .NOTES
 Do not execute this file directly; dot-source it from `build.ps1` or `build-installer.ps1` so helpers are available in your script scope.
 #>
+
+function Get-LogRepoRoot {
+    param (
+        [string]$Solution
+    )
+
+    # Use the repo/worktree that contains the project being built (first ancestor with PowerToys.slnx),
+    # so builds in another clone don't write logs into the clone whose tools\build scripts ran.
+    # Relative paths are resolved against $script:RepoRoot because msbuild runs from there.
+    $fallback = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+    if (-not $Solution) { return $fallback }
+
+    try {
+        $fullPath = $Solution
+        if (-not [System.IO.Path]::IsPathRooted($fullPath)) {
+            $base = $script:RepoRoot
+            if (-not $base) { $base = (Get-Location).Path }
+            $fullPath = Join-Path $base $fullPath
+        }
+        $dir = Split-Path ([System.IO.Path]::GetFullPath($fullPath)) -Parent
+        while ($dir) {
+            if (Test-Path -LiteralPath (Join-Path $dir 'PowerToys.slnx') -PathType Leaf) {
+                return $dir
+            }
+            $parent = Split-Path $dir -Parent
+            if ($parent -eq $dir) { break }
+            $dir = $parent
+        }
+    } catch {
+    }
+
+    return $fallback
+}
 
 function RunMSBuild {
     param (
@@ -41,7 +75,7 @@ function RunMSBuild {
     # projects run MakeAppx on their own folder before compiling, and MSBuild's open log files
     # there make it fail with 0x80070020 (file in use).
     $projectName = [System.IO.Path]::GetFileNameWithoutExtension($Solution)
-    $logRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\artifacts\logs\$projectName"))
+    $logRoot = Join-Path (Get-LogRepoRoot $Solution) "artifacts\logs\$projectName"
     New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 
     $cfg = $null
