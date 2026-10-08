@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using AdaptiveCards.ObjectModel.WinUI3;
@@ -251,6 +252,13 @@ internal static class IncrementalAdaptiveCardVisualTree
     /// Finds the control rendered for a registered custom element. The renderer tags the control
     /// it returned for the element, so only that exact control can be a target.
     /// </summary>
+    /// <remarks>
+    /// Element tags reach managed code as plain objects, and under native AOT CsWinRT finds their
+    /// projected type by name, which needs the type's metadata. Without it, every tag is a bare
+    /// IInspectable, nothing matches, and each update rebuilds the whole card. The methods that
+    /// read tags keep the metadata they need with <see cref="DynamicDependencyAttribute"/>.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ElementTagContent))]
     private static bool TryGetCustomTarget(
         DependencyObject node,
         IncrementalPatchableElements? patchableElements,
@@ -321,6 +329,8 @@ internal static class IncrementalAdaptiveCardVisualTree
                 || string.Equals(imageResource, expectedValue, StringComparison.Ordinal));
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ElementTagContent))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveTextBlock))]
     private static bool TryMapPlainText(
         DependencyObject node,
         HashSet<TextBlock> mappedTargets,
@@ -335,6 +345,8 @@ internal static class IncrementalAdaptiveCardVisualTree
             && mappedTargets.Add(textBlock);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ElementTagContent))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveTextBlock))]
     private static bool TryGetPlainTextTarget(
         DependencyObject node,
         out TextBlock textBlock)
@@ -347,6 +359,7 @@ internal static class IncrementalAdaptiveCardVisualTree
             && IsPlainText(textBlock);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Run))]
     private static bool IsPlainText(TextBlock textBlock)
     {
         if (textBlock.Inlines.Count == 0)
@@ -365,6 +378,7 @@ internal static class IncrementalAdaptiveCardVisualTree
             && run.TextDecorations == textBlock.TextDecorations;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Run))]
     private static void ApplyPlainText(TextBlock current, TextBlock candidate)
     {
         if (current.Inlines.Count == 1
@@ -449,6 +463,8 @@ internal static class IncrementalAdaptiveCardVisualTree
         return false;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ElementTagContent))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveImage))]
     private static bool TryGetInlineSvgTarget(
         DependencyObject node,
         out Image image,

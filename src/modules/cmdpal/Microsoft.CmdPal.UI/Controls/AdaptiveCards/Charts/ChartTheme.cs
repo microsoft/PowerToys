@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
@@ -73,7 +74,7 @@ internal static class ChartTheme
     {
         if (IsHighContrast)
         {
-            return GetResourceColor("SystemColorWindowTextColor", ChartColor.FromRgb(0xFFFFFF));
+            return GetSystemColor(UIElementType.WindowText);
         }
 
         return (isDarkTheme, secondary) switch
@@ -85,24 +86,17 @@ internal static class ChartTheme
         };
     }
 
-    public static ChartColor GetHighContrastColor() =>
-        GetResourceColor("SystemColorHighlightColor", ChartColor.FromRgb(0x1AEBFF));
+    public static ChartColor GetHighContrastColor() => GetSystemColor(UIElementType.Highlight);
 
-    private static ChartColor GetResourceColor(string key, ChartColor fallback)
+    /// <summary>
+    /// Gets a contrast theme color: the same system color the SystemColor*Color resources use.
+    /// It's read with a typed call because a color boxed in a resource dictionary can't be
+    /// unboxed under native AOT.
+    /// </summary>
+    private static ChartColor GetSystemColor(UIElementType type)
     {
-        try
-        {
-            if (Application.Current.Resources[key] is global::Windows.UI.Color color)
-            {
-                return new ChartColor(color.A, color.R, color.G, color.B);
-            }
-        }
-        catch (Exception)
-        {
-            // Fall back to the default high contrast color.
-        }
-
-        return fallback;
+        var color = UserInterfaceSettings.Value.UIElementColor(type);
+        return new ChartColor(color.A, color.R, color.G, color.B);
     }
 
     /// <summary>Picks black or white text for a filled background.</summary>
@@ -117,5 +111,11 @@ internal static class ChartTheme
 
     public static SolidColorBrush ToBrush(ChartColor color) => new(ToColor(color));
 
+    /// <summary>
+    /// Gets a text style from the application resources. Resource values reach managed code as
+    /// plain objects, and under native AOT CsWinRT finds their type by name, which needs
+    /// <see cref="Style"/>'s metadata.
+    /// </summary>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Style))]
     public static Style GetTextStyle(string key) => (Style)Application.Current.Resources[key];
 }

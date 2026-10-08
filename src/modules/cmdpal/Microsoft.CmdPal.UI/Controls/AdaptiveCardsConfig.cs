@@ -57,10 +57,10 @@ public sealed class AdaptiveCardsConfig
         if (AccessibilitySettings.HighContrast)
         {
             return AdaptiveCardThemeTokens.HighContrast(
-                GetResourceColor("SystemColorWindowTextColor", "#FFFFFFFF"),
-                GetResourceColor("SystemColorGrayTextColor", "#FFC0C0C0"),
-                GetResourceColor("SystemColorHighlightColor", "#FF1AEBFF"),
-                GetResourceColor("SystemColorWindowColor", "#FF000000"));
+                GetSystemColor(UIElementType.WindowText),
+                GetSystemColor(UIElementType.GrayText),
+                GetSystemColor(UIElementType.Highlight),
+                GetSystemColor(UIElementType.Window));
         }
 
         // Match AccentTextFillColorPrimaryBrush: a darker accent on light surfaces and a
@@ -76,20 +76,14 @@ public sealed class AdaptiveCardsConfig
         return AdaptiveCardThemeTokens.ToHex(color.A, color.R, color.G, color.B);
     }
 
-    private static string GetResourceColor(string key, string fallback)
+    /// <summary>
+    /// Gets a contrast theme color: the same system color the SystemColor*Color resources use.
+    /// It's read with a typed call because a color boxed in a resource dictionary can't be
+    /// unboxed under native AOT.
+    /// </summary>
+    private static string GetSystemColor(UIElementType type)
     {
-        try
-        {
-            if (Application.Current?.Resources[key] is global::Windows.UI.Color color)
-            {
-                return AdaptiveCardThemeTokens.ToHex(color.A, color.R, color.G, color.B);
-            }
-        }
-        catch (Exception)
-        {
-            // Fall through to the default high contrast color.
-        }
-
-        return fallback;
+        var color = UserInterfaceSettings.UIElementColor(type);
+        return AdaptiveCardThemeTokens.ToHex(color.A, color.R, color.G, color.B);
     }
 }

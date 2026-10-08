@@ -339,7 +339,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             return;
         }
 
-        var captionStyle = (Style)Application.Current.Resources["CaptionTextBlockStyle"];
+        var captionStyle = ChartTheme.GetTextStyle("CaptionTextBlockStyle");
         for (var i = 0; i < _model.Series.Count; i++)
         {
             var entry = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
@@ -376,7 +376,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         var firstSlot = layout.GetFirstSlot(points.Count);
         var maxLabels = Math.Max(2, (int)(layout.Width / MinimumXLabelSpacing));
         var step = Math.Max(1, (int)Math.Ceiling((points.Count - 1) / (double)Math.Max(1, maxLabels - 1)));
-        var captionStyle = (Style)Application.Current.Resources["CaptionTextBlockStyle"];
+        var captionStyle = ChartTheme.GetTextStyle("CaptionTextBlockStyle");
         var previousRight = double.NegativeInfinity;
         for (var i = 0; i < points.Count; i++)
         {

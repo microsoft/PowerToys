@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.UI.Xaml;
@@ -50,6 +51,10 @@ internal sealed partial class AdaptiveContainerDecoratorRenderer : IAdaptiveElem
         }
     }
 
+    // The rendered element and the style come back as base types or plain objects, and under
+    // native AOT CsWinRT finds their actual type by name, which needs the type's metadata.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Border))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Style))]
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
         // Let fallback signals from the inner renderer propagate unchanged.
