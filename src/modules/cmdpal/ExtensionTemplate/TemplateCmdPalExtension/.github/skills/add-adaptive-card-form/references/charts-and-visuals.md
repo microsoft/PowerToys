@@ -117,6 +117,8 @@ Names have a light theme and a dark theme variant, and switch to system colors i
 | `color`, `colorSet` | One color for every bar, or a color per bar. |
 | `yMin`, `yMax`, `valueFormat` | Command Palette: the value range and format, as for `Chart.Line`. |
 
+A vertical bar chart skips labels that would overlap. A horizontal bar chart trims labels longer than 40% of its width, and shows the full label in a tooltip.
+
 ## Chart.HorizontalBar.Stacked
 
 `data` is a list of bars, each with a `title` and its own `data` of parts: `[{ "title": "Desktop", "data": [{ "legend": "In use", "value": 18, "color": "categoricalPurple" }] }]`. A legend appears once for all bars, and a legend keeps the same color in every bar. Bars are scaled to the longest bar, so a single bar fills the width. Set `showLegend` to `false` to hide the legend.

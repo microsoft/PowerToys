@@ -27,6 +27,9 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
     private const double MinimumXLabelSpacing = 56;
     private const double HorizontalBarHeight = 10;
 
+    // Long labels, such as process names, are trimmed so the bars keep most of the width.
+    private const double MaximumLabelShare = 0.4;
+
     private BarChartModel _model;
 
     public BarChartControl(BarChartModel model)
@@ -36,8 +39,6 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
     }
 
     public override string IncrementalState => _model.IncrementalState;
-
-    protected override bool WidthAffectsLayout => _model.Orientation == BarOrientation.Vertical;
 
     protected override void ApplyModel(AdaptiveVisualControl candidate) => _model = ((BarChartControl)candidate)._model;
 
@@ -154,6 +155,7 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var track = ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme));
+        var maximumLabelWidth = LayoutWidth * MaximumLabelShare;
         for (var i = 0; i < _model.Data.Count; i++)
         {
             var point = _model.Data[i];
@@ -161,6 +163,10 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
 
             var label = ChartShapes.CreateText(point.Label ?? string.Empty, ChartShapes.BodyStyle, secondary);
             label.VerticalAlignment = VerticalAlignment.Center;
+            label.MaxWidth = maximumLabelWidth;
+            label.TextWrapping = TextWrapping.NoWrap;
+            label.TextTrimming = TextTrimming.CharacterEllipsis;
+            label.IsTextTrimmedChanged += static (sender, _) => ToolTipService.SetToolTip(sender, sender.IsTextTrimmed ? sender.Text : null);
             Grid.SetRow(label, i);
             grid.Children.Add(label);
 
