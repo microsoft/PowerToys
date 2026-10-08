@@ -178,16 +178,23 @@ static bool ggml_graph_compute_helper(
 static bool ggml_graph_compute_helper(
        struct ggml_backend * backend,
         struct ggml_cgraph * graph,
-                       int   n_threads) {
+                       int   n_threads,
+         ggml_abort_callback abort_callback,
+                        void * abort_callback_data) {
     if (ggml_backend_is_cpu(backend)) {
         ggml_backend_cpu_set_n_threads(backend, n_threads);
+        ggml_backend_cpu_set_abort_callback(backend, abort_callback, abort_callback_data);
     }
 #ifdef GGML_USE_METAL
     if (ggml_backend_is_metal(backend)) {
         ggml_backend_metal_set_n_cb(backend, n_threads);
     }
 #endif
-    return ggml_backend_graph_compute(backend, graph) == GGML_STATUS_SUCCESS;
+    const enum ggml_status status = ggml_backend_graph_compute(backend, graph);
+    if (ggml_backend_is_cpu(backend)) {
+        ggml_backend_cpu_set_abort_callback(backend, nullptr, nullptr);
+    }
+    return status == GGML_STATUS_SUCCESS;
 }
 
 // faster matrix multiplications for tensors that do not have dimension 0 divisible by "pad"
@@ -2223,7 +2230,7 @@ static bool whisper_encode_internal(
         }
 
         if (!whisper_encode_external(wstate)) {
-            if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads)) {
+            if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads, abort_callback, abort_callback_data)) {
                 return false;
             }
         } else {
@@ -2246,7 +2253,7 @@ static bool whisper_encode_internal(
             return false;
         }
 
-        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads)) {
+        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads, abort_callback, abort_callback_data)) {
             return false;
         }
     }
@@ -2262,7 +2269,7 @@ static bool whisper_encode_internal(
             return false;
         }
 
-        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads)) {
+        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads, abort_callback, abort_callback_data)) {
             return false;
         }
     }
@@ -2730,7 +2737,7 @@ static bool whisper_decode_internal(
 
         logits = gf->nodes[gf->n_nodes - 1];
 
-        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads)) {
+        if (!ggml_graph_compute_helper(wstate.backend, gf, n_threads, abort_callback, abort_callback_data)) {
             return false;
         }
     }
