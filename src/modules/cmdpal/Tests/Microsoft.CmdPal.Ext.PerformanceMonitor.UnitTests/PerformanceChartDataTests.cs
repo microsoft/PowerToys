@@ -58,4 +58,31 @@ public class PerformanceChartDataTests
 
         Assert.AreEqual("3:04:05:06", SystemCPUUsageWidgetPage.UptimeToString(uptime));
     }
+
+    [TestMethod]
+    [DataRow("0,0", true, 0, 0)]
+    [DataRow("1,17", true, 1, 17)]
+    [DataRow("0,_Total", false, 0, 0)]
+    [DataRow("_Total", false, 0, 0)]
+    public void ProcessorInstanceNamesAreParsed(string instanceName, bool parsed, int group, int index)
+    {
+        Assert.AreEqual(parsed, CoreWidgetProvider.Helpers.CPUStats.TryParseProcessor(instanceName, out var parsedGroup, out var parsedIndex));
+        if (parsed)
+        {
+            Assert.AreEqual(group, parsedGroup);
+            Assert.AreEqual(index, parsedIndex);
+        }
+    }
+
+    [TestMethod]
+    public void CoreBarsAreLabeledByProcessor()
+    {
+        var bars = SystemCPUUsageWidgetPage.CreateCoreBars([12.34f, 99.96f]);
+
+        Assert.AreEqual(2, bars.Count);
+        Assert.AreEqual("1", (string)bars[1]["x"]);
+        Assert.AreEqual(12.3d, (double)bars[0]["y"], 1e-9);
+        Assert.AreEqual(100d, (double)bars[1]["y"], 1e-9);
+        Assert.AreEqual(0, SystemCPUUsageWidgetPage.CreateCoreBars([]).Count);
+    }
 }

@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.Win32;
 using Windows.Win32;
@@ -26,6 +28,13 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     private bool _cpuCounterReadFailureLogged;
     private bool _processCounterEnumerationFailureLogged;
     private bool _processCounterReadFailureLogged;
+
+    // Per-processor utilization, read in one batch, only while a CPU card shows it.
+    private PerformanceCounterCategory? _processorCategory;
+    private bool _processorCategoryCreated;
+    private Dictionary<string, CounterSample> _previousCoreSamples = [];
+    private int _coreRequests;
+    private bool _coreReadFailureLogged;
 
     internal sealed class ProcessStats
     {
@@ -56,6 +65,12 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     public ProcessStats[] ProcessCPUStats { get; set; }
 
     public List<float> CpuChartValues { get; set; } = new();
+
+    /// <summary>
+    /// Gets the utilization of each logical processor in percent, in processor order. It's empty
+    /// unless a card has requested it with <see cref="RequestCoreUsage"/>.
+    /// </summary>
+    public float[] CoreUsage { get; private set; } = [];
 
     public CPUStats()
     {
@@ -131,6 +146,16 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
             ReadSystemCounts();
 
+            if (Volatile.Read(ref _coreRequests) > 0)
+            {
+                ReadCoreUsage();
+            }
+            else if (CoreUsage.Length > 0)
+            {
+                CoreUsage = [];
+                _previousCoreSamples = [];
+            }
+
             var speedMs = timer.ElapsedMilliseconds - usageMs;
             lock (CpuChartValues)
             {
@@ -205,6 +230,88 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             ThreadCount = info.ThreadCount;
             HandleCount = info.HandleCount;
         }
+    }
+
+    /// <summary>
+    /// Starts or stops reading per-processor utilization. Only the CPU card shows it, so the dock
+    /// and the overview don't pay for it.
+    /// </summary>
+    internal void RequestCoreUsage(bool request)
+    {
+        if (request)
+        {
+            Interlocked.Increment(ref _coreRequests);
+        }
+        else if (Interlocked.Decrement(ref _coreRequests) < 0)
+        {
+            Interlocked.Exchange(ref _coreRequests, 0);
+        }
+    }
+
+    private void ReadCoreUsage()
+    {
+        if (!_processorCategoryCreated)
+        {
+            _processorCategoryCreated = true;
+            _processorCategory = CreatePerformanceCounterCategory("Processor Information", logFailure: false);
+        }
+
+        if (_processorCategory is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // One batch read for every processor, like the GPU engines.
+            var categoryData = _processorCategory.ReadCategory();
+            if (!categoryData.Contains("% Processor Time"))
+            {
+                return;
+            }
+
+            var samples = new Dictionary<string, CounterSample>();
+            var cores = new List<(int Group, int Index, float Usage)>();
+            foreach (InstanceData instance in categoryData["% Processor Time"].Values)
+            {
+                if (!TryParseProcessor(instance.InstanceName, out var group, out var index))
+                {
+                    continue;
+                }
+
+                samples[instance.InstanceName] = instance.Sample;
+                var usage = 0f;
+                if (_previousCoreSamples.TryGetValue(instance.InstanceName, out var previous))
+                {
+                    var cooked = CounterSampleCalculator.ComputeCounterValue(previous, instance.Sample);
+                    usage = float.IsFinite(cooked) ? Math.Clamp(cooked, 0f, 100f) : 0f;
+                }
+
+                cores.Add((group, index, usage));
+            }
+
+            _previousCoreSamples = samples;
+            cores.Sort(static (left, right) => left.Group != right.Group ? left.Group.CompareTo(right.Group) : left.Index.CompareTo(right.Index));
+            CoreUsage = cores.Select(static core => core.Usage).ToArray();
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _coreReadFailureLogged, "Failed while reading per-processor performance counters.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Parses a Processor Information instance name, such as <c>0,3</c> for processor 3 in group 0.
+    /// Totals such as <c>_Total</c> and <c>0,_Total</c> return false.
+    /// </summary>
+    internal static bool TryParseProcessor(string instanceName, out int group, out int index)
+    {
+        group = 0;
+        index = 0;
+        var comma = instanceName.IndexOf(',');
+        return comma > 0
+            && int.TryParse(instanceName.AsSpan(0, comma), NumberStyles.None, CultureInfo.InvariantCulture, out group)
+            && int.TryParse(instanceName.AsSpan(comma + 1), NumberStyles.None, CultureInfo.InvariantCulture, out index);
     }
 
     private static string ReadProcessorName()

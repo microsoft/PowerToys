@@ -353,6 +353,10 @@
     <value>Logical processors</value>
     <comment>Label for the number of logical processors (hardware threads)</comment>
   </data>
+  <data name="CPUUsage_Widget_Template.Cores_Chart_Title" xml:space="preserve">
+    <value>Utilization by logical processor</value>
+    <comment>Title of a bar chart with one bar per logical processor (hardware thread)</comment>
+  </data>
   <data name="CPUUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
     <value>% Utilization</value>
     <comment>Vertical axis title of the CPU usage history chart</comment>

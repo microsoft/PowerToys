@@ -250,6 +250,26 @@
               ]
             }
           ]
+        },
+        {
+          "type": "Container",
+          "$when": "${count(cpuCores) > 0}",
+          "spacing": "small",
+          "style": "emphasis",
+          "roundedCorners": true,
+          "showBorder": true,
+          "items": [
+            {
+              "type": "Chart.VerticalBar",
+              "title": "%CPUUsage_Widget_Template/Cores_Chart_Title%",
+              "yMin": 0,
+              "yMax": 100,
+              "valueFormat": "percentage",
+              "color": "categoricalBlue",
+              "data": "${cpuCores}",
+              "fallback": "drop"
+            }
+          ]
         }
       ]
     }

@@ -720,6 +720,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
                 Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
                 PerformanceChartData.CpuColor,
                 PerformanceChartData.Snapshot(currentData.CpuChartValues)));
+            ContentJson["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
 
             // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
             // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
@@ -779,6 +780,36 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             uptime.Hours,
             uptime.Minutes,
             uptime.Seconds);
+    }
+
+    /// <summary>One bar per logical processor, as in Task Manager's logical processor view.</summary>
+    internal static JsonArray CreateCoreBars(float[] cores)
+    {
+        var bars = new JsonArray();
+        for (var i = 0; i < cores.Length; i++)
+        {
+            bars.Add((JsonNode)new JsonObject
+            {
+                ["x"] = i.ToString(CultureInfo.InvariantCulture),
+                ["y"] = Math.Round((double)cores[i], 1, MidpointRounding.AwayFromZero),
+            });
+        }
+
+        return bars;
+    }
+
+    // The card shows per-processor utilization, which the dock and the overview don't need, so
+    // it's read only while the card is open.
+    protected override void Loaded()
+    {
+        _dataManager.GetCPUStats().RequestCoreUsage(true);
+        base.Loaded();
+    }
+
+    protected override void Unloaded()
+    {
+        base.Unloaded();
+        _dataManager.GetCPUStats().RequestCoreUsage(false);
     }
 
     protected override void OnActivated() => _dataManager.Start();
