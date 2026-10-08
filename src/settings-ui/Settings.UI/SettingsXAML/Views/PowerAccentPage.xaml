@@ -227,32 +227,15 @@
                             <ListView.GroupStyle>
                                 <GroupStyle>
                                     <GroupStyle.HeaderContainerStyle>
-                                        <!--  Default ListViewHeaderItem template without the divider line  -->
-                                        <Style TargetType="ListViewHeaderItem">
-                                            <Setter Property="Margin" Value="0" />
+                                        <Style BasedOn="{StaticResource PlainListViewHeaderItemStyle}" TargetType="ListViewHeaderItem">
                                             <Setter Property="Padding" Value="12,16,12,4" />
-                                            <Setter Property="MinHeight" Value="0" />
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ListViewHeaderItem">
-                                                        <ContentPresenter
-                                                            Margin="{TemplateBinding Padding}"
-                                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                            Background="{TemplateBinding Background}"
-                                                            Content="{TemplateBinding Content}"
-                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                            ContentTransitions="{TemplateBinding ContentTransitions}" />
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
                                         </Style>
                                     </GroupStyle.HeaderContainerStyle>
                                     <GroupStyle.HeaderTemplate>
                                         <DataTemplate x:DataType="vm:CharacterSetPickerGroup">
                                             <TextBlock
                                                 AutomationProperties.HeadingLevel="Level2"
-                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                Style="{StaticResource SecondaryTextStyle}"
                                                 Text="{x:Bind Header}" />
                                         </DataTemplate>
                                     </GroupStyle.HeaderTemplate>

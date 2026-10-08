@@ -2,7 +2,6 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentReferenceGuideWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -22,7 +21,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,*">
+    <Grid x:Name="RootGrid" RowDefinitions="Auto,*">
         <Grid.Resources>
             <!--  Groups the flat FilteredGroups collection for the ListView with GroupStyle.  -->
             <CollectionViewSource
@@ -30,13 +29,14 @@
                 IsSourceGrouped="True"
                 ItemsPath="Languages" />
 
-            <!--  Compact borderless style for individual character copy buttons.  -->
-            <Style x:Key="CharacterButtonStyle" TargetType="Button">
-                <Setter Property="Padding" Value="4,2" />
-                <Setter Property="MinWidth" Value="0" />
+            <!--  Subtle copy button that only shows the character until hovered.  -->
+            <Style
+                x:Key="CharacterButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="Padding" Value="6,2" />
+                <Setter Property="MinWidth" Value="32" />
                 <Setter Property="MinHeight" Value="0" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="FontSize" Value="18" />
             </Style>
         </Grid.Resources>
@@ -65,26 +65,16 @@
             </TitleBar.Content>
         </TitleBar>
 
-        <!--  Usage hint  -->
-        <InfoBar
-            x:Uid="QuickAccent_ReferenceGuide_Hint"
-            Grid.Row="1"
-            Margin="16,8,16,4"
-            IsClosable="False"
-            IsOpen="True"
-            IsTabStop="False"
-            Severity="Informational" />
-
         <!--  Empty state  -->
         <TextBlock
             x:Uid="QuickAccent_ReferenceGuide_NoResults"
-            Grid.Row="2"
+            Grid.Row="1"
             Margin="16,16"
             Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" />
 
         <!--  Main scrollable content - single virtualising ListView with GroupStyle  -->
         <ListView
-            Grid.Row="2"
+            Grid.Row="1"
             Padding="16,0,16,16"
             IsItemClickEnabled="False"
             ItemContainerStyle="{StaticResource NonInteractiveListViewItemStyle}"
@@ -94,13 +84,28 @@
             <!--  Language card template  -->
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="vm:ReferenceLanguageModel">
-                    <controls:Card
-                        Title="{x:Bind DisplayName}"
+                    <Border
                         Margin="0,4"
-                        Padding="12,4,12,12">
-                        <controls:Card.Content>
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Grid RowDefinitions="Auto,Auto,Auto">
+                            <TextBlock
+                                Margin="16,10"
+                                AutomationProperties.HeadingLevel="Level3"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind DisplayName}" />
+                            <Rectangle
+                                Grid.Row="1"
+                                Height="1"
+                                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
                             <!--  Key mappings - one row per key  -->
-                            <ItemsControl ItemsSource="{x:Bind KeyMappings}">
+                            <ItemsControl
+                                Grid.Row="2"
+                                Margin="12,4,12,12"
+                                ItemsSource="{x:Bind KeyMappings}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="vm:KeyMappingModel">
                                         <!--  Left-aligned with the Card's 16px title indent.  -->
@@ -132,6 +137,7 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="vm:CharacterModel">
                                                         <Button
+                                                            AutomationProperties.Name="{x:Bind Tooltip}"
                                                             Click="CharacterButton_Click"
                                                             Content="{x:Bind DisplayValue}"
                                                             Style="{StaticResource CharacterButtonStyle}"
@@ -143,19 +149,19 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </controls:Card.Content>
-                    </controls:Card>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
 
             <!--  Group header template  -->
             <ListView.GroupStyle>
-                <GroupStyle>
+                <GroupStyle HeaderContainerStyle="{StaticResource PlainListViewHeaderItemStyle}">
                     <GroupStyle.HeaderTemplate>
                         <DataTemplate x:DataType="vm:ReferenceGroupModel">
                             <TextBlock
-                                Margin="0,16,0,0"
-                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level2"
+                                Style="{StaticResource SecondaryTextStyle}"
                                 Text="{x:Bind GroupHeader}" />
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>

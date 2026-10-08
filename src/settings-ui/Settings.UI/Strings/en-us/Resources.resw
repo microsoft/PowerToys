@@ -3647,9 +3647,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_ReferenceGuide_Search.PlaceholderText" xml:space="preserve">
     <value>Search for a character…</value>
   </data>
-  <data name="QuickAccent_ReferenceGuide_Hint.Message" xml:space="preserve">
-    <value>Hover over a character to see its Unicode name. Click to copy it to the clipboard.</value>
-  </data>
   <data name="QuickAccent_ReferenceGuide_NoResults.Text" xml:space="preserve">
     <value>No characters found matching your search.</value>
   </data>
