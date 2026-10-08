@@ -723,9 +723,6 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             ContentJson["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
             ContentJson["cpuTopProcesses"] = CreateProcessBars(currentData.TopProcesses);
 
-            // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
-            // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
-            // ContentData["cpuProc3"] = currentData.GetCpuProcessText(2);
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
             // CoreLogger.LogDebug($"CPU stats retrieved in {dataDuration} ms, content prepared in {contentDuration} ms. (Total {timer.ElapsedMilliseconds} ms)");

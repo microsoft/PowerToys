@@ -23,14 +23,10 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     private readonly PerformanceCounter? _procPerf;
     private readonly PerformanceCounter? _procPerformance;
     private readonly PerformanceCounter? _procFrequency;
-    private readonly Dictionary<Process, PerformanceCounter> _cpuCounters = new();
 
     // Per-processor utilization and the busiest processes, only while a CPU card shows them.
     private readonly ProcessCpuSampler _processSampler = new();
-    private bool _processCountersInitialized;
     private bool _cpuCounterReadFailureLogged;
-    private bool _processCounterEnumerationFailureLogged;
-    private bool _processCounterReadFailureLogged;
     private PerformanceCounterCategory? _processorCategory;
     private bool _processorCategoryCreated;
     private Dictionary<string, CounterSample> _previousCoreSamples = [];
@@ -38,13 +34,6 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     private bool _detailsRead;
     private bool _coreReadFailureLogged;
     private bool _processReadFailureLogged;
-
-    internal sealed class ProcessStats
-    {
-        public Process? Process { get; set; }
-
-        public float CpuUsage { get; set; }
-    }
 
     public float CpuUsage { get; set; }
 
@@ -65,8 +54,6 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
     public static TimeSpan Uptime => TimeSpan.FromMilliseconds(Environment.TickCount64);
 
-    public ProcessStats[] ProcessCPUStats { get; set; }
-
     public List<float> CpuChartValues { get; set; } = new();
 
     /// <summary>
@@ -81,12 +68,6 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     public CPUStats()
     {
         CpuUsage = 0;
-        ProcessCPUStats =
-        [
-            new ProcessStats(),
-            new ProcessStats(),
-            new ProcessStats()
-        ];
 
         // Use "% Processor Time" instead of "% Processor Utility": the latter is unbounded above 100%
         // when cores boost above their nominal base frequency (it is scaled by % Processor Performance),
@@ -97,52 +78,15 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         _procFrequency = CreatePerformanceCounter("Processor Information", "Processor Frequency", "_Total");
     }
 
-    private void EnsureCPUProcessCountersInitialized()
-    {
-        if (_processCountersInitialized)
-        {
-            return;
-        }
-
-        _processCountersInitialized = true;
-
-        try
-        {
-            var allProcesses = Process.GetProcesses().Where(p => (long)p.MainWindowHandle != 0);
-
-            foreach (var process in allProcesses)
-            {
-                try
-                {
-                    var counter = CreatePerformanceCounter("Process", "% Processor Time", process.ProcessName, logFailure: false);
-                    if (counter is not null)
-                    {
-                        _cpuCounters.Add(process, counter);
-                    }
-                }
-                catch (Exception)
-                {
-                    // Skip processes whose counters cannot be created.
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            LogFailureOnce(ref _processCounterEnumerationFailureLogged, "Failed to initialize CPU process performance counters.", ex);
-        }
-    }
-
-    public void GetData(bool includeTopProcesses)
+    public void GetData()
     {
         try
         {
-            var timer = Stopwatch.StartNew();
             if (_procPerf is not null)
             {
                 CpuUsage = _procPerf.NextValue() / 100;
             }
 
-            var usageMs = timer.ElapsedMilliseconds;
             if (_procFrequency is not null && _procPerformance is not null)
             {
                 var frequency = _procFrequency.NextValue();
@@ -167,60 +111,10 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
                 _processSampler.Reset();
             }
 
-            var speedMs = timer.ElapsedMilliseconds - usageMs;
             lock (CpuChartValues)
             {
                 ChartHelper.AddNextChartValue(CpuUsage * 100, CpuChartValues, PerformanceChartData.HistoryLength);
             }
-
-            var chartMs = timer.ElapsedMilliseconds - speedMs;
-
-            var processCPUUsages = new Dictionary<Process, float>();
-
-            if (includeTopProcesses)
-            {
-                EnsureCPUProcessCountersInitialized();
-
-                var countersToRemove = new List<Process>();
-                foreach (var processCounter in _cpuCounters.ToArray())
-                {
-                    try
-                    {
-                        // process might be terminated
-                        processCPUUsages.Add(processCounter.Key, processCounter.Value.NextValue() / Environment.ProcessorCount);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        countersToRemove.Add(processCounter.Key);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogFailureOnce(ref _processCounterReadFailureLogged, "Failed while reading CPU process performance counters.", ex);
-                    }
-                }
-
-                foreach (var process in countersToRemove)
-                {
-                    if (_cpuCounters.Remove(process, out var counter))
-                    {
-                        counter.Dispose();
-                    }
-                }
-
-                var cpuIndex = 0;
-                foreach (var processCPUValue in processCPUUsages.OrderByDescending(x => x.Value).Take(3))
-                {
-                    ProcessCPUStats[cpuIndex].Process = processCPUValue.Key;
-                    ProcessCPUStats[cpuIndex].CpuUsage = processCPUValue.Value;
-                    cpuIndex++;
-                }
-            }
-
-            timer.Stop();
-            var total = timer.ElapsedMilliseconds;
-            var processesMs = total - chartMs;
-
-            // CoreLogger.LogDebug($"[{usageMs}]+[{speedMs}]+[{chartMs}]+[{processesMs}]=[{total}]");
         }
         catch (Exception ex)
         {
@@ -353,35 +247,10 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
-    internal string GetCpuProcessText(int cpuProcessIndex)
-    {
-        if (cpuProcessIndex >= ProcessCPUStats.Length)
-        {
-            return "no data";
-        }
-
-        return $"{ProcessCPUStats[cpuProcessIndex].Process?.ProcessName} ({ProcessCPUStats[cpuProcessIndex].CpuUsage / 100:p})";
-    }
-
-    internal void KillTopProcess(int cpuProcessIndex)
-    {
-        if (cpuProcessIndex >= ProcessCPUStats.Length)
-        {
-            return;
-        }
-
-        ProcessCPUStats[cpuProcessIndex].Process?.Kill();
-    }
-
     public void Dispose()
     {
         _procPerf?.Dispose();
         _procPerformance?.Dispose();
         _procFrequency?.Dispose();
-
-        foreach (var counter in _cpuCounters.Values)
-        {
-            counter.Dispose();
-        }
     }
 }
