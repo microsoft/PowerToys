@@ -209,6 +209,30 @@
     <value>Free {0}</value>
     <comment>Memory that holds no data. {0} is an amount of memory</comment>
   </data>
+  <data name="Memory_Widget_Template.Speed" xml:space="preserve">
+    <value>Speed</value>
+    <comment>Label for the memory speed, such as 5600 MT/s</comment>
+  </data>
+  <data name="Memory_Widget_Template.Slots_Used" xml:space="preserve">
+    <value>Slots used</value>
+    <comment>Label for how many memory slots have a module, such as 2 of 4</comment>
+  </data>
+  <data name="Memory_Widget_Template.Slots_Used_Value" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0} is the number of memory slots with a module; {1} is the number of slots</comment>
+  </data>
+  <data name="Memory_Widget_Template.Form_Factor" xml:space="preserve">
+    <value>Form factor</value>
+    <comment>Label for the memory module type, such as SODIMM</comment>
+  </data>
+  <data name="Memory_Widget_Template.Form_Factor_Row_Of_Chips" xml:space="preserve">
+    <value>Row of chips</value>
+    <comment>Memory form factor: chips soldered to the board, as Task Manager calls it</comment>
+  </data>
+  <data name="Memory_Widget_Template.Hardware_Reserved" xml:space="preserve">
+    <value>Hardware reserved</value>
+    <comment>Label for installed memory that the hardware reserves, such as for integrated graphics</comment>
+  </data>
   <data name="NetworkUsage_Widget_Template.Network_Usage" xml:space="preserve">
     <value>Utilization</value>
   </data>

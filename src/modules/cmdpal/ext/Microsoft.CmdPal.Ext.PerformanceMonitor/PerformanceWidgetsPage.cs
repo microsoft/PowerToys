@@ -864,6 +864,27 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
                 FloatToPercentString(currentData.MemUsage),
                 MemUlongToString(currentData.AllMem));
             ContentData["memUsedOfTotal"] = FormatUsedOfTotal(currentData.UsedMem, currentData.AllMem);
+
+            // Memory hardware, as on Task Manager's memory page.
+            if (MemoryHardware.Modules is MemoryModules modules)
+            {
+                if (modules.SpeedMegatransfers > 0)
+                {
+                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegatransfers);
+                }
+
+                ContentData["memSlots"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Widget_Template/Slots_Used_Value"), modules.SlotsUsed, modules.SlotCount);
+                if (MemoryHardware.GetFormFactorName(modules.FormFactor) is string formFactor)
+                {
+                    ContentData["memFormFactor"] = formFactor;
+                }
+            }
+
+            if (MemoryHardware.InstalledBytes > currentData.AllMem)
+            {
+                ContentData["memReserved"] = MemUlongToString(MemoryHardware.InstalledBytes - currentData.AllMem);
+            }
+
             ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
             ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
