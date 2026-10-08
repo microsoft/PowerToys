@@ -173,6 +173,42 @@
   <data name="Memory_Widget_Template.PagedPool" xml:space="preserve">
     <value>Paged pool</value>
   </data>
+  <data name="Memory_Widget_Template.InUse" xml:space="preserve">
+    <value>In use</value>
+    <comment>Label for memory that is in use</comment>
+  </data>
+  <data name="Memory_Widget_Template.Available" xml:space="preserve">
+    <value>Available</value>
+    <comment>Label for memory that is available for use</comment>
+  </data>
+  <data name="Memory_Widget_Template.UsageOfTotal" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0} is the percentage of memory in use, such as 57%; {1} is the total memory, such as 31.7 GB</comment>
+  </data>
+  <data name="Memory_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Memory usage</value>
+    <comment>Vertical axis title of the memory usage history chart</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition" xml:space="preserve">
+    <value>Memory composition</value>
+    <comment>Title of a bar that splits memory into in use, modified, standby, and free</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_InUse" xml:space="preserve">
+    <value>In use {0}</value>
+    <comment>{0} is an amount of memory, such as 12.4 GB</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Modified" xml:space="preserve">
+    <value>Modified {0}</value>
+    <comment>Memory whose contents must be written to disk before reuse. {0} is an amount of memory</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Standby" xml:space="preserve">
+    <value>Standby {0}</value>
+    <comment>Cached memory that is available for reuse. {0} is an amount of memory</comment>
+  </data>
+  <data name="Memory_Widget_Template.Composition_Free" xml:space="preserve">
+    <value>Free {0}</value>
+    <comment>Memory that holds no data. {0} is an amount of memory</comment>
+  </data>
   <data name="NetworkUsage_Widget_Template.Network_Usage" xml:space="preserve">
     <value>Utilization</value>
   </data>
@@ -184,6 +220,14 @@
   </data>
   <data name="NetworkUsage_Widget_Template.Network_Name" xml:space="preserve">
     <value>Name</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Throughput ({0})</value>
+    <comment>Vertical axis title of the network chart. {0} is a rate unit, such as Mbps or MB/s</comment>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Link_Speed" xml:space="preserve">
+    <value>Link speed</value>
+    <comment>Label for the speed of the network connection, such as 1 Gbps</comment>
   </data>
   <data name="Previous_Network_Title" xml:space="preserve">
     <value>Previous network</value>
@@ -215,6 +259,22 @@
   </data>
   <data name="DiskUsage_Widget_Template.Disk_Name" xml:space="preserve">
     <value>Name</value>
+  </data>
+  <data name="DiskUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
+    <value>Transfer rate ({0})</value>
+    <comment>Vertical axis title of the disk chart. {0} is a rate unit, such as MB/s</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Disk_Number" xml:space="preserve">
+    <value>Disk {0}</value>
+    <comment>{0} is the disk number</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Disk_Number_Volumes" xml:space="preserve">
+    <value>Disk {0} ({1})</value>
+    <comment>{0} is the disk number; {1} lists its drive letters, such as C: D:</comment>
+  </data>
+  <data name="DiskUsage_Widget_Template.Volume_Free" xml:space="preserve">
+    <value>{0} free of {1}</value>
+    <comment>{0} is free space and {1} is total size, such as 412 GB and 953 GB</comment>
   </data>
   <data name="Previous_Disk_Title" xml:space="preserve">
     <value>Previous disk</value>
@@ -459,6 +519,22 @@
   </data>
   <data name="Battery_Widget_Template.TimeRemaining" xml:space="preserve">
     <value>Time remaining</value>
+  </data>
+  <data name="Battery_Widget_Template.Charge_Rate" xml:space="preserve">
+    <value>Charge rate</value>
+    <comment>Label for the power flowing into the battery, such as 25 W</comment>
+  </data>
+  <data name="Battery_Widget_Template.Discharge_Rate" xml:space="preserve">
+    <value>Discharge rate</value>
+    <comment>Label for the power drawn from the battery, such as 9.5 W</comment>
+  </data>
+  <data name="Battery_Widget_Template.Health" xml:space="preserve">
+    <value>Health</value>
+    <comment>Label for the battery's full charge capacity as a percentage of its design capacity</comment>
+  </data>
+  <data name="Battery_Widget_Template.Full_Charge_Capacity" xml:space="preserve">
+    <value>Full charge capacity</value>
+    <comment>Label for the energy the battery holds when fully charged, such as 54 Wh</comment>
   </data>
   <data name="Open_Task_Manager_Title" xml:space="preserve">
     <value>Open Task Manager</value>

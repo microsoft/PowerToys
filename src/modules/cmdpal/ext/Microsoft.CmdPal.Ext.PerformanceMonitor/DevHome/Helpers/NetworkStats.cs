@@ -18,8 +18,8 @@ internal sealed partial class NetworkStats
     private readonly IPhysicalNetworkInterfaceSnapshotProvider _snapshotProvider;
     private readonly string _allAdaptersName;
     private readonly Dictionary<ulong, CounterSample> _previousSamples = new();
-    private readonly Dictionary<ulong, List<float>> _chartValues = new();
-    private readonly List<float> _allAdaptersChartValues = new();
+    private readonly Dictionary<ulong, AdapterHistory> _history = new();
+    private readonly AdapterHistory _allAdaptersHistory = new(new SampleHistory(), new SampleHistory());
     private readonly List<ulong> _missingInterfaceIds = new();
     private NetworkAdapterData[] _networkAdapters = [];
     private long? _lastTimestamp;
@@ -43,7 +43,10 @@ internal sealed partial class NetworkStats
         }
     }
 
-    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, List<float> ChartValues);
+    /// <summary>Send and receive rates in bytes per second, one sample per update.</summary>
+    internal sealed record AdapterHistory(SampleHistory Sent, SampleHistory Received);
+
+    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, AdapterHistory History, double LinkSpeed);
 
     private readonly record struct CounterSample(ulong ReceivedBytes, ulong SentBytes);
 
@@ -57,7 +60,7 @@ internal sealed partial class NetworkStats
     {
         _snapshotProvider = snapshotProvider;
         _allAdaptersName = allAdaptersName;
-        _networkAdapters = [new(AllPhysicalAdaptersId, _allAdaptersName, new Data(), _allAdaptersChartValues)];
+        _networkAdapters = [new(AllPhysicalAdaptersId, _allAdaptersName, new Data(), _allAdaptersHistory, 0)];
     }
 
     public void GetData()
@@ -115,32 +118,38 @@ internal sealed partial class NetworkStats
         RemoveMissingInterfaces(currentInterfaceIds);
 
         var aggregateUsage = CreateUsage(totalSent, totalReceived, totalBandwidth);
-        AddChartValue(_allAdaptersChartValues, aggregateUsage.Usage);
+        AddHistory(_allAdaptersHistory, aggregateUsage);
 
         var adapters = new NetworkAdapterData[adapterMeasurements.Count + 1];
-        adapters[0] = new(AllPhysicalAdaptersId, _allAdaptersName, aggregateUsage, _allAdaptersChartValues);
+        adapters[0] = new(AllPhysicalAdaptersId, _allAdaptersName, aggregateUsage, _allAdaptersHistory, totalBandwidth);
 
         for (var index = 0; index < adapterMeasurements.Count; index++)
         {
             var (snapshot, usage) = adapterMeasurements[index];
-            if (!_chartValues.TryGetValue(snapshot.InterfaceLuid, out var chartValues))
+            if (!_history.TryGetValue(snapshot.InterfaceLuid, out var history))
             {
-                chartValues = new List<float>();
-                _chartValues.Add(snapshot.InterfaceLuid, chartValues);
+                history = new AdapterHistory(new SampleHistory(), new SampleHistory());
+                _history.Add(snapshot.InterfaceLuid, history);
             }
 
-            AddChartValue(chartValues, usage.Usage);
-            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, chartValues);
+            AddHistory(history, usage);
+            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, history, snapshot.LinkSpeed);
         }
 
         Volatile.Write(ref _networkAdapters, adapters);
     }
 
-    public string CreateNetImageUrl(int netChartIndex)
+    public AdapterHistory GetHistory(int networkIndex)
     {
         var adapters = Volatile.Read(ref _networkAdapters);
-        var resolvedIndex = ResolveIndex(netChartIndex, adapters.Length);
-        return ChartHelper.CreateImageUrl(adapters[resolvedIndex].ChartValues, ChartHelper.ChartType.Net);
+        return adapters[ResolveIndex(networkIndex, adapters.Length)].History;
+    }
+
+    /// <summary>Gets the link speed in bits per second; for all adapters, the combined speed.</summary>
+    public double GetLinkSpeed(int networkIndex)
+    {
+        var adapters = Volatile.Read(ref _networkAdapters);
+        return adapters[ResolveIndex(networkIndex, adapters.Length)].LinkSpeed;
     }
 
     public string GetNetworkName(int networkIndex)
@@ -225,12 +234,10 @@ internal sealed partial class NetworkStats
         };
     }
 
-    private static void AddChartValue(List<float> chartValues, float usage)
+    private static void AddHistory(AdapterHistory history, Data usage)
     {
-        lock (chartValues)
-        {
-            ChartHelper.AddNextChartValue(usage * 100, chartValues);
-        }
+        history.Sent.Add(usage.Sent);
+        history.Received.Add(usage.Received);
     }
 
     private void RemoveMissingInterfaces(HashSet<ulong> currentInterfaceIds)
@@ -247,7 +254,7 @@ internal sealed partial class NetworkStats
         foreach (var interfaceId in _missingInterfaceIds)
         {
             _previousSamples.Remove(interfaceId);
-            _chartValues.Remove(interfaceId);
+            _history.Remove(interfaceId);
         }
     }
 }

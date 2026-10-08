@@ -19,64 +19,69 @@
       "$when": "${errorMessage == null}",
       "items": [
         {
-          "type": "Image",
-          "url": "${gpuGraphUrl}",
-          "height": "${chartHeight}",
-          "width": "${chartWidth}",
-          "$when": "${$host.widgetSize != \"small\"}",
-          "horizontalAlignment": "center"
-        },
-        {
           "type": "ColumnSet",
           "columns": [
             {
               "type": "Column",
+              "width": "stretch",
               "items": [
                 {
-                  "text": "%GPUUsage_Widget_Template/GPU_Usage%",
                   "type": "TextBlock",
+                  "isSubtle": true,
                   "size": "small",
-                  "isSubtle": true
+                  "text": "%GPUUsage_Widget_Template/GPU_Usage%"
                 },
                 {
-                  "text": "${gpuUsage}",
                   "type": "TextBlock",
-                  "size": "large",
-                  "weight": "bolder"
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "text": "${gpuUsage}"
                 }
               ]
             },
             {
               "type": "Column",
+              "width": "auto",
+              "$when": "${gpuTemp != '--'}",
               "items": [
                 {
-                  "text": "%GPUUsage_Widget_Template/GPU_Temperature%",
                   "type": "TextBlock",
-                  "size": "small",
                   "isSubtle": true,
-                  "horizontalAlignment": "right"
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "%GPUUsage_Widget_Template/GPU_Temperature%"
                 },
                 {
-                  "text": "${gpuTemp}",
                   "type": "TextBlock",
-                  "size": "large",
+                  "size": "extraLarge",
                   "weight": "bolder",
-                  "horizontalAlignment": "right"
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuTemp}"
                 }
               ]
             }
           ]
         },
         {
-          "text": "%GPUUsage_Widget_Template/GPU_Name%",
-          "type": "TextBlock",
-          "size": "small",
-          "isSubtle": true
+          "type": "Chart.Line",
+          "spacing": "medium",
+          "yAxisTitle": "%CPUUsage_Widget_Template/Chart_Y_Axis%",
+          "xAxisTitle": "%CPUUsage_Widget_Template/Chart_X_Axis%",
+          "yMin": 0,
+          "yMax": 100,
+          "valueFormat": "percentage",
+          "fill": "gradient",
+          "data": "${gpuSeries}",
+          "fallback": "drop"
         },
         {
-          "text": "${gpuName}",
           "type": "TextBlock",
-          "size": "medium"
+          "spacing": "medium",
+          "isSubtle": true,
+          "wrap": true,
+          "text": "${gpuName}"
         }
       ]
     }

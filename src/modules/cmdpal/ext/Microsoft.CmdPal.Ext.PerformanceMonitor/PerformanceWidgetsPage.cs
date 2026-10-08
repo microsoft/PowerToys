@@ -763,6 +763,7 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -772,15 +773,23 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
             ContentData["allMem"] = MemUlongToString(currentData.AllMem);
             ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
+            ContentData["availableMem"] = MemUlongToString(currentData.MemAvailable);
             ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
+            ContentData["memUsageOfTotal"] = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.GetResource("Memory_Widget_Template/UsageOfTotal"),
+                FloatToPercentString(currentData.MemUsage),
+                MemUlongToString(currentData.AllMem));
             ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
             ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
             ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
             ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentData["memGraphUrl"] = currentData.CreateMemImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentJson["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("Memory_Widget_Template/Chart_Y_Axis"),
+                "categoricalPurple",
+                PerformanceChartData.Snapshot(currentData.MemChartValues)));
+            ContentJson["memComposition"] = CreateComposition(currentData);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -789,9 +798,36 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
+    }
+
+    /// <summary>Builds a stacked bar of in use, modified, standby, and free memory, as in Task Manager.</summary>
+    private JsonArray CreateComposition(MemoryStats stats)
+    {
+        static JsonObject Part(string legend, ulong bytes, string color) => new()
+        {
+            ["legend"] = legend,
+            ["value"] = Math.Round(bytes / 1048576.0),
+            ["color"] = color,
+        };
+
+        string Legend(string key, ulong bytes) => string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource(key),
+            MemUlongToString(bytes));
+
+        var parts = new JsonArray
+        {
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_InUse", stats.MemInUse), stats.MemInUse, "categoricalPurple"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Modified", stats.MemModified), stats.MemModified, "categoricalMarigold"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Standby", stats.MemStandby), stats.MemStandby, "categoricalLightBlue"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Free", stats.MemFree), stats.MemFree, "neutral"),
+        };
+
+        return new JsonArray { (JsonNode)new JsonObject { ["data"] = parts } };
     }
 
     protected override string GetTemplatePath(WidgetPageState page)
@@ -878,6 +914,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -892,9 +929,17 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
-            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["diskDisplayName"] = DiskVolumes.GetDisplayName(diskName);
+
+            var history = currentData.GetHistory(_diskIndex);
+            var read = history.Read.Snapshot();
+            var written = history.Write.Snapshot();
+            var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.DiskSpeedUnit, PerformanceChartData.Max(read, written));
+            ContentData["diskChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Chart_Y_Axis"), unit);
+            ContentJson["diskSeries"] = PerformanceChartData.Create(
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Read"), "categoricalTeal", PerformanceChartData.Scale(read, divisor)),
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Write"), "categoricalGreen", PerformanceChartData.Scale(written, divisor)));
+            ContentJson["volumes"] = DiskVolumes.Create(diskName);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -903,6 +948,7 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
@@ -1058,6 +1104,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1082,9 +1129,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
             ContentData["netReceived"] = SpeedToString(networkStats.Received);
             ContentData["networkName"] = netName;
-            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["netLinkSpeed"] = LinkSpeedToString(currentData.GetLinkSpeed(_networkIndex));
+
+            var history = currentData.GetHistory(_networkIndex);
+            var sent = history.Sent.Snapshot();
+            var received = history.Received.Snapshot();
+            var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.NetworkSpeedUnit, PerformanceChartData.Max(sent, received));
+            ContentData["netChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("NetworkUsage_Widget_Template/Chart_Y_Axis"), unit);
+            ContentJson["netSeries"] = PerformanceChartData.Create(
+                new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Received"), "categoricalMarigold", PerformanceChartData.Scale(received, divisor)),
+                new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Sent"), "categoricalRed", PerformanceChartData.Scale(sent, divisor)));
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1093,10 +1147,20 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
     }
+
+    /// <summary>Formats a link speed given in bits per second, such as <c>1 Gbps</c>.</summary>
+    internal static string LinkSpeedToString(double bitsPerSecond) => bitsPerSecond switch
+    {
+        >= 1e9 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Gbps", bitsPerSecond / 1e9),
+        >= 1e6 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Mbps", bitsPerSecond / 1e6),
+        > 0 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Kbps", bitsPerSecond / 1e3),
+        _ => "—",
+    };
 
     protected override string GetTemplatePath(WidgetPageState page)
     {
@@ -1267,6 +1331,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1279,9 +1344,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
             ContentData["gpuName"] = _gpuDisplayInfo.Name;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentJson["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
+                "categoricalTeal",
+                stats.GetGPUHistory(_gpuActiveIndex)));
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1290,6 +1356,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             if (_gpuDisplayInfo is { } previous)
             {
                 _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
@@ -1408,6 +1475,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
         try
         {
             ContentData.Clear();
+            ContentJson.Clear();
 
             var stats = _dataManager.GetBatteryStats();
 
@@ -1418,6 +1486,9 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
                 ContentData["batteryCharge"] = "—";
                 ContentData["batteryStatus"] = Resources.GetResource("Battery_Usage_Unknown");
                 ContentData["batteryTimeRemaining"] = string.Empty;
+                ContentData["batteryStatusStyle"] = "default";
+                ContentJson["batteryPercent"] = 0;
+                ContentData["batteryColor"] = "neutral";
                 return;
             }
 
@@ -1427,15 +1498,49 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
 
             ContentData["batteryStatus"] = GetStatusText(stats);
             ContentData["batteryTimeRemaining"] = GetTimeRemainingText(stats);
+            ContentData["batteryStatusStyle"] = stats.IsCharging ? "good" : stats.IsOnAcPower ? "informative" : "accent";
+            ContentData["batteryColor"] = GetChargeColor(stats.IsCharging, stats.ChargePercent);
+            ContentJson["batteryPercent"] = Math.Round(Math.Max(0, stats.ChargePercent) * 100);
+
+            stats.ReadReport();
+            if (stats.ChargeRateMilliwatts is int rate && rate != 0)
+            {
+                ContentData["batteryRateLabel"] = Resources.GetResource(rate > 0 ? "Battery_Widget_Template/Charge_Rate" : "Battery_Widget_Template/Discharge_Rate");
+                ContentData["batteryRate"] = string.Format(CultureInfo.CurrentCulture, "{0:0.#} W", Math.Abs(rate) / 1000.0);
+            }
+
+            if (stats.FullChargeCapacityMilliwattHours is int full && full > 0)
+            {
+                ContentData["batteryFullCapacity"] = string.Format(CultureInfo.CurrentCulture, "{0:0.#} Wh", full / 1000.0);
+                if (stats.DesignCapacityMilliwattHours is int design && design > 0)
+                {
+                    ContentData["batteryHealth"] = FloatToPercentString(Math.Min(1f, (float)full / design));
+                    ContentData["batteryDesignCapacity"] = string.Format(CultureInfo.CurrentCulture, "{0:0.#} Wh", design / 1000.0);
+                }
+            }
         }
         catch (Exception e)
         {
             ContentData.Clear();
+            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             CurrentIcon = Icons.BatteryGlyph(-1, false, false);
             return;
         }
     }
+
+    /// <summary>
+    /// Green while charging or above half, then warning, then attention when low. An unknown
+    /// charge (-1) uses the accent color.
+    /// </summary>
+    internal static string GetChargeColor(bool isCharging, float chargePercent) => chargePercent switch
+    {
+        < 0 => "accent",
+        _ when isCharging => "good",
+        > 0.5f => "good",
+        > 0.2f => "warning",
+        _ => "attention",
+    };
 
     protected override string GetTemplatePath(WidgetPageState page)
     {

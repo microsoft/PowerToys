@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -236,7 +237,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     gpu.Usage = clamped / 100f;
                     lock (gpu.GpuChartValues)
                     {
-                        ChartHelper.AddNextChartValue(clamped, gpu.GpuChartValues);
+                        ChartHelper.AddNextChartValue(clamped, gpu.GpuChartValues, PerformanceChartData.HistoryLength);
                     }
                 }
             }
@@ -346,16 +347,17 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         return false;
     }
 
-    internal string CreateGPUImageUrl(int gpuChartIndex)
+    /// <summary>Returns a copy of the utilization history (percent), oldest first.</summary>
+    internal float[] GetGPUHistory(int gpuChartIndex)
     {
         lock (_statsLock)
         {
             if (_stats.Count <= gpuChartIndex)
             {
-                return string.Empty;
+                return [];
             }
 
-            return ChartHelper.CreateImageUrl(_stats[gpuChartIndex].GpuChartValues, ChartHelper.ChartType.GPU);
+            return PerformanceChartData.Snapshot(_stats[gpuChartIndex].GpuChartValues);
         }
     }
 

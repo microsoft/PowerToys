@@ -57,4 +57,59 @@ internal static class PerformanceChartData
             return values.ToArray();
         }
     }
+
+    /// <summary>
+    /// Picks one unit for a whole rate chart, with the same unit names as the value labels, so
+    /// the axis reads naturally. Divide bytes per second by <c>Divisor</c> to get the unit.
+    /// </summary>
+    public static (float Divisor, string Unit) GetRateScale(SpeedUnit speedUnit, float maxBytesPerSecond)
+    {
+        var (multiplier, step, units) = speedUnit switch
+        {
+            SpeedUnit.BytesPerSecond => (1f, 1000f, BytesUnits),
+            SpeedUnit.BinaryBytesPerSecond => (1f, 1024f, BinaryBytesUnits),
+            _ => (8f, 1024f, BitsUnits),
+        };
+
+        var value = maxBytesPerSecond * multiplier / step;
+        var divisor = step;
+        var index = 0;
+        while (index < units.Length - 1 && value >= step)
+        {
+            value /= step;
+            divisor *= step;
+            index++;
+        }
+
+        return (divisor / multiplier, units[index]);
+    }
+
+    public static float[] Scale(float[] values, float divisor)
+    {
+        var scaled = new float[values.Length];
+        for (var i = 0; i < values.Length; i++)
+        {
+            scaled[i] = values[i] / divisor;
+        }
+
+        return scaled;
+    }
+
+    public static float Max(params float[][] series)
+    {
+        var max = 0f;
+        foreach (var values in series)
+        {
+            foreach (var value in values)
+            {
+                max = Math.Max(max, value);
+            }
+        }
+
+        return max;
+    }
+
+    private static readonly string[] BitsUnits = ["Kbps", "Mbps", "Gbps"];
+    private static readonly string[] BytesUnits = ["KB/s", "MB/s", "GB/s"];
+    private static readonly string[] BinaryBytesUnits = ["KiB/s", "MiB/s", "GiB/s"];
 }
