@@ -227,7 +227,7 @@ ZoomIt embeds `ggml-small.en-q5_1.bin` (190,098,681 bytes), whose SHA-256 is
 `Prewarm` loads the model on the dictation worker while the user begins selecting the snip.
 Audio is captured during the drag, converted to mono floating-point PCM, resampled to
 Whisper's 16 kHz input rate, and transcribed when the mouse is released. Finalization is
-allowed up to ten seconds for Whisper because inference, unlike SAPI event draining, is
+allowed up to twenty seconds for Whisper because inference, unlike SAPI event draining, is
 CPU-bound. The completed selection border, dimmed exterior, and badge remain visible, the
 pointer returns to the normal arrow, and the badge shows `Transcribing - Press Esc to cancel.`
 alongside a drawn, rotating progress ring. Capture exclusion keeps the selection overlay

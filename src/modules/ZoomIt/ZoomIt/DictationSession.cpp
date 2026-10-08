@@ -632,8 +632,11 @@ std::wstring DictationSession::Stop(
     PostCommand( Command::Stop );
 
     std::unique_lock<std::mutex> lock( m_lock );
+    // CPU-only small.en inference can exceed ten seconds on native ARM64 even
+    // for a short utterance. Keep the wait bounded, but allow enough time for
+    // the embedded model to return a useful transcript on supported hardware.
     const DWORD waitMilliseconds =
-        waitForWhisper ? std::max<DWORD>( graceMilliseconds, 10000 ) : graceMilliseconds;
+        waitForWhisper ? std::max<DWORD>( graceMilliseconds, 20000 ) : graceMilliseconds;
     const auto waitResult = WaitForDictationFinalization(
         std::chrono::milliseconds( waitMilliseconds ),
         [this] { return m_status == Status::Finalizing; },
