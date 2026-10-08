@@ -49,7 +49,7 @@ The module on/off state lives in `EnabledModules.MouseButtonLock` in the global 
 
 ## Settings UI
 
-Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on. Expanding it shows the button checkboxes, the hold-duration slider, and the drag-threshold box, plus an InfoBar recommending the right and middle buttons and pointing to Windows' built-in ClickLock (Control Panel > Mouse > Buttons) for the left button. The InfoBar sits as a sibling just below the expander with its `Visibility` bound to the expander's `IsExpanded` (through `BoolToVisibilityConverter`), so it appears only while the section is open. It is deliberately **not** an item inside `SettingsExpander.Items`: that compiles but throws at runtime when the item is realized (i.e. when the section is first expanded), so an `InfoBar` cannot be hosted there.
+Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on. Expanding it shows the button checkboxes, the hold-duration slider, and the drag-threshold box. Settings copy is kept short on purpose; explanations such as the overlap with Windows' built-in left-button ClickLock belong in the user docs.
 
 ```text
 Settings  >  Mouse utilities
@@ -60,36 +60,28 @@ Settings  >  Mouse utilities
 
 +------------------------------------------------------------------------+
 |   [v]   Buttons and behavior                                           |
-|         Choose which buttons lock and tune the hold-to-lock behavior.  |
+|         Choose which buttons can be locked                             |
 +------------------------------------------------------------------------+
-|   [ ]   Lock the left (primary) mouse button                           |
-|   [x]   Lock the right mouse button                                    |
-|   [ ]   Lock the middle mouse button                                   |
+|   [ ]   Left button                                                    |
+|   [x]   Right button                                                   |
+|   [ ]   Middle button                                                  |
 |                                                                        |
 |   Hold duration (ms)                           1200 ms  [=====O======] |
 |      How long to hold a button before it locks                         |
 |                                                                        |
 |   Drag threshold (pixels)                                [     5  ^v ] |
-|      Movement beyond this distance during the hold is treated as a     |
-|      drag and will not lock.                                           |
+|      Moving farther than this while holding cancels the lock           |
 +------------------------------------------------------------------------+
-
-+------------------------------------------------------------------------+
-|  (i)  Recommended for the right and middle buttons.                    |
-|       Windows already includes ClickLock for the left button;          |
-|       turn it on in Control Panel > Mouse > Buttons.                   |
-+------------------------------------------------------------------------+
-        ^ InfoBar shown only while "Buttons and behavior" is expanded
 ```
 
-Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[=====O======]` slider with its live value label (e.g. `1200 ms`), `[ 5 ^v ]` number box with spinner, `(i)` informational InfoBar (shown only while the expander is open). The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
+Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[=====O======]` slider with its live value label (e.g. `1200 ms`), `[ 5 ^v ]` number box with spinner. The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
 
 | Control | Type (UI range) | Setting key | ViewModel property | Default |
 | --- | --- | --- | --- | --- |
 | Mouse Button Lock | toggle | `EnabledModules.MouseButtonLock` | `IsMouseButtonLockEnabled` | off |
-| Lock the left (primary) mouse button | checkbox | `lmb_lock_enabled` | `MouseButtonLockLmbEnabled` | off |
-| Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
-| Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
+| Left button | checkbox | `lmb_lock_enabled` | `MouseButtonLockLmbEnabled` | off |
+| Right button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
+| Middle button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
 | Hold duration (ms) | slider (200-2200 ms, snaps in 100 ms steps) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 1200 |
 | Drag threshold (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
 

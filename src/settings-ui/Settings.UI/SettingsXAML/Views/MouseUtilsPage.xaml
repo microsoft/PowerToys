@@ -186,13 +186,6 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-
-                    <InfoBar
-                        x:Uid="MouseUtils_MouseButtonLock_ButtonRecommendation"
-                        IsClosable="False"
-                        IsOpen="True"
-                        Severity="Informational"
-                        Visibility="{x:Bind MouseUtilsMouseButtonLockSettingsExpander.IsExpanded, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
