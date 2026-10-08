@@ -179,6 +179,12 @@ The details that matter:
   returned values have to be stored and compared against `msg.wParam`.
 - Every stage records `GetClipboardSequenceNumber`. If it no longer matches, the user copied
   something else and the sequence abandons quietly rather than overwriting their clipboard.
+- Arming succeeds only after the image is published and the low-level hook is installed.
+  If either step fails, the caller publishes the combined payload instead of leaving an
+  image-only clipboard behind.
+- Electron applications can hold the clipboard open while asynchronously creating an image
+  attachment. Stage transitions retry for a bounded interval while the clipboard sequence
+  and foreground target remain unchanged.
 - The second paste waits for the physical `Ctrl` to come up first, so the synthesized key
   events do not interleave with the user's own.
 - If no paste arrives within a minute the combined payload is restored, leaving the user

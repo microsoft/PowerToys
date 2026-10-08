@@ -13,6 +13,9 @@
 #include <memory>
 #include <new>
 
+// Defined in Zoomit.cpp
+void OutputDebug( const TCHAR* format, ... );
+
 namespace
 {
     // Posted by the low level keyboard hook when the user presses Ctrl+V.
@@ -33,9 +36,38 @@ namespace
     // combined payload.
     constexpr UINT ARM_TIMEOUT = 60 * 1000;
 
+    // Clipboard consumers such as Electron can keep the clipboard open while
+    // asynchronously creating an image attachment. Retry the stage transition
+    // instead of permanently leaving the clipboard in the image-only stage.
+    constexpr DWORD CLIPBOARD_RETRY_TIMEOUT = 2 * 1000;
+    constexpr DWORD CLIPBOARD_RETRY_DELAY = 50;
+
+    // Arm does not report success until the worker has published stage one and
+    // installed its hook.
+    constexpr DWORD STARTUP_TIMEOUT = 5 * 1000;
+
     // Longest we wait for the user to release Ctrl before synthesizing the
     // second paste, in 10ms steps.
     constexpr int CTRL_RELEASE_POLLS = 100;
+
+    struct ChaperoneStartup
+    {
+        ChaperoneStartup() :
+            ReadyEvent( CreateEventW( nullptr, TRUE, FALSE, nullptr ) )
+        {
+        }
+
+        ~ChaperoneStartup()
+        {
+            if( ReadyEvent != nullptr )
+            {
+                CloseHandle( ReadyEvent );
+            }
+        }
+
+        HANDLE ReadyEvent = nullptr;
+        std::atomic_bool Succeeded{ false };
+    };
 
     struct ChaperoneState
     {
@@ -59,6 +91,7 @@ namespace
         UINT_PTR        TimerConsume = 0;
         UINT_PTR        TimerRestore = 0;
         UINT_PTR        TimerTimeout = 0;
+        std::shared_ptr<ChaperoneStartup> Startup;
     };
 
     // Only ever touched by the chaperone thread.
@@ -91,6 +124,8 @@ namespace
             {
                 g_State->SawPaste = true;
                 g_State->PasteTarget = GetForegroundWindow();
+                OutputDebug( L"[Snip/PasteChaperone] Physical paste target=%p sequence=%lu\n",
+                             g_State->PasteTarget, g_State->Sequence );
                 PostThreadMessage( g_State->ThreadId, WM_CHAPERONE_PASTED, 0, 0 );
             }
         }
@@ -140,6 +175,43 @@ namespace
                GetForegroundWindow() == g_State->PasteTarget;
     }
 
+    bool PublishStageWithRetry( DWORD formats, bool requireOwnership, bool requirePasteTarget )
+    {
+        const ULONGLONG deadline = GetTickCount64() + CLIPBOARD_RETRY_TIMEOUT;
+        unsigned int attempts = 0;
+
+        do
+        {
+            if( requireOwnership && !ClipboardStillOurs() )
+            {
+                OutputDebug( L"[Snip/PasteChaperone] Clipboard changed before formats=0x%08x\n", formats );
+                return false;
+            }
+            if( requirePasteTarget && !PasteTargetStillActive() )
+            {
+                OutputDebug( L"[Snip/PasteChaperone] Paste target changed before formats=0x%08x\n", formats );
+                return false;
+            }
+
+            if( PublishStage( formats ) )
+            {
+                if( attempts != 0 )
+                {
+                    OutputDebug( L"[Snip/PasteChaperone] Published formats=0x%08x after %u retries\n",
+                                 formats, attempts );
+                }
+                return true;
+            }
+
+            ++attempts;
+            Sleep( CLIPBOARD_RETRY_DELAY );
+        } while( GetTickCount64() < deadline );
+
+        OutputDebug( L"[Snip/PasteChaperone] Timed out publishing formats=0x%08x attempts=%u owner=%p err=%lu\n",
+                     formats, attempts, GetOpenClipboardWindow(), GetLastError() );
+        return false;
+    }
+
 
     //----------------------------------------------------------------------
     //
@@ -173,8 +245,17 @@ namespace
         inputs[3].ki.wVk = VK_CONTROL;
         inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
-        return SendInput( ARRAYSIZE( inputs ), inputs, sizeof( INPUT ) ) ==
-               ARRAYSIZE( inputs );
+        const UINT sent = SendInput( ARRAYSIZE( inputs ), inputs, sizeof( INPUT ) );
+        if( sent != ARRAYSIZE( inputs ) )
+        {
+            OutputDebug( L"[Snip/PasteChaperone] SendInput sent=%u expected=%zu err=%lu\n",
+                         sent, ARRAYSIZE( inputs ), GetLastError() );
+            return false;
+        }
+
+        OutputDebug( L"[Snip/PasteChaperone] Synthesized transcription paste target=%p\n",
+                     g_State->PasteTarget );
+        return true;
     }
 
 
@@ -206,7 +287,8 @@ namespace
         // Stage one. With only the image on the clipboard an application that
         // takes either an image or text has no text to prefer, so it takes the
         // image.
-        if( state->Window != nullptr && PublishStage( SNIP_CLIPBOARD_IMAGE ) )
+        if( state->Window != nullptr &&
+            PublishStageWithRetry( SNIP_CLIPBOARD_IMAGE, false, false ) )
         {
             state->Hook = SetWindowsHookEx( WH_KEYBOARD_LL, KeyboardHookProc,
                                             GetModuleHandle( nullptr ), 0 );
@@ -216,7 +298,24 @@ namespace
         {
             state->TimerTimeout = SetTimer( nullptr, 0, ARM_TIMEOUT, nullptr );
             InterlockedExchange( &g_Armed, 1 );
+        }
 
+        const bool startupSucceeded =
+            state->Hook != nullptr && state->TimerTimeout != 0;
+        if( !startupSucceeded )
+        {
+            OutputDebug( L"[Snip/PasteChaperone] Arm failed window=%p hook=%p timer=%zu err=%lu\n",
+                         state->Window, state->Hook, state->TimerTimeout, GetLastError() );
+        }
+        if( state->Startup )
+        {
+            state->Startup->Succeeded.store( startupSucceeded, std::memory_order_release );
+            SetEvent( state->Startup->ReadyEvent );
+            state->Startup.reset();
+        }
+
+        if( state->Hook != nullptr )
+        {
             while( GetMessage( &msg, nullptr, 0, 0 ) > 0 )
             {
                 bool done = false;
@@ -245,7 +344,7 @@ namespace
                     // Stage two: the image has been consumed, so hand the
                     // target the transcription and paste it for the user.
                     if( ClipboardStillOurs() && PasteTargetStillActive() &&
-                        PublishStage( SNIP_CLIPBOARD_TEXT ) && SendPaste() )
+                        PublishStageWithRetry( SNIP_CLIPBOARD_TEXT, true, true ) && SendPaste() )
                     {
                         state->TimerRestore = SetTimer( nullptr, 0, RESTORE_DELAY, nullptr );
                     }
@@ -253,7 +352,7 @@ namespace
                     {
                         if( ClipboardStillOurs() )
                         {
-                            PublishStage( state->CombinedFormats );
+                            PublishStageWithRetry( state->CombinedFormats, true, false );
                         }
                         done = true;
                     }
@@ -266,7 +365,7 @@ namespace
 
                     if( ClipboardStillOurs() )
                     {
-                        PublishStage( state->CombinedFormats );
+                        PublishStageWithRetry( state->CombinedFormats, true, false );
                     }
                     done = true;
                 }
@@ -280,7 +379,7 @@ namespace
                     // same as if the chaperone had not been armed at all.
                     if( ClipboardStillOurs() )
                     {
-                        PublishStage( state->CombinedFormats );
+                        PublishStageWithRetry( state->CombinedFormats, true, false );
                     }
                     done = true;
                 }
@@ -342,6 +441,13 @@ bool PasteChaperone::Arm( HBITMAP bitmap, const std::wstring& text, DWORD combin
 
     state->Text = text;
     state->CombinedFormats = combinedFormats;
+    const std::shared_ptr<ChaperoneStartup> startup(
+        new ( std::nothrow ) ChaperoneStartup() );
+    if( startup == nullptr || startup->ReadyEvent == nullptr )
+    {
+        return false;
+    }
+    state->Startup = startup;
 
     g_Thread = CreateThread( nullptr, 0, ChaperoneThread, state.get(), 0, &g_ThreadId );
     if( g_Thread == nullptr )
@@ -351,7 +457,17 @@ bool PasteChaperone::Arm( HBITMAP bitmap, const std::wstring& text, DWORD combin
     }
 
     state.release();
-    return true;
+
+    const DWORD startupWait = WaitForSingleObject( startup->ReadyEvent, STARTUP_TIMEOUT );
+    const bool armed = startupWait == WAIT_OBJECT_0 &&
+                       startup->Succeeded.load( std::memory_order_acquire );
+    if( !armed )
+    {
+        OutputDebug( L"[Snip/PasteChaperone] Arm did not complete wait=%lu err=%lu\n",
+                     startupWait, GetLastError() );
+        Cancel();
+    }
+    return armed;
 }
 
 
