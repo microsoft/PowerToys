@@ -12,15 +12,18 @@ using Windows.Data.Json;
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
 /// <summary>
-/// The Adaptive Cards <c>Chart.Line</c> element. The WinUI 3 renderer has no chart support, so
-/// Command Palette parses and renders it as a custom element. Cards stay portable: hosts that
-/// support charts render the same JSON, and other hosts use the element's <c>fallback</c>.
+/// An Adaptive Cards element from the current schema (charts, progress bars, badges) that the
+/// WinUI 3 renderer doesn't support. Command Palette parses and renders it natively. Cards stay
+/// portable: other hosts render the same JSON or use the element's <c>fallback</c>.
 /// </summary>
-internal sealed partial class AdaptiveLineChartElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed partial class AdaptiveVisualElement : IAdaptiveCardElement
 {
-    public static string CustomInputType => "Chart.Line";
+    public AdaptiveVisualElement(string elementType)
+    {
+        ElementTypeString = elementType;
+    }
 
-    public LineChartModel Model { get; set; } = LineChartModel.Empty;
+    public IAdaptiveVisualModel? Model { get; set; }
 
     public JsonObject ToJson() => AdaptiveCustomElementJson.Create(this);
 
@@ -28,7 +31,7 @@ internal sealed partial class AdaptiveLineChartElement : IAdaptiveCardElement, I
 
     public ElementType ElementType { get; } = ElementType.Custom;
 
-    public string ElementTypeString => CustomInputType;
+    public string ElementTypeString { get; }
 
     public IAdaptiveCardElement? FallbackContent { get; set; }
 
@@ -48,15 +51,22 @@ internal sealed partial class AdaptiveLineChartElement : IAdaptiveCardElement, I
     public Spacing Spacing { get; set; }
 }
 
-internal sealed partial class AdaptiveLineChartElementParser : IAdaptiveElementParser
+internal sealed partial class AdaptiveVisualElementParser : IAdaptiveElementParser
 {
+    private readonly AdaptiveVisualElementType _type;
+
+    public AdaptiveVisualElementParser(AdaptiveVisualElementType type)
+    {
+        _type = type;
+    }
+
     public IAdaptiveCardElement FromJson(
         JsonObject inputJson,
         AdaptiveElementParserRegistration elementParsers,
         AdaptiveActionParserRegistration actionParsers,
         IList<AdaptiveWarning> warnings)
     {
-        var element = new AdaptiveLineChartElement();
+        var element = new AdaptiveVisualElement(_type.Name);
         AdaptiveCustomElementJson.ParseCommonProperties(
             element,
             inputJson,
@@ -66,22 +76,30 @@ internal sealed partial class AdaptiveLineChartElementParser : IAdaptiveElementP
             requireId: false);
 
         var modelWarnings = new List<string>();
-        element.Model = LineChartModel.Parse(inputJson.Stringify(), modelWarnings);
+        element.Model = _type.Parse(inputJson.Stringify(), modelWarnings);
         foreach (var warning in modelWarnings)
         {
-            warnings.Add(new AdaptiveWarning(
-                WarningStatusCode.InvalidValue,
-                $"{AdaptiveLineChartElement.CustomInputType}: {warning}"));
+            warnings.Add(new AdaptiveWarning(WarningStatusCode.InvalidValue, $"{_type.Name}: {warning}"));
         }
 
         return element;
     }
 }
 
-internal sealed partial class AdaptiveLineChartElementRenderer : IAdaptiveElementRenderer
+internal sealed partial class AdaptiveVisualElementRenderer : IAdaptiveElementRenderer
 {
-    public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs) =>
-        new LineChartControl(((AdaptiveLineChartElement)element).Model);
+    private readonly AdaptiveVisualElementType _type;
+
+    public AdaptiveVisualElementRenderer(AdaptiveVisualElementType type)
+    {
+        _type = type;
+    }
+
+    public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
+    {
+        var model = ((AdaptiveVisualElement)element).Model ?? _type.Parse("{}", new List<string>());
+        return _type.Create(model);
+    }
 }
 
 #pragma warning restore SA1402 // File may only contain a single type

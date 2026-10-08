@@ -33,7 +33,7 @@ internal enum ChartStyle
 /// optional properties that other hosts ignore: <c>yMin</c>, <c>yMax</c>, <c>valueFormat</c>,
 /// <c>fill</c>, <c>curve</c>, <c>style</c>, <c>showLegend</c>, and <c>minHeight</c>.
 /// </remarks>
-internal sealed class LineChartModel
+internal sealed class LineChartModel : IAdaptiveVisualModel
 {
     public static LineChartModel Empty { get; } = new() { IncrementalState = "{}" };
 

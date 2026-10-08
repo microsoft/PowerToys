@@ -1829,6 +1829,22 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>{0}: latest {1}, low {2}, high {3}.</value>
     <comment>Screen reader summary of one chart data series. {0} is the series name; {1}, {2}, and {3} are formatted values.</comment>
   </data>
+  <data name="AdaptiveChart_Gauge" xml:space="preserve">
+    <value>Gauge</value>
+    <comment>Accessible name of a gauge chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_DonutChart" xml:space="preserve">
+    <value>Donut chart</value>
+    <comment>Accessible name of a donut chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_PieChart" xml:space="preserve">
+    <value>Pie chart</value>
+    <comment>Accessible name of a pie chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_BarChart" xml:space="preserve">
+    <value>Bar chart</value>
+    <comment>Accessible name of a bar chart in a form when the chart has no title.</comment>
+  </data>
   <data name="AdaptiveFilePathInput_BrowseFor" xml:space="preserve">
     <value>Browse for {0}</value>
     <comment>Accessible label for the browse button. {0} is the name of the path field.</comment>

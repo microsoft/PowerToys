@@ -21,13 +21,11 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
-    // Custom elements whose controls absorb data updates in place, so live charts don't flicker.
-    private static readonly IncrementalPatchableElements PatchableElements =
-        new IncrementalPatchableElements().Add(AdaptiveLineChartElement.CustomInputType);
-
     private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
+    private readonly AdaptiveCardRenderer _renderer;
     private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
+    private AdaptiveHostConfig _hostConfig;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
@@ -48,7 +46,7 @@ public sealed partial class ContentFormControl : UserControl
         RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
         RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
         RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
-        RegisterParser<AdaptiveLineChartElement, AdaptiveLineChartElementParser>();
+        AdaptiveVisualElements.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
 
         _customElementParsersRegistered = true;
     }
@@ -56,27 +54,51 @@ public sealed partial class ContentFormControl : UserControl
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        _hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
         var renderer = new AdaptiveCardRenderer()
         {
-            HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark,
+            HostConfig = _hostConfig,
             OverrideStyles = CardOverrideStyles,
         };
+        _renderer = renderer;
         RegisterRenderer<AdaptiveStringListInputElement, AdaptiveStringListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
         RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
-        RegisterRenderer<AdaptiveLineChartElement, AdaptiveLineChartElementRenderer>(renderer);
+        AdaptiveVisualElements.RegisterRenderers(renderer);
         AdaptiveContainerDecoratorRenderer.Register(renderer);
         _cardUpdater = new IncrementalAdaptiveCardUpdater(
             renderer,
             CardHost,
             AdaptiveCardParserRegistrations.ElementParsers,
             AdaptiveCardParserRegistrations.ActionParsers,
-            PatchableElements);
+            AdaptiveVisualElements.PatchableElements);
 
-        // TODO in the future, we should handle ActualThemeChanged and replace
-        // our rendered card with one for that theme. But today is not that day
+        // The theme can differ once the control joins a window with its own requested theme.
+        Loaded += (_, _) => RefreshHostConfig();
+        ActualThemeChanged += (_, _) => RefreshHostConfig();
+    }
+
+    /// <summary>
+    /// Re-renders the card with the host config for the current theme. Host config colors are
+    /// baked into the rendered card, so a theme change needs a full render.
+    /// </summary>
+    private void RefreshHostConfig()
+    {
+        var hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
+        if (ReferenceEquals(hostConfig, _hostConfig))
+        {
+            return;
+        }
+
+        _hostConfig = hostConfig;
+        _renderer.HostConfig = hostConfig;
+        var card = _viewModel?.Card;
+        ResetCard();
+        if (card is not null)
+        {
+            RequestDisplayCard(card);
+        }
     }
 
     private static void RegisterParser<TElement, TParser>()

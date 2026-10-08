@@ -134,6 +134,16 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartAxisRange.cs" Link="Controls\AdaptiveCards\Charts\ChartAxisRange.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\BadgeModel.cs" Link="Controls\AdaptiveCards\Charts\BadgeModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\BarChartModel.cs" Link="Controls\AdaptiveCards\Charts\BarChartModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartArc.cs" Link="Controls\AdaptiveCards\Charts\ChartArc.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartDataPoint.cs" Link="Controls\AdaptiveCards\Charts\ChartDataPoint.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\DonutChartModel.cs" Link="Controls\AdaptiveCards\Charts\DonutChartModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\GaugeChartModel.cs" Link="Controls\AdaptiveCards\Charts\GaugeChartModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\IAdaptiveVisualModel.cs" Link="Controls\AdaptiveCards\Charts\IAdaptiveVisualModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ProgressBarModel.cs" Link="Controls\AdaptiveCards\Charts\ProgressBarModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\StackedBarChartModel.cs" Link="Controls\AdaptiveCards\Charts\StackedBarChartModel.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\StackedBarGroup.cs" Link="Controls\AdaptiveCards\Charts\StackedBarGroup.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartBezierSegment.cs" Link="Controls\AdaptiveCards\Charts\ChartBezierSegment.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartColor.cs" Link="Controls\AdaptiveCards\Charts\ChartColor.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\AdaptiveCards\Charts\ChartCurve.cs" Link="Controls\AdaptiveCards\Charts\ChartCurve.cs" />

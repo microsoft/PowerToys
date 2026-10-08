@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
-using Windows.UI.ViewManagement;
 using Path = Microsoft.UI.Xaml.Shapes.Path;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -47,8 +46,6 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
     private static readonly TimeSpan DefaultScrollDuration = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MinimumScrollDuration = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan MaximumScrollDuration = TimeSpan.FromMilliseconds(1500);
-    private static readonly Lazy<UISettings> UserInterfaceSettings = new(() => new UISettings());
-    private static readonly Lazy<AccessibilitySettings> AccessibilitySettings = new(() => new AccessibilitySettings());
     private static readonly CompositeFormat SeriesNameFormat = CompositeFormat.Parse(RS_.GetString("AdaptiveChart_SeriesName"));
     private static readonly CompositeFormat SeriesSummaryFormat = CompositeFormat.Parse(RS_.GetString("AdaptiveChart_SeriesSummary"));
 
@@ -169,8 +166,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         GridLinesPath.Data = isSparkline ? null : CreateGridLines(layout);
 
         var isDarkTheme = ActualTheme == ElementTheme.Dark;
-        var isHighContrast = AccessibilitySettings.Value.HighContrast;
-        var accent = GetAccentColor(isDarkTheme);
+        var isHighContrast = ChartTheme.IsHighContrast;
         var fillOpacity = _model.Fill == ChartFill.Gradient && !isHighContrast
             ? (isDarkTheme ? DarkThemeAreaOpacity : LightThemeAreaOpacity)
             : 0;
@@ -179,9 +175,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         for (var i = 0; i < _model.Series.Count; i++)
         {
             var series = _model.Series[i];
-            colors[i] = isHighContrast
-                ? GetHighContrastColor()
-                : ChartPalette.ResolveSeriesColor(series.Color, _model.Color, _model.ColorSet, i, isDarkTheme, accent);
+            colors[i] = ChartTheme.Resolve(series.Color, _model.Color, _model.ColorSet, i, isDarkTheme);
             DrawSeries(series, layout, colors[i], fillOpacity, markerScale);
         }
 
@@ -189,7 +183,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         UpdateXLabels(layout);
         UpdateSummary();
 
-        if (scrolled && layout.SlotWidth > 0 && UserInterfaceSettings.Value.AnimationsEnabled)
+        if (scrolled && layout.SlotWidth > 0 && ChartTheme.AnimationsEnabled)
         {
             StartScrollAnimation(layout.SlotWidth);
         }
@@ -494,30 +488,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         _model.Series[index].Legend
             ?? string.Format(CultureInfo.CurrentCulture, SeriesNameFormat, index + 1);
 
-    private static ChartColor GetAccentColor(bool isDarkTheme)
-    {
-        var color = UserInterfaceSettings.Value.GetColorValue(isDarkTheme ? UIColorType.AccentLight2 : UIColorType.AccentDark1);
-        return new ChartColor(color.A, color.R, color.G, color.B);
-    }
-
-    private static ChartColor GetHighContrastColor()
-    {
-        try
-        {
-            if (Application.Current.Resources["SystemColorHighlightColor"] is global::Windows.UI.Color color)
-            {
-                return new ChartColor(color.A, color.R, color.G, color.B);
-            }
-        }
-        catch (Exception)
-        {
-            // Fall back to the high contrast default highlight color.
-        }
-
-        return ChartColor.FromRgb(0x1AEBFF);
-    }
-
-    private static global::Windows.UI.Color ToColor(ChartColor color) => ColorHelper.FromArgb(color.A, color.R, color.G, color.B);
+    private static global::Windows.UI.Color ToColor(ChartColor color) => ChartTheme.ToColor(color);
 
     private static Point ToPoint(ChartPoint point) => new(point.X, point.Y);
 

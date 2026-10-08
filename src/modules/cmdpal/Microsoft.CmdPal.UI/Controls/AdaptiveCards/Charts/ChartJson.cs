@@ -88,6 +88,47 @@ internal static class ChartJson
         _ => null,
     };
 
+    /// <summary>
+    /// Reads an array of objects such as <c>[{ "legend": "A", "value": 1, "color": "good" }]</c>.
+    /// Missing values read as zero; a <paramref name="fallbackValueProperty"/> covers schema aliases.
+    /// </summary>
+    public static List<ChartDataPoint> GetDataPoints(
+        JsonElement element,
+        string arrayProperty,
+        string labelProperty,
+        string valueProperty,
+        ICollection<string> warnings,
+        string? fallbackValueProperty = null)
+    {
+        var points = new List<ChartDataPoint>();
+        if (element.ValueKind != JsonValueKind.Object || !element.TryGetProperty(arrayProperty, out var array))
+        {
+            return points;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            warnings.Add($"{arrayProperty} must be an array.");
+            return points;
+        }
+
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object)
+            {
+                warnings.Add($"Each {arrayProperty} item must be an object.");
+                continue;
+            }
+
+            var value = GetNumber(item, valueProperty)
+                ?? (fallbackValueProperty is null ? null : GetNumber(item, fallbackValueProperty));
+            var label = item.TryGetProperty(labelProperty, out var labelValue) ? ToLabel(labelValue) : null;
+            points.Add(new ChartDataPoint(label, value ?? 0, GetString(item, "color")));
+        }
+
+        return points;
+    }
+
     public static TEnum GetEnum<TEnum>(
         JsonElement element,
         string propertyName,
