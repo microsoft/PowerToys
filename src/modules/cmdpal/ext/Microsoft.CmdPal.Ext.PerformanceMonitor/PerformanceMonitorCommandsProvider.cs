@@ -22,6 +22,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private static readonly PerformanceMetricKind?[] BandMetrics =
     [
         null,
+        PerformanceMetricKind.Overview,
         PerformanceMetricKind.Cpu,
         PerformanceMetricKind.Memory,
         PerformanceMetricKind.Network,
@@ -38,6 +39,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private ICommandItem[] _bands = [];
     private PerformanceWidgetsPage? _mainPage;
     private PerformanceWidgetsPage? _bandPage;
+    private PerformanceWidgetsPage? _overviewBandPage;
     private PerformanceWidgetsPage? _cpuBandPage;
     private PerformanceWidgetsPage? _memoryBandPage;
     private PerformanceWidgetsPage? _diskBandPage;
@@ -157,6 +159,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         return metric switch
         {
+            PerformanceMetricKind.Overview => Resources.GetResource("Overview_Title"),
             PerformanceMetricKind.Cpu => Resources.GetResource("CPU_Usage_Title"),
             PerformanceMetricKind.Memory => Resources.GetResource("Memory_Usage_Title"),
             PerformanceMetricKind.Network => Resources.GetResource("Network_Usage_Title"),
@@ -201,6 +204,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _mainPage = new PerformanceWidgetsPage(_settingsManager, false);
         _bandPage = new PerformanceWidgetsPage(_settingsManager, true);
+        _overviewBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Overview);
         _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu);
         _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory);
         _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network);
@@ -211,6 +215,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         List<ICommandItem> bands = [
             new CommandItem(_bandPage) { Title = DisplayName },
+            new CommandItem(_overviewBandPage) { Title = Resources.GetResource("Overview_Title") },
             new CommandItem(_cpuBandPage) { Title = Resources.GetResource("CPU_Usage_Title") },
             new CommandItem(_memoryBandPage) { Title = Resources.GetResource("Memory_Usage_Title") },
             new CommandItem(_networkBandPage) { Title = Resources.GetResource("Network_Usage_Title") },
@@ -245,6 +250,9 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _bandPage?.Dispose();
         _bandPage = null;
+
+        _overviewBandPage?.Dispose();
+        _overviewBandPage = null;
 
         _cpuBandPage?.Dispose();
         _cpuBandPage = null;

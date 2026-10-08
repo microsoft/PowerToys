@@ -35,6 +35,7 @@ internal enum PerformanceMetricKind
     Disk,
     Gpu,
     Battery,
+    Overview,
 }
 
 /// <summary>
@@ -216,13 +217,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             }
         }
 
-        if (!_isBandPage && _singleMetric is null)
+        if ((!_isBandPage && _singleMetric is null) || _singleMetric == PerformanceMetricKind.Overview)
         {
             _overviewPage = new SystemOverviewWidgetPage(_cpuPage!, _memoryPage!, _gpuPage!, _diskPage!, _networkPage!, _batteryPage);
             _overviewItem = new ListItem(_overviewPage)
             {
                 Title = _overviewPage.Title,
-                Subtitle = Resources.GetResource("Overview_Subtitle"),
+                Subtitle = _isBandPage ? string.Empty : Resources.GetResource("Overview_Subtitle"),
+                Icon = Icons.PerformanceMonitorIcon,
                 MoreCommands = _overviewPage.Commands,
             };
         }
@@ -280,6 +282,12 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     protected override void Loaded()
     {
+        // The overview band is a button: its metrics start when the overview opens.
+        if (_singleMetric == PerformanceMetricKind.Overview)
+        {
+            return;
+        }
+
         _cpuPage?.PushActivate();
         _memoryPage?.PushActivate();
         _networkPage?.PushActivate();
@@ -290,6 +298,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     protected override void Unloaded()
     {
+        if (_singleMetric == PerformanceMetricKind.Overview)
+        {
+            return;
+        }
+
         _cpuPage?.PopActivate();
         _memoryPage?.PopActivate();
         _networkPage?.PopActivate();
@@ -325,6 +338,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Disk => new IListItem[] { _diskItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
+                PerformanceMetricKind.Overview => new IListItem[] { _overviewItem! },
                 _ => Array.Empty<IListItem>(),
             };
         }
@@ -413,7 +427,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         if (_singleMetric is PerformanceMetricKind singleMetric)
         {
+            // The overview shows every metric.
             return singleMetric == metric
+                || singleMetric == PerformanceMetricKind.Overview
                 || (singleMetric == PerformanceMetricKind.NetworkSpeed && metric == PerformanceMetricKind.Network);
         }
 
@@ -431,6 +447,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Disk => "disk",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
+            PerformanceMetricKind.Overview => "overview",
             _ => "unknown",
         };
     }
