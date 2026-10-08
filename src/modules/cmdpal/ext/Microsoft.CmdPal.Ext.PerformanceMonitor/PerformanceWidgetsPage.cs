@@ -1740,7 +1740,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             ContentJson["batteryPercent"] = Math.Round(Math.Max(0, stats.ChargePercent) * 100);
 
             stats.ReadReport();
-            if (stats.ChargeRateMilliwatts is int rate && rate != 0)
+            if (GetDisplayedRate(stats.IsCharging, stats.IsOnAcPower, stats.ChargeRateMilliwatts) is int rate)
             {
                 ContentData["batteryRateLabel"] = Resources.GetResource(rate > 0 ? "Battery_Widget_Template/Charge_Rate" : "Battery_Widget_Template/Discharge_Rate");
                 ContentData["batteryRate"] = string.Format(CultureInfo.CurrentCulture, "{0:0.#} W", Math.Abs(rate) / 1000.0);
@@ -1765,6 +1765,18 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             return;
         }
     }
+
+    /// <summary>
+    /// Returns the rate to show in milliwatts: a charge rate (positive) while charging, or a
+    /// discharge rate (negative) on battery power. On AC power without charging, the battery is
+    /// idle and the report's small readings come and go, so there's no rate to show.
+    /// </summary>
+    internal static int? GetDisplayedRate(bool isCharging, bool isOnAcPower, int? rateMilliwatts) => rateMilliwatts switch
+    {
+        > 0 when isCharging => rateMilliwatts,
+        < 0 when !isOnAcPower => rateMilliwatts,
+        _ => null,
+    };
 
     /// <summary>
     /// Green while charging or above half, then warning, then attention when low. An unknown

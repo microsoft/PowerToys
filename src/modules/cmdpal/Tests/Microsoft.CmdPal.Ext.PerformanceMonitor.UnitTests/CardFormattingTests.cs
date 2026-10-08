@@ -164,6 +164,23 @@ public class CardFormattingTests
     }
 
     [TestMethod]
+    public void RateIsShownOnlyWhileChargingOrOnBattery()
+    {
+        Assert.AreEqual(15000, SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, 15000));
+        Assert.AreEqual(-8000, SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, -8000));
+
+        // Plugged in and full: the battery is idle, and small readings come and go.
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: true, -1100));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: true, 1100));
+
+        // A reading that disagrees with the charging state isn't shown.
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, -500));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, 500));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, null));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, 0));
+    }
+
+    [TestMethod]
     public void MemoryUseShowsTheSizeUnit()
     {
         const ulong BytesPerGigabyte = 1024UL * 1024 * 1024;
