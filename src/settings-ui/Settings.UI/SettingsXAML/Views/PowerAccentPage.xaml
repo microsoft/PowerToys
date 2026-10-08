@@ -179,10 +179,11 @@
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
                     <ContentDialog.Resources>
                         <x:Double x:Key="ContentDialogMaxHeight">840</x:Double>
+                        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
                         <!--  Undo the app-wide ListViewItem override (App.xaml) so the list uses the stock look  -->
                         <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem" />
                     </ContentDialog.Resources>
-                    <Grid Width="420" RowSpacing="8">
+                    <Grid Width="540" RowSpacing="8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -214,14 +215,28 @@
                             SelectionMode="Multiple">
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="vm:CharacterSetPickerItem">
-                                    <StackPanel Padding="0,6" AutomationProperties.Name="{x:Bind Language.Language}">
-                                        <TextBlock Text="{x:Bind Language.Language}" TextTrimming="CharacterEllipsis" />
+                                    <Grid
+                                        Padding="0,10"
+                                        AutomationProperties.Name="{x:Bind Language.Language}"
+                                        ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
                                         <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind Language.Language}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="0,0,12,0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Style="{StaticResource CaptionTextBlockStyle}"
                                             Text="{x:Bind Language.CharacterPreview}"
                                             TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
+                                    </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                             <ListView.GroupStyle>
