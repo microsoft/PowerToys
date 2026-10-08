@@ -57,7 +57,7 @@ $measure = '.\tools\performance\Measure-StartupPerformance.ps1'
 
 ## Before you run it
 
-- **It takes over PowerToys.** `Runner`, `Settings`, and `PowerToysRun` stop every running PowerToys runner first and start them again at the end. If PowerToys runs elevated, exit it first or run the script elevated. The other scenarios leave a running PowerToys alone.
+- **It takes over PowerToys.** `Runner`, `Settings`, and `PowerToysRun` stop every PowerToys runner in your session first and start them again at the end. If "Always run as administrator" is on, the script refuses to run unless it's elevated, because the runner would restart itself elevated. If PowerToys runs elevated for another reason, exit it first or run the script elevated. PowerToys of other signed-in users is left alone. The other scenarios leave a running PowerToys alone.
 - **It restores your settings.** Local and installed builds share `%LOCALAPPDATA%\Microsoft\PowerToys`, and a build of another version rewrites files there: version stamps, PowerToys Run's plugin data, default settings of modules. So for the three scenarios above, the script copies that folder (without logs) first and puts it back exactly at the end. It also writes the measured build's version to `last_version_run.json`, so "What's new" doesn't open during the run. `FileLocksmith` restores the `last-run.log` file it uses.
 - **Compare like with like.** The results record the enabled modules. The runner's stage times and memory depend on them, so compare runs with the same settings.
 - **Keep the machine quiet.** Close other apps, stay on AC power, and don't build at the same time.

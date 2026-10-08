@@ -654,6 +654,9 @@ $runnerLogFolder = Join-Path $powerToysDataFolder 'RunnerLogs'
 $workFolder = Join-Path $OutputDirectory 'work'
 $timestampFrequency = [double][Diagnostics.Stopwatch]::Frequency
 
+# The single-instance mutexes are per session, so PowerToys of another signed-in user doesn't conflict.
+$sessionId = (Get-Process -Id $PID).SessionId
+
 $script:recorder = $null
 $script:samples = New-Object System.Collections.Generic.List[object]
 $script:launched = New-Object System.Collections.Generic.List[System.Diagnostics.Process]
@@ -1233,7 +1236,7 @@ function Stop-Runner
 
 function Stop-AllRunners
 {
-    foreach ($runner in @(Get-Process -Name 'PowerToys' -ErrorAction SilentlyContinue))
+    foreach ($runner in @(Get-Process -Name 'PowerToys' -ErrorAction SilentlyContinue | Where-Object SessionId -eq $sessionId))
     {
         $path = $null
         try
@@ -1382,7 +1385,7 @@ function Measure-Settings
 
 function Measure-PowerToysRun
 {
-    if (@(Get-Process -Name 'PowerToys.PowerLauncher' -ErrorAction SilentlyContinue).Count -gt 0)
+    if (@(Get-Process -Name 'PowerToys.PowerLauncher' -ErrorAction SilentlyContinue | Where-Object SessionId -eq $sessionId).Count -gt 0)
     {
         throw 'PowerToys Run is already running, and its single-instance check would close the measured process. Close it first.'
     }
@@ -1653,6 +1656,30 @@ foreach ($name in $Scenario)
 if ($Scenario -contains 'Runner' -and -not [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($runnerPath)).Contains('Startup stages (ms since process start)'))
 {
     throw "The Runner scenario needs a runner that logs its startup stages, and $runnerPath doesn't. Measure a newer build, or leave out Runner."
+}
+
+if ($Scenario | Where-Object { $_ -in 'Runner', 'Settings', 'PowerToysRun' })
+{
+    # With "Always run as administrator" on, a non-elevated runner restarts itself elevated through UAC and exits,
+    # and this script couldn't see or stop that elevated runner.
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $generalSettings = Join-Path $powerToysDataFolder 'settings.json'
+    if (-not $isAdmin -and (Test-Path -LiteralPath $generalSettings))
+    {
+        $runElevated = $false
+        try
+        {
+            $runElevated = [bool](Get-Content -LiteralPath $generalSettings -Raw | ConvertFrom-Json).run_elevated
+        }
+        catch
+        {
+        }
+
+        if ($runElevated)
+        {
+            throw "'Always run as administrator' is on, so the runner would restart itself elevated. Run this script elevated."
+        }
+    }
 }
 
 $null = New-Item -ItemType Directory -Force -Path $OutputDirectory
