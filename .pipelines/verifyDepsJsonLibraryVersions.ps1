@@ -87,6 +87,12 @@ public class SemanticVersionComparer : IComparer<string>
     }
 }
 
+public class AuditResult
+{
+    public int ScannedFilesCount { get; set; }
+    public SortedDictionary<string, SortedDictionary<string, List<string>>> Versions { get; set; }
+}
+
 public static class DepsJsonAudit
 {
     // Name-based excludes. UI/Fuzzer tests are skipped because of Appium.WebDriver dependencies.
@@ -187,10 +193,10 @@ public static class DepsJsonAudit
         return result;
     }
 
-    // Returns: DllName > fileVersion > deps.json file names that reference it.
-    public static SortedDictionary<string, SortedDictionary<string, List<string>>> Collect(string root)
+    // Returns: AuditResult containing total parsed files and DllName > fileVersion > deps.json file names that reference it.
+    public static AuditResult Collect(string root)
     {
-        var options = new EnumerationOptions { RecurseSubdirectories = true };
+        var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
         var files = new List<string>();
         foreach (var f in Directory.EnumerateFiles(root, "*.deps.json", options))
         {
@@ -230,19 +236,22 @@ public static class DepsJsonAudit
             }
         }
 
-        return all;
+        return new AuditResult { ScannedFilesCount = files.Count, Versions = all };
     }
 }
 '@
 }
 
-$referencedFileVersionsPerDll = [DepsJsonAudit]::Collect((Resolve-Path $targetDir).Path)
-$totalFailures = 0
+$auditResult = [DepsJsonAudit]::Collect((Resolve-Path $targetDir).Path)
 
-if ($referencedFileVersionsPerDll.Count -eq 0) {
+# Check ScannedFilesCount, allowing empty valid manifests to pass.
+if ($auditResult.ScannedFilesCount -eq 0) {
     Write-Host -ForegroundColor Yellow "No *.deps.json files found under $targetDir; check the path."
     exit 1
 }
+
+$referencedFileVersionsPerDll = $auditResult.Versions
+$totalFailures = 0
 
 # Report dlls referenced with more than one version.
 $report = [System.Text.StringBuilder]::new()
