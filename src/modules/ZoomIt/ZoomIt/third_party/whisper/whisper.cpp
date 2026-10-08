@@ -172,7 +172,7 @@ static bool ggml_graph_compute_helper(
         plan.work_data = buf.data();
     }
 
-    return ggml_graph_compute(graph, &plan);
+    return ggml_graph_compute(graph, &plan) == GGML_STATUS_SUCCESS;
 }
 
 static bool ggml_graph_compute_helper(
