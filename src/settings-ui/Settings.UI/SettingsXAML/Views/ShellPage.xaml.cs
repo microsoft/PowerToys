@@ -113,7 +113,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ShellPage()
         {
             InitializeComponent();
-            InitializeNavigation();
             SetWindowTitle();
             var settingsUtils = SettingsUtils.Default;
             var generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
@@ -143,44 +142,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
-        }
-
-        private void InitializeNavigation()
-        {
-            NavHelper.SetNavigateTo(DashboardNavigationItem, typeof(DashboardPage));
-            NavHelper.SetNavigateTo(GeneralNavigationItem, typeof(GeneralPage));
-            NavHelper.SetNavigateTo(AdvancedPasteNavigationItem, typeof(AdvancedPastePage));
-            NavHelper.SetNavigateTo(AwakeNavigationItem, typeof(AwakePage));
-            NavHelper.SetNavigateTo(CmdPalNavigationItem, typeof(CmdPalPage));
-            NavHelper.SetNavigateTo(ColorPickerNavigationItem, typeof(ColorPickerPage));
-            NavHelper.SetNavigateTo(LightSwitchNavigationItem, typeof(LightSwitchPage));
-            NavHelper.SetNavigateTo(PowerLauncherNavigationItem, typeof(PowerLauncherPage));
-            NavHelper.SetNavigateTo(MeasureToolNavigationItem, typeof(MeasureToolPage));
-            NavHelper.SetNavigateTo(ShortcutGuideNavigationItem, typeof(ShortcutGuidePage));
-            NavHelper.SetNavigateTo(TextExtractorNavigationItem, typeof(PowerOcrPage));
-            NavHelper.SetNavigateTo(ZoomItNavigationItem, typeof(ZoomItPage));
-            NavHelper.SetNavigateTo(AlwaysOnTopNavigationItem, typeof(AlwaysOnTopPage));
-            NavHelper.SetNavigateTo(CropAndLockNavigationItem, typeof(CropAndLockPage));
-            NavHelper.SetNavigateTo(FancyZonesNavigationItem, typeof(FancyZonesPage));
-            NavHelper.SetNavigateTo(GrabAndMoveNavigationItem, typeof(GrabAndMovePage));
-            NavHelper.SetNavigateTo(AltWindowCycleNavigationItem, typeof(AltWindowCyclePage));
-            NavHelper.SetNavigateTo(WorkspacesNavigationItem, typeof(WorkspacesPage));
-            NavHelper.SetNavigateTo(KeyboardManagerNavigationItem, typeof(KeyboardManagerPage));
-            NavHelper.SetNavigateTo(MouseUtilitiesNavigationItem, typeof(MouseUtilsPage));
-            NavHelper.SetNavigateTo(MouseWithoutBordersNavigationItem, typeof(MouseWithoutBordersPage));
-            NavHelper.SetNavigateTo(PowerDisplayNavigationItem, typeof(PowerDisplayPage));
-            NavHelper.SetNavigateTo(DisplayProfilesNavigationItem, typeof(DisplayProfilesPage));
-            NavHelper.SetNavigateTo(QuickAccentNavigationItem, typeof(PowerAccentPage));
-            NavHelper.SetNavigateTo(PowerPreviewNavigationItem, typeof(PowerPreviewPage));
-            NavHelper.SetNavigateTo(FileLocksmithNavigationItem, typeof(FileLocksmithPage));
-            NavHelper.SetNavigateTo(ImageResizerNavigationItem, typeof(ImageResizerPage));
-            NavHelper.SetNavigateTo(NewPlusNavigationItem, typeof(NewPlusPage));
-            NavHelper.SetNavigateTo(PeekNavigationItem, typeof(PeekPage));
-            NavHelper.SetNavigateTo(PowerRenameNavigationItem, typeof(PowerRenamePage));
-            NavHelper.SetNavigateTo(CmdNotFoundNavigationItem, typeof(CmdNotFoundPage));
-            NavHelper.SetNavigateTo(EnvironmentVariablesNavigationItem, typeof(EnvironmentVariablesPage));
-            NavHelper.SetNavigateTo(HostsNavigationItem, typeof(HostsPage));
-            NavHelper.SetNavigateTo(RegistryPreviewNavigationItem, typeof(RegistryPreviewPage));
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -364,14 +325,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
-                if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem))
+                if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
                 {
-                    if (!parentItem.IsExpanded)
-                    {
-                        parentItem.IsExpanded = true;
-                        ViewModel.Expanding = parentItem;
-                    }
-
+                    parentItem.IsExpanded = true;
+                    ViewModel.Expanding = parentItem;
                     NavigationService.Navigate(pageType);
                 }
             }

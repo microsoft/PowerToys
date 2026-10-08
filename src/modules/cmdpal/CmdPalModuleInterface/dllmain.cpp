@@ -226,13 +226,6 @@ public:
         packageName = L"Microsoft.CommandPalette.Dev";
 #endif
 
-#ifdef _DEBUG
-        // The unpackaged Debug build has no registered x-cmdpal protocol handler.
-        // Start CmdPal directly and keep it hidden while the controller listener is active.
-        launchPath = get_module_folderpath() + L"\\WinUI3Apps\\CmdPal\\Microsoft.CmdPal.UI.exe";
-        launchArgs = L"--background";
-#endif
-
         if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
             try

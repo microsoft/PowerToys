@@ -89,7 +89,6 @@
            lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
            supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
            than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
-      <AdditionalDependencies>runtimeobject.lib;oleaut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
       <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib /profile /opt:ref /opt:icf</AdditionalOptions>
     </Link>
@@ -147,24 +146,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="Microsoft.CommandPalette.Extensions.idl">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </Midl>
+    <Midl Include="Microsoft.CommandPalette.Extensions.idl" />
   </ItemGroup>
-  <!-- Custom target: generate .winmd from .idl without MSBuild Midl pipeline.
-       Uses midlrt.exe (Windows SDK) with /nomidl to skip regular MIDL compilation.
-       The ExcludedFromBuild=true on the Midl item prevents MSBuild's Midl target
-       from running; this custom target replaces it. -->
-  <Target Name="GenerateWinMD" BeforeTargets="ClCompile" Inputs="$(MSBuildProjectDirectory)\Microsoft.CommandPalette.Extensions.idl" Outputs="$(OutDir)\Microsoft.CommandPalette.Extensions.winmd">
-    <PropertyGroup>
-      <_WinMDScript>$(MSBuildProjectDirectory)\generate-winmd.ps1</_WinMDScript>
-      <_IdlFile>$(MSBuildProjectDirectory)\Microsoft.CommandPalette.Extensions.idl</_IdlFile>
-      <_OutputWinmd>$(OutDir)\Microsoft.CommandPalette.Extensions.winmd</_OutputWinmd>
-    </PropertyGroup>
-    <Message Text="Generating WinMD from IDL (without MSBuild Midl)..." Importance="high" />
-    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(_WinMDScript)&quot; -IdlPath &quot;$(_IdlFile)&quot; -OutputWinmd &quot;$(_OutputWinmd)&quot; -ShowVerbose" ConsoleToMSBuild="true" />
-    <Message Text="WinMD generated: $(_OutputWinmd)" Importance="high" />
-  </Target>
   <ItemGroup>
     <None Include="Microsoft.CommandPalette.Extensions.def" />
   </ItemGroup>
