@@ -3638,7 +3638,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_ReferenceGuide_Button.Content" xml:space="preserve">
     <value>Open reference guide</value>
   </data>
-  <data name="QuickAccent_ReferenceGuide_Title.Text" xml:space="preserve">
+  <data name="QuickAccent_ReferenceGuide_WindowTitle" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_TitleBar.Title" xml:space="preserve">
     <value>Character reference guide</value>
   </data>
   <data name="QuickAccent_ReferenceGuide_Search.PlaceholderText" xml:space="preserve">

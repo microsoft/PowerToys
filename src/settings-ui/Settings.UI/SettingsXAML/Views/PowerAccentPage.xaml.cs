@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -172,7 +171,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 .Select(l => l.LanguageCode)
                 .ToArray();
 
-            NavigationService.Navigate<PowerAccentReferenceGuidePage>(selectedCodes);
+            ((App)Application.Current).OpenPowerAccentReferenceGuideWindow(selectedCodes);
         }
     }
 }

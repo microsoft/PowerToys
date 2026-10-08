@@ -175,7 +175,7 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<Page Update="SettingsXAML\Views\PowerAccentReferenceGuidePage.xaml">
+		<Page Update="SettingsXAML\Views\PowerAccentReferenceGuideWindow.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
