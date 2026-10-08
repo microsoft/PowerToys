@@ -73,12 +73,10 @@ PowerToys.DSC.exe set --resource 'settings' --module CropAndLock --input $config
 
 This example configures custom hotkeys for cropping and reparenting.
 
-```bash
-dsc config set --file cropandlock-hotkeys.dsc.yaml
-```
+Save the following configuration as `cropandlock-hotkeys.dsc.config.yaml`:
 
 ```yaml
-# cropandlock-hotkeys.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Crop And Lock hotkeys
@@ -98,16 +96,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file cropandlock-hotkeys.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Crop And Lock.
 
-```bash
-winget configure winget-cropandlock.yaml
-```
+Save the following configuration as `cropandlock.dsc.config.winget`:
 
 ```yaml
-# winget-cropandlock.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -129,12 +131,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure cropandlock.dsc.config.winget
+```
+
 ### Example 4 - Semi-transparent thumbnails
 
 This example configures thumbnails to be semi-transparent for overlay use.
 
+Save the following configuration as `cropandlock-transparent.dsc.config.yaml`:
+
 ```yaml
-# cropandlock-transparent.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Semi-transparent thumbnails

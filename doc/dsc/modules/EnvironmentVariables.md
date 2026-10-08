@@ -51,12 +51,10 @@ PowerToys.DSC.exe set --resource 'settings' --module EnvironmentVariables --inpu
 
 This example enables administrator launch through DSC configuration.
 
-```bash
-dsc config set --file environmentvariables-config.dsc.yaml
-```
+Save the following configuration as `environmentvariables-config.dsc.config.yaml`:
 
 ```yaml
-# environmentvariables-config.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Environment Variables editor
@@ -69,17 +67,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file environmentvariables-config.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Environment Variables for
 admin launch.
 
-```bash
-winget configure winget-envvars.yaml
-```
+Save the following configuration as `envvars.dsc.config.winget`:
 
 ```yaml
-# winget-envvars.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -101,16 +103,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure envvars.dsc.config.winget
+```
+
 ### Example 4 - Standard user mode
 
 This example configures for standard user access (no elevation).
 
-```bash
-dsc config set --file envvars-user.dsc.yaml
-```
+Save the following configuration as `envvars-user.dsc.config.yaml`:
 
 ```yaml
-# envvars-user.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: User-level Environment Variables
@@ -121,6 +127,12 @@ resources:
           LaunchAdministrator: false
         name: EnvironmentVariables
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file envvars-user.dsc.config.yaml
 ```
 
 ### Example 5 - Test admin launch configuration

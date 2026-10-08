@@ -108,12 +108,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Awake --input $config
 
 This example configures a timed keep-awake period.
 
-```bash
-dsc config set --file awake-timed.dsc.yaml
-```
+Save the following configuration as `awake-timed.dsc.config.yaml`:
 
 ```yaml
-# awake-timed.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Awake for 2 hours
@@ -129,16 +127,20 @@ resources:
         version: 0.0.1
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file awake-timed.dsc.config.yaml
+```
+
 ### Example 3 - Keep awake until specific time with WinGet
 
 This example configures Awake to stay active until a specific date and time.
 
-```bash
-winget configure winget-awake-scheduled.yaml
-```
+Save the following configuration as `awake-scheduled.dsc.config.winget`:
 
 ```yaml
-# winget-awake-scheduled.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -160,6 +162,12 @@ resources:
           expirationDateTime: "2025-10-18T17:00:00.0000000-07:00"
         name: Awake
         version: 0.0.1
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure awake-scheduled.dsc.config.winget
 ```
 
 ### Example 4 - Disable Awake
@@ -184,12 +192,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Awake --input $config
 
 This example keeps the system awake while allowing the display to turn off.
 
-```bash
-dsc config set --file awake-system-only.dsc.yaml
-```
+Save the following configuration as `awake-system-only.dsc.config.yaml`:
 
 ```yaml
-# awake-system-only.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Keep system awake only
@@ -203,16 +209,20 @@ resources:
         version: 0.0.1
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file awake-system-only.dsc.config.yaml
+```
+
 ### Example 6 - Configure for presentation (4 hours)
 
 This example configures Awake for a presentation scenario using WinGet.
 
-```bash
-winget configure presentation-mode.yaml
-```
+Save the following configuration as `presentation-mode.dsc.config.winget`:
 
 ```yaml
-# presentation-mode.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -229,6 +239,12 @@ resources:
           intervalMinutes: 0
         name: Awake
         version: 0.0.1
+```
+
+Apply the configuration with WinGet:
+
+```bash
+winget configure presentation-mode.dsc.config.winget
 ```
 
 ### Example 7 - Test current configuration

@@ -113,12 +113,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ColorPicker --input $config
 This example configures the color picker to open directly without the
 editor.
 
-```bash
-dsc config set --file colorpicker-activation.dsc.yaml
-```
+Save the following configuration as `colorpicker-activation.dsc.config.yaml`:
 
 ```yaml
-# colorpicker-activation.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Color Picker activation
@@ -133,17 +131,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file colorpicker-activation.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure for web development with WinGet
 
 This example installs PowerToys and configures Color Picker for web
 developers.
 
-```bash
-winget configure winget-colorpicker-webdev.yaml
-```
+Save the following configuration as `colorpicker-webdev.dsc.config.winget`:
 
 ```yaml
-# winget-colorpicker-webdev.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -173,16 +175,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure colorpicker-webdev.dsc.config.winget
+```
+
 ### Example 4 - Configure visible formats
 
 This example enables only HEX, RGB, and HSL formats.
 
-```bash
-dsc config set --file colorpicker-formats.dsc.yaml
-```
+Save the following configuration as `colorpicker-formats.dsc.config.yaml`:
 
 ```yaml
-# colorpicker-formats.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure visible color formats
@@ -203,6 +209,12 @@ resources:
             Decimal: false
         name: ColorPicker
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file colorpicker-formats.dsc.config.yaml
 ```
 
 ### Example 5 - Configure for graphic design

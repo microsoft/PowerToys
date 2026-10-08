@@ -174,12 +174,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ImageResizer `
 
 This example configures image quality and format options.
 
-```bash
-dsc config set --file imageresizer-quality.dsc.yaml
-```
+Save the following configuration as `imageresizer-quality.dsc.config.yaml`:
 
 ```yaml
-# imageresizer-quality.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Image Resizer quality
@@ -194,17 +192,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file imageresizer-quality.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Image Resizer with
 web-optimized presets.
 
-```bash
-winget configure winget-imageresizer.yaml
-```
+Save the following configuration as `imageresizer.dsc.config.winget`:
 
 ```yaml
-# winget-imageresizer.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -243,17 +245,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure imageresizer.dsc.config.winget
+```
+
 ### Example 4 - Photography workflow
 
 This example configures for photography with high quality and metadata
 preservation.
 
-```bash
-dsc config set --file imageresizer-photo.dsc.yaml
-```
+Save the following configuration as `imageresizer-photography.dsc.config.yaml`:
 
 ```yaml
-# imageresizer-photography.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Photography configuration
@@ -267,6 +273,12 @@ resources:
           ImageresizerShrinkOnly: true
         name: ImageResizer
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file imageresizer-photography.dsc.config.yaml
 ```
 
 ### Example 5 - Social media presets

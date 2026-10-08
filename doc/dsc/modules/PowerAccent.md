@@ -110,12 +110,10 @@ PowerToys.DSC.exe set --resource 'settings' --module PowerAccent `
 
 This example customizes the toolbar position and display options.
 
-```bash
-dsc config set --file poweraccent-toolbar.dsc.yaml
-```
+Save the following configuration as `poweraccent-toolbar.dsc.config.yaml`:
 
 ```yaml
-# poweraccent-toolbar.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Power Accent toolbar
@@ -130,17 +128,21 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file poweraccent-toolbar.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Power Accent for multilingual
 typing.
 
-```bash
-winget configure winget-poweraccent.yaml
-```
+Save the following configuration as `poweraccent.dsc.config.winget`:
 
 ```yaml
-# winget-poweraccent.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -165,16 +167,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure poweraccent.dsc.config.winget
+```
+
 ### Example 4 - Fast activation configuration
 
 This example configures for quick accent selection.
 
-```bash
-dsc config set --file poweraccent-fast.dsc.yaml
-```
+Save the following configuration as `poweraccent-fast.dsc.config.yaml`:
 
 ```yaml
-# poweraccent-fast.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Fast accent activation
@@ -186,6 +192,12 @@ resources:
           SortByUsageFrequency: true
         name: PowerAccent
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file poweraccent-fast.dsc.config.yaml
 ```
 
 ### Example 5 - Exclude applications

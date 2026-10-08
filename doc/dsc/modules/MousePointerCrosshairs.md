@@ -137,12 +137,10 @@ PowerToys.DSC.exe set --resource 'settings' --module MousePointerCrosshairs `
 
 This example adds a border to the crosshairs for better visibility.
 
-```bash
-dsc config set --file mousecrosshairs-border.dsc.yaml
-```
+Save the following configuration as `mousecrosshairs-border.dsc.config.yaml`:
 
 ```yaml
-# mousecrosshairs-border.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure crosshairs with border
@@ -158,16 +156,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousecrosshairs-border.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures crosshairs for presentations.
 
-```bash
-winget configure winget-mousecrosshairs.yaml
-```
+Save the following configuration as `mousecrosshairs.dsc.config.winget`:
 
 ```yaml
-# winget-mousecrosshairs.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -193,16 +195,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure mousecrosshairs.dsc.config.winget
+```
+
 ### Example 4 - Full-screen crosshairs
 
 This example configures crosshairs that extend to screen edges.
 
-```bash
-dsc config set --file mousecrosshairs-fullscreen.dsc.yaml
-```
+Save the following configuration as `mousecrosshairs-fullscreen.dsc.config.yaml`:
 
 ```yaml
-# mousecrosshairs-fullscreen.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Full-screen crosshairs
@@ -214,6 +220,12 @@ resources:
           CrosshairsOpacity: 60
         name: MousePointerCrosshairs
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file mousecrosshairs-fullscreen.dsc.config.yaml
 ```
 
 ### Example 5 - Subtle crosshairs with auto-hide

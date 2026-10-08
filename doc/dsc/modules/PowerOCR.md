@@ -78,12 +78,10 @@ PowerToys.DSC.exe set --resource 'settings' --module PowerOCR `
 
 This example sets the preferred OCR language.
 
-```bash
-dsc config set --file powerocr-language.dsc.yaml
-```
+Save the following configuration as `powerocr-language.dsc.config.yaml`:
 
 ```yaml
-# powerocr-language.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Configure Power OCR language
@@ -96,16 +94,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file powerocr-language.dsc.config.yaml
+```
+
 ### Example 3 - Install and configure with WinGet
 
 This example installs PowerToys and configures Power OCR.
 
-```bash
-winget configure winget-powerocr.yaml
-```
+Save the following configuration as `powerocr.dsc.config.winget`:
 
 ```yaml
-# winget-powerocr.yaml
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
@@ -127,16 +129,20 @@ resources:
         version: 1.0
 ```
 
+Apply the configuration with WinGet:
+
+```bash
+winget configure powerocr.dsc.config.winget
+```
+
 ### Example 4 - Multilingual configuration
 
 This example configures for multilingual text extraction.
 
-```bash
-dsc config set --file powerocr-multilingual.dsc.yaml
-```
+Save the following configuration as `powerocr-multilingual.dsc.config.yaml`:
 
 ```yaml
-# powerocr-multilingual.dsc.yaml
+# yaml-language-server: $schema=https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 resources:
   - name: Multilingual OCR
@@ -147,6 +153,12 @@ resources:
           PreferredLanguage: fr-FR
         name: PowerOCR
         version: 1.0
+```
+
+Apply the configuration with Microsoft DSC:
+
+```bash
+dsc config set --file powerocr-multilingual.dsc.config.yaml
 ```
 
 ## Use cases
