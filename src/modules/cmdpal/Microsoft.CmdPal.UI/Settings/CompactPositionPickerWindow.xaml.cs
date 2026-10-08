@@ -359,7 +359,9 @@ public sealed partial class CompactPositionPickerWindow : WindowEx
         _selectedPercentage = CompactPositionConstraints.ClampPercentageFromBottom(
             _selectedPercentage,
             workAreaHeight);
-        var ghostCenterY = workAreaTop + (workAreaHeight * (1 - (_selectedPercentage / 100)));
+        var ghostCenterY = workAreaTop + Math.Max(
+            PaletteGhost.Height / 2,
+            workAreaHeight * (1 - (_selectedPercentage / 100)));
         var ghostLeft = (Root.ActualWidth - PaletteGhost.Width) / 2;
         Canvas.SetLeft(PaletteGhost, ghostLeft);
         Canvas.SetTop(PaletteGhost, ghostCenterY - (PaletteGhost.Height / 2));
