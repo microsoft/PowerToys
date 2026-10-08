@@ -239,6 +239,9 @@
     <ClInclude Include="ZoomAnimation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DictationFinalization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\ZoomItModuleInterface\Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>

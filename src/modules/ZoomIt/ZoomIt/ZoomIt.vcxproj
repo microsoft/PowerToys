@@ -532,6 +532,7 @@
     <ClInclude Include="ClipboardPayload.h" />
     <ClInclude Include="PasteChaperone.h" />
     <ClInclude Include="DictationBadge.h" />
+    <ClInclude Include="DictationFinalization.h" />
     <ClInclude Include="DictationSession.h" />
     <ClInclude Include="WhisperRecognizer.h" />
     <ClInclude Include="third_party\whisper\ggml.h" />

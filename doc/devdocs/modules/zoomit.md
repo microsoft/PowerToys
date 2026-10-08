@@ -227,6 +227,9 @@ pointer returns to the normal arrow, and the badge shows `Transcribing - Press E
 alongside a drawn, rotating progress ring. Capture exclusion keeps the selection overlay
 out of the screenshot without hiding it, and its exterior opacity stays unchanged on
 release. Escape cancels inference and abandons the snip without changing the clipboard.
+If a recognizer does not quiesce by the bounded deadline, ZoomIt requests cancellation,
+releases the selection UI, and lets the application-lifetime recognition worker drain in
+the background rather than retaining the modal desktop overlay.
 
 The badge fits its status and transcript text, with a maximum width of 520 DIPs and up to
 three wrapped transcript lines. Its initial width accommodates both the startup and listening

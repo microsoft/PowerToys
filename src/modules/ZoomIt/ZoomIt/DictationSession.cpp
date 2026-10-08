@@ -21,6 +21,7 @@
 //
 //==============================================================================
 #include "pch.h"
+#include "DictationFinalization.h"
 #include "DictationSession.h"
 #include "WhisperRecognizer.h"
 
@@ -491,7 +492,8 @@ void DictationSession::Prewarm()
     {
         std::lock_guard<std::mutex> guard( m_lock );
         if( m_status == Status::Preparing || m_status == Status::Ready ||
-            m_status == Status::Listening || m_status == Status::Unavailable )
+            m_status == Status::Listening || m_status == Status::Finalizing ||
+            m_status == Status::Unavailable )
         {
             return;
         }
@@ -632,24 +634,23 @@ std::wstring DictationSession::Stop(
     std::unique_lock<std::mutex> lock( m_lock );
     const DWORD waitMilliseconds =
         waitForWhisper ? std::max<DWORD>( graceMilliseconds, 10000 ) : graceMilliseconds;
-    bool finalized = false;
-    const auto deadline =
-        std::chrono::steady_clock::now() + std::chrono::milliseconds( waitMilliseconds );
-    while( m_status == Status::Finalizing && std::chrono::steady_clock::now() < deadline )
-    {
-        if( waitCallback )
-        {
-            waitCallback();
-        }
-        if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
-        {
-            cancelledByUser = true;
-            m_cancelRequested = true;
-            break;
-        }
-        m_stateSignal.wait_for( lock, std::chrono::milliseconds( 50 ) );
-    }
-    finalized = m_status != Status::Finalizing;
+    const auto waitResult = WaitForDictationFinalization(
+        std::chrono::milliseconds( waitMilliseconds ),
+        [this] { return m_status == Status::Finalizing; },
+        [this] {
+            if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
+            {
+                m_cancelRequested = true;
+                return true;
+            }
+            return false;
+        },
+        [this, &lock]( std::chrono::milliseconds duration ) {
+            m_stateSignal.wait_for( lock, duration );
+        },
+        waitCallback );
+    const bool finalized = waitResult == DictationFinalizationWaitResult::Completed;
+    cancelledByUser = waitResult == DictationFinalizationWaitResult::Cancelled;
 
     if( !finalized )
     {
@@ -664,14 +665,12 @@ std::wstring DictationSession::Stop(
         if( waitForWhisper )
         {
             m_cancelRequested = true;
-            m_stateSignal.wait( lock, [this] { return m_status != Status::Finalizing; } );
         }
-        else if( cancelledByUser )
-        {
-            // SAPI cannot abort an in-progress final drain. Wait for it to
-            // quiesce before the caller destroys the badge callbacks.
-            m_stateSignal.wait( lock, [this] { return m_status != Status::Finalizing; } );
-        }
+
+        // The session has application lifetime, and callers clear callbacks
+        // before destroying their badge. Do not retain the modal selection
+        // overlay while a slow recognizer drains on the worker thread.
+        OutputDebug( L"[Dictation] Returning while finalization drains on the worker\n" );
     }
 
     if( cancelled )

@@ -66,8 +66,9 @@ public:
     bool Start();
 
     //
-    // Stops transcribing and waits up to graceMilliseconds for the final phrase
-    // to arrive, then returns the accumulated text.
+    // Stops transcribing and waits a bounded amount of time for the final phrase
+    // to arrive, then returns the accumulated text. A recognizer that does not
+    // quiesce promptly is cancelled and allowed to drain on the worker thread.
     //
     std::wstring Stop(
         DWORD graceMilliseconds,
