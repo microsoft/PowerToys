@@ -63,9 +63,6 @@ steps:
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
   #
-  # Both MSI builds (machine, then user) compile the same generated .wxs files prepared above;
-  # the MSI build no longer reverts or otherwise modifies any .wxs file.
-  #
   # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
   # We only pass -restore on the first one because the second run should already have all
   # of the dependencies.
