@@ -51,14 +51,18 @@ Function Get-ComponentGuid() {
         [Parameter(Mandatory = $True)]
         [string]$scope,
         [Parameter(Mandatory = $True)]
+        [string]$installPath,
+        [Parameter(Mandatory = $True)]
         [string[]]$fileList
     )
 
-    # Stable across builds, but a different scope (HKCU vs HKLM key path), platform, or set of
-    # files yields a different GUID, so the component rules hold if the file set changes.
+    # Stable across builds, but a different scope (HKCU vs HKLM key path), platform, install
+    # directory, or set of files yields a different GUID, so the component rules hold if the
+    # component moves to a new directory (even with the same ID and file set) or its file set
+    # changes.
     $files = [string[]]($fileList | ForEach-Object { $_.ToLowerInvariant() })
     [Array]::Sort($files, [System.StringComparer]::Ordinal)
-    $name = "$componentId|$scope|$platform|$($files -join '|')"
+    $name = "$componentId|$scope|$platform|$($installPath.ToLowerInvariant())|$($files -join '|')"
     return New-DeterministicGuid -namespace $componentGuidNamespace -name $name
 }
 
@@ -154,6 +158,13 @@ Function Generate-FileComponents() {
     $wxsFile = Get-Content $wxsFilePath;
 
     $wxsFile | ForEach-Object {
+        if ($_ -match "(<?define $($fileListName)Path=)(.*)\?>") {
+            [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'installPath',
+            Justification = 'variable is used in another scope')]
+
+            $installPath = $matches[2]
+            return
+        }
         if ($_ -match "(<?define $fileListName=)(.*)\?>") {
             [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
             Justification = 'variable is used in another scope')]
@@ -170,8 +181,11 @@ Function Generate-FileComponents() {
 
     $componentId = "$($fileListName)_Component"
     $componentGuidVar = "$($fileListName)_ComponentGuid"
-    $perUserGuid = Get-ComponentGuid -componentId $componentId -scope "perUser" -fileList $fileList
-    $perMachineGuid = Get-ComponentGuid -componentId $componentId -scope "perMachine" -fileList $fileList
+    # $installPath is the unexpanded <fileListName>Path define (e.g. "$(var.BinDir)WinUI3Apps\Assets\ColorPicker\")
+    # rather than its resolved value, but it still uniquely identifies the component's target
+    # directory and changes if the component is retargeted to a new path/define.
+    $perUserGuid = Get-ComponentGuid -componentId $componentId -scope "perUser" -installPath $installPath -fileList $fileList
+    $perMachineGuid = Get-ComponentGuid -componentId $componentId -scope "perMachine" -installPath $installPath -fileList $fileList
 
     $componentDefs = "`r`n"
     $componentDefs +=
