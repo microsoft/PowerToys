@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
@@ -16,6 +17,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,11 +25,13 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
+using Windows.UI.ViewManagement;
 
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -36,9 +40,12 @@ namespace Microsoft.CmdPal.UI.Dock;
 public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
     private readonly ContextMenuHost _menuHost;
+    private readonly UISettings _pinDropUiSettings = new();
 
     private DockViewModel _viewModel;
     private WeakReference<DockItemViewModel>? _lastFocusedItem;
+    private DockDropTarget? _pinDropTarget;
+    private bool? _pinDropAnimationsEnabled;
 
     internal DockViewModel ViewModel => _viewModel;
 
@@ -56,7 +63,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         EditModeContextMenu.IsOpen ||
         EditButtonsTeachingTip.IsOpen;
 
-    internal bool IsDragOperationActive => _draggedBand is not null;
+    internal bool IsDragOperationActive => _draggedBand is not null || _pinDropTarget is not null;
 
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
@@ -140,6 +147,8 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _menuHost.Close();
+        ClearPinDropAnimations();
+        UpdatePinDropTarget(null);
 
         ItemContextMenuFlyout.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ItemContextMenuFlyout.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
@@ -198,6 +207,13 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void UpdateEditMode(bool isEditMode)
     {
+        if (isEditMode)
+        {
+            ClearPinDropAnimations();
+        }
+
+        UpdatePinDropTarget(null);
+
         // Update center visibility based on edit mode and center items
         UpdateCenterVisibility();
 
@@ -296,6 +312,9 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         DockSize = effectiveSize;
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
+        StartDropZone.Label = RS_.GetString(isHorizontal ? "PinToDock_Left" : "PinToDock_Top");
+        CenterDropZone.Label = RS_.GetString("PinToDock_CenterLabel");
+        EndDropZone.Label = RS_.GetString(isHorizontal ? "PinToDock_RightLabel" : "PinToDock_Bottom");
 
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
@@ -933,90 +952,184 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
 
     private void RootGrid_DragOver(object sender, DragEventArgs e)
     {
-        // Don't intercept internal band drag-drop during edit mode
-        if (_draggedBand != null)
+        var target = ResolvePinDropTarget(e);
+        UpdatePinDropTarget(target);
+        if (target is null)
+        {
+            if (_draggedBand is null && !e.DataView.Properties.ContainsKey("DockBandId"))
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+            }
+
+            return;
+        }
+
+        e.AcceptedOperation = DataPackageOperation.Link;
+        e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
+        e.DragUIOverride.IsGlyphVisible = true;
+        e.DragUIOverride.IsCaptionVisible = true;
+    }
+
+    private void RootGrid_DragLeave(object sender, DragEventArgs e)
+    {
+        UpdatePinDropTarget(null);
+    }
+
+    private DockDropTarget? ResolvePinDropTarget(DragEventArgs e)
+    {
+        return DockDropTarget.Resolve(
+            e.DataView,
+            IsEditMode || _draggedBand is not null,
+            DockSide,
+            e.GetPosition(RootGrid),
+            new Size(RootGrid.ActualWidth, RootGrid.ActualHeight),
+            ViewModel.MonitorDeviceId,
+            App.Current.Services.GetRequiredService<IMonitorService>().GetMonitors().Count);
+    }
+
+    private void UpdatePinDropTarget(DockDropTarget? target)
+    {
+        if (_pinDropTarget == target)
         {
             return;
         }
 
-        if (e.DataView.Contains(StandardDataFormats.StorageItems) ||
-            e.DataView.Contains(StandardDataFormats.Uri))
+        if (target is not null)
         {
-            e.AcceptedOperation = DataPackageOperation.Link;
-            e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
-            e.DragUIOverride.IsGlyphVisible = true;
-            e.DragUIOverride.IsCaptionVisible = true;
-
-            // DON'T mark the event as handled - if you do, we won't get the Drop event.
+            UpdatePinDropAnimations();
         }
+
+        _pinDropTarget = target;
+        PinDropOverlay.Visibility = target is null ? Visibility.Collapsed : Visibility.Visible;
+        var state = target?.Side switch
+        {
+            DockPinSide.Start => "PinDropStart",
+            DockPinSide.Center => "PinDropCenter",
+            DockPinSide.End => "PinDropEnd",
+            _ => "PinDropNone",
+        };
+        VisualStateManager.GoToState(this, state, false);
+    }
+
+    private void UpdatePinDropAnimations()
+    {
+        var enabled = _pinDropUiSettings.AnimationsEnabled;
+        if (_pinDropAnimationsEnabled == enabled)
+        {
+            return;
+        }
+
+        _pinDropAnimationsEnabled = enabled;
+        var duration = enabled ? TimeSpan.FromMilliseconds(240) : TimeSpan.Zero;
+        StartDropZone.AnimationDuration = duration;
+        CenterDropZone.AnimationDuration = duration;
+        EndDropZone.AnimationDuration = duration;
+
+        if (!enabled)
+        {
+            ClearPinDropAnimations();
+            _pinDropAnimationsEnabled = false;
+            return;
+        }
+
+        var compositor = ElementCompositionPreview.GetElementVisual(PinDropOverlay).Compositor;
+        var easing = compositor.CreateCubicBezierEasingFunction(new Vector2(0.2f, 0), new Vector2(0, 1));
+        var show = compositor.CreateScalarKeyFrameAnimation();
+        show.Target = nameof(UIElement.Opacity);
+        show.InsertKeyFrame(0, 0);
+        show.InsertKeyFrame(1, 1, easing);
+        show.Duration = TimeSpan.FromMilliseconds(280);
+
+        var hide = compositor.CreateScalarKeyFrameAnimation();
+        hide.Target = nameof(UIElement.Opacity);
+        hide.InsertKeyFrame(1, 0, easing);
+        hide.Duration = TimeSpan.FromMilliseconds(120);
+
+        ElementCompositionPreview.SetImplicitShowAnimation(PinDropOverlay, show);
+        ElementCompositionPreview.SetImplicitHideAnimation(PinDropOverlay, hide);
+    }
+
+    private void ClearPinDropAnimations()
+    {
+        ElementCompositionPreview.SetImplicitShowAnimation(PinDropOverlay, null);
+        ElementCompositionPreview.SetImplicitHideAnimation(PinDropOverlay, null);
+        var visual = ElementCompositionPreview.GetElementVisual(PinDropOverlay);
+        visual.StopAnimation(nameof(UIElement.Opacity));
+        visual.Opacity = 1;
+        _pinDropAnimationsEnabled = null;
     }
 
     private async void RootGrid_Drop(object sender, DragEventArgs e)
     {
-        // Don't intercept internal band drag-drop during edit mode
-        if (_draggedBand != null)
-        {
-            Logger.LogDebug("[DockDrop] RootGrid_Drop: ignoring (internal band drag in progress)");
-            return;
-        }
-
-        var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
-        var hasUri = e.DataView.Contains(StandardDataFormats.Uri);
-
-        if (!hasStorageItems && !hasUri)
-        {
-            return;
-        }
-
-        e.Handled = true;
-
         try
         {
-            var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
-            if (bookmarksManager == null)
+            var target = ResolvePinDropTarget(e);
+            UpdatePinDropTarget(null);
+            if (target is not { } dropTarget)
             {
-                Logger.LogWarning("[DockDrop] IBookmarksManager service is not registered; cannot pin dropped item");
                 return;
             }
 
-            var foundItem = false;
-            if (hasStorageItems)
-            {
-                var items = await e.DataView.GetStorageItemsAsync();
-                foreach (var item in items)
-                {
-                    var path = item.Path;
-                    if (string.IsNullOrEmpty(path))
-                    {
-                        continue;
-                    }
+            var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
+            var deferral = e.GetDeferral();
 
-                    var name = Path.GetFileNameWithoutExtension(path);
-                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
-                    foundItem = true;
+            try
+            {
+                e.Handled = true;
+                var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
+                if (bookmarksManager == null)
+                {
+                    Logger.LogWarning("[DockDrop] IBookmarksManager service is not registered; cannot pin dropped item");
+                    return;
+                }
+
+                var foundItem = false;
+                if (hasStorageItems)
+                {
+                    var items = await e.DataView.GetStorageItemsAsync();
+                    foreach (var item in items)
+                    {
+                        var path = item.Path;
+                        if (string.IsNullOrEmpty(path))
+                        {
+                            continue;
+                        }
+
+                        var name = Path.GetFileNameWithoutExtension(path);
+                        AddBookmarkAndPinToDock(bookmarksManager, name, path, dropTarget);
+                        foundItem = true;
+                    }
+                }
+
+                if (foundItem)
+                {
+                    return;
+                }
+
+                var uri = await DockDropTarget.ReadLinkAsync(e.DataView);
+                if (uri is not null)
+                {
+                    var url = uri.AbsoluteUri;
+                    var name = string.IsNullOrEmpty(uri.Host) ? url : uri.Host;
+                    AddBookmarkAndPinToDock(bookmarksManager, name, url, dropTarget);
                 }
             }
-
-            if (foundItem)
+            catch (Exception ex)
             {
-                return;
+                Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
             }
-
-            if (hasUri)
+            finally
             {
-                var uri = await e.DataView.GetUriAsync();
-                var url = uri.AbsoluteUri;
-                var name = uri.Host;
-                AddBookmarkAndPinToDock(bookmarksManager, name, url);
+                deferral.Complete();
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
+            Logger.LogError("[DockDrop] Error in dock drop handler", ex);
         }
     }
 
-    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
+    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue, DockDropTarget target)
     {
         var bookmark = bookmarksManager.Add(name, bookmarkValue);
 
@@ -1024,7 +1137,7 @@ public sealed partial class DockControl : UserControl, IRecipient<EnterDockEditM
         // top-level list, so that pinning to the dock from the top-level is seamless.
         var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
         Logger.LogDebug($"[DockDrop] Pinning dropped item '{name}' as bookmark id={bookmark.Id} (commandId='{commandId}')");
-        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
+        WeakReferenceMessenger.Default.Send(target.CreatePinMessage("Bookmarks", commandId));
     }
 
     public void Receive(CrossMonitorBandDropMessage message)
