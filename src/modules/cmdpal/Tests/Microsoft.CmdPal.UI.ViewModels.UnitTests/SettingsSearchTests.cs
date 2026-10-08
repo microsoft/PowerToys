@@ -67,6 +67,13 @@ public partial class SettingsSearchTests
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
     [DataRow("recent items", SettingsLinkIds.General.RecentItems)]
     [DataRow("quick access shelf", SettingsLinkIds.Appearance.QuickAccessShelf)]
+    [DataRow("compact", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("compact mode", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("full mode", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("minimal", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("collapsed", SettingsLinkIds.Appearance.CompactMode)]
+    [DataRow("vertical search box position", SettingsLinkIds.Appearance.CompactPosition)]
+    [DataRow("offset", SettingsLinkIds.Appearance.CompactPosition)]
     [DataRow("alt+number shortcuts in lists", SettingsLinkIds.Appearance.ListItemAltNumberBehavior)]
     public void Search_RanksExpectedSettingFirst(string query, string expectedLink)
     {
@@ -76,11 +83,23 @@ public partial class SettingsSearchTests
     }
 
     [TestMethod]
+    [DataRow("monitor")]
+    [DataRow("cursor")]
+    public void Search_KeepsLaunchPositionTermsOffCompactPosition(string query)
+    {
+        var results = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(LoadResources())).Search(query, _matcher);
+
+        Assert.IsTrue(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.LaunchPosition));
+        Assert.IsFalse(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.CompactPosition));
+    }
+
+    [TestMethod]
     [DataRow(SettingsLinkIds.General.RecentItems, "General")]
     [DataRow(SettingsLinkIds.Appearance.HomeRecentCommands, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.QuickAccessShelf, "Personalization › Layout and positioning")]
+    [DataRow(SettingsLinkIds.Appearance.CompactPosition, "Personalization › Layout and positioning")]
     [DataRow(SettingsLinkIds.Appearance.ListItemAltNumberBehavior, "Personalization › Interaction")]
     public void Catalog_UsesCurrentSettingsLocation(string linkId, string expectedBreadcrumb)
     {

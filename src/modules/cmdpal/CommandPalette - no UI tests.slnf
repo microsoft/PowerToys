@@ -15,7 +15,6 @@
       "src\\modules\\cmdpal\\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering\\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.csproj",
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\Microsoft.CmdPal.UI.ViewModels.csproj",
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
-      "src\\modules\\cmdpal\\Microsoft.Terminal.UI\\Microsoft.Terminal.UI.vcxproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Common.UnitTests\\Microsoft.CmdPal.Common.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests\\Microsoft.CmdPal.AdaptiveCards.IncrementalRendering.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Apps.UnitTests\\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj",
