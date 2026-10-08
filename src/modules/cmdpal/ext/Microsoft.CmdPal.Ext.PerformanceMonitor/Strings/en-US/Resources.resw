@@ -291,6 +291,30 @@
   <data name="GPUUsage_Widget_Template.GPU_Temperature" xml:space="preserve">
     <value>Temperature</value>
   </data>
+  <data name="GPUUsage_Widget_Template.Dedicated_Memory" xml:space="preserve">
+    <value>Dedicated GPU memory</value>
+    <comment>Label for memory that belongs to the graphics card, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Shared_Memory" xml:space="preserve">
+    <value>Shared GPU memory</value>
+    <comment>Label for system memory that the graphics card can use, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_3D" xml:space="preserve">
+    <value>3D</value>
+    <comment>Name of the GPU engine that renders 3D graphics, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_Copy" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Name of the GPU engine that copies memory, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_VideoDecode" xml:space="preserve">
+    <value>Video decode</value>
+    <comment>Name of the GPU engine that decodes video, as in Task Manager</comment>
+  </data>
+  <data name="GPUUsage_Widget_Template.Engine_VideoEncode" xml:space="preserve">
+    <value>Video encode</value>
+    <comment>Name of the GPU engine that encodes video, as in Task Manager</comment>
+  </data>
   <data name="Previous_GPU_Title" xml:space="preserve">
     <value>Previous GPU</value>
   </data>
@@ -519,6 +543,28 @@
   </data>
   <data name="Battery_Widget_Template.TimeRemaining" xml:space="preserve">
     <value>Time remaining</value>
+  </data>
+  <data name="Overview_Title" xml:space="preserve">
+    <value>Overview</value>
+    <comment>Title of the page that shows every performance metric at a glance</comment>
+  </data>
+  <data name="Overview_Subtitle" xml:space="preserve">
+    <value>CPU, memory, GPU, disk, and network at a glance</value>
+  </data>
+  <data name="Overview_Widget_Template.CPU" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Overview_Widget_Template.GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Overview_Widget_Template.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Overview_Widget_Template.Battery" xml:space="preserve">
+    <value>Battery</value>
   </data>
   <data name="Battery_Widget_Template.Charge_Rate" xml:space="preserve">
     <value>Charge rate</value>

@@ -43,6 +43,28 @@
             {
               "type": "Column",
               "width": "auto",
+              "$when": "${gpuMemory != null}",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "isSubtle": true,
+                  "size": "small",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuMemoryLabel}"
+                },
+                {
+                  "type": "TextBlock",
+                  "size": "extraLarge",
+                  "weight": "bolder",
+                  "spacing": "none",
+                  "horizontalAlignment": "right",
+                  "text": "${gpuMemory}"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "auto",
               "$when": "${gpuTemp != '--'}",
               "items": [
                 {
@@ -78,10 +100,127 @@
         },
         {
           "type": "TextBlock",
+          "$when": "${gpuName != ''}",
           "spacing": "medium",
           "isSubtle": true,
           "wrap": true,
           "text": "${gpuName}"
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${count(gpuEngines) > 0}",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "$data": "${gpuEngines}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "${name}"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${text}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "small",
+                      "value": "${percent}",
+                      "color": "categoricalGreen",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${hasDedicatedMemory || hasSharedMemory}",
+          "spacing": "small",
+          "columns": [
+            {
+              "type": "Column",
+              "$when": "${hasDedicatedMemory}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%GPUUsage_Widget_Template/Dedicated_Memory%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${gpuDedicatedMemory}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "small",
+                      "value": "${gpuDedicatedPercent}",
+                      "color": "categoricalGreen",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "$when": "${hasSharedMemory}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%GPUUsage_Widget_Template/Shared_Memory%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${gpuSharedMemory}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "small",
+                      "value": "${gpuSharedPercent}",
+                      "color": "categoricalGreen",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

@@ -14,6 +14,16 @@ internal static class PerformanceChartData
     /// <summary>The number of one-second samples each history chart shows.</summary>
     public const int HistoryLength = 60;
 
+    // Each metric has its own color, as in Task Manager. Charts of a flow use one pair of
+    // colors on every card: teal for data coming in (read, receive) and marigold for data
+    // going out (write, send).
+    public const string CpuColor = "categoricalBlue";
+    public const string MemoryColor = "categoricalPurple";
+    public const string DiskColor = "categoricalLime";
+    public const string GpuColor = "categoricalGreen";
+    public const string InColor = "categoricalTeal";
+    public const string OutColor = "categoricalMarigold";
+
     /// <summary>A series to plot: its legend, color name, and samples (oldest first).</summary>
     internal readonly record struct Series(string Legend, string Color, IReadOnlyList<float> Values);
 

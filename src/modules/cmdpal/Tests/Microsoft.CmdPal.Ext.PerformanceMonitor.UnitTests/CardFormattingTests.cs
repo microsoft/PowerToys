@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -112,5 +113,37 @@ public class CardFormattingTests
         Assert.AreEqual("attention", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, 0.1f));
         Assert.AreEqual("good", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: true, 0.1f));
         Assert.AreEqual("accent", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, -1f));
+    }
+
+    [TestMethod]
+    public void MemoryUseShowsTheSizeUnit()
+    {
+        const ulong Gibibyte = 1024UL * 1024 * 1024;
+
+        Assert.AreEqual("1.5 / 8.0 GB", WidgetPage.FormatUsedOfTotal(Gibibyte + (Gibibyte / 2), 8 * Gibibyte));
+        Assert.AreEqual("128 / 512 MB", WidgetPage.FormatUsedOfTotal(128UL * 1024 * 1024, 512UL * 1024 * 1024));
+    }
+
+    [TestMethod]
+    public void PercentIsClampedAndHandlesAnUnknownSize()
+    {
+        Assert.AreEqual(25d, WidgetPage.GetPercent(1, 4));
+        Assert.AreEqual(100d, WidgetPage.GetPercent(9, 4));
+        Assert.AreEqual(0d, WidgetPage.GetPercent(9, 0));
+    }
+
+    [TestMethod]
+    public void SparklineTopRoundsUpWithAFloor()
+    {
+        static JsonObject Data(params float[] values) => new()
+        {
+            ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series("CPU", PerformanceChartData.CpuColor, values)),
+        };
+
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(Data(0.4f, 2f), "series"));
+        Assert.AreEqual(40d, SystemOverviewWidgetPage.GetSparklineMax(Data(12f, 33.5f), "series"));
+        Assert.AreEqual(100d, SystemOverviewWidgetPage.GetSparklineMax(Data(100f), "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(null, "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(new JsonObject(), "series"));
     }
 }

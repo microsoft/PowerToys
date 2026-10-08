@@ -1,0 +1,425 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "ColumnSet",
+      "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%Overview_Widget_Template/CPU%"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "${cpu.cpuSpeed}"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${cpu.cpuUsage}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "style": "sparkline",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "yMax": "${sparkMax.cpu}",
+                      "fill": "gradient",
+                      "data": "${cpu.cpuSeries}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%Overview_Widget_Template/Memory%"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "${memory.memUsedOfTotal}"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${memory.memUsage}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "style": "sparkline",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "yMax": 100,
+                      "fill": "gradient",
+                      "data": "${memory.memSeries}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%Overview_Widget_Template/GPU%"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "${gpu.gpuShortName}"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${gpu.gpuUsage}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "style": "sparkline",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "yMax": "${sparkMax.gpu}",
+                      "fill": "gradient",
+                      "data": "${gpu.gpuSeries}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            }
+      ]
+    },
+    {
+      "type": "ColumnSet",
+      "spacing": "small",
+      "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "${disk.diskDisplayName}"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "%DiskUsage_Widget_Template/Disk_Usage%"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${disk.diskUsage}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "style": "sparkline",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "yMax": "${sparkMax.disk}",
+                      "fill": "gradient",
+                      "data": "${disk.diskActiveSeries}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%Overview_Widget_Template/Network%"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "\u2191 ${network.netSent}"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "\u2193 ${network.netReceived}"
+                    },
+                    {
+                      "type": "Chart.Line",
+                      "style": "sparkline",
+                      "spacing": "small",
+                      "yMin": 0,
+                      "fill": "gradient",
+                      "data": "${network.netSeries}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "$when": "${hasBattery}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "ColumnSet",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "auto",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "weight": "bolder",
+                              "text": "%Overview_Widget_Template/Battery%"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [
+                            {
+                              "type": "TextBlock",
+                              "size": "small",
+                              "isSubtle": true,
+                              "horizontalAlignment": "right",
+                              "text": "${battery.batteryStatus}"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${battery.batteryCharge}"
+                    },
+                    {
+                      "type": "ProgressBar",
+                      "spacing": "medium",
+                      "value": "${battery.batteryPercent}",
+                      "color": "${battery.batteryColor}",
+                      "fallback": "drop"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "$when": "${!hasBattery}",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "height": "stretch",
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "size": "small",
+                      "weight": "bolder",
+                      "text": "%CPUUsage_Widget_Template/Up_Time%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "extraLarge",
+                      "weight": "bolder",
+                      "spacing": "none",
+                      "text": "${cpu.cpuUptime}"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "small",
+                      "isSubtle": true,
+                      "spacing": "small",
+                      "wrap": true,
+                      "maxLines": 2,
+                      "text": "${cpu.cpuName}"
+                    }
+                  ]
+                }
+              ]
+            }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

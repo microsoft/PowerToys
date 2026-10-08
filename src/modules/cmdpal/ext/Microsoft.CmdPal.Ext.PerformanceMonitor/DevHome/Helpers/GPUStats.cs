@@ -16,8 +16,19 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     // Performance counter category & counter names
     private const string GpuEngineCategoryName = "GPU Engine";
     private const string UtilizationPercentageCounter = "Utilization Percentage";
+    private const string GpuAdapterMemoryCategoryName = "GPU Adapter Memory";
+    private const string DedicatedUsageCounter = "Dedicated Usage";
+    private const string SharedUsageCounter = "Shared Usage";
 
     private static readonly CompositeFormat TemperatureFormat = CompositeFormat.Parse("{0:0.} \u00B0C");
+
+    /// <summary>
+    /// The engine types the card shows, in Task Manager's order. The first, 3D, is the GPU's
+    /// overall utilization.
+    /// </summary>
+    internal static readonly string[] EngineTypes = ["3D", "Copy", "VideoDecode", "VideoEncode"];
+
+    private static readonly string[] EngineTypeSuffixes = ["3D", "engtype_Copy", "engtype_VideoDecode", "engtype_VideoEncode"];
 
     // Instance-name key tokens
     private const string KeyPid = "pid";
@@ -37,6 +48,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     // Batch read via category - single kernel transition per tick
     private readonly PerformanceCounterCategory? _gpuEngineCategory;
+    private readonly PerformanceCounterCategory? _gpuAdapterMemoryCategory;
 
     // Friendly adapter names (and software flag) keyed by LUID, resolved via DXGI.
     private readonly Dictionary<long, GpuAdapterNames.AdapterInfo> _adaptersByLuid;
@@ -57,8 +69,15 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     private Dictionary<string, CounterSample> _previousSamples = [];
     private bool _gpuEnumerationFailureLogged;
     private bool _gpuReadFailureLogged;
+    private bool _gpuMemoryReadFailureLogged;
 
     internal sealed record DisplayInfo(string Name, string ShortName, int AdapterCount);
+
+    /// <summary>An adapter's memory use and size, in bytes. Sizes are zero when unknown.</summary>
+    internal readonly record struct MemoryInfo(ulong DedicatedUsed, ulong DedicatedTotal, ulong SharedUsed, ulong SharedTotal);
+
+    /// <summary>The utilization of one engine type, as an index into <see cref="EngineTypes"/>.</summary>
+    internal readonly record struct EngineUsage(int Type, float Percent);
 
     public sealed class Data
     {
@@ -73,12 +92,24 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         public float Temperature { get; set; }
 
         public List<float> GpuChartValues { get; set; } = [];
+
+        public ulong DedicatedMemoryTotal { get; init; }
+
+        public ulong SharedMemoryTotal { get; init; }
+
+        public ulong DedicatedMemoryUsed { get; set; }
+
+        public ulong SharedMemoryUsed { get; set; }
+
+        /// <summary>Gets or sets the utilization of each engine type the adapter has, in percent.</summary>
+        public EngineUsage[] Engines { get; set; } = [];
     }
 
     public GPUStats()
         : this(GpuAdapterNames.GetByLuid(), [])
     {
         _gpuEngineCategory = CreatePerformanceCounterCategory(GpuEngineCategoryName);
+        _gpuAdapterMemoryCategory = CreatePerformanceCounterCategory(GpuAdapterMemoryCategoryName, logFailure: false);
         DiscoverGPUsFromCounters();
     }
 
@@ -152,25 +183,26 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
             var utilizationData = categoryData[UtilizationPercentageCounter];
 
-            // Accumulate utilization for each (adapter, 3D engine) pair. Each instance
+            // Accumulate utilization for each (adapter, engine) pair. Each instance
             // (pid_<pid>_luid_<luid>_phys_<phys>_eng_<engId>_engtype_3D) reports the percentage
             // of wall-clock time a single process spent on that engine. Summing across processes
             // for the same engine is correct (gives total engine utilization). Summing across
-            // multiple 3D engines on the same adapter, however, is NOT - that produced values
-            // >100% in the dock under heavy GPU load (issue #48677). Mirroring Task Manager,
-            // we take the maximum 3D engine utilization per adapter and clamp to [0, 100].
-            // This parallels the CPU fix in #46381, which switched to a counter that is
-            // naturally bounded to 0-100%. Adapters are keyed by LUID rather than the
-            // "phys_N" token, which is effectively always 0 even on multi-GPU machines and
-            // so cannot tell adapters apart.
-            var perEngineUsage = new Dictionary<(long Luid, string EngineId), float>();
+            // multiple engines of the same type on the same adapter, however, is NOT - that produced
+            // values >100% in the dock under heavy GPU load (issue #48677). Mirroring Task Manager,
+            // we take the maximum utilization per adapter and engine type and clamp to [0, 100].
+            // The 3D engines give the adapter's overall utilization. This parallels the CPU fix in
+            // #46381, which switched to a counter that is naturally bounded to 0-100%. Adapters are
+            // keyed by LUID rather than the "phys_N" token, which is effectively always 0 even on
+            // multi-GPU machines and so cannot tell adapters apart.
+            var perEngineUsage = new Dictionary<(long Luid, string EngineId, int Type), float>();
             var currentSamples = new Dictionary<string, CounterSample>();
             var seenLuids = new HashSet<long>();
 
             foreach (InstanceData instance in utilizationData.Values)
             {
                 var instanceName = instance.InstanceName;
-                if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
+                var engineType = GetEngineType(instanceName);
+                if (engineType < 0)
                 {
                     continue;
                 }
@@ -182,30 +214,37 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
                 // Just record which adapters we saw; discovery of new ones is
                 // batched after the loop so we don't take _statsLock per instance
-                // (there can be hundreds of instances per tick).
-                seenLuids.Add(luidKey);
+                // (there can be hundreds of instances per tick). Adapters are
+                // discovered from their 3D engines; other engine types add detail.
+                if (engineType == 0)
+                {
+                    seenLuids.Add(luidKey);
+                }
 
                 var sample = instance.Sample;
                 currentSamples[instanceName] = sample;
 
+                // Record every engine, even before it has a value, so the card lists the
+                // engine types the adapter has.
+                var key = (luidKey, engineId, engineType);
+                var engineUsage = perEngineUsage.GetValueOrDefault(key);
                 if (_previousSamples.TryGetValue(instanceName, out var prevSample))
                 {
                     try
                     {
                         var cookedValue = CounterSampleCalculator.ComputeCounterValue(prevSample, sample);
-                        if (float.IsNaN(cookedValue) || float.IsInfinity(cookedValue) || cookedValue < 0f)
+                        if (!float.IsNaN(cookedValue) && !float.IsInfinity(cookedValue) && cookedValue >= 0f)
                         {
-                            continue;
+                            engineUsage += cookedValue;
                         }
-
-                        var key = (luidKey, engineId);
-                        perEngineUsage[key] = perEngineUsage.GetValueOrDefault(key) + cookedValue;
                     }
                     catch (Exception)
                     {
                         // Skip this instance on calculation error.
                     }
                 }
+
+                perEngineUsage[key] = engineUsage;
             }
 
             // Swap samples - stale entries are automatically cleaned up
@@ -217,27 +256,35 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             // this tick.
             DiscoverGpus(seenLuids);
 
-            // Reduce per-engine values to a single 0-100 utilization per adapter (max across engines).
-            var gpuUsage = new Dictionary<long, float>();
-            foreach (var kvp in perEngineUsage)
-            {
-                if (kvp.Value > gpuUsage.GetValueOrDefault(kvp.Key.Luid))
-                {
-                    gpuUsage[kvp.Key.Luid] = kvp.Value;
-                }
-            }
+            var adapterEngines = ReduceEngineUsage(perEngineUsage);
+            var adapterMemory = ReadAdapterMemory();
 
             // Update stats
             lock (_statsLock)
             {
                 foreach (var gpu in _stats)
                 {
-                    var raw = gpuUsage.TryGetValue(gpu.LuidKey, out var usage) ? usage : 0f;
-                    var clamped = Math.Clamp(raw, 0f, 100f);
-                    gpu.Usage = clamped / 100f;
+                    var engines = adapterEngines.TryGetValue(gpu.LuidKey, out var found) ? found : [];
+                    var usage = 0f;
+                    foreach (var engine in engines)
+                    {
+                        if (engine.Type == 0)
+                        {
+                            usage = engine.Percent;
+                        }
+                    }
+
+                    gpu.Usage = usage / 100f;
+                    gpu.Engines = engines;
+                    if (adapterMemory.TryGetValue(gpu.LuidKey, out var memory))
+                    {
+                        gpu.DedicatedMemoryUsed = memory.Dedicated;
+                        gpu.SharedMemoryUsed = memory.Shared;
+                    }
+
                     lock (gpu.GpuChartValues)
                     {
-                        ChartHelper.AddNextChartValue(clamped, gpu.GpuChartValues, PerformanceChartData.HistoryLength);
+                        ChartHelper.AddNextChartValue(usage, gpu.GpuChartValues, PerformanceChartData.HistoryLength);
                     }
                 }
             }
@@ -246,6 +293,112 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         {
             LogFailureOnce(ref _gpuReadFailureLogged, "Failed while reading GPU performance counters.", ex);
         }
+    }
+
+    /// <summary>Returns the index into <see cref="EngineTypes"/> of an engine instance, or -1.</summary>
+    internal static int GetEngineType(string instanceName)
+    {
+        for (var type = 0; type < EngineTypeSuffixes.Length; type++)
+        {
+            if (instanceName.EndsWith(EngineTypeSuffixes[type], StringComparison.Ordinal))
+            {
+                return type;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Reduces per-engine utilization to one value per adapter and engine type: the busiest
+    /// engine of that type, clamped to 0-100. Engine types the adapter doesn't have are omitted.
+    /// </summary>
+    internal static Dictionary<long, EngineUsage[]> ReduceEngineUsage(Dictionary<(long Luid, string EngineId, int Type), float> perEngineUsage)
+    {
+        var maxima = new Dictionary<long, float[]>();
+        foreach (var ((luid, _, type), value) in perEngineUsage)
+        {
+            if (!maxima.TryGetValue(luid, out var values))
+            {
+                values = new float[EngineTypes.Length];
+                Array.Fill(values, float.NaN);
+                maxima[luid] = values;
+            }
+
+            var clamped = Math.Clamp(value, 0f, 100f);
+            values[type] = float.IsNaN(values[type]) ? clamped : Math.Max(values[type], clamped);
+        }
+
+        var result = new Dictionary<long, EngineUsage[]>(maxima.Count);
+        foreach (var (luid, values) in maxima)
+        {
+            var engines = new List<EngineUsage>(values.Length);
+            for (var type = 0; type < values.Length; type++)
+            {
+                if (!float.IsNaN(values[type]))
+                {
+                    engines.Add(new EngineUsage(type, values[type]));
+                }
+            }
+
+            result[luid] = engines.ToArray();
+        }
+
+        return result;
+    }
+
+    /// <summary>Reads each adapter's dedicated and shared memory use, in bytes, keyed by LUID.</summary>
+    private Dictionary<long, (ulong Dedicated, ulong Shared)> ReadAdapterMemory()
+    {
+        var memory = new Dictionary<long, (ulong Dedicated, ulong Shared)>();
+        if (_gpuAdapterMemoryCategory is null)
+        {
+            return memory;
+        }
+
+        try
+        {
+            var categoryData = _gpuAdapterMemoryCategory.ReadCategory();
+            if (categoryData.Contains(DedicatedUsageCounter))
+            {
+                foreach (InstanceData instance in categoryData[DedicatedUsageCounter].Values)
+                {
+                    if (TryGetAdapterLuid(instance.InstanceName, out var luidKey))
+                    {
+                        memory[luidKey] = (ToBytes(instance.RawValue), memory.GetValueOrDefault(luidKey).Shared);
+                    }
+                }
+            }
+
+            if (categoryData.Contains(SharedUsageCounter))
+            {
+                foreach (InstanceData instance in categoryData[SharedUsageCounter].Values)
+                {
+                    if (TryGetAdapterLuid(instance.InstanceName, out var luidKey))
+                    {
+                        memory[luidKey] = (memory.GetValueOrDefault(luidKey).Dedicated, ToBytes(instance.RawValue));
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _gpuMemoryReadFailureLogged, "Failed while reading GPU memory performance counters.", ex);
+        }
+
+        return memory;
+    }
+
+    private static ulong ToBytes(long rawValue) => rawValue > 0 ? (ulong)rawValue : 0;
+
+    /// <summary>Reads the LUID from a GPU Adapter Memory instance name, such as <c>luid_0x00000000_0x0001766D_phys_0</c>.</summary>
+    internal static bool TryGetAdapterLuid(string instanceName, out long luidKey)
+    {
+        luidKey = 0;
+        var parts = instanceName.Split('_');
+        return parts.Length >= 3
+            && string.Equals(parts[0], KeyLuid, StringComparison.Ordinal)
+            && TryParseLuidKey($"{parts[1]}_{parts[2]}", out luidKey);
     }
 
     // Adds any newly-seen adapters to _stats. Called once per tick with the set
@@ -327,7 +480,14 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             ? GpuNamePrefix + _stats.Count
             : info.Description;
 
-        _stats.Add(new Data() { LuidKey = luidKey, Name = name, ShortName = GpuAdapterNames.GetShortName(name) });
+        _stats.Add(new Data()
+        {
+            LuidKey = luidKey,
+            Name = name,
+            ShortName = GpuAdapterNames.GetShortName(name),
+            DedicatedMemoryTotal = info.DedicatedVideoMemory,
+            SharedMemoryTotal = info.SharedSystemMemory,
+        });
     }
 
     // True if DXGI reports at least one non-software adapter in the system. DXGI
@@ -358,6 +518,29 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             }
 
             return PerformanceChartData.Snapshot(_stats[gpuChartIndex].GpuChartValues);
+        }
+    }
+
+    internal MemoryInfo GetGPUMemory(int gpuActiveIndex)
+    {
+        lock (_statsLock)
+        {
+            if ((uint)gpuActiveIndex >= (uint)_stats.Count)
+            {
+                return default;
+            }
+
+            var gpu = _stats[gpuActiveIndex];
+            return new(gpu.DedicatedMemoryUsed, gpu.DedicatedMemoryTotal, gpu.SharedMemoryUsed, gpu.SharedMemoryTotal);
+        }
+    }
+
+    /// <summary>Returns the utilization of each engine type the adapter has, in <see cref="EngineTypes"/> order.</summary>
+    internal EngineUsage[] GetGPUEngines(int gpuActiveIndex)
+    {
+        lock (_statsLock)
+        {
+            return (uint)gpuActiveIndex < (uint)_stats.Count ? _stats[gpuActiveIndex].Engines : [];
         }
     }
 

@@ -63,6 +63,7 @@
                 },
                 {
                   "type": "TextBlock",
+                  "$when": "${batteryTimeRemaining != ''}",
                   "isSubtle": true,
                   "size": "small",
                   "spacing": "medium",
@@ -70,6 +71,7 @@
                 },
                 {
                   "type": "TextBlock",
+                  "$when": "${batteryTimeRemaining != ''}",
                   "size": "large",
                   "spacing": "none",
                   "wrap": true,
