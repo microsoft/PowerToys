@@ -37,8 +37,8 @@ internal static class GpuAdapterNames
             .Replace("\u2122", string.Empty, StringComparison.Ordinal);
         name = string.Join(' ', name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
-        // Some drivers append details, such as "(6144-core Blackwell RTX GPU)", that make the
-        // name too long for a label.
+        // Some drivers append details in parentheses, such as the core count and architecture,
+        // that make the name too long for a label.
         if (name.EndsWith(')') && name.LastIndexOf(" (", StringComparison.Ordinal) is > 0 and var detailsStart)
         {
             name = name[..detailsStart];

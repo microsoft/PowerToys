@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.UI.UnitTests.Charts;
 public class ChartScaleTests
 {
     [TestMethod]
-    public void FixedPercentRangeUsesQuarterGridlines()
+    public void FixedPercentRangeUsesQuarterGridLines()
     {
         var range = ChartScale.Compute(0, 100, 3, 42);
 

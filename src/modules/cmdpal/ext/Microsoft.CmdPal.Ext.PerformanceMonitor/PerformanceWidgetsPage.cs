@@ -882,9 +882,9 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
             // Memory hardware, as on Task Manager's memory page.
             if (MemoryHardware.Modules is MemoryModules modules)
             {
-                if (modules.SpeedMegatransfers > 0)
+                if (modules.SpeedMegaTransfers > 0)
                 {
-                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegatransfers);
+                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegaTransfers);
                 }
 
                 ContentData["memSlots"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Widget_Template/Slots_Used_Value"), modules.SlotsUsed, modules.SlotCount);

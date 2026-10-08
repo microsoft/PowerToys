@@ -149,4 +149,4 @@ internal static class MemoryHardware
 }
 
 /// <summary>Memory modules as the firmware describes them.</summary>
-internal readonly record struct MemoryModules(int SlotsUsed, int SlotCount, uint SpeedMegatransfers, byte FormFactor);
+internal readonly record struct MemoryModules(int SlotsUsed, int SlotCount, uint SpeedMegaTransfers, byte FormFactor);

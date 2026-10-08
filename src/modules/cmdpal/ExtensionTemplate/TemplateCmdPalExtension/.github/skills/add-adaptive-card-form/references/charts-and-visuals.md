@@ -139,7 +139,7 @@ Names have a light theme and a dark theme variant, and switch to system colors i
 
 ## Icon
 
-`name` is a Fluent icon name from the Adaptive Cards icon catalog, such as `Calendar`, `Wifi1`, or `Battery7`. Command Palette draws icons with Segoe Fluent Icons, so it supports the common names that have a matching glyph, including system names (`DeveloperBoard`, `Ram`, `HardDrive`, `Desktop`, `NetworkAdapter`, `Wifi1` to `Wifi4`, `Battery0` to `Battery10`, `BatteryCharge`), status names (`Checkmark`, `CheckmarkCircle`, `Warning`, `ErrorCircle`, `Info`), and common actions. Other names don't render, so give the element a `fallback`.
+`name` is a Fluent icon name from the Adaptive Cards icon catalog, such as `Calendar`, `Wifi1`, or `Battery7`. Command Palette draws icons with Segoe Fluent Icons, so it supports the common names that have a matching glyph, including system names (`DeveloperBoard`, `Ram`, `HardDrive`, `Desktop`, `NetworkAdapter`, `Wifi1` to `Wifi4`, `Battery0` to `Battery10`, `BatteryCharge`), status names (`Checkmark`, `CheckmarkCircle`, `Warning`, `ErrorCircle`, `Info`), and common actions. Other names don't render, so give each icon a `fallback`.
 
 - `size`: `xxSmall` (12 px), `xSmall` (16), `Small` (20), `Standard` (24, the default), `Medium` (28), `Large` (32), `xLarge` (40), or `xxLarge` (48).
 - `style`: `Regular` (default) or `Filled`. Icons without a filled glyph use the regular one.

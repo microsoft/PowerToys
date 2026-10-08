@@ -202,15 +202,15 @@ internal static class SampleChartsTemplate
                   "items": [
                     {
                       "type": "Chart.VerticalBar",
-                      "title": "Builds per day",
+                      "title": "Builds per week",
                       "showBarValues": true,
                       "color": "categoricalTeal",
                       "data": [
-                        { "x": "Mon", "y": 12 },
-                        { "x": "Tue", "y": 18 },
-                        { "x": "Wed", "y": 9 },
-                        { "x": "Thu", "y": 21 },
-                        { "x": "Fri", "y": 15 }
+                        { "x": "Week 1", "y": 12 },
+                        { "x": "Week 2", "y": 18 },
+                        { "x": "Week 3", "y": 9 },
+                        { "x": "Week 4", "y": 21 },
+                        { "x": "Week 5", "y": 15 }
                       ],
                       "fallback": "drop"
                     }

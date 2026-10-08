@@ -4,14 +4,14 @@
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards.Charts;
 
-/// <summary>The value range of a chart axis and the spacing of its gridlines.</summary>
+/// <summary>The value range of a chart axis and the spacing of its grid lines.</summary>
 internal readonly record struct ChartAxisRange(double Min, double Max, double Step)
 {
     /// <summary>Maps <paramref name="value"/> to 0 (minimum) through 1 (maximum), clamped.</summary>
     public double Normalize(double value) =>
         Max > Min ? Math.Clamp((value - Min) / (Max - Min), 0, 1) : 0;
 
-    /// <summary>Returns the gridline values, from the minimum to the maximum.</summary>
+    /// <summary>Returns the grid line values, from the minimum to the maximum.</summary>
     public IReadOnlyList<double> GetTicks()
     {
         var ticks = new List<double>();

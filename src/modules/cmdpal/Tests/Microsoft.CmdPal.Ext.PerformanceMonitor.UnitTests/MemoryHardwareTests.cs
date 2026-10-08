@@ -25,7 +25,7 @@ public class MemoryHardwareTests
         Assert.IsNotNull(modules);
         Assert.AreEqual(2, modules.Value.SlotsUsed);
         Assert.AreEqual(3, modules.Value.SlotCount);
-        Assert.AreEqual(5200u, modules.Value.SpeedMegatransfers);
+        Assert.AreEqual(5200u, modules.Value.SpeedMegaTransfers);
         Assert.AreEqual((byte)0x0D, modules.Value.FormFactor);
     }
 
@@ -34,7 +34,7 @@ public class MemoryHardwareTests
     {
         var modules = MemoryHardware.Parse(Table(MemoryDevice(8192, 0x09, ratedSpeed: 3200, configuredSpeed: 0), EndOfTable()));
 
-        Assert.AreEqual(3200u, modules.Value.SpeedMegatransfers);
+        Assert.AreEqual(3200u, modules.Value.SpeedMegaTransfers);
     }
 
     [TestMethod]

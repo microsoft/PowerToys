@@ -646,7 +646,7 @@
   </data>
   <data name="Battery_Widget_Template.Full_Charge_Capacity" xml:space="preserve">
     <value>Full charge capacity</value>
-    <comment>Label for the energy the battery holds when fully charged, such as 54 Wh</comment>
+    <comment>Label for the battery's energy when fully charged, such as 54 Wh</comment>
   </data>
   <data name="Open_Task_Manager_Title" xml:space="preserve">
     <value>Open Task Manager</value>

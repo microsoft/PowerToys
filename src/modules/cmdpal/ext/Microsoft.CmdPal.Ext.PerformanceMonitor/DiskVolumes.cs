@@ -58,8 +58,8 @@ internal static class DiskVolumes
     }
 
     /// <summary>
-    /// Describes a disk the way Task Manager does, such as <c>SSD (NVMe)</c>, or returns null when
-    /// the disk's kind is unknown.
+    /// Describes a disk as Task Manager does, such as <c>SSD (NVMe)</c>, or returns null when the
+    /// disk's kind is unknown.
     /// </summary>
     public static string? GetTypeText(DiskDeviceInfo info)
     {

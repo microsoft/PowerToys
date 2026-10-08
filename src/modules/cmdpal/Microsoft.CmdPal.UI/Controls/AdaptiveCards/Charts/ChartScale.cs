@@ -9,7 +9,7 @@ internal static class ChartScale
 {
     /// <summary>
     /// Computes the axis range. A fixed minimum or maximum is kept as-is; open ends are rounded
-    /// outward to the gridline step. Without a fixed minimum the axis starts at zero unless the
+    /// outward to the grid line step. Without a fixed minimum the axis starts at zero unless the
     /// data is negative.
     /// </summary>
     public static ChartAxisRange Compute(
