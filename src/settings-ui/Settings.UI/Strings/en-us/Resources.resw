@@ -3576,33 +3576,47 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
     <value>Character sets</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Quick Accent shows accented characters from the character sets you add</value>
+  <data name="QuickAccent_SelectedLanguage_Summary_None" xml:space="preserve">
+    <value>No character sets selected</value>
   </data>
-  <data name="QuickAccent_AddCharacterSets_Button.Content" xml:space="preserve">
-    <value>Add character sets</value>
+  <data name="QuickAccent_SelectedLanguage_Summary_All" xml:space="preserve">
+    <value>All {0} character sets</value>
+    <comment>{0} is the total number of character sets</comment>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog.Title" xml:space="preserve">
-    <value>Add character sets</value>
+  <data name="QuickAccent_SelectedLanguage_Summary_More" xml:space="preserve">
+    <value>{0} and {1} more</value>
+    <comment>{0} is a comma-separated list of character set names, {1} is the number of additional character sets that are not listed</comment>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Add</value>
+  <data name="QuickAccent_EditCharacterSets_Button.Content" xml:space="preserve">
+    <value>Edit</value>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog.CloseButtonText" xml:space="preserve">
+  <data name="QuickAccent_EditCharacterSets_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.Title" xml:space="preserve">
+    <value>Choose character sets</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog_Search.PlaceholderText" xml:space="preserve">
+  <data name="QuickAccent_CharacterSetsDialog_Search.PlaceholderText" xml:space="preserve">
     <value>Search character sets</value>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="QuickAccent_CharacterSetsDialog_Search.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Search character sets</value>
   </data>
-  <data name="QuickAccent_AddCharacterSetsDialog_NoResults.Text" xml:space="preserve">
+  <data name="QuickAccent_CharacterSetsDialog_SelectAll.Content" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_SelectedCount" xml:space="preserve">
+    <value>{0} of {1} selected</value>
+    <comment>{0} is the number of selected character sets, {1} is the total number of character sets</comment>
+  </data>
+  <data name="QuickAccent_CharacterSetsDialog_NoResults.Text" xml:space="preserve">
     <value>No character sets found</value>
-  </data>
-  <data name="QuickAccent_RemoveCharacterSet.Text" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a character set from the list of added character sets</comment>
   </data>
   <data name="QuickAccent_NoCharacterSets.Title" xml:space="preserve">
     <value>No character sets added</value>

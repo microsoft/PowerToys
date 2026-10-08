@@ -67,16 +67,22 @@
                     x:Name="QuickAccent_Language"
                     x:Uid="QuickAccent_Language"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="QuickAccentSelectedLanguage"
                         x:Uid="QuickAccent_SelectedLanguage"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                        Description="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
+                        ItemsSource="{x:Bind ViewModel.SelectedLanguages, Mode=OneWay}">
                         <Button
-                            x:Uid="QuickAccent_AddCharacterSets_Button"
-                            Click="AddCharacterSetsButton_Click"
-                            IsEnabled="{x:Bind ViewModel.CanAddLanguages, Mode=OneWay}"
-                            Style="{StaticResource AccentButtonStyle}" />
-                    </tkcontrols:SettingsCard>
+                            x:Uid="QuickAccent_EditCharacterSets_Button"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Click="EditCharacterSetsButton_Click" />
+                        <tkcontrols:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="Lib:PowerAccentLanguageModel">
+                                <tkcontrols:SettingsCard Description="{x:Bind CharacterPreview}" Header="{x:Bind Language}" />
+                            </DataTemplate>
+                        </tkcontrols:SettingsExpander.ItemTemplate>
+                    </tkcontrols:SettingsExpander>
                     <InfoBar
                         x:Uid="QuickAccent_NoCharacterSets"
                         IsClosable="False"
@@ -84,44 +90,6 @@
                         IsTabStop="False"
                         Severity="Warning"
                         Visibility="{x:Bind ViewModel.HasSelectedLanguages, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
-                    <ItemsControl
-                        x:Name="SelectedCharacterSets"
-                        HorizontalAlignment="Stretch"
-                        AutomationProperties.Name="{Binding ElementName=QuickAccentSelectedLanguage, Path=Header}"
-                        IsTabStop="False"
-                        ItemsSource="{x:Bind ViewModel.SelectedLanguages, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="Lib:PowerAccentLanguageModel">
-                                <tkcontrols:SettingsCard
-                                    Margin="0,0,0,2"
-                                    Description="{x:Bind CharacterPreview}"
-                                    Header="{x:Bind Language}">
-                                    <tkcontrols:SettingsCard.Resources>
-                                        <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
-                                    </tkcontrols:SettingsCard.Resources>
-                                    <Button
-                                        x:Uid="More_Options_Button"
-                                        VerticalAlignment="Center"
-                                        AutomationProperties.HelpText="{x:Bind Language}"
-                                        Content="&#xE712;"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                        Style="{StaticResource SubtleButtonStyle}">
-                                        <Button.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem
-                                                    x:Uid="QuickAccent_RemoveCharacterSet"
-                                                    Click="RemoveCharacterSet_Click"
-                                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                        <ToolTipService.ToolTip>
-                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
-                                        </ToolTipService.ToolTip>
-                                    </Button>
-                                </tkcontrols:SettingsCard>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_ReferenceGuide" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -207,25 +175,37 @@
                 </controls:SettingsGroup>
 
                 <ContentDialog
-                    x:Name="AddCharacterSetsDialog"
-                    x:Uid="QuickAccent_AddCharacterSetsDialog"
+                    x:Name="CharacterSetsDialog"
+                    x:Uid="QuickAccent_CharacterSetsDialog"
                     DefaultButton="Primary"
-                    IsPrimaryButtonEnabled="False"
-                    PrimaryButtonClick="AddCharacterSetsDialog_PrimaryButtonClick"
+                    PrimaryButtonClick="CharacterSetsDialog_PrimaryButtonClick"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
-                    <Grid Width="420" RowSpacing="12">
+                    <Grid Width="420" RowSpacing="8">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <AutoSuggestBox
                             x:Name="CharacterSetsSearchBox"
-                            x:Uid="QuickAccent_AddCharacterSetsDialog_Search"
+                            x:Uid="QuickAccent_CharacterSetsDialog_Search"
                             QueryIcon="Find"
                             TextChanged="CharacterSetsSearchBox_TextChanged" />
+                        <Grid Grid.Row="1" Padding="0,4,0,4">
+                            <CheckBox
+                                x:Name="SelectAllCharacterSetsCheckBox"
+                                x:Uid="QuickAccent_CharacterSetsDialog_SelectAll"
+                                Click="SelectAllCharacterSetsCheckBox_Click" />
+                            <TextBlock
+                                x:Name="SelectedCharacterSetsCountText"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}" />
+                        </Grid>
                         <ListView
                             x:Name="AvailableCharacterSetsList"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Height="360"
                             IsItemClickEnabled="True"
                             ItemClick="AvailableCharacterSetsList_ItemClick"
@@ -270,8 +250,8 @@
                         </ListView>
                         <TextBlock
                             x:Name="NoCharacterSetsFoundText"
-                            x:Uid="QuickAccent_AddCharacterSetsDialog_NoResults"
-                            Grid.Row="1"
+                            x:Uid="QuickAccent_CharacterSetsDialog_NoResults"
+                            Grid.Row="2"
                             Margin="0,12,0,0"
                             HorizontalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

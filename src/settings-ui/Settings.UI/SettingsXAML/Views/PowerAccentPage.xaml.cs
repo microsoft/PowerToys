@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,38 +31,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        private List<CharacterSetPickerGroup> _availableCharacterSetGroups = [];
+        private List<CharacterSetPickerGroup> _characterSetGroups = [];
+        private List<CharacterSetPickerGroup> _visibleCharacterSetGroups = [];
 
-        private async void AddCharacterSetsButton_Click(object sender, RoutedEventArgs e)
+        private async void EditCharacterSetsButton_Click(object sender, RoutedEventArgs e)
         {
-            _availableCharacterSetGroups = ViewModel.GetAvailableLanguageGroups()
-                .Select(group => new CharacterSetPickerGroup(group.Group, group.Select(l => new CharacterSetPickerItem(l))))
+            var selected = new HashSet<PowerAccentLanguageModel>(ViewModel.SelectedLanguageOptions);
+            _characterSetGroups = ViewModel.LanguageGroups
+                .Select(group => new CharacterSetPickerGroup(group.Group, group.Select(l => new CharacterSetPickerItem(l) { IsChecked = selected.Contains(l) })))
                 .ToList();
 
             CharacterSetsSearchBox.Text = string.Empty;
             ApplyCharacterSetsFilter(string.Empty);
-            UpdateAddButtonState();
 
-            AddCharacterSetsDialog.XamlRoot = XamlRoot;
-            await AddCharacterSetsDialog.ShowAsync();
+            CharacterSetsDialog.XamlRoot = XamlRoot;
+            await CharacterSetsDialog.ShowAsync();
         }
 
         private void ApplyCharacterSetsFilter(string query)
         {
             query = query?.Trim() ?? string.Empty;
 
-            var filtered = string.IsNullOrEmpty(query)
-                ? _availableCharacterSetGroups
-                : _availableCharacterSetGroups
+            _visibleCharacterSetGroups = string.IsNullOrEmpty(query)
+                ? _characterSetGroups
+                : _characterSetGroups
                     .Select(group => new CharacterSetPickerGroup(
                         group.Header,
                         group.Where(item => item.Language.Language.Contains(query, StringComparison.CurrentCultureIgnoreCase))))
                     .Where(group => group.Count > 0)
                     .ToList();
 
-            AvailableCharacterSetsViewSource.Source = filtered;
+            AvailableCharacterSetsViewSource.Source = _visibleCharacterSetGroups;
             AvailableCharacterSetsList.ItemsSource = AvailableCharacterSetsViewSource.View;
-            NoCharacterSetsFoundText.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            NoCharacterSetsFoundText.Visibility = _visibleCharacterSetGroups.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            UpdateCharacterSetsDialogState();
         }
 
         private void CharacterSetsSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -77,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (e.ClickedItem is CharacterSetPickerItem item)
             {
                 item.IsChecked = !item.IsChecked;
-                UpdateAddButtonState();
+                UpdateCharacterSetsDialogState();
             }
         }
 
@@ -89,28 +92,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 item.IsChecked = checkBox.IsChecked == true;
             }
 
-            UpdateAddButtonState();
+            UpdateCharacterSetsDialogState();
         }
 
-        private IEnumerable<PowerAccentLanguageModel> GetCheckedCharacterSets() =>
-            _availableCharacterSetGroups.SelectMany(group => group).Where(item => item.IsChecked).Select(item => item.Language);
-
-        private void UpdateAddButtonState()
+        private void SelectAllCharacterSetsCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            AddCharacterSetsDialog.IsPrimaryButtonEnabled = GetCheckedCharacterSets().Any();
-        }
-
-        private void AddCharacterSetsDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            ViewModel.AddLanguages(GetCheckedCharacterSets().ToList());
-        }
-
-        private void RemoveCharacterSet_Click(object sender, RoutedEventArgs e)
-        {
-            if ((sender as FrameworkElement)?.DataContext is PowerAccentLanguageModel language)
+            // Applies to the visible (filtered) sets. From the mixed state, a click selects all.
+            var visibleItems = _visibleCharacterSetGroups.SelectMany(group => group).ToList();
+            bool check = !visibleItems.All(item => item.IsChecked);
+            foreach (var item in visibleItems)
             {
-                ViewModel.RemoveLanguage(language);
+                item.IsChecked = check;
             }
+
+            UpdateCharacterSetsDialogState();
+        }
+
+        private List<PowerAccentLanguageModel> GetCheckedCharacterSets() =>
+            _characterSetGroups.SelectMany(group => group).Where(item => item.IsChecked).Select(item => item.Language).ToList();
+
+        private void UpdateCharacterSetsDialogState()
+        {
+            var visibleItems = _visibleCharacterSetGroups.SelectMany(group => group).ToList();
+            int visibleChecked = visibleItems.Count(item => item.IsChecked);
+            SelectAllCharacterSetsCheckBox.IsEnabled = visibleItems.Count > 0;
+            SelectAllCharacterSetsCheckBox.IsChecked = visibleChecked == 0 ? false : visibleChecked == visibleItems.Count ? true : null;
+
+            int totalChecked = GetCheckedCharacterSets().Count;
+            int total = _characterSetGroups.Sum(group => group.Count);
+            SelectedCharacterSetsCountText.Text = string.Format(
+                CultureInfo.CurrentCulture,
+                ResourceLoaderInstance.ResourceLoader.GetString("QuickAccent_CharacterSetsDialog_SelectedCount"),
+                totalChecked,
+                total);
+
+            // Require at least one set; with none selected Quick Accent would never show anything.
+            CharacterSetsDialog.IsPrimaryButtonEnabled = totalChecked > 0;
+        }
+
+        private void CharacterSetsDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            ViewModel.SelectedLanguageOptions = GetCheckedCharacterSets().ToArray();
         }
 
         private void ReferenceGuideButton_Click(object sender, RoutedEventArgs e)

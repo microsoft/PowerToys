@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
@@ -364,7 +365,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Normalize to the canonical (sorted) order of Languages and drop duplicates.
                 var selected = new HashSet<PowerAccentLanguageModel>(value ?? []);
                 _selectedLanguageOptions = Languages.Where(selected.Contains).ToArray();
-                _powerAccentSettings.Properties.SelectedLang.Value = string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
+
+                // Persist "ALL" when everything is selected so sets added in future releases are included automatically.
+                _powerAccentSettings.Properties.SelectedLang.Value = AllSelected
+                    ? "ALL"
+                    : string.Join(',', _selectedLanguageOptions.Select(l => l.LanguageCode));
 
                 SelectedLanguages.Clear();
                 foreach (var language in _selectedLanguageOptions)
@@ -373,49 +378,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 OnPropertyChanged(nameof(HasSelectedLanguages));
-                OnPropertyChanged(nameof(CanAddLanguages));
+                OnPropertyChanged(nameof(SelectedLanguagesSummary));
                 RaisePropertyChanged(nameof(SelectedLanguageOptions));
             }
         }
 
         /// <summary>
-        /// Gets the character sets the user has added, in display order. Bound to the
-        /// list of character set cards in the Settings UI.
+        /// Gets the active character sets, in display order. Shown as read-only rows
+        /// inside the "Character sets" expander in the Settings UI.
         /// </summary>
         public ObservableCollection<PowerAccentLanguageModel> SelectedLanguages { get; } = new();
 
         public bool HasSelectedLanguages => _selectedLanguageOptions.Length > 0;
 
-        public bool CanAddLanguages => _selectedLanguageOptions.Length < Languages.Count;
+        private const int SummaryMaxNames = 3;
 
         /// <summary>
-        /// Gets the character sets that have not yet been added, grouped in display order.
-        /// Used to populate the "Add character sets" dialog.
+        /// Gets a short summary of the active character sets, e.g. "French, German, Spanish and 2 more".
         /// </summary>
-        public IEnumerable<PowerAccentLanguageGroupModel> GetAvailableLanguageGroups()
+        public string SelectedLanguagesSummary
         {
-            var selected = new HashSet<PowerAccentLanguageModel>(_selectedLanguageOptions);
-            return LanguageGroups
-                .Select(group => new PowerAccentLanguageGroupModel(group.Where(l => !selected.Contains(l)).ToList(), group.Group))
-                .Where(group => group.Count > 0);
-        }
-
-        public void AddLanguages(IEnumerable<PowerAccentLanguageModel> languages)
-        {
-            ArgumentNullException.ThrowIfNull(languages);
-
-            var toAdd = languages.Where(l => !_selectedLanguageOptions.Contains(l)).ToList();
-            if (toAdd.Count > 0)
+            get
             {
-                SelectedLanguageOptions = _selectedLanguageOptions.Concat(toAdd).ToArray();
-            }
-        }
+                var loader = ResourceLoaderInstance.ResourceLoader;
+                if (_selectedLanguageOptions.Length == 0)
+                {
+                    return loader.GetString("QuickAccent_SelectedLanguage_Summary_None");
+                }
 
-        public void RemoveLanguage(PowerAccentLanguageModel language)
-        {
-            if (language != null && _selectedLanguageOptions.Contains(language))
-            {
-                SelectedLanguageOptions = _selectedLanguageOptions.Where(l => l != language).ToArray();
+                if (AllSelected)
+                {
+                    return string.Format(CultureInfo.CurrentCulture, loader.GetString("QuickAccent_SelectedLanguage_Summary_All"), Languages.Count);
+                }
+
+                string names = string.Join(", ", _selectedLanguageOptions.Take(SummaryMaxNames).Select(l => l.Language));
+                int remaining = _selectedLanguageOptions.Length - SummaryMaxNames;
+                return remaining > 0
+                    ? string.Format(CultureInfo.CurrentCulture, loader.GetString("QuickAccent_SelectedLanguage_Summary_More"), names, remaining)
+                    : names;
             }
         }
 
