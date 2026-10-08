@@ -4,7 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -15,6 +17,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel : INotifyPropertyChanged,
+    IDisposable,
     IRecipient<DockAutoHideConflictMessage>
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
@@ -33,8 +36,71 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly IMonitorService? _monitorService;
+    private readonly ILanguageService _languageService;
+    private readonly TaskScheduler _uiScheduler;
+
+    private int _languageIndex;
+    private bool _languageRestartFailed;
+    private bool _disposed;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public List<LanguageItem> Languages { get; private set; } = [];
+
+    public bool IsPseudoLocalizationMissing => _languageService.IsPseudoLocalizationMissing;
+
+    public int LanguageIndex
+    {
+        get => _languageIndex;
+        set
+        {
+            if (_languageIndex == value || value < 0 || value >= Languages.Count)
+            {
+                return;
+            }
+
+            LanguageRestartFailed = false;
+            _languageIndex = value;
+            _settingsService.UpdateSettings(s => s with { Language = Languages[value].Tag });
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageIndex)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageChanged)));
+        }
+    }
+
+    public bool LanguageRestartFailed
+    {
+        get => _languageRestartFailed;
+        set
+        {
+            if (_languageRestartFailed == value)
+            {
+                return;
+            }
+
+            _languageRestartFailed = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageRestartFailed)));
+        }
+    }
+
+    public bool LanguageChanged
+    {
+        get
+        {
+            if (Languages.Count == 0)
+            {
+                return false;
+            }
+
+            var currentLanguage = _languageIndex >= 0 && _languageIndex < Languages.Count
+                ? Languages[_languageIndex].Tag : string.Empty;
+
+            return !string.Equals(
+                _languageService.CurrentLanguageTag,
+                _languageService.GetEffectiveLanguageTag(currentLanguage),
+                StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     public AppearanceSettingsViewModel Appearance { get; }
 
@@ -60,12 +126,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
-    public bool AllowExternalReload
+    public bool EnableExternalCommandLinks
     {
-        get => _settingsService.Settings.AllowExternalReload;
+        get => _settingsService.Settings.EnableExternalCommandLinks;
         set
         {
-            _settingsService.UpdateSettings(s => s with { AllowExternalReload = value });
+            _settingsService.UpdateSettings(s => s with { EnableExternalCommandLinks = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableExternalCommandLinks)));
         }
     }
 
@@ -158,8 +225,117 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         get => _settingsService.Settings.CompactMode;
         set
         {
+            if (value == CompactMode)
+            {
+                return;
+            }
+
             _settingsService.UpdateSettings(s => s with { CompactMode = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+        }
+    }
+
+    public int CommandPaletteOpeningModeIndex
+    {
+        get => CompactMode ? 1 : 0;
+        set
+        {
+            if (value is 0 or 1)
+            {
+                CompactMode = value == 1;
+            }
+        }
+    }
+
+    public bool ShowQuickAccessShelf
+    {
+        get => _settingsService.Settings.ShowQuickAccessShelf;
+        set
+        {
+            if (value == ShowQuickAccessShelf)
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { ShowQuickAccessShelf = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+        }
+    }
+
+    public bool CanConfigureQuickAccessShelf => CompactMode && ShowQuickAccessShelf;
+
+    public double MaxQuickAccessShelfPinnedCommandLimit => SettingsModel.MaxQuickAccessShelfPinnedCommandLimit;
+
+    public int ListItemAltNumberBehaviorIndex
+    {
+        get => (int)_settingsService.Settings.ListItemAltNumberBehavior;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ListItemAltNumberBehavior = (AltNumberShortcutBehavior)value });
+        }
+    }
+
+    public double QuickAccessShelfPinnedCommandLimit
+    {
+        get => _settingsService.Settings.QuickAccessShelfPinnedCommandLimit;
+        set
+        {
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { QuickAccessShelfPinnedCommandLimit = limit });
+        }
+    }
+
+    public int RecentCommandsOnQuickAccessShelfIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnQuickAccessShelf;
+        set
+        {
+            if (!Enum.IsDefined((RecentCommandsPlacement)value))
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnQuickAccessShelf = (RecentCommandsPlacement)value });
+        }
+    }
+
+    public int RecentCommandsOnHomeIndex
+    {
+        get => (int)_settingsService.Settings.RecentCommandsOnHome;
+        set
+        {
+            if (!Enum.IsDefined((RecentCommandsPlacement)value))
+            {
+                return;
+            }
+
+            _settingsService.UpdateSettings(s => s with { RecentCommandsOnHome = (RecentCommandsPlacement)value });
+        }
+    }
+
+    public double MinRecentCommandsDisplayLimit => SettingsModel.MinRecentCommandsDisplayLimit;
+
+    public double MaxRecentCommandsDisplayLimit => SettingsModel.MaxRecentCommandsDisplayLimit;
+
+    public double RecentCommandsDisplayLimit
+    {
+        get => _settingsService.Settings.RecentCommandsDisplayLimit;
+        set
+        {
+            if (double.IsNaN(value))
+            {
+                return;
+            }
+
+            var limit = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            _settingsService.UpdateSettings(s => s with { RecentCommandsDisplayLimit = limit });
         }
     }
 
@@ -303,6 +479,46 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public HotkeySettings? Dock_FocusHotkey
+    {
+        get => _settingsService.Settings.DockFocusHotkey;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusHotkey = value ?? SettingsModel.DefaultDockFocusShortcut });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusHotkey)));
+        }
+    }
+
+    public bool Dock_FocusPrimaryFirst
+    {
+        get => _settingsService.Settings.DockFocusPrimaryFirst;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusPrimaryFirst = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusPrimaryFirst)));
+        }
+    }
+
+    public bool Dock_FocusAcrossMonitors
+    {
+        get => _settingsService.Settings.DockFocusAcrossMonitors;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockFocusAcrossMonitors = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_FocusAcrossMonitors)));
+        }
+    }
+
+    public bool Dock_RememberLastFocusedItem
+    {
+        get => _settingsService.Settings.DockRememberLastFocusedItem;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockRememberLastFocusedItem = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_RememberLastFocusedItem)));
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
@@ -327,11 +543,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         TaskScheduler scheduler,
         IThemeService themeService,
         ISettingsService settingsService,
+        ILanguageService languageService,
         IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _monitorService = monitorService;
+        _languageService = languageService;
+        _uiScheduler = scheduler;
+
+        InitializeLanguages(languageService);
 
         Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
@@ -395,11 +616,115 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
 
         WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this);
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
     }
 
     public void Receive(DockAutoHideConflictMessage message)
     {
         Dock_AutoHideConflict = message.IsConflict;
+    }
+
+    /// <summary>Returns settings for a loaded provider, adding a late provider to this view model.</summary>
+    public ProviderSettingsViewModel? FindOrAddCommandProvider(string providerId)
+    {
+        var existing = CommandProviders.FirstOrDefault(provider =>
+            string.Equals(provider.ProviderId, providerId, StringComparison.Ordinal));
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var provider = _topLevelCommandManager.LookupProvider(providerId);
+        if (provider is null)
+        {
+            return null;
+        }
+
+        var currentSettings = _settingsService.Settings;
+        var (updatedSettings, providerSettings) = currentSettings.GetProviderSettings(provider);
+        if (!ReferenceEquals(currentSettings, updatedSettings))
+        {
+            _settingsService.UpdateSettings(
+                settings =>
+                {
+                    (var model, providerSettings) = settings.GetProviderSettings(provider);
+                    return model;
+                },
+                hotReload: false);
+        }
+
+        var providerViewModel = new ProviderSettingsViewModel(provider, providerSettings, _settingsService);
+        CommandProviders.Add(providerViewModel);
+        return providerViewModel;
+    }
+
+    private void InitializeLanguages(ILanguageService languageService)
+    {
+        var defaultItem = new LanguageItem(string.Empty, Properties.Resources.Language_Default);
+
+        var sorted = new List<LanguageItem>();
+        foreach (var tag in languageService.AvailableLanguages)
+        {
+            try
+            {
+                var culture = new CultureInfo(tag);
+                sorted.Add(new LanguageItem(tag, culture.NativeName));
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError($"Culture '{tag}' not found", ex);
+            }
+        }
+
+        var comparer = StringComparer.Create(CultureInfo.CurrentUICulture, ignoreCase: true);
+        sorted.Sort((a, b) => comparer.Compare(a.DisplayName, b.DisplayName));
+        sorted.Insert(0, defaultItem);
+        Languages = sorted;
+
+        var currentLang = _settingsService.Settings.Language ?? string.Empty;
+        _languageIndex = Math.Max(0, Languages.FindIndex(l => l.Tag.Equals(currentLang, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        foreach (var provider in CommandProviders)
+        {
+            provider.Dispose();
+        }
+
+        Appearance?.Dispose();
+        DockAppearance?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel settings)
+    {
+        // SettingsChanged may run inside a binding setter or on a background thread.
+        // Queue the refresh so bindings read the latest settings on the UI scheduler.
+        _ = Task.Factory.StartNew(
+            () =>
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandPaletteOpeningModeIndex)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowQuickAccessShelf)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanConfigureQuickAccessShelf)));
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _uiScheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

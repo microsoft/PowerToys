@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
@@ -12,14 +14,15 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -39,6 +42,15 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private const double ListShortcutCueHorizontalOffset = -16;
+
+    private static readonly CompositeFormat _numberedShortcutAcceleratorFormat =
+        CompositeFormat.Parse(RS_.GetString("ListItemNumberedShortcutAcceleratorFormat"));
+
+    private readonly Dictionary<SelectorItem, (ListViewBase Owner, ListItemRealizationRegistration Registration)> _realizedItems = new(64);
+
+    private readonly AccessKeyModeController _accessKeyMode;
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -51,17 +63,23 @@ public sealed partial class ListItemsView : UserControl,
     private long _pendingContextMenuOpenRequestId;
     private Action? _cancelPendingContextMenuOpen;
 
-    // A single search-text change can produce multiple ItemsUpdated calls
-    // dispatched as separate UI-thread callbacks. A later "soft" update
-    // (ForceFirstItem = false) must not overwrite a prior force-first
-    // intent. This flag latches true whenever any update requests
-    // force-first and is only cleared once selection stabilizes.
+    // Retain reset intent until selection is applied. The main page keeps following
+    // the first result as late results arrive, until the user changes selection.
     private bool _forceFirstPending;
 
     private bool _isLoaded;
     private bool _isMessengerRegistered;
     private ScrollViewer? _itemsScrollViewer;
     private ListViewBase? _itemsScrollViewerOwner;
+    private bool _areNumberedShortcutCuesVisible;
+    private bool _numberedShortcutCueUpdatePending;
+    private Border[]? _numberedShortcutCues;
+    private SelectorItem?[]? _numberedShortcutCueContainers;
+    private RectangleGeometry? _numberedShortcutCueClip;
+    private ListViewBase? _numberedShortcutCueTrackedView;
+    private ScrollViewer? _numberedShortcutCueScrollViewer;
+
+    public bool ShowNumberedShortcutCues { get; set; }
 
     public ListViewModel? ViewModel
     {
@@ -80,7 +98,12 @@ public sealed partial class ListItemsView : UserControl,
 
     public ListItemsView()
     {
+        _accessKeyMode = App.Current.Services.GetRequiredService<AccessKeyModeController>();
         this.InitializeComponent();
+
+        // Item containers can handle pointer presses before they reach the list or grid.
+        ItemsList.AddHandler(PointerPressedEvent, new PointerEventHandler(TrackPointerInput), handledEventsToo: true);
+        ItemsGrid.AddHandler(PointerPressedEvent, new PointerEventHandler(TrackPointerInput), handledEventsToo: true);
         GridItems.Invalidated += GridItems_Invalidated;
 
         this.Loaded += OnLoaded;
@@ -89,14 +112,32 @@ public sealed partial class ListItemsView : UserControl,
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        if (_isLoaded)
+        {
+            return;
+        }
+
         _isLoaded = true;
         SynchronizeGridItems();
         RegisterMessenger();
+        RegisterExistingRealizedItems();
+        _accessKeyMode.IsActiveChanged += AccessKeyMode_IsActiveChanged;
+        SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
+    }
+
+    internal void DetachFromPage()
+    {
+        Bindings.StopTracking();
+        ViewModel = null;
+        ItemsList.ItemsSource = null;
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         _isLoaded = false;
+        _lastInputSource = InputSource.None;
+        _accessKeyMode.IsActiveChanged -= AccessKeyMode_IsActiveChanged;
+        SetNumberedShortcutCuesVisibility(false);
 
         // Release before the native panel tears down. A reattached grid rebuilds
         // its groups from the source, which is what it does after any teardown.
@@ -104,6 +145,7 @@ public sealed partial class ListItemsView : UserControl,
         SetItemsScrollViewer(null);
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
+        ReleaseRealizedItems();
     }
 
     private void RegisterMessenger()
@@ -185,6 +227,40 @@ public sealed partial class ListItemsView : UserControl,
         });
     }
 
+    internal void HandleNumberedShortcut(NumberedItemShortcuts.Shortcut shortcut)
+    {
+        var viewModel = ViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        var targets = NumberedItemShortcuts.GetTargets(viewModel.FilteredItems, static item => item.IsInteractive);
+        if (shortcut.Index >= targets.Count)
+        {
+            return;
+        }
+
+        var item = targets[shortcut.Index];
+        if (shortcut.Action == NumberedItemShortcuts.ShortcutAction.Invoke)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            return;
+        }
+
+        MarkKeyboardNavigation();
+        if (!ReferenceEquals(ItemView.SelectedItem, item))
+        {
+            _scrollOnNextSelectionChange = true;
+            ItemView.SelectedItem = item;
+        }
+        else
+        {
+            ScrollToItem(item);
+            PushSelectionToVm();
+        }
+    }
+
     /// <summary>
     /// Finds the index of the first item in the list that is not a separator.
     /// Returns -1 if the list is empty or only contains separators.
@@ -223,13 +299,25 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (sender is not ListViewBase itemView || !ReferenceEquals(itemView, ItemView) || ViewModel is not { } viewModel)
         {
-            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
+            return;
+        }
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var item = ListItemDoubleTapTarget.Resolve<DependencyObject, SelectorItem>(
+            e.OriginalSource as DependencyObject,
+            itemView,
+            settings.SingleClickActivates,
+            VisualTreeHelper.GetParent,
+            container => ReferenceEquals(ItemsControl.ItemsControlFromItemContainer(container), itemView)
+                ? itemView.ItemFromContainer(container) as ListItemViewModel
+                : null);
+
+        if (item is not null)
+        {
+            viewModel.InvokeItemCommand.Execute(item);
+            e.Handled = true;
         }
     }
 
@@ -334,6 +422,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
+        RegisterExistingRealizedItems();
+
         if (sender is ListViewBase view && ReferenceEquals(view, ItemView))
         {
             SynchronizeGridItems();
@@ -344,6 +434,13 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_Unloaded(object sender, RoutedEventArgs e)
     {
+        if (sender is ListViewBase view)
+        {
+            // The incoming view may already be loaded. Release only the outgoing
+            // view's demand, even if its detached panel still has children.
+            ReleaseRealizedItems(view);
+        }
+
         if (ReferenceEquals(sender, _itemsScrollViewerOwner))
         {
             SetItemsScrollViewer(null);
@@ -374,6 +471,105 @@ public sealed partial class ListItemsView : UserControl,
         }
     }
 
+    private void Items_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        try
+        {
+            var container = args.ItemContainer;
+            if (!sender.IsLoaded || args.InRecycleQueue || args.Item is not ListItemViewModel item)
+            {
+                ReleaseRealizedItem(container);
+                return;
+            }
+
+            RegisterRealizedItem(sender, container, item);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to track a realized list item", ex);
+        }
+    }
+
+    private void RegisterRealizedItem(ListViewBase owner, SelectorItem container, ListItemViewModel item)
+    {
+        if (_realizedItems.TryGetValue(container, out var existing))
+        {
+            // Demand belongs to the item, not its current coordinator. A refetch
+            // replays a live registration even when this container is unchanged.
+            if (ReferenceEquals(existing.Owner, owner) && existing.Registration.IsFor(item))
+            {
+                return;
+            }
+
+            existing.Registration.Release();
+            _realizedItems.Remove(container);
+        }
+
+        var registration = item.BeginRealization();
+        if (registration.IsValid)
+        {
+            _realizedItems.Add(container, (owner, registration));
+        }
+    }
+
+    private void RegisterExistingRealizedItems()
+    {
+        try
+        {
+            // Unloading releases demand. Loading the same view need not raise
+            // ContainerContentChanging again. Only visit realized panel children,
+            // never the potentially very large Items collection.
+            RegisterExistingRealizedItems(ItemsList);
+            RegisterExistingRealizedItems(ItemsGrid);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to restore realized list item demand", ex);
+        }
+    }
+
+    private void RegisterExistingRealizedItems(ListViewBase view)
+    {
+        if (!view.IsLoaded || view.ItemsPanelRoot is not { } panel)
+        {
+            return;
+        }
+
+        foreach (var child in panel.Children)
+        {
+            if (child is SelectorItem container && view.ItemFromContainer(container) is ListItemViewModel item)
+            {
+                RegisterRealizedItem(view, container, item);
+            }
+        }
+    }
+
+    private void ReleaseRealizedItem(SelectorItem container)
+    {
+        if (_realizedItems.Remove(container, out var realized))
+        {
+            realized.Registration.Release();
+        }
+    }
+
+    private void ReleaseRealizedItems(ListViewBase owner)
+    {
+        foreach (var container in _realizedItems.Where(entry => ReferenceEquals(entry.Value.Owner, owner)).Select(entry => entry.Key).ToArray())
+        {
+            ReleaseRealizedItem(container);
+        }
+    }
+
+    private void ReleaseRealizedItems()
+    {
+        foreach (var realized in _realizedItems.Values)
+        {
+            realized.Registration.Release();
+        }
+
+        _realizedItems.Clear();
+    }
+
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
     {
         var scrollView = sender as ScrollViewer;
@@ -395,27 +591,38 @@ public sealed partial class ListItemsView : UserControl,
     // Message-driven navigation should count as keyboard.
     private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
 
-    private void PushSelectionToVm()
+    private void PushSelectionToVm(bool force = false)
     {
         if (ViewModel is null)
         {
             return;
         }
 
-        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        var li = ItemView.SelectedItem as ListItemViewModel;
+        if (li is not null && !IsSeparator(li))
         {
-            ViewModel.UpdateSelectedItemCommand.Execute(null);
-            return;
+            if (!force && ReferenceEquals(_lastPushedToVm, li))
+            {
+                return;
+            }
+
+            _lastPushedToVm = li;
+            _stickySelectedItem = li;
+        }
+        else
+        {
+            li = null;
+            _lastPushedToVm = null;
         }
 
-        if (ReferenceEquals(_lastPushedToVm, li))
+        if (force)
         {
-            return;
+            ViewModel.AcknowledgeSelection(li);
         }
-
-        _lastPushedToVm = li;
-        _stickySelectedItem = li;
-        ViewModel.UpdateSelectedItemCommand.Execute(li);
+        else
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(li);
+        }
     }
 
     public void Receive(NavigateNextCommand message)
@@ -710,9 +917,12 @@ public sealed partial class ListItemsView : UserControl,
     {
         if (d is ListItemsView @this)
         {
+            @this._lastInputSource = InputSource.None;
             Interlocked.Increment(ref @this._itemsUpdatedVersion);
             @this.CancelPendingGridActions();
             @this.CancelPendingContextMenuOpen();
+            @this.ReleaseRealizedItems();
+
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
@@ -750,6 +960,12 @@ public sealed partial class ListItemsView : UserControl,
             {
                 Logger.LogDebug("cleared view model");
             }
+
+            if (@this._areNumberedShortcutCuesVisible)
+            {
+                @this.EnsureNumberedShortcutCueTracking();
+                @this.QueueNumberedShortcutCueUpdate();
+            }
         }
     }
 
@@ -778,6 +994,8 @@ public sealed partial class ListItemsView : UserControl,
             CancelPendingGridActions();
         }
 
+        QueueNumberedShortcutCueUpdate();
+
         // Latch: once any update requests force-first, keep it until consumed.
         _forceFirstPending |= args.ForceFirstItem;
         var forceFirstItem = _forceFirstPending;
@@ -790,8 +1008,8 @@ public sealed partial class ListItemsView : UserControl,
 
         // Try to handle selection immediately after updating the presentation.
         // The grouped CollectionViewSource may still be processing its changes.
-        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
-        // selection stabilizes (no repair needed), so we don't clear it here.
+        // TrySetSelectionAfterUpdate consumes resets once selection is applied
+        // and retains main-page tracking until user navigation.
         if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
         {
             return;
@@ -809,6 +1027,309 @@ public sealed partial class ListItemsView : UserControl,
 
                 TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible);
             });
+    }
+
+    private void AccessKeyMode_IsActiveChanged(object? sender, EventArgs e) =>
+        SetNumberedShortcutCuesVisibility(_accessKeyMode.IsActive);
+
+    private void SetNumberedShortcutCuesVisibility(bool isActive)
+    {
+        var isVisible = ShowNumberedShortcutCues && isActive;
+        if (_areNumberedShortcutCuesVisible == isVisible)
+        {
+            return;
+        }
+
+        _areNumberedShortcutCuesVisible = isVisible;
+        if (isVisible)
+        {
+            EnsureNumberedShortcutCues();
+            EnsureNumberedShortcutCueTracking();
+            UpdateNumberedShortcutCues();
+        }
+        else
+        {
+            StopNumberedShortcutCueTracking();
+            HideNumberedShortcutCues();
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        QueueNumberedShortcutCueUpdate();
+    }
+
+    private void QueueNumberedShortcutCueUpdate()
+    {
+        if (!_areNumberedShortcutCuesVisible || _numberedShortcutCueUpdatePending)
+        {
+            return;
+        }
+
+        _numberedShortcutCueUpdatePending = true;
+        if (!DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                () =>
+                {
+                    _numberedShortcutCueUpdatePending = false;
+                    if (_areNumberedShortcutCuesVisible)
+                    {
+                        UpdateNumberedShortcutCues();
+                    }
+                }))
+        {
+            _numberedShortcutCueUpdatePending = false;
+        }
+    }
+
+    private void EnsureNumberedShortcutCues()
+    {
+        if (_numberedShortcutCues is not null)
+        {
+            return;
+        }
+
+        var borderStyle = (Style)Resources["NumberedShortcutCueBorderStyle"];
+        var textStyle = (Style)Resources["NumberedShortcutCueTextStyle"];
+        var cues = new Border[NumberedItemShortcuts.ShortcutCount];
+        _numberedShortcutCueContainers = new SelectorItem?[cues.Length];
+        for (var index = 0; index < cues.Length; index++)
+        {
+            var cue = new Border
+            {
+                Style = borderStyle,
+                Child = new TextBlock
+                {
+                    Style = textStyle,
+                    Text = NumberedItemShortcuts.IndexToShortcutDigit(index),
+                },
+            };
+
+            cues[index] = cue;
+            NumberedShortcutCueOverlay.Children.Add(cue);
+        }
+
+        _numberedShortcutCues = cues;
+        _numberedShortcutCueClip = new RectangleGeometry();
+        NumberedShortcutCueOverlay.Clip = _numberedShortcutCueClip;
+    }
+
+    private void EnsureNumberedShortcutCueTracking()
+    {
+        var itemView = _areNumberedShortcutCuesVisible && ShowNumberedShortcutCues && ViewModel is not null
+            ? ItemView
+            : null;
+        if (ReferenceEquals(_numberedShortcutCueTrackedView, itemView))
+        {
+            if (itemView is not null && _numberedShortcutCueScrollViewer is null)
+            {
+                AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+            }
+
+            return;
+        }
+
+        StopNumberedShortcutCueTracking();
+        if (itemView is null)
+        {
+            return;
+        }
+
+        _numberedShortcutCueTrackedView = itemView;
+        itemView.ContainerContentChanging += NumberedShortcutCueTrackedView_ContainerContentChanging;
+        itemView.Loaded += NumberedShortcutCueTrackedView_Loaded;
+        itemView.SizeChanged += NumberedShortcutCueTrackedView_SizeChanged;
+        AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+    }
+
+    private void StopNumberedShortcutCueTracking()
+    {
+        if (_numberedShortcutCueTrackedView is not null)
+        {
+            _numberedShortcutCueTrackedView.ContainerContentChanging -= NumberedShortcutCueTrackedView_ContainerContentChanging;
+            _numberedShortcutCueTrackedView.Loaded -= NumberedShortcutCueTrackedView_Loaded;
+            _numberedShortcutCueTrackedView.SizeChanged -= NumberedShortcutCueTrackedView_SizeChanged;
+            _numberedShortcutCueTrackedView = null;
+        }
+
+        AttachNumberedShortcutCueScrollViewer(null);
+    }
+
+    private void AttachNumberedShortcutCueScrollViewer(ScrollViewer? scrollViewer)
+    {
+        if (ReferenceEquals(_numberedShortcutCueScrollViewer, scrollViewer))
+        {
+            return;
+        }
+
+        if (_numberedShortcutCueScrollViewer is not null)
+        {
+            _numberedShortcutCueScrollViewer.ViewChanged -= NumberedShortcutCueScrollViewer_ViewChanged;
+        }
+
+        _numberedShortcutCueScrollViewer = scrollViewer;
+        if (_numberedShortcutCueScrollViewer is not null)
+        {
+            _numberedShortcutCueScrollViewer.ViewChanged += NumberedShortcutCueScrollViewer_ViewChanged;
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is ListViewBase itemView && ReferenceEquals(itemView, _numberedShortcutCueTrackedView))
+        {
+            AttachNumberedShortcutCueScrollViewer(FindScrollViewer(itemView));
+            QueueNumberedShortcutCueUpdate();
+        }
+    }
+
+    private void NumberedShortcutCueTrackedView_SizeChanged(object sender, SizeChangedEventArgs e) =>
+        QueueNumberedShortcutCueUpdate();
+
+    private void NumberedShortcutCueScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e) =>
+        QueueNumberedShortcutCueUpdate();
+
+    private void UpdateNumberedShortcutCues()
+    {
+        if (!_areNumberedShortcutCuesVisible || !ShowNumberedShortcutCues || ViewModel is null)
+        {
+            HideNumberedShortcutCues();
+            return;
+        }
+
+        EnsureNumberedShortcutCues();
+        EnsureNumberedShortcutCueTracking();
+
+        var itemView = ItemView;
+        if (!TryUpdateNumberedShortcutCueClip(itemView))
+        {
+            HideNumberedShortcutCues();
+            return;
+        }
+
+        ClearNumberedShortcutAccelerators();
+        var cueIndex = 0;
+        foreach (var item in ViewModel.FilteredItems)
+        {
+            if (!item.IsInteractive)
+            {
+                continue;
+            }
+
+            var cue = _numberedShortcutCues![cueIndex];
+            if (itemView.ContainerFromItem(item) is SelectorItem container &&
+                container.ContentTemplateRoot is FrameworkElement anchor)
+            {
+                SetNumberedShortcutAccelerator(container, cueIndex);
+                PositionNumberedShortcutCue(cue, anchor, itemView);
+            }
+            else
+            {
+                cue.Visibility = Visibility.Collapsed;
+            }
+
+            cueIndex++;
+            if (cueIndex == _numberedShortcutCues.Length)
+            {
+                break;
+            }
+        }
+
+        for (; cueIndex < _numberedShortcutCues!.Length; cueIndex++)
+        {
+            _numberedShortcutCues[cueIndex].Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private bool TryUpdateNumberedShortcutCueClip(ListViewBase itemView)
+    {
+        if (_numberedShortcutCueClip is null ||
+            itemView.XamlRoot is null ||
+            !ReferenceEquals(itemView.XamlRoot, NumberedShortcutCueOverlay.XamlRoot))
+        {
+            return false;
+        }
+
+        try
+        {
+            var origin = itemView.TransformToVisual(NumberedShortcutCueOverlay).TransformPoint(default);
+            _numberedShortcutCueClip.Rect = new Rect(
+                origin.X,
+                origin.Y,
+                Math.Max(0, itemView.ActualWidth),
+                Math.Max(0, itemView.ActualHeight));
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private void PositionNumberedShortcutCue(Border cue, FrameworkElement anchor, ListViewBase itemView)
+    {
+        try
+        {
+            var origin = anchor.TransformToVisual(NumberedShortcutCueOverlay).TransformPoint(default);
+            var left = origin.X + (ReferenceEquals(itemView, ItemsList) ? ListShortcutCueHorizontalOffset : 0);
+            if (Canvas.GetLeft(cue) != left)
+            {
+                Canvas.SetLeft(cue, left);
+            }
+
+            if (Canvas.GetTop(cue) != origin.Y)
+            {
+                Canvas.SetTop(cue, origin.Y);
+            }
+
+            cue.Visibility = Visibility.Visible;
+        }
+        catch (ArgumentException)
+        {
+            cue.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void SetNumberedShortcutAccelerator(SelectorItem container, int shortcutIndex)
+    {
+        _numberedShortcutCueContainers![shortcutIndex] = container;
+        var acceleratorKey = string.Format(
+            CultureInfo.CurrentCulture,
+            _numberedShortcutAcceleratorFormat,
+            NumberedItemShortcuts.IndexToShortcutDigit(shortcutIndex));
+        AutomationProperties.SetAcceleratorKey(container, acceleratorKey);
+    }
+
+    private void ClearNumberedShortcutAccelerators()
+    {
+        if (_numberedShortcutCueContainers is null)
+        {
+            return;
+        }
+
+        foreach (var container in _numberedShortcutCueContainers)
+        {
+            if (container is not null)
+            {
+                AutomationProperties.SetAcceleratorKey(container, string.Empty);
+            }
+        }
+
+        Array.Clear(_numberedShortcutCueContainers);
+    }
+
+    private void HideNumberedShortcutCues()
+    {
+        if (_numberedShortcutCues is null)
+        {
+            return;
+        }
+
+        ClearNumberedShortcutAccelerators();
+        foreach (var cue in _numberedShortcutCues)
+        {
+            cue.Visibility = Visibility.Collapsed;
+        }
     }
 
     /// <summary>
@@ -851,8 +1372,7 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
         // If ItemView.Items hasn't caught up with the ObservableCollection yet,
@@ -873,10 +1393,11 @@ public sealed partial class ListItemsView : UserControl,
                 _lastPushedToVm = null;
             }
 
-            PushSelectionToVm();
-            return true;
+            return CompleteSelectionUpdate(sender, version, forceFirstItem);
         }
 
+        // User navigation can cancel a reset while its retry is queued.
+        forceFirstItem &= _forceFirstPending;
         var shouldUpdateSelection = forceFirstItem;
 
         if (!shouldUpdateSelection)
@@ -957,10 +1478,6 @@ public sealed partial class ListItemsView : UserControl,
         }
         else
         {
-            // Selection is valid and unchanged: the force-first intent (if any)
-            // has been fully delivered and selection has stabilized.
-            _forceFirstPending = false;
-
             if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
@@ -979,7 +1496,17 @@ public sealed partial class ListItemsView : UserControl,
             }
         }
 
-        PushSelectionToVm();
+        return CompleteSelectionUpdate(sender, version, forceFirstItem);
+    }
+
+    private bool CompleteSelectionUpdate(ListViewModel sender, long version, bool forceSelection)
+    {
+        if (version == Volatile.Read(ref _itemsUpdatedVersion) && ReferenceEquals(sender, ViewModel))
+        {
+            _forceFirstPending &= sender.IsMainPage;
+            PushSelectionToVm(forceSelection);
+        }
+
         return true;
     }
 
@@ -1047,10 +1574,13 @@ public sealed partial class ListItemsView : UserControl,
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         CancelPendingContextMenuOpen();
-        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<ClosePaletteContextMenuMessage>());
     }
 
-    private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
+    private void TrackPointerInput(object sender, PointerRoutedEventArgs e)
+    {
+        _lastInputSource = InputSource.Pointer;
+    }
 
     private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -1116,31 +1646,7 @@ public sealed partial class ListItemsView : UserControl,
                 return;
             }
 
-            // copy properties
-            foreach (var (key, value) in item.DataPackage.Properties)
-            {
-                try
-                {
-                    e.Data.Properties[key] = value;
-                }
-                catch (Exception)
-                {
-                    // noop - skip any properties that fail
-                }
-            }
-
-            // setup e.Data formats as deferred renderers to read from the item's DataPackage
-            foreach (var format in item.DataPackage.AvailableFormats)
-            {
-                try
-                {
-                    e.Data.SetDataProvider(format, request => DelayRenderer(request, item, format));
-                }
-                catch (Exception)
-                {
-                    // noop - skip any formats that fail
-                }
-            }
+            DataPackageTransfer.Copy(item.DataPackage, e.Data);
 
             WeakReferenceMessenger.Default.Send(new DragStartedMessage());
         }
@@ -1148,39 +1654,6 @@ public sealed partial class ListItemsView : UserControl,
         {
             WeakReferenceMessenger.Default.Send(new DragCompletedMessage());
             Logger.LogError("Failed to start dragging an item", ex);
-        }
-    }
-
-    private static void DelayRenderer(DataProviderRequest request, ListItemViewModel item, string format)
-    {
-        var deferral = request.GetDeferral();
-        try
-        {
-            item.DataPackage?.GetDataAsync(format)
-                .AsTask()
-                .ContinueWith(dataTask =>
-                {
-                    try
-                    {
-                        if (dataTask.IsCompletedSuccessfully)
-                        {
-                            request.SetData(dataTask.Result);
-                        }
-                        else if (dataTask.IsFaulted && dataTask.Exception is not null)
-                        {
-                            Logger.LogError($"Failed to get data for format '{format}' during drag-and-drop", dataTask.Exception);
-                        }
-                    }
-                    finally
-                    {
-                        deferral.Complete();
-                    }
-                });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to set data for format '{format}' during drag-and-drop", ex);
-            deferral.Complete();
         }
     }
 
@@ -1302,10 +1775,14 @@ public sealed partial class ListItemsView : UserControl,
 
                 WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
                     new OpenContextMenuMessage(
-                        element,
-                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        pos,
-                        ContextMenuFilterLocation.Top));
+                        new ContextMenuRequest(item)
+                        {
+                            Anchor = new ContextMenuAnchor(
+                                element,
+                                pos,
+                                FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                ContextMenuFilterLocation.Top),
+                        }));
             });
 
         return true;

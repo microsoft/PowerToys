@@ -46,6 +46,7 @@ ALLOWUNDO
 ALLVIEW
 ALPHATYPE
 altkey
+altwindowcycle
 amr
 animatedvisuals
 Animnate
@@ -104,6 +105,7 @@ authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
+autohidecursor
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
 autopf
@@ -242,6 +244,7 @@ CLOSEAPP
 clsids
 Clusion
 cmder
+cmdnotfound
 CMDNOTFOUNDMODULEINTERFACE
 cmdpal
 CMIC
@@ -557,6 +560,7 @@ Fairlight
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+faststart
 fdw
 fdx
 fesf
@@ -756,6 +760,7 @@ hotlight
 hotspot
 HPAINTBUFFER
 HPS
+hqdn
 HRAWINPUT
 HREDRAW
 hres
@@ -1042,7 +1047,6 @@ manifestdependency
 MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
-MARKDOWNPREVIEWHANDLERCPP
 maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
@@ -1112,6 +1116,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1484,6 +1489,7 @@ psapi
 pscid
 pscustomobject
 PSECURITY
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
@@ -1670,6 +1676,7 @@ SETFOREGROUND
 SETHOTKEY
 SETICON
 SETLOWPOWERACTIVE
+setparams
 SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
@@ -1762,6 +1769,7 @@ slnx
 SMALLICON
 smartphone
 smileys
+smpte
 SMTO
 SNAPPROCESS
 snk

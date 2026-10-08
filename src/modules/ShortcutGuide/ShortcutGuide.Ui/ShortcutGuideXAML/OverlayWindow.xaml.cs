@@ -74,6 +74,9 @@ namespace ShortcutGuide
         {
             this.InitializeComponent();
 
+            const string fallbackTitle = "Shortcut Guide";
+            this.Title = fallbackTitle;
+
             // The base TransparentWindow already applies the
             // TransparentTintBackdrop, extends content into the title bar and
             // collapses it, and strips the native chrome.
@@ -84,7 +87,7 @@ namespace ShortcutGuide
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Shortcut Guide";
+                title = fallbackTitle;
             }
 
             this.Title = title;
@@ -273,7 +276,10 @@ namespace ShortcutGuide
                 return;
             }
 
-            UpdateTaskbarPaneLayout();
+            if (UpdateTaskbarPaneLayout())
+            {
+                this.TaskbarPane.Visibility = Visibility.Visible;
+            }
         }
 
         private void OnMainPaneInitializationFailed(object? sender, EventArgs e)
@@ -325,8 +331,9 @@ namespace ShortcutGuide
         /// <summary>
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
+        /// Returns <see langword="false"/> if no buttons were found.
         /// </summary>
-        public void UpdateTaskbarPaneLayout()
+        public bool UpdateTaskbarPaneLayout()
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
@@ -342,14 +349,14 @@ namespace ShortcutGuide
             if (layout is null)
             {
                 this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
+                return false;
             }
 
             this.TaskbarPane.Width = layout.Value.Width;
             this.TaskbarPane.Height = layout.Value.Height;
             Canvas.SetLeft(this.TaskbarPane, layout.Value.Left);
             Canvas.SetTop(this.TaskbarPane, layout.Value.Top);
-            this.TaskbarPane.Visibility = Visibility.Visible;
+            return true;
         }
 
         /// <summary>

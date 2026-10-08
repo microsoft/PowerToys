@@ -452,11 +452,15 @@ void GetBaselineIndentation()
     wchar_t* seekBuffer = nullptr;
     static const WORD VK_C = static_cast<WORD>(LOBYTE( VkKeyScan( L'c' ) ));
 
-    // VS fakes newline indentation until the user adds input
-    SendVirtualKeyDown( VK_SPACE );
-    SendVirtualKeyUp  ( VK_SPACE );
-    SendVirtualKeyDown( VK_BACK  );
-    SendVirtualKeyUp  ( VK_BACK  );
+    // VS fakes newline indentation until the user adds input. Notepad has no virtual
+    // indentation to materialize, so avoid an insert/delete probe in its document.
+    if( !g_Notepad )
+    {
+        SendVirtualKeyDown( VK_SPACE );
+        SendVirtualKeyUp  ( VK_SPACE );
+        SendVirtualKeyDown( VK_BACK  );
+        SendVirtualKeyUp  ( VK_BACK  );
+    }
 
     for( int i = 0; i < MAX_INDENT_DEPTH; i++ )
     {

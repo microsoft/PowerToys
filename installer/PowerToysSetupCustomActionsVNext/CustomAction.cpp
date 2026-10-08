@@ -1356,13 +1356,12 @@ UINT __stdcall InstallCmdPalPackageCA(MSIHANDLE hInstall)
     try
     {
         auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\", false);
-        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\Dependencies\\", true);
 
         if (!msix.empty())
         {
             auto msixPath = msix[0];
 
-            if (!package::RegisterPackage(msixPath, dependencies))
+            if (!package::RegisterPackage(msixPath, {}))
             {
                 Logger::error(L"Failed to install CmdPal package");
                 er = ERROR_INSTALL_FAILURE;
@@ -1609,6 +1608,8 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerDisplay.exe",
         // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
         L"PowerToys.PowerDisplay.Cli.exe",
+        // Also matches the installed shim PowerToys.Settings.CLI.exe.
+        L"PowerToys.Settings.Cli.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",

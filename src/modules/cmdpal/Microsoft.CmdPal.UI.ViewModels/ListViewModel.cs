@@ -40,9 +40,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly ExtensionObject<IListPage> _model;
 
+    // When both locks are needed, take the list lock before the fetch-state lock.
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    // Background fetches alone take this lock. Selection, realization, and teardown
+    // never acquire it, so installing a coordinator cannot block the UI thread.
+    private readonly Lock _initializationCoordinatorLock = new();
 
     // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
     // CollectionChanged synchronously, and its layout pass can pump the message
@@ -53,12 +58,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private bool _isUpdatingFilteredItems;
     private Action? _pendingFilteredItemsUpdate;
 
+    // A filter can replace a pending collection mutation without completing the
+    // fetch that supplied its items. Keep that generation until mutations drain.
+    private int? _pendingPublication;
+
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
     private InterlockedBoolean _isLoadingMore;
-    private int _activeFetchCount;
-    private int _latestFetchGeneration;
+    private long _activeFetchGeneration = long.MinValue;
     private bool _deferredFetchRequested;
     private bool _deferredFetchKeepSelection = true;
     private bool _deferredFetchEnsureSelectionVisible;
@@ -75,7 +83,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public IGridPropertiesViewModel? GridProperties { get; private set; }
 
-    private bool IsFetching => Volatile.Read(ref _activeFetchCount) > 0;
+    private bool IsFetching => IsCurrentFetch(Volatile.Read(ref _activeFetchGeneration));
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -99,7 +107,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private bool _isDynamic;
 
+    private bool _initializationStarted;
+
+    private ListPageLaunchOptions? _launchOptions;
+
     private Task? _initializeItemsTask;
+    private ListItemInitializationCoordinator? _itemInitializationCoordinator;
+
+    // Navigation may suspend and later restore this VM from the Frame back stack.
+    // Dispose/SafeCleanup are terminal; resumption must never undo either of them.
+    private ListPageWorkState _workState = new(0, ListPageWorkStatus.Active, ListPageFetchPhase.Published);
+
+    private bool IsWorkActive => Volatile.Read(ref _workState).Status == ListPageWorkStatus.Active;
 
     // For cancelling the task to load the properties from the items in the list
     private CancellationTokenSource? _cancellationTokenSource;
@@ -112,10 +131,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ListItemViewModel? _lastSelectedItem;
 
+    // Cache UI-owned selection position so background fetches never inspect FilteredItems.
+    private volatile bool _selectionIsFirstOrAbsent = true;
+
+    // Retain logical first-row selection until the view reports its deferred move.
+    private bool _awaitingFirstSelection;
+
+    private int _selectionNavigationVersion;
+
     // Persists across cancelled FetchItems calls so a forceFirstItem=true
     // intent is never lost when FetchItems(false) is cancelled by a
-    // subsequent FetchItems(true).
-    private volatile bool _forceFirstItemPending;
+    // subsequent FetchItems(true), unless the user selects a later row.
+    private int? _forceFirstItemSelectionVersion;
 
     // For cancelling a deferred SafeSlowInit when the user navigates rapidly
     private CancellationTokenSource? _selectedItemCts;
@@ -135,6 +162,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+    }
+
+    internal void SetLaunchOptions(ListPageLaunchOptions launchOptions)
+    {
+        ArgumentNullException.ThrowIfNull(launchOptions);
+
+        if (_initializationStarted || _launchOptions is not null)
+        {
+            throw new InvalidOperationException("List page launch options must be set before initialization.");
+        }
+
+        if (launchOptions.IsEmpty)
+        {
+            throw new ArgumentException("List page launch options must contain a query or filter.", nameof(launchOptions));
+        }
+
+        _launchOptions = launchOptions;
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -162,6 +206,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -204,6 +254,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
+                _awaitingFirstSelection = true;
+                UpdateSelectionPosition();
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
@@ -235,6 +287,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void RequestFetch(bool keepSelection, bool ensureSelectionVisible)
     {
+        if (DeferFetchWhileInactive(keepSelection, ensureSelectionVisible))
+        {
+            return;
+        }
+
         // Keep RPC GetItems work off the UI thread. If the provider raises
         // ItemsChanged while we're already on a background thread, stay on that
         // thread so same-thread reentrancy detection still works.
@@ -284,9 +341,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    private static void QueueObservedBackgroundFetch(Action action, string logMessage)
+    private static Task QueueObservedBackgroundFetch(Action action, string logMessage)
     {
-        _ = Task.Run(
+        return Task.Run(
             () =>
             {
                 try
@@ -304,43 +361,62 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection, bool ensureSelectionVisible)
+    private void FetchItems(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration = null)
     {
-        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
-
-        // If this fetch should reset selection, remember that intent even if
-        // a later incremental fetch cancels us.
-        if (!keepSelection)
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
         {
-            _forceFirstItemPending = true;
+            return;
         }
+
+        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
         CancellationToken cancellationToken;
         int fetchGeneration;
         lock (_fetchStateLock)
         {
-            // Cancel any previous FetchItems operation
-            CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-            _fetchItemsCancellationTokenSource = new CancellationTokenSource();
+            if (!TryBeginFetch(keepSelection, ensureSelectionVisible, recoveryGeneration, out var work))
+            {
+                return;
+            }
 
-            cancellationToken = _fetchItemsCancellationTokenSource.Token;
-            fetchGeneration = Interlocked.Increment(ref _latestFetchGeneration);
+            fetchGeneration = work.Generation;
+
+            // Capture selection intent before reused items are reordered.
+            // Read the version first so newer navigation cannot pair its version with an old first-row position.
+            var selectionVersion = Volatile.Read(ref _selectionNavigationVersion);
+            if (!work.KeepSelection && (IsRootPage || _selectionIsFirstOrAbsent))
+            {
+                _forceFirstItemSelectionVersion = selectionVersion;
+            }
+
+            // Capture the token before publishing its owner: navigation can cancel
+            // and dispose the source without acquiring this background fetch lock.
+            var fetchCancellation = new CancellationTokenSource();
+            cancellationToken = fetchCancellation.Token;
+            var previousCancellation = Interlocked.Exchange(ref _fetchItemsCancellationTokenSource, fetchCancellation);
+            CancelAndDisposeTokenSource(ref previousCancellation);
+            if (!IsCurrentFetch(fetchGeneration))
+            {
+                if (Interlocked.CompareExchange(ref _fetchItemsCancellationTokenSource, null, fetchCancellation) == fetchCancellation)
+                {
+                    fetchCancellation.Dispose();
+                }
+
+                return;
+            }
+
+            Volatile.Write(ref _activeFetchGeneration, fetchGeneration);
         }
 
         // Declared outside try so catch blocks can reference them
         List<ListItemViewModel> createdViewModels = [];
         var itemsTransferredToList = false;
-        var fetchCountIncremented = false;
 
         try
         {
-            fetchCountIncremented = true;
-            if (Interlocked.Increment(ref _activeFetchCount) == 1)
-            {
-                UpdateEmptyContent();
-            }
-
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+            UpdateEmptyContent();
 
             IListItem[] newItems;
             try
@@ -422,21 +498,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                item?.SafeInitializeProperties();
+                item?.InitializePropertiesOnce();
             }
-
-            // Cancel any ongoing property initialization for the previous list.
-            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
 
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
-            lock (_fetchStateLock)
+            lock (_listLock)
             {
                 ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                lock (_listLock)
+                lock (_fetchStateLock)
                 {
+                    ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+
                     // Now that we have new ViewModels for everything from the
                     // extension, smartly update our list of VMs
                     ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
@@ -450,6 +525,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             itemsTransferredToList = true;
+            AdvanceFetchPhase(fetchGeneration, ListPageFetchPhase.Committed);
 
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)
@@ -491,109 +567,139 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
         finally
         {
-            if (fetchCountIncremented && Interlocked.Decrement(ref _activeFetchCount) == 0)
+            // A canceled extension call may return after another fetch has taken ownership.
+            if (Interlocked.CompareExchange(ref _activeFetchGeneration, long.MinValue, fetchGeneration) == fetchGeneration && IsCurrentFetch(fetchGeneration))
             {
                 UpdateEmptyContent();
             }
         }
 
-        var initializeItemsCts = new CancellationTokenSource();
-        _cancellationTokenSource = initializeItemsCts;
-        var initializeItemsToken = initializeItemsCts.Token;
+        StartItemInitialization(fetchGeneration, cancellationToken);
+        QueueItemsPublication(fetchGeneration);
+    }
 
-        _initializeItemsTask = new Task(() =>
+    private void QueueItemsPublication(int fetchGeneration)
+    {
+        DoOnUiThread(() =>
         {
-            InitializeItemsTask(initializeItemsToken);
-        });
-        _initializeItemsTask.Start();
-
-        DoOnUiThread(
-            () =>
+            lock (_listLock)
             {
                 lock (_fetchStateLock)
                 {
-                    if (!IsLatestFetchGeneration(fetchGeneration))
+                    if (!IsCurrentFetch(fetchGeneration))
                     {
                         return;
                     }
 
-                    lock (_listLock)
-                    {
-                        if (!IsLatestFetchGeneration(fetchGeneration))
-                        {
-                            return;
-                        }
-
-                        // Now that our Items contains everything we want, it's time for us to
-                        // re-evaluate our Filter on those items.
-                        if (!_isDynamic)
-                        {
-                            // A static list? Great! Just run the filter.
-                            RunFilteredItemsUpdate(ApplyFilterUnderLock);
-                        }
-                        else
-                        {
-                            // A dynamic list? Even better! Just stick everything into
-                            // FilteredItems. The extension already did any filtering it cared about.
-                            var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
-                            RunFilteredItemsUpdate(() => ListHelpers.InPlaceUpdateList(FilteredItems, snapshot));
-                        }
-
-                        UpdateEmptyContent();
-                    }
-
-                    if (!IsLatestFetchGeneration(fetchGeneration))
-                    {
-                        return;
-                    }
-
-                    // Consume the pending flag on the UI thread so a
-                    // forceFirstItem=true intent survives cancellation.
-                    var forceFirst = _forceFirstItemPending;
-                    _forceFirstItemPending = false;
-
-                    ItemsUpdated?.Invoke(
-                        this,
-                        new ItemsUpdatedEventArgs(
-                            forceFirstItem: IsRootPage && forceFirst,
-                            ensureSelectionVisible: ensureSelectionVisible));
-                    _isLoadingMore.Clear();
+                    _pendingPublication = fetchGeneration;
+                    RunFilteredItemsUpdate(() => ApplyFetchedItemsUnderLock(fetchGeneration));
                 }
-            });
+            }
+        });
     }
 
-    private void InitializeItemsTask(CancellationToken ct)
+    private void ApplyFetchedItemsUnderLock(int fetchGeneration)
     {
-        // Were we already canceled?
-        if (ct.IsCancellationRequested)
+        // RunFilteredItemsUpdate's callers hold _listLock, including when a
+        // reentrant publication is deferred until an earlier mutation finishes.
+        if (!IsCurrentFetch(fetchGeneration))
         {
             return;
         }
 
-        ListItemViewModel[] iterable;
-        lock (_listLock)
+        // Reuse the same filtering/publication path after a fetch and when Back
+        // recovers a committed snapshot whose callback was cancelled.
+        if (!_isDynamic)
         {
-            iterable = Items.ToArray();
+            ApplyFilterUnderLock();
+        }
+        else
+        {
+            var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
+            ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
+        }
+    }
+
+    private void CompleteItemsPublication(int fetchGeneration)
+    {
+        UpdateEmptyContent();
+        ListPageWorkState work;
+        bool forceFirst;
+        lock (_fetchStateLock)
+        {
+            work = Volatile.Read(ref _workState);
+            if (work.Status != ListPageWorkStatus.Active || work.Generation != fetchGeneration)
+            {
+                return;
+            }
+
+            // Consume selection intent only when the retained snapshot reaches the
+            // UI, including a request originally received while suspended.
+            forceFirst = (_forceFirstItemSelectionVersion == Volatile.Read(ref _selectionNavigationVersion)) ||
+                (IsRootPage && !work.KeepSelection);
+            _forceFirstItemSelectionVersion = null;
+            _awaitingFirstSelection |= forceFirst;
+            UpdateSelectionPosition();
         }
 
-        foreach (var item in iterable)
+        ItemsUpdated?.Invoke(
+            this,
+            new ItemsUpdatedEventArgs(
+                forceFirstItem: forceFirst,
+                ensureSelectionVisible: work.EnsureSelectionVisible));
+        _isLoadingMore.Clear();
+        AdvanceFetchPhase(fetchGeneration, ListPageFetchPhase.Published);
+    }
+
+    private void StartItemInitialization(int fetchGeneration, CancellationToken fetchCancellationToken)
+    {
+        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "Coordinator installation belongs to the background fetch.");
+
+        lock (_initializationCoordinatorLock)
         {
-            if (ct.IsCancellationRequested)
+            if (!IsCurrentFetch(fetchGeneration) || fetchCancellationToken.IsCancellationRequested)
             {
                 return;
             }
 
-            // TODO: GH #502
-            // We should probably remove the item from the list if it
-            // entered the error state. I had issues doing that without having
-            // multiple threads muck with `Items` (and possibly FilteredItems!)
-            // at once.
-            item.SafeInitializeProperties();
-
-            if (ct.IsCancellationRequested)
+            ListItemViewModel[] itemSnapshot;
+            lock (_listLock)
             {
+                itemSnapshot = Items.ToArray();
+            }
+
+            // Serialize only background installations. A superseded fetch must not
+            // attach items to an older coordinator after a newer one was installed.
+            var initializeItemsCts = new CancellationTokenSource();
+            var initializeItemsToken = initializeItemsCts.Token;
+            var coordinator = new ListItemInitializationCoordinator(itemSnapshot);
+            var previousCoordinator = Interlocked.Exchange(ref _itemInitializationCoordinator, coordinator);
+            var previousCancellation = Interlocked.Exchange(ref _cancellationTokenSource, initializeItemsCts);
+
+            // The constructor above must reattach and replay live demand before Stop:
+            // stopping (or a racing producer observing it) can discard queue entries
+            // whose publishers already returned success. Item-owned demand survives
+            // that discard only because the replacement has already replayed it.
+            previousCoordinator?.Stop();
+            CancelAndDisposeTokenSource(ref previousCancellation);
+
+            // Navigation/teardown never wait for the background-only lock. Recheck
+            // the generation too: a suspend/resume cycle must not revive this fetch.
+            // A Stop after this check is also safe before Run starts.
+            if (!IsCurrentFetch(fetchGeneration) || fetchCancellationToken.IsCancellationRequested)
+            {
+                coordinator.Stop();
+                Interlocked.CompareExchange(ref _itemInitializationCoordinator, null, coordinator);
+                if (Interlocked.CompareExchange(ref _cancellationTokenSource, null, initializeItemsCts) == initializeItemsCts)
+                {
+                    initializeItemsCts.Dispose();
+                }
+
                 return;
             }
+
+            _initializeItemsTask = new Task(() => coordinator.Run(initializeItemsToken));
+            _initializeItemsTask.Start();
         }
     }
 
@@ -633,12 +739,29 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             updateAction();
 
-            // Drain any update that was enqueued while we were running.
-            while (_pendingFilteredItemsUpdate is not null)
+            // Finish the latest mutation before publishing its fetch. Completion
+            // callbacks can reenter too, so drain any updates they request before
+            // considering another publication.
+            while (true)
             {
-                var pending = _pendingFilteredItemsUpdate;
-                _pendingFilteredItemsUpdate = null;
-                pending();
+                if (_pendingFilteredItemsUpdate is { } pending)
+                {
+                    _pendingFilteredItemsUpdate = null;
+                    pending();
+                }
+                else if (_pendingPublication is { } generation)
+                {
+                    _pendingPublication = null;
+                    if (IsCurrentFetch(generation))
+                    {
+                        CompleteItemsPublication(generation);
+                    }
+                }
+                else
+                {
+                    UpdateSelectionPosition();
+                    break;
+                }
             }
         }
         finally
@@ -730,15 +853,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void ThrowIfFetchCanceledOrStale(int fetchGeneration, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (Volatile.Read(ref _latestFetchGeneration) != fetchGeneration)
+        if (!IsCurrentFetch(fetchGeneration))
         {
             throw new OperationCanceledException();
         }
     }
 
-    private bool IsLatestFetchGeneration(int fetchGeneration)
+    private bool IsCurrentFetch(long fetchGeneration)
     {
-        return Volatile.Read(ref _latestFetchGeneration) == fetchGeneration;
+        var work = Volatile.Read(ref _workState);
+        return work.Status == ListPageWorkStatus.Active && work.Generation == fetchGeneration;
     }
 
     private void PublishVmCache(Dictionary<IListItem, ListItemViewModel> newCache)
@@ -788,13 +912,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+            var message = new PerformCommandMessage(item.Command.Model, item.Model, this);
+            WeakReferenceMessenger.Default.Send(message);
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+            var message = new PerformCommandMessage(
                 EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
+                EmptyContent.PrimaryCommand.Model,
+                this);
+            WeakReferenceMessenger.Default.Send(message);
         }
     }
 
@@ -806,23 +933,61 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             if (item.SecondaryCommand is not null)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+                var message = new PerformCommandMessage(item.SecondaryCommand.Command.Model, item.Model, this);
+                WeakReferenceMessenger.Default.Send(message);
             }
         }
         else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+            var message = new PerformCommandMessage(
                 EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
+                EmptyContent.SecondaryCommand.Model,
+                this);
+            WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    public void AcknowledgeSelection(ListItemViewModel? item)
+    {
+        if (!ReferenceEquals(_lastSelectedItem, item))
+        {
+            UpdateSelectedItem(item);
+        }
+        else if (Volatile.Read(ref _workState).Status != ListPageWorkStatus.Stopped)
+        {
+            _awaitingFirstSelection = false;
+            UpdateSelectionPosition();
         }
     }
 
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
+        if (Volatile.Read(ref _workState).Status == ListPageWorkStatus.Stopped)
+        {
+            return;
+        }
+
         if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+        }
+
+        // Retain selection changes, including clearing selection, during navigation.
+        // Only the active page may update the shared command bar and details.
+        var selectionChanged = !ReferenceEquals(_lastSelectedItem, item);
+        _lastSelectedItem = item;
+        _awaitingFirstSelection = false;
+        UpdateSelectionPosition();
+        if (selectionChanged && !_selectionIsFirstOrAbsent)
+        {
+            // Publish the new position before invalidating older reset requests.
+            Interlocked.Increment(ref _selectionNavigationVersion);
+        }
+
+        if (!IsWorkActive)
+        {
+            return;
         }
 
         if (item is not null)
@@ -835,12 +1000,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    private void UpdateSelectionPosition()
+        => _selectionIsFirstOrAbsent = _awaitingFirstSelection || _lastSelectedItem is null ||
+            ReferenceEquals(_lastSelectedItem, FilteredItems.FirstOrDefault(item => item.IsInteractive));
+
     private void SetSelectedItem(ListItemViewModel item)
     {
-        _lastSelectedItem = item;
-        _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
+        item.PropertyChanged += SelectedItemPropertyChanged;
 
-        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+        SendPageUiMessage(new UpdateCommandBarMessage(item));
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -850,47 +1018,78 @@ public partial class ListViewModel : PageViewModel, IDisposable
         var ct = cts.Token;
 
         _ = Task.Run(
-            () =>
+            async () =>
             {
-                if (ct.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (!item.SafeSlowInit())
+                try
                 {
                     if (ct.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    var initialized = await item.RequestInitializationAsync(ct).ConfigureAwait(false);
 
-                    return;
-                }
+                    if (!initialized || ct.IsCancellationRequested)
+                    {
+                        if (!ct.IsCancellationRequested)
+                        {
+                            SendPageUiMessage(new HideDetailsMessage());
+                        }
 
-                if (ct.IsCancellationRequested)
-                {
-                    return;
-                }
+                        return;
+                    }
 
-                // SafeSlowInit completed on a background thread — details
-                // messages will be marshalled to the UI thread by the receiver.
-                if (ShowDetails && item.HasDetails)
-                {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
-                }
-                else
-                {
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-                }
+                    if (!item.SafeSlowInit())
+                    {
+                        if (ct.IsCancellationRequested)
+                        {
+                            return;
+                        }
 
-                var suggestion = item.TextToSuggest;
-                DoOnUiThread(() =>
+                        SendPageUiMessage(new HideDetailsMessage());
+
+                        return;
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    // SafeSlowInit completed on a background thread — details
+                    // messages will be marshalled to the UI thread by the receiver.
+                    if (ShowDetails && item.HasDetails)
+                    {
+                        SendPageUiMessage(new ShowDetailsMessage(item.Details));
+                    }
+                    else
+                    {
+                        SendPageUiMessage(new HideDetailsMessage());
+                    }
+
+                    var suggestion = item.TextToSuggest;
+                    DoOnUiThread(() =>
+                    {
+                        if (ct.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        TextToSuggest = suggestion;
+                        SendPageUiMessage(new UpdateSuggestionMessage(suggestion));
+                    });
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
-                    TextToSuggest = suggestion;
-                    WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
-                });
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to initialize the selected list item", ex);
+                    if (!ct.IsCancellationRequested)
+                    {
+                        SendPageUiMessage(new HideDetailsMessage());
+                    }
+                }
             },
             ct);
     }
@@ -898,7 +1097,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var item = _lastSelectedItem;
-        if (item is null)
+        if (!IsWorkActive || item is null)
         {
             return;
         }
@@ -910,16 +1109,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.SecondaryCommand):
             case nameof(item.AllCommands):
             case nameof(item.Name):
-                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+                SendPageUiMessage(new UpdateCommandBarMessage(item));
                 break;
             case nameof(item.Details):
                 if (ShowDetails && item.HasDetails)
                 {
-                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                    SendPageUiMessage(new ShowDetailsMessage(item.Details));
                 }
                 else
                 {
-                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                    SendPageUiMessage(new HideDetailsMessage());
                 }
 
                 break;
@@ -933,14 +1132,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
-        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
+        SendPageUiMessage(new UpdateCommandBarMessage(null));
+        SendPageUiMessage(new HideDetailsMessage());
+        SendPageUiMessage(new UpdateSuggestionMessage(string.Empty));
         TextToSuggest = string.Empty;
     }
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
+        _initializationStarted = true;
         base.InitializeProperties();
 
         var model = _model.Unsafe;
@@ -965,7 +1171,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        InitialSearchText = SearchText = model.SearchText;
+        if (!TryApplyLaunchOptions(model, out var initialSearchText))
+        {
+            return;
+        }
+
+        InitialSearchText = SearchText = initialSearchText;
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
@@ -986,6 +1197,45 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
+    }
+
+    private bool TryApplyLaunchOptions(IListPage model, out string initialSearchText)
+    {
+        initialSearchText = model.SearchText;
+        if (_launchOptions is not { } launchOptions)
+        {
+            return true;
+        }
+
+        if (launchOptions.FilterId is { } filterId)
+        {
+            var filters = model.Filters;
+            var filterExists = filters?.GetFilters()?
+                .OfType<IFilter>()
+                .Any(candidate => string.Equals(candidate.Id, filterId, StringComparison.Ordinal)) == true;
+            if (!filterExists)
+            {
+                _launchOptions = null;
+                ShowErrorMessage(Properties.Resources.list_page_requested_filter_unavailable);
+                return false;
+            }
+
+            filters!.CurrentFilterId = filterId;
+        }
+
+        if (launchOptions.Query is { } query)
+        {
+            if (model is IDynamicListPage dynamicListPage)
+            {
+                dynamicListPage.SearchText = query;
+            }
+
+            initialSearchText = query;
+            SetInitialSearchTextBox(query);
+        }
+
+        _launchOptions = null;
+        return true;
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
@@ -1108,10 +1358,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnUiThread(
+        DoOnActivePage(
            () =>
            {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
+               SendPageUiMessage(new UpdateCommandBarMessage(EmptyContent));
            });
     }
 
@@ -1130,26 +1380,214 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    // The shell serializes navigation transitions on the UI thread. Terminal
+    // cleanup may race them, but resumption can only transition Suspended -> Active.
+    internal override void SuspendForNavigation()
+    {
+        base.SuspendForNavigation();
+        if (TryChangeWorkStatus(ListPageWorkStatus.Active, ListPageWorkStatus.Suspended) is not null)
+        {
+            CancelPendingWork();
+        }
+    }
+
+    internal override Task ResumeAfterNavigation()
+    {
+        base.ResumeAfterNavigation();
+        var work = TryChangeWorkStatus(ListPageWorkStatus.Suspended, ListPageWorkStatus.Active);
+        if (work is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        UpdateSelectedItem(_lastSelectedItem);
+
+        // Do not consume the recovery record when queueing: another navigation
+        // can invalidate this visit before the worker or UI callback ever runs.
+        return QueueObservedBackgroundFetch(
+            () =>
+            {
+                if (!IsCurrentFetch(work.Generation))
+                {
+                    return;
+                }
+
+                if (work.Phase == ListPageFetchPhase.Fetching)
+                {
+                    FetchItems(work.KeepSelection, work.EnsureSelectionVisible, work.Generation);
+                }
+                else
+                {
+                    StartItemInitialization(work.Generation, CancellationToken.None);
+                    if (work.Phase == ListPageFetchPhase.Committed)
+                    {
+                        QueueItemsPublication(work.Generation);
+                    }
+                }
+            },
+            "Failed to resume list page after navigation");
+    }
+
+    private bool DeferFetchWhileInactive(bool keepSelection, bool ensureSelectionVisible)
+    {
+        while (true)
+        {
+            var work = Volatile.Read(ref _workState);
+            if (work.Status == ListPageWorkStatus.Active)
+            {
+                return false;
+            }
+
+            if (work.Status == ListPageWorkStatus.Stopped)
+            {
+                return true;
+            }
+
+            var pendingKeepSelection = work.KeepSelection && keepSelection;
+            var pendingEnsureSelectionVisible = work.EnsureSelectionVisible || ensureSelectionVisible;
+            var pending = work.Phase == ListPageFetchPhase.Fetching &&
+                work.KeepSelection == pendingKeepSelection &&
+                work.EnsureSelectionVisible == pendingEnsureSelectionVisible
+                    ? work
+                    : work with
+                    {
+                        Phase = ListPageFetchPhase.Fetching,
+                        KeepSelection = pendingKeepSelection,
+                        EnsureSelectionVisible = pendingEnsureSelectionVisible,
+                    };
+
+            // Even an already-covered request verifies ownership with a no-op CAS:
+            // if resume won, this request must retry on the now-active page.
+            if (ReferenceEquals(Interlocked.CompareExchange(ref _workState, pending, work), work))
+            {
+                return true;
+            }
+
+            // Status and pending intent share one CAS. If resume won, retry sees
+            // Active and the caller fetches normally; no late flag can be stranded.
+        }
+    }
+
+    private bool TryBeginFetch(bool keepSelection, bool ensureSelectionVisible, int? recoveryGeneration, out ListPageWorkState work)
+    {
+        while (true)
+        {
+            var previous = Volatile.Read(ref _workState);
+            work = previous;
+            if (recoveryGeneration.HasValue && previous.Generation != recoveryGeneration.Value)
+            {
+                return false;
+            }
+
+            if (previous.Status != ListPageWorkStatus.Active)
+            {
+                if (DeferFetchWhileInactive(keepSelection, ensureSelectionVisible))
+                {
+                    return false;
+                }
+
+                continue;
+            }
+
+            work = new(
+                unchecked(previous.Generation + 1),
+                ListPageWorkStatus.Active,
+                ListPageFetchPhase.Fetching,
+                previous.KeepSelection && keepSelection,
+                previous.EnsureSelectionVisible || ensureSelectionVisible);
+
+            // Use ReferenceEquals for all work-state CAS results: record == can
+            // mistake a distinct-but-equal snapshot for a successful exchange.
+            if (ReferenceEquals(Interlocked.CompareExchange(ref _workState, work, previous), previous))
+            {
+                return true;
+            }
+        }
+    }
+
+    private void AdvanceFetchPhase(int generation, ListPageFetchPhase phase)
+    {
+        var work = Volatile.Read(ref _workState);
+        if (work.Status != ListPageWorkStatus.Active || work.Generation != generation)
+        {
+            return;
+        }
+
+        var completed = work with
+        {
+            Phase = phase,
+            KeepSelection = phase == ListPageFetchPhase.Published || work.KeepSelection,
+            EnsureSelectionVisible = phase != ListPageFetchPhase.Published && work.EnsureSelectionVisible,
+        };
+
+        // A failed CAS means another fetch or navigation owns recovery now. Never
+        // let a late unwind/commit/publication rewrite that owner's obligation.
+        Interlocked.CompareExchange(ref _workState, completed, work);
+    }
+
+    private ListPageWorkState? TryChangeWorkStatus(ListPageWorkStatus from, ListPageWorkStatus to)
+    {
+        while (true)
+        {
+            var work = Volatile.Read(ref _workState);
+            if (work.Status != from)
+            {
+                return null;
+            }
+
+            var next = work with { Status = to, Generation = unchecked(work.Generation + 1) };
+            if (ReferenceEquals(Interlocked.CompareExchange(ref _workState, next, work), work))
+            {
+                return next;
+            }
+        }
+    }
+
+    private void CancelPendingWork()
+    {
+        // The status transition already invalidated callbacks and retained their
+        // unfinished phase atomically. Never take worker-owned locks on navigation.
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+        Interlocked.Exchange(ref _itemInitializationCoordinator, null)?.Stop();
+        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
+        StopWork();
     }
+
+    private void StopWork()
+    {
+        while (true)
+        {
+            var work = Volatile.Read(ref _workState);
+            if (work.Status == ListPageWorkStatus.Stopped)
+            {
+                return;
+            }
+
+            if (TryChangeWorkStatus(work.Status, ListPageWorkStatus.Stopped) is not null)
+            {
+                break;
+            }
+        }
+
+        CancelPendingWork();
+    }
+
+    protected override void OnCleanupRequested() => StopWork();
 
     protected override void UnsafeCleanup()
     {
+        StopWork();
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
-
-        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
-        CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         lock (_listLock)
         {

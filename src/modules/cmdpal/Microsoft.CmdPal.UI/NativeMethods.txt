@@ -1,4 +1,11 @@
 GetPhysicallyInstalledSystemMemory
+SIIGBF
+BITMAP
+GetObject
+GetDIBits
+GetDC
+ReleaseDC
+DeleteObject
 GlobalMemoryStatusEx
 GetSystemInfo
 GetActiveWindow
@@ -144,6 +151,7 @@ EVENT_SYSTEM_FOREGROUND
 WINEVENT_OUTOFCONTEXT
 GetWindowThreadProcessId
 AttachThreadInput
+IsWindow
 
 GetWindowPlacement
 WINDOWPLACEMENT
@@ -163,3 +171,11 @@ DISPLAYCONFIG_PATH_INFO
 DISPLAYCONFIG_MODE_INFO
 DISPLAYCONFIG_DEVICE_INFO_TYPE
 QUERY_DISPLAY_CONFIG_FLAGS
+WM_MENUCHAR
+CM_Locate_DevNode
+CM_Open_DevNode_Key
+CM_REGISTRY_HARDWARE
+RegDisposition_OpenExisting
+REG_SAM_FLAGS
+RegQueryValueEx
+RegCloseKey

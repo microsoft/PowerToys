@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -22,6 +22,10 @@
 
     <Page.Resources>
         <ResourceDictionary>
+            <cpcontrols:ContextMenuFlyout
+                x:Name="ItemContextMenuFlyout"
+                BackRequested="ContextMenuFlyout_BackRequested" />
+
             <converters:StringVisibilityConverter
                 x:Key="StringNotEmptyToVisibilityConverter"
                 EmptyValue="Collapsed"
@@ -30,6 +34,9 @@
             <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
             <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
+            <cmdpalUI:QuickAccessShortcutTextConverter x:Key="QuickAccessShortcutTextConverter" />
+
+            <cpcontrols:ContextMenuFlyout x:Name="QuickAccessShelfContextMenuFlyout" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
@@ -49,6 +56,10 @@
                 TargetType="TextBlock">
                 <Setter Property="IsTextSelectionEnabled" Value="True" />
                 <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style x:Key="ExternalCommandLinkWarningTextBlockStyle" TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
             </Style>
 
@@ -95,6 +106,8 @@
                                 Width="16"
                                 Height="16"
                                 Margin="0,3,8,0"
+                                DiagnosticScope="DetailsCommand"
+                                RequestSite="Details"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                 SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                             <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
@@ -181,7 +194,10 @@
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
 
-            <StackLayout x:Key="DetailsContentLayout" Orientation="Vertical" Spacing="8" />
+            <StackLayout
+                x:Key="DetailsContentLayout"
+                Orientation="Vertical"
+                Spacing="8" />
 
             <cmdpalUI:ContentTemplateSelector
                 x:Key="DetailsContentTemplateSelector"
@@ -219,15 +235,27 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <!--
-                In compact mode this row collapses to Auto so the card can shrink to just the
-                search box. A star row would otherwise reserve space during measure even when
-                its only child (the collapsed content) is hidden.
+                In compact mode this row collapses to Auto so the card can shrink to the search
+                row and optional quick-access shelf. A star row would otherwise reserve space
+                during measure even when the expanded content is hidden.
             -->
             <RowDefinition Height="{x:Bind ExpandedMode, Mode=OneWay, Converter={StaticResource ExpandedModeToRowHeightConverter}}" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <TeachingTip
+            x:Name="QuickAccessShelfEmptyTeachingTip"
+            x:Uid="QuickAccessShelf_EmptyTeachingTip"
+            ActionButtonClick="QuickAccessShelfSettings_Click"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Bottom"
+            ShouldConstrainToRootBounds="False"
+            Target="{x:Bind SearchBox}" />
+
+        <Grid
+            x:Name="TopBarSurface"
+            Grid.Row="0"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -347,7 +375,9 @@
                         Margin="4,0,4,0"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        DiagnosticScope="CurrentPage"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        RequestSite="PageHeader"
                         SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconProvider.SourceRequested20}"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
@@ -422,6 +452,206 @@
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
+        </Grid>
+
+        <!--
+            Compact quick access occupies the same row as the expanded body. Switching to the
+            expanded shell therefore replaces this secondary surface in place instead of
+            inserting another permanent section into the window.
+        -->
+        <Grid
+            x:Name="QuickAccessShelfSurface"
+            x:Uid="QuickAccessShelfSurface"
+            Grid.Row="1"
+            MinHeight="48"
+            Padding="10,4"
+            AutomationProperties.LandmarkType="Custom"
+            Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+            BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0"
+            Visibility="{x:Bind IsQuickAccessShelfVisible, Mode=OneWay}">
+            <Grid.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Hide" Click="QuickAccessShelfHide_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind viewModels:Glyphs.Hide, Mode=OneTime}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem x:Uid="QuickAccessShelf_ContextMenu_Settings" Click="QuickAccessShelfSettings_Click">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind viewModels:Glyphs.Settings, Mode=OneTime}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.187" />
+                <animations:TranslationAnimation
+                    From="0,-8,0"
+                    To="0,0,0"
+                    Duration="0:0:0.187" />
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.187" />
+                <animations:TranslationAnimation
+                    From="0,0,0"
+                    To="0,-8,0"
+                    Duration="0:0:0.187" />
+            </animations:Implicit.HideAnimations>
+
+            <Grid
+                x:Name="QuickAccessShelfItemsHost"
+                KeyTipPlacementMode="Bottom"
+                SizeChanged="QuickAccessShelfItemsHost_SizeChanged">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ItemsRepeater ItemsSource="{x:Bind QuickAccessShelf.VisibleItems, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:QuickAccessShelfItem">
+                            <Grid
+                                Width="40"
+                                Height="40"
+                                AllowDrop="True"
+                                DragLeave="QuickAccessShelfItem_DragLeave"
+                                DragOver="QuickAccessShelfItem_DragOver"
+                                Drop="QuickAccessShelfItem_Drop"
+                                Tag="{x:Bind}">
+                                <Button
+                                    Width="40"
+                                    Height="40"
+                                    Padding="8"
+                                    AccessKey="{x:Bind ShortcutDigit, Mode=OneTime}"
+                                    AccessKeyInvoked="QuickAccessShelfItem_AccessKeyInvoked"
+                                    AutomationProperties.HelpText="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                    AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
+                                    Click="QuickAccessShelfItem_Click"
+                                    ContextCanceled="QuickAccessShelfItem_ContextCanceled"
+                                    ContextRequested="QuickAccessShelfItem_ContextRequested"
+                                    DragStarting="QuickAccessShelfItem_DragStarting"
+                                    DropCompleted="QuickAccessShelfItem_DropCompleted"
+                                    GotFocus="QuickAccessShelfItem_GotFocus"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    Tag="{x:Bind}"
+                                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind Title, Mode=OneTime}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource QuickAccessShortcutTextConverter}}"
+                                                    Visibility="{x:Bind ShortcutDigit, Mode=OneTime, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </ToolTipService.ToolTip>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind Icon, Mode=OneTime}"
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+                                </Button>
+                                <Border
+                                    Width="1"
+                                    Height="24"
+                                    Margin="-2,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
+                                    IsHitTestVisible="False"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(StartsNewSection), Mode=OneTime}" />
+                                <Border
+                                    Width="2"
+                                    Height="32"
+                                    HorizontalAlignment="Left"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    Canvas.ZIndex="2"
+                                    IsHitTestVisible="False"
+                                    Tag="QuickAccessShelfDropIndicator"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+
+                <Button
+                    x:Name="QuickAccessOverflowButton"
+                    x:Uid="QuickAccessOverflowButton"
+                    Grid.Column="1"
+                    Width="40"
+                    Height="40"
+                    Padding="8"
+                    AccessKey="0"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
+                    Visibility="{x:Bind QuickAccessShelf.HasOverflow, Mode=OneWay}">
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="QuickAccessOverflowFlyout" Opening="QuickAccessOverflowFlyout_Opening" />
+                    </Button.Flyout>
+                    <FontIcon Glyph="&#xE712;" />
+                </Button>
+
+                <Border
+                    x:Name="QuickAccessShelfPinDropTarget"
+                    x:Uid="QuickAccessShelfPinDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    Margin="0,0,44,0"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfPinDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfPinDropTarget_DragOver"
+                    Drop="QuickAccessShelfPinDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                        Glyph="&#xE840;" />
+                </Border>
+
+                <Border
+                    x:Name="QuickAccessShelfRemoveDropTarget"
+                    x:Uid="QuickAccessShelfRemoveDropTarget"
+                    Grid.ColumnSpan="2"
+                    Width="40"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    AllowDrop="True"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                    BorderThickness="1"
+                    Canvas.ZIndex="3"
+                    CornerRadius="4"
+                    DragLeave="QuickAccessShelfRemoveDropTarget_DragLeave"
+                    DragOver="QuickAccessShelfRemoveDropTarget_DragOver"
+                    Drop="QuickAccessShelfRemoveDropTarget_Drop"
+                    Visibility="Collapsed">
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        Glyph="&#xE74D;" />
+                </Border>
+            </Grid>
         </Grid>
 
         <Grid
@@ -502,9 +732,18 @@
                             Margin="0,0,16,16"
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
+                            DiagnosticScope="HeroImage"
+                            PreferFallbackSourceForFontIcons="True"
+                            RequestSite="Details"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested64}"
-                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
+                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}">
+                            <cpcontrols:IconBox.FallbackSource>
+                                <BitmapIconSource
+                                    ShowAsMonochrome="False"
+                                    UriSource="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                            </cpcontrols:IconBox.FallbackSource>
+                        </cpcontrols:IconBox>
 
                         <TextBlock
                             Grid.Row="1"
@@ -566,13 +805,13 @@
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-            
+
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-            
+
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
@@ -606,7 +845,9 @@
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
-            <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+            <cpcontrols:CommandBar
+                CommandContext="{x:Bind ViewModel.CurrentCommandContext, Mode=OneWay}"
+                CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
         <VisualStateManager.VisualStateGroups>

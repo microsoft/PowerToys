@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -13,6 +16,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 {
+    private static readonly PropertyChangingEventArgs SearchTextBoxChangingEventArgs = new(nameof(SearchTextBox));
+    private static readonly PropertyChangedEventArgs SearchTextBoxChangedEventArgs = new(nameof(SearchTextBox));
+    private static readonly PropertyChangedEventArgs ShowSuggestionChangedEventArgs = new(nameof(ShowSuggestion));
+
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
@@ -46,10 +53,26 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial bool HasBackButton { get; set; } = true;
 
-    // This is set from the SearchBar
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
-    public partial string SearchTextBox { get; set; } = string.Empty;
+    private string _searchTextBox = string.Empty;
+
+    // This is set from the SearchBar.
+    public string SearchTextBox
+    {
+        get => _searchTextBox;
+        set
+        {
+            if (StringComparer.Ordinal.Equals(_searchTextBox, value))
+            {
+                return;
+            }
+
+            OnPropertyChanging(SearchTextBoxChangingEventArgs);
+            _searchTextBox = value;
+            OnSearchTextBoxUpdated(value);
+            OnPropertyChanged(SearchTextBoxChangedEventArgs);
+            OnPropertyChanged(ShowSuggestionChangedEventArgs);
+        }
+    }
 
     [ObservableProperty]
     public virtual partial string PlaceholderText { get; private set; } = "Type here to search...";
@@ -143,21 +166,29 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
 
         // Notify we're done back on the UI Thread.
-        Task.Factory.StartNew(
+        DoOnUiThread(
             () =>
             {
+                if (IsDiscarded)
+                {
+                    return;
+                }
+
                 IsInitialized = true;
 
                 // TODO: Do we want an event/signal here that the Page Views can listen to? (i.e. ListPage setting the selected index to 0, however, in async world the user may have already started navigating around page...)
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            Scheduler);
+            });
         return Task.FromResult(true);
     }
 
     public override void InitializeProperties()
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         var page = _pageModel.Unsafe;
         if (page is null)
         {
@@ -186,6 +217,12 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
     {
+        using var operation = TryBeginPageOperation();
+        if (operation is null)
+        {
+            return;
+        }
+
         try
         {
             var propName = args.PropertyName;
@@ -197,12 +234,28 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
     }
 
-    partial void OnSearchTextBoxChanged(string oldValue, string newValue) => OnSearchTextBoxUpdated(newValue);
+    /// <summary>Sets initial search text through the UI-thread notification path.</summary>
+    protected void SetInitialSearchTextBox(string value)
+    {
+        if (StringComparer.Ordinal.Equals(_searchTextBox, value))
+        {
+            return;
+        }
+
+        _searchTextBox = value;
+        UpdateProperty(nameof(SearchTextBox), nameof(ShowSuggestion));
+    }
 
     protected virtual void OnSearchTextBoxUpdated(string searchTextBox)
     {
         // The base page has no notion of data, so we do nothing here...
         // subclasses should override.
+    }
+
+    protected void SendPageUiMessage<TMessage>(TMessage message)
+        where TMessage : class
+    {
+        WeakReferenceMessenger.Default.Send<TMessage>(message);
     }
 
     protected virtual void FetchProperty(string propertyName)
@@ -255,15 +308,19 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         // Set the extensionHint to the Page Title (if we have one, and one not provided).
         // extensionHint ??= _pageModel?.Unsafe?.Title;
         extensionHint ??= ExtensionHost.GetExtensionDisplayName() ?? Title;
-        Task.Factory.StartNew(
+        ShowErrorMessage(DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint));
+    }
+
+    protected void ShowErrorMessage(string message)
+    {
+        DoOnUiThread(
             () =>
             {
-                var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint);
-                ErrorMessage += message;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            Scheduler);
+                if (!IsDiscarded)
+                {
+                    ErrorMessage += message;
+                }
+            });
     }
 
     public override string ToString() => $"{Title} ViewModel";

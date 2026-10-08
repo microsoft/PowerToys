@@ -310,8 +310,11 @@ namespace ShortcutGuide
                         _ = Task.Run(() => Program.LogForegroundCapture(Program.ForegroundWindowHandle));
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
                         OverlayWindow.ShowOverlay();
-                        OverlayWindow.UpdateTaskbarPaneLayout();
-                        OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
+                        if (OverlayWindow.UpdateTaskbarPaneLayout())
+                        {
+                            OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
+                        }
+
                         break;
 
                     case ShortcutGuideActivationAction.ShowFullGuide:
@@ -340,6 +343,7 @@ namespace ShortcutGuide
                         // the main pane is still Collapsed, then prepare and lay out the
                         // navigation items and shortcut data before revealing it.
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+                        OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Collapsed;
                         OverlayWindow.ShowOverlay();
                         await OverlayWindow.MainPaneControl.Open();
                         if ((ShortcutGuideActivationSource)Volatile.Read(ref _activeSource) != activationSource ||
@@ -350,7 +354,6 @@ namespace ShortcutGuide
 
                         long contentPreparedMs = openStopwatch.ElapsedMilliseconds;
 
-                        OverlayWindow.UpdateTaskbarPaneLayout();
                         OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
                         OverlayWindow.MainPaneControl.FocusSearch();
 
