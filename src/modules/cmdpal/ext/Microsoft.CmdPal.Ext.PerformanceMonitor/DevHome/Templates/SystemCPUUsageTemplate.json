@@ -253,6 +253,27 @@
         },
         {
           "type": "Container",
+          "$when": "${count(cpuTopProcesses) > 0}",
+          "spacing": "small",
+          "style": "emphasis",
+          "roundedCorners": true,
+          "showBorder": true,
+          "items": [
+            {
+              "type": "Chart.HorizontalBar",
+              "title": "%CPUUsage_Widget_Template/Top_Processes%",
+                "yMin": 0,
+                "yMax": 100,
+                "valueFormat": "percentage",
+              "showBarValues": true,
+              "color": "categoricalBlue",
+              "data": "${cpuTopProcesses}",
+              "fallback": "drop"
+            }
+          ]
+        },
+        {
+          "type": "Container",
           "$when": "${count(cpuCores) > 0}",
           "spacing": "small",
           "style": "emphasis",

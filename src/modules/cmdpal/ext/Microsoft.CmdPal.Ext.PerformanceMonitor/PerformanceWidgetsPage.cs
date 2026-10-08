@@ -721,6 +721,7 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
                 PerformanceChartData.CpuColor,
                 PerformanceChartData.Snapshot(currentData.CpuChartValues)));
             ContentJson["cpuCores"] = CreateCoreBars(currentData.CoreUsage);
+            ContentJson["cpuTopProcesses"] = CreateProcessBars(currentData.TopProcesses);
 
             // ContentData["cpuProc1"] = currentData.GetCpuProcessText(0);
             // ContentData["cpuProc2"] = currentData.GetCpuProcessText(1);
@@ -798,18 +799,34 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
         return bars;
     }
 
-    // The card shows per-processor utilization, which the dock and the overview don't need, so
-    // it's read only while the card is open.
+    /// <summary>One bar per busy process, busiest first.</summary>
+    internal static JsonArray CreateProcessBars(ProcessCpuSampler.ProcessUsage[] processes)
+    {
+        var bars = new JsonArray();
+        foreach (var process in processes)
+        {
+            bars.Add((JsonNode)new JsonObject
+            {
+                ["x"] = process.Name,
+                ["y"] = Math.Round((double)process.Percent, 1, MidpointRounding.AwayFromZero),
+            });
+        }
+
+        return bars;
+    }
+
+    // The card shows per-processor utilization and the busiest processes, which the dock and the
+    // overview don't need, so they're read only while the card is open.
     protected override void Loaded()
     {
-        _dataManager.GetCPUStats().RequestCoreUsage(true);
+        _dataManager.GetCPUStats().RequestDetails(true);
         base.Loaded();
     }
 
     protected override void Unloaded()
     {
         base.Unloaded();
-        _dataManager.GetCPUStats().RequestCoreUsage(false);
+        _dataManager.GetCPUStats().RequestDetails(false);
     }
 
     protected override void OnActivated() => _dataManager.Start();

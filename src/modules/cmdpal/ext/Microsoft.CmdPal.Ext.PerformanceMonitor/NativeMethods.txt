@@ -15,3 +15,5 @@ DEVICE_SEEK_PENALTY_DESCRIPTOR
 STORAGE_DEVICE_DESCRIPTOR
 GetSystemFirmwareTable
 GetPhysicallyInstalledSystemMemory
+NtQuerySystemInformation
+SYSTEM_PROCESS_INFORMATION

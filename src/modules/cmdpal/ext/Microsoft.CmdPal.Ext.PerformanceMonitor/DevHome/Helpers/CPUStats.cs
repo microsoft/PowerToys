@@ -24,17 +24,20 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     private readonly PerformanceCounter? _procPerformance;
     private readonly PerformanceCounter? _procFrequency;
     private readonly Dictionary<Process, PerformanceCounter> _cpuCounters = new();
+
+    // Per-processor utilization and the busiest processes, only while a CPU card shows them.
+    private readonly ProcessCpuSampler _processSampler = new();
     private bool _processCountersInitialized;
     private bool _cpuCounterReadFailureLogged;
     private bool _processCounterEnumerationFailureLogged;
     private bool _processCounterReadFailureLogged;
-
-    // Per-processor utilization, read in one batch, only while a CPU card shows it.
     private PerformanceCounterCategory? _processorCategory;
     private bool _processorCategoryCreated;
     private Dictionary<string, CounterSample> _previousCoreSamples = [];
-    private int _coreRequests;
+    private int _detailRequests;
+    private bool _detailsRead;
     private bool _coreReadFailureLogged;
+    private bool _processReadFailureLogged;
 
     internal sealed class ProcessStats
     {
@@ -68,9 +71,12 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
     /// <summary>
     /// Gets the utilization of each logical processor in percent, in processor order. It's empty
-    /// unless a card has requested it with <see cref="RequestCoreUsage"/>.
+    /// unless a card has requested details with <see cref="RequestDetails"/>.
     /// </summary>
     public float[] CoreUsage { get; private set; } = [];
+
+    /// <summary>Gets the busiest processes, busiest first. It's empty unless a card has requested details.</summary>
+    public ProcessCpuSampler.ProcessUsage[] TopProcesses { get; private set; } = [];
 
     public CPUStats()
     {
@@ -146,14 +152,19 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
 
             ReadSystemCounts();
 
-            if (Volatile.Read(ref _coreRequests) > 0)
+            if (Volatile.Read(ref _detailRequests) > 0)
             {
+                _detailsRead = true;
                 ReadCoreUsage();
+                ReadTopProcesses();
             }
-            else if (CoreUsage.Length > 0)
+            else if (_detailsRead)
             {
+                _detailsRead = false;
                 CoreUsage = [];
+                TopProcesses = [];
                 _previousCoreSamples = [];
+                _processSampler.Reset();
             }
 
             var speedMs = timer.ElapsedMilliseconds - usageMs;
@@ -233,18 +244,30 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
     }
 
     /// <summary>
-    /// Starts or stops reading per-processor utilization. Only the CPU card shows it, so the dock
-    /// and the overview don't pay for it.
+    /// Starts or stops reading per-processor utilization and the busiest processes. Only the CPU
+    /// card shows them, so the dock and the overview don't pay for them.
     /// </summary>
-    internal void RequestCoreUsage(bool request)
+    internal void RequestDetails(bool request)
     {
         if (request)
         {
-            Interlocked.Increment(ref _coreRequests);
+            Interlocked.Increment(ref _detailRequests);
         }
-        else if (Interlocked.Decrement(ref _coreRequests) < 0)
+        else if (Interlocked.Decrement(ref _detailRequests) < 0)
         {
-            Interlocked.Exchange(ref _coreRequests, 0);
+            Interlocked.Exchange(ref _detailRequests, 0);
+        }
+    }
+
+    private void ReadTopProcesses()
+    {
+        try
+        {
+            TopProcesses = _processSampler.Sample(5);
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _processReadFailureLogged, "Failed while reading process CPU times.", ex);
         }
     }
 

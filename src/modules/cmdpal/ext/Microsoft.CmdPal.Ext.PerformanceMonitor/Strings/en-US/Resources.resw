@@ -415,6 +415,10 @@
     <value>Utilization by logical processor</value>
     <comment>Title of a bar chart with one bar per logical processor (hardware thread)</comment>
   </data>
+  <data name="CPUUsage_Widget_Template.Top_Processes" xml:space="preserve">
+    <value>Top processes</value>
+    <comment>Title of a bar chart of the processes using the most CPU</comment>
+  </data>
   <data name="CPUUsage_Widget_Template.Chart_Y_Axis" xml:space="preserve">
     <value>% Utilization</value>
     <comment>Vertical axis title of the CPU usage history chart</comment>
