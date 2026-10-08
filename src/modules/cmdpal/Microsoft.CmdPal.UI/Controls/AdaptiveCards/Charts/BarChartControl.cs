@@ -64,7 +64,13 @@ internal sealed partial class BarChartControl : AdaptiveVisualControl
         {
             root.Children.Add(CreateLabelRow(_model.YAxisTitle, ChartValueFormatter.Format(range.Max, _model.ValueFormat, CultureInfo.CurrentCulture), secondary));
             root.Children.Add(CreateVerticalPlot(range, isDarkTheme, secondary));
-            root.Children.Add(CreateLabelRow(_model.XAxisTitle, ChartValueFormatter.Format(range.Min, _model.ValueFormat, CultureInfo.CurrentCulture), secondary));
+
+            // Bars start at zero, so the minimum only needs a label when it isn't zero.
+            var minimum = range.Min == 0 ? string.Empty : ChartValueFormatter.Format(range.Min, _model.ValueFormat, CultureInfo.CurrentCulture);
+            if (!string.IsNullOrWhiteSpace(_model.XAxisTitle) || minimum.Length > 0)
+            {
+                root.Children.Add(CreateLabelRow(_model.XAxisTitle, minimum, secondary));
+            }
         }
 
         Content = root;

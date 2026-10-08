@@ -25,9 +25,11 @@ internal static class ChartArc
 
     /// <summary>
     /// Splits 0..1 into one span per share, leaving <paramref name="gap"/> (as a fraction of the
-    /// whole) between neighboring non-empty spans. Empty shares get an empty span.
+    /// whole) between neighboring non-empty spans. Empty shares get an empty span. A closed ring,
+    /// such as a donut, also has a gap where the last span meets the first; an open arc, such as a
+    /// gauge, starts and ends without one.
     /// </summary>
-    public static IReadOnlyList<(double Start, double End)> GetSpans(IReadOnlyList<double> shares, double gap)
+    public static IReadOnlyList<(double Start, double End)> GetSpans(IReadOnlyList<double> shares, double gap, bool closed = true)
     {
         var spans = new (double Start, double End)[shares.Count];
         var visible = 0;
@@ -41,13 +43,29 @@ internal static class ChartArc
 
         var halfGap = visible > 1 ? gap / 2 : 0;
         var start = 0d;
+        var first = -1;
+        var last = -1;
         for (var i = 0; i < shares.Count; i++)
         {
             var end = start + Math.Max(0, shares[i]);
-            spans[i] = shares[i] > 0 && end - start > gap
-                ? (start + halfGap, end - halfGap)
-                : (start, start);
+            if (shares[i] > 0 && end - start > gap)
+            {
+                spans[i] = (start + halfGap, end - halfGap);
+                first = first < 0 ? i : first;
+                last = i;
+            }
+            else
+            {
+                spans[i] = (start, start);
+            }
+
             start = end;
+        }
+
+        if (!closed && first >= 0)
+        {
+            spans[first] = (spans[first].Start - halfGap, spans[first].End);
+            spans[last] = (spans[last].Start, spans[last].End + halfGap);
         }
 
         return spans;

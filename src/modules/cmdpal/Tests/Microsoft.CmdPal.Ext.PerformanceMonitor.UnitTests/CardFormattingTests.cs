@@ -118,9 +118,9 @@ public class CardFormattingTests
     [TestMethod]
     public void MemoryUseShowsTheSizeUnit()
     {
-        const ulong Gibibyte = 1024UL * 1024 * 1024;
+        const ulong BytesPerGigabyte = 1024UL * 1024 * 1024;
 
-        Assert.AreEqual("1.5 / 8.0 GB", WidgetPage.FormatUsedOfTotal(Gibibyte + (Gibibyte / 2), 8 * Gibibyte));
+        Assert.AreEqual("1.5 / 8.0 GB", WidgetPage.FormatUsedOfTotal(BytesPerGigabyte + (BytesPerGigabyte / 2), 8 * BytesPerGigabyte));
         Assert.AreEqual("128 / 512 MB", WidgetPage.FormatUsedOfTotal(128UL * 1024 * 1024, 512UL * 1024 * 1024));
     }
 

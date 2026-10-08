@@ -120,7 +120,10 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
 
         var thickness = Math.Round(diameter * RingRatio);
         var radius = (diameter - thickness) / 2;
-        canvas.Children.Add(ChartShapes.CreateCircle(center, diameter - thickness, null, ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme)), thickness));
+
+        // An ellipse strokes inside its bounds, while the arcs stroke centered on the radius, so
+        // full rings use the outer diameter to line up with the slices.
+        canvas.Children.Add(ChartShapes.CreateCircle(center, diameter, null, ChartTheme.ToBrush(ChartTheme.GetTrackColor(isDarkTheme)), thickness));
         if (hasData)
         {
             var spans = ChartArc.GetSpans(shares, SliceGap);
@@ -129,7 +132,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
                 var stroke = ChartTheme.ToBrush(colors[i]);
                 if (shares[i] >= 0.9999)
                 {
-                    canvas.Children.Add(ChartShapes.CreateCircle(center, diameter - thickness, null, stroke, thickness));
+                    canvas.Children.Add(ChartShapes.CreateCircle(center, diameter, null, stroke, thickness));
                 }
                 else if (spans[i].End > spans[i].Start)
                 {

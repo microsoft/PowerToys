@@ -1,0 +1,34 @@
+# Native Adaptive Cards visuals
+
+The WinUI 3 Adaptive Cards renderer doesn't support the charts and visuals in the current Adaptive Cards schema, so Command Palette renders them itself: `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, and `Badge`. Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts.
+
+Extension authors: see `ExtensionTemplate\TemplateCmdPalExtension\.github\skills\add-adaptive-card-form\references\charts-and-visuals.md`, and the Samples extension's "Charts and visuals" page.
+
+## How an element works
+
+Each element has two parts, joined in `AdaptiveVisualElements`:
+
+- **Model** (`*Model.cs`): parses the element JSON with `ChartJson`, leniently. Invalid values read as missing and add a warning. Models don't use WinUI, so the unit tests link them directly. `IncrementalState` is the element's canonical JSON.
+- **Control** (`*Control.cs`): an `AdaptiveVisualControl` that draws the model with shapes and text. It re-renders when the theme or, for width-dependent layouts, the width changes.
+
+`AdaptiveVisualElements.Types` lists every element with its parser and control factory. `ContentFormControl` registers the parsers, the renderers, and `PatchableElements`, so the incremental updater can move a new model into an existing control instead of rebuilding the card. A line chart that gains one sample scrolls instead of redrawing.
+
+`AdaptiveContainerDecoratorRenderer` (one folder up) adds `roundedCorners` and `showBorder` to containers, column sets, and columns with the `CmdPal.Adaptive.Container.*` styles in `ContentFormControl.xaml`.
+
+## Theming
+
+- `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
+- `ChartTheme` adds the accent color, text and track colors, and high contrast, where every data color becomes the system highlight color.
+- `AdaptiveCardsConfig` builds the host config from `AdaptiveCardThemeTokens`, so text sizes, spacing, and container styles match Fluent, and cards re-render when the theme changes.
+
+## Add an element
+
+1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`.
+2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`.
+3. Add the element to `AdaptiveVisualElements.Types`.
+4. Link the model in `Tests\Microsoft.CmdPal.UI.UnitTests` and add parsing tests.
+5. Document the element for extension authors, and add it to the Samples extension.
+
+## Upstream
+
+These renderers follow the Adaptive Cards schema, so they can move to the open-source WinUI 3 renderer in [microsoft/AdaptiveCards](https://github.com/microsoft/AdaptiveCards). Until then, Command Palette registers them through the renderer's public custom element APIs, without a fork.

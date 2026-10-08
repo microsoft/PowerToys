@@ -644,14 +644,14 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     /// <summary>Gets a copy of the page's current template data, for the overview card.</summary>
     internal JsonObject GetDataSnapshot() => ContentDataJson;
 
-    /// <summary>Formats memory use against its size, such as <c>1.2 / 8.0 GB</c>.</summary>
+    /// <summary>Formats memory use against its size in binary units, as Task Manager does, such as <c>1.2 / 8.0 GB</c>.</summary>
     internal static string FormatUsedOfTotal(ulong used, ulong total)
     {
-        const double Gibibyte = 1024.0 * 1024 * 1024;
-        const double Mebibyte = 1024.0 * 1024;
-        return total >= Gibibyte
-            ? string.Format(CultureInfo.CurrentCulture, "{0:0.0} / {1:0.0} GB", used / Gibibyte, total / Gibibyte)
-            : string.Format(CultureInfo.CurrentCulture, "{0:0} / {1:0} MB", used / Mebibyte, total / Mebibyte);
+        const double BytesPerGigabyte = 1024.0 * 1024 * 1024;
+        const double BytesPerMegabyte = 1024.0 * 1024;
+        return total >= BytesPerGigabyte
+            ? string.Format(CultureInfo.CurrentCulture, "{0:0.0} / {1:0.0} GB", used / BytesPerGigabyte, total / BytesPerGigabyte)
+            : string.Format(CultureInfo.CurrentCulture, "{0:0} / {1:0} MB", used / BytesPerMegabyte, total / BytesPerMegabyte);
     }
 
     internal static double GetPercent(ulong used, ulong total) =>

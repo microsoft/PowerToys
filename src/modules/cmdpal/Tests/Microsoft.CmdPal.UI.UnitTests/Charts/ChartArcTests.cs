@@ -67,4 +67,15 @@ public class ChartArcTests
 
         Assert.AreEqual(spans[1].Start, spans[1].End);
     }
+
+    [TestMethod]
+    public void OpenArcsHaveNoGapAtTheirEnds()
+    {
+        var spans = ChartArc.GetSpans([0.6, 0.25, 0.15], 0.02, closed: false);
+
+        Assert.AreEqual(0d, spans[0].Start, 1e-9);
+        Assert.AreEqual(0.59, spans[0].End, 1e-9);
+        Assert.AreEqual(0.61, spans[1].Start, 1e-9);
+        Assert.AreEqual(1d, spans[2].End, 1e-9);
+    }
 }

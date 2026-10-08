@@ -37,12 +37,10 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
     {
         var isDarkTheme = IsDarkTheme;
         var secondary = ChartTheme.ToBrush(ChartTheme.GetTextColor(isDarkTheme, secondary: true));
-        var root = new StackPanel { Spacing = 8, HorizontalAlignment = HorizontalAlignment.Center };
+        var root = new StackPanel { Spacing = 8 };
         if (!string.IsNullOrWhiteSpace(_model.Title))
         {
-            var title = ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle);
-            title.HorizontalAlignment = HorizontalAlignment.Center;
-            root.Children.Add(title);
+            root.Children.Add(ChartShapes.CreateText(_model.Title, ChartShapes.BodyStrongStyle));
         }
 
         var diameter = Math.Clamp(LayoutWidth, MinimumDiameter, MaximumDiameter);
@@ -50,7 +48,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         var radius = (diameter - thickness) / 2;
         var center = new ChartPoint(diameter / 2, diameter / 2);
         var labelHeight = _model.ShowMinMax ? 18 : 0;
-        var canvas = new Canvas { Width = diameter, Height = center.Y + (thickness / 2) + labelHeight };
+        var canvas = new Canvas { Width = diameter, Height = center.Y + (thickness / 2) + labelHeight, HorizontalAlignment = HorizontalAlignment.Center };
 
         var colors = new ChartColor[_model.Segments.Count];
         for (var i = 0; i < colors.Length; i++)
@@ -83,7 +81,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
                 shares[i] = Math.Max(0, _model.Segments[i].Value) / range;
             }
 
-            var spans = ChartArc.GetSpans(shares, SegmentGap);
+            var spans = ChartArc.GetSpans(shares, SegmentGap, closed: false);
             for (var i = 0; i < spans.Count; i++)
             {
                 if (spans[i].End > spans[i].Start)
