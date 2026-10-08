@@ -81,5 +81,14 @@ namespace Microsoft.CmdPal.Common.Properties {
                 return ResourceManager.GetString("PinnedItemSuffix", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Run as administrator.
+        /// </summary>
+        internal static string RunAsAdministratorCommand_Name {
+            get {
+                return ResourceManager.GetString("RunAsAdministratorCommand_Name", resourceCulture);
+            }
+        }
     }
 }

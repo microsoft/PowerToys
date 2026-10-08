@@ -287,10 +287,12 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var currentHost = message.Context?.ExtensionHost ?? CurrentPage.ExtensionHost;
+        var currentProviderContext = message.Context?.ProviderContext ?? CurrentPage.ProviderContext;
+        var host = _appHostService.GetHostForCommand(message.CommandContext, currentHost);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+            : _appHostService.GetProviderContextForCommand(message.CommandContext, currentProviderContext);
 
         try
         {
@@ -327,7 +329,7 @@ public partial class ShellViewModel : ObservableObject,
                 pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -398,13 +400,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
+                _rootPageService.OnPerformCommand(message.CommandContext, CurrentPage.IsRootPage, host);
             }
         }
         catch (Exception ex)
@@ -454,7 +456,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.Context);
+                result = invokable.Invoke(message.CommandContext);
                 success = true;
             }
             finally
@@ -466,7 +468,11 @@ public partial class ShellViewModel : ObservableObject,
             }
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
+            UnsafeHandleCommandResult(
+                result,
+                message.OnBeforeShowConfirmation,
+                message.ResultHandler,
+                message.Context?.Page);
 
             _handleInvokeTask = null;
         }
@@ -483,7 +489,11 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
+    private void UnsafeHandleCommandResult(
+        ICommandResult? result,
+        Action? onBeforeShowConfirmation = null,
+        Func<ICommandResult, bool>? resultHandler = null,
+        PageViewModel? sourcePage = null)
     {
         if (result is null)
         {
@@ -495,6 +505,11 @@ public partial class ShellViewModel : ObservableObject,
         CoreLogger.LogDebug($"handling {kind.ToString()}");
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
+        if (resultHandler?.Invoke(result) == true)
+        {
+            return;
+        }
+
         switch (kind)
         {
             case CommandResultKind.Dismiss:
@@ -571,13 +586,13 @@ public partial class ShellViewModel : ObservableObject,
                             var toastCommand = a2.Command;
                             if (toastCommand is not null)
                             {
-                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command = new CommandViewModel(toastCommand, new(sourcePage ?? CurrentPage));
                                 command.InitializeProperties();
                             }
                         }
 
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
-                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, resultHandler, sourcePage);
                     }
 
                     break;
@@ -610,7 +625,11 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
-        UnsafeHandleCommandResult(message.Result.Unsafe);
+        UnsafeHandleCommandResult(
+            message.Result.Unsafe,
+            message.OnBeforeShowConfirmation,
+            message.ResultHandler,
+            message.Context?.Page);
     }
 
     public void Receive(WindowHiddenMessage message)

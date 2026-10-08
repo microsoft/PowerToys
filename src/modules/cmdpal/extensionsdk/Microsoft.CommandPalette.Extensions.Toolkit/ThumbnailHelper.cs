@@ -4,6 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Storage;
@@ -14,6 +15,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public static class ThumbnailHelper
 {
+    // Temporary until IShellItemImageFactory replaces image lists; the SDK does not own the extension lifecycle.
+    private static readonly Lazy<bool> ShellIconCacheInitialized = new(static () => NativeMethods.FileIconInit(true));
+
     private static readonly string[] ImageExtensions =
     [
         ".png",
@@ -133,6 +137,16 @@ public static class ThumbnailHelper
 
     private static async Task<IRandomAccessStream?> GetFileIconStream(string filePath, bool jumbo)
     {
+        if (TryParseIconReference(filePath, out var iconPath, out var iconIndex, requireIndex: true)
+            && !Path.Exists(filePath)
+            && (!Uri.TryCreate(filePath, UriKind.Absolute, out var uri) || uri.IsFile))
+        {
+            var icon = ExtractIconHandle(iconPath, iconIndex, jumbo);
+            return icon != 0 ? await FromHIconToStream(icon) : null;
+        }
+
+        // Initialize once before concurrent requests can race the Shell image-list setup.
+        _ = ShellIconCacheInitialized.Value;
         return await TryExtractUsingPIDL(filePath, jumbo)
                ?? await GetFileIconStreamUsingFilePath(filePath, jumbo);
     }
@@ -250,7 +264,10 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(string path)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
+        if (NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX) == IntPtr.Zero)
+        {
+            return 0;
+        }
 
         var iID_IImageList = IID_IImageList;
         var imageListPtr = IntPtr.Zero;
@@ -272,7 +289,10 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(IntPtr pidl)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL);
+        if (NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL) == IntPtr.Zero)
+        {
+            return 0;
+        }
 
         var iID_IImageList = IID_IImageList;
         var imageListPtr = IntPtr.Zero;
@@ -440,7 +460,7 @@ public static class ThumbnailHelper
         }
     }
 
-    private static bool TryParseIconReference(string iconRef, out string path, out int index)
+    private static bool TryParseIconReference(string iconRef, out string path, out int index, bool requireIndex = false)
     {
         // Typical shapes:
         //   "C:\Program Files\Outlook\OUTLOOK.EXE,-1"
@@ -453,80 +473,44 @@ public static class ThumbnailHelper
 
         // Split only on the last comma so paths with commas still work
         var lastComma = path.LastIndexOf(',');
-        if (lastComma >= 0)
+        var hasIndex = lastComma >= 0
+            && int.TryParse(path.AsSpan(lastComma + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out index);
+        if (hasIndex)
         {
-            var idxPart = path[(lastComma + 1)..].Trim();
             path = path[..lastComma].Trim();
-            _ = int.TryParse(idxPart, out index);
         }
 
         // Trim quotes around path
         path = path.Trim('"');
-        if (path.Length > 1 && path[0] == '"' && path[^1] == '"')
-        {
-            path = path.Substring(1, path.Length - 2);
-        }
-
-        // Basic sanity
-        return !string.IsNullOrWhiteSpace(path);
+        return !string.IsNullOrWhiteSpace(path) && (!requireIndex || hasIndex);
     }
 
     private static nint ExtractIconHandle(string path, int index, bool jumbo)
     {
         using var errorMode = ShellThreadErrorModeScope.SuppressShellDialogs();
 
-        // Request sizes: LOWORD=small, HIWORD=large.
-        // Ask for 256 when jumbo, else fall back to 32/16.
-        var small = jumbo ? 256 : 16;
-        var large = jumbo ? 256 : 32;
-        var sizeParam = (large << 16) | (small & 0xFFFF);
-
-        var hr = NativeMethods.SHDefExtractIconW(path, index, 0, out var hLarge, out var hSmall, sizeParam);
-        if (hr == 0 && TryTakePreferredIcon(hLarge, hSmall, out var selectedIcon))
+        path = Environment.ExpandEnvironmentVariables(path);
+        var hr = NativeMethods.SHDefExtractIconW(path, index, 0, out var icon, 0, jumbo ? 256 : 32);
+        if (hr != 0 && jumbo)
         {
-            return selectedIcon;
+            if (icon != 0)
+            {
+                NativeMethods.DestroyIcon(icon);
+            }
+
+            hr = NativeMethods.SHDefExtractIconW(path, index, 0, out icon, 0, 32);
         }
 
-        DestroyIcons(hLarge, hSmall);
-
-        // Final fallback: try 32/16 explicitly in case the resource can’t upscale
-        sizeParam = (32 << 16) | 16;
-        hr = NativeMethods.SHDefExtractIconW(path, index, 0, out hLarge, out hSmall, sizeParam);
-        if (hr == 0 && TryTakePreferredIcon(hLarge, hSmall, out selectedIcon))
+        if (hr == 0)
         {
-            return selectedIcon;
+            return icon;
         }
 
-        DestroyIcons(hLarge, hSmall);
+        if (icon != 0)
+        {
+            NativeMethods.DestroyIcon(icon);
+        }
+
         return 0;
-
-        static bool TryTakePreferredIcon(nint largeIcon, nint smallIcon, out nint selectedIcon)
-        {
-            selectedIcon = largeIcon != 0 ? largeIcon : smallIcon;
-            if (selectedIcon == 0)
-            {
-                return false;
-            }
-
-            if (largeIcon != 0 && smallIcon != 0 && smallIcon != largeIcon)
-            {
-                _ = NativeMethods.DestroyIcon(smallIcon);
-            }
-
-            return true;
-        }
-
-        static void DestroyIcons(nint largeIcon, nint smallIcon)
-        {
-            if (largeIcon != 0)
-            {
-                _ = NativeMethods.DestroyIcon(largeIcon);
-            }
-
-            if (smallIcon != 0 && smallIcon != largeIcon)
-            {
-                _ = NativeMethods.DestroyIcon(smallIcon);
-            }
-        }
     }
 }

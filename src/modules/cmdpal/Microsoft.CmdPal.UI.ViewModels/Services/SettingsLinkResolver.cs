@@ -37,6 +37,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.Appearance.DisableAnimations, SettingsPageTags.Appearance, "disable-animations"),
         CreateTarget(SettingsLinkIds.Appearance.Layout, SettingsPageTags.Appearance, "layout-section"),
         CreateTarget(SettingsLinkIds.Appearance.CompactMode, SettingsPageTags.Appearance, "compact-mode"),
+        CreateTarget(SettingsLinkIds.Appearance.CompactPosition, SettingsPageTags.Appearance, "compact-position"),
         CreateTarget(SettingsLinkIds.Appearance.QuickAccessShelf, SettingsPageTags.Appearance, "quick-access-shelf"),
         CreateTarget(SettingsLinkIds.Appearance.HomeRecentCommands, SettingsPageTags.General, "home-recent-commands"),
         CreateTarget(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, SettingsPageTags.General, "recent-commands-display-limit"),

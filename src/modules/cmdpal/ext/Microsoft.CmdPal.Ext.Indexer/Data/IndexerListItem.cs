@@ -97,6 +97,11 @@ internal sealed partial class IndexerListItem : ListItem
         else
         {
             commands.Add(new CommandContextItem(openCommand));
+
+            if (RunAsAdministratorCommand.IsSupportedFileType(fullPath))
+            {
+                commands.Add(new CommandContextItem(new RunAsAdministratorCommand(fullPath)) { RequestedShortcut = KeyChords.RunAsAdministrator });
+            }
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));

@@ -48,6 +48,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.Repair_Fail | Triggered when the PowerToys repair operation fails to complete successfully due to an error. |
 | Microsoft.PowerToys.Runner_Launch | Indicates when the PowerToys Runner is launched. |
 | Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
+| Microsoft.PowerToys.Settings_CLICommand | Triggered when the Settings CLI is invoked, logging only a fixed command category and success status. Module names, settings values, and other arguments are not collected. |
 | Microsoft.PowerToys.SettingsBootEvent | Triggered when PowerToys settings are initialized at startup. |
 | Microsoft.PowerToys.SettingsEnabledEvent | Indicates that the PowerToys settings have been enabled. |
 | Microsoft.PowerToys.ShortcutConflictControlClickedEvent | Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard. |
