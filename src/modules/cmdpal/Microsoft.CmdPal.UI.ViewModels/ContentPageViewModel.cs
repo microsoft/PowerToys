@@ -397,7 +397,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.ResumeAfterNavigation();
         UpdateDetails();
-        DoOnActivePage(() => WeakReferenceMessenger.Default.Send(new UpdateCommandBarMessage(this)));
+        DoOnActivePage(() => SetCommandBarContext(this));
         return Task.CompletedTask;
     }
 

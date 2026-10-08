@@ -360,16 +360,15 @@ public sealed partial class PageCleanupTests
         page.Setup(p => p.GetContent()).Returns([]);
         page.SetupGet(p => p.Details).Returns(Mock.Of<IDetails>());
         var viewModel = new ContentPageViewModel(page.Object, scheduler, new TestHost(), CommandProviderContext.Empty);
-        var recipient = new object();
         var commandUpdates = 0;
         var detailsUpdates = 0;
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(recipient, (_, message) =>
+        viewModel.CommandBarContextChanged += (_, message) =>
         {
-            if (ReferenceEquals(message.ViewModel, viewModel))
+            if (ReferenceEquals(message.Context, viewModel))
             {
                 commandUpdates++;
             }
-        });
+        };
         viewModel.DetailsChanged += (_, message) =>
         {
             if (ReferenceEquals(message.Details, viewModel.Details))
@@ -404,7 +403,6 @@ public sealed partial class PageCleanupTests
         }
         finally
         {
-            WeakReferenceMessenger.Default.UnregisterAll(recipient);
             await viewModel.CleanupAsync().WaitAsync(TestTimeout);
         }
     }
