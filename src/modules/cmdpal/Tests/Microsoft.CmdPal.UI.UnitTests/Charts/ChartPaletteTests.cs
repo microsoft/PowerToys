@@ -98,4 +98,26 @@ public class ChartPaletteTests
     {
         Assert.AreEqual(expected, ChartValueFormatter.FormatCompact(value, CultureInfo.InvariantCulture));
     }
+
+    [TestMethod]
+    public void HighContrastSlotsCycleByIndex()
+    {
+        Assert.AreEqual(3, ChartPalette.HighContrastColorCount);
+        Assert.AreEqual(0, ChartPalette.GetHighContrastSlot(0));
+        Assert.AreEqual(1, ChartPalette.GetHighContrastSlot(1));
+        Assert.AreEqual(2, ChartPalette.GetHighContrastSlot(2));
+        Assert.AreEqual(0, ChartPalette.GetHighContrastSlot(3));
+    }
+
+    [TestMethod]
+    public void HighContrastDashPatternsVaryBySeries()
+    {
+        Assert.IsNull(ChartPalette.GetHighContrastDashPattern(0));
+        var dashed = ChartPalette.GetHighContrastDashPattern(1);
+        var dotted = ChartPalette.GetHighContrastDashPattern(2);
+        Assert.IsNotNull(dashed);
+        Assert.IsNotNull(dotted);
+        CollectionAssert.AreNotEqual(dashed, dotted);
+        Assert.IsNull(ChartPalette.GetHighContrastDashPattern(3));
+    }
 }

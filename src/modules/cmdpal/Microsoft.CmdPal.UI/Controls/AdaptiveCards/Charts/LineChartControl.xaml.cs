@@ -180,7 +180,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         {
             var series = _model.Series[i];
             colors[i] = ChartTheme.Resolve(series.Color, _model.Color, _model.ColorSet, i, isDarkTheme);
-            DrawSeries(series, layout, colors[i], fillOpacity, markerScale);
+            DrawSeries(series, layout, colors[i], fillOpacity, markerScale, isHighContrast ? ChartPalette.GetHighContrastDashPattern(i) : null);
         }
 
         UpdateLegend(colors);
@@ -202,7 +202,8 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
         LineChartLayout layout,
         ChartColor color,
         double fillOpacity,
-        double markerScale)
+        double markerScale,
+        double[]? dashPattern)
     {
         var runs = layout.GetRuns(series.Points);
         var stroke = new SolidColorBrush(ToColor(color));
@@ -226,7 +227,7 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 continue;
             }
 
-            SeriesLayer.Children.Add(new Path
+            var line = new Path
             {
                 Data = CreateLineGeometry(run),
                 Stroke = stroke,
@@ -234,7 +235,14 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
                 StrokeLineJoin = PenLineJoin.Round,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-            });
+            };
+            if (dashPattern is not null)
+            {
+                line.StrokeDashCap = PenLineCap.Round;
+                line.StrokeDashArray = CreateDashArray(dashPattern);
+            }
+
+            SeriesLayer.Children.Add(line);
         }
 
         // Mark the newest sample: the "now" of a live series.
@@ -244,6 +252,17 @@ internal sealed partial class LineChartControl : UserControl, IIncrementalAdapti
             AddDot(point, MarkerHaloDiameter * markerScale, new SolidColorBrush(ToColor(color.WithOpacity(MarkerHaloOpacity))));
             AddDot(point, MarkerDiameter * markerScale, stroke);
         }
+    }
+
+    private static DoubleCollection CreateDashArray(double[] pattern)
+    {
+        var dashes = new DoubleCollection();
+        foreach (var value in pattern)
+        {
+            dashes.Add(value);
+        }
+
+        return dashes;
     }
 
     private PathGeometry CreateLineGeometry(IReadOnlyList<ChartPoint> run)

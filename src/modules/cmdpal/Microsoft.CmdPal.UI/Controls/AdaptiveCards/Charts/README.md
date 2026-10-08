@@ -20,12 +20,12 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 ## Theming
 
 - `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
-- `ChartTheme` adds the accent color, text and track colors, and high contrast, where every data color becomes the system highlight color.
+- `ChartTheme` adds the accent color, text and track colors, and high contrast, where data colors cycle by index through the system highlight, hyperlink, and window text colors, and line series alternate solid, dashed, and dotted strokes.
 - `AdaptiveCardsConfig` builds the host config from `AdaptiveCardThemeTokens`, so text sizes, spacing, and container styles match Fluent, and cards re-render when the theme changes.
 
 ## Icons
 
-`Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. Command Palette draws them with Segoe Fluent Icons, the font it already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed and don't render.
+`Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. Command Palette draws them with Segoe Fluent Icons, the font it already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed and render nothing. The element's `fallback` isn't used for them, since a registered element always renders itself; it applies only in hosts that don't support `Icon`.
 
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
 

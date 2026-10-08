@@ -12,6 +12,9 @@ internal static class ChartPalette
 {
     public const string AccentColorName = "accent";
 
+    /// <summary>The number of distinct system colors that data items cycle through in high contrast.</summary>
+    public const int HighContrastColorCount = 3;
+
     // Each entry is (light theme, dark theme). Semantic colors follow the Fluent system fill
     // colors. The other colors are tuned to keep contrast on both Mica and Acrylic surfaces.
     private static readonly Dictionary<string, (uint Light, uint Dark)> NamedColors = new(StringComparer.OrdinalIgnoreCase)
@@ -158,4 +161,22 @@ internal static class ChartPalette
         TryResolve(set[Math.Abs(index) % set.Count], isDarkTheme, accent, out color);
         return color;
     }
+
+    /// <summary>
+    /// Gets which of the <see cref="HighContrastColorCount"/> distinct system colors an item uses
+    /// in high contrast, cycling by index the way the color sets do.
+    /// </summary>
+    public static int GetHighContrastSlot(int index) => Math.Abs(index) % HighContrastColorCount;
+
+    /// <summary>
+    /// Gets the dash pattern for a line series in high contrast: solid for the first series, then
+    /// dashed and dotted (in multiples of the stroke thickness, with round dash caps), so lines
+    /// stay distinct even when contrast theme colors are close. Returns null for a solid line.
+    /// </summary>
+    public static double[]? GetHighContrastDashPattern(int index) => (Math.Abs(index) % 3) switch
+    {
+        1 => [3, 3],
+        2 => [0, 2],
+        _ => null,
+    };
 }

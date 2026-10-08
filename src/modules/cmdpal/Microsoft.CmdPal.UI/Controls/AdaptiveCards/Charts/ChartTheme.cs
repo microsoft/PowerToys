@@ -16,6 +16,15 @@ internal static class ChartTheme
     private static readonly Lazy<UISettings> UserInterfaceSettings = new(() => new UISettings());
     private static readonly Lazy<AccessibilitySettings> AccessibilitySettings = new(() => new AccessibilitySettings());
 
+    // Contrast themes define these as distinct, readable colors on the Window background. The count
+    // matches ChartPalette.HighContrastColorCount.
+    private static readonly UIElementType[] HighContrastDataElements =
+    [
+        UIElementType.Highlight,
+        UIElementType.Hotlight,
+        UIElementType.WindowText,
+    ];
+
     public static bool IsHighContrast => AccessibilitySettings.Value.HighContrast;
 
     public static bool AnimationsEnabled => UserInterfaceSettings.Value.AnimationsEnabled;
@@ -27,10 +36,13 @@ internal static class ChartTheme
         return new ChartColor(color.A, color.R, color.G, color.B);
     }
 
-    /// <summary>Resolves a data color, using the system highlight color in high contrast.</summary>
+    /// <summary>
+    /// Resolves a data color. In high contrast, items cycle through distinct system colors by
+    /// index, so series, slices, and segments stay distinguishable.
+    /// </summary>
     public static ChartColor Resolve(string? itemColor, string? chartColor, string? colorSet, int index, bool isDarkTheme) =>
         IsHighContrast
-            ? GetHighContrastColor()
+            ? GetSystemColor(HighContrastDataElements[ChartPalette.GetHighContrastSlot(index)])
             : ChartPalette.ResolveSeriesColor(itemColor, chartColor, colorSet, index, isDarkTheme, GetAccent(isDarkTheme));
 
     /// <summary>
