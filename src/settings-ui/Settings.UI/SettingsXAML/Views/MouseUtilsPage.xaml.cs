@@ -72,15 +72,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OpenMouseControlPanel_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        private void OpenMouseSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             try
             {
-                StartProcessHelper.StartControlPanelApplet(StartProcessHelper.MouseControlPanel);
+                StartProcessHelper.Start(StartProcessHelper.MouseSettings);
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error while trying to open the mouse control panel", ex);
+                Logger.LogError("Error while trying to open the mouse settings", ex);
             }
         }
     }

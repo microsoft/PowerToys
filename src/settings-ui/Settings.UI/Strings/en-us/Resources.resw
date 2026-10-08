@@ -2906,7 +2906,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_MouseButtonLock_LmbLock_Link.Text" xml:space="preserve">
     <value>Open mouse settings</value>
-    <comment>Link that opens the Windows Mouse Properties dialog, where ClickLock can be turned on.</comment>
+    <comment>Link that opens the Windows Settings accessibility mouse page, where ClickLock can be turned on.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock_RmbLock.Content" xml:space="preserve">
     <value>Right button</value>
