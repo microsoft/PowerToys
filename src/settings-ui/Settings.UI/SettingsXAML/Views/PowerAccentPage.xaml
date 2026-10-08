@@ -74,17 +74,10 @@
                         IsExpanded="True">
                         <Button
                             x:Uid="QuickAccent_EditCharacterSets_Button"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Click="EditCharacterSetsButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
-                                <TextBlock
-                                    x:Name="SelectedCharacterSetsText"
-                                    IsTextSelectionEnabled="True"
-                                    Text="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
-                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Name="SelectedCharacterSetsCard" Description="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}" />
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                     <InfoBar
@@ -216,6 +209,7 @@
                             x:Name="AvailableCharacterSetsList"
                             Grid.Row="2"
                             Height="520"
+                            Margin="-14,0,0,0"
                             SelectionChanged="AvailableCharacterSetsList_SelectionChanged"
                             SelectionMode="Multiple">
                             <ListView.ItemTemplate>
