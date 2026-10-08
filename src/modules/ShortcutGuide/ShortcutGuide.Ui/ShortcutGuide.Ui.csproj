@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ShortcutGuide.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Assets\CopilotKey.png" />
     <Content Remove="Assets\ShortcutGuide\HeroImage.png" />
     <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />
