@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstdint>
 
@@ -95,6 +95,16 @@ namespace CommonSharedConstants
     const wchar_t MOUSE_HIGHLIGHTER_TRIGGER_EVENT[] = L"Local\\MouseHighlighterTriggerEvent-1e3c9c3d-3fdf-4f9a-9a52-31c9b3c3a8f4";
     const wchar_t MOUSE_CROSSHAIRS_TRIGGER_EVENT[] = L"Local\\MouseCrosshairsTriggerEvent-0d4c7f92-0a5c-4f5c-b64b-8a2a2f7e0b21";
     const wchar_t CURSOR_WRAP_TRIGGER_EVENT[] = L"Local\\CursorWrapTriggerEvent-1f8452b5-4e6e-45b3-8b09-13f14a5900c9";
+    const wchar_t LASER_POINTER_TRIGGER_EVENT[] = L"Local\\LaserPointerTriggerEvent-c5cb38aa-2fbd-4957-a25b-1eb6b6c7c939";
+
+    // Toggles the shareable presenter window. Separate from the trigger event above
+    // because the presenter is independent of the laser itself.
+    const wchar_t LASER_POINTER_PRESENTER_EVENT[] = L"Local\\LaserPointerPresenterEvent-8f2b41d6-59ae-4c07-b3d2-0a7e6c1f4b58";
+    const wchar_t LASER_POINTER_PRESENTER_STOP_EVENT[] = L"Local\\LaserPointerPresenterStopEvent-6b1e4a27-0d35-4f8c-9a71-58e2c4d6b093";
+
+    // Manual-reset, and signalled for exactly as long as the presenter window is up. Read
+    // by Quick Access, which runs in its own process and has no other way of knowing.
+    const wchar_t LASER_POINTER_PRESENTER_ACTIVE_EVENT[] = L"Local\\LaserPointerPresenterActiveEvent-3d7c0e94-6b21-4a5f-8e13-27ca9f60b4d1";
 
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";

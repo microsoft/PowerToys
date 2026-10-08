@@ -41,6 +41,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
         static GpoRuleConfigured GetConfiguredAutoHideCursorEnabledValue();
         static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
+        static GpoRuleConfigured GetConfiguredLaserPointerEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
         static GpoRuleConfigured GetConfiguredQuickAccentEnabledValue();
